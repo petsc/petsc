@@ -185,12 +185,21 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 @*/
 PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 {
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "Space in %D variables of order %D with %D components\n", sp->Nv, sp->order, sp->Nc);CHKERRQ(ierr);
+  }
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -551,13 +560,8 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (sp->Nc > 1) {
-    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %D variables of degree %D with %D components\n", sp->Nv, sp->order, sp->Nc);CHKERRQ(ierr);}
-    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %D variables of degree %D with %D components\n", sp->Nv, sp->order, sp->Nc);CHKERRQ(ierr);}
-  } else {
-    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %d variables of degree %d\n", sp->Nv, sp->order);CHKERRQ(ierr);}
-    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of degree %d\n", sp->Nv, sp->order);CHKERRQ(ierr);}
-  }
+  if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space of degree %D\n", sp->order);CHKERRQ(ierr);}
+  else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space of degree %D\n", sp->order);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1351,6 +1355,566 @@ PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  PetscDualSpace dualSubspace;
+  PetscSpace     origSpace;
+  PetscReal      *x;
+  PetscReal      *x_alloc;
+  PetscReal      *Jx;
+  PetscReal      *Jx_alloc;
+  PetscReal      *u;
+  PetscReal      *u_alloc;
+  PetscReal      *Ju;
+  PetscReal      *Ju_alloc;
+  PetscReal      *Q;
+  PetscInt       Nb;
+} PetscSpace_Subspace;
+
+static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp)
+{
+  PetscSpace_Subspace *subsp;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  subsp = (PetscSpace_Subspace *) sp->data;
+  subsp->x = NULL;
+  ierr = PetscFree(subsp->x_alloc);CHKERRQ(ierr);
+  subsp->Jx = NULL;
+  ierr = PetscFree(subsp->Jx_alloc);CHKERRQ(ierr);
+  subsp->u = NULL;
+  ierr = PetscFree(subsp->u_alloc);CHKERRQ(ierr);
+  subsp->Ju = NULL;
+  ierr = PetscFree(subsp->Ju_alloc);CHKERRQ(ierr);
+  ierr = PetscFree(subsp->Q);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&subsp->origSpace);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&subsp->dualSubspace);CHKERRQ(ierr);
+  ierr = PetscFree(subsp);CHKERRQ(ierr);
+  sp->data = NULL;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
+{
+  PetscBool           iascii;
+  PetscSpace_Subspace *subsp;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  subsp = (PetscSpace_Subspace *) sp->data;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscInt origDim, subDim, origNc, subNc, o, s;
+
+    ierr = PetscSpaceGetNumVariables(subsp->origSpace,&origDim);CHKERRQ(ierr);
+    ierr = PetscSpaceGetNumComponents(subsp->origSpace,&origNc);CHKERRQ(ierr);
+    ierr = PetscSpaceGetNumVariables(sp,&subDim);CHKERRQ(ierr);
+    ierr = PetscSpaceGetNumComponents(sp,&subNc);CHKERRQ(ierr);
+    if (subsp->x) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Subspace-to-space domain shift:\n\n");CHKERRQ(ierr);
+      for (o = 0; o < origDim; o++) {
+        ierr = PetscViewerASCIIPrintf(viewer," %g\n", (double)subsp->x[o]);CHKERRQ(ierr);
+      }
+    }
+    if (subsp->Jx) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Subspace-to-space domain transform:\n\n");CHKERRQ(ierr);
+      for (o = 0; o < origDim; o++) {
+        ierr = PetscViewerASCIIPrintf(viewer," %g", (double)subsp->Jx[o * subDim + 0]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+        for (s = 1; s < subDim; s++) {
+          ierr = PetscViewerASCIIPrintf(viewer," %g", (double)subsp->Jx[o * subDim + s]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
+    if (subsp->u) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Space-to-subspace range shift:\n\n");CHKERRQ(ierr);
+      for (o = 0; o < origNc; o++) {
+        ierr = PetscViewerASCIIPrintf(viewer," %d\n", subsp->u[o]);CHKERRQ(ierr);
+      }
+    }
+    if (subsp->Ju) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Space-to-subsace domain transform:\n");CHKERRQ(ierr);
+      for (o = 0; o < origNc; o++) {
+        ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+        for (s = 0; s < subNc; s++) {
+          ierr = PetscViewerASCIIPrintf(viewer," %d", subsp->Ju[o * subNc + s]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"Original space:\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscSpaceView(subsp->origSpace,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
+  PetscSpace_Subspace *subsp = (PetscSpace_Subspace *) sp->data;
+  PetscSpace          origsp;
+  PetscInt            origDim, subDim, origNc, subNc, subNb, origNb, i, j, k, l, m, n, o;
+  PetscReal           *inpoints, *inB = NULL, *inD = NULL, *inH = NULL;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  origsp = subsp->origSpace;
+  ierr = PetscSpaceGetNumVariables(sp,&subDim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumVariables(origsp,&origDim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumComponents(sp,&subNc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumComponents(origsp,&origNc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDimension(sp,&subNb);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDimension(origsp,&origNb);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(sp->dm,npoints*origDim,MPIU_REAL,&inpoints);CHKERRQ(ierr);
+  for (i = 0; i < npoints; i++) {
+    if (subsp->x) {
+      for (j = 0; j < origDim; j++) inpoints[i * origDim + j] = subsp->x[j];
+    } else {
+      for (j = 0; j < origDim; j++) inpoints[i * origDim + j] = 0.0;
+    }
+    if (subsp->Jx) {
+      for (j = 0; j < origDim; j++) {
+        for (k = 0; k < subDim; k++) {
+          inpoints[i * origDim + j] += subsp->Jx[j * origDim + k] * points[i * subDim + k];
+        }
+      }
+    } else {
+      for (j = 0; j < PetscMin(subDim, origDim); j++) {
+        inpoints[i * origDim + j] += points[i * subDim + k];
+      }
+    }
+  }
+  if (B) {
+    ierr = DMGetWorkArray(sp->dm,npoints*origNb*origNc,MPIU_REAL,&inB);CHKERRQ(ierr);
+  }
+  if (D) {
+    ierr = DMGetWorkArray(sp->dm,npoints*origNb*origNc*origDim,MPIU_REAL,&inD);CHKERRQ(ierr);
+  }
+  if (H) {
+    ierr = DMGetWorkArray(sp->dm,npoints*origNb*origNc*origDim*origDim,MPIU_REAL,&inH);CHKERRQ(ierr);
+  }
+  ierr = PetscSpaceEvaluate(origsp,npoints,inpoints,inB,inD,inH);CHKERRQ(ierr);
+  if (H) {
+    PetscReal *phi, *psi;
+
+    ierr = DMGetWorkArray(sp->dm,origNc*origDim*origDim,MPIU_REAL,&phi);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(sp->dm,origNc*subDim*subDim,MPIU_REAL,&psi);CHKERRQ(ierr);
+    for (i = 0; i < npoints * subNb * subNc * subDim; i++) D[i] = 0.0;
+    for (i = 0; i < subNb; i++) {
+      const PetscReal *subq = &subsp->Q[i * origNb];
+
+      for (j = 0; j < npoints; j++) {
+        for (k = 0; k < origNc * origDim; k++) phi[k] = 0.;
+        for (k = 0; k < origNc * subDim; k++) psi[k] = 0.;
+        for (k = 0; k < origNb; k++) {
+          for (l = 0; l < origNc * origDim * origDim; l++) {
+            phi[l] += inH[(j * origNb + k) * origNc * origDim * origDim + l] * subq[k];
+          }
+        }
+        if (subsp->Jx) {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < subDim; l++) {
+              for (m = 0; m < origDim; m++) {
+                for (n = 0; n < subDim; n++) {
+                  for (o = 0; o < origDim; o++) {
+                    psi[(k * subDim + l) * subDim + n] += subsp->Jx[l * origDim + m] * subsp->Jx[n * origDim + o] * phi[(k * origDim + m) * origDim + o];
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < PetscMin(subDim, origDim); l++) {
+              for (m = 0; m < PetscMin(subDim, origDim); m++) {
+                psi[(k * subDim + l) * subDim + m] += phi[(k * origDim + l) * origDim + m];
+              }
+            }
+          }
+        }
+        if (subsp->Ju) {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < origNc; l++) {
+              for (m = 0; m < subDim * subDim; m++) {
+                H[((j * subNb + i) * subNc + k) * subDim * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim * subDim + m];
+              }
+            }
+          }
+        }
+        else {
+          for (k = 0; k < PetscMin(subNc, origNc); k++) {
+            for (l = 0; l < subDim * subDim; l++) {
+              H[((j * subNb + i) * subNc + k) * subDim * subDim + l] += psi[k * subDim * subDim + l];
+            }
+          }
+        }
+      }
+    }
+    ierr = DMRestoreWorkArray(sp->dm,subNc*origDim,MPIU_REAL,&psi);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(sp->dm,origNc*origDim,MPIU_REAL,&phi);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(sp->dm,npoints*origNb*origNc*origDim,MPIU_REAL,&inH);CHKERRQ(ierr);
+  }
+  if (D) {
+    PetscReal *phi, *psi;
+
+    ierr = DMGetWorkArray(sp->dm,origNc*origDim,MPIU_REAL,&phi);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(sp->dm,origNc*subDim,MPIU_REAL,&psi);CHKERRQ(ierr);
+    for (i = 0; i < npoints * subNb * subNc * subDim; i++) D[i] = 0.0;
+    for (i = 0; i < subNb; i++) {
+      const PetscReal *subq = &subsp->Q[i * origNb];
+
+      for (j = 0; j < npoints; j++) {
+        for (k = 0; k < origNc * origDim; k++) phi[k] = 0.;
+        for (k = 0; k < origNc * subDim; k++) psi[k] = 0.;
+        for (k = 0; k < origNb; k++) {
+          for (l = 0; l < origNc * origDim; l++) {
+            phi[l] += inD[(j * origNb + k) * origNc * origDim + l] * subq[k];
+          }
+        }
+        if (subsp->Jx) {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < subDim; l++) {
+              for (m = 0; m < origDim; m++) {
+                psi[k * subDim + l] += subsp->Jx[l * origDim + m] * phi[k * origDim + m];
+              }
+            }
+          }
+        } else {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < PetscMin(subDim, origDim); l++) {
+              psi[k * subDim + l] += phi[k * origDim + l];
+            }
+          }
+        }
+        if (subsp->Ju) {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < origNc; l++) {
+              for (m = 0; m < subDim; m++) {
+                D[((j * subNb + i) * subNc + k) * subDim + m] += subsp->Ju[k * origNc + l] * psi[l * subDim + m];
+              }
+            }
+          }
+        }
+        else {
+          for (k = 0; k < PetscMin(subNc, origNc); k++) {
+            for (l = 0; l < subDim; l++) {
+              D[((j * subNb + i) * subNc + k) * subDim + l] += psi[k * subDim + l];
+            }
+          }
+        }
+      }
+    }
+    ierr = DMRestoreWorkArray(sp->dm,subNc*origDim,MPIU_REAL,&psi);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(sp->dm,origNc*origDim,MPIU_REAL,&phi);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(sp->dm,npoints*origNb*origNc*origDim,MPIU_REAL,&inD);CHKERRQ(ierr);
+  }
+  if (B) {
+    PetscReal *phi;
+
+    ierr = DMGetWorkArray(sp->dm,origNc,MPIU_REAL,&phi);CHKERRQ(ierr);
+    if (subsp->u) {
+      for (i = 0; i < npoints * subNb; i++) {
+        for (j = 0; j < subNc; j++) B[i * subNc + j] = subsp->u[j];
+      }
+    } else {
+      for (i = 0; i < npoints * subNb * subNc; i++) B[i] = 0.0;
+    }
+    for (i = 0; i < subNb; i++) {
+      const PetscReal *subq = &subsp->Q[i * origNb];
+
+      for (j = 0; j < npoints; j++) {
+        for (k = 0; k < origNc; k++) phi[k] = 0.;
+        for (k = 0; k < origNb; k++) {
+          for (l = 0; l < origNc; l++) {
+            phi[l] += inB[(j * origNb + k) * origNc + l] * subq[k];
+          }
+        }
+        if (subsp->Ju) {
+          for (k = 0; k < subNc; k++) {
+            for (l = 0; l < origNc; l++) {
+              B[(j * subNb + i) * subNc + k] += subsp->Ju[k * origNc + l] * phi[l];
+            }
+          }
+        }
+        else {
+          for (k = 0; k < PetscMin(subNc, origNc); k++) {
+            B[(j * subNb + i) * subNc + k] += phi[k];
+          }
+        }
+      }
+    }
+    ierr = DMRestoreWorkArray(sp->dm,origNc,MPIU_REAL,&phi);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(sp->dm,npoints*origNb*origNc,MPIU_REAL,&inB);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(sp->dm,npoints*origDim,MPIU_REAL,&inpoints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
+{
+  PetscSpace_Subspace *subsp;
+
+  PetscErrorCode ierr;
+  ierr = PetscNewLog(sp,&subsp);CHKERRQ(ierr);
+  sp->data = (void *) subsp;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *dim)
+{
+  PetscSpace_Subspace *subsp;
+
+  PetscFunctionBegin;
+  subsp = (PetscSpace_Subspace *) sp->data;
+  *dim = subsp->Nb;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp)
+{
+  const PetscReal     *x;
+  const PetscReal     *Jx;
+  const PetscReal     *u;
+  const PetscReal     *Ju;
+  PetscDualSpace      dualSubspace;
+  PetscSpace          origSpace;
+  PetscInt            origDim, subDim, origNc, subNc, origNb, subNb, f, i, j, numPoints, offset;
+  PetscReal           *allPoints, *allWeights, *B, *V;
+  DM                  dm;
+  PetscSpace_Subspace *subsp;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  subsp = (PetscSpace_Subspace *) sp->data;
+  x            = subsp->x;
+  Jx           = subsp->Jx;
+  u            = subsp->u;
+  Ju           = subsp->Ju;
+  origSpace    = subsp->origSpace;
+  dualSubspace = subsp->dualSubspace;
+  ierr = PetscSpaceGetNumComponents(origSpace,&origNc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumVariables(origSpace,&origDim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(dualSubspace,&dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&subDim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDimension(origSpace,&origNb);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(dualSubspace,&subNb);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(dualSubspace,&subNc);CHKERRQ(ierr);
+
+  for (f = 0, numPoints = 0; f < subNb; f++) {
+    PetscQuadrature q;
+    PetscInt        qNp;
+
+    ierr = PetscDualSpaceGetFunctional(dualSubspace,f,&q);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,NULL,&qNp,NULL,NULL);CHKERRQ(ierr);
+    numPoints += qNp;
+  }
+  ierr = PetscMalloc1(subNb*origNb,&V);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numPoints*origDim,&allPoints,numPoints*origNc,&allWeights,numPoints*origNb*origNc,&B);CHKERRQ(ierr);
+  for (f = 0, offset = 0; f < subNb; f++) {
+    PetscQuadrature q;
+    PetscInt        qNp, p;
+    const PetscReal *qp;
+    const PetscReal *qw;
+
+    ierr = PetscDualSpaceGetFunctional(dualSubspace,f,&q);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,NULL,&qNp,&qp,&qw);CHKERRQ(ierr);
+    for (p = 0; p < qNp; p++, offset++) {
+      if (x) {
+        for (i = 0; i < origDim; i++) allPoints[origDim * offset + i] = x[i];
+      } else {
+        for (i = 0; i < origDim; i++) allPoints[origDim * offset + i] = 0.0;
+      }
+      if (Jx) {
+        for (i = 0; i < origDim; i++) {
+          for (j = 0; j < subDim; j++) {
+            allPoints[origDim * offset + i] += Jx[i * subDim + j] * qp[j];
+          }
+        }
+      } else {
+        for (i = 0; i < PetscMin(subDim, origDim); i++) allPoints[origDim * offset + i] += qp[i];
+      }
+      for (i = 0; i < origNc; i++) allWeights[origNc * offset + i] = 0.0;
+      if (Ju) {
+        for (i = 0; i < origNc; i++) {
+          for (j = 0; j < subNc; j++) {
+            allWeights[offset * origNc + i] += qw[j] * Ju[j * origNc + i];
+          }
+        }
+      } else {
+        for (i = 0; i < PetscMin(subNc, origNc); i++) allWeights[offset * origNc + i] += qw[i];
+      }
+    }
+  }
+  ierr = PetscSpaceEvaluate(origSpace,numPoints,allPoints,B,NULL,NULL);CHKERRQ(ierr);
+  for (f = 0, offset = 0; f < subNb; f++) {
+    PetscInt b, p, s, qNp;
+    PetscQuadrature q;
+    const PetscReal *qw;
+
+    ierr = PetscDualSpaceGetFunctional(dualSubspace,f,&q);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,NULL,&qNp,NULL,&qw);CHKERRQ(ierr);
+    if (u) {
+      for (b = 0; b < origNb; b++) {
+        for (s = 0; s < subNc; s++) {
+          V[f * origNb + b] += qw[s] * u[s];
+        }
+      }
+    } else {
+      for (b = 0; b < origNb; b++) V[f * origNb + b] = 0.0;
+    }
+    for (p = 0; p < qNp; p++, offset++) {
+      for (b = 0; b < origNb; b++) {
+        for (s = 0; s < origNc; s++) {
+          V[f * origNb + b] += B[(offset * origNb + b) * origNc + s] * allWeights[offset * origNc + s];
+        }
+      }
+    }
+  }
+  /* orthnormalize rows of V */
+  for (f = 0; f < subNb; f++) {
+    PetscReal rho = 0.0, scal;
+
+    for (i = 0; i < origNb; i++) rho += PetscSqr(V[f * origNb + i]);
+
+    scal = 1. / PetscSqrtReal(rho);
+
+    for (i = 0; i < origNb; i++) V[f * origNb + i] *= scal;
+    for (j = f + 1; j < subNb; j++) {
+      for (i = 0, scal = 0.; i < origNb; i++) scal += V[f * origNb + i] * V[j * origNb + i];
+      for (i = 0; i < origNb; i++) V[j * origNb + i] -= V[f * origNb + i] * scal;
+    }
+  }
+  ierr = PetscFree3(allPoints,allWeights,B);CHKERRQ(ierr);
+  subsp->Q = V;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, PetscBool *poly)
+{
+  PetscSpace_Subspace *subsp = (PetscSpace_Subspace *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *poly = PETSC_FALSE;
+  ierr = PetscSpacePolynomialGetTensor(subsp->origSpace,poly);CHKERRQ(ierr);
+  if (*poly) {
+    if (subsp->Jx) {
+      PetscInt subDim, origDim, i, j;
+      PetscInt maxnnz;
+
+      ierr = PetscSpaceGetNumVariables(subsp->origSpace,&origDim);CHKERRQ(ierr);
+      ierr = PetscSpaceGetNumVariables(sp,&subDim);CHKERRQ(ierr);
+      maxnnz = 0;
+      for (i = 0; i < origDim; i++) {
+        PetscInt nnz = 0;
+
+        for (j = 0; j < subDim; j++) nnz += (subsp->Jx[i * subDim + j] != 0.);
+        maxnnz = PetscMax(maxnnz,nnz);
+      }
+      for (j = 0; j < subDim; j++) {
+        PetscInt nnz = 0;
+
+        for (i = 0; i < origDim; i++) nnz += (subsp->Jx[i * subDim + j] != 0.);
+        maxnnz = PetscMax(maxnnz,nnz);
+      }
+      if (maxnnz > 1) *poly = PETSC_FALSE;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  sp->ops->setup = PetscSpaceSetUp_Subspace;
+  sp->ops->view  = PetscSpaceView_Subspace;
+  sp->ops->destroy  = PetscSpaceDestroy_Subspace;
+  sp->ops->getdimension  = PetscSpaceGetDimension_Subspace;
+  sp->ops->evaluate = PetscSpaceEvaluate_Subspace;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Subspace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dualSubspace, PetscReal *x, PetscReal *Jx, PetscReal *u, PetscReal *Ju, PetscCopyMode copymode, PetscSpace *subspace)
+{
+  PetscSpace_Subspace *subsp;
+  PetscInt            origDim, subDim, origNc, subNc, subNb;
+  PetscInt            order;
+  DM                  dm;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(origSpace,PETSCSPACE_CLASSID,1);
+  PetscValidHeaderSpecific(dualSubspace,PETSCDUALSPACE_CLASSID,2);
+  if (x) PetscValidRealPointer(x,3);
+  if (Jx) PetscValidRealPointer(Jx,4);
+  if (u) PetscValidRealPointer(u,5);
+  if (Ju) PetscValidRealPointer(Ju,6);
+  PetscValidPointer(subspace,7);
+  ierr = PetscSpaceGetNumComponents(origSpace,&origNc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumVariables(origSpace,&origDim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(dualSubspace,&dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&subDim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(dualSubspace,&subNb);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(dualSubspace,&subNc);CHKERRQ(ierr);
+  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject)origSpace),subspace);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(*subspace,PETSCSPACESUBSPACE);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumVariables(*subspace,subDim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumComponents(*subspace,subNc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(origSpace,&order);CHKERRQ(ierr);
+  ierr = PetscSpaceSetOrder(*subspace,order);CHKERRQ(ierr);
+  subsp = (PetscSpace_Subspace *) (*subspace)->data;
+  subsp->Nb = subNb;
+  switch (copymode) {
+  case PETSC_OWN_POINTER:
+    if (x) subsp->x_alloc = x;
+    if (Jx) subsp->Jx_alloc = Jx;
+    if (u) subsp->u_alloc = u;
+    if (Ju) subsp->Ju_alloc = Ju;
+  case PETSC_USE_POINTER:
+    if (x) subsp->x = x;
+    if (Jx) subsp->Jx = Jx;
+    if (u) subsp->u = u;
+    if (Ju) subsp->Ju = Ju;
+    break;
+  case PETSC_COPY_VALUES:
+    if (x) {
+      ierr = PetscMalloc1(origDim,&subsp->x_alloc);CHKERRQ(ierr);
+      ierr = PetscMemcpy(subsp->x_alloc,x,origDim*sizeof(*subsp->x_alloc));CHKERRQ(ierr);
+      subsp->x = subsp->x_alloc;
+    }
+    if (Jx) {
+      ierr = PetscMalloc1(origDim * subDim,&subsp->Jx_alloc);CHKERRQ(ierr);
+      ierr = PetscMemcpy(subsp->Jx_alloc,Jx,origDim * subDim*sizeof(*subsp->Jx_alloc));CHKERRQ(ierr);
+      subsp->Jx = subsp->Jx_alloc;
+    }
+    if (u) {
+      ierr = PetscMalloc1(subNc,&subsp->u_alloc);CHKERRQ(ierr);
+      ierr = PetscMemcpy(subsp->u_alloc,u,subNc*sizeof(*subsp->u_alloc));CHKERRQ(ierr);
+      subsp->u = subsp->u_alloc;
+    }
+    if (Ju) {
+      ierr = PetscMalloc1(origNc * subNc,&subsp->Ju_alloc);CHKERRQ(ierr);
+      ierr = PetscMemcpy(subsp->Ju_alloc,Ju,origNc * subNc*sizeof(*subsp->Ju_alloc));CHKERRQ(ierr);
+      subsp->Ju = subsp->Ju_alloc;
+    }
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)origSpace),PETSC_ERR_ARG_OUTOFRANGE,"Unknown copy mode");
+  }
+  ierr = PetscObjectReference((PetscObject)origSpace);CHKERRQ(ierr);
+  subsp->origSpace = origSpace;
+  ierr = PetscObjectReference((PetscObject)dualSubspace);CHKERRQ(ierr);
+  subsp->dualSubspace = dualSubspace;
+  ierr = PetscSpaceInitialize_Subspace(*subspace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 PetscClassId PETSCDUALSPACE_CLASSID = 0;
 
@@ -1941,6 +2505,33 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *section)
+{
+  DM             dm;
+  PetscInt       pStart, pEnd, depth, h;
+  const PetscInt *numDof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sp),section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*section,pStart,pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumDof(sp,&numDof);CHKERRQ(ierr);
+  for (h = 0; h <= depth; h++) {
+    PetscInt hStart, hEnd, p, dof;
+
+    ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
+    dof = numDof[depth - h];
+    for (p = hStart; p < hEnd; p++) {
+      ierr = PetscSectionSetDof(*section,p,dof);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
@@ -2125,7 +2716,8 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 }
 
 /*@
-  PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a given height.
+  PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a
+  given height.  This assumes that the reference cell is symmetric over points of this height.
 
   If the dual space is not defined on mesh points of the given height (e.g. if the space is discontinuous and
   pointwise values are not defined on the element boundaries), or if the implementation of PetscDualSpace does not
@@ -2140,7 +2732,8 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 - height - the height of the mesh point for which the subspace is desired
 
   Output Parameter:
-. subsp - the subspace
+. subsp - the subspace.  Note that the functionals in the subspace are with respect to the intrinsic geometry of the
+  point, which will be of lesser dimension if height > 0.
 
   Level: advanced
 
@@ -2156,6 +2749,54 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   *subsp = NULL;
   if (sp->ops->getheightsubspace) {
     ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceGetPointSubspace - Get the subset of the dual space basis that is supported on a particular mesh point.
+
+  If the dual space is not defined on the mesh point (e.g. if the space is discontinuous and pointwise values are not
+  defined on the element boundaries), or if the implementation of PetscDualSpace does not support extracting
+  subspaces, then NULL is returned.
+
+  This does not increment the reference count on the returned dual space, and the user should not destroy it.
+
+  Not collective
+
+  Input Parameters:
++ sp - the PetscDualSpace object
+- point - the point (in the dual space's DM) for which the subspace is desired
+
+  Output Parameters:
+  bdsp - the subspace.  Note that the functionals in the subspace are with respect to the intrinsic geometry of the
+  point, which will be of lesser dimension if height > 0.
+
+  Level: advanced
+
+.seealso: PetscDualSpace
+@*/
+PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point, PetscDualSpace *bdsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(bdsp,2);
+  *bdsp = NULL;
+  if (sp->ops->getpointsubspace) {
+    ierr = (*sp->ops->getpointsubspace)(sp,point,bdsp);CHKERRQ(ierr);
+  } else if (sp->ops->getheightsubspace) {
+    DM       dm;
+    DMLabel  label;
+    PetscInt dim, depth, height;
+
+    ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm,&dim);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthLabel(dm,&label);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(label,point,&depth);CHKERRQ(ierr);
+    height = dim - depth;
+    ierr = (*sp->ops->getheightsubspace)(sp,height,bdsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6296,6 +6937,63 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   cmp->jac            = NULL;
 
   ierr = PetscFEInitialize_Composite(fem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoint, PetscFE *trFE)
+{
+  PetscSpace     bsp, bsubsp;
+  PetscDualSpace dsp, dsubsp;
+  PetscInt       dim, depth, numComp, i, j, coneSize, order;
+  PetscFEType    type;
+  DM             dm;
+  DMLabel        label;
+  PetscReal      *xi, *v, *J, detJ;
+  PetscQuadrature origin, fullQuad, subQuad;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFEGetBasisSpace(fe,&bsp);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(dsp,&dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm,&label);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(label,refPoint,&depth);CHKERRQ(ierr);
+  ierr = PetscCalloc1(depth,&xi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim,&v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim*dim,&J);CHKERRQ(ierr);
+  for (i = 0; i < depth; i++) xi[i] = 0.;
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,&origin);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(origin,depth,0,1,xi,NULL);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFEM(dm,refPoint,origin,v,J,NULL,&detJ);CHKERRQ(ierr);
+  /* CellGeometryFEM computes the expanded Jacobian, we want the true jacobian */
+  for (i = 1; i < dim; i++) {
+    for (j = 0; j < depth; j++) {
+      J[i * depth + j] = J[i * dim + j];
+    }
+  }
+  ierr = PetscQuadratureDestroy(&origin);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetPointSubspace(dsp,refPoint,&dsubsp);CHKERRQ(ierr);
+  ierr = PetscSpaceCreateSubspace(bsp,dsubsp,v,J,NULL,NULL,PETSC_OWN_POINTER,&bsubsp);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(bsubsp);CHKERRQ(ierr);
+  ierr = PetscFECreate(PetscObjectComm((PetscObject)fe),trFE);CHKERRQ(ierr);
+  ierr = PetscFEGetType(fe,&type);CHKERRQ(ierr);
+  ierr = PetscFESetType(*trFE,type);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe,&numComp);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*trFE,numComp);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*trFE,bsubsp);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*trFE,dsubsp);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe,&fullQuad);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(fullQuad,&order);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm,refPoint,&coneSize);CHKERRQ(ierr);
+  if (coneSize == 2 * depth) {
+    ierr = PetscDTGaussTensorQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDTGaussJacobiQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
+  }
+  ierr = PetscFESetQuadrature(*trFE,subQuad);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&subQuad);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&bsubsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
