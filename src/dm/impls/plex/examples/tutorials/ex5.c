@@ -33,6 +33,7 @@ int main(int argc, char **argv)
   PetscPartitioner part;
   AppCtx         user;
   PetscViewer    v;
+  PetscViewerFormat f;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -51,8 +52,12 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
+  f = PETSC_VIEWER_DEFAULT;
+  ierr = PetscOptionsGetEnum(NULL, NULL, "-format", PetscViewerFormats, (PetscEnum*)&f, NULL);
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(v, f);CHKERRQ(ierr);
   ierr = DMView(dm, v);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), &dmnew);CHKERRQ(ierr);
