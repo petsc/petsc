@@ -337,7 +337,7 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   Vec               xlocal,ylocal;
   const PetscScalar *xl;
   PetscScalar       *yl;
-  PetscMPIInt       _One = 1,n;
+  PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;  
 
   ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
@@ -379,7 +379,7 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   Vec               xlocal,ylocal;
   const PetscScalar *xl;
   PetscScalar       *yl;
-  PetscMPIInt       _One = 1,n;
+  PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;  
 
   ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
