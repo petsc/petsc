@@ -6,10 +6,12 @@
 static PetscErrorCode MatStashScatterBegin_Ref(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 static PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
+#if !defined(PETSC_HAVE_MPIUNI)
 static PetscErrorCode MatStashScatterBegin_BTS(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash*);
 static PetscErrorCode MatStashScatterDestroy_BTS(MatStash*);
+#endif
 
 /*
   MatStashCreate_Private - Creates a stash,currently used for all the parallel
