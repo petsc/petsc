@@ -1,7 +1,7 @@
 #! /bin/csh
 #
 # This 'default' config is sourced by startnightly/copylogsnightly/killnightly
-# which inturn setsup some common conifg data for these scripts.
+# which sets some common configuration data for these scripts.
 #
 # It uses "TEST" variable set by the calling script - and setup:
 # TNAME : the actual config file for this test

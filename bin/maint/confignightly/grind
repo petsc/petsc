@@ -2,5 +2,5 @@
 
 set MACH=grind
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-pardiso
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-pardiso

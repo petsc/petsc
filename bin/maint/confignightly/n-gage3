@@ -2,5 +2,5 @@
 #
 set MACH=n-gage
 set USR=petsc
-set LOC=/export/home/petsc/${RNAME}-3
-set CONF=arch-opensolaris-cmplx-pkgs-dbg
+set PETSC_DIR=/export/home/petsc/${RNAME}-3
+set PETSC_ARCH=arch-opensolaris-cmplx-pkgs-dbg

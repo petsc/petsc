@@ -2,5 +2,5 @@
 
 set MACH=el6
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-4
-set CONF=arch-linux-pkgs-valgrind
+set PETSC_DIR=/sandbox/petsc/${RNAME}-4
+set PETSC_ARCH=arch-linux-pkgs-valgrind

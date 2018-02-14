@@ -1,16 +1,17 @@
 #! /bin/csh
 #
-# Example usage: killnightly solaris
+#  usage: killnightly tname1[:branch1] tname2[:branch2] ...
 #
+#  tname1 is the name of a file in $PETSC_DIR/bin/maint/confignightly that defines
+#  a machine on which a job started with startnightly/buildtest should be killed.
 #
 set dir=`dirname $0`
-set day=`date | cut -f1 -d" "`
 
 foreach TEST ($*)
   source $dir/confignightly/default
   source $dir/confignightly/${TNAME}
 
-  $SSH $USR@$MACH $DASHN "$LOC/bin/maint/zapall" &
+  $SSH $USR@$MACH $DASHN "$PETSC_DIR/bin/maint/zapall" &
   sleep 10 # If 2 invocations on the same machine - they stomp in each other
 end
 wait

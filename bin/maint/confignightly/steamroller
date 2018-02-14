@@ -2,5 +2,5 @@
 
 set MACH=steamroller
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-pkgs-gcov
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-pkgs-gcov

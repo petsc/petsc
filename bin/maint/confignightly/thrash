@@ -2,5 +2,5 @@
 
 set MACH=thrash
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-matlab-ilp64-gcov
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-matlab-ilp64-gcov

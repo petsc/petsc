@@ -2,5 +2,5 @@
 
 set MACH=ipro
 set USR=petsc
-set LOC=/Users/petsc/${RNAME}
-set CONF=arch-osx-10.6
+set PETSC_DIR=/Users/petsc/${RNAME}
+set PETSC_ARCH=arch-osx-10.6

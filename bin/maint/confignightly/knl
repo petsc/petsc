@@ -2,5 +2,5 @@
 #
 set MACH=knl
 set USR=petsc
-set LOC=/home/petsc/${RNAME}
-set CONF=arch-linux-knl
+set PETSC_DIR=/home/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-knl

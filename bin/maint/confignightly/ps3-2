@@ -2,5 +2,5 @@
 #
 set MACH=ps3
 set USR=sbalay
-set LOC=/home/sbalay/${RNAME}-2
-set CONF=arch-mswin-cxx-cmplx
+set PETSC_DIR=/home/sbalay/${RNAME}-2
+set PETSC_ARCH=arch-mswin-cxx-cmplx

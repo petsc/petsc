@@ -2,5 +2,5 @@
 #
 set MACH=es
 set USR=petsc
-set LOC=/scratch/petsc/${RNAME}-3
-set CONF=arch-c-exodus-dbg-builder
+set PETSC_DIR=/scratch/petsc/${RNAME}-3
+set PETSC_ARCH=arch-c-exodus-dbg-builder

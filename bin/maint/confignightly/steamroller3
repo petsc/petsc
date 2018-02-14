@@ -2,5 +2,5 @@
 
 set MACH=steamroller
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-3
-set CONF=arch-linux-cmplx-single
+set PETSC_DIR=/sandbox/petsc/${RNAME}-3
+set PETSC_ARCH=arch-linux-cmplx-single

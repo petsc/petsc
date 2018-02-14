@@ -1,17 +1,24 @@
 #! /usr/bin/env tcsh
-# 
-# Compiles and tests PETSc in our nightly builds.
-# Run as buildtest ARCH where ARCH is one of the default PETSc archs
-# of a configure arch
 #
-# Example usage: ${PETSC_DIR}/bin/maint/buildtest solaris
-#                ./bin/maint/buildtest solaris
+# Compiles and tests PETSc on one particular machine with one particular PETSC_ARCH
+#
+#  Three wasy to run:
+#     cd $PETSC_DIR ; ./bin/maint/buildtest PETSC_ARCH
+#     /fullpathtopetsc/bin/maint/buildtest PETSC_ARCH
+#     PETSC_DIR=/fullpathtopetsc  anypath/bin/maint/buildtest PETSC_ARCH
+#
+# The file ${PETSC_DIR}/config/examples/${PETSC_ARCH}.py must exist
+# and defines the options PETSc is tested with
+#
+# The file ${PETSC_DIR}/config/examples/${PETSC_ARCH}.csh may exist
+# and provides additional PETSC_OPTION values specific to that configuration
 #
 set day=`date | cut -f1 -d" "`
 set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
   set maintdir=`dirname $0`
-  set nPETSC_DIR=`dirname $maintdir`
+  set bindir=`dirname $maintdir`
+  set nPETSC_DIR=`dirname $bindir`
   if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petscsys.h )) then
     if (${?PETSC_DIR}) then 
       set nPETSC_DIR=${PETSC_DIR}
@@ -27,9 +34,9 @@ if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
 endif
 
 if (${#argv} > 0) then 
-  set ARCH=${1}
+  set nPETSC_ARCH=${1}
 else
-  echo "ARCH not specified to buildtest"
+  echo "PETSC_ARCH not specified to buildtest"
   exit
 endif
 if (${#argv} > 1) then 
@@ -41,19 +48,19 @@ endif
 set MACH=`hostname`
 cd $nPETSC_DIR
 rm -f build.log
-echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
+echo "Build on $MACH $nPETSC_ARCH $nPETSC_DIR `date` " > build.log
 
 # Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
 echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
 (git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
-rm -rf ./${ARCH}
+rm -rf ./${nPETSC_ARCH}
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& build.log
 
 set PETSC_DIR=$nPETSC_DIR
-set PETSC_ARCH=${ARCH}
+set PETSC_ARCH=${nPETSC_ARCH}
 set CONFIGURE='yes'
 set CONFIGURE_FILE=$PETSC_ARCH
 
@@ -133,7 +140,7 @@ endif
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finished Test on $MACH $ARCH `date`" >>& build.log
+echo "Finished Test on $MACH $nPETSC_ARCH `date`" >>& build.log
 if ( $err ) exit
 #
 # check analyzer
@@ -151,7 +158,7 @@ else
 endif
 #
 rm -f examples.log
-echo "Build on $MACH $ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
+echo "Build on $MACH $nPETSC_ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
 echo '******************************************************' >>& examples.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
 $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
@@ -166,7 +173,7 @@ if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
 
-echo "Finished Build on $MACH $ARCH $nPETSC_DIR `date`" >>& examples.log
+echo "Finished Build on $MACH $nPETSC_ARCH $nPETSC_DIR `date`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
 
 

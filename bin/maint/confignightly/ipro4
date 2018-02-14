@@ -2,5 +2,5 @@
 
 set MACH=ipro
 set USR=petsc
-set LOC=/Users/petsc/${RNAME}-4
-set CONF=arch-osx-xsdk-opt
+set PETSC_DIR=/Users/petsc/${RNAME}-4
+set PETSC_ARCH=arch-osx-xsdk-opt

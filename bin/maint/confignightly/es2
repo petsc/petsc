@@ -2,5 +2,5 @@
 #
 set MACH=es
 set USR=petsc
-set LOC=/scratch/petsc/${RNAME}-2
-set CONF=arch-cuda-single
+set PETSC_DIR=/scratch/petsc/${RNAME}-2
+set PETSC_ARCH=arch-cuda-single
