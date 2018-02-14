@@ -333,7 +333,7 @@ int main(int argc,char **argv)
   /* Coupling subnetwork */
   int              *edgelist_couple=NULL;
 
-  ierr = PetscInitialize(&argc,&argv,"ex3options",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"ex1options",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&crank);CHKERRQ(ierr);
 
   /* (1) Read Data - Only rank 0 reads the data */
