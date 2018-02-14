@@ -64,6 +64,7 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBoo
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGraph,MatNullSpace*);
 PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,Vec[],MatNullSpace*);
 PetscErrorCode PCBDDCNedelecSupport(PC);
+PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC,IS);
 
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);

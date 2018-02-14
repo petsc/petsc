@@ -5,6 +5,7 @@
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/dmpleximpl.h>
+#include <petscdmda.h>
 
 static PetscErrorCode MatMPIAIJRestrict(Mat,MPI_Comm,Mat*);
 
@@ -1636,6 +1637,28 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC pc, IS primalv)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (primalv) {
+    if (pcbddc->user_primal_vertices_local) {
+      IS list[2], newp;
+
+      list[0] = primalv;
+      list[1] = pcbddc->user_primal_vertices_local;
+      ierr = ISConcatenate(PetscObjectComm((PetscObject)pc),2,list,&newp);CHKERRQ(ierr);
+      ierr = ISSortRemoveDups(newp);CHKERRQ(ierr);
+      ierr = ISDestroy(&list[1]);CHKERRQ(ierr);
+      pcbddc->user_primal_vertices_local = newp;
+    } else {
+      ierr = PCBDDCSetPrimalVerticesLocalIS(pc,primalv);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
 {
@@ -1729,7 +1752,57 @@ boundary:
   }
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
+  /* detect local disconnected subdomains if requested (use matis->A) */
+  if (pcbddc->detect_disconnected) {
+    IS       primalv = NULL;
+    PetscInt i;
 
+    for (i=0;i<pcbddc->n_local_subs;i++) {
+      ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
+    ierr = PCBDDCDetectDisconnectedComponents(pc,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
+    ierr = PCBDDCAddPrimalVerticesLocalIS(pc,primalv);CHKERRQ(ierr);
+    ierr = ISDestroy(&primalv);CHKERRQ(ierr);
+  }
+  /* early stage corner detection */
+  {
+    DM dm;
+
+    ierr = MatGetDM(pc->pmat,&dm);CHKERRQ(ierr);
+    if (dm) {
+      PetscBool isda;
+
+      ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+      if (isda) {
+        ISLocalToGlobalMapping l2l;
+        IS                     corners;
+        Mat                    lA;
+
+        ierr = DMDAGetElementsCornersIS(dm,&corners);CHKERRQ(ierr);
+        ierr = MatISGetLocalMat(pc->pmat,&lA);CHKERRQ(ierr);
+        ierr = MatGetLocalToGlobalMapping(lA,&l2l,NULL);CHKERRQ(ierr);
+        ierr = MatISRestoreLocalMat(pc->pmat,&lA);CHKERRQ(ierr);
+        if (l2l) {
+          const PetscInt *idx;
+          PetscInt       bs,*idxout,n;
+
+          ierr = ISLocalToGlobalMappingGetBlockSize(l2l,&bs);CHKERRQ(ierr);
+          ierr = ISGetLocalSize(corners,&n);CHKERRQ(ierr);
+          ierr = ISGetIndices(corners,&idx);CHKERRQ(ierr);
+          ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingApplyBlock(l2l,n,idx,idxout);CHKERRQ(ierr);
+          ierr = ISRestoreIndices(corners,&idx);CHKERRQ(ierr);
+          ierr = DMDARestoreElementsCornersIS(dm,&corners);CHKERRQ(ierr);
+          ierr = ISCreateBlock(PetscObjectComm((PetscObject)pc),bs,n,idxout,PETSC_OWN_POINTER,&corners);CHKERRQ(ierr);
+          ierr = PCBDDCAddPrimalVerticesLocalIS(pc,corners);CHKERRQ(ierr);
+          ierr = ISDestroy(&corners);CHKERRQ(ierr);
+        } else { /* not from DMDA */
+          ierr = DMDARestoreElementsCornersIS(dm,&corners);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 

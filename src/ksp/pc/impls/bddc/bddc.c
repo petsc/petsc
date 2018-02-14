@@ -1498,31 +1498,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* process topology information */
   if (pcbddc->recompute_topography) {
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
-    /* detect local disconnected subdomains if requested (use matis->A) */
-    if (pcbddc->detect_disconnected) {
-      IS       primalv;
-      PetscInt i;
-
-      for (i=0;i<pcbddc->n_local_subs;i++) {
-        ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-      ierr = PCBDDCDetectDisconnectedComponents(pc,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
-      if (primalv) {
-        if (pcbddc->user_primal_vertices_local) {
-          IS list[2], newp;
-
-          list[0] = primalv;
-          list[1] = pcbddc->user_primal_vertices_local;
-          ierr = ISConcatenate(PetscObjectComm((PetscObject)pc),2,list,&newp);CHKERRQ(ierr);
-          ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
-          ierr = ISDestroy(&list[1]);CHKERRQ(ierr);
-          pcbddc->user_primal_vertices_local = newp;
-        } else {
-          pcbddc->user_primal_vertices_local = primalv;
-        }
-      }
-    }
     if (pcbddc->discretegradient) {
       ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
     }
