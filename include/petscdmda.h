@@ -34,6 +34,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetInterpolationType(DM,DMDAInterpolationType*);
 PETSC_EXTERN PetscErrorCode DMDASetElementType(DM,DMDAElementType);
 PETSC_EXTERN PetscErrorCode DMDAGetElementType(DM,DMDAElementType*);
 PETSC_EXTERN PetscErrorCode DMDAGetElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMDAGetElementsCornersIS(DM,IS *);
+PETSC_EXTERN PetscErrorCode DMDARestoreElementsCornersIS(DM,IS *);
 PETSC_EXTERN PetscErrorCode DMDARestoreElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
 
 typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
