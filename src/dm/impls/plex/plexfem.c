@@ -977,7 +977,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       if (funcs[field]) {
         for (q = 0; q < Nq; ++q) {
           if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)detJ[q], c, q);
-          ierr = (*funcs[field])(dim, time, &coords[q*coordDim], Nc, funcVal, ctx);
+          ierr = (*funcs[field])(coordDim, time, &coords[q*coordDim], Nc, funcVal, ctx);
           if (ierr) {
             PetscErrorCode ierr2;
             ierr2 = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr2);

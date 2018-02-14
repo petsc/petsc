@@ -106,7 +106,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
           CoordinatesRefToReal(dimEmbed, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
           EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, fegeom->invJ, coefficients, coefficients_t, u, u_x, u_t);
           if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
-          (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, numConstants, constants, bc);
+          (*funcs[f])(dimEmbed, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, numConstants, constants, bc);
           if (Ncc) {
             for (c = 0; c < Ncc; ++c) values[v] += bc[comps[c]]*weights[comps[c]];
           } else {
