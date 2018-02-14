@@ -180,7 +180,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
         }
       }
     }
-    ierr = DMRestoreWorkArray(dm,feDim,PETSC_SCALAR,&elem);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm,feDim,MPIU_SCALAR,&elem);CHKERRQ(ierr);
     ierr = PetscFERestoreTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
   } else {SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented");}
   if (!isStride) {

@@ -2,8 +2,6 @@
 
 PETSC_INTERN PetscErrorCode DMFieldCreate_Shell(DMField field)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

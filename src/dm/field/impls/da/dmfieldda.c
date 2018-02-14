@@ -252,13 +252,13 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   /* TODO: probably take components into account */
   ierr = PetscQuadratureGetData(points, NULL, NULL, &nq, &q, NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  ierr = DMGetWorkArray(dm,nq * dim,PETSC_SCALAR,&qs);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,nq * dim,MPIU_SCALAR,&qs);CHKERRQ(ierr);
   for (i = 0; i < nq * dim; i++) qs[i] = q[i];
 #else
   qs = q;
 #endif
   ierr = DMDAGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,(1 << dim) * nc,PETSC_SCALAR,&cellCoeffs);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs);CHKERRQ(ierr);
   whol = (1 << dim);
   half = whol >> 1;
   ierr = ISGetLocalSize(cellIS,&nCells);CHKERRQ(ierr);
@@ -305,9 +305,9 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   if (!isStride) {
     ierr = ISRestoreIndices(cellIS,&cells);CHKERRQ(ierr);
   }
-  ierr = DMRestoreWorkArray(dm,(1 << dim) * nc,PETSC_SCALAR,&cellCoeffs);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,(1 << dim) * nc,MPIU_SCALAR,&cellCoeffs);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  ierr = DMRestoreWorkArray(dm,nq * dim,PETSC_SCALAR,&qs);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,nq * dim,MPIU_SCALAR,&qs);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -344,7 +344,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   cellsPer[2] = info.gzm;
   ierr = DMDAGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = ISGetLocalSize(cellIS,&numCells);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dim * numCells,PETSC_SCALAR,&points);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dim * numCells,MPIU_SCALAR,&points);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)cellIS,ISSTRIDE,&isStride);CHKERRQ(ierr);
   if (isStride) {
     ierr = ISStrideGetInfo(cellIS,&sfirst,&stride);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
     ierr = ISRestoreIndices(cellIS,&cells);CHKERRQ(ierr);
   }
   MultilinearEvaluate(dim,dafield->coordRange,nc,dafield->cornerCoeffs,dafield->work,numCells,points,datatype,B,D,H);
-  ierr = DMRestoreWorkArray(dm,dim * numCells,PETSC_SCALAR,&points);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dim * numCells,MPIU_SCALAR,&points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
