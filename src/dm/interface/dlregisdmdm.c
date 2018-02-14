@@ -1,5 +1,6 @@
 
 #include <petsc/private/dmlabelimpl.h>
+#include <petsc/private/dmfieldimpl.h>
 #include <petsc/private/dmdaimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/petscdsimpl.h>
@@ -363,6 +364,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
+  ierr = DMFieldInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
