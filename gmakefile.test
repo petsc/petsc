@@ -131,6 +131,7 @@ ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 else
 	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
+	-@$(GFORTRAN_DEP_CLEANUP)
 
 $(TESTDIR)/%.o : $(EXAMPLESDIR)/%.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
@@ -138,14 +139,16 @@ ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 else
 	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
+	-@$(GFORTRAN_DEP_CLEANUP)
+
 #   This is a hack to fix a broken gfortran.
-	-@if test -e "$(@:%.o=%.d)" ; then \
-	    if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
-	      echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
-	      cat $(@:%.o=%.d) | tr '\n' '@' | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
-	      cp $(@:%.o=%.dtemp) $(@:%.o=%.d); \
-        fi; \
-      fi
+define GFORTRAN_DEP_CLEANUP
+  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | fgrep -q -v : ; then\
+    echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
+    tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
+    mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+  fi
+endef
 
 # link line constructed differently for gmakefile vs gmakefile.test invocation
 ifeq ($(libpetscall),)
