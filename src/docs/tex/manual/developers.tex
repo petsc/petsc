@@ -1912,6 +1912,8 @@ make -f gmakefile.test test
 # todo 91/3915 tests (2.3%)
 # skip 770/3915 tests (19.7%)
 #
+# Approximate time (not incl. build time): 429 sec
+#
 # To rerun failed tests:
 #     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
 \end{outputlisting}
@@ -1960,6 +1962,18 @@ cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
 \item Repeat with other errors.
 \end{enumerate}
 
+To rerun just the reporting, 
+\begin{bashlisting}
+config/report_tests.py
+\end{bashlisting}
+To see the full options:
+\begin{bashlisting}
+config/report_tests.py -h
+\end{bashlisting}
+To see the full timing information for the 5 most expensive tests:
+\begin{bashlisting}
+config/report_tests.py -t 5
+\end{bashlisting}
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
 
