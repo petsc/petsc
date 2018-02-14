@@ -43,15 +43,15 @@ PC Object: 8 MPI processes
     Benign subspace trick is active: 0
     Algebraic computation of no-net-flux 0
     ********************************** STATISTICS AT LEVEL 0 **********************************
-    Global dofs sizes: all 315 interface 123 coarse 25
-    Coarsening ratios: all/coarse 12 interface/coarse 4
+    Global dofs sizes: all 2160 interface 648 coarse 87
+    Coarsening ratios: all/coarse 24 interface/coarse 7
     Active processes : 8
     Total subdomains : 8
     Dofs type        :	MIN	MAX	MEAN
-    Interior  dofs   :	24	24	24
-    Interface dofs   :	36	36	36
-    Primal    dofs   :	10	10	10
-    Local     dofs   :	60	60	60
+    Interior  dofs   :	144	240	189
+    Interface dofs   :	156	210	182
+    Primal    dofs   :	36	36	36
+    Local     dofs   :	300	450	371
     Local     subs   :	1	1
     ********************************** COARSE PROBLEM DETAILS *********************************
   KSP Object: (pc_bddc_coarse_) 8 MPI processes
@@ -66,10 +66,10 @@ PC Object: 8 MPI processes
     linear system matrix = precond matrix:
     Mat Object: 8 MPI processes
       type: mpiaij
-      rows=25, cols=25
-      total: nonzeros=421, allocated nonzeros=540
+      rows=87, cols=87
+      total: nonzeros=5277, allocated nonzeros=6796
       total number of mallocs used during MatSetValues calls =0
-        using I-node (on process 0) routines: found 1 nodes, limit used is 5
+        using I-node (on process 0) routines: found 3 nodes, limit used is 5
         KSP Object:   (pc_bddc_coarse_redundant_)   1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
@@ -83,14 +83,14 @@ PC Object: 8 MPI processes
           linear system matrix = precond matrix:
           Mat Object:   1 MPI processes
             type: seqaij
-            rows=25, cols=25
-            total: nonzeros=421, allocated nonzeros=421
+            rows=87, cols=87
+            total: nonzeros=5277, allocated nonzeros=5277
             total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+              using I-node routines: found 25 nodes, limit used is 5
   linear system matrix = precond matrix:
   Mat Object: 8 MPI processes
     type: is
-    rows=315, cols=315
-    total: nonzeros=7280, allocated nonzeros=12960
+    rows=2160, cols=2160, bs=3
+    total: nonzeros=156078, allocated nonzeros=240570
     total number of mallocs used during MatSetValues calls =0
-      has attached null space
+      has attached near null space
