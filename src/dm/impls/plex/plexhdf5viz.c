@@ -4,24 +4,19 @@
 #include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode DMPlexCreateHDF5VizFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *newdm)
+PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
-  PetscViewer     viewer;
-  DM              dm;
   Vec             coordinates;
   IS              cells;
   PetscInt        dim, spatialDim, N, numCells, numVertices, numCorners, bs;
   //hid_t           fileId;
   PetscMPIInt     rank;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
 
   /* Read topology */
   ierr = PetscViewerHDF5ReadAttribute(viewer, "/viz/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
@@ -54,13 +49,16 @@ PetscErrorCode DMPlexCreateHDF5VizFromFile(MPI_Comm comm, const char filename[],
   {
     const PetscReal *coordinates_arr;
     const PetscInt *cells_arr;
+    PetscSF sfVert=NULL;
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISGetIndices(cells, &cells_arr);CHKERRQ(ierr);
-    ierr = DMPlexCreateFromCellListParallel(comm, dim, numCells, numVertices, numCorners, interpolate, cells_arr, spatialDim, coordinates_arr, NULL, &dm);CHKERRQ(ierr);
+    ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
+    ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, numCells, numVertices, numCorners, cells_arr, &sfVert);CHKERRQ(ierr);
+    ierr = DMPlexBuildCoordinates_Parallel_Internal(dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
-
+    ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&cells);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
@@ -75,9 +73,6 @@ PetscErrorCode DMPlexCreateHDF5VizFromFile(MPI_Comm comm, const char filename[],
   }
 
   /* TODO: read labels */
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  *newdm = dm;
   PetscFunctionReturn(0);
 }
 #endif
