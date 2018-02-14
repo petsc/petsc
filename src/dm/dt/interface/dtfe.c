@@ -193,11 +193,13 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   if (v) PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(v, "Space in %D variables of order %D with %D components\n", sp->Nv, sp->order, sp->Nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
   if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1484,7 +1486,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
       }
     } else {
       for (j = 0; j < PetscMin(subDim, origDim); j++) {
-        inpoints[i * origDim + j] += points[i * subDim + k];
+        inpoints[i * origDim + j] += points[i * subDim + j];
       }
     }
   }
@@ -6966,6 +6968,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe,PETSCFE_CLASSID,1);
+  PetscValidPointer(trFE,3);
   ierr = PetscFEGetBasisSpace(fe,&bsp);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(dsp,&dm);CHKERRQ(ierr);
@@ -7005,8 +7009,28 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
     ierr = PetscDTGaussJacobiQuadrature(depth,1,(order + 1)/2,-1.,1.,&subQuad);CHKERRQ(ierr);
   }
   ierr = PetscFESetQuadrature(*trFE,subQuad);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*trFE);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&subQuad);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&bsubsp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscFECreateHeightTrace(PetscFE fe, PetscInt height, PetscFE *trFE)
+{
+  PetscInt       hStart, hEnd;
+  PetscDualSpace dsp;
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe,PETSCFE_CLASSID,1);
+  PetscValidPointer(trFE,3);
+  *trFE = NULL;
+  ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(dsp,&dm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm,height,&hStart,&hEnd);CHKERRQ(ierr);
+  if (hEnd <= hStart) PetscFunctionReturn(0);
+  ierr = PetscFECreatePointTrace(fe,hStart,trFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
