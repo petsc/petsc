@@ -27,16 +27,15 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.metis          = framework.require('config.packages.metis',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
+    self.odeps          = [self.parmetis]
     if self.framework.argDB['download-superlu_dist-gpu']:
       self.cuda           = framework.require('config.packages.cuda',self)
       self.openmp         = framework.require('config.packages.openmp',self)
       self.deps           = [self.mpi,self.blasLapack,self.cuda,self.openmp]
     else:
       self.deps           = [self.mpi,self.blasLapack]
-      self.odeps          = [self.parmetis,self.metis]
     return
 
   def formCMakeConfigureArgs(self):
@@ -44,12 +43,10 @@ class Configure(config.package.CMakePackage):
     if not self.framework.argDB['download-superlu_dist-gpu']:
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-    metis_inc = self.headers.toStringNoDupes(self.metis.include)[2:]
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     if self.parmetis.found:
-      parmetis_inc = self.headers.toStringNoDupes(self.parmetis.include)[2:]
-      args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+metis_inc+';'+parmetis_inc+'"')
-      args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib+self.metis.lib)+'"')
+      args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.dinclude)+'"')
+      args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.dlib)+'"')
     else:
       args.append('-Denable_parmetislib=FALSE')
 
