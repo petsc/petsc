@@ -697,6 +697,7 @@ static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nv
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_HAVE_MPIUNI)
 typedef struct {
   PetscInt row;
   PetscInt col;
@@ -825,7 +826,6 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_HAVE_MPIUNI)
 /*
  * owners[] contains the ownership ranges; may be indexed by either blocks or scalars
  */
