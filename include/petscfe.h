@@ -29,6 +29,21 @@ typedef struct {
   PetscInt  face[2];    /* The local face numbers in the adjacent cells */
 } PetscFEFaceGeom;
 
+typedef struct _n_PetscFEGeom {
+  const PetscReal *xi;
+  PetscReal *v;
+  PetscReal *J;
+  PetscReal *invJ;
+  PetscReal *detJ;
+  PetscReal *n;
+  PetscInt  (*face)[2];
+  PetscInt  dim;
+  PetscInt  dimEmbed;
+  PetscInt  numCells;
+  PetscInt  numPoints;
+  PetscBool isAffine;
+} PetscFEGeom;
+
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
@@ -117,6 +132,12 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace, const PetscInt ****, const PetscScalar ****);
+
+PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature,PetscInt,PetscInt,PetscBool,PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom*,PetscInt,PetscInt,PetscFEGeom**);
+PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom*);
+PETSC_EXTERN PetscErrorCode PetscFEGeomDestroy(PetscFEGeom**);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
