@@ -2508,7 +2508,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *section)
 {
   DM             dm;
-  PetscInt       pStart, pEnd, depth, h;
+  PetscInt       pStart, pEnd, depth, h, offset;
   const PetscInt *numDof;
   PetscErrorCode ierr;
 
@@ -2529,6 +2529,17 @@ PetscErrorCode PetscDualSpaceCreateSection(PetscDualSpace sp, PetscSection *sect
     }
   }
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+  for (h = 0, offset = 0; h <= depth; h++) {
+    PetscInt hStart, hEnd, p, dof;
+
+    ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
+    dof = numDof[depth - h];
+    for (p = hStart; p < hEnd; p++) {
+      ierr = PetscSectionGetDof(*section,p,&dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetOffset(*section,p,offset);CHKERRQ(ierr);
+      offset += dof;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
