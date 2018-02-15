@@ -173,7 +173,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   }
 
-  /* Form Function for the coupling subnetwork */
+  /* Form Function for the coupling subnetwork -- experimental, not done yet */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (user->subsnes_id != 0 && ne) {
     const PetscInt *cone,*connedges,*econe;
@@ -184,7 +184,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,cone[0],&vid[0]);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,cone[1],&vid[1]);CHKERRQ(ierr);
-    //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Formfunction, coupling subnetwork: nv %d, ne %d; connected vertices %d %d\n",rank,nv,ne,vid[0],vid[1]);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Formfunction, coupling subnetwork: nv %d, ne %d; connected vertices %d %d\n",rank,nv,ne,vid[0],vid[1]);CHKERRQ(ierr); */
 
     /* Get coupling powernet load vertex */
     ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     /* get its supporting edges */
     ierr = DMNetworkGetSupportingEdges(networkdm,cone[1],&nconnedges,&connedges);CHKERRQ(ierr);
-    //printf("nconnedges %d\n",nconnedges);
+    /* printf("nconnedges %d\n",nconnedges); */
 
     for (k=0; k<nconnedges; k++) {
       e = connedges[k];
@@ -228,9 +228,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           ht = xarr[offsetnode2];
 
           PetscScalar flow = Flow_Pump(pump,hf,ht);
-          PetscScalar Hp = 0.1; // load->pl
-          PetscScalar flow_couple = 8.81*Hp*1.e6/(ht-hf);     //pump->h0;
-          //printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
+          PetscScalar Hp = 0.1; /* load->pl */
+          PetscScalar flow_couple = 8.81*Hp*1.e6/(ht-hf);     /* pump->h0; */
+          /* printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2); */
 #endif
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
@@ -492,7 +492,7 @@ int main(int argc,char **argv)
   PetscLogStagePush(stage[2]);
 
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
-  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Create coupled snes */
   /*-------------------- */
@@ -535,9 +535,7 @@ int main(int argc,char **argv)
 
   /* Use user-provide Jacobian */
   ierr = DMCreateMatrix(networkdm,&Jac);CHKERRQ(ierr);
-  //ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
-
   ierr = SNESSetFromOptions(snes_power);CHKERRQ(ierr);
 
   if (viewX) {
