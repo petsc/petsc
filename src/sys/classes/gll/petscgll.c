@@ -517,5 +517,38 @@ PetscErrorCode PetscGLLElementAdvectionDestroy(PetscGLL *gll,PetscReal ***AA)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscGLLElementMassCreate(PetscGLL *gll,PetscReal ***AA)
+{
+  PetscReal        **A;
+  PetscErrorCode  ierr;
+  const PetscReal  *weights = gll->weights;
+  const PetscInt   n = gll->n;
+  PetscInt         i,j;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(n,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*n,&A[0]);CHKERRQ(ierr);
+  for (i=1; i<n; i++) A[i] = A[i-1]+n;
+  if (n==1) {A[0][0] = 0.;}
+  for  (i=0; i<n; i++) {
+    for  (j=0; j<n; j++) {
+      A[i][j] = 0.;
+      if (j==i)     A[i][j] = weights[i];
+    }
+  }
+  *AA  = A;
+  PetscFunctionReturn(0);
+}
+
+  PetscErrorCode PetscGLLElementMassDestroy(PetscGLL *gll,PetscReal ***AA)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  PetscFunctionReturn(0);
+}
 
 

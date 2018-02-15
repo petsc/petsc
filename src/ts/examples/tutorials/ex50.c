@@ -281,10 +281,11 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   AppCtx          *appctx = (AppCtx*)ctx;  
 
   PetscFunctionBegin;
-  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); /* grad u */
-  ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); /* u grad u */
-  ierr = VecScale(globalout, -1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(appctx->SEMop.keptstiff,globalin,globalout,globalout);CHKERRQ(ierr);
+  /*  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr);*/ /* grad u */
+  /* ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr);*/ /* u grad u */
+  /* ierr = VecScale(globalout, -1.0);CHKERRQ(ierr);
+  */
+                                     ierr = MatMult(appctx->SEMop.keptstiff,globalin,globalout/*,globalout*/);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -318,7 +319,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 
   /*   A  = K - A    */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(A,0.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

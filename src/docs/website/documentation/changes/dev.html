@@ -108,6 +108,7 @@
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
+        <li>Added MatShellTestMultTranspose() and MatShellTestMult() for checking if user provided MATSHELL matches the Jacobian of a given function computed with diffencing.</li>
         <li>MatSolverPackage is replaced with MatSolverType.</li>
         <li>mat_solver_package is replaced with mat_solver_type.</li>
       </ul>
@@ -119,6 +120,7 @@
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <li>Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest() checking if user provide MATSHELL Jacobian with TSSetRHSJacobian() matches the Jacobian of the function provided to TSSetRHSFunction() computed with finite differencing. Command line options -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view  and -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view </li>
       <h4>TAO:</h4>
       <ul>
         <li>Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other PETSc default monitor names, also now print with the same format as other monitors %3D Tao ....</li>

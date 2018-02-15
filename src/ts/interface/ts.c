@@ -163,6 +163,8 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_error_if_step_fails <true,false> - Error if no step succeeds
 .  -ts_rtol <rtol> - relative tolerance for local truncation error
 .  -ts_atol <atol> Absolute tolerance for local truncation error
+.  -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - test the Jacobian at each iteration against finite difference with RHS function
+.  -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - test the Jacobian at each iteration against finite difference with RHS function
 .  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
@@ -236,6 +238,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,NULL);CHKERRQ(ierr);
 
+  ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult","Test the RHS Jacobian for consistency with RHS at each solve ","None",ts->testjacobian,&ts->testjacobian,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult_transpose","Test the RHS Jacobian transpose for consistency with RHS at each solve ","None",ts->testjacobiantranspose,&ts->testjacobiantranspose,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
@@ -4390,6 +4394,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
       ierr = TSStep(ts);CHKERRQ(ierr);
+      if (ts->testjacobian) {
+        ierr = TSRHSJacobianTest(ts,NULL);CHKERRQ(ierr);
+      }
+      if (ts->testjacobiantranspose) {
+        ierr = TSRHSJacobianTestTranspose(ts,NULL);CHKERRQ(ierr);
+      }
       if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
@@ -8186,5 +8196,83 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
     }
   }
   *tsout = t;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void* ctx,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  TS             ts = (TS) ctx;
+
+  PetscFunctionBegin;
+  ierr = TSComputeRHSFunction(ts,0,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    TSRHSJacobianTest - Compares the multiply routine provided to the MATSHELL with differencing on the TS given RHS function.
+
+   Logically Collective on TS and Mat
+
+    Input Parameters:
+    TS - the time stepping routine
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+ .   -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - run the test at each timestep of the integrator
+
+   Level: advanced
+
+   Notes: This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose(), TSRHSJacobianTestTranspose()
+@*/
+PetscErrorCode  TSRHSJacobianTest(TS ts,PetscBool *flg)
+{
+  Mat            J,B;
+  PetscErrorCode ierr;
+  TSRHSJacobian  func;
+  void*          ctx;
+
+  PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
+  ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
+  ierr = MatShellTestMult(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    TSRHSJacobianTestTranspose - Compares the multiply transpose routine provided to the MATSHELL with differencing on the TS given RHS function.
+
+   Logically Collective on TS and Mat
+
+    Input Parameters:
+    TS - the time stepping routine
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+.   -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - run the test at each timestep of the integrator
+
+   Notes: This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+
+   Level: advanced
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose(), TSRHSJacobianTest()
+@*/
+PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
+{
+  Mat            J,B;
+  PetscErrorCode ierr;
+  void           *ctx;
+  TSRHSJacobian  func;
+
+  PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
+  ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
+  ierr = MatShellTestMultTranspose(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
