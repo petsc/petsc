@@ -3985,6 +3985,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         Mat tA_RVT,A_RVT;
 
         if (!pcbddc->symmetric_primal) {
+          /* A_RV already scaled by -1 */
           ierr = MatTranspose(A_RV,MAT_INITIAL_MATRIX,&A_RVT);CHKERRQ(ierr);
         } else {
           restoreavr = PETSC_TRUE;
@@ -4484,6 +4485,16 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       ierr = PetscObjectSetName((PetscObject)pcbddc->coarse_psi_D,"psi_D");CHKERRQ(ierr);
       ierr = MatView(pcbddc->coarse_psi_D,viewer);CHKERRQ(ierr);
     }
+    ierr = PetscObjectSetName((PetscObject)pcbddc->local_mat,"A");CHKERRQ(ierr);
+    ierr = MatView(pcbddc->local_mat,viewer);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)pcbddc->ConstraintMatrix,"C");CHKERRQ(ierr);
+    ierr = MatView(pcbddc->ConstraintMatrix,viewer);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)pcis->is_I_local,"I");CHKERRQ(ierr);
+    ierr = ISView(pcis->is_I_local,viewer);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)pcis->is_B_local,"B");CHKERRQ(ierr);
+    ierr = ISView(pcis->is_B_local,viewer);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)pcbddc->is_R_local,"R");CHKERRQ(ierr);
+    ierr = ISView(pcbddc->is_R_local,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 #endif
