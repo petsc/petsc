@@ -1,6 +1,7 @@
 #include <petsc/private/kspimpl.h> /*I <petscksp.h> I*/
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petscdm.h>
 
 static PetscBool  cited  = PETSC_FALSE;
 static PetscBool  cited2 = PETSC_FALSE;
@@ -559,12 +560,24 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   fetidp->matnnzstate  = matnnzstate;
   fetidp->statechanged = fetidp->saddlepoint;
 
-  /* see if MATIS has same fields attached */
+  /* see if we have some fields attached */
   if (!pcbddc->n_ISForDofsLocal && !pcbddc->n_ISForDofs) {
+    DM             dm;
     PetscContainer c;
 
+    ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)A,"_convert_nest_lfields",(PetscObject*)&c);CHKERRQ(ierr);
-    if (c) {
+    if (dm) {
+      IS      *fields;
+      PetscInt nf,i;
+
+      ierr = DMCreateFieldDecomposition(dm,&nf,NULL,&fields,NULL);CHKERRQ(ierr);
+      ierr = PCBDDCSetDofsSplitting(fetidp->innerbddc,nf,fields);CHKERRQ(ierr);
+      for (i=0;i<nf;i++) {
+        ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(fields);CHKERRQ(ierr);
+    } else if (c) {
       MatISLocalFields lf;
       ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
       ierr = PCBDDCSetDofsSplittingLocal(fetidp->innerbddc,lf->nr,lf->rf);CHKERRQ(ierr);
