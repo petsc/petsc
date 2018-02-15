@@ -1132,13 +1132,13 @@ int main(int argc, char **argv)
     args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
 
   # 2D Q_2 on a quadrilaterial
   test:
@@ -1329,13 +1329,13 @@ TEST*/
     args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6

@@ -9,6 +9,7 @@
 #include <petscfe.h>
 #include <petscfv.h>
 #include <petscsftypes.h>
+#include <petscdmfield.h>
 
 PETSC_EXTERN PetscClassId PETSCPARTITIONER_CLASSID;
 
@@ -256,7 +257,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSubdomainSection(DM, PetscSection*);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFEM(DM, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFEM(DM, DMField *);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesToReference(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexReferenceToCoordinates(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 

@@ -8,27 +8,6 @@
 #include <petscfetypes.h>
 #include <petscdstypes.h>
 
-/* Assuming dim <= 3 */
-typedef struct {
-  PetscReal v0[3];
-  PetscReal J[9];
-  PetscReal invJ[9];
-  PetscReal detJ;
-  PetscInt  dim;
-  PetscInt  dimEmbed;
-} PetscFECellGeom;
-
-typedef struct {
-  PetscReal v0[3];
-  PetscReal J[9];       /* Size could be reduced to 6 */
-  PetscReal invJ[2][9]; /* invJ in the adjacent cells */
-  PetscReal detJ;       /* Not really the determinant of J, but \sqrt{\det{J^T J}} */
-  PetscReal n[3];
-  PetscInt  dim;
-  PetscInt  dimEmbed;
-  PetscInt  face[2];    /* The local face numbers in the adjacent cells */
-} PetscFEFaceGeom;
-
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
   PetscReal *v;
@@ -139,8 +118,8 @@ PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom*,PetscInt,PetscI
 PETSC_EXTERN PetscErrorCode PetscFEGeomComplete(PetscFEGeom*);
 PETSC_EXTERN PetscErrorCode PetscFEGeomDestroy(PetscFEGeom**);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetAllPoints(PetscDualSpace, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace, PetscQuadrature *);
@@ -211,11 +190,11 @@ PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const Pe
 PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEGetHeightSubspace(PetscFE, PetscInt, PetscFE *);
 
-PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEFaceGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFEFaceGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFECompositeGetMapping(PetscFE, PetscInt *, const PetscReal *[], const PetscReal *[], const PetscReal *[]);
 
