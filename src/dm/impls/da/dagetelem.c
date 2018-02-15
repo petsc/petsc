@@ -151,6 +151,108 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 }
 
 /*@
+   DMDAGetElementsCorners - Returns the global (x,y,z) indices of the lower left
+   corner of the non-overlapping decomposition identified by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DM object
+
+   Output Parameters:
++     gx - the x index
+.     gy - the y index
+-     gz - the z index
+
+   Level: intermediate
+
+   Notes:
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
+@*/
+PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz)
+{
+  PetscInt       xs,Xs;
+  PetscInt       ys,Ys;
+  PetscInt       zs,Zs;
+  PetscBool      isda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (gx) PetscValidIntPointer(gx,2);
+  if (gy) PetscValidIntPointer(gy,3);
+  if (gz) PetscValidIntPointer(gz,4);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (xs != Xs) xs -= 1;
+  if (ys != Ys) ys -= 1;
+  if (zs != Zs) zs -= 1;
+  if (gx) *gx  = xs;
+  if (gy) *gy  = ys;
+  if (gz) *gz  = zs;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      DMDAGetElementsSizes - Gets the local number of elements per direction for the non-overlapping decomposition identified by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DM object
+
+   Output Parameters:
++     mx - number of local elements in x-direction
+.     my - number of local elements in y-direction
+-     mz - number of local elements in z-direction
+
+   Level: intermediate
+
+   Notes: It returns the same number of elements, irrespective of the DMDAElementType
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements
+@*/
+PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz)
+{
+  PetscInt       xs,xe,Xs;
+  PetscInt       ys,ye,Ys;
+  PetscInt       zs,ze,Zs;
+  PetscInt       dim;
+  PetscBool      isda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (mx) PetscValidIntPointer(mx,2);
+  if (my) PetscValidIntPointer(my,3);
+  if (mz) PetscValidIntPointer(mz,4);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  xe  += xs; if (xs != Xs) xs -= 1;
+  ye  += ys; if (ys != Ys) ys -= 1;
+  ze  += zs; if (zs != Zs) zs -= 1;
+  if (mx) *mx  = 0;
+  if (my) *my  = 0;
+  if (mz) *mz  = 0;
+  ierr = DMGetDimension(da,&dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 3:
+    if (mz) *mz = ze - zs - 1;
+  case 2:
+    if (my) *my = ye - ys - 1;
+  case 1:
+    if (mx) *mx = xe - xs - 1;
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
       DMDASetElementType - Sets the element type to be returned by DMDAGetElements()
 
     Not Collective
@@ -273,7 +375,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 }
 
 /*@
-      DMDAGetElementsCornersIS - Gets an index set containing the corner indices (in local coordinates)
+      DMDAGetSubdomainCornersIS - Gets an index set containing the corner indices (in local coordinates)
                                  of the non-overlapping decomposition identified by DMDAGetElements
 
     Not Collective
@@ -286,11 +388,11 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
    Level: intermediate
 
-   Notes: Call DMDARestoreElementsCornersIS() once you have finished accessing the index set.
+   Notes: Call DMDARestoreSubdomainCornersIS() once you have finished accessing the index set.
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements(), DMDARestoreElementsCornersIS()
 @*/
-PetscErrorCode  DMDAGetElementsCornersIS(DM dm,IS *is)
+PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
@@ -348,7 +450,7 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
 }
 
 /*@
-      DMDARestoreElementsCornersIS - Restores the IS obtained with DMDAGetElementsCornersIS()
+      DMDARestoreSubdomainCornersIS - Restores the IS obtained with DMDAGetSubdomainCornersIS()
 
     Not Collective
 
@@ -360,9 +462,9 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
 
    Note:
 
-.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElementsCornersIS()
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetSubdomainCornersIS()
 @*/
-PetscErrorCode  DMDARestoreElementsCornersIS(DM dm,IS *is)
+PetscErrorCode  DMDARestoreSubdomainCornersIS(DM dm,IS *is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
