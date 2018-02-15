@@ -13,12 +13,6 @@
 
 #include <petsc/private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas_v2.h>
-
-extern cublasHandle_t cublasv2handle;
-#endif
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
 #define petscinitializenoarguments_   PETSCINITIALIZENOARGUMENTS
@@ -272,10 +266,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #if defined (PETSC_USE_NARGS)
   short          flg;
 #endif
-#if defined(PETSC_HAVE_CUDA)
-  PetscBool      flg2;
-  cublasStatus_t cberr;
-#endif
   int            flag;
   PetscMPIInt    size;
   char           *t1,name[256],hostname[64];
@@ -498,15 +488,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   *ierr = PetscFPTCreate(10000);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
-#endif
-
-#if defined(PETSC_HAVE_CUDA)
-  flg2  = PETSC_TRUE;
-  *ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg2,NULL);
-  if (flg2) {
-    cberr = cublasCreate(&cublasv2handle);
-    if (((int)cberr) != (int)CUBLAS_STATUS_SUCCESS) {(*PetscErrorPrintf)("PetscInitialize:CUBLAS error %d\n",cberr);return;}
-  }
 #endif
 }
 

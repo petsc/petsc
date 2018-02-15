@@ -40,6 +40,8 @@ struct Vec_CUSP {
 
 #include <cuda_runtime.h>
 
+PETSC_INTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle);
+
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqCUSP(Vec,PetscScalar,Vec,Vec);
