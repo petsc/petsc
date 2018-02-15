@@ -2609,37 +2609,26 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 }
 
 /*@C
-  PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to an input function
+  PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllPoints()
 
   Input Parameters:
-+ sp      - The PetscDualSpace object
-. time    - The time
-. cgeom   - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
-. numComp - The number of components for the function
-. func    - The input function
-- ctx     - A context for the function
++ sp        - The PetscDualSpace object
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllPoints()
 
   Output Parameter:
-. value   - numComp output values
-
-  Note: The calling sequence for the callback func is given by:
-
-$ func(PetscInt dim, PetscReal time, const PetscReal x[],
-$      PetscInt numComponents, PetscScalar values[], void *ctx)
+. spValue   - The values of all dual space functionals
 
   Level: developer
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, PetscReal time, PetscFEGeom *cgeom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(cgeom, 4);
-  PetscValidPointer(value, 8);
-  ierr = (*sp->ops->applyall)(sp, time, cgeom, numComp, func, ctx, value);CHKERRQ(ierr);
+  ierr = (*sp->ops->applyall)(sp, pointEval, spValue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2705,90 +2694,62 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 }
 
 /*@C
-  PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to an input function by assuming a point evaluation functional.
+  PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by PetscDualSpaceGetAllPoints()
 
   Input Parameters:
-+ sp    - The PetscDualSpace object
-. time  - The time
-. cgeom - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
-. Nc    - The number of components for the function
-. func  - The input function
-- ctx   - A context for the function
++ sp        - The PetscDualSpace object
+- pointEval - Evaluation at the points returned by PetscDualSpaceGetAllPoints()
 
   Output Parameter:
-. value   - The output value
-
-  Note: The calling sequence for the callback func is given by:
-
-$ func(PetscInt dim, PetscReal time, const PetscReal x[],
-$      PetscInt numComponents, PetscScalar values[], void *ctx)
-
-and the idea is to evaluate the functional as an integral
-
-$ n(f) = int dx n(x) . f(x)
-
-where both n and f have Nc components.
+. spValue   - The values of all dual space functionals
 
   Level: developer
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, PetscReal time, PetscFEGeom *cgeom, PetscInt Nc, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScalar *pointEval, PetscScalar *spValue)
 {
-  DM               dm;
   PetscQuadrature  n;
   const PetscReal *points, *weights;
-  PetscReal        x[3];
-  PetscScalar     *val;
-  PetscInt         dim, dE, qNc, c, Nq, q, f, spdim, v;
-  PetscBool        isAffine;
+  PetscInt         qNc, c, Nq, q, f, spdim, Nc;
+  PetscInt         offset;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(value, 5);
+  PetscValidScalarPointer(pointEval, 2);
+  PetscValidScalarPointer(spValue, 5);
   ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
-  for (f = 0, v = 0; f < spdim; f++) {
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  for (f = 0, offset = 0; f < spdim; f++) {
     ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(n, &dim, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
-    if (dim != cgeom->dim) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature spatial dimension %D != cell geometry dimension %D", dim, cgeom->dim);
+    ierr = PetscQuadratureGetData(n, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
     if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
-    value[f] = 0.0;
-    isAffine = (cgeom->numPoints == 1 && Nq > 1) ? PETSC_TRUE : PETSC_FALSE;
-    dE = cgeom->dimEmbed;
-    for (q = 0; q < Nq; ++q, v++) {
-      if (isAffine) {
-        CoordinatesRefToReal(dE, cgeom->dim, cgeom->xi, cgeom->v, cgeom->J, &points[q*dim], x);
-        ierr = (*func)(dE, time, x, Nc, val, ctx);CHKERRQ(ierr);
-      } else {
-        ierr = (*func)(dE, time, &cgeom->v[dE*v], Nc, val, ctx);CHKERRQ(ierr);
-      }
+    spValue[f] = 0.0;
+    for (q = 0; q < Nq; ++q) {
       for (c = 0; c < Nc; ++c) {
-        value[f] += val[c]*weights[q*Nc+c];
+        spValue[f] += pointEval[offset++]*weights[q*Nc+c];
       }
     }
   }
-  ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDualSpaceGetApplyAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
+PetscErrorCode PetscDualSpaceGetAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(allPoints,2);
-  if (!sp->allPoints && sp->ops->createapplyallpoints) {
-    ierr = (*sp->ops->createapplyallpoints)(sp,&sp->allPoints);CHKERRQ(ierr);
+  if (!sp->allPoints && sp->ops->createallpoints) {
+    ierr = (*sp->ops->createallpoints)(sp,&sp->allPoints);CHKERRQ(ierr);
   }
   *allPoints = sp->allPoints;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDualSpaceCreateApplyAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
+PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace sp, PetscQuadrature *allPoints)
 {
   PetscInt        spdim;
   PetscInt        numPoints, offset;
