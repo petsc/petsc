@@ -79,6 +79,7 @@ typedef struct {
   PetscInt     cells[3];
   PetscBool    useglobal;
   PetscBool    dirbc;
+  PetscBool    per[3];
   PetscBool    test;
   PetscScalar *elemMat;
 } AppCtx;
@@ -99,6 +100,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->useglobal = PETSC_FALSE;
   options->dirbc     = PETSC_TRUE;
   options->test      = PETSC_FALSE;
+  options->per[0]    = PETSC_FALSE;
+  options->per[1]    = PETSC_FALSE;
+  options->per[2]    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm,NULL,"Problem Options",NULL);CHKERRQ(ierr);
   pde  = options->pde;
@@ -106,12 +110,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->pde = (PDEType)pde;
   ierr = PetscOptionsInt("-dim","The topological mesh dimension",__FILE__,options->dim,&options->dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-cells","The mesh division",__FILE__,options->cells,(n=3,&n),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoolArray("-periodicity","The mesh periodicity",__FILE__,options->per,(n=3,&n),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_global","Test MatSetValues",__FILE__,options->useglobal,&options->useglobal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dirichlet","Use dirichlet BC",__FILE__,options->dirbc,&options->dirbc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_assembly","Test MATIS assembly",__FILE__,options->test,&options->test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
+  if (options->per[0]) options->dirbc = 0;
 
   /* element matrices */
   switch (options->pde) {
@@ -170,13 +176,23 @@ int main(int argc,char **args)
   ierr = ProcessOptions(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
   switch (user.dim) {
   case 3:
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,user.cells[2]+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,user.dof,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         user.per[2] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,user.cells[2]+1,
+                                         PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,user.dof,
+                                         1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,PETSC_DECIDE,PETSC_DECIDE,user.dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         user.per[1] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         DMDA_STENCIL_BOX,user.cells[0]+1,user.cells[1]+1,
+                                         PETSC_DECIDE,PETSC_DECIDE,user.dof,
+                                         1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   case 1:
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.cells[0]+1,user.dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,user.per[0] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE,
+                                         user.cells[0]+1,user.dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
   }
@@ -273,6 +289,8 @@ int main(int argc,char **args)
       ierr = MatNullSpaceCreateRigidBody(xcoor,&nullsp);CHKERRQ(ierr);
       break;
     }
+    /* with periodic BC and Elasticity, just the displacements are in the nullspace
+       this is no harm since we eliminate all the components of the rhs */
     ierr = MatSetNullSpace(A,nullsp);CHKERRQ(ierr);
   }
 
