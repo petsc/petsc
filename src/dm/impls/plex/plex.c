@@ -5,6 +5,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 #include <petscdraw.h>
+#include <petscdmfield.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
@@ -3441,6 +3442,22 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = DMSetDefaultConstraints(*cdm, s, m);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = MatDestroy(&m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
+{
+  Vec            coordsLocal;
+  DM             coordsDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *field = NULL;
+  ierr = DMGetCoordinatesLocal(dm,&coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm,&coordsDM);CHKERRQ(ierr);
+  if (coordsLocal && coordsDM) {
+    ierr = DMFieldCreateDS(coordsDM, 0, coordsLocal, field);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
