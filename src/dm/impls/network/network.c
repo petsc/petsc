@@ -17,7 +17,7 @@
 @*/
 PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
 {
-  DM_Network     *network = (DM_Network*) netdm->data;
+  DM_Network *network = (DM_Network*) netdm->data;
 
   PetscFunctionBegin;
   *plexdm = network->plex;
@@ -166,99 +166,6 @@ PetscErrorCode DMNetworkSetEdgeList(DM dm,int *edgelist[],int *edgelistCouple[])
 .seealso: DMNetworkSetSizes, DMNetworkSetEdgeList
 @*/
 PetscErrorCode DMNetworkLayoutSetUp(DM dm)
-{
-  PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
-  PetscInt       dim = 1; /* One dimensional network */
-  PetscInt       numCorners=2;
-  PetscInt       spacedim=2;
-  double         *vertexcoords=NULL;
-  PetscInt       i,j;
-  PetscInt       ndata;
-  PetscInt       ctr=0;
-
-  PetscFunctionBegin;
-  if (network->nVertices) {
-    ierr = PetscCalloc1(numCorners*network->nVertices,&vertexcoords);CHKERRQ(ierr);
-  }
-
-  /* Create the edgelist for the network by concatenating edgelists of the subnetworks */
-  ierr = PetscCalloc1(2*network->nEdges,&network->edges);CHKERRQ(ierr);
-  for(i=0; i < network->nsubnet; i++) {
-    for(j = 0; j < network->subnet[i].nedge; j++) {
-      network->edges[2*ctr] = network->subnet[i].vStart + network->subnet[i].edgelist[2*j];
-      network->edges[2*ctr+1] = network->subnet[i].vStart + network->subnet[i].edgelist[2*j+1];
-      ctr++;
-    }
-  }
-
-#if 0
-  for(i=0; i < network->nEdges; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",network->edges[2*i],network->edges[2*i+1]);CHKERRQ(ierr);
-  }
-#endif
-
-  ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
-  if (network->nVertices) {
-    ierr = PetscFree(vertexcoords);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(network->edges);CHKERRQ(ierr);
-
-  ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(network->plex,1,&network->vStart,&network->vEnd);CHKERRQ(ierr);
-
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DataSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&network->DofSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
-
-  /* Create vertices and edges array for the subnetworks */
-  for(j=0; j < network->nsubnet; j++) {
-    ierr = PetscCalloc1(network->subnet[j].nedge,&network->subnet[j].edges);CHKERRQ(ierr);
-    ierr = PetscCalloc1(network->subnet[j].nvtx,&network->subnet[j].vertices);CHKERRQ(ierr);
-    /* Temporarily setting nvtx and nedge to 0 so we can use them as counters in the below for loop.
-       These get updated when the vertices and edges are added. */
-    network->subnet[j].nvtx = network->subnet[j].nedge = 0;
-  }
-
-  network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
-  for(i=network->eStart; i < network->eEnd; i++) {
-    network->header[i].index = i;   /* Global edge number */
-    for(j=0; j < network->nsubnet; j++) {
-      if((network->subnet[j].eStart <= i) && (i < network->subnet[j].eEnd)) {
-	network->header[i].subnetid = j; /* Subnetwork id */
-	network->subnet[j].edges[network->subnet[j].nedge++] = i;
-	break;
-      }
-    }
-    network->header[i].ndata = 0;
-    ndata = network->header[i].ndata;
-    ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
-    network->header[i].offset[ndata] = 0;
-  }
-
-  for(i=network->vStart; i < network->vEnd; i++) {
-    network->header[i].index = i - network->vStart;
-    for(j=0; j < network->nsubnet; j++) {
-      if((network->subnet[j].vStart <= i-network->vStart) && (i-network->vStart < network->subnet[j].vEnd)) {
-	network->header[i].subnetid = j;
-	network->subnet[j].vertices[network->subnet[j].nvtx++] = i;
-	break;
-      }
-    }
-    network->header[i].ndata = 0;
-    ndata = network->header[i].ndata;
-    ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
-    network->header[i].offset[ndata] = 0;
-  }
-
-  ierr = PetscMalloc1(network->pEnd-network->pStart,&network->cvalue);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMNetworkLayoutSetUpCoupled(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
@@ -892,14 +799,12 @@ PetscErrorCode DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar)
    function is called during DMSetUp() */
 PetscErrorCode DMNetworkComponentSetUp(DM dm)
 {
-  PetscErrorCode              ierr;
-  DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt                    arr_size;
-  PetscInt                    p,offset,offsetp;
+  PetscErrorCode           ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  PetscInt                 arr_size,p,offset,offsetp,ncomp,i;
   DMNetworkComponentHeader header;
   DMNetworkComponentValue  cvalue;
-  DMNetworkComponentGenericDataType      *componentdataarray;
-  PetscInt ncomp, i;
+  DMNetworkComponentGenericDataType *componentdataarray;
 
   PetscFunctionBegin;
   ierr = PetscSectionSetUp(network->DataSection);CHKERRQ(ierr);
@@ -1593,7 +1498,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank, size;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
   PetscInt       eStart,eEnd,vStart,vEnd,rstart,nrows,*rows,localSize;
   PetscInt       cstart,ncols,j,e,v;
   PetscBool      ghost,ghost_vc,ghost2,isNest;
@@ -1917,7 +1822,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
   PetscInt       j;
 
   PetscFunctionBegin;
@@ -1960,10 +1865,10 @@ PetscErrorCode DMDestroy_Network(DM dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
+PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = DMView(network->plex,viewer);CHKERRQ(ierr);
@@ -1973,7 +1878,7 @@ PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
 PetscErrorCode DMGlobalToLocalBegin_Network(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = DMGlobalToLocalBegin(network->plex,g,mode,l);CHKERRQ(ierr);
@@ -1983,7 +1888,7 @@ PetscErrorCode DMGlobalToLocalBegin_Network(DM dm, Vec g, InsertMode mode, Vec l
 PetscErrorCode DMGlobalToLocalEnd_Network(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = DMGlobalToLocalEnd(network->plex,g,mode,l);CHKERRQ(ierr);
@@ -1993,7 +1898,7 @@ PetscErrorCode DMGlobalToLocalEnd_Network(DM dm, Vec g, InsertMode mode, Vec l)
 PetscErrorCode DMLocalToGlobalBegin_Network(DM dm, Vec l, InsertMode mode, Vec g)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = DMLocalToGlobalBegin(network->plex,l,mode,g);CHKERRQ(ierr);
@@ -2003,7 +1908,7 @@ PetscErrorCode DMLocalToGlobalBegin_Network(DM dm, Vec l, InsertMode mode, Vec g
 PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 {
   PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
+  DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = DMLocalToGlobalEnd(network->plex,l,mode,g);CHKERRQ(ierr);

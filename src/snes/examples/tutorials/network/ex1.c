@@ -431,7 +431,7 @@ int main(int argc,char **argv)
   ierr = DMNetworkSetEdgeList(networkdm,edgelist,edgelist+2);CHKERRQ(ierr);
 
   /* Set up the network layout */
-  ierr = DMNetworkLayoutSetUpCoupled(networkdm);CHKERRQ(ierr);
+  ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
   /* Add network components - only process[0] has any data to add */
   /* ADD VARIABLES AND COMPONENTS FOR THE POWER SUBNETWORK */
