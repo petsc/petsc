@@ -5,12 +5,12 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = dvecimpl.h
+SOURCEH  = ../../../include/petsc/private/vecimpl.h ../../../include/petscvec.h
+DIRS     = impls examples interface
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared hypre nest node
-LOCDIR   = src/vec/vec/impls/
+MANSEC   = Vec
+LOCDIR   = src/vec/vscat/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-

@@ -107,7 +107,30 @@ typedef const char* VecType;
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
+#define VECNODE        "node"       /* use on-node shared memory */
 
+/*J
+    VecScatterType - String with the name of a PETSc vector scatter type
+
+   Level: beginner
+
+.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
+J*/
+typedef const char* VecScatterType;
+#define VECSCATTERSEQ       "seq"
+#define VECSCATTERMPI1      "mpi1"
+#define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
+#define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
+
+/* Dynamic creation and loading functions */
+PETSC_EXTERN PetscFunctionList VecScatterList;
+PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
+PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType *);
+PETSC_EXTERN PetscErrorCode VecScatterSetFromOptions(VecScatter);
+PETSC_EXTERN PetscErrorCode VecScatterRegister(const char[],PetscErrorCode (*)(VecScatter));
+PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecScatterFinalizePackage(void);
 
 /* Logging support */
 #define    REAL_FILE_CLASSID 1211213
@@ -125,6 +148,8 @@ PETSC_EXTERN PetscErrorCode VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateNode(MPI_Comm,PetscInt,PetscInt,Vec*);
+
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
 PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
 

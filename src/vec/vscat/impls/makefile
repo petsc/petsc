@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = vscat.c vpscat.c vpscat_mpi1.c
 SOURCEF  =
-SOURCEH  = dvecimpl.h
+SOURCEH  = vpscat.h vpscat_mpi1.h
+DIRS     =
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared hypre nest node
-LOCDIR   = src/vec/vec/impls/
+MANSEC   = Vec
+LOCDIR   = src/vec/vscat/impls
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-

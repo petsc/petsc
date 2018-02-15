@@ -5154,14 +5154,14 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   MPI_Comm               comm;
   PetscMPIInt            *rprocs,*sprocs,tag,rank;
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap->n,row,*b_othi,*b_othj;
-  PetscInt               *rvalues,*svalues;
-  MatScalar              *b_otha,*bufa,*bufA;
+  PetscInt               *rvalues,*svalues,*cols,sbs,rbs;
+  PetscScalar              *b_otha,*bufa,*bufA,*vals;
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             *sstatus,rstatus;
   PetscMPIInt            jj,size;
-  PetscInt               *cols,sbs,rbs;
-  PetscScalar            *vals;
+  VecScatterType         type;
+  PetscBool              mpi1;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -5181,11 +5181,15 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   }
 
   ctx = a->Mvctx;
-  if (a->Mvctx->mpi3 && !a->Mvctx_mpi1) { 
-    /* a->Mvctx is type of MPI3 which is not implemented for Mat-Mat ops,
+  ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"mpi1",&mpi1);CHKERRQ(ierr);
+  if (!mpi1) {
+    /* a->Mvctx is not type MPI1 which is not implemented for Mat-Mat ops,
      thus create a->Mvctx_mpi1 */
-    a->Mvctx_mpi1_flg = PETSC_TRUE;
-    ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+    if (!a->Mvctx_mpi1) {
+      a->Mvctx_mpi1_flg = PETSC_TRUE;
+      ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+    }
     ctx = a->Mvctx_mpi1;
   }
   tag = ((PetscObject)ctx)->tag;

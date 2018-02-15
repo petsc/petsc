@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = vecnode.c
 SOURCEF  =
-SOURCEH  = dvecimpl.h
+SOURCEH  = vecnodeimpl.h
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared hypre nest node
-LOCDIR   = src/vec/vec/impls/
+MANSEC   = Vec
+LOCDIR   = src/vec/vec/impls/node/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
