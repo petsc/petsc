@@ -192,7 +192,6 @@ PetscErrorCode PetscFERegisterAll(void)
   PetscFERegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscFERegister(PETSCFEBASIC,     PetscFECreate_Basic);CHKERRQ(ierr);
-  ierr = PetscFERegister(PETSCFENONAFFINE, PetscFECreate_Nonaffine);CHKERRQ(ierr);
   ierr = PetscFERegister(PETSCFECOMPOSITE, PetscFECreate_Composite);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_OPENCL
   ierr = PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL);CHKERRQ(ierr);
