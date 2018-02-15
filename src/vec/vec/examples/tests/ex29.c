@@ -84,25 +84,25 @@ int main(int argc,char **argv)
    test:
       suffix: bts
       nsize: 3
-      args: -n 126 -vec_assembly_bts
+      args: -n 126 -vec_assembly_legacy
       output_file: output/ex29_1.out
 
    test:
       suffix: bts_2
       nsize: 3
-      args: -n 126 -vec_assembly_bts -repeat 2
+      args: -n 126 -vec_assembly_legacy -repeat 2
       output_file: output/ex29_1.out
 
    test:
       suffix: bts_2_subset
       nsize: 3
-      args: -n 126 -vec_assembly_bts -repeat 2 -subset
+      args: -n 126 -vec_assembly_legacy -repeat 2 -subset
       output_file: output/ex29_1.out
 
    test:
       suffix: bts_2_subset_proper
       nsize: 3
-      args: -n 126 -vec_assembly_bts -repeat 5 -subset
+      args: -n 126 -vec_assembly_legacy -repeat 5 -subset
       output_file: output/ex29_1.out
 
 TEST*/
