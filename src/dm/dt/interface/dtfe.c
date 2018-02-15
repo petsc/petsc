@@ -2167,6 +2167,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
     ierr = PetscQuadratureDestroy(&(*sp)->functional[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*sp)->functional);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*sp)->allPoints);CHKERRQ(ierr);
   ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
 
   if ((*sp)->ops->destroy) {ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);}
