@@ -61,6 +61,7 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
   PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
   PetscErrorCode (*applyall)(PetscDualSpace, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+  PetscErrorCode (*createapplyallpoints)(PetscDualSpace, PetscQuadrature *);
 };
 
 struct _p_PetscDualSpace {
@@ -70,6 +71,7 @@ struct _p_PetscDualSpace {
   PetscInt         order;      /* The approximation order of the space */
   PetscInt         Nc;         /* The number of components */
   PetscQuadrature *functional; /* The basis of functionals for this space */
+  PetscQuadrature  allPoints;
   PetscBool        setupcalled;
 };
 

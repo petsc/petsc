@@ -2774,6 +2774,61 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, PetscReal time, 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscDualSpaceGetApplyAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(allPoints,2);
+  if (!sp->allPoints && sp->ops->createapplyallpoints) {
+    ierr = (*sp->ops->createapplyallpoints)(sp,&sp->allPoints);CHKERRQ(ierr);
+  }
+  *allPoints = sp->allPoints;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDualSpaceCreateApplyAllPoints(PetscDualSpace sp, PetscQuadrature *allPoints)
+{
+  PetscInt        spdim;
+  PetscInt        numPoints, offset;
+  PetscReal       *points;
+  PetscInt        f, dim;
+  PetscQuadrature q;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDimension(sp,&spdim);CHKERRQ(ierr);
+  if (!spdim) {
+    ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)sp),allPoints);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(*allPoints,0,0,0,NULL,NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscDualSpaceGetFunctional(sp,0,&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q,&dim,NULL,&numPoints,NULL,NULL);CHKERRQ(ierr);
+  for (f = 1; f < spdim; f++) {
+    PetscInt Np;
+
+    ierr = PetscDualSpaceGetFunctional(sp,f,&q);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,NULL,NULL);CHKERRQ(ierr);
+    numPoints += Np;
+  }
+  ierr = PetscMalloc1(dim*numPoints,&points);CHKERRQ(ierr);
+  for (f = 0, offset = 0; f < spdim; f++) {
+    const PetscReal *p;
+    PetscInt        Np, i;
+
+    ierr = PetscDualSpaceGetFunctional(sp,f,&q);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,NULL,&Np,&p,NULL);CHKERRQ(ierr);
+    for (i = 0; i < Np * dim; i++) {
+      points[offset + i] = p[i];
+    }
+    offset += Np * dim;
+  }
+  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)sp),allPoints);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*allPoints,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function by assuming a point evaluation functional at the cell centroid.
 
