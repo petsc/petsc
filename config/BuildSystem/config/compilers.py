@@ -1305,7 +1305,7 @@ class Configure(config.base.Configure):
   def checkFortranTypeStar(self):
     '''Determine whether the Fortran compiler handles type(*)'''
     self.pushLanguage('FC')
-    if self.checkCompile(body = '      interface\n      subroutine a(b)\n     type(*) :: b(:)\n      end subroutine\n      end interface\n'):
+    if self.checkCompile(body = '      interface\n      subroutine a(b)\n      type(*) :: b(:)\n      end subroutine\n      end interface\n'):
       self.addDefine('HAVE_FORTRAN_TYPE_STAR', 1)
       self.logPrint('Fortran compiler supports type(*)')
     else:
