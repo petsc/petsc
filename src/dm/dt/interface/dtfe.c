@@ -2609,6 +2609,41 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
 }
 
 /*@C
+  PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to an input function
+
+  Input Parameters:
++ sp      - The PetscDualSpace object
+. time    - The time
+. cgeom   - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. numComp - The number of components for the function
+. func    - The input function
+- ctx     - A context for the function
+
+  Output Parameter:
+. value   - numComp output values
+
+  Note: The calling sequence for the callback func is given by:
+
+$ func(PetscInt dim, PetscReal time, const PetscReal x[],
+$      PetscInt numComponents, PetscScalar values[], void *ctx)
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, PetscReal time, PetscFEGeom *cgeom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(cgeom, 4);
+  PetscValidPointer(value, 8);
+  ierr = (*sp->ops->applyall)(sp, time, cgeom, numComp, func, ctx, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscDualSpaceApplyDefault - Apply a functional from the dual space basis to an input function by assuming a point evaluation functional.
 
   Input Parameters:
@@ -2666,6 +2701,76 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
     }
   }
   ierr = DMRestoreWorkArray(dm, Nc, MPIU_SCALAR, &val);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to an input function by assuming a point evaluation functional.
+
+  Input Parameters:
++ sp    - The PetscDualSpace object
+. time  - The time
+. cgeom - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. Nc    - The number of components for the function
+. func  - The input function
+- ctx   - A context for the function
+
+  Output Parameter:
+. value   - The output value
+
+  Note: The calling sequence for the callback func is given by:
+
+$ func(PetscInt dim, PetscReal time, const PetscReal x[],
+$      PetscInt numComponents, PetscScalar values[], void *ctx)
+
+and the idea is to evaluate the functional as an integral
+
+$ n(f) = int dx n(x) . f(x)
+
+where both n and f have Nc components.
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, PetscReal time, PetscFEGeom *cgeom, PetscInt Nc, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+{
+  DM               dm;
+  PetscQuadrature  n;
+  const PetscReal *points, *weights;
+  PetscReal        x[3];
+  PetscScalar     *val;
+  PetscInt         dim, dE, qNc, c, Nq, q, f, spdim, v;
+  PetscBool        isAffine;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(value, 5);
+  ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  for (f = 0, v = 0; f < spdim; f++) {
+    ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(n, &dim, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
+    if (dim != cgeom->dim) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature spatial dimension %D != cell geometry dimension %D", dim, cgeom->dim);
+    if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
+    value[f] = 0.0;
+    isAffine = (cgeom->numPoints == 1 && Nq > 1) ? PETSC_TRUE : PETSC_FALSE;
+    dE = cgeom->dimEmbed;
+    for (q = 0; q < Nq; ++q, v++) {
+      if (isAffine) {
+        CoordinatesRefToReal(dE, cgeom->dim, cgeom->xi, cgeom->v, cgeom->J, &points[q*dim], x);
+        ierr = (*func)(dE, time, x, Nc, val, ctx);CHKERRQ(ierr);
+      } else {
+        ierr = (*func)(dE, time, &cgeom->v[dE*v], Nc, val, ctx);CHKERRQ(ierr);
+      }
+      for (c = 0; c < Nc; ++c) {
+        value[f] += val[c]*weights[q*Nc+c];
+      }
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3537,6 +3642,7 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   sp->ops->getheightsubspace = PetscDualSpaceGetHeightSubspace_Lagrange;
   sp->ops->getsymmetries     = PetscDualSpaceGetSymmetries_Lagrange;
   sp->ops->apply             = PetscDualSpaceApplyDefault;
+  sp->ops->applyall          = PetscDualSpaceApplyAllDefault;
   PetscFunctionReturn(0);
 }
 
