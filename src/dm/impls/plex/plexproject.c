@@ -159,6 +159,46 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, PetscDS prob, DM dmAux, Pets
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpace *sp, PetscInt dim, void (**funcs)(void), PetscQuadrature *allPoints)
+{
+  PetscReal      *points;
+  PetscInt       f, numPoints;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  numPoints = 0;
+  for (f = 0; f < Nf; ++f) {
+    if (funcs[f]) {
+      PetscQuadrature fAllPoints;
+      PetscInt        fNumPoints;
+
+      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(fAllPoints, NULL, NULL, &fNumPoints, NULL, NULL);CHKERRQ(ierr);
+      numPoints += fNumPoints;
+    }
+  }
+  ierr = PetscMalloc1(dim*numPoints,&points);CHKERRQ(ierr);
+  numPoints = 0;
+  for (f = 0; f < Nf; ++f) {
+    PetscInt spDim;
+
+    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+    if (funcs[f]) {
+      PetscQuadrature fAllPoints;
+      PetscInt        fNumPoints, q;
+      const PetscReal *fPoints;
+
+      ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(fAllPoints, NULL, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
+      for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];
+      numPoints += fNumPoints;
+    }
+  }
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allPoints);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*allPoints,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
   This function iterates over a manifold, and interpolates the input function/field using the basis provided by the DS in our DM
 
