@@ -3981,6 +3981,8 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (fem->setupcalled) PetscFunctionReturn(0);
+  fem->setupcalled = PETSC_TRUE;
   if (fem->ops->setup) {ierr = (*fem->ops->setup)(fem);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
