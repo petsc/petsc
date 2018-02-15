@@ -163,8 +163,7 @@ int main(int argc, char **argv)
       ierr = PCMGSetType(pc, PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH);CHKERRQ(ierr);
       ierr = PCMGSetCycleType(pc, PC_MG_CYCLE_V);CHKERRQ(ierr);
-      ierr = PCMGSetNumberSmoothUp(pc, 2);CHKERRQ(ierr);
-      ierr = PCMGSetNumberSmoothDown(pc, 2);CHKERRQ(ierr);
+      ierr = PCMGSetNumberSmooth(pc, 2);CHKERRQ(ierr);
 
       for (k = 1; k <= user.nlevels; k++) {
         ierr = DMCreateInterpolation(dmhierarchy[k - 1], dmhierarchy[k], &R, NULL);CHKERRQ(ierr);

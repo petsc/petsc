@@ -1124,8 +1124,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
    Options Database Key:
    Multigrid options(inherited):
 +  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
-.  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
-.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
+.  -pc_mg_distinct_smoothup: Should one configure the up and down smoothers separately (PCMGSetDistinctSmoothUp)
 -  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
    ML options:
 +  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
@@ -1149,8 +1148,8 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
   Concepts: multigrid
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType,
-           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetNumberSmoothDown(),
-           PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
+           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetDistinctSmoothUp(),
+           PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
            PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/

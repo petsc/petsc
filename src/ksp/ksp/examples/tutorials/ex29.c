@@ -227,4 +227,8 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
       suffix: 3
       args: -ksp_view -da_refine 2 -pc_type mg -pc_mg_distinct_smoothup -mg_levels_up_pc_type jacobi
 
+   test:
+      suffix: 4
+      args: -ksp_view -da_refine 2 -pc_type mg -pc_mg_distinct_smoothup -mg_levels_up_ksp_max_it 3 -mg_levels_ksp_max_it 4
+
 TEST*/
