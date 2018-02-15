@@ -841,7 +841,7 @@ PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec 
   PetscInt       m,n;
   Mat            mf,Dmf,Dmat,Ddiff;
   PetscReal      Diffnorm,Dmfnorm;
-  PetscBool      v = 0, flag = PETSC_TRUE;
+  PetscBool      v = PETSC_FALSE, flag = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -907,7 +907,7 @@ PetscErrorCode  MatShellTestMultTranspose(Mat mat,PetscErrorCode (*f)(void*,Vec,
   PetscInt       m,n,M,N;
   Mat            mf,Dmf,Dmat,Ddiff;
   PetscReal      Diffnorm,Dmfnorm;
-  PetscBool      v = 0, flag = PETSC_TRUE;
+  PetscBool      v = PETSC_FALSE, flag = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
