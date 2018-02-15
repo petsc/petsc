@@ -385,6 +385,10 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) {
     ierr = PCMGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-pc_mg_distinct_smoothup","Create seperate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCMGSetDistinctSmoothUp(pc);CHKERRQ(ierr);
+  }
   mgtype = mg->am;
   ierr   = PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)mgtype,(PetscEnum*)&mgtype,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1240,6 +1244,50 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
     ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg->default_smoothu = n;
     mg->default_smoothd = n;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a seperate KSP from the down (pre) smoother on all levels
+       and adds the suffix _post to the options name
+
+   Logically Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+.  -pc_mg_distinct_smoothup
+
+   Level: advanced
+
+   Notes: this does not set a value on the coarsest grid, since we assume that
+    there is no separate smooth up on the coarsest grid.
+
+.keywords: MG, smooth, up, post-smoothing, steps, multigrid
+
+.seealso: PCMGSetNumberSmoothDown(), PCMGSetNumberSmooth()
+@*/
+PetscErrorCode  PCMGSetDistinctSmoothUp(PC pc)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+  PetscInt       i,levels;
+  KSP            subksp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
+  levels = mglevels[0]->levels;
+
+  for (i=1; i<levels; i++) {
+    if (mglevels[i]->smoothu != mglevels[i]->smoothd) continue;
+
+    /* make sure smoother up and down are different */
+    ierr = PCMGGetSmootherUp(pc,i,&subksp);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(subksp,"up_");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

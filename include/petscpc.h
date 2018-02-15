@@ -310,6 +310,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
 PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode PCMGSetDistinctSmoothUp(PC);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC,PetscInt);
