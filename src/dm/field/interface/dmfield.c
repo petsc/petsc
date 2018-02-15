@@ -271,3 +271,92 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
+  PetscInt       dim, dE;
+  PetscInt       nPoints;
+  PetscFEGeom    *g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
+  PetscValidHeaderSpecific(pointIS,IS_CLASSID,2);
+  PetscValidHeader(quad,3);
+  ierr = ISGetLocalSize(pointIS,&nPoints);CHKERRQ(ierr);
+  dE = field->numComponents;
+  ierr = PetscFEGeomCreate(quad,nPoints,dE,faceData,&g);CHKERRQ(ierr);
+  ierr = DMFieldEvaluateFE(field,pointIS,quad,PETSC_REAL,g->v,g->J,NULL);CHKERRQ(ierr);
+  dim = g->dim;
+  if (dE > dim) {
+    /* space out J and make square Jacobians */
+    PetscInt  i, j, k, N = g->numPoints * g->numCells;
+
+    for (i = N-1; i >= 0; i--) {
+      PetscReal   J[9];
+
+      for (j = 0; j < dE; j++) {
+        for (k = 0; k < dim; k++) {
+          J[j*dE + k] = g->J[i*dE*dim + j*dim + k];
+        }
+      }
+      switch (dim) {
+      case 0:
+        for (j = 0; j < dE; j++) {
+          for (k = 0; k < dE; k++) {
+            J[j * dE + k] = (j == k) ? 1. : 0.;
+          }
+        }
+        break;
+      case 1:
+        if (dE == 2) {
+          PetscReal norm = PetscSqrtReal(J[0] * J[0] + J[2] * J[2]);
+
+          J[1] = -J[2] / norm;
+          J[3] =  J[0] / norm;
+        } else {
+          PetscReal inorm = 1./PetscSqrtReal(J[0] * J[0] + J[3] * J[3] + J[6] * J[6]);
+          PetscReal x = J[0] * inorm;
+          PetscReal y = J[3] * inorm;
+          PetscReal z = J[6] * inorm;
+
+          if (x > 0.) {
+            PetscReal inv1pX   = 1./ (1. + x);
+
+            J[1] = -y;              J[2] = -z;
+            J[4] = 1. - y*y*inv1pX; J[5] =     -y*z*inv1pX;
+            J[7] =     -y*z*inv1pX; J[8] = 1. - z*z*inv1pX;
+          } else {
+            PetscReal inv1mX   = 1./ (1. - x);
+
+            J[1] = z;               J[2] = y;
+            J[4] =     -y*z*inv1mX; J[5] = 1. - y*y*inv1mX;
+            J[7] = 1. - z*z*inv1mX; J[8] =     -y*z*inv1mX;
+          }
+        }
+        break;
+      case 2:
+        {
+          PetscReal inorm;
+
+          J[2] = J[3] * J[7] - J[6] * J[4];
+          J[5] = J[6] * J[1] - J[0] * J[7];
+          J[8] = J[0] * J[4] - J[3] * J[1];
+
+          inorm = 1./ PetscSqrtReal(J[2]*J[2] + J[5]*J[5] + J[8]*J[8]);
+
+          J[2] *= inorm;
+          J[5] *= inorm;
+          J[8] *= inorm;
+        }
+        break;
+      }
+      for (j = 0; j < dE*dE; j++) {
+        g->J[i*dE*dE + j] = J[j];
+      }
+    }
+  }
+  ierr = PetscFEGeomComplete(g);CHKERRQ(ierr);
+  ierr = DMFieldGetFEInvariance(field,pointIS,NULL,&g->isAffine,NULL);CHKERRQ(ierr);
+  *geom = g;
+  PetscFunctionReturn(0);
+}

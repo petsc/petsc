@@ -37,6 +37,7 @@ PETSC_EXTERN PetscErrorCode    DMFieldGetContinuity(DMField,DMFieldContinuity*);
 PETSC_EXTERN PetscErrorCode    DMFieldEvaluate(DMField,Vec,PetscDataType,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode    DMFieldEvaluateFE(DMField,IS,PetscQuadrature,PetscDataType,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode    DMFieldEvaluateFV(DMField,IS,PetscDataType,void*,void*,void*);
+PETSC_EXTERN PetscErrorCode    DMFieldCreateFEGeom(DMField,IS,PetscQuadrature,PetscBool,PetscFEGeom **);
 
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDefaultQuadrature(DMField,IS,PetscQuadrature*);
 
