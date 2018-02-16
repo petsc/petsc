@@ -1451,16 +1451,17 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
 PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   PetscDS        prob;
-  PetscInt       dim, numBd, bd, depth;
+  PetscInt       dim, numBd, bd;
+  DMLabel        depthLabel;
   DMField        coordField = NULL;
   IS             facetIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(depth,dim - 1,&facetIS);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(depthLabel,dim - 1,&facetIS);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
   ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
