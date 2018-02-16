@@ -1060,7 +1060,7 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
   case MATOP_MULT_TRANSPOSE:
     if (shell->managescalingshifts) {
       shell->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec))f;
-      mat->ops->mult   = MatMultTranspose_Shell;
+      mat->ops->multtranspose   = MatMultTranspose_Shell;
     } else mat->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec))f;
     break;
   default:
