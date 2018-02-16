@@ -115,7 +115,7 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    if (yy[i]) ww[i] = xx[i] / yy[i];
+    if (yy[i] != 0.0) ww[i] = xx[i] / yy[i];
     else ww[i] = 0.0;
   }
 
