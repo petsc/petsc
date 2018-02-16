@@ -153,7 +153,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
   } else {
     ierr = VecScale(Y,shell->vscale);CHKERRQ(ierr);
   }
-  if (shell->vshift) {ierr = VecAXPY(Y,shell->vshift,X);CHKERRQ(ierr);} /* if test is for non-square matrices */
+  if (shell->vshift != 0.0) {ierr = VecAXPY(Y,shell->vshift,X);CHKERRQ(ierr);} /* if test is for non-square matrices */
   PetscFunctionReturn(0);
 }
 
