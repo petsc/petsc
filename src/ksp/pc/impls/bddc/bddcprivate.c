@@ -1676,7 +1676,12 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   /* need to convert from global to local topology information and remove references to information in global ordering */
   ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
-  if (monolithic) goto boundary;
+  if (monolithic) { /* just get block size to properly compute vertices */
+    if (pcbddc->vertex_size == 1) {
+      ierr = MatGetBlockSize(pc->pmat,&pcbddc->vertex_size);CHKERRQ(ierr);
+    }
+    goto boundary;
+  }
 
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) {
