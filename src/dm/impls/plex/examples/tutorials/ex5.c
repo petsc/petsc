@@ -57,14 +57,15 @@ int main(int argc, char **argv)
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(v, f);CHKERRQ(ierr);
   ierr = DMView(dm, v);CHKERRQ(ierr);
+
+  ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), &dmnew);CHKERRQ(ierr);
+  ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
+  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
+
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), &dmnew);CHKERRQ(ierr);
-  ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "dmdist.h5", FILE_MODE_READ, &v);CHKERRQ(ierr);
-  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
