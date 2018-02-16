@@ -120,9 +120,11 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmGetField(*sw, "f_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
   for (c = 0; c < Ncell; ++c) {
     for (q = 0; q < Nq; ++q) {
+      const PetscReal xi0[3] = {-1., -1., -1.};
+
       ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
       cellid[c*Nq + q] = c;
-      CoordinatesRefToReal(dim, dim, v0, J, &qpoints[q*dim], &coords[(c*Nq + q)*dim]);
+      CoordinatesRefToReal(dim, dim, xi0, v0, J, &qpoints[q*dim], &coords[(c*Nq + q)*dim]);
       linear(dim, 0.0, &coords[(c*Nq + q)*dim], 1, &vals[c*Nq + q], NULL);
     }
   }

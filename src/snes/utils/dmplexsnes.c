@@ -1349,7 +1349,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     PetscQuadrature  qGeom = NULL;
     IS               pointIS;
     const PetscInt  *points;
-    PetscInt         dep, numFaces, face, Nq;
+    PetscInt         numFaces, face, Nq;
 
     ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
     if (!pointIS) continue; /* No points with that id on this process */
@@ -1380,7 +1380,6 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support, *cone;
       PetscScalar   *x     = NULL;
-      PetscReal      dummyJ[9], dummyDetJ;
       PetscInt       i, coneSize, faceLoc;
 
       ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
@@ -1407,8 +1406,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     ierr = PetscMemzero(elemVec, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
     {
       PetscFE         fe;
-      PetscQuadrature q;
-      PetscInt        numQuadPoints, Nb;
+      PetscInt        Nb;
       PetscFEGeom     *chunkGeom = NULL;
       /* Conforming batches */
       PetscInt        numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
