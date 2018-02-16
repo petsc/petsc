@@ -803,15 +803,21 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
     ISLocalToGlobalMapping rl2g;
     IS                     is;
     PetscInt               *lidxs,*lgidxs,*newgidxs;
-    PetscInt               ll,newloc;
+    PetscInt               ll,newloc,irbs,icbs,arbs,acbs,rbs,cbs;
     MPI_Comm               comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+    ierr = MatGetBlockSizes(mat,&arbs,&acbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(irow,&irbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(icol,&icbs);CHKERRQ(ierr);
+    rbs  = arbs == irbs ? irbs : 1;
+    cbs  = acbs == icbs ? icbs : 1;
     ierr = ISGetLocalSize(irow,&m);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol,&n);CHKERRQ(ierr);
     ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
     ierr = MatSetType(*newmat,MATIS);CHKERRQ(ierr);
     ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(*newmat,rbs,cbs);CHKERRQ(ierr);
     /* communicate irow to their owners in the layout */
     ierr = ISGetIndices(irow,&idxs);CHKERRQ(ierr);
     ierr = PetscLayoutMapLocal_Private(mat->rmap,m,idxs,&ll,&lidxs,&lgidxs);CHKERRQ(ierr);
@@ -833,6 +839,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
       }
     ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingSetBlockSize(rl2g,rbs);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
     /* local is to extract local submatrix */
     newmatis = (Mat_IS*)(*newmat)->data;
@@ -871,6 +878,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
         }
       ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingSetBlockSize(cl2g,cbs);CHKERRQ(ierr);
       ierr = ISDestroy(&is);CHKERRQ(ierr);
       /* local is to extract local submatrix */
       ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_cis);CHKERRQ(ierr);
