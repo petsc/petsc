@@ -201,12 +201,14 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscInt          i,n = sub->n;
   PetscMPIInt       rank,size;
   PetscBool         iascii;
-  PetscViewerFormat fmt,matl;
+  PetscViewerFormat fmt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    PetscBool matl;
+
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);

@@ -5307,16 +5307,6 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   const PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
-  PetscBool ss = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-swap",&ss,NULL);CHKERRQ(ierr);
-  if (ss) {
-  Mat save_B = pcbddc->coarse_phi_B;
-  pcbddc->coarse_phi_B = pcbddc->coarse_psi_B;
-  pcbddc->coarse_psi_B = save_B;
-  Mat save_D = pcbddc->coarse_phi_D;
-  pcbddc->coarse_phi_D = pcbddc->coarse_psi_D;
-  pcbddc->coarse_psi_D = save_D;
-  }
   /* Application of PSI^T or PHI^T (depending on applytranspose, see comment above) */
   if (!pcbddc->benign_apply_coarse_only) {
     if (applytranspose) {
@@ -5433,14 +5423,6 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     } else {
       ierr = MatMult(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B);CHKERRQ(ierr);
     }
-  }
-  if (ss) {
-  Mat save_B = pcbddc->coarse_phi_B;
-  pcbddc->coarse_phi_B = pcbddc->coarse_psi_B;
-  pcbddc->coarse_psi_B = save_B;
-  Mat save_D = pcbddc->coarse_phi_D;
-  pcbddc->coarse_phi_D = pcbddc->coarse_psi_D;
-  pcbddc->coarse_psi_D = save_D;
   }
   PetscFunctionReturn(0);
 }
