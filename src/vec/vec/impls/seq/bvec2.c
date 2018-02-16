@@ -114,7 +114,10 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   ierr = VecGetArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
   ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
 
-  for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
+  for (i=0; i<n; i++) {
+    if (yy[i]) ww[i] = xx[i] / yy[i];
+    else ww[i] = 0.0;
+  }
 
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
