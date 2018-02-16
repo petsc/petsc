@@ -377,6 +377,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) {
     ierr = PCMGSetGalerkin(pc,gtype);CHKERRQ(ierr);
   }
+  flg = PETSC_FALSE;
   ierr = PetscOptionsBool("-pc_mg_distinct_smoothup","Create seperate smoothup KSP and append the prefix _up","PCMGSetDistinctSmoothUp",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCMGSetDistinctSmoothUp(pc);CHKERRQ(ierr);
