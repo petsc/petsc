@@ -373,6 +373,11 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   ierr = VecShift(v,shell->vshift);CHKERRQ(ierr);
   if (shell->left)  {ierr = VecPointwiseMult(v,v,shell->left);CHKERRQ(ierr);}
   if (shell->right) {ierr = VecPointwiseMult(v,v,shell->right);CHKERRQ(ierr);}
+  if (shell->axpy) {
+    if (!shell->left_work) {ierr = VecDuplicate(v,&shell->left_work);CHKERRQ(ierr);}
+    ierr = MatGetDiagonal(shell->axpy,shell->left_work);CHKERRQ(ierr);
+    ierr = VecAXPY(v,shell->axpy_vscale,shell->left_work);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -438,6 +443,7 @@ PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
   if (shell->dshift) {
     ierr = VecScale(shell->dshift,a);CHKERRQ(ierr);
   }
+  shell->axpy_vscale *= a;
   PetscFunctionReturn(0);
 }
 
@@ -447,6 +453,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (shell->axpy) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_SUP,"Cannot diagonal scale MATSHELL after MatAXPY operation");
   if (left) {
     if (!shell->left) {
       ierr = VecDuplicate(left,&shell->left);CHKERRQ(ierr);
@@ -478,6 +485,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
     ierr = VecDestroy(&shell->dshift);CHKERRQ(ierr);
     ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
     ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
+    ierr = MatDestroy(&shell->axpy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
