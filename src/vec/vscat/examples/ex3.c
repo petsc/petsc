@@ -2,7 +2,7 @@
 static char help[]= "Scatters from a sequential vector to a parallel vector. \n\
 uses block index sets\n\n";
 
-/* runex3_5 might give incorrect solution due to multiple cores write to the same variable */
+/* 'mpiexec -n 3 ./ex3 -vecscatter_type mpi3node' might give incorrect solution due to multiple cores write to the same variable */
 
 #include <petscvec.h>
 
@@ -89,3 +89,36 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   test:
+      nsize: 2
+      args: -vecscatter_type mpi3node
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -vecscatter_type mpi3
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -bs 2 -vecscatter_type mpi3node
+      output_file: output/ex3_3.out
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -bs 2 -vecscatter_type mpi3
+      output_file: output/ex3_3.out
+
+   test:
+      suffix: 5
+      nsize: 3
+      args: -vecscatter_type mpi3
+      output_file: output/ex3_5.out
+
+
+TEST*/

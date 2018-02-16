@@ -124,3 +124,23 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   test:
+      nsize: 2
+      args: -vecscatter_type mpi3node
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -vecscatter_type mpi3node
+      output_file: output/ex1_2.out
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -bs 2 -vecscatter_type mpi3node
+      output_file: output/ex1_3.out
+
+TEST*/

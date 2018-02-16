@@ -1385,7 +1385,7 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
     ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
     ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
-    if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%d %d)",nx,ny);
+    if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%D %D)",nx,ny);
     if (vec_mpi1_flg) {
       ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     } else {

@@ -416,13 +416,13 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
             sharedspace = vnode->winarray[i];
 
             if (sharedspace[-1] != yv[-1]) {
-              if (sharedspace[-1] > yv[-1]) {
+              if (PetscRealPart(sharedspace[-1] - yv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%d] statecnt %g > [%d] my_statecnt %g",i,sharedspace[-1],msrank,yv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,yv[-1]);
               }
               /* i-the core has not reached the current object statecnt yet, wait ... */
-              /* printf("%d-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],yv[-1]); */
+              /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],yv[-1]); */
               continue;
             }
 
@@ -434,7 +434,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               for (k= 0; k<cnt; k++) {
                 for (k1=0; k1<bs; k1++) sharedspace[idy[k]+k1] = xv[idx[k]+k1];
               }
-            } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
+            } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %D", addv);
             notdone--;
           }
           i++;
@@ -460,13 +460,13 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
             sharedspace = vnode->winarray[i];
 
             if (sharedspace[-1] != xv[-1]) {
-              if (sharedspace[-1] > xv[-1]) {
+              if (PetscRealPart(sharedspace[-1] - xv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%d] statecnt %g > [%d] my_statecnt %g",i,sharedspace[-1],msrank,xv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,xv[-1]);
               }
               /* i-the core has not reached the current object state cnt yet, wait ... */
-              /* printf("%d-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],xv[-1]); */
+              /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],xv[-1]); */
               continue;
             }
 
@@ -478,7 +478,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               for (k=0; k<cnt; k++) {
                 for (k1=0; k1<bs; k1++) yv[idy[k]+k1] = sharedspace[idx[k]+k1]; /* read x shared values */
               }
-            } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
+            } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %D", addv);
 
             notdone--;
           }
