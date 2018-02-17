@@ -1247,8 +1247,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 
    Multigrid options(inherited):
 +  -pc_mg_cycles <v>: v or w (PCMGSetCycleType())
-.  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
-.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
+.  -pc_mg_distinct_smoothup: configure the up and down smoothers separately (PCMGSetDistinctSmoothUp())
 .  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
 

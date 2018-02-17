@@ -3208,14 +3208,14 @@ The commands above can also be set from the options database. The option
 names are \trl{-pc_mg_type [multiplicative, additive, full, kaskade]},
 and \trl{-pc_mg_cycle_type} \trl{<ctype>}. \findex{-pc_mg_type} \findex{-pc_mg_cycle_type}
 
-The user can control the amount of pre- and postsmoothing
-\sindex{smoothing} \sindex{relaxation} by using
-either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
-\trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
-the routines
+The user can control the amount of smoothing
+\sindex{smoothing} \sindex{relaxation} by configuring the solvers on
+the levels.  By default, the up and down smoothers are identical.  If
+separate configuration of up and down smooths is required, it can be
+requested with the option \findex{-pc_mg_distinct_smoothup}
+\trl{-pc_mg_distinct_smoothup} or the routine
 \begin{lstlisting}
-PCMGSetNumberSmoothUp(PC pc,PetscInt m);
-PCMGSetNumberSmoothDown(PC pc,PetscInt n);
+PCMGSetDistinctSmoothUp(PC pc);
 \end{lstlisting}
 
 The multigrid routines, which determine

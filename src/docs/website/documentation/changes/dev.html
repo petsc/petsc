@@ -113,6 +113,15 @@
         <li>mat_solver_package is replaced with mat_solver_type.</li>
       </ul>
       <h4>PC:</h4>
+      <li> Added -pc_mg_distinct_smoothup and
+      PCMGSetDistinctSmoothUp() so that one can control the down and
+        up smoothers options seperately from the options database</li>
+      <li> Removed -pc_mg_smoothup and -pc_mg_smoothdown and
+      PCMGSetNumberSmoothUp() and PCMGSetNumberSmoothDown().  Instead,
+      configure the solvers on the levels with -mg_levels_ksp_max_it
+      n.  If separate numbers of smoothing steps are required for up
+      and down smoothers, use -pc_mg_distinct_smoothup
+      -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
       <ul>
