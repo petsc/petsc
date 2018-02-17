@@ -20,3 +20,5 @@ ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/startnightly $testbranches
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/copylognightly $testbranches
 
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs /mcs/ftp/pub/petsc/nightlylogs/$testbranchname.html
+
+echo "Results can be viewed at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/barry-test.html"
