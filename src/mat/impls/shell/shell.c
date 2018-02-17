@@ -254,6 +254,12 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
   } else {
     ierr = VecDestroy(&shellB->right);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&shellB->axpy);CHKERRQ(ierr);
+  if (shellA->axpy) {
+    ierr                 = PetscObjectReference((PetscObject)shellA->axpy);CHKERRQ(ierr);
+    shellB->axpy        = shellA->axpy;
+    shellB->axpy_vscale = shellA->axpy_vscale;
+  }
   PetscFunctionReturn(0);
 }
 
