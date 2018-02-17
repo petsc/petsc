@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'xsdk-0.2.0-rc1'
+    self.gitcommit         = 'v5.3.0'
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['SuperLU_DIST','superlu_dist']
     self.functions        = ['set_default_options_dist']
@@ -27,15 +27,15 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.metis          = framework.require('config.packages.metis',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
+    self.odeps          = [self.parmetis]
     if self.framework.argDB['download-superlu_dist-gpu']:
       self.cuda           = framework.require('config.packages.cuda',self)
       self.openmp         = framework.require('config.packages.openmp',self)
-      self.deps           = [self.mpi,self.blasLapack,self.parmetis,self.metis,self.cuda,self.openmp]
+      self.deps           = [self.mpi,self.blasLapack,self.cuda,self.openmp]
     else:
-      self.deps           = [self.mpi,self.blasLapack,self.parmetis,self.metis]
+      self.deps           = [self.mpi,self.blasLapack]
     return
 
   def formCMakeConfigureArgs(self):
@@ -43,11 +43,12 @@ class Configure(config.package.CMakePackage):
     if not self.framework.argDB['download-superlu_dist-gpu']:
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     args.append('-DUSE_XSDK_DEFAULTS=YES')
-    metis_inc = self.headers.toStringNoDupes(self.metis.include)[2:]
-    parmetis_inc = self.headers.toStringNoDupes(self.parmetis.include)[2:]
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+metis_inc+';'+parmetis_inc+'"')
-    args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib+self.metis.lib)+'"')
+    if self.parmetis.found:
+      args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.dinclude)+'"')
+      args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.dlib)+'"')
+    else:
+      args.append('-Denable_parmetislib=FALSE')
 
     if self.getDefaultIndexSize() == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
