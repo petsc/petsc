@@ -256,10 +256,10 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&csize);CHKERRQ(ierr);
-  if (csize > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc\n");
+  if (csize > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc");
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
   if (!sorted) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted");
   }
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
   if (mpardiso->schur_size != size) {
@@ -418,7 +418,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
   }
   ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
 
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
+  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   if (A->schur) { /* solve Schur complement and expand solution */
     PetscInt shift = mat_mkl_pardiso->schur_size;
@@ -460,7 +460,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
       (void*)mat_mkl_pardiso->schur_work, /* according to the specs, the solution vector is always used */
       &mat_mkl_pardiso->err);
 
-    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
+    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
     mat_mkl_pardiso->iparm[6-1] = 0;
   }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       (void*)barray,
       (void*)xarray,
       &mat_mkl_pardiso->err);
-    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
+    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
     if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
       PetscScalar *o_schur_work = NULL;
@@ -580,7 +580,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
         ierr = PetscFree(mat_mkl_pardiso->schur_work);CHKERRQ(ierr);
         mat_mkl_pardiso->schur_work = o_schur_work;
       }
-      if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
+      if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
       mat_mkl_pardiso->iparm[6-1] = 0;
     }
   }
@@ -614,7 +614,7 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
     NULL,
     (void*)mat_mkl_pardiso->schur,
     &mat_mkl_pardiso->err);
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
+  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   if (F->schur) { /* schur output from pardiso is in row major format */
     ierr = MatFactorRestoreSchurComplement(F,NULL,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
@@ -814,7 +814,7 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFac
     NULL,
     NULL,
     &mat_mkl_pardiso->err);
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d\n. Please check manual",mat_mkl_pardiso->err);
+  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   mat_mkl_pardiso->CleanUp = PETSC_TRUE;
 
@@ -1048,8 +1048,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso->mtype = 13;
 #else
-    if (A->structurally_symmetric) mat_mkl_pardiso->mtype = 1;
-    else                           mat_mkl_pardiso->mtype = 11;
+    mat_mkl_pardiso->mtype = 11;
 #endif
   } else {
 #if defined(PETSC_USE_COMPLEX)
