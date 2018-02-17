@@ -117,7 +117,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEnd();
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
-  if (options->per[0]) options->dirbc = 0;
+  if (options->per[0]) options->dirbc = PETSC_FALSE;
 
   /* element matrices */
   switch (options->pde) {
