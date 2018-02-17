@@ -1,0 +1,22 @@
+#! /bin/csh
+#
+# usage: runtest branch   (see startnightly for details of running)
+#
+#
+#  Put the following in your .ssh/config  file
+# host cron
+#     ProxyCommand ssh -q -a -x petsc@login.mcs.anl.gov /bin/nc thwomp %p
+#
+set testbranchname=barry-test
+set testbranches="knl:$testbranchname thrash3:$testbranchname"
+set tbranch=$1
+git checkout $tbranch
+git branch -D $testbranchname
+git branch $testbranchname
+git checkout $testbranchname
+git push -f  --set-upstream origin $testbranchname
+ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/startnightly $testbranches
+
+ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/copylognightly $testbranches
+
+ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs /mcs/ftp/pub/petsc/nightlylogs/$testbranchname.html
