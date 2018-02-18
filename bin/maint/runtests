@@ -23,6 +23,6 @@ ssh petsc@cron rm -f "/mcs/ftp/pub/petsc/nightlylogs/${testbranchname}/*"
 
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/copylognightly -dirname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname $testbranches
 
-ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs /mcs/ftp/pub/petsc/nightlylogs/$testbranchname/$testbranchname.html
+ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname/$testbranchname.html
 
 echo "Results can be viewed at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/${testbranchname}/${testbranchname}.html"
