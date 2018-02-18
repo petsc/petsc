@@ -218,7 +218,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         const char* name;
 
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"%s = [%D : %D : %D];\n",name,sub->first+1,sub->step,sub->step*n+1);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%s = [%D : %D : %D];\n",name,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
         if (is->isperm) {
           ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
@@ -235,7 +235,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         const char* name;
 
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%D : %D : %D];\n",name,rank,sub->first,sub->step,sub->step*n);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [%D : %D : %D];\n",name,rank,sub->first+1,sub->step,sub->first + sub->step*(n-1)+1);CHKERRQ(ierr);
       } else {
         if (is->isperm) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
