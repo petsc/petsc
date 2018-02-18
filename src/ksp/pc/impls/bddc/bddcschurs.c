@@ -1659,7 +1659,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERPETSC,&ispetsc);CHKERRQ(ierr);
-  sub_schurs->schur_explicit = !ispetsc;
+  sub_schurs->schur_explicit = (PetscBool)!ispetsc;
 
   ierr = PetscObjectReference((PetscObject)is_I);CHKERRQ(ierr);
   sub_schurs->is_I = is_I;
