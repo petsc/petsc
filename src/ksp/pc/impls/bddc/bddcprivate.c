@@ -8584,8 +8584,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   if (!pcbddc->sub_schurs) {
     ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
   }
-  ierr = PCBDDCSubSchursInit(pcbddc->sub_schurs,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
-  pcbddc->sub_schurs->prefix = ((PetscObject)pc)->prefix;
+  ierr = PCBDDCSubSchursInit(pcbddc->sub_schurs,((PetscObject)pc)->prefix,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
 
   /* free graph struct */
   if (pcbddc->sub_schurs_rebuild) {

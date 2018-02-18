@@ -404,19 +404,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscFunctionBegin;
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_COMPLEX)
-  sub_schurs->is_hermitian = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
-#else
-  sub_schurs->is_hermitian = PETSC_TRUE;
-#endif
-  sub_schurs->is_posdef    = PETSC_TRUE;
-  if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-sub_schurs_hermitian","Hermitian problem",NULL,sub_schurs->is_hermitian,&sub_schurs->is_hermitian,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   /* convert matrix if needed */
   if (Ain) {
     PetscBool isseqaij;
@@ -437,6 +424,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* preliminary checks */
   if (!sub_schurs->schur_explicit && compute_Stilda) SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
+
+  if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
 
   /* restrict work on active processes */
   color = 0;
@@ -789,7 +778,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscInt    n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
     PetscBool   economic,solver_S,S_lower_triangular = PETSC_FALSE;
     PetscBool   schur_has_vertices,factor_workaround;
-    char        solver[256];
 
     /* get sizes */
     n_I = 0;
@@ -920,12 +908,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MUMPS)
-    ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
-#else
-    ierr = PetscStrcpy(solver,MATSOLVERMKL_PARDISO);CHKERRQ(ierr);
-#endif
-    ierr = PetscOptionsGetString(NULL,((PetscObject)A)->prefix,"-mat_solver_type",solver,256,NULL);CHKERRQ(ierr);
 
     /* when using the benign subspace trick, the local Schur complements are SPD */
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
@@ -934,9 +916,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       IS is_schur;
 
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-        ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+        ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
       } else {
-        ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+        ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
       }
       ierr = MatSetErrorIfFailure(A,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -1612,11 +1594,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap, PetscBool copycc)
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefix, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap, PetscBool copycc)
 {
   IS              *faces,*edges,*all_cc,vertices;
   PetscInt        i,n_faces,n_edges,n_all_cc;
-  PetscBool       is_sorted;
+  PetscBool       is_sorted,ispetsc;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1657,13 +1639,27 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, IS is_I, IS is_B,
   ierr = PCBDDCGraphGetDirichletDofsB(graph,&sub_schurs->is_dir);CHKERRQ(ierr);
 
   /* Determine if MatFactor can be used */
-  sub_schurs->schur_explicit = PETSC_FALSE;
+  ierr = PetscStrallocpy(prefix,&sub_schurs->prefix);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
-  sub_schurs->schur_explicit = PETSC_TRUE;
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMUMPS,64);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_MKL_PARDISO)
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERMKL_PARDISO,64);CHKERRQ(ierr);
+#else
+  ierr = PetscStrncpy(sub_schurs->mat_solver_type,MATSOLVERPETSC,64);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MKL_PARDISO)
-  sub_schurs->schur_explicit = PETSC_TRUE;
+#if defined(PETSC_USE_COMPLEX)
+  sub_schurs->is_hermitian = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
+#else
+  sub_schurs->is_hermitian = PETSC_TRUE;
 #endif
+  sub_schurs->is_posdef    = PETSC_TRUE;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)graph->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-sub_schurs_mat_solver_type","Specific direct solver to use",NULL,sub_schurs->mat_solver_type,sub_schurs->mat_solver_type,64,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sub_schurs_hermitian","Hermitian problem",NULL,sub_schurs->is_hermitian,&sub_schurs->is_hermitian,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERPETSC,&ispetsc);CHKERRQ(ierr);
+  sub_schurs->schur_explicit = !ispetsc;
 
   ierr = PetscObjectReference((PetscObject)is_I);CHKERRQ(ierr);
   sub_schurs->is_I = is_I;
@@ -1707,6 +1703,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
 
   PetscFunctionBegin;
   if (!sub_schurs) PetscFunctionReturn(0);
+  ierr = PetscFree(sub_schurs->prefix);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_I);CHKERRQ(ierr);

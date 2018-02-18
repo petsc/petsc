@@ -100,6 +100,7 @@ struct _PCBDDCSubSchurs {
   IS  is_I;
   IS  is_B;
   /* whether Schur complements are explicitly computed with or not */
+  char      mat_solver_type[64];
   PetscBool schur_explicit;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
