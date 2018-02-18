@@ -1900,6 +1900,16 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   }
 
   {
+    PC        pc;
+    PetscBool same = PETSC_FALSE;
+    ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same);CHKERRQ(ierr);
+    if (same) {
+      ierr = KSPSetOperators(ksp_S,A,A);CHKERRQ(ierr);
+    }
+  }
+
+  {
     PetscBool stokes_monitor = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
     if (stokes_monitor) {
