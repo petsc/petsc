@@ -133,17 +133,16 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     PetscFE      fe = (PetscFE) disc;
     PetscInt     feDim, i;
     PetscReal    *fB = NULL, *fD = NULL, *fH = NULL;
-    PetscInt     closureSize;
-    PetscScalar  *elem = NULL;
 
     if (dim == meshDim - 1) {
       /* TODO */
     }
     ierr = PetscFEGetDimension(fe,&feDim);CHKERRQ(ierr);
     ierr = PetscFEGetTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
-    closureSize = feDim;
     for (i = 0; i < numCells; i++) {
-      PetscInt c = isStride ? (sfirst + i * stride) : points[i];
+      PetscInt     c = isStride ? (sfirst + i * stride) : points[i];
+      PetscInt     closureSize;
+      PetscScalar *elem = NULL;
 
       ierr = DMPlexVecGetClosure(dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
       if (B) {
@@ -179,8 +178,8 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
           DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),PetscRealPart);
         }
       }
+      ierr = DMPlexVecRestoreClosure(dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
     }
-    ierr = DMRestoreWorkArray(dm,feDim,MPIU_SCALAR,&elem);CHKERRQ(ierr);
     ierr = PetscFERestoreTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
   } else {SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented");}
   if (!isStride) {
