@@ -17,6 +17,9 @@ git checkout $testbranchname
 git push -f  --set-upstream origin $testbranchname
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/startnightly $testbranches
 
+
+ssh petsc@cron rm -f "/mcs/ftp/pub/petsc/nightlylogs/$testbranchname/*"
+
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/copylognightly -dirname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname $testbranches
 
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs /mcs/ftp/pub/petsc/nightlylogs/$testbranchname/$testbranchname.html
