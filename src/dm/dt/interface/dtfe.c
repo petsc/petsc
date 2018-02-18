@@ -1475,7 +1475,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
     if (subsp->Jx) {
       for (j = 0; j < origDim; j++) {
         for (k = 0; k < subDim; k++) {
-          inpoints[i * origDim + j] += subsp->Jx[j * origDim + k] * points[i * subDim + k];
+          inpoints[i * origDim + j] += subsp->Jx[j * subDim + k] * points[i * subDim + k];
         }
       }
     } else {
@@ -1517,7 +1517,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
               for (m = 0; m < origDim; m++) {
                 for (n = 0; n < subDim; n++) {
                   for (o = 0; o < origDim; o++) {
-                    psi[(k * subDim + l) * subDim + n] += subsp->Jx[l * origDim + m] * subsp->Jx[n * origDim + o] * phi[(k * origDim + m) * origDim + o];
+                    psi[(k * subDim + l) * subDim + n] += subsp->Jx[m * subDim + l] * subsp->Jx[o * subDim + n] * phi[(k * origDim + m) * origDim + o];
                   }
                 }
               }
@@ -1575,7 +1575,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
           for (k = 0; k < subNc; k++) {
             for (l = 0; l < subDim; l++) {
               for (m = 0; m < origDim; m++) {
-                psi[k * subDim + l] += subsp->Jx[l * origDim + m] * phi[k * origDim + m];
+                psi[k * subDim + l] += subsp->Jx[m * subDim + l] * phi[k * origDim + m];
               }
             }
           }
@@ -7502,7 +7502,7 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   if (geom->n) {
     for (i = 0; i < N; i++) {
       for (j = 0; j < dE; j++) {
-        geom->n[dE*i + j] = geom->J[dE*dE+i + dE*j + dE-1];
+        geom->n[dE*i + j] = geom->J[dE*dE*i + dE*j + dE-1];
       }
     }
   }
