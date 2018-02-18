@@ -9,8 +9,9 @@ DMField Object: field 1 MPI processes
     1-cells:   33  
     2-cells:   18  
   Labels:
-    marker: 1 strata of sizes (24)
-    depth: 3 strata of sizes (16, 33, 18)
+    Face Sets: 1 strata with value/size (1 (12))
+    marker: 1 strata with value/size (1 (24))
+    depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))
   PetscDS field 0
     Basic Finite Element:
       dimension:       2

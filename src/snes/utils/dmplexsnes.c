@@ -2055,7 +2055,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
       }
       ierr = ISGetLocalSize(pointIS, &numFaces);CHKERRQ(ierr);
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      ierr = PetscMalloc4(numFaces*totDim,&u,locX_t ? numFaces*totDim : 0,&u_t,numFaces,&fgeom,numFaces*totDim*totDim,&elemMat);CHKERRQ(ierr);
+      ierr = PetscMalloc3(numFaces*totDim,&u,locX_t ? numFaces*totDim : 0,&u_t,numFaces*totDim*totDim,&elemMat);CHKERRQ(ierr);
       if (locA) {ierr = PetscMalloc1(numFaces*totDimAux,&a);CHKERRQ(ierr);}
       ierr = DMFieldGetFEInvariance(coordField,pointIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
       if (isAffine) {
@@ -2077,7 +2077,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         ierr = DMPlexGetCone(dm, support[0], &cone);CHKERRQ(ierr);
         for (faceLoc = 0; faceLoc < coneSize; ++faceLoc) if (cone[faceLoc] == point) break;
         if (faceLoc == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of support[0] %d", point, support[0]);
-        fgeom[face].face[0][0] = faceLoc;
+        fgeom->face[face][0] = faceLoc;
         ierr = DMPlexVecGetClosure(dm, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
         for (i = 0; i < totDim; ++i) u[face*totDim+i] = x[i];
         ierr = DMPlexVecRestoreClosure(dm, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
@@ -2138,6 +2138,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
       }
       ierr = PetscFEGeomDestroy(&fgeom);CHKERRQ(ierr);
       ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
+      ierr = PetscFree3(u,u_t,elemMat);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       if (locA) {ierr = PetscFree(a);CHKERRQ(ierr);}
@@ -2472,11 +2473,11 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
     ierr = PetscFEGeomGetChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
     ierr = PetscFEGeomGetChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);
     for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
-      ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Ne, cgeomFEM, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);
-      ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Nr, &cgeomFEM[offset * Nq], &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Ne, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN, fieldI, fieldJ, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
       if (hasDyn) {
-        ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Ne, cgeomFEM, u, u_t, probAux, a, t, X_tShift, elemMatD);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Nr, &cgeomFEM[offset * Nq], &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMatD[offset*totDim*totDim]);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Ne, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMatD);CHKERRQ(ierr);
+        ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, X_tShift, &elemMatD[offset*totDim*totDim]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);

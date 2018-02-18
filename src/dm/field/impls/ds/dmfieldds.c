@@ -116,7 +116,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   dm   = field->dm;
   nc   = field->numComponents;
   ierr = PetscQuadratureGetData(quad,&dim,NULL,&nq,&qpoints,NULL);CHKERRQ(ierr);
-  ierr = DMFieldDSGetHeightDisc(field,dsfield->height - dim,&disc);CHKERRQ(ierr);
+  ierr = DMFieldDSGetHeightDisc(field,dsfield->height - 1 - dim,&disc);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&meshDim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetField(section,dsfield->fieldNum,&section);CHKERRQ(ierr);
@@ -201,7 +201,7 @@ static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, Petsc
   PetscFunctionBegin;
   dsfield = (DMField_DS *) field->data;
   ierr = ISGetMinMax(pointIS,&imin,NULL);CHKERRQ(ierr);
-  for (h = 0; h <= dsfield->height; h++) {
+  for (h = 0; h < dsfield->height; h++) {
     PetscInt hEnd;
 
     ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
     if (imin >= hStart && imax < hEnd) break;
   }
   *quad = NULL;
-  if (h <= dsfield->height) {
+  if (h < dsfield->height) {
     ierr = DMFieldDSGetHeightDisc(field,h,&disc);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
     if (id != PETSCFE_CLASSID) PetscFunctionReturn(0);
@@ -380,6 +380,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
   dsfield = (DMField_DS *) b->data;
   dsfield->fieldNum = fieldNum;
   ierr = DMGetDimension(dm,&dsfield->height);CHKERRQ(ierr);
+  dsfield->height++;
   ierr = PetscCalloc1(dsfield->height,&dsfield->disc);CHKERRQ(ierr);
   dsfield->disc[0] = disc;
   ierr = PetscObjectReference((PetscObject)vec);CHKERRQ(ierr);

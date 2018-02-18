@@ -1331,6 +1331,10 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
   ierr = PetscFree(u);CHKERRQ(ierr);
   /* Cleanup */
+  if (affineQuad) {
+    ierr = PetscFEGeomDestroy(&cgeomFEM);CHKERRQ(ierr);
+  }
+  ierr = PetscQuadratureDestroy(&affineQuad);CHKERRQ(ierr);
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);

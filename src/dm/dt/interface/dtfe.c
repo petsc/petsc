@@ -499,7 +499,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  if (sp->Nv) PetscValidPointer(points, 3);
   if (B) PetscValidPointer(B, 4);
   if (D) PetscValidPointer(D, 5);
   if (H) PetscValidPointer(H, 6);
@@ -4745,8 +4745,13 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
   if (B) {ierr = DMGetWorkArray(dm, npoints*pdim*comp, MPIU_REAL, B);CHKERRQ(ierr);}
-  if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*comp*dim, MPIU_REAL, D);CHKERRQ(ierr);}
-  if (H) {ierr = DMGetWorkArray(dm, npoints*pdim*comp*dim*dim, MPIU_REAL, H);CHKERRQ(ierr);}
+  if (!dim) {
+    if (D) *D = NULL;
+    if (H) *H = NULL;
+  } else {
+    if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*comp*dim, MPIU_REAL, D);CHKERRQ(ierr);}
+    if (H) {ierr = DMGetWorkArray(dm, npoints*pdim*comp*dim*dim, MPIU_REAL, H);CHKERRQ(ierr);}
+  }
   ierr = (*fem->ops->gettabulation)(fem, npoints, points, B ? *B : NULL, D ? *D : NULL, H ? *H : NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5210,7 +5215,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
       const PetscReal *n;
       PetscReal detJ;
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*(dim-1)], x);
         v = x;
         invJ = &fgeom->invJ[e*dE*dE];
         detJ = fgeom->detJ[e];
@@ -5534,7 +5539,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       if (isAffine) {
-        CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*dim], x);
+        CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*(dim-1)], x);
         v = x;
         invJ = &fgeom->invJ[e*dE*dE];
         detJ = fgeom->detJ[e];
@@ -7424,6 +7429,7 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
   ierr = PetscFree4((*geom)->v,(*geom)->J,(*geom)->invJ,(*geom)->detJ);CHKERRQ(ierr);
+  ierr = PetscFree2((*geom)->face,(*geom)->n);CHKERRQ(ierr);
   ierr = PetscFree(*geom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -7496,7 +7502,7 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   if (geom->n) {
     for (i = 0; i < N; i++) {
       for (j = 0; j < dE; j++) {
-        geom->n[dE*i + j] = geom->detJ[dE*dE+i + dE*j + dE-1];
+        geom->n[dE*i + j] = geom->J[dE*dE+i + dE*j + dE-1];
       }
     }
   }
