@@ -16,6 +16,7 @@ typedef struct _n_PetscFEGeom {
   PetscReal *detJ;
   PetscReal *n;
   PetscInt  (*face)[2];
+  PetscReal *suppInvJ[2];
   PetscInt  dim;
   PetscInt  dimEmbed;
   PetscInt  numCells;

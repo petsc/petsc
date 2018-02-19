@@ -5217,12 +5217,12 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
       if (isAffine) {
         CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*(dim-1)], x);
         v = x;
-        invJ = &fgeom->invJ[e*dE*dE];
+        invJ = &fgeom->suppInvJ[0][e*dE*dE];
         detJ = fgeom->detJ[e];
         n    = &fgeom->n[e*dE];
       } else {
         v = &v0[q*dE];
-        invJ = &fgeom->invJ[(e*Np+q)*dE*dE];
+        invJ = &fgeom->suppInvJ[0][(e*Np+q)*dE*dE];
         detJ = fgeom->detJ[e*Np + q];
         n    = &fgeom->n[(e*Np+q)*dE];
       }
@@ -5541,12 +5541,12 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (isAffine) {
         CoordinatesRefToReal(dE, dim-1, fgeom->xi, v0, J, &quadPoints[q*(dim-1)], x);
         v = x;
-        invJ = &fgeom->invJ[e*dE*dE];
+        invJ = &fgeom->suppInvJ[0][e*dE*dE];
         detJ = fgeom->detJ[e];
         n    = &fgeom->n[e*dE];
       } else {
         v = &v0[q*dE];
-        invJ = &fgeom->invJ[(e*Np+q)*dE*dE];
+        invJ = &fgeom->suppInvJ[0][(e*Np+q)*dE*dE];
         detJ = fgeom->detJ[e*Np + q];
         n    = &fgeom->n[(e*Np+q)*dE];
       }
@@ -7413,10 +7413,11 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   g->dim       = dim;
   g->dimEmbed  = dimEmbed;
   N = numCells * numPoints;
-  ierr = PetscCalloc4(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N * dimEmbed * dimEmbed, &g->invJ, N, &g->detJ);CHKERRQ(ierr);
+  ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
   if (faceData) {
-    /* TODO */
-    ierr = PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n);CHKERRQ(ierr);
+    ierr = PetscCalloc4(numCells, &g->face, N * dimEmbed, &g->n, N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]));CHKERRQ(ierr);
+  } else {
+    ierr = PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ);CHKERRQ(ierr);
   }
   *geom = g;
   PetscFunctionReturn(0);
@@ -7428,8 +7429,9 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
 
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
-  ierr = PetscFree4((*geom)->v,(*geom)->J,(*geom)->invJ,(*geom)->detJ);CHKERRQ(ierr);
-  ierr = PetscFree2((*geom)->face,(*geom)->n);CHKERRQ(ierr);
+  ierr = PetscFree3((*geom)->v,(*geom)->J,(*geom)->detJ);CHKERRQ(ierr);
+  ierr = PetscFree((*geom)->invJ);CHKERRQ(ierr);
+  ierr = PetscFree4((*geom)->face,(*geom)->n,(*geom)->suppInvJ[0],(*geom)->suppInvJ[1]);CHKERRQ(ierr);
   ierr = PetscFree(*geom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -7455,10 +7457,12 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   (*chunkGeom)->xi = geom->xi;
   (*chunkGeom)->v = &geom->v[Nq*dE*cStart];
   (*chunkGeom)->J = &geom->J[Nq*dE*dE*cStart];
-  (*chunkGeom)->invJ = &geom->invJ[Nq*dE*dE*cStart];
+  (*chunkGeom)->invJ = (geom->invJ) ? &geom->invJ[Nq*dE*dE*cStart] : NULL;
   (*chunkGeom)->detJ = &geom->detJ[Nq*cStart];
   (*chunkGeom)->n = geom->n ? &geom->n[Nq*dE*cStart] : NULL;
   (*chunkGeom)->face = geom->face ? &geom->face[cStart] : NULL;
+  (*chunkGeom)->suppInvJ[0] = geom->suppInvJ[0] ? &geom->suppInvJ[0][Nq*dE*dE*cStart] : NULL;
+  (*chunkGeom)->suppInvJ[1] = geom->suppInvJ[1] ? &geom->suppInvJ[1][Nq*dE*dE*cStart] : NULL;
   (*chunkGeom)->isAffine = geom->isAffine;
   PetscFunctionReturn(0);
 }
@@ -7483,19 +7487,19 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   case 3:
     for (i = 0; i < N; i++) {
       DMPlex_Det3D_Internal(&geom->detJ[i], &geom->J[dE*dE*i]);
-      DMPlex_Invert3D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
+      if (geom->invJ) DMPlex_Invert3D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
     }
     break;
   case 2:
     for (i = 0; i < N; i++) {
       DMPlex_Det2D_Internal(&geom->detJ[i], &geom->J[dE*dE*i]);
-      DMPlex_Invert2D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
+      if (geom->invJ) DMPlex_Invert2D_Internal(&geom->invJ[dE*dE*i], &geom->J[dE*dE*i], geom->detJ[i]);
     }
     break;
   case 1:
     for (i = 0; i < N; i++) {
       geom->detJ[i] = PetscAbsReal(geom->J[i]);
-      geom->invJ[i] = 1. / geom->J[i];
+      if (geom->invJ) geom->invJ[i] = 1. / geom->J[i];
     }
     break;
   }

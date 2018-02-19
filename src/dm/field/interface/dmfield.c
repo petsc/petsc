@@ -1,4 +1,6 @@
 #include <petsc/private/dmfieldimpl.h> /*I "petscdmfield.h" I*/
+#include <petsc/private/petscfeimpl.h> /*I "petscdmfield.h" I*/
+#include <petscdmplex.h>
 
 const char *const DMFieldContinuities[] = {
   "VERTEX",
@@ -357,6 +359,10 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   }
   ierr = PetscFEGeomComplete(g);CHKERRQ(ierr);
   ierr = DMFieldGetFEInvariance(field,pointIS,NULL,&g->isAffine,NULL);CHKERRQ(ierr);
+  if (faceData) {
+    if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data\n");
+    ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);
+  }
   *geom = g;
   PetscFunctionReturn(0);
 }

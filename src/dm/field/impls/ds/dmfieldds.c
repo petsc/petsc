@@ -1,4 +1,5 @@
 #include <petsc/private/dmfieldimpl.h> /*I "petscdmfield.h" I*/
+#include <petsc/private/petscfeimpl.h> /*I "petscdmfield.h" I*/
 #include <petscfe.h>
 #include <petscdmplex.h>
 #include <petscds.h>
@@ -266,6 +267,299 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, PetscQuadrature quad, PetscFEGeom *geom)
+{
+  const PetscInt *points;
+  PetscInt        p, dim, dE, numFaces, Nq;
+  PetscBool       affineCells;
+  DMLabel         depthLabel;
+  IS              cellIS;
+  DM              dm = field->dm;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  dim = geom->dim;
+  dE  = geom->dimEmbed;
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(depthLabel, dim + 1, &cellIS);CHKERRQ(ierr);
+  ierr = DMFieldGetFEInvariance(field,cellIS,NULL,&affineCells,NULL);CHKERRQ(ierr);
+  ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+  numFaces = geom->numCells;
+  Nq = geom->numPoints;
+  if (affineCells) {
+    PetscInt        numCells, offset, *cells;
+    PetscFEGeom     *cellGeom;
+    IS              suppIS;
+    PetscQuadrature cellQuad = NULL;
+
+    ierr = DMFieldCreateDefaultQuadrature(field,cellIS,&cellQuad);CHKERRQ(ierr);
+    for (p = 0, numCells = 0; p < numFaces; p++) {
+      PetscInt        point = points[p];
+      PetscInt        numSupp, numChildren;
+
+      ierr = DMPlexGetTreeChildren(dm, point, &numChildren, NULL); CHKERRQ(ierr);
+      if (numChildren) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+      ierr = DMPlexGetSupportSize(dm, point,&numSupp);CHKERRQ(ierr);
+      if (numSupp > 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2\n", point, numSupp);
+      numCells += numSupp;
+    }
+    ierr = PetscMalloc1(numCells, &cells);CHKERRQ(ierr);
+    for (p = 0, offset = 0; p < numFaces; p++) {
+      PetscInt        point = points[p];
+      PetscInt        numSupp, s;
+      const PetscInt *supp;
+
+      ierr = DMPlexGetSupportSize(dm, point,&numSupp);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, point, &supp);CHKERRQ(ierr);
+      for (s = 0; s < numSupp; s++, offset++) {
+        cells[offset] = supp[s];
+      }
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,numCells,cells,PETSC_USE_POINTER, &suppIS);CHKERRQ(ierr);
+    ierr = DMFieldCreateFEGeom(field,suppIS,cellQuad,PETSC_FALSE,&cellGeom);CHKERRQ(ierr);
+    for (p = 0, offset = 0; p < numFaces; p++) {
+      PetscInt        point = points[p];
+      PetscInt        numSupp, s, q;
+      const PetscInt *supp;
+
+      ierr = DMPlexGetSupportSize(dm, point,&numSupp);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, point, &supp);CHKERRQ(ierr);
+      for (s = 0; s < numSupp; s++, offset++) {
+        for (q = 0; q < Nq * dE * dE; q++) {
+          geom->suppInvJ[s][p * Nq * dE * dE + q] = cellGeom->invJ[offset * Nq * dE * dE + q];
+        }
+      }
+    }
+    ierr = PetscFEGeomDestroy(&cellGeom);CHKERRQ(ierr);
+    ierr = ISDestroy(&suppIS);CHKERRQ(ierr);
+    ierr = PetscFree(cells);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
+  } else {
+    PetscObject          faceDisc, cellDisc;
+    PetscClassId         faceId, cellId;
+    PetscDualSpace       dsp;
+    DM                   K;
+    PetscInt           (*co)[2][3];
+    PetscInt             coneSize;
+    PetscInt           **counts;
+    PetscInt             f, i, o, q, s;
+    const PetscInt      *coneK;
+    PetscInt             minOrient, maxOrient, numOrient;
+    PetscInt            *orients;
+    PetscReal          **orientPoints;
+    PetscReal           *cellPoints;
+    PetscReal           *dummyWeights;
+    PetscQuadrature      cellQuad = NULL;
+
+    ierr = DMFieldDSGetHeightDisc(field, 1, &faceDisc);CHKERRQ(ierr);
+    ierr = DMFieldDSGetHeightDisc(field, 0, &cellDisc);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(faceDisc,&faceId);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(cellDisc,&cellId);CHKERRQ(ierr);
+    if (faceId != PETSCFE_CLASSID || cellId != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not supported\n");
+    ierr = PetscFEGetDualSpace((PetscFE)cellDisc, &dsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDM(dsp, &K); CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(K,0,&coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(K,0,&coneK);CHKERRQ(ierr);
+    ierr = PetscMalloc4(numFaces,&co,dE*Nq,&cellPoints,coneSize,&counts,Nq,&dummyWeights);CHKERRQ(ierr);
+    ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)field), &cellQuad);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, dummyWeights);CHKERRQ(ierr);
+    minOrient = PETSC_MAX_INT;
+    maxOrient = PETSC_MIN_INT;
+    for (p = 0; p < numFaces; p++) { /* record the orientation of the facet wrt the support cells */
+      PetscInt        point = points[p];
+      PetscInt        numSupp, numChildren;
+      const PetscInt *supp;
+
+      ierr = DMPlexGetTreeChildren(dm, point, &numChildren, NULL); CHKERRQ(ierr);
+      if (numChildren) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+      ierr = DMPlexGetSupportSize(dm, point,&numSupp);CHKERRQ(ierr);
+      if (numSupp > 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2\n", point, numSupp);
+      ierr = DMPlexGetSupport(dm, point, &supp);CHKERRQ(ierr);
+      for (s = 0; s < numSupp; s++) {
+        PetscInt        cell = supp[s];
+        PetscInt        numCone;
+        const PetscInt *cone, *orient;
+
+        ierr = DMPlexGetConeSize(dm, cell, &numCone);CHKERRQ(ierr);
+        if (numCone != coneSize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support point does not match reference element");
+        ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeOrientation(dm, cell, &orient);CHKERRQ(ierr);
+        for (f = 0; f < coneSize; f++) {
+          if (cone[f] == point) break;
+        }
+        co[p][s][0] = f;
+        co[p][s][1] = orient[f];
+        co[p][s][2] = cell;
+        minOrient = PetscMin(minOrient, orient[f]);
+        maxOrient = PetscMin(maxOrient, orient[f]);
+      }
+      for (; s < 2; s++) {
+        co[p][s][0] = -1;
+        co[p][s][1] = -1;
+        co[p][s][2] = -1;
+      }
+    }
+    numOrient = maxOrient + 1 - minOrient;
+    ierr = DMPlexGetCone(K,0,&coneK);CHKERRQ(ierr);
+    /* count all (face,orientation) doubles that appear */
+    ierr = PetscCalloc2(numOrient,&orients,numOrient,&orientPoints);CHKERRQ(ierr);
+    for (f = 0; f < coneSize; f++) {ierr = PetscCalloc1(numOrient, &counts[f]);CHKERRQ(ierr);}
+    for (p = 0; p < numFaces; p++) {
+      for (s = 0; s < 2; s++) {
+        if (co[p][s][0] >= 0) {
+          counts[co[p][s][0]][co[p][s][1] - minOrient]++;
+          orients[co[p][s][1] - minOrient]++;
+        }
+      }
+    }
+    for (o = 0; o < numOrient; o++) {
+      if (orients[o]) {
+        PetscInt orient = o + minOrient;
+        PetscInt q;
+
+        ierr = PetscMalloc1(Nq * dim, &orientPoints[o]);CHKERRQ(ierr);
+        /* rotate the quadrature points appropriately */
+        switch (dim) {
+        case 0:
+          break;
+        case 1:
+          if (orient == -2 || orient == 1) {
+            for (q = 0; q < Nq; q++) {
+              orientPoints[o][q] = -geom->xi[q];
+            }
+          } else {
+            for (q = 0; q < Nq; q++) {
+              orientPoints[o][q] = geom->xi[q];
+            }
+          }
+          break;
+        case 2:
+          switch (coneSize) {
+          case 3:
+            for (q = 0; q < Nq; q++) {
+              PetscReal lambda[3];
+              PetscReal lambdao[3];
+
+              /* convert to barycentric */
+              lambda[0] = - (geom->xi[2 * q] + geom->xi[2 * q + 1]) / 2.;
+              lambda[1] = (geom->xi[2 * q] + 1.) / 2.;
+              lambda[2] = (geom->xi[2 * q + 1] + 1.) / 2.;
+              if (orient >= 0) {
+                for (i = 0; i < 3; i++) {
+                  lambdao[i] = lambda[(orient + i) % 3];
+                }
+              } else {
+                for (i = 0; i < 3; i++) {
+                  lambdao[i] = lambda[(-(orient + i) + 3) % 3];
+                }
+              }
+              /* convert to coordinates */
+              orientPoints[o][2 * q + 0] = -(lambdao[0] + lambdao[2]) + lambdao[1];
+              orientPoints[o][2 * q + 1] = -(lambdao[0] + lambdao[1]) + lambdao[2];
+            }
+            break;
+          case 4:
+            for (q = 0; q < Nq; q++) {
+              PetscReal xi[2], xio[2];
+              PetscInt oabs = (orient >= 0) ? orient : -(orient + 1);
+
+              xi[0] = geom->xi[2 * q];
+              xi[1] = geom->xi[2 * q + 1];
+              switch (oabs) {
+              case 0:
+                xio[0] = xi[0];
+                xio[1] = xi[1];
+                break;
+              case 1:
+                xio[0] = xi[1];
+                xio[1] = -xi[0];
+                break;
+              case 2:
+                xio[0] = -xi[0];
+                xio[1] = -xi[1];
+              case 3:
+                xio[0] = -xi[1];
+                xio[1] = xi[0];
+              }
+              if (orient < 0) {
+                xio[0] = -xio[0];
+              }
+              orientPoints[o][2 * q + 0] = xio[0];
+              orientPoints[o][2 * q + 1] = xio[1];
+            }
+            break;
+          default:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+          }
+        default:
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not implemented yet\n");
+        }
+      }
+    }
+    for (f = 0; f < coneSize; f++) {
+      PetscInt face = coneK[f];
+      PetscScalar v0[3];
+      PetscScalar J[9];
+      PetscInt numCells, offset;
+      PetscInt *cells;
+      IS suppIS;
+
+      ierr = DMPlexComputeCellGeometryFEM(K, face, NULL, v0, J, NULL, NULL);CHKERRQ(ierr);
+      for (o = 0; o <= numOrient; o++) {
+        PetscFEGeom *cellGeom;
+
+        if (!counts[f][o]) continue;
+        /* If this (face,orientation) double appears,
+         * convert the face quadrature points into volume quadrature points */
+        for (q = 0; q < Nq; q++) {
+          PetscReal xi0[3] = {-1., -1., -1.};
+
+          CoordinatesRefToReal(dE, dim, xi0, v0, J, &orientPoints[o][dim * q + 0], &cellPoints[dE * q + 0]);
+        }
+        for (p = 0, numCells = 0; p < numFaces; p++) {
+          for (s = 0; s < 2; s++) {
+            if (co[p][s][0] == f && co[p][s][1] == o + minOrient) numCells++;
+          }
+        }
+        ierr = PetscMalloc1(numCells, &cells);CHKERRQ(ierr);
+        for (p = 0, offset = 0; p < numFaces; p++) {
+          for (s = 0; s < 2; s++) {
+            if (co[p][s][0] == f && co[p][s][1] == o + minOrient) {
+              cells[offset++] = co[p][s][2];
+            }
+          }
+        }
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,numCells,cells,PETSC_USE_POINTER, &suppIS);CHKERRQ(ierr);
+        ierr = DMFieldCreateFEGeom(field,suppIS,cellQuad,PETSC_FALSE,&cellGeom);CHKERRQ(ierr);
+        for (p = 0, offset = 0; p < numFaces; p++) {
+          for (s = 0; s < 2; s++) {
+            if (co[p][s][0] == f && co[p][s][1] == o + minOrient) {
+              for (q = 0; q < Nq * dE * dE; q++) {
+                geom->suppInvJ[s][p * Nq * dE * dE + q] = cellGeom->invJ[offset * Nq * dE * dE + q];
+              }
+              offset++;
+            }
+          }
+        }
+        ierr = PetscFEGeomDestroy(&cellGeom);CHKERRQ(ierr);
+        ierr = ISDestroy(&suppIS);CHKERRQ(ierr);
+        ierr = PetscFree(cells);CHKERRQ(ierr);
+      }
+    }
+    for (o = 0; o < numOrient; o++) {
+      if (orients[o]) {
+        ierr = PetscFree(orientPoints[o]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree2(orients,orientPoints);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
+    ierr = PetscFree4(co,cellPoints,counts,dummyWeights);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMFieldInitialize_DS(DMField field)
 {
   PetscFunctionBegin;
@@ -275,6 +569,7 @@ static PetscErrorCode DMFieldInitialize_DS(DMField field)
   field->ops->getFEInvariance         = DMFieldGetFEInvariance_DS;
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DS;
   field->ops->view                    = DMFieldView_DS;
+  field->ops->computeFaceData         = DMFieldComputeFaceData_DS;
   PetscFunctionReturn(0);
 }
 

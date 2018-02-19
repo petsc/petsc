@@ -19,6 +19,7 @@ struct _DMFieldOps {
   PetscErrorCode (*evaluateFV) (DMField,IS,PetscDataType,void*,void*,void*);
   PetscErrorCode (*getFEInvariance) (DMField,IS,PetscBool*,PetscBool*,PetscBool*);
   PetscErrorCode (*createDefaultQuadrature) (DMField,IS,PetscQuadrature*);
+  PetscErrorCode (*computeFaceData) (DMField,IS,PetscQuadrature,PetscFEGeom *);
 };
 struct _p_DMField {
   PETSCHEADER(struct _DMFieldOps);
