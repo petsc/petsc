@@ -603,10 +603,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERGLVIS);CHKERRQ(ierr);
 
   socket       = (PetscViewerGLVis)((*viewer)->data);
-  ierr         = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr         = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
   socket->type = type;
-  socket->port = port;
+  if (type == PETSC_VIEWER_GLVIS_DUMP || name) {
+    ierr = PetscFree(socket->name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
+  }
+  socket->port = (!port || port == PETSC_DETERMINE || port == PETSC_DECIDE) ? 19916 : port;
 
   ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
