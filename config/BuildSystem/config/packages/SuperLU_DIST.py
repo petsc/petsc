@@ -64,6 +64,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
+    args.append('-DCMAKE_INSTALL_LIBDIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
 
     # Add in fortran mangling flag
     if self.blasLapack.mangling == 'underscore':
