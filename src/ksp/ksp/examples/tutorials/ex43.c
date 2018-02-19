@@ -1359,6 +1359,16 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   }
 
   {
+    PC        pc;
+    PetscBool same = PETSC_FALSE;
+    ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same);CHKERRQ(ierr);
+    if (same) {
+      ierr = KSPSetOperators(ksp_S,A,A);CHKERRQ(ierr);
+    }
+  }
+
+  {
     PC        pc_S;
     KSP       *sub_ksp,ksp_U;
     PetscInt  nsplits;
@@ -1801,5 +1811,11 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
       suffix: fetidp_unsym
       nsize: 8
       args: -dm_mat_type is -stokes_ksp_type fetidp -stokes_ksp_monitor_true_residual -stokes_ksp_converged_reason -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+
+   test:
+      suffix: bddc_stokes_deluxe
+      nsize: 8
+      args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_hermitian -stokes_sub_schurs_mat_solver_type petsc
+
 
 TEST*/
