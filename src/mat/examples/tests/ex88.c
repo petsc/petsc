@@ -119,8 +119,6 @@ int main(int argc,char **args)
   ierr = MatShellSetOperation(S,MATOP_VIEW,(void (*)(void))MatView_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
-  //  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
-  //ierr = MatShellSetOperation(S,MATOP_DIAGONAL_SET,(void (*)(void))MatDiagonalSet_User);CHKERRQ(ierr);
 
   for (i=0; i<4; i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
