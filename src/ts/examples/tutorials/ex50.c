@@ -281,11 +281,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   AppCtx          *appctx = (AppCtx*)ctx;  
 
   PetscFunctionBegin;
-  /*  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr);*/ /* grad u */
-  /* ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr);*/ /* u grad u */
-  /* ierr = VecScale(globalout, -1.0);CHKERRQ(ierr);
-  */
-                                     ierr = MatMult(appctx->SEMop.keptstiff,globalin,globalout/*,globalout*/);CHKERRQ(ierr);
+  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); /* grad u */
+  ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); /* u grad u */
+  ierr = VecScale(globalout, -1.0);CHKERRQ(ierr);
+  ierr = MatMultAdd(appctx->SEMop.keptstiff,globalin,globalout,globalout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -562,4 +561,15 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
       nsize: 5
       requires: !single
 
+    test:
+      suffix: 3
+      requires: !single
+      args: -ts_view  -ts_type beuler -gll_mf -pc_type none -ts_max_steps 5 -ts_monitor_error 
+
+    test:
+      suffix: 4
+      requires: !single
+      args: -ts_view  -ts_type beuler  -pc_type none -ts_max_steps 5 -ts_monitor_error 
+
 TEST*/
+

@@ -5032,7 +5032,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
    Concepts: matrices^diagonal scaling
    Concepts: diagonal scaling of matrices
 
-.seealso: MatScale()
+.seealso: MatScale(), MatShift(), MatDiagonalSet()
 @*/
 PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
 {

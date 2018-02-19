@@ -120,7 +120,7 @@ int main( int argc, char **argv )
   ierr = DMCreateMatrix(user.dm,&user.A);CHKERRQ(ierr);
 
   if (testgetdiag) {
-    ierr = MatShellSetOperation(user.A,MATOP_GET_DIAGONAL,NULL);CHKERRQ(ierr);
+    ierr = MatSetOperation(user.A,MATOP_GET_DIAGONAL,NULL);CHKERRQ(ierr);
   }
 
   /* User defined function -- compute linear term of quadratic */

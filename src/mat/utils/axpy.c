@@ -148,12 +148,14 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 
+   To form Y = Y + diag(V) use MatDiagonalSet()
+
    Developers Note: If the local "diagonal part" of the matrix Y has no entries then the local diagonal part is
     preallocated with 1 nonzero per row for the to be added values. This allows for fast shifting of an empty matrix.
 
 .keywords: matrix, add, shift
 
-.seealso: MatDiagonalSet()
+.seealso: MatDiagonalSet(), MatScale(), MatDiagonalScale()
  @*/
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
@@ -225,7 +227,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
 .keywords: matrix, add, shift, diagonal
 
-.seealso: MatShift()
+.seealso: MatShift(), MatScale(), MatDiagonalScale()
 @*/
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {

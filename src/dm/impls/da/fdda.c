@@ -785,8 +785,8 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     /* change viewer to display matrix in natural ordering */
-    ierr = MatShellSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA);CHKERRQ(ierr);
+    ierr = MatSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA);CHKERRQ(ierr);
+    ierr = MatSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA);CHKERRQ(ierr);
   }
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   *J = A;
