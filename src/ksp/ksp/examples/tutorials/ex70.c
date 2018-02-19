@@ -905,6 +905,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscBool              randomize_coords = PETSC_FALSE;
   PetscReal              randomize_fac = 0.25;
   PetscBool              no_view = PETSC_FALSE;
+  PetscBool              isbddc;
 
   PetscFunctionBeginUser;
   /*
@@ -1146,6 +1147,11 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+  if (isbddc) {
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  }
 
   /* Define u-v-p indices for fieldsplit */
   {
@@ -1209,7 +1215,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = DMDAApplyBoundaryConditions(dm_stokes,B,NULL);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... solve\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A, isbddc ? A : B);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,f,X);CHKERRQ(ierr);
 
     ierr = VecStrideMax(X,0,NULL,&vx[1]);CHKERRQ(ierr);
