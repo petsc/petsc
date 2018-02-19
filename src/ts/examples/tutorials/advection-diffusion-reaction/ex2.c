@@ -189,5 +189,6 @@ int main(int argc,char **argv)
    test:
      args: -ts_view -ts_max_time 2.e4
      timeoutfactor: 15
+     requires: !single
 
 TEST*/
