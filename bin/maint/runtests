@@ -7,6 +7,7 @@
 # host cron
 #     ProxyCommand ssh -q -a -x petsc@login.mcs.anl.gov /bin/nc thwomp %p
 #
+echo "---------------------------------------------------------------------------------------------"
 set testbranchname=barry-test
 set testbranches="knl:$testbranchname"
 #set testbranches="knl:$testbranchname thrash3:$testbranchname"
@@ -16,8 +17,8 @@ git branch -D $testbranchname
 git branch $testbranchname
 git checkout $testbranchname
 git push -f  --set-upstream origin $testbranchname
-ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/startnightly $testbranches
 
+ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/startnightly $testbranches
 
 ssh petsc@cron rm -f "/mcs/ftp/pub/petsc/nightlylogs/${testbranchname}/*"
 
@@ -25,4 +26,6 @@ ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/copylognightly -dirname /mcs
 
 ssh petsc@cron /sandbox/petsc/petsc.clone/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname/$testbranchname.html
 
+echo "---------------------------------------------------------------------------------------------"
 echo "Results can be viewed at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/${testbranchname}/${testbranchname}.html"
+echo "---------------------------------------------------------------------------------------------"
