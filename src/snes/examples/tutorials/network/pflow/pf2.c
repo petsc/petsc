@@ -2,8 +2,8 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
                       The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
                       The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
                       This example shows the use of subnetwork feature in DMNetwork. It creates duplicates of the same network which are treated as subnetworks.\n\
-                      Run this program: mpiexec -n <n> ./pf\n\
-                      mpiexec -n <n> ./pf \n";
+                      Run this program: mpiexec -n <n> ./pf2\n\
+                      mpiexec -n <n> ./pf2 \n";
 
 /* T
    Concepts: DMNetwork
@@ -425,7 +425,7 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata1,*pfdata2;
   PetscInt         numEdges1=0,numVertices1=0,numEdges2=0,numVertices2=0;
   int              *edgelist1 = NULL,*edgelist2 = NULL;

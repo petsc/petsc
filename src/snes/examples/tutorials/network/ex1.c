@@ -318,7 +318,7 @@ int main(int argc,char **argv)
 
   /* Power subnetwork */
   UserCtx_Power    user_power = user.user_power;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/datafiles/case9.m";
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/case9.m";
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
   int              *edgelist_power=NULL;
@@ -625,3 +625,22 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   build:
+     depends: pflow/PFReadData.c pflow/pffunctions.c waternet/waternetreaddata.c waternet/waterfunctions.c
+
+   test:
+      args: -coupled_snes_converged_reason -options_left no
+      localrunfiles: ex1options
+      output_file: output/ex1.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -coupled_snes_converged_reason -options_left no
+      localrunfiles: ex1options
+      output_file: output/ex1.out
+
+TEST*/

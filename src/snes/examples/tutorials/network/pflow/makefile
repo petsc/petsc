@@ -15,7 +15,7 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 
 pfc: pfc.o PFReadData.o pffunctions.o chkopts
 	-${CLINKER} -o pfc pfc.o pffunctions.o PFReadData.o ${PETSC_SNES_LIB}
-	${RM} pfc.o PFReadData.o pffunctions.o
+#	${RM} pfc.o PFReadData.o pffunctions.o
 
 pf2: $(OBJECTS_PF2) chkopts
 	-${CLINKER} -o pf2 $(OBJECTS_PF2) ${PETSC_SNES_LIB}

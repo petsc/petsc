@@ -2,7 +2,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
                       The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
                       The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
                       Run this program: mpiexec -n <n> ./pf\n\
-                      mpiexec -n <n> ./pf \n";
+                      mpiexec -n <n> ./pfc \n";
 
 /* T
    Concepts: DMNetwork
@@ -245,18 +245,20 @@ int main(int argc,char ** argv)
 /*TEST
 
    build:
-     depends: PFReadData.c
+     depends: PFReadData.c pffunctions.c
      requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
 
    test:
      args: -snes_rtol 1.e-3
      localrunfiles: pfoptions case9.m
+     output_file: output/pfc_1.out
 
    test:
      suffix: 2
      args: -snes_rtol 1.e-3 -petscpartitioner_type simple
      nsize: 4
      localrunfiles: pfoptions case9.m
+     output_file: output/pfc_1.out
 
 TEST*/

@@ -954,6 +954,7 @@ int main(int argc,char ** argv)
   Userctx        user;
   KSP            ksp;
   PC             pc;
+  PetscInt       numEdges=0,numVertices=0,NumEdges=PETSC_DETERMINE,NumVertices=PETSC_DETERMINE;
 
   ierr = PetscInitialize(&argc,&argv,"ex9busnetworkops",help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);
@@ -976,13 +977,12 @@ int main(int argc,char ** argv)
 
   /* Set local number of nodes and edges */
   if (!rank){
-    ierr = DMNetworkSetSizes(networkdm,NBUS*nc,NBRANCH*nc+(nc-1),PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  } else {
-    ierr = DMNetworkSetSizes(networkdm,0,0,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    numVertices = NBUS*nc; numEdges = NBRANCH*nc+(nc-1);
   }
+  ierr = DMNetworkSetSizes(networkdm,1,0,&numVertices,&numEdges,&NumVertices,&NumEdges);CHKERRQ(ierr);
 
   /* Add edge connectivity */
-  ierr = DMNetworkSetEdgeList(networkdm,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkSetEdgeList(networkdm,&edgelist,NULL);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

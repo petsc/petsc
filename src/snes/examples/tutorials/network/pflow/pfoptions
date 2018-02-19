@@ -1,7 +1,7 @@
 # SNES, KSP, and PC options
 #-snes_view
 -snes_type newtonls
--snes_monitor_short
+-snes_converged_reason
 -snes_atol 1e-8
 -snes_rtol 1e-20
 -snes_linesearch_type basic
