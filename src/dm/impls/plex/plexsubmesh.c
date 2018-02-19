@@ -2,7 +2,7 @@
 #include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"   I*/
 #include <petscsf.h>
 
-static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLabel label)
+static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
 {
   PetscInt       fStart, fEnd, f;
   PetscErrorCode ierr;
@@ -14,7 +14,24 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeigh
     PetscInt supportSize;
 
     ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-    if (supportSize == 1) {ierr = DMLabelSetValue(label, f, 1);CHKERRQ(ierr);}
+    if (supportSize == 1) {
+      if (val < 0) {
+        PetscInt *closure = NULL;
+        PetscInt  clSize, cl, cval;
+
+        ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+        for (cl = 0; cl < clSize*2; cl += 2) {
+          ierr = DMLabelGetValue(label, closure[cl], &cval);CHKERRQ(ierr);
+          if (cval < 0) continue;
+          ierr = DMLabelSetValue(label, f, cval);CHKERRQ(ierr);
+          break;
+        }
+        if (cl == clSize*2) {ierr = DMLabelSetValue(label, f, 1);CHKERRQ(ierr);}
+        ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
+      } else {
+        ierr = DMLabelSetValue(label, f, val);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -25,21 +42,22 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeigh
   Not Collective
 
   Input Parameter:
-. dm - The original DM
++ dm - The original DM
+- val - The marker value, or PETSC_DETERMINE to use some value in the closure (or 1 if none are found)
 
   Output Parameter:
-. label - The DMLabel marking boundary faces with value 1
+. label - The DMLabel marking boundary faces with the given value
 
   Level: developer
 
 .seealso: DMLabelCreate(), DMCreateLabel()
 @*/
-PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
+PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, PetscInt val, DMLabel label)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexMarkBoundaryFaces_Internal(dm, 0, label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces_Internal(dm, val, 0, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -832,7 +850,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
     /* Get label for boundary faces */
     ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   }
   ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
   ierr = DMCopyBoundary(dm, gdm);CHKERRQ(ierr);

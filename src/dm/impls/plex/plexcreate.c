@@ -2748,6 +2748,128 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
 }
 
 /*@C
+  DMPlexCreateCellVertexFromFile - Create a DMPlex mesh from a simple cell-vertex file.
+
++ comm        - The MPI communicator
+. filename    - Name of the .dat file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Note: The format is the simplest possible:
+$ Ne
+$ v0 v1 ... vk
+$ Nv
+$ x y z marker
+
+  Level: beginner
+
+.seealso: DMPlexCreateFromFile(), DMPlexCreateMedFromFile(), DMPlexCreateGmsh(), DMPlexCreate()
+@*/
+PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  DMLabel         marker;
+  PetscViewer     viewer;
+  Vec             coordinates;
+  PetscSection    coordSection;
+  PetscScalar    *coords;
+  char            line[PETSC_MAX_PATH_LEN];
+  PetscInt        dim = 3, cdim = 3, coordSize, v, c, d;
+  PetscMPIInt     rank;
+  int             snum, Nv, Nc;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
+    snum = sscanf(line, "%d %d", &Nc, &Nv);
+    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(*dm, 0, Nc+Nv);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*dm, cdim);CHKERRQ(ierr);
+  /* Read topology */
+  if (!rank) {
+    PetscInt cone[8], corners = 8;
+    int      vbuf[8], v;
+
+    for (c = 0; c < Nc; ++c) {ierr = DMPlexSetConeSize(*dm, c, corners);CHKERRQ(ierr);}
+    ierr = DMSetUp(*dm);CHKERRQ(ierr);
+    for (c = 0; c < Nc; ++c) {
+      ierr = PetscViewerRead(viewer, line, corners, NULL, PETSC_STRING);CHKERRQ(ierr);
+      snum = sscanf(line, "%d %d %d %d %d %d %d %d", &vbuf[0], &vbuf[1], &vbuf[2], &vbuf[3], &vbuf[4], &vbuf[5], &vbuf[6], &vbuf[7]);
+      if (snum != corners) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+      for (v = 0; v < corners; ++v) cone[v] = vbuf[v] + Nc;
+      /* Hexahedra are inverted */
+      {
+        PetscInt tmp = cone[1];
+        cone[1] = cone[3];
+        cone[3] = tmp;
+      }
+      ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
+  /* Read coordinates */
+  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, cdim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, Nc, Nc + Nv);CHKERRQ(ierr);
+  for (v = Nc; v < Nc+Nv; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, cdim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, cdim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, cdim);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  if (!rank) {
+    double x[3];
+    int    val;
+
+    ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "marker", &marker);CHKERRQ(ierr);
+    for (v = 0; v < Nv; ++v) {
+      ierr = PetscViewerRead(viewer, line, 4, NULL, PETSC_STRING);CHKERRQ(ierr);
+      snum = sscanf(line, "%lg %lg %lg %d", &x[0], &x[1], &x[2], &val);
+      if (snum != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+      for (d = 0; d < cdim; ++d) coords[v*cdim+d] = x[d];
+      if (val) {ierr = DMLabelSetValue(marker, v+Nc, val);CHKERRQ(ierr);}
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  if (interpolate) {
+    DM      idm;
+    DMLabel bdlabel;
+
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
+
+    ierr = DMGetLabel(*dm, "marker", &bdlabel);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, PETSC_DETERMINE, bdlabel);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(*dm, bdlabel);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
   DMPlexCreateFromFile - This takes a filename and produces a DM
 
   Input Parameters:
@@ -2772,8 +2894,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extHDF5    = ".h5";
   const char    *extMed     = ".med";
   const char    *extPLY     = ".ply";
+  const char    *extCV      = ".dat";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY;
+  PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -2791,6 +2914,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,    3, &isHDF5);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,     4, &isMed);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,     4, &isPLY);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extCV,      4, &isCV);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -2822,6 +2946,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {
     ierr = DMPlexCreatePLYFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else if (isCV) {
+    ierr = DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }
