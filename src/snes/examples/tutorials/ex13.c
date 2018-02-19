@@ -358,32 +358,32 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_0
     requires: triangle
-    args: -potential_petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -potential_petscspace_order 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_0
     requires: triangle
-    args: -potential_petscspace_order 2 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -potential_petscspace_order 2 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p3_0
     requires: triangle
-    args: -potential_petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -potential_petscspace_order 3 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q1_0
-    args: -simplex 0 -potential_petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_order 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_0
-    args: -simplex 0 -potential_petscspace_order 2 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_order 2 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q3_0
-    args: -simplex 0 -potential_petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_order 3 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p1_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_order 1 -num_refine 4 -snes_convergence_estimate
+    args: -dim 3 -potential_petscspace_order 1 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_order 2 -num_refine 4 -snes_convergence_estimate
+    args: -dim 3 -potential_petscspace_order 2 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
     requires: ctetgen

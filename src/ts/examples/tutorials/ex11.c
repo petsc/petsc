@@ -2590,10 +2590,10 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   # Advection in a box
   test:
     suffix: adv_2d_quad_0
-    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
   test:
     suffix: adv_2d_quad_1
-    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
     timeoutfactor: 3
   test:
     suffix: adv_2d_quad_p4est_0

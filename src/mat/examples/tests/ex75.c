@@ -319,7 +319,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      nsize: {{1 2 3}}
-      args: -bs {{1 2 3 4 5 6 7 8}} -mat_ignore_lower_triangular
+      nsize: {{1 3}}
+      args: -bs {{1 2 3  5  7 8}} -mat_ignore_lower_triangular
 
 TEST*/
