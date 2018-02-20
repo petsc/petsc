@@ -6,6 +6,7 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 
 typedef struct {
   PetscBool compare;                      /* Compare the meshes using DMPlexEqual() */
+  PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
 } AppCtx;
@@ -16,11 +17,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->compare = PETSC_FALSE;
+  options->distribute = PETSC_TRUE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex5.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex5.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex5.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex5.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -29,7 +32,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 int main(int argc, char **argv)
 {
-  DM             dm, dmdist, dmnew;
+  DM             dm, dmnew;
   PetscPartitioner part;
   AppCtx         user;
   PetscViewer    v;
@@ -41,13 +44,19 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
-  if (dmdist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm   = dmdist;
+
+  if (user.distribute) {
+    DM dmdist;
+
+    ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
+    if (dmdist) {
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = dmdist;
+    }
   }
+
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
