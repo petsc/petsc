@@ -1343,12 +1343,12 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
    test:
       nsize: 4
       suffix: bddc_unsym_deluxe
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0 -elas_pc_bddc_use_deluxe_scaling -elas_sub_schurs_hermitian 0
+      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0 -elas_pc_bddc_use_deluxe_scaling -elas_sub_schurs_symmetric 0
 
    test:
       nsize: 4
       suffix: fetidp_unsym_deluxe
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type fetidp -elas_fetidp_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_fetidp_bddc_pc_bddc_monolithic -use_nonsymbc -elas_fetidp_bddc_pc_bddc_use_deluxe_scaling -elas_fetidp_bddc_sub_schurs_hermitian 0 -elas_fetidp_bddc_pc_bddc_deluxe_singlemat
+      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type fetidp -elas_fetidp_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_fetidp_bddc_pc_bddc_monolithic -use_nonsymbc -elas_fetidp_bddc_pc_bddc_use_deluxe_scaling -elas_fetidp_bddc_sub_schurs_symmetric 0 -elas_fetidp_bddc_pc_bddc_deluxe_singlemat
 
    test:
       nsize: 4

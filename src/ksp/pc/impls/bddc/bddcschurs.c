@@ -583,13 +583,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* allocate extra workspace needed only for GETRI or SYTRF */
-  use_potr = PETSC_TRUE;
-  if (local_size && !benign_trick && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+  use_potr = use_sytr = PETSC_FALSE;
+  if (benign_trick || (sub_schurs->is_hermitian && sub_schurs->is_posdef)) {
+    use_potr = PETSC_TRUE;
+  } else if (sub_schurs->is_symmetric) {
+    use_sytr = PETSC_TRUE;
+  }
+  if (local_size && !use_potr) {
     PetscScalar  lwork,dummyscalar = 0.;
     PetscBLASInt dummyint = 0;
 
-    use_potr = PETSC_FALSE;
-    use_sytr = sub_schurs->is_hermitian;
     B_lwork = -1;
     ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -778,6 +781,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     PetscInt    n,n_I,*dummy_idx,size_schur,size_active_schur,cum,cum2;
     PetscBool   economic,solver_S,S_lower_triangular = PETSC_FALSE;
     PetscBool   schur_has_vertices,factor_workaround;
+    PetscBool   use_cholesky;
 
     /* get sizes */
     n_I = 0;
@@ -905,9 +909,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = ISDestroy(&is_p0_p);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&N_to_reor);CHKERRQ(ierr);
     }
-    ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_hermitian);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_SYMMETRIC,sub_schurs->is_symmetric);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
     ierr = MatSetOption(A,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
+
+    /* for complexes, symmetric and hermitian at the same time implies null imaginary part */
+    use_cholesky = (PetscBool)((use_potr || use_sytr) && sub_schurs->is_hermitian && sub_schurs->is_symmetric);
 
     /* when using the benign subspace trick, the local Schur complements are SPD */
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
@@ -915,7 +922,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (n_I) {
       IS is_schur;
 
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+      if (use_cholesky) {
         ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
       } else {
         ierr = MatGetFactor(A,sub_schurs->mat_solver_type,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
@@ -928,7 +935,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
 
       /* factorization step */
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+      if (use_cholesky) {
         ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
         ierr = MatMumpsSetIcntl(F,19,2);CHKERRQ(ierr);
@@ -943,6 +950,34 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
       }
       ierr = MatViewFromOptions(F,(PetscObject)A,"-mat_factor_view");CHKERRQ(ierr);
+
+#if defined(SUB_SCHURS_DEBUG)
+      {
+        PetscViewer viewer;
+        char        filename[256];
+        Mat         S;
+        IS          is;
+
+        sprintf(filename,"sub_schurs_Schur_r%d.m",PetscGlobalRank);
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)A,"A");CHKERRQ(ierr);
+        ierr = MatView(A,viewer);CHKERRQ(ierr);
+        ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)S,"S");CHKERRQ(ierr);
+        ierr = MatView(S,viewer);CHKERRQ(ierr);
+        ierr = MatDestroy(&S);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,n_I,0,1,&is);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)is,"I");CHKERRQ(ierr);
+        ierr = ISView(is,viewer);CHKERRQ(ierr);
+        ierr = ISDestroy(&is);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,n_I,1,&is);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)is,"B");CHKERRQ(ierr);
+        ierr = ISView(is,viewer);CHKERRQ(ierr);
+        ierr = ISDestroy(&is);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      }
+#endif
 
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
@@ -1522,7 +1557,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatAssemblyEnd(sub_schurs->sum_S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
   }
-
   /* Global matrix of all assembled Schur on subsets */
   ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatISSetMPIXAIJPreallocation_Private(work_mat,global_schur_subsets,PETSC_TRUE);CHKERRQ(ierr);
@@ -1583,6 +1617,46 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
   }
   ierr = MatDestroySubMatrices(1,&submats);CHKERRQ(ierr);
+#if defined(SUB_SCHURS_DEBUG)
+  {
+    PetscViewer viewer;
+    char        filename[256];
+    PetscInt    cum;
+
+    sprintf(filename,"sub_schurs_mats_r%d.m",PetscGlobalRank);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    if (sub_schurs->S_Ej_all) {
+      ierr = PetscObjectSetName((PetscObject)sub_schurs->S_Ej_all,"SE");CHKERRQ(ierr);
+      ierr = MatView(sub_schurs->S_Ej_all,viewer);CHKERRQ(ierr);
+    }
+    if (sub_schurs->sum_S_Ej_all) {
+      ierr = PetscObjectSetName((PetscObject)sub_schurs->sum_S_Ej_all,"SSE");CHKERRQ(ierr);
+      ierr = MatView(sub_schurs->sum_S_Ej_all,viewer);CHKERRQ(ierr);
+    }
+    if (sub_schurs->sum_S_Ej_inv_all) {
+      ierr = PetscObjectSetName((PetscObject)sub_schurs->sum_S_Ej_inv_all,"SSEm");CHKERRQ(ierr);
+      ierr = MatView(sub_schurs->sum_S_Ej_inv_all,viewer);CHKERRQ(ierr);
+    }
+    if (sub_schurs->sum_S_Ej_tilda_all) {
+      ierr = PetscObjectSetName((PetscObject)sub_schurs->sum_S_Ej_tilda_all,"SSEt");CHKERRQ(ierr);
+      ierr = MatView(sub_schurs->sum_S_Ej_tilda_all,viewer);CHKERRQ(ierr);
+    }
+    for (i=0,cum=0;i<sub_schurs->n_subs;i++) {
+      IS   is;
+      char name[16];
+
+      sprintf(name,"IE%d",i);
+      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,subset_size,cum,1,&is);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)is,name);CHKERRQ(ierr);
+      ierr = ISView(is,viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      cum += subset_size;
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+#endif
 
   /* free workspace */
   ierr = PetscFree(submats);CHKERRQ(ierr);
@@ -1653,13 +1727,21 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   sub_schurs->is_hermitian = PETSC_TRUE;
 #endif
   sub_schurs->is_posdef    = PETSC_TRUE;
+  sub_schurs->is_symmetric = PETSC_TRUE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)graph->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsString("-sub_schurs_mat_solver_type","Specific direct solver to use",NULL,sub_schurs->mat_solver_type,sub_schurs->mat_solver_type,64,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sub_schurs_symmetric","Symmetric problem",NULL,sub_schurs->is_symmetric,&sub_schurs->is_symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_hermitian","Hermitian problem",NULL,sub_schurs->is_hermitian,&sub_schurs->is_hermitian,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscStrcmp(sub_schurs->mat_solver_type,MATSOLVERPETSC,&ispetsc);CHKERRQ(ierr);
   sub_schurs->schur_explicit = (PetscBool)!ispetsc;
+
+  /* for reals, symmetric and hermitian are synonims */
+#if !defined(PETSC_USE_COMPLEX)
+  sub_schurs->is_symmetric = (PetscBool)(sub_schurs->is_symmetric && sub_schurs->is_hermitian);
+  sub_schurs->is_hermitian = sub_schurs->is_symmetric;
+#endif
 
   ierr = PetscObjectReference((PetscObject)is_I);CHKERRQ(ierr);
   sub_schurs->is_I = is_I;

@@ -120,6 +120,7 @@ struct _PCBDDCSubSchurs {
   IS*      is_subs;
   PetscBT  is_edge;
   /* mat flags */
+  PetscBool is_symmetric;
   PetscBool is_hermitian;
   PetscBool is_posdef;
   /* data structure to reuse MatFactor with Schur solver */
