@@ -424,14 +424,16 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexCreateCubeBoundary(self.dm, ilow, iup, ifac) )
         return self
 
-    def markBoundaryFaces(self, label):
+    def markBoundaryFaces(self, label, value=None):
+        cdef PetscInt ival = PETSC_DETERMINE
+        if value is not None: ival = asInt(value)
         if not self.hasLabel(label):
             self.createLabel(label)
         cdef const_char *cval = NULL
         label = str2bytes(label, &cval)
         cdef PetscDMLabel clbl = NULL
         CHKERR( DMGetLabel(self.dm, cval, &clbl) )
-        CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
+        CHKERR( DMPlexMarkBoundaryFaces(self.dm, ival, clbl) )
 
     def setAdjacencyUseCone(self, useCone=True):
         cdef PetscBool flag = useCone
