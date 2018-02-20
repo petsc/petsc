@@ -79,7 +79,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     ierr = VecScale(coordinates, 1.0/lengthScale);CHKERRQ(ierr);
   }
 
-  /* TODO: read labels */
+  /* Read Labels */
+  ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
