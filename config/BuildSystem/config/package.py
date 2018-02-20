@@ -264,7 +264,7 @@ class Package(config.base.Configure):
       return self.framework.externalPackagesDir
     return self._defaultInstallDir
   def setDefaultInstallDir(self, defaultInstallDir):
-    '''The installation directroy of the library'''
+    '''The installation directory of the library'''
     self._defaultInstallDir = defaultInstallDir
     return
   defaultInstallDir = property(getDefaultInstallDir, setDefaultInstallDir, doc = 'The installation directory of the library')

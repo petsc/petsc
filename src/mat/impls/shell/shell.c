@@ -740,9 +740,6 @@ $    MatDestroy(mat);
    the shell matrix may not actually be physically partitioned.
    For example,
 
-   MATSHELL handles MatShift(), MatDiagonalSet(), MatDiagonalScale(), and MatScale() internally so these 
-   operations cannot be overwritten unless MatShellSetManageScalingShifts() is called.
-
 $
 $     Vec x, y
 $     extern int mult(Mat,Vec,Vec);
@@ -758,6 +755,11 @@ $     MatMult(A,x,y);
 $     MatDestroy(A);
 $     VecDestroy(y); VecDestroy(x);
 $
+
+
+   MATSHELL handles MatShift(), MatDiagonalSet(), MatDiagonalScale(), MatAXPY(), and MatScale() internally so these
+   operations cannot be overwritten unless MatShellSetManageScalingShifts() is called.
+
 
     For rectangular matrices do all the scalings and shifts make sense?
 
@@ -988,8 +990,6 @@ PetscErrorCode  MatShellTestMultTranspose(Mat mat,PetscErrorCode (*f)(void*,Vec,
 }
 
 /*@C
-    MatShellSetOperation - Allows user to set a matrix operation for
-                           a shell matrix.
     MatShellSetOperation - Allows user to set a matrix operation for a shell matrix.
 
    Logically Collective on Mat
