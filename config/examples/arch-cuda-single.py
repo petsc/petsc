@@ -5,7 +5,6 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--with-make-test-np=2',
     '--with-cuda=1',
     '--with-cusp=1',
     '--with-cusp-dir=/home/balay/soft/cusplibrary-g0a21327',
