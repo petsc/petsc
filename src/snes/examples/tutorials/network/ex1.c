@@ -11,7 +11,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 */
 
 #include "pflow/pf.h"
-#include "waternet/waternet.h"
+#include "water/water.h"
 
 typedef struct{
   UserCtx_Power user_power;
@@ -190,7 +190,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
     if (key != user_power.compkey_load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
 
-    /* Get coupling waternet vertex and pump edge */
+    /* Get coupling water vertex and pump edge */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
     if (key != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
 
@@ -327,7 +327,7 @@ int main(int argc,char **argv)
   /* Water subnetwork */
   AppCtx_Water     appctx_water = user.appctx_water;
   WATERDATA        *waterdata;
-  char             waterdata_file[PETSC_MAX_PATH_LEN]="waternet/sample1.inp";
+  char             waterdata_file[PETSC_MAX_PATH_LEN]="water/sample1.inp";
   int              *edgelist_water=NULL;
 
   /* Coupling subnetwork */
@@ -373,11 +373,11 @@ int main(int argc,char **argv)
   /* If external option activated. Introduce error in jacobian */
   ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &user_power.jac_error);CHKERRQ(ierr);
 
-  /* GET DATA FOR THE SECOND SUBNETWORK: Waternet */
+  /* GET DATA FOR THE SECOND SUBNETWORK: Water */
   ierr = PetscNew(&waterdata);CHKERRQ(ierr);
   if (!crank) {
     ierr = PetscOptionsGetString(NULL,NULL,"-waterdata",waterdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
-    ierr = WaterNetReadData(waterdata,waterdata_file);CHKERRQ(ierr);
+    ierr = WaterReadData(waterdata,waterdata_file);CHKERRQ(ierr);
 
     ierr = PetscCalloc1(2*waterdata->nedge,&edgelist_water);CHKERRQ(ierr);
     ierr = GetListofEdges_Water(waterdata,edgelist_water);CHKERRQ(ierr);
@@ -629,18 +629,18 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     depends: pflow/PFReadData.c pflow/pffunctions.c waternet/waternetreaddata.c waternet/waterfunctions.c
+     depends: pflow/PFReadData.c pflow/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options
+      localrunfiles: ex1options pflow/case9.m
       output_file: output/ex1.out
 
    test:
       suffix: 2
       nsize: 3
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options
+      localrunfiles: ex1options pflow/case9.m
       output_file: output/ex1.out
 
 TEST*/

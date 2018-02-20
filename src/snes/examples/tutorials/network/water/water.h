@@ -1,5 +1,5 @@
-#ifndef WATERNET_H
-#define WATERNET_H
+#ifndef WATER_H
+#define WATER_H
 
 #include <petscsnes.h>
 #include <petscdmnetwork.h>
@@ -109,7 +109,7 @@ typedef struct{
   EDGE_Water   edge;
 } WATERDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-extern PetscErrorCode WaterNetReadData(WATERDATA*,char*);
+extern PetscErrorCode WaterReadData(WATERDATA*,char*);
 extern PetscErrorCode GetListofEdges_Water(WATERDATA*,int*);
 extern PetscErrorCode WaterSetInitialGuess(DM,Vec);
 extern PetscErrorCode WaterFormFunction(SNES,Vec,Vec,void*);

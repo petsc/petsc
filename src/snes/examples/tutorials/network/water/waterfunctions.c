@@ -1,6 +1,6 @@
-/* function subroutines used by waternet.c */
+/* function subroutines used by water.c */
 
-#include "waternet.h"
+#include "water.h"
 #include <petscdmnetwork.h>
 
 PetscScalar Flow_Pipe(Pipe *pipe,PetscScalar hf,PetscScalar ht)
@@ -156,7 +156,7 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
+PetscErrorCode GetListofEdges_Water(WATERDATA *water,int *edgelist)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,node1,node2;
@@ -165,17 +165,17 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
   PetscBool      netview=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(NULL,NULL, "-waternet_view",&netview);CHKERRQ(ierr);
-  for (i=0; i < waternet->nedge; i++) {
-    if (waternet->edge[i].type == EDGE_TYPE_PIPE) {
-      pipe  = &waternet->edge[i].pipe;
+  ierr = PetscOptionsHasName(NULL,NULL, "-water_view",&netview);CHKERRQ(ierr);
+  for (i=0; i < water->nedge; i++) {
+    if (water->edge[i].type == EDGE_TYPE_PIPE) {
+      pipe  = &water->edge[i].pipe;
       node1 = pipe->node1;
       node2 = pipe->node2;
       if (netview) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2);CHKERRQ(ierr);
       }
     } else {
-      pump  = &waternet->edge[i].pump;
+      pump  = &water->edge[i].pump;
       node1 = pump->node1;
       node2 = pump->node2;
       if (netview) {
@@ -183,15 +183,15 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
       }
     }
 
-    for (j=0; j < waternet->nvertex; j++) {
-      if (waternet->vertex[j].id == node1) {
+    for (j=0; j < water->nvertex; j++) {
+      if (water->vertex[j].id == node1) {
 	edgelist[2*i] = j;
 	break;
       }
     }
 
-    for (j=0; j < waternet->nvertex; j++) {
-      if (waternet->vertex[j].id == node2) {
+    for (j=0; j < water->nvertex; j++) {
+      if (water->vertex[j].id == node2) {
 	edgelist[2*i+1] = j;
 	break;
       }

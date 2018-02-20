@@ -1,4 +1,4 @@
-#include "waternet.h"
+#include "water.h"
 #include <string.h>
 #include <ctype.h>
 
@@ -132,7 +132,7 @@ void GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos,PetscInt 
 }
 
 
-PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
+PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
 {
   FILE           *fp;
   PetscErrorCode ierr;
@@ -150,7 +150,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
   PetscScalar    curve_x,curve_y;
 
   PetscFunctionBegin;
-  waternet->nvertex = waternet->nedge = 0;
+  water->nvertex = water->nedge = 0;
   fp = fopen(filename,"r");
   /* Check for valid file */
   if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open EPANET data file %s",filename);
@@ -164,32 +164,32 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 
     if (strstr(line,"[JUNCTIONS]")) {
       GetDataSegment(fp,line,&junc_start_pos,&nlines);
-      waternet->nvertex += nlines;
-      waternet->njunction = nlines;
+      water->nvertex += nlines;
+      water->njunction = nlines;
     }
 
     if (strstr(line,"[RESERVOIRS]")) {
       GetDataSegment(fp,line,&res_start_pos,&nlines);
-      waternet->nvertex += nlines;
-      waternet->nreservoir = nlines;
+      water->nvertex += nlines;
+      water->nreservoir = nlines;
     }
 
     if (strstr(line,"[TANKS]")) {
       GetDataSegment(fp,line,&tank_start_pos,&nlines);
-      waternet->nvertex += nlines;
-      waternet->ntank = nlines;
+      water->nvertex += nlines;
+      water->ntank = nlines;
     }
 
     if (strstr(line,"[PIPES]")) {
       GetDataSegment(fp,line,&pipe_start_pos,&nlines);
-      waternet->nedge += nlines;
-      waternet->npipe = nlines;
+      water->nedge += nlines;
+      water->npipe = nlines;
     }
 
     if (strstr(line,"[PUMPS]")) {
       GetDataSegment(fp,line,&pump_start_pos,&nlines);
-      waternet->nedge += nlines;
-      waternet->npump = nlines;
+      water->nedge += nlines;
+      water->npump = nlines;
     }
 
     if (strstr(line,"[CURVES]")) {
@@ -198,14 +198,14 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
   }
 
   /* Allocate vertex and edge data structs */
-  ierr = PetscCalloc1(waternet->nvertex,&waternet->vertex);CHKERRQ(ierr);
-  ierr = PetscCalloc1(waternet->nedge,&waternet->edge);CHKERRQ(ierr);
-  vert = waternet->vertex;
-  edge = waternet->edge;
+  ierr = PetscCalloc1(water->nvertex,&water->vertex);CHKERRQ(ierr);
+  ierr = PetscCalloc1(water->nedge,&water->edge);CHKERRQ(ierr);
+  vert = water->vertex;
+  edge = water->edge;
 
   /* Junctions */
   fsetpos(fp,&junc_start_pos);
-  for (i=0; i < waternet->njunction; i++) {
+  for (i=0; i < water->njunction; i++) {
     fgets(line,MAXLINE,fp);
     vert[nv].type = VERTEX_TYPE_JUNCTION;
     /*    printf("%s\n",line); */
@@ -218,7 +218,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 
   /* Reservoirs */
   fsetpos(fp,&res_start_pos);
-  for (i=0; i < waternet->nreservoir; i++) {
+  for (i=0; i < water->nreservoir; i++) {
     fgets(line,MAXLINE,fp);
     vert[nv].type = VERTEX_TYPE_RESERVOIR;
     /*    printf("%s\n",line); */
@@ -230,7 +230,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 
   /* Tanks */
   fsetpos(fp,&tank_start_pos);
-  for (i=0; i < waternet->ntank; i++) {
+  for (i=0; i < water->ntank; i++) {
     fgets(line,MAXLINE,fp);
     vert[nv].type = VERTEX_TYPE_TANK;
     /*    printf("%s\n",line); */
@@ -242,7 +242,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 
   /* Pipes */
   fsetpos(fp,&pipe_start_pos);
-  for (i=0; i < waternet->npipe; i++) {
+  for (i=0; i < water->npipe; i++) {
     fgets(line,MAXLINE,fp);
     edge[ne].type = EDGE_TYPE_PIPE;
     /*    printf("%s\n",line); */
@@ -262,7 +262,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 
   /* Pumps */
   fsetpos(fp,&pump_start_pos);
-  for (i=0; i < waternet->npump; i++) {
+  for (i=0; i < water->npump; i++) {
     fgets(line,MAXLINE,fp);
     edge[ne].type = EDGE_TYPE_PUMP;
     /*    printf("%s\n",line); */
@@ -279,12 +279,12 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
     /*    printf("%s\n",line); */
     ndata = sscanf(line,"%d %lf %lf",&curve_id,&curve_x,&curve_y);
     /* Check for pump with the curve_id */
-    for (j=waternet->npipe;j < waternet->npipe+waternet->npump;j++) {
-      if(waternet->edge[j].pump.paramid == curve_id) {
+    for (j=water->npipe;j < water->npipe+water->npump;j++) {
+      if(water->edge[j].pump.paramid == curve_id) {
 	if(pump->headcurve.npt == 3) {
 	  SETERRQ3(PETSC_COMM_SELF,0,"Pump %d [%d --> %d]: No support for more than 3-pt head-flow curve",pump->id,pump->node1,pump->node2);
 	}
-	pump = &waternet->edge[j].pump;
+	pump = &water->edge[j].pump;
 	pump->headcurve.flow[pump->headcurve.npt] = curve_x*GPM_CFS;
 	pump->headcurve.head[pump->headcurve.npt] = curve_y;
 	pump->headcurve.npt++;
@@ -296,8 +296,8 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
   fclose(fp);
 
   /* Get pump curve parameters */
-  for(j=waternet->npipe;j < waternet->npipe+waternet->npump;j++) {
-    pump = &waternet->edge[j].pump;
+  for(j=water->npipe;j < water->npipe+water->npump;j++) {
+    pump = &water->edge[j].pump;
     if (strcmp(pump->param,"HEAD") == 0) {
       /* Head-flow curve */
       ierr = SetPumpHeadCurveParams(pump);CHKERRQ(ierr);
