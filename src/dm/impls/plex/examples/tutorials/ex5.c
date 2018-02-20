@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: exodusii
+    requires: hdf5 exodusii
   # Idempotence of saving/loading
   test:
     suffix: 0
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
-    requires: exodusii
+    requires: hdf5 exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
 TEST*/
