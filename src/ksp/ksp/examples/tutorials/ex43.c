@@ -39,7 +39,13 @@ Options: \n"
                               -sinker_c0y  : Origin (y-coord) of the circular inclusion \n\
                               -sinker_dx   : Width of the rectangular inclusion \n\
                               -sinker_dy   : Height of the rectangular inclusion \n\
-                              -sinker_phi  : Rotation angle of the rectangular inclusion \n\
+                              -sinker_phi  : Rotation angle of the rectangular inclusion \n"
+"\
+          -c_str 4 => Coefficient definition for checkerboard jumps aligned with the domain decomposition \n\
+                              -jump_eta0      : Viscosity for black subdomains \n\
+                              -jump_magnitude : Magnitude of jumps. White subdomains will have eta = eta0*10^magnitude \n\
+                              -jump_nz        : Wavenumber in the y direction for rhs \n"
+"\
      -use_gp_coords : Evaluate the viscosity and force term at the global coordinates of each quadrature point \n\
                       By default, the viscosity and force term are evaulated at the element center and applied as a constant over the entire element \n";
 
@@ -1336,6 +1342,36 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
             element_props[j][i].fy[p]  = -1.0;
           }
         }
+      } else if (coefficient_structure == 4) { /* subdomain jump */
+        PetscReal opts_mag,opts_eta0;
+        PetscInt  opts_nz,px,py;
+        PetscBool jump;
+
+        opts_mag  = 1.0;
+        opts_eta0 = 1.0;
+        opts_nz   = 1;
+
+        ierr = PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetInt(NULL,NULL,"-jump_nz",&opts_nz,NULL);CHKERRQ(ierr);
+        ierr = DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+        if (px%2) {
+          jump = (PetscBool)(PetscGlobalRank%2);
+        } else {
+          jump = (PetscBool)((PetscGlobalRank/px)%2 ? PetscGlobalRank%2 : !(PetscGlobalRank%2));
+        }
+        for (p = 0; p < GAUSS_POINTS; p++) {
+          coord_x = centroid_x;
+          coord_y = centroid_y;
+          if (use_gp_coords) {
+            coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
+            coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
+          }
+
+          element_props[j][i].eta[p] = jump ? PetscPowReal(10.0,opts_mag) : opts_eta0;
+          element_props[j][i].fx[p]  = 0.0;
+          element_props[j][i].fy[p]  = PetscSinReal(opts_nz*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
+        }
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
     }
   }
@@ -1415,7 +1451,26 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same);CHKERRQ(ierr);
     if (same) {
+      PetscBool usedivmat = PETSC_FALSE;
       ierr = KSPSetOperators(ksp_S,A,A);CHKERRQ(ierr);
+
+      ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_pc_bddc_use_divergence",&usedivmat,NULL);CHKERRQ(ierr);
+      if (usedivmat) {
+        IS       *fields,vel;
+        PetscInt i,nf;
+
+        ierr = DMCreateFieldDecomposition(da_Stokes,&nf,NULL,&fields,NULL);CHKERRQ(ierr);
+        ierr = ISConcatenate(PETSC_COMM_WORLD,2,fields,&vel);CHKERRQ(ierr);
+        ierr = MatZeroRowsIS(B,fields[2],1.0,NULL,NULL);CHKERRQ(ierr); /* we put 1.0 on the diagonal to pick the pressure average too */
+        ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+        ierr = MatZeroRowsIS(B,vel,0.0,NULL,NULL);CHKERRQ(ierr);
+        ierr = ISDestroy(&vel);CHKERRQ(ierr);
+        ierr = PCBDDCSetDivergenceMat(pc,B,PETSC_FALSE,NULL);CHKERRQ(ierr);
+        for (i=0;i<nf;i++) {
+          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(fields);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -1875,7 +1930,12 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
    test:
       suffix: bddc_stokes_deluxe
       nsize: 8
-      args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_hermitian -stokes_sub_schurs_mat_solver_type petsc
+      args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc
+
+   test:
+      suffix: bddc_stokes_subdomainjump_deluxe
+      nsize: 9
+      args: -c_str 4 -jump_magnitude 3 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc
 
 
 TEST*/
