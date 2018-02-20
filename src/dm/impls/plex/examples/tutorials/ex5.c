@@ -88,13 +88,16 @@ int main(int argc, char **argv)
   # Idempotence of saving/loading
   test:
     suffix: 0
-    requires: exodusii broken
+    requires: hdf5 exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+    args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: exodusii broken
+    requires: hdf5 exodusii parmetis
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+    args: -petscpartitioner_type parmetis
+    args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail 
   test:
     suffix: 2
     requires: hdf5 exodusii chaco
