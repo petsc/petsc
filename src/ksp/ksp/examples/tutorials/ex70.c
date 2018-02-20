@@ -890,6 +890,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   Vec                    eta_v,rho_v;
   Vec                    f,X;
   KSP                    ksp;
+  PC                     pc;
   char                   filename[PETSC_MAX_PATH_LEN];
   DM                     dms_quadrature,dms_mpoint;
   PetscInt               nel,npe,npoints;
