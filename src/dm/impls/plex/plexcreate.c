@@ -2306,7 +2306,8 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
 */
-PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscSF *sfVert)
+/* TODO: invertCells and spaceDim arguments could be added also to to DMPlexCreateFromCellListParallel(), DMPlexBuildFromCellList_Internal() and DMPlexCreateFromCellList() */
+PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells, PetscSF *sfVert)
 {
   PetscSF         sfPoint;
   PetscLayout     vLayout;
@@ -2363,6 +2364,7 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt numCell
       if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
       cone[p] = lv+numCells;
     }
+    if (invertCells) { ierr = DMPlexInvertCell(spaceDim, numCorners, cone);CHKERRQ(ierr); }
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -2523,7 +2525,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   PetscValidLogicalCollectiveInt(*dm, dim, 2);
   PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Parallel_Internal(*dm, numCells, numVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Parallel_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE, &sfVert);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
@@ -2531,7 +2533,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  ierr = DMPlexBuildCoordinates_Parallel_Internal(*dm, spaceDim, numCells, numVertices,sfVert, vertexCoords);CHKERRQ(ierr);
+  ierr = DMPlexBuildCoordinates_Parallel_Internal(*dm, spaceDim, numCells, numVertices, sfVert, vertexCoords);CHKERRQ(ierr);
   if (vertexSF) *vertexSF = sfVert;
   else {ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
