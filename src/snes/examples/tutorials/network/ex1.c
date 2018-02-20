@@ -633,14 +633,14 @@ int main(int argc,char **argv)
 
    test:
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options
+      localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
 
    test:
       suffix: 2
       nsize: 3
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options
+      localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
 
 TEST*/
