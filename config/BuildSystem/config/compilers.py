@@ -206,7 +206,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{printf("testing");}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
+        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{char s[16];printf("testing %s",s);}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C libraries are not needed when using Fortran linker')
         else:
@@ -221,7 +221,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{printf("testing");}\n',"int main(int argc,char **args)\n{return 0;}\n",language1='C',language2='C++'):
+        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{char s[16];printf("testing %s",s);}\n',"int main(int argc,char **args)\n{return 0;}\n",language1='C',language2='C++'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C libraries are not needed when using C++ linker')
         else:
