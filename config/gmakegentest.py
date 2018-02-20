@@ -561,7 +561,9 @@ class generateExamples(Petsc):
         if not os.path.isdir(os.path.join(runscript_dir,lfile)):
           shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
       else:
-        shutil.copy(fullfile,runscript_dir)
+        runscriptsub_dir=os.path.join(runscript_dir,os.path.dirname(lfile))
+        if not os.path.isdir(runscriptsub_dir): os.makedirs(runscriptsub_dir)
+        shutil.copy(fullfile,runscriptsub_dir)
     # Check subtests for local runfiles
     for stest in subst.get("subtests",[]):
       for lfile in testDict[stest].get('localrunfiles','').split():

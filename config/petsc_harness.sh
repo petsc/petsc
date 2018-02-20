@@ -11,10 +11,12 @@ if test -d "${rundir}" && test -n "${rundir}"; then
   rm -f ${rundir}/*.tmp ${rundir}/*.err ${rundir}/*.out
 fi
 mkdir -p ${rundir}
-if test -d "${runfiles}"; then
-  cp -r ${runfiles} ${rundir}
-elif test -n "${runfiles}"; then
-  cp ${runfiles} ${rundir}
+if test -n "${runfiles}"; then
+  for runfile in ${runfiles}; do
+      subdir=`dirname ${runfile}`
+      mkdir -p ${rundir}/${subdir}
+      cp -r ${runfile} ${rundir}/${subdir}
+  done
 fi
 cd ${rundir}
 
