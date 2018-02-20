@@ -1,5 +1,5 @@
 #include "petscmat.h"
-#include "pf.h"
+#include "power.h"
 #include <string.h>
 #include <ctype.h>
 

@@ -1,5 +1,5 @@
 static char help[] = "This example demonstrates the use of DMNetwork interface with subnetworks for solving a nonlinear electric power grid problem.\n\
-                      The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
+                      The available solver options are in the poweroptions file and the data files are in the datafiles directory.\n\
                       The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
                       This example shows the use of subnetwork feature in DMNetwork. It creates duplicates of the same network which are treated as subnetworks.\n\
                       Run this program: mpiexec -n <n> ./pf2\n\
@@ -10,7 +10,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
    Concepts: PETSc SNES solver
 */
 
-#include "pf.h"
+#include "power.h"
 #include <petscdmnetwork.h>
 
 PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
@@ -448,7 +448,7 @@ int main(int argc,char ** argv)
   SNES             snes;
 
 
-  ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"poweroptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */
@@ -626,3 +626,24 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   build:
+     depends: PFReadData.c pffunctions.c
+     requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+
+
+   test:
+     args: -snes_rtol 1.e-3
+     localrunfiles: poweroptions case9.m
+     output_file: output/power2_1.out
+
+   test:
+     suffix: 2
+     args: -snes_rtol 1.e-3 -petscpartitioner_type simple
+     nsize: 4
+     localrunfiles: poweroptions case9.m
+     output_file: output/power2_1.out
+
+TEST*/

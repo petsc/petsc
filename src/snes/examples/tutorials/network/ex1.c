@@ -10,7 +10,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
    Concepts: PETSc SNES solver
 */
 
-#include "pflow/pf.h"
+#include "power/power.h"
 #include "water/water.h"
 
 typedef struct{
@@ -74,7 +74,7 @@ PetscErrorCode FormJacobian_subPower(SNES snes,Vec X, Mat J,Mat Jpre,void *appct
 
   ierr = MatZeroEntries(J);CHKERRQ(ierr);
 
-  /* Power subnetwork: copied from pflow/FormJacobian_Power() */
+  /* Power subnetwork: copied from power/FormJacobian_Power() */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = FormJacobian_Power_private(networkdm,localX,J,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
 
@@ -318,7 +318,7 @@ int main(int argc,char **argv)
 
   /* Power subnetwork */
   UserCtx_Power    user_power = user.user_power;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/case9.m";
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="power/case9.m";
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
   int              *edgelist_power=NULL;
@@ -629,18 +629,18 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     depends: pflow/PFReadData.c pflow/pffunctions.c water/waterreaddata.c water/waterfunctions.c
+     depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options pflow/case9.m
+      localrunfiles: ex1options
       output_file: output/ex1.out
 
    test:
       suffix: 2
       nsize: 3
       args: -coupled_snes_converged_reason -options_left no
-      localrunfiles: ex1options pflow/case9.m
+      localrunfiles: ex1options
       output_file: output/ex1.out
 
 TEST*/

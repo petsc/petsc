@@ -4,7 +4,7 @@
 #include <petscsnes.h>
 #include <petscdmnetwork.h>
 
-# define MAXLINE 1000
+#define MAXLINE 1000
 #define REF_BUS 3
 #define PV_BUS 2
 #define PQ_BUS 1
