@@ -7,6 +7,7 @@ Options: \n"
      -my : Number of elements in the y-direction \n\
      -o : Specify output filename for solution (will be petsc binary format or paraview format if the extension is .vts) \n\
      -gnuplot : Output Gauss point coordinates, coefficients and u,p solution in gnuplot format \n\
+     -glvis : Visualizes coefficients and u,p solution through GLVIs (use -viewer_glvis_dmda_bs 2,1 to visualize velocity as a vector)\n\
      -c_str : Indicates the structure of the coefficients to use \n"
 "\
           -c_str 0 => Coefficient definition for an analytic solution with a vertical jump in viscosity at x = xc \n\
@@ -74,6 +75,34 @@ typedef struct {
   PetscScalar p_dof;
 } StokesDOF;
 
+static PetscErrorCode glvis_extract_eta(PetscObject oV,PetscInt nf, PetscObject oVf[], void *ctx)
+{
+  DM                     properties_da = (DM)(ctx),stokes_da;
+  Vec                    V = (Vec)oV, *Vf = (Vec*)oVf;
+  GaussPointCoefficients **props;
+  PetscInt               sex,sey,mx,my;
+  PetscInt               ei,ej,p,cum;
+  PetscScalar            *array;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBeginUser;
+  ierr = VecGetDM(Vf[0],&stokes_da);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(properties_da,V,&props);CHKERRQ(ierr);
+  ierr = DMDAGetElementsCorners(stokes_da,&sex,&sey,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(stokes_da,&mx,&my,NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(Vf[0],&array);CHKERRQ(ierr);
+  cum  = 0;
+  for (ej = sey; ej < sey+my; ej++) {
+    for (ei = sex; ei < sex+mx; ei++) {
+      for (p = 0; p < GAUSS_POINTS; p++) {
+        array[cum++] = props[ej][ei].eta[p];
+      }
+    }
+  }
+  ierr = VecRestoreArray(Vf[0],&array);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(properties_da,V,&props);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*
  Element: Local basis function ordering
@@ -1061,13 +1090,14 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   KSP                    ksp_S;
   PetscInt               coefficient_structure = 0;
   PetscInt               cpu_x,cpu_y,*lx = NULL,*ly = NULL;
-  PetscBool              use_gp_coords = PETSC_FALSE,set,output_gnuplot = PETSC_FALSE;
+  PetscBool              use_gp_coords = PETSC_FALSE,set,output_gnuplot = PETSC_FALSE,glvis = PETSC_FALSE;
   char                   filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-gnuplot",&output_gnuplot,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-glvis",&glvis,NULL);CHKERRQ(ierr);
 
   /* Generate the da for velocity and pressure */
   /*
@@ -1319,7 +1349,28 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   if (output_gnuplot) {
     ierr = DMDACoordViewGnuplot2d(da_Stokes,"mesh");CHKERRQ(ierr);
-    ierr = DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coeffcients for Stokes eqn.","properties");CHKERRQ(ierr);
+    ierr = DMDAViewCoefficientsGnuplot2d(da_prop,properties,"Coefficients for Stokes eqn.","properties");CHKERRQ(ierr);
+  }
+
+  if (glvis) {
+    Vec         glv_prop,etaf;
+    PetscViewer view;
+    PetscInt    dim;
+    const char  *fec = {"FiniteElementCollection: L2_2D_P1"};
+
+    ierr = DMGetDimension(da_Stokes,&dim);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,GAUSS_POINTS*mx*mx,&etaf);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)etaf,"viscosity");CHKERRQ(ierr);
+    ierr = PetscViewerGLVisOpen(PETSC_COMM_WORLD,PETSC_VIEWER_GLVIS_SOCKET,NULL,PETSC_DECIDE,&view);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisSetFields(view,1,&fec,&dim,glvis_extract_eta,(PetscObject*)&etaf,da_prop,NULL);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(da_prop,&glv_prop);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(da_prop,properties,INSERT_VALUES,glv_prop);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da_prop,properties,INSERT_VALUES,glv_prop);CHKERRQ(ierr);
+    ierr = VecSetDM(etaf,da_Stokes);CHKERRQ(ierr);
+    ierr = VecView(glv_prop,view);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da_prop,&glv_prop);CHKERRQ(ierr);
+    ierr = VecDestroy(&etaf);CHKERRQ(ierr);
   }
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
@@ -1418,6 +1469,15 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   }
   if (output_gnuplot) {
     ierr = DMDAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X");CHKERRQ(ierr);
+  }
+
+  if (glvis) {
+    PetscViewer view;
+
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&view);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(view,PETSCVIEWERGLVIS);CHKERRQ(ierr);
+    ierr = VecView(X,view);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   }
 
   ierr = KSPGetIterationNumber(ksp_S,&its);CHKERRQ(ierr);
