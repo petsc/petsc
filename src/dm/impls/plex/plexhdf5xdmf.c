@@ -44,7 +44,14 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   numVertices /= spatialDim;
 
-  /* TODO: check that maximum in cells is <= number of vertices */
+  /* Check that maximum index referred in cells is in line with global number of vertices */
+  {
+    PetscInt max1, max2;
+    ierr = ISGetMinMax(cells, NULL, &max1);CHKERRQ(ierr);
+    ierr = VecGetSize(coordinates, &max2);CHKERRQ(ierr);
+    max2 /= spatialDim; max2--;
+    if (max1 > max2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "maximum index in cells = %d > %d = total number of vertices - 1", max1, max2);
+  }
 
   {
     const PetscReal *coordinates_arr;
