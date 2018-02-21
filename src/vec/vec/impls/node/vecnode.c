@@ -2,6 +2,8 @@
 #include <../src/vec/vec/impls/node/vecnodeimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+
 PetscErrorCode VecSetValues_Node(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {
   PetscFunctionBegin;
@@ -357,3 +359,5 @@ PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec v)
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECNODE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#endif
