@@ -690,7 +690,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Compute Schur complements explicitly */
   F = NULL;
-  if (!sub_schurs->schur_explicit) { /* this code branch is used when MatFactor with Schur complemnent support is not present; it is not very efficient, unless the economic version of the scaling is required */
+  if (!sub_schurs->schur_explicit) {
+    /* this code branch is used when MatFactor with Schur complement support is not present or when explicitly requested;
+       it is not efficient, unless the economic version of the scaling is used */
     Mat         S_Ej_expl;
     PetscScalar *work;
     PetscInt    j,*dummy_idx;
@@ -709,8 +711,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* IE block */
       ierr = MatCreateSubMatrix(A_IB,is_I,is_subset_B,MAT_INITIAL_MATRIX,&AE_IE);CHKERRQ(ierr);
       /* EI block */
-      if (sub_schurs->is_hermitian) {
+      if (sub_schurs->is_symmetric) {
         ierr = MatCreateTranspose(AE_IE,&AE_EI);CHKERRQ(ierr);
+      } else if (sub_schurs->is_hermitian) {
+        ierr = MatCreateHermitianTranspose(AE_IE,&AE_EI);CHKERRQ(ierr);
       } else {
         ierr = MatCreateSubMatrix(A_BI,is_subset_B,is_I,MAT_INITIAL_MATRIX,&AE_EI);CHKERRQ(ierr);
       }
@@ -756,7 +760,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&S_Ej_expl);CHKERRQ(ierr);
-      ierr = PCBDDCComputeExplicitSchur(S_Ej,sub_schurs->is_hermitian,MAT_REUSE_MATRIX,&S_Ej_expl);CHKERRQ(ierr);
+      ierr = PCBDDCComputeExplicitSchur(S_Ej,sub_schurs->is_symmetric,MAT_REUSE_MATRIX,&S_Ej_expl);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)S_Ej_expl,MATSEQDENSE,&Sdense);CHKERRQ(ierr);
       if (Sdense) {
         for (j=0;j<subset_size;j++) {
@@ -1753,11 +1757,6 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
   sub_schurs->BtoNmap = BtoNmap;
   sub_schurs->n_subs = n_all_cc;
   sub_schurs->is_subs = all_cc;
-  if (!sub_schurs->schur_explicit) { /* sort by local ordering if we are not using MatFactor */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISSort(sub_schurs->is_subs[i]);CHKERRQ(ierr);
-    }
-  }
   sub_schurs->S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_inv_all = NULL;
