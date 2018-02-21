@@ -5,7 +5,7 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
      -my : number elements in y-direction \n\
      -mz : number elements in z-direction \n\
      -stokes_ksp_monitor_blocks : active monitor for each component u,v,w,p \n\
-     -model : defines viscosity and forcing function. Choose either: 0 (isoviscous), 1 (manufactured-broken), 2 (solcx-2d), 3 (sinker) \n";
+     -model : defines viscosity and forcing function. Choose either: 0 (isoviscous), 1 (manufactured-broken), 2 (solcx-2d), 3 (sinker), 4 (subdomain jumps) \n";
 
 /* Contributed by Dave May */
 
@@ -1849,6 +1849,42 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
     break;
 
+  case 4: /* subdomain jumps */
+    for (ek = sez; ek < sez+Kmz; ek++) {
+      for (ej = sey; ej < sey+Jmy; ej++) {
+        for (ei = sex; ei < sex+Imx; ei++) {
+          PetscReal              opts_mag,opts_eta0;
+          PetscInt               px,py,pz;
+          PetscBool              jump;
+          PetscMPIInt            rr;
+          GaussPointCoefficients *cell;
+
+          opts_mag  = 1.0;
+          opts_eta0 = 1.e-2;
+
+          ierr = PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL);CHKERRQ(ierr);
+          ierr = DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,&pz,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+          rr   = PetscGlobalRank%(px*py);
+          if (px%2) jump = (PetscBool)(rr%2);
+          else jump = (PetscBool)((rr/px)%2 ? rr%2 : !(rr%2));
+          rr = PetscGlobalRank/(px*py);
+          if (rr%2) jump = (PetscBool)!jump;
+          ierr = CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell);CHKERRQ(ierr);
+          for (p = 0; p < GAUSS_POINTS; p++) {
+            PetscReal xp = PetscRealPart(cell->gp_coords[NSD*p]);
+            PetscReal yp = PetscRealPart(cell->gp_coords[NSD*p+1]);
+
+            cell->eta[p] = jump ? PetscPowReal(10.0,opts_mag) : opts_eta0;
+            cell->fx[p]  = 0.0;
+            cell->fy[p]  = -PetscSinReal(2.2*PETSC_PI*yp)*PetscCosReal(1.0*PETSC_PI*xp);
+            cell->fz[p]  = 0.0;
+            cell->hc[p]  = 0.0;
+          }
+        }
+      }
+    }
+    break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No default model is supported. Choose either -model {0,1,2,3}");
     break;
@@ -1998,5 +2034,11 @@ int main(int argc,char **args)
       suffix: bddc_stokes_deluxe
       nsize: 6
       args: -mx 5 -my 4 -mz 3 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_dirichlet_pc_type svd -stokes_pc_bddc_neumann_pc_type svd -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc
+
+   test:
+      suffix: bddc_stokes_subdomainjump_deluxe
+      nsize: 9
+      args: -model 4 -jump_magnitude 4 -mx 6 -my 6 -mz 2 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc -stokes_pc_bddc_schur_layers 1
+
 
 TEST*/
