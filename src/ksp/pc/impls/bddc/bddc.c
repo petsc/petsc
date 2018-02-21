@@ -318,11 +318,12 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type MATIS)
 .  trans - if trans if false (resp. true), then pressures are in the test (trial) space and velocities are in the trial (test) space.
--  vl2l - optional IS describing the local (wrt the local mat in divudotp) to local (wrt the local mat in pc->pmat) map for the velocities
+-  vl2l - optional index set describing the local (wrt the local matrix in divudotp) to local (wrt the local matrix in the preconditioning matrix) map for the velocities
 
    Level: advanced
 
    Notes: This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+          If vl2l is NULL, the local ordering for velocities in divudotp should match that of the preconditioning matrix
 
 .seealso: PCBDDC
 @*/
