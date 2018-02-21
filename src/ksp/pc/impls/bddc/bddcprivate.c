@@ -2985,7 +2985,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscScalar     *work,lwork;
   PetscScalar     *St,*S,*eigv;
   PetscScalar     *Sarray,*Starray;
-  PetscReal       *eigs,thresh;
+  PetscReal       *eigs,thresh,lthresh,uthresh;
   PetscInt        i,nmax,nmin,nv,cum,mss,cum2,cumarray,maxneigs;
   PetscBool       allocated_S_St;
 #if defined(PETSC_USE_COMPLEX)
@@ -2996,7 +2996,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscFunctionBegin;
   if (!sub_schurs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
   if (!sub_schurs->schur_explicit) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
-  if (sub_schurs->n_subs && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for general matrix pencils (herm %d, posdef %d)\nRerun with -sub_schurs_hermitian 1 -sub_schurs_posdef 1 if the problem is SPD",sub_schurs->is_hermitian,sub_schurs->is_posdef);
+  if (sub_schurs->n_subs && (!sub_schurs->is_symmetric)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for this matrix pencil (herm %d, symm %d, posdef %d)",sub_schurs->is_hermitian,sub_schurs->is_symmetric,sub_schurs->is_posdef);
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -3023,7 +3023,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   nmin = pcbddc->adaptive_nmin > 0 ? pcbddc->adaptive_nmin : 0;
   nmax = PetscMax(nmin,nmax);
   allocated_S_St = PETSC_FALSE;
-  if (nmin) {
+  if (nmin || !sub_schurs->is_posdef) { /* XXX */
     allocated_S_St = PETSC_TRUE;
   }
 
@@ -3040,7 +3040,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     maxneigs = PetscMax(maxneigs,n);
   }
   if (mss) {
-    if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+    if (sub_schurs->is_symmetric) {
       PetscBLASInt B_itype = 1;
       PetscBLASInt B_N = mss;
       PetscReal    zero = 0.0;
@@ -3065,9 +3065,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #endif
       if (B_ierr != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYGVX Lapack routine %d",(int)B_ierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    } else {
-        /* TODO */
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
   } else {
     lwork = 0;
   }
@@ -3114,26 +3112,60 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
   }
 
-  thresh = pcbddc->adaptive_threshold;
+  lthresh = pcbddc->adaptive_threshold[0];
+  uthresh = pcbddc->adaptive_threshold[1];
   for (i=0;i<sub_schurs->n_subs;i++) {
     const PetscInt *idxs;
     PetscReal      upper,lower;
     PetscInt       j,subset_size,eigs_start = 0;
     PetscBLASInt   B_N;
     PetscBool      same_data = PETSC_FALSE;
+    PetscBool      scal = PETSC_FALSE;
 
     if (pcbddc->use_deluxe_scaling) {
       upper = PETSC_MAX_REAL;
-      lower = thresh;
+      lower = uthresh;
     } else {
-      upper = 1./thresh;
+      if (!sub_schurs->is_posdef) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented without deluxe scaling");
+      upper = 1./uthresh;
       lower = 0.;
     }
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
     ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
+    /* this is experimental: we assume the dofs have been properly grouped to have
+       the diagonal blocks Schur complements either positive or negative definite (true for Stokes) */
+    if (!sub_schurs->is_posdef) {
+      Mat T;
+
+      for (j=0;j<subset_size;j++) {
+        if (PetscRealPart(*(Sarray+cumarray+j*(subset_size+1))) < 0.0) {
+          ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,Sarray+cumarray,&T);CHKERRQ(ierr);
+          ierr = MatScale(T,-1.0);CHKERRQ(ierr);
+          ierr = MatDestroy(&T);CHKERRQ(ierr);
+          ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,Starray+cumarray,&T);CHKERRQ(ierr);
+          ierr = MatScale(T,-1.0);CHKERRQ(ierr);
+          ierr = MatDestroy(&T);CHKERRQ(ierr);
+          if (sub_schurs->change_primal_sub) {
+            PetscInt       nz,k;
+            const PetscInt *idxs;
+
+            ierr = ISGetLocalSize(sub_schurs->change_primal_sub[i],&nz);CHKERRQ(ierr);
+            ierr = ISGetIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
+            for (k=0;k<nz;k++) {
+              *( Sarray + cumarray + idxs[k]*(subset_size+1)) *= -1.0;
+              *(Starray + cumarray + idxs[k]*(subset_size+1))  = 0.0;
+            }
+            ierr = ISRestoreIndices(sub_schurs->change_primal_sub[i],&idxs);CHKERRQ(ierr);
+          }
+          scal = PETSC_TRUE;
+          break;
+        }
+      }
+    }
+
     if (allocated_S_St) { /* S and S_t should be copied since we could need them later */
-      if (sub_schurs->is_hermitian) {
+      if (sub_schurs->is_symmetric) {
         PetscInt j,k;
         if (sub_schurs->n_subs == 1) { /* zeroing memory to use PetscMemcmp later */
           ierr = PetscMemzero(S,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -3161,32 +3193,72 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     if (same_data && !sub_schurs->change) { /* there's no need of constraints here */
       B_neigs = 0;
     } else {
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+      if (sub_schurs->is_symmetric) {
         PetscBLASInt B_itype = 1;
         PetscBLASInt B_IL, B_IU;
         PetscReal    eps = -1.0; /* dlamch? */
         PetscInt     nmin_s;
-        PetscBool    compute_range = PETSC_FALSE;
+        PetscBool    compute_range;
+
+        compute_range = (PetscBool)!same_data;
+        if (nmin >= subset_size) compute_range = PETSC_FALSE;
 
         if (pcbddc->dbg_flag) {
-          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d size %d count %d fid %d.\n",i,sub_schurs->n_subs,subset_size,pcbddc->mat_graph->count[idxs[0]]+1,pcbddc->mat_graph->which_dof[idxs[0]]);
-        }
-
-        compute_range = PETSC_FALSE;
-        if (thresh > 1.+PETSC_SMALL && !same_data) {
-          compute_range = PETSC_TRUE;
+          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d size %d count %d fid %d (range %d).\n",i,sub_schurs->n_subs,subset_size,pcbddc->mat_graph->count[idxs[0]]+1,pcbddc->mat_graph->which_dof[idxs[0]],compute_range);CHKERRQ(ierr);
         }
 
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         if (compute_range) {
 
           /* ask for eigenvalues larger than thresh */
+          if (sub_schurs->is_posdef) {
 #if defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+            PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
 #else
-          PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+            PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&lower,&upper,&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
 #endif
-        } else if (!same_data) {
+          } else { /* no theory so far, but it works nicely */
+            PetscInt  recipe = 0;
+            PetscReal bb[2];
+
+            ierr = PetscOptionsGetInt(NULL,((PetscObject)pc)->prefix,"-pc_bddc_adaptive_recipe",&recipe,NULL);CHKERRQ(ierr);
+            switch (recipe) {
+            case 0:
+              if (scal) { bb[0] = PETSC_MIN_REAL; bb[1] = lthresh; }
+              else { bb[0] = uthresh; bb[1] = PETSC_MAX_REAL; }
+#if defined(PETSC_USE_COMPLEX)
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+#else
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+#endif
+              break;
+            case 1:
+              bb[0] = PETSC_MIN_REAL; bb[1] = lthresh*lthresh;
+#if defined(PETSC_USE_COMPLEX)
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+#else
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+#endif
+              if (!scal) {
+                PetscBLASInt B_neigs2;
+
+                bb[0] = uthresh; bb[1] = PETSC_MAX_REAL;
+                ierr = PetscMemcpy(S,Sarray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+                ierr = PetscMemcpy(St,Starray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+                PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*B_N,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+#else
+                PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs2,eigs+B_neigs,eigv+B_neigs*B_N,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+#endif
+                B_neigs += B_neigs2;
+              }
+              break;
+            default:
+              SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unknown recipe %D",recipe);
+              break;
+            }
+          }
+        } else if (!same_data) { /* this is just to see all the eigenvalues */
           B_IU = PetscMax(1,PetscMin(B_N,nmax));
           B_IL = 1;
 #if defined(PETSC_USE_COMPLEX)
@@ -3215,9 +3287,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
         if (B_neigs > nmax) {
           if (pcbddc->dbg_flag) {
-            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);CHKERRQ(ierr);
           }
-          if (pcbddc->use_deluxe_scaling) eigs_start = B_neigs -nmax;
+          if (pcbddc->use_deluxe_scaling) eigs_start = scal ? 0 : B_neigs-nmax;
           B_neigs = nmax;
         }
 
@@ -3226,8 +3298,13 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           PetscBLASInt B_neigs2;
 
           if (pcbddc->use_deluxe_scaling) {
-            B_IL = B_N - nmin_s + 1;
-            B_IU = B_N - B_neigs;
+            if (scal) {
+              B_IU = nmin_s;
+              B_IL = B_neigs + 1;
+            } else {
+              B_IL = B_N - nmin_s + 1;
+              B_IU = B_N - B_neigs;
+            }
           } else {
             B_IL = B_neigs + 1;
             B_IU = nmin_s;
@@ -3235,7 +3312,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           if (pcbddc->dbg_flag) {
             PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",B_neigs,nmin,B_IL,B_IU);
           }
-          if (sub_schurs->is_hermitian) {
+          if (sub_schurs->is_symmetric) {
             PetscInt j,k;
             for (j=0;j<subset_size;j++) {
               for (k=j;k<subset_size;k++) {
@@ -3275,9 +3352,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
             }
           }
         }
-      } else {
-          /* TODO */
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented");
     }
     /* change the basis back to the original one */
     if (sub_schurs->change) {
@@ -7979,7 +8054,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PCBDDCSetDivergenceMat(pc_temp,coarsedivudotp_is,PETSC_FALSE,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&coarsedivudotp_is);CHKERRQ(ierr);
         pcbddc_coarse->adaptive_userdefined = PETSC_TRUE;
-        if (pcbddc->adaptive_threshold < 1.0) pcbddc_coarse->deluxe_zerorows = PETSC_TRUE;
+        if (pcbddc->adaptive_threshold[0] == 0.0) pcbddc_coarse->deluxe_zerorows = PETSC_TRUE;
       }
     }
 

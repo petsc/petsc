@@ -152,7 +152,7 @@ typedef struct {
   /* adaptive selection of constraints */
   PetscBool    adaptive_selection;
   PetscBool    adaptive_userdefined;
-  PetscReal    adaptive_threshold;
+  PetscReal    adaptive_threshold[2];
   PetscInt     adaptive_nmin;
   PetscInt     adaptive_nmax;
   PetscInt*    adaptive_constraints_n;

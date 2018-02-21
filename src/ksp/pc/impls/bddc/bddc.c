@@ -44,6 +44,7 @@ PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt       nt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -84,7 +85,9 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_deluxe_zerorows","Zero rows and columns of deluxe operators associated with primal dofs","none",pcbddc->deluxe_zerorows,&pcbddc->deluxe_zerorows,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_deluxe_singlemat","Collapse deluxe operators","none",pcbddc->deluxe_singlemat,&pcbddc->deluxe_singlemat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_adaptive_userdefined","Use user-defined constraints (should be attached via MatSetNearNullSpace to pmat) in addition to those adaptively generated","none",pcbddc->adaptive_userdefined,&pcbddc->adaptive_userdefined,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
+  nt   = 2;
+  ierr = PetscOptionsRealArray("-pc_bddc_adaptive_threshold","Thresholds to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&nt,NULL);CHKERRQ(ierr);
+  if (nt == 1) pcbddc->adaptive_threshold[1] = pcbddc->adaptive_threshold[0];
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
@@ -155,7 +158,11 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Rebuild interface graph for Schur principal minors: %d\n",pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of dofs' layers for the computation of principal minors: %D\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use user CSR graph to compute successive layers: %d\n",pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection threshold (active %d, userdefined %d): %g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold);CHKERRQ(ierr);
+    if (pcbddc->adaptive_threshold[1] != pcbddc->adaptive_threshold[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection thresholds (active %d, userdefined %d): %g,%g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold[0],pcbddc->adaptive_threshold[1]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection threshold (active %d, userdefined %d): %g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold[0]);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  Min constraints / connected component: %D\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Max constraints / connected component: %D\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Invert exact Schur complement for adaptive selection: %d\n",pcbddc->sub_schurs_exact_schur);CHKERRQ(ierr);
@@ -1469,7 +1476,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
+  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
@@ -2527,7 +2534,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 .    -pc_bddc_coarse_redistribute <0> - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
 .    -pc_bddc_use_deluxe_scaling <false> - use deluxe scaling
 .    -pc_bddc_schur_layers <-1> - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold <0.0> - when a value greater than one is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
+.    -pc_bddc_adaptive_threshold <0.0> - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
 -    -pc_bddc_check_level <0> - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set with
@@ -2591,6 +2598,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->nedglobal                 = PETSC_TRUE;
   pcbddc->graphmaxcount             = PETSC_MAX_INT;
   pcbddc->sub_schurs_layers         = -1;
+  pcbddc->adaptive_threshold[0]     = 0.0;
+  pcbddc->adaptive_threshold[1]     = 0.0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
