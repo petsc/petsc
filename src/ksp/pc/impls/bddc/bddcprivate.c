@@ -1598,6 +1598,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   }
   for (i=0;i<maxneighs;i++) {
     ierr = VecAssemblyEnd(quad_vecs[i]);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(quad_vecs[i],NULL,"-pc_bddc_quad_vecs_view");CHKERRQ(ierr);
     ierr = VecLockPush(quad_vecs[i]);CHKERRQ(ierr);
   }
   ierr = VecDestroyVecs(maxneighs,&quad_vecs);CHKERRQ(ierr);
@@ -2085,7 +2086,7 @@ PetscErrorCode MatSeqAIJCompress(Mat A, Mat *B)
     PetscInt j;
     for (j=ii[i];j<ii[i+1];j++) {
       PetscScalar entry = a[j];
-      if (PetscLikely(PetscAbsScalar(entry) > PETSC_SMALL) || ij[j] == i) {
+      if (PetscLikely(PetscAbsScalar(entry) > PETSC_SMALL) || (n == m && ij[j] == i)) {
         bij[nnz] = ij[j];
         bdata[nnz] = entry;
         nnz++;
@@ -2100,6 +2101,9 @@ PetscErrorCode MatSeqAIJCompress(Mat A, Mat *B)
     Mat_SeqAIJ *b = (Mat_SeqAIJ*)(Bt->data);
     b->free_a = PETSC_TRUE;
     b->free_ij = PETSC_TRUE;
+  }
+  if (*B == A) {
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   *B = Bt;
   PetscFunctionReturn(0);
@@ -6122,6 +6126,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* assembling */
   ierr = MatAssemblyBegin(pcbddc->ConstraintMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pcbddc->ConstraintMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatChop(pcbddc->ConstraintMatrix,PETSC_SMALL);CHKERRQ(ierr);
+  ierr = MatSeqAIJCompress(pcbddc->ConstraintMatrix,&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(pcbddc->ConstraintMatrix,NULL,"-pc_bddc_constraint_mat_view");CHKERRQ(ierr);
 
   /*
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
