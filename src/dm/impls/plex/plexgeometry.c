@@ -1970,34 +1970,6 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
 }
 
 /*@
-  DMPlexComputeGeometryFEM - Precompute cell geometry for the entire mesh
-
-  Collective on dm
-
-  Input Parameter:
-. dm - The DMPlex
-
-  Output Parameter:
-. geom - A field describing the geometry
-
-  Level: beginner
-
-.keywords: DMPlexComputeCellGeometryFEM()
-@*/
-PetscErrorCode DMPlexComputeGeometryFEM(DM dm, DMField *geom)
-{
-  DM             dmCoord;
-  Vec            coordinates;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm,&dmCoord);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-  ierr = DMFieldCreateDS(dmCoord,0,coordinates,geom);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
   DMPlexComputeGeometryFVM - Computes the cell and face geometry for a finite volume method
 
   Input Parameter:

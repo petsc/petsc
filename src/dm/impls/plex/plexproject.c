@@ -344,10 +344,10 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   }
   ierr = DMGetCoordinateField(dm,&coordField);CHKERRQ(ierr);
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
-    PetscInt   effectiveHeight = auxBd ? minHeight : 0;
-    PetscFE    fem, subfem;
-    PetscReal *points;
-    PetscInt   numPoints, spDim, qdim = 0, d;
+    PetscInt         effectiveHeight = auxBd ? minHeight : 0;
+    PetscFE          fem, subfem;
+    const PetscReal *points;
+    PetscInt         numPoints;
 
     if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     ierr = PetscDualSpaceGetAllPointsUnion(Nf,cellsp,dim,funcs,&allPoints);CHKERRQ(ierr);

@@ -824,37 +824,44 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 
 /********************* Residual Computation **************************/
 
-/*@
-  DMPlexSNESGetGeometryFEM - Return precomputed geometric data
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameters:
-. geom - A field describing the geometry
-
-  Level: developer
-
-.seealso: DMPlexSNESSetFunctionLocal()
-@*/
-PetscErrorCode DMPlexSNESGetGeometryFEM(DM dm, DMField *geom)
+static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom (void *ctx)
 {
-  DMSNES         dmsnes;
-  PetscObject    obj;
+  PetscFEGeom *geom = (PetscFEGeom *) ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMSNES(dm, &dmsnes);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_geomfield", &obj);CHKERRQ(ierr);
-  if (!obj) {
-    DMField geomField;
+  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-    ierr = DMPlexComputeGeometryFEM(dm, &geomField);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmsnes, "DMPlexSNES_geomfield", (PetscObject) geomField);CHKERRQ(ierr);
-    ierr = DMFieldDestroy(&geomField);CHKERRQ(ierr);
+static PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
+  char            composeStr[33] = {0};
+  PetscObjectId   id;
+  PetscContainer  container;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetId((PetscObject)quad,&id);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(composeStr, 32, "DMSNESGetFEGeom_%x\n", id);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) pointIS, composeStr, (PetscObject *) &container);CHKERRQ(ierr);
+  if (container) {
+    ierr = PetscContainerGetPointer(container, (void **) geom);CHKERRQ(ierr);
+  } else {
+    ierr = DMFieldCreateFEGeom(coordField, pointIS, quad, faceData, geom);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container, (void *) *geom);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) pointIS, composeStr, (PetscObject) container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
-  if (geom) {PetscValidPointer(geom, 3); ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_geomfield", (PetscObject *) geom);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSNESRestoreFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
+  PetscFunctionBegin;
+  *geom = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1317,6 +1324,29 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ISIntersect_Caching(IS is1, IS is2, IS *isect)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *isect = NULL;
+  if (is2 && is1) {
+    char           composeStr[33] = {0};
+    PetscObjectId  is2id;
+
+    ierr = PetscObjectGetId((PetscObject)is2,&is2id);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(composeStr,32,"ISIntersect_Caching_%x",is2id);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) is1, composeStr, (PetscObject *) isect);CHKERRQ(ierr);
+    if (*isect == NULL) {
+      ierr = ISIntersect(is1, is2, isect);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) is1, composeStr, (PetscObject) *isect);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject) *isect);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF, DMField coordField, IS facetIS)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
@@ -1356,8 +1386,8 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     {
       IS isectIS;
 
-      /* TODO: Special cases of ISIntersect where it is quick to check a prior if one is a superset of the other */
-      ierr = ISIntersect(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+      /* TODO: Special cases of ISIntersect where it is quick to check a priori if one is a superset of the other */
+      ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       pointIS = isectIS;
     }
@@ -1376,7 +1406,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
     }
     ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMFieldCreateFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
+    ierr = DMSNESGetFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support, *cone;
       PetscScalar   *x     = NULL;
@@ -1402,7 +1432,6 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
         ierr = DMPlexVecRestoreClosure(plex, sectionAux, locA, support[0], NULL, &x);CHKERRQ(ierr);
       }
     }
-    if (plex) {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
     ierr = PetscMemzero(elemVec, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
     {
       PetscFE         fe;
@@ -1437,12 +1466,13 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
       ierr = DMPlexVecSetClosure(dm, NULL, locF, support[0], &elemVec[face*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
     }
-    ierr = PetscFEGeomDestroy(&fgeom);CHKERRQ(ierr);
+    ierr = DMSNESRestoreFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     ierr = PetscFree4(u, u_t, elemVec, a);CHKERRQ(ierr);
   }
+  if (plex) {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1461,7 +1491,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(depthLabel,dim - 1,&facetIS);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(prob, &numBd);CHKERRQ(ierr);
-  ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     DMBoundaryConditionType type;
     const char             *bdLabel;
@@ -1482,7 +1512,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex          *mesh       = (DM_Plex *) dm->data;
   const char       *name       = "Residual";
@@ -1502,6 +1532,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
   Vec               locA, cellGeometryFVM = NULL, faceGeometryFVM = NULL, grad, locGrad = NULL;
   PetscScalar      *u = NULL, *u_t, *a, *uL, *uR;
   PetscInt          Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
+  PetscBool         isStride;
+  PetscInt          cStart = -1, cEnd = -1, numCells;
+  PetscBool         isAffine = PETSC_FALSE;
+  PetscQuadrature   affineQuad = NULL, *quads = NULL;
+  PetscFEGeom      *affineGeom = NULL, **geoms = NULL;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1535,7 +1570,31 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
   }
   if (useFEM) {
-    ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
+    ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
+    ierr = DMFieldGetFEInvariance(coordField,cellIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
+    if (isAffine) {
+      ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&affineQuad);CHKERRQ(ierr);
+      ierr = DMSNESGetFEGeom(coordField,cellIS,affineQuad,PETSC_FALSE,&affineGeom);CHKERRQ(ierr);
+    } else {
+      ierr = PetscCalloc2(Nf,&quads,Nf,&geoms);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        PetscObject  obj;
+        PetscClassId id;
+        PetscBool    fimp;
+
+        ierr = PetscDSGetImplicit(prob, f, &fimp);CHKERRQ(ierr);
+        if (isImplicit != fimp) continue;
+        ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE) obj;
+
+          ierr = PetscFEGetQuadrature(fe, &quads[f]);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)quads[f]);CHKERRQ(ierr);
+          ierr = DMSNESGetFEGeom(coordField,cellIS,quads[f],PETSC_FALSE,&geoms[f]);CHKERRQ(ierr);
+        }
+      }
+    }
   }
   if (useFVM) {
     ierr = DMPlexSNESGetGeometryFVM(dm, &faceGeometryFVM, &cellGeometryFVM, NULL);CHKERRQ(ierr);
@@ -1557,9 +1616,21 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     ierr = DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, time, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
   }
   /* Loop over chunks */
+  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) cellIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {
+    PetscInt step;
+
+    ierr = ISStrideGetInfo(cellIS, &cStart, &step);CHKERRQ(ierr);
+    cEnd = cStart + numCells;
+    if (step != 1) {
+      isStride = PETSC_FALSE;
+    }
+  }
+  if (!isStride) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not implemented yet");
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   numChunks     = 1;
-  cellChunkSize = (cEnd - cStart)/numChunks;
+  cellChunkSize = numCells/numChunks;
   faceChunkSize = (fEnd - fStart)/numChunks;
   for (chunk = 0; chunk < numChunks; ++chunk) {
     PetscScalar     *elemVec, *fluxL, *fluxR;
@@ -1567,10 +1638,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     PetscFVFaceGeom *fgeom;
     PetscInt         cS = cStart+chunk*cellChunkSize, cE = PetscMin(cS+cellChunkSize, cEnd), numCells = cE - cS, cell;
     PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces = 0, face;
-    PetscBool        isAffine;
-    IS               cellIS;
 
-    ierr = ISCreateStride(PETSC_COMM_SELF,numCells,cS,1,&cellIS);CHKERRQ(ierr);
     /* Extract field coefficients */
     if (useFEM) {
       ierr = DMPlexGetCellFields(dm, cS, cE, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
@@ -1599,21 +1667,13 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         PetscFE         fe = (PetscFE) obj;
-        PetscQuadrature qGeom = NULL;
-        PetscFEGeom     *cgeomFEM, *chunkGeom = NULL;
+        PetscFEGeom    *geom = affineGeom ? affineGeom : geoms[f];
+        PetscFEGeom    *chunkGeom = NULL;
+        PetscQuadrature quad = affineQuad ? affineQuad : quads[f];
         PetscInt        Nq, Nb;
 
         ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-        ierr = DMFieldGetFEInvariance(coordField,cellIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
-        if (isAffine) {
-          ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&qGeom);CHKERRQ(ierr);
-        }
-        if (!qGeom) {
-          ierr = PetscFEGetQuadrature(fe, &qGeom);CHKERRQ(ierr);
-          ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
-        }
-        ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-        ierr = DMFieldCreateFEGeom (coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM);CHKERRQ(ierr);
+        ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
         ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
         blockSize = Nb;
         batchSize = numBlocks * blockSize;
@@ -1624,13 +1684,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
         offset    = numCells - Nr;
         /* Integrate FE residual to get elemVec (need fields at quadrature points) */
         /*   For FV, I think we use a P0 basis and the cell coefficients (for subdivided cells, we can tweak the basis tabulation to be the indicator function) */
-        ierr = PetscFEGeomGetChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
+        ierr = PetscFEGeomGetChunk(geom,0,offset,&chunkGeom);CHKERRQ(ierr);
         ierr = PetscFEIntegrateResidual(fe, prob, f, Ne, chunkGeom, u, u_t, probAux, a, t, elemVec);CHKERRQ(ierr);
-        ierr = PetscFEGeomGetChunk(cgeomFEM,offset,numCells,&chunkGeom);CHKERRQ(ierr);
+        ierr = PetscFEGeomGetChunk(geom,offset,numCells,&chunkGeom);CHKERRQ(ierr);
         ierr = PetscFEIntegrateResidual(fe, prob, f, Nr, chunkGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
-        ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&chunkGeom);CHKERRQ(ierr);
-        ierr = PetscFEGeomDestroy(&cgeomFEM);CHKERRQ(ierr);
-        ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
+        ierr = PetscFEGeomRestoreChunk(geom,offset,numCells,&chunkGeom);CHKERRQ(ierr);
       } else if (id == PETSCFV_CLASSID) {
         PetscFV fv = (PetscFV) obj;
 
@@ -1740,10 +1798,22 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = DMRestoreWorkArray(dm, numFaces*totDim, MPIU_SCALAR, &fluxR);CHKERRQ(ierr);
       if (dmGrad) {ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);}
     }
-    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   }
 
-  if (useFEM) {ierr = DMPlexComputeBdResidual_Internal(dm, locX, locX_t, t, locF, user);CHKERRQ(ierr);}
+  if (useFEM) {
+    ierr = DMPlexComputeBdResidual_Internal(dm, locX, locX_t, t, locF, user);CHKERRQ(ierr);
+
+    if (isAffine) {
+      ierr = DMSNESRestoreFEGeom(coordField,cellIS,affineQuad,PETSC_FALSE,&affineGeom);CHKERRQ(ierr);
+      ierr = PetscQuadratureDestroy(&affineQuad);CHKERRQ(ierr);
+    } else {
+      for (f = 0; f < Nf; ++f) {
+        ierr = DMSNESRestoreFEGeom(coordField,cellIS,quads[f],PETSC_FALSE,&geoms[f]);CHKERRQ(ierr);
+        ierr = PetscQuadratureDestroy(&quads[f]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree2(quads,geoms);CHKERRQ(ierr);
+    }
+  }
 
   /* FEM */
   /* 1: Get sizes from dm and dmAux */
@@ -1811,8 +1881,10 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
   PetscScalar      *elemVec, *elemVecCh, *u, *u_t, *a = NULL;
   PetscInt          Nf, f, numCells, cStart, cEnd, c;
   PetscInt          totDim, totDimAux = 0, diffCell = 0;
+  PetscInt          depth;
   PetscBool         isAffine;
   IS                cellIS;
+  DMLabel           depthLabel;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1835,8 +1907,10 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
   ierr = PetscMalloc3(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc1(numCells*totDim,&elemVecCh);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),numCells,cStart,1,&cellIS);CHKERRQ(ierr);
-  ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(depthLabel,depth,&cellIS);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL, *x_t = NULL;
     PetscInt     i;
@@ -1882,7 +1956,7 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
       ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
     }
     ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMFieldCreateFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESGetFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     blockSize = Nb;
     batchSize = numBlocks * blockSize;
     ierr =  PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
@@ -1897,7 +1971,7 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
     ierr = PetscFEIntegrateResidual(fe, prob, f, Nr, chunkGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
     ierr = PetscFEIntegrateResidual(feCh, prob, f, Nr, chunkGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], t, &elemVecCh[offset*totDim]);CHKERRQ(ierr);
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&chunkGeom);CHKERRQ(ierr);
-    ierr = PetscFEGeomDestroy(&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESRestoreFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
@@ -1939,19 +2013,23 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
 PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   PetscObject    check;
-  PetscInt       cStart, cEnd, cEndInterior;
   DM             plex;
+  IS             cellIS;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
   /* The dmCh is used to check two mathematically equivalent discretizations for computational equivalence */
   ierr = PetscObjectQuery((PetscObject) plex, "dmCh", &check);CHKERRQ(ierr);
   if (check) {ierr = DMPlexComputeResidualFEM_Check_Internal(plex, X, NULL, 0.0, F, user);CHKERRQ(ierr);}
-  else       {ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, PETSC_MIN_REAL, X, NULL, 0.0, F, user);CHKERRQ(ierr);}
+  else       {ierr = DMPlexComputeResidual_Internal(plex, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user);CHKERRQ(ierr);}
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2019,7 +2097,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
-  ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     DMBoundaryConditionType type;
     const char             *bdLabel;
@@ -2049,7 +2127,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         IS isectIS;
 
         /* TODO: Special cases of ISIntersect where it is quick to check a prior if one is a superset of the other */
-        ierr = ISIntersect(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+        ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
         ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
         pointIS = isectIS;
       }
@@ -2066,7 +2144,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
       }
       ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-      ierr = DMFieldCreateFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
+      ierr = DMSNESGetFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
       for (face = 0; face < numFaces; ++face) {
         const PetscInt point = points[face], *support, *cone;
         PetscScalar   *x     = NULL;
@@ -2136,7 +2214,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
           ierr = DMPlexMatSetClosure(dm, section, subSection, lJ, support[0], &elemMat[face*totDim*totDim], ADD_VALUES);CHKERRQ(ierr);
         }
       }
-      ierr = PetscFEGeomDestroy(&fgeom);CHKERRQ(ierr);
+      ierr = DMSNESRestoreFEGeom(coordField,pointIS,qGeom,PETSC_TRUE,&fgeom);CHKERRQ(ierr);
       ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
       ierr = PetscFree3(u,u_t,elemMat);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
@@ -2149,7 +2227,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
+PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   const char       *name  = "Jacobian";
@@ -2160,9 +2238,9 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   PetscSection      section, globalSection, subSection, sectionAux;
   PetscScalar      *elemMat, *elemMatP, *elemMatD, *u, *u_t, *a = NULL;
   PetscInt          Nf, fieldI, fieldJ, numCells, c;
-  PetscInt          totDim, totDimAux;
+  PetscInt          totDim, totDimAux, cStart = -1, cEnd = -1;
   PetscBool         isMatIS, isMatISP, isShell, hasJac, hasPrec, hasDyn, hasFV = PETSC_FALSE;
-  IS                cellIS;
+  PetscBool         isStride;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2180,7 +2258,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  numCells = cEnd - cStart;
+  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
@@ -2193,8 +2271,18 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc5(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,hasJac ? numCells*totDim*totDim : 0,&elemMat,hasPrec ? numCells*totDim*totDim : 0, &elemMatP,hasDyn ? numCells*totDim*totDim : 0, &elemMatD);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
-  ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),numCells,cStart,1,&cellIS);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) cellIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {
+    PetscInt step;
+
+    ierr = ISStrideGetInfo(cellIS, &cStart, &step);CHKERRQ(ierr);
+    cEnd = cStart + numCells;
+    if (step != 1) {
+      isStride = PETSC_FALSE;
+    }
+  }
+  if (!isStride) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not implemented yet");
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL,  *x_t = NULL;
     PetscInt     i;
@@ -2242,7 +2330,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
       ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
     }
     ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMFieldCreateFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESGetFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     blockSize = Nb;
     batchSize = numBlocks * blockSize;
     ierr = PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
@@ -2268,7 +2356,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     }
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
-    ierr = PetscFEGeomDestroy(&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESRestoreFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
   }
   if (hasDyn) {
@@ -2344,7 +2432,6 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     }
   }
   if (hasFV) {ierr = MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE);CHKERRQ(ierr);}
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = PetscFree5(u,u_t,elemMat,elemMatP,elemMatD);CHKERRQ(ierr);
   if (dmAux) {
     ierr = PetscFree(a);CHKERRQ(ierr);
@@ -2373,8 +2460,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
   PetscFunctionReturn(0);
 }
 
-
-PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
+PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   const char       *name  = "Jacobian";
@@ -2386,9 +2472,10 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   PetscScalar      *elemMat, *elemMatD, *u, *u_t, *a = NULL, *y, *z;
   PetscInt          Nf, fieldI, fieldJ, numCells, c;
   PetscInt          totDim, totDimAux = 0;
+  PetscBool         isStride;
+  PetscInt          cStart = -1, cEnd = -1;
   PetscBool         hasDyn;
   DMField           coordField;
-  IS                cellIS;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2400,8 +2487,7 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  numCells = cEnd - cStart;
+  ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
@@ -2413,8 +2499,18 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   ierr = VecSet(Z, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*totDim*totDim,&elemMat,hasDyn ? numCells*totDim*totDim : 0, &elemMatD,numCells*totDim,&y,totDim,&z);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
-  ierr = DMPlexSNESGetGeometryFEM(dm, &coordField);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),numCells,cStart,1,&cellIS);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) cellIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {
+    PetscInt step;
+
+    ierr = ISStrideGetInfo(cellIS, &cStart, &step);CHKERRQ(ierr);
+    cEnd = cStart + numCells;
+    if (step != 1) {
+      isStride = PETSC_FALSE;
+    }
+  }
+  if (!isStride) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not implemented yet");
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL,  *x_t = NULL;
     PetscInt     i;
@@ -2462,7 +2558,7 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
       ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
     }
     ierr = PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMFieldCreateFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESGetFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     blockSize = Nb;
     batchSize = numBlocks * blockSize;
     ierr = PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
@@ -2482,7 +2578,7 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
     }
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,offset,numCells,&remGeom);CHKERRQ(ierr);
     ierr = PetscFEGeomRestoreChunk(cgeomFEM,0,offset,&chunkGeom);CHKERRQ(ierr);
-    ierr = PetscFEGeomDestroy(&cgeomFEM);CHKERRQ(ierr);
+    ierr = DMSNESRestoreFEGeom(coordField,cellIS,qGeom,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
   }
   if (hasDyn) {
@@ -2535,16 +2631,20 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
 @*/
 PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *user)
 {
-  PetscInt       cStart, cEnd, cEndInterior;
   DM             plex;
+  IS             cellIS;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeJacobian_Internal(plex, cStart, cEnd, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
+  ierr = DMPlexComputeJacobian_Internal(plex, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2571,16 +2671,20 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
 @*/
 PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, void *user)
 {
-  PetscInt       cStart, cEnd, cEndInterior;
   DM             plex;
+  IS             cellIS;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeJacobianAction_Internal(plex, cStart, cEnd, 0.0, 0.0, X, NULL, Y, Z, user);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
+  ierr = DMPlexComputeJacobianAction_Internal(plex, cellIS, 0.0, 0.0, X, NULL, Y, Z, user);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
