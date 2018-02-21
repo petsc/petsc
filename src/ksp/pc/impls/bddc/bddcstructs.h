@@ -54,6 +54,12 @@ struct _PCBDDCGraph {
      these are not intended to be exposed */
   PetscInt               n_local_subs;
   PetscInt               *local_subs;
+  /* coordinates (for corner detection) */
+  PetscBool              active_coords;
+  PetscBool              cloc;
+  PetscInt               cdim,cnloc;
+  PetscReal*             coords;
+
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 

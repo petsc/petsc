@@ -6716,7 +6716,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = PCBDDCConsistencyCheckIS(pc,MPI_LOR,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
     }
     /* Check validity of the csr graph passed in by the user */
-    if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
+    if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %D, expected %D\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 
     /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
     if (!pcbddc->mat_graph->xadj && pcbddc->use_local_adj) {
@@ -6735,6 +6735,28 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
+
+    if (pcbddc->mat_graph->cdim && !pcbddc->mat_graph->cloc) {
+      PetscReal    *lcoords;
+      PetscInt     n;
+      MPI_Datatype dimrealtype;
+
+      if (pcbddc->mat_graph->cnloc != pc->pmat->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pc->pmat->rmap->n);
+      ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
+      ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pcbddc->mat_graph->cdim*n,&lcoords);CHKERRQ(ierr);
+      ierr = MPI_Type_contiguous(pcbddc->mat_graph->cdim,MPIU_REAL,&dimrealtype);CHKERRQ(ierr);
+      ierr = MPI_Type_commit(&dimrealtype);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(matis->sf,dimrealtype,pcbddc->mat_graph->coords,lcoords);CHKERRQ(ierr);
+      ierr = MPI_Type_free(&dimrealtype);CHKERRQ(ierr);
+      ierr = PetscFree(pcbddc->mat_graph->coords);CHKERRQ(ierr);
+
+      pcbddc->mat_graph->coords = lcoords;
+      pcbddc->mat_graph->cloc   = PETSC_TRUE;
+      pcbddc->mat_graph->cnloc  = n;
+    }
+    if (pcbddc->mat_graph->cnloc && pcbddc->mat_graph->cnloc != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local subdomain coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pcbddc->mat_graph->nvtxs);
 
     /* Setup of Graph */
     pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */

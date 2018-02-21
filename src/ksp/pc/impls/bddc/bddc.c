@@ -419,6 +419,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
   if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
 /*@
  PCBDDCSetPrimalVerticesIS - Set additional user defined primal vertices in PCBDDC
 
@@ -2142,7 +2143,24 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PCBDDCGraph    mat_graph = pcbddc->mat_graph;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(mat_graph->coords);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc*dim,&mat_graph->coords);CHKERRQ(ierr);
+  ierr = PetscMemcpy(mat_graph->coords,coords,nloc*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  mat_graph->cnloc = nloc;
+  mat_graph->cdim  = dim;
+  mat_graph->cloc  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2640,6 +2658,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",PCBDDCMatFETIDPGetRHS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_BDDC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -701,7 +701,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCheckSameComm(graph->l2gmap,1,ISForDofs[i],6);
   }
   if (custom_primal_vertices) {
-    PetscValidHeaderSpecific(custom_primal_vertices,IS_CLASSID,6);
+    PetscValidHeaderSpecific(custom_primal_vertices,IS_CLASSID,7);
     PetscCheckSameComm(graph->l2gmap,1,custom_primal_vertices,7);
   }
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&comm);CHKERRQ(ierr);
@@ -960,7 +960,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
             same_set = PETSC_FALSE;
           }
         }
-        /* I found a friend of mine */
+        /* I have found a friend of mine */
         if (same_set) {
           ierr = PetscBTSet(graph->touched,j);CHKERRQ(ierr);
           graph->subset[j] = graph->ncc+1;
@@ -1021,6 +1021,19 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /* free workspace */
   graph->setupcalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCBDDCGraphResetCoords(PCBDDCGraph graph)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!graph) PetscFunctionReturn(0);
+  ierr = PetscFree(graph->coords);CHKERRQ(ierr);
+  graph->cdim  = 0;
+  graph->cnloc = 0;
+  graph->cloc  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1136,6 +1149,7 @@ PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph* graph)
 
   PetscFunctionBegin;
   ierr = PCBDDCGraphResetCSR(*graph);CHKERRQ(ierr);
+  ierr = PCBDDCGraphResetCoords(*graph);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(*graph);CHKERRQ(ierr);
   ierr = PetscFree(*graph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
