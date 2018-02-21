@@ -59,6 +59,7 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
     hf = xarr[offsetnode1];
     ht = xarr[offsetnode2];
 
+    flow = 0.0;
     if (edge->type == EDGE_TYPE_PIPE) {
       pipe = &edge->pipe;
       flow = Flow_Pipe(pipe,hf,ht);

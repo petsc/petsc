@@ -142,11 +142,11 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   fpos_t         curve_start_pos,title_start_pos;
   char           line[MAXLINE];
   PetscInt       i,j,nv=0,ne=0,ncurve=0,ntitle=0,nlines,ndata,curve_id;
-  Junction       *junction;
-  Reservoir      *reservoir;
-  Tank           *tank;
-  Pipe           *pipe;
-  Pump           *pump;
+  Junction       *junction=NULL;
+  Reservoir      *reservoir=NULL;
+  Tank           *tank=NULL;
+  Pipe           *pipe=NULL;
+  Pump           *pump=NULL;
   PetscScalar    curve_x,curve_y;
 
   PetscFunctionBegin;

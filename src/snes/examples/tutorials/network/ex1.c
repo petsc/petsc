@@ -314,10 +314,10 @@ int main(int argc,char **argv)
   PetscBool        viewJ=PETSC_FALSE,viewX=PETSC_FALSE;
   UserCtx          user;
   PetscInt         it_max=10;
-  SNESConvergedReason reason=-1;
+  SNESConvergedReason reason;
 
   /* Power subnetwork */
-  UserCtx_Power    user_power = user.user_power;
+  UserCtx_Power    user_power;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="power/case9.m";
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
@@ -325,7 +325,7 @@ int main(int argc,char **argv)
   PetscScalar      Sbase;
 
   /* Water subnetwork */
-  AppCtx_Water     appctx_water = user.appctx_water;
+  AppCtx_Water     appctx_water;
   WATERDATA        *waterdata;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="water/sample1.inp";
   int              *edgelist_water=NULL;
@@ -340,6 +340,9 @@ int main(int argc,char **argv)
   /*--------------------------------------------*/
   ierr = PetscLogStageRegister("Read Data",&stage[0]);CHKERRQ(ierr);
   PetscLogStagePush(stage[0]);
+
+  user_power   = user.user_power;
+  appctx_water = user.appctx_water;
 
   for (i=0; i<nsubnet; i++) {
     numVertices[i] = 0; NumVertices[i] = PETSC_DETERMINE;
@@ -573,6 +576,7 @@ int main(int argc,char **argv)
   ierr = PetscLogStageRegister("SNES Solve",&stage[3]);CHKERRQ(ierr);
   PetscLogStagePush(stage[3]);
   user.it = 0;
+  reason  = -1;
   while (user.it < it_max && reason<0) {
 #if 0
     user.subsnes_id = 0;
@@ -635,6 +639,7 @@ int main(int argc,char **argv)
       args: -coupled_snes_converged_reason -options_left no
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: 2
@@ -642,5 +647,6 @@ int main(int argc,char **argv)
       args: -coupled_snes_converged_reason -options_left no
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
