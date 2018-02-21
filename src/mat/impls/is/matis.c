@@ -1614,14 +1614,31 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   /* Setup Layout and set local to global maps */
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
-
-  /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(rmapping,&nr);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&rbs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(cmapping,&nc);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockSize(cmapping,&cbs);CHKERRQ(ierr);
+  /* check if the two mappings are actually the same for square matrices (DOLFIN passes 2 different objects) */
+  if (rmapping != cmapping && A->rmap->N == A->cmap->N) {
+    PetscBool same,gsame;
+
+    same = PETSC_FALSE;
+    if (nr == nc && cbs == rbs) {
+      const PetscInt *idxs1,*idxs2;
+
+      ierr = ISLocalToGlobalMappingGetBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+      ierr = PetscMemcmp(idxs1,idxs2,(nr/rbs)*sizeof(PetscInt),&same);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+    }
+    ierr = MPIU_Allreduce(&same,&gsame,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    if (gsame) cmapping = rmapping;
+  }
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
+
+  /* Create the local matrix A */
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
   ierr = MatSetType(is->A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetSizes(is->A,nr,nc,nr,nc);CHKERRQ(ierr);
