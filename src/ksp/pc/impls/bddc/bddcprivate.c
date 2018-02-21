@@ -5493,8 +5493,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* some quantities */
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
   PetscInt          size_of_constraint,max_size_of_constraint=0,max_constraints,temp_constraints;
+  PetscReal         tol; /* tolerance for retaining eigenmodes */
 
   PetscFunctionBegin;
+  tol  = PetscSqrtReal(PETSC_SMALL);
   /* Destroy Mat objects computed previously */
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
@@ -5756,7 +5758,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         /* check if array is null on the connected component */
         ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
         PetscStackCallBLAS("BLASasum",real_value = BLASasum_(&Blas_N,ptr_to_data,&Blas_one));
-        if (real_value > PETSC_SMALL*size_of_constraint) { /* keep indices and values */
+        if (real_value > tol*size_of_constraint) { /* keep indices and values */
           temp_constraints++;
           total_counts++;
           if (!idxs_copied) {
@@ -5777,7 +5779,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           norm = 1.0/PetscSqrtReal(PetscRealPart(norm));
           PetscStackCallBLAS("BLASscal",BLASscal_(&Blas_N,&norm,ptr_to_data,&Blas_one));
         } else { /* perform SVD */
-          PetscReal   tol = PetscSqrtReal(PETSC_SMALL); /* tolerance for retaining eigenmodes */
           PetscScalar *ptr_to_data = &constraints_data[constraints_data_ptr[total_counts_cc]];
 
 #if defined(PETSC_MISSING_LAPACK_GESVD)
