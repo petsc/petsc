@@ -206,14 +206,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
         EDGE_Water        edge=(EDGE_Water)component;
         if (edge->type == EDGE_TYPE_PUMP) {
           /* compute flow_pump */
-          ierr = DMNetworkGetConnectedVertices(networkdm,e,&econe);CHKERRQ(ierr);
-          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[0],&vid[0]);CHKERRQ(ierr);
-          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[1],&vid[1]);CHKERRQ(ierr);
-
           PetscInt offsetnode1,offsetnode2,key_0,key_1;
           const PetscScalar *xarr;
           PetscScalar       *farr;
           VERTEX_Water      vertexnode1,vertexnode2;
+
+          ierr = DMNetworkGetConnectedVertices(networkdm,e,&econe);CHKERRQ(ierr);
+          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[0],&vid[0]);CHKERRQ(ierr);
+          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[1],&vid[1]);CHKERRQ(ierr);
 
           ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
           ierr = DMNetworkGetVariableOffset(networkdm,econe[0],&offsetnode1);CHKERRQ(ierr);
@@ -306,7 +306,8 @@ int main(int argc,char **argv)
   PetscLogStage    stage[4];
   PetscMPIInt      crank;
   PetscInt         nsubnet = 3,numVertices[3],NumVertices[3],numEdges[3],NumEdges[3];
-  PetscInt         i,j,*edgelist[3],nv,ne;
+  PetscInt         i,j,nv,ne;
+  int              *edgelist[3];
   const PetscInt   *vtx,*edges;
   Vec              X,F;
   SNES             snes,snes_power,snes_water;

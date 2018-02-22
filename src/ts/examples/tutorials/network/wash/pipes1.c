@@ -527,8 +527,7 @@ int main(int argc,char ** argv)
   Junction          junctions,junction;
   Pipe              pipe,pipes;
   PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
-  int               *edgelist = NULL;
-  PetscInt          *edgelists[1];
+  int               *edgelist = NULL,*edgelists[1];
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,type,varoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;

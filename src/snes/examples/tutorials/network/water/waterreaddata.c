@@ -33,11 +33,10 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
   PetscErrorCode ierr;
   SNES           snes;
   Vec            X,F;
+  PetscScalar   *head,*flow,*x;
   SNESConvergedReason reason;
-  PetscScalar   *head,*flow;
 
   PetscFunctionBegin;
-
   head = pump->headcurve.head;
   flow = pump->headcurve.flow;
   if(pump->headcurve.npt == 1) {
@@ -60,7 +59,6 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
   ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  PetscScalar *x;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = head[1]; x[1] = 10; x[2] = 3;
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);

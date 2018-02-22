@@ -173,7 +173,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscInt       numCorners=2,spacedim=2;
   double         *vertexcoords=NULL;
   PetscInt       i,j,ndata,ctr=0,nsubnet;
-  PetscInt       *edgelist_couple=NULL,k,netid,vid;
+  PetscInt       k,netid,vid;
+  int            *edgelist_couple=NULL;
 
   PetscFunctionBegin;
   if (network->nVertices) {
