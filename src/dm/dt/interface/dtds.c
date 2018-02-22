@@ -223,6 +223,11 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 . prob - the PetscDS object to set options for
 
   Options Database:
++ -petscds_type <type>     : Set the DS type
+. -petscds_view <view opt> : View the DS
+. -petscds_jac_pre         : Turn formation of a separate Jacobian preconditioner on and off
+. -bc_<name> <ids>         : Specify a list of label ids for a boundary condition
+- -bc_<name>_comp <comps>  : Specify a list of field components to constrain for a boundary condition
 
   Level: developer
 
@@ -277,6 +282,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   } else if (!((PetscObject) prob)->type_name) {
     ierr = PetscDSSetType(prob, defaultType);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-petscds_jac_pre", "Discrete System", "PetscDSUseJacobianPreconditioner", prob->useJacPre, &prob->useJacPre, &flg);CHKERRQ(ierr);
   if (prob->ops->setfromoptions) {ierr = (*prob->ops->setfromoptions)(prob);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) prob);CHKERRQ(ierr);
@@ -527,6 +533,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
   p->dimEmbed      = -1;
   p->defaultAdj[0] = PETSC_FALSE;
   p->defaultAdj[1] = PETSC_TRUE;
+  p->useJacPre     = PETSC_TRUE;
 
   *prob = p;
   PetscFunctionReturn(0);
@@ -1256,6 +1263,27 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
 }
 
 /*@C
+  PetscDSUseJacobianPreconditioner - Whether to construct a Jacobian preconditioner
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS
+- useJacPre - flag that enables construction of a Jacobian preconditioner
+
+  Level: intermediate
+
+.seealso: PetscDSGetJacobianPreconditioner(), PetscDSSetJacobianPreconditioner(), PetscDSGetJacobian()
+@*/
+PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPre)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->useJacPre = useJacPre;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscDSHasJacobianPreconditioner - Signals that a Jacobian preconditioner matrix has been set
 
   Not collective
@@ -1277,6 +1305,7 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS prob, PetscBool *hasJacP
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   *hasJacPre = PETSC_FALSE;
+  if (!prob->useJacPre) PetscFunctionReturn(0);
   for (f = 0; f < prob->Nf; ++f) {
     for (g = 0; g < prob->Nf; ++g) {
       for (h = 0; h < 4; ++h) {
