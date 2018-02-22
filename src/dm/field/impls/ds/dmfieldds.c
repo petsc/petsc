@@ -57,13 +57,6 @@ static PetscErrorCode DMFieldView_DS(DMField field,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented yet");
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, PetscObject *disc)
 {
   DMField_DS     *dsfield = (DMField_DS *) field->data;
@@ -187,6 +180,153 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     ierr = ISRestoreIndices(pointIS,&points);CHKERRQ(ierr);
   }
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
+{
+  DMField_DS        *dsfield = (DMField_DS *) field->data;
+  PetscSF            cellSF = NULL;
+  const PetscSFNode *cells;
+  PetscInt           c, nFound, numCells, feDim, nc;
+  const PetscInt    *cellDegrees;
+  const PetscScalar *pointsArray;
+  PetscScalar       *cellPoints;
+  PetscInt           gatherSize, gatherMax;
+  PetscInt           dim, dimR, offset;
+  MPI_Datatype       pointType;
+  PetscObject        cellDisc;
+  PetscFE            cellFE;
+  PetscClassId       discID;
+  PetscReal         *coordsReal, *coordsRef;
+  PetscSection       section;
+  PetscScalar       *cellBs = NULL, *cellDs = NULL, *cellHs = NULL;
+  PetscReal         *cellBr = NULL, *cellDr = NULL, *cellHr = NULL;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  nc   = field->numComponents;
+  ierr = DMGetDefaultSection(field->dm,&section);CHKERRQ(ierr);
+  ierr = DMFieldDSGetHeightDisc(field,0,&cellDisc);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(cellDisc, &discID);CHKERRQ(ierr);
+  if (discID != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Discretization type not supported\n");
+  cellFE = (PetscFE) cellDisc;
+  ierr = PetscFEGetDimension(cellFE,&feDim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(field->dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(field->dm, &dimR);CHKERRQ(ierr);
+  ierr = DMLocatePoints(field->dm, points, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(cellSF, &numCells, &nFound, NULL, &cells);CHKERRQ(ierr);
+  for (c = 0; c < nFound; c++) {
+    if (cells[c].index < 0) SETERRQ1(PetscObjectComm((PetscObject)points),PETSC_ERR_ARG_WRONG, "Point %D could not be located\n", c);
+  }
+  ierr = PetscSFComputeDegreeBegin(cellSF,&cellDegrees);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(cellSF,&cellDegrees);CHKERRQ(ierr);
+  for (c = 0, gatherSize = 0, gatherMax = 0; c < numCells; c++) {
+    gatherMax = PetscMax(gatherMax,cellDegrees[c]);
+    gatherSize += cellDegrees[c];
+  }
+  ierr = PetscMalloc3(gatherSize*dim,&cellPoints,gatherMax*dim,&coordsReal,gatherMax*dimR,&coordsRef);CHKERRQ(ierr);
+  if (datatype == PETSC_SCALAR) {
+    ierr = PetscMalloc3(B ? nc * gatherSize : 0, &cellBs, D ? nc * dim * gatherSize : 0, &cellDs, H ? nc * dim * dim * gatherSize : 0, &cellHs);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc3(B ? nc * gatherSize : 0, &cellBr, D ? nc * dim * gatherSize : 0, &cellDr, H ? nc * dim * dim * gatherSize : 0, &cellHr);CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Type_contiguous(dim,MPIU_SCALAR,&pointType);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&pointType);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(points,&pointsArray);CHKERRQ(ierr);
+  ierr = PetscSFGatherBegin(cellSF, pointType, pointsArray, cellPoints);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(cellSF, pointType, pointsArray, cellPoints);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(points,&pointsArray);CHKERRQ(ierr);
+  for (c = 0, offset = 0; c < numCells; c++) {
+    PetscInt nq = cellDegrees[c], p;
+
+    if (nq) {
+      PetscReal *fB, *fD, *fH;
+      PetscInt     closureSize;
+      PetscScalar *elem = NULL;
+
+      for (p = 0; p < dim * nq; p++) coordsReal[p] = cellPoints[dim * offset + p];
+      ierr = DMPlexCoordinatesToReference(field->dm, c, nq, coordsReal, coordsRef);CHKERRQ(ierr);
+      ierr = PetscFEGetTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
+      if (B) {
+        if (datatype == PETSC_SCALAR) {
+          PetscScalar *cB = &cellBs[nc * offset];
+
+          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,(PetscScalar));
+        } else {
+          PetscReal *cB = &cellBr[nc * offset];
+
+          DMFieldDSdot(cB,fB,elem,nq,feDim,nc,PetscRealPart);
+        }
+      }
+      if (D) {
+        if (datatype == PETSC_SCALAR) {
+          PetscScalar *cD = &cellDs[nc * dim * offset];
+
+          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),(PetscScalar));
+        } else {
+          PetscReal *cD = &cellDr[nc * dim * offset];
+
+          DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),PetscRealPart);
+        }
+      }
+      if (H) {
+        if (datatype == PETSC_SCALAR) {
+          PetscScalar *cH = &cellHs[nc * dim * dim * offset];
+
+          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),(PetscScalar));
+        } else {
+          PetscReal *cH = &cellHr[nc * dim * dim * offset];
+
+          DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),PetscRealPart);
+        }
+      }
+      ierr = DMPlexVecRestoreClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
+    }
+    offset += nq;
+  }
+  {
+    MPI_Datatype origtype;
+    if (datatype == PETSC_SCALAR) {
+      origtype = MPIU_SCALAR;
+    } else {
+      origtype = MPIU_REAL;
+    }
+    if (B) {
+      MPI_Datatype Btype;
+
+      ierr = MPI_Type_contiguous(origtype, nc, &Btype);CHKERRQ(ierr);
+      ierr = MPI_Type_commit(&Btype);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
+      ierr = MPI_Type_free(&Btype);CHKERRQ(ierr);
+    }
+    if (D) {
+      MPI_Datatype Dtype;
+
+      ierr = MPI_Type_contiguous(origtype, nc * dim, &Dtype);CHKERRQ(ierr);
+      ierr = MPI_Type_commit(&Dtype);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
+      ierr = MPI_Type_free(&Dtype);CHKERRQ(ierr);
+    }
+    if (H) {
+      MPI_Datatype Htype;
+
+      ierr = MPI_Type_contiguous(origtype, nc * dim * dim, &Htype);CHKERRQ(ierr);
+      ierr = MPI_Type_commit(&Htype);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
+      ierr = MPI_Type_free(&Htype);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree3(cellBr, cellDr, cellHr);CHKERRQ(ierr);
+  ierr = PetscFree3(cellBs, cellDs, cellHs);CHKERRQ(ierr);
+  ierr = PetscFree3(cellPoints,coordsReal,coordsRef);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&pointType);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

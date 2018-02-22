@@ -4960,9 +4960,9 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
 $    const PetscSFNode *cells;
 $    PetscInt           nFound;
-$    const PetscSFNode *found;
+$    const PetscInt    *found;
 $
-$    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
+$    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 
   Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
   the index of the cell in its rank's local numbering.
