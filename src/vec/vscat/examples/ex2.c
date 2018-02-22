@@ -38,7 +38,6 @@ int main(int argc,char **argv)
     array[i] = (PetscScalar)(i + low);
   }
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Create a sequential vector y */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);

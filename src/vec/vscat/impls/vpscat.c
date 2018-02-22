@@ -2304,7 +2304,8 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
       PetscBT        table;
       /* sz and dsp_unit are not used. Replacing them with NULL would cause MPI_Win_shared_query() crash */
       MPI_Aint       sz;
-      PetscInt       dsp_unit,N=xin->map->N;
+      PetscMPIInt    dsp_unit;
+      PetscInt       N = xin->map->N;
 
       ierr = PetscBTCreate(N,&table);CHKERRQ(ierr); /* may not be scalable */
       ierr = PetscBTMemzero(N,table);CHKERRQ(ierr);

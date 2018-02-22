@@ -332,8 +332,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec v)
 
   if (alloc && !array) {
     PetscInt n = v->map->n;
-    PetscMPIInt msize,mrank;
-    PetscInt    i,dsp_unit;
+    PetscMPIInt msize,mrank,disp_unit;
+    PetscInt    i;
     MPI_Aint    sz;
 
     ierr = MPI_Comm_split_type(PetscObjectComm((PetscObject)v),MPI_COMM_TYPE_SHARED,0,MPI_INFO_NULL,&shmcomm);CHKERRQ(ierr);
@@ -348,7 +348,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec v)
     ierr = PetscMalloc1(msize,&s->winarray);CHKERRQ(ierr);
     for (i=0; i<msize; i++) {
       if (i != mrank) {
-        MPI_Win_shared_query(win,i,&sz,&dsp_unit,&s->winarray[i]);
+        MPI_Win_shared_query(win,i,&sz,&disp_unit,&s->winarray[i]);
         s->winarray[i]++;
       }
     }
