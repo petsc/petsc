@@ -293,14 +293,14 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
       SNESNEWTONTR - Newton based nonlinear solver that uses a trust region
 
    Options Database:
-+    -snes_trtol <tol> Trust region tolerance
-.    -snes_tr_mu <mu>
-.    -snes_tr_eta <eta>
-.    -snes_tr_sigma <sigma>
++    -snes_trtol <tol> - trust region tolerance
+.    -snes_tr_mu <mu> - trust region parameter
+.    -snes_tr_eta <eta> - trust region parameter
+.    -snes_tr_sigma <sigma> - trust region parameter
 .    -snes_tr_delta0 <delta0> -  initial size of the trust region is delta0*norm2(x)
-.    -snes_tr_delta1 <delta1>
-.    -snes_tr_delta2 <delta2>
--    -snes_tr_delta3 <delta3>
+.    -snes_tr_delta1 <delta1> - trust region parameter
+.    -snes_tr_delta2 <delta2> - trust region parameter
+-    -snes_tr_delta3 <delta3> - trust region parameter
 
    The basic algorithm is taken from "The Minpack Project", by More',
    Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development
