@@ -1317,7 +1317,7 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF)
+PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
   DM               plex = NULL;
@@ -1460,7 +1460,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if ((id != PETSCFE_CLASSID) || (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    ierr = DMPlexComputeBdResidual_Single_Internal(dm, t, label, numValues, values, field, locX, locX_t, locF);CHKERRQ(ierr);
+    ierr = DMPlexComputeBdResidualSingle(dm, t, label, numValues, values, field, locX, locX_t, locF);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
