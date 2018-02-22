@@ -22,8 +22,6 @@ typedef struct {
 
 #include <cuda_runtime.h>
 
-PETSC_INTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle);
-
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUDA(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqCUDA(Vec,PetscScalar,Vec,Vec);

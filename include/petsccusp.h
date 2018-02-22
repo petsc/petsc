@@ -25,5 +25,6 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec v, PetscScalar **a)
 PETSC_EXTERN PetscErrorCode VecCUSPPlaceArray(Vec, cusp::array1d<PetscScalar,cusp::device_memory>*);
 PETSC_EXTERN PetscErrorCode VecCUSPReplaceArray(Vec, cusp::array1d<PetscScalar,cusp::device_memory>*);
 PETSC_EXTERN PetscErrorCode VecCUSPResetArray(Vec);
+PETSC_EXTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle);
 
 #endif

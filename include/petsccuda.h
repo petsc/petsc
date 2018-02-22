@@ -15,5 +15,6 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a);
 PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
+PETSC_EXTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle);
 
 #endif
