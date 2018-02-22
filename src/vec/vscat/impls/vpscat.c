@@ -2642,6 +2642,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   PetscMPIInt    size;
   PetscInt       i, n;
   PetscErrorCode ierr;
+  VecScatterType type;
+  PetscBool      mpi3node;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ctx,&comm);CHKERRQ(ierr);
@@ -2849,8 +2851,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   if (bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
 #endif
 
-  VecScatterType    type;
-  PetscBool         mpi3node;
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type,"mpi3node",&mpi3node);CHKERRQ(ierr);
 

@@ -23,7 +23,7 @@ static PetscErrorCode VecAssemblyEnd_Node(Vec v)
   Vec_Node       *s = (Vec_Node*)v->data;
 
   PetscFunctionBegin;
-  s->array[-1]++; /* update local object state counter if this routine changes values of v */
+  s->array[-1] += 1.0; /* update local object state counter if this routine changes values of v */
   /* printf("VecAssemblyEnd_Node s->array[-1] %g\n",s->array[-1]); */
   PetscFunctionReturn(0);
 }
@@ -35,7 +35,7 @@ static PetscErrorCode VecScale_Node(Vec v, PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = VecScale_Seq(v,alpha);CHKERRQ(ierr);
-  s->array[-1]++; /* update local object state counter if this routine changes values of v */
+  s->array[-1] += 1.0; /* update local object state counter if this routine changes values of v */
   /* printf("VecScale_Node s->array[-1] %g\n",s->array[-1]); */
   PetscFunctionReturn(0);
 }
@@ -47,7 +47,7 @@ static PetscErrorCode VecCopy_Node(Vec v,Vec y)
 
   PetscFunctionBegin;
   ierr = VecCopy_Seq(v,y);CHKERRQ(ierr);
-  s->array[-1]++; /* update local object state counter if this routine changes values of y */
+  s->array[-1] += 1.0; /* update local object state counter if this routine changes values of y */
   PetscFunctionReturn(0);
 }
 
@@ -106,7 +106,7 @@ static PetscErrorCode VecAYPX_Node(Vec y,PetscScalar alpha,Vec x)
 
   PetscFunctionBegin;
   ierr = VecAYPX_Seq(y,alpha,x);CHKERRQ(ierr);
-  s->array[-1]++;
+  s->array[-1] += 1.0;
   PetscFunctionReturn(0);
 }
 
@@ -124,7 +124,7 @@ static PetscErrorCode VecAXPBYPCZ_Node(Vec z,PetscScalar alpha,PetscScalar beta,
 
   PetscFunctionBegin;
   ierr = VecAXPBYPCZ_Seq(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
-  s->array[-1]++;
+  s->array[-1] += 1.0;
   PetscFunctionReturn(0);
 }
 
@@ -143,7 +143,7 @@ static PetscErrorCode VecWAXPY_Node(Vec w,PetscScalar alpha,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = VecWAXPY_Seq(w,alpha,x,y);CHKERRQ(ierr);
-  s->array[-1]++;
+  s->array[-1] += 1.0;
   PetscFunctionReturn(0);
 }
 
@@ -183,7 +183,7 @@ static PetscErrorCode VecRestoreArray_Node(Vec x,PetscScalar **a)
   Vec_Node       *s = (Vec_Node*)x->data;
 
   PetscFunctionBegin;
-  s->array[-1]++; /* update local object state counter if this routine changes values of v */
+  s->array[-1] += 1.0; /* update local object state counter if this routine changes values of v */
   /* printf("VecRestoreArray_Node s->array[-1] %g\n",s->array[-1]); */
   PetscFunctionReturn(0);
 }
