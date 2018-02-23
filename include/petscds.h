@@ -141,6 +141,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetJacobian(PetscDS, PetscInt, PetscInt,
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS, PetscInt, PetscInt,
                                                void (**)(PetscInt, PetscInt, PetscInt,
