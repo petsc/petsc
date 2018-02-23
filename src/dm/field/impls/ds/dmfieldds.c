@@ -202,6 +202,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscSection       section;
   PetscScalar       *cellBs = NULL, *cellDs = NULL, *cellHs = NULL;
   PetscReal         *cellBr = NULL, *cellDr = NULL, *cellHr = NULL;
+  PetscReal         *v, *J, *invJ, *detJ;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -226,6 +227,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     gatherSize += cellDegrees[c];
   }
   ierr = PetscMalloc3(gatherSize*dim,&cellPoints,gatherMax*dim,&coordsReal,gatherMax*dimR,&coordsRef);CHKERRQ(ierr);
+  ierr = PetscMalloc4(gatherMax*dimR,&v,gatherMax*dimR*dimR,&J,gatherMax*dimR*dimR,&invJ,gatherMax,&detJ);CHKERRQ(ierr);
   if (datatype == PETSC_SCALAR) {
     ierr = PetscMalloc3(B ? nc * gatherSize : 0, &cellBs, D ? nc * dim * gatherSize : 0, &cellDs, H ? nc * dim * dim * gatherSize : 0, &cellHs);CHKERRQ(ierr);
   } else {
@@ -245,10 +247,19 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
       PetscReal *fB, *fD, *fH;
       PetscInt     closureSize;
       PetscScalar *elem = NULL;
+      PetscReal   *quadPoints;
+      PetscQuadrature quad;
+      PetscInt d, e, f, g;
 
       for (p = 0; p < dim * nq; p++) coordsReal[p] = cellPoints[dim * offset + p];
       ierr = DMPlexCoordinatesToReference(field->dm, c, nq, coordsReal, coordsRef);CHKERRQ(ierr);
       ierr = PetscFEGetTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
+      ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &quad);CHKERRQ(ierr);
+      ierr = PetscMalloc1(dimR * nq, &quadPoints);CHKERRQ(ierr);
+      for (p = 0; p < dimR * nq; p++) quadPoints[p] = coordsRef[p];
+      ierr = PetscQuadratureSetData(quad, dimR, 0, nq, quadPoints, NULL);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(field->dm, c, quad, v, J, invJ, detJ);CHKERRQ(ierr);
+      ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
       if (B) {
         if (datatype == PETSC_SCALAR) {
@@ -266,10 +277,36 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
           PetscScalar *cD = &cellDs[nc * dim * offset];
 
           DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),(PetscScalar));
+          for (p = 0; p < nq; p++) {
+            for (g = 0; g < nc; g++) {
+              for (d = 0; d < dimR; d++) {
+                v[d] = 0.;
+                for (e = 0; e < dimR; e++) {
+                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
+                }
+              }
+              for (d = 0; d < dimR; d++) {
+                cD[(nc * p + g) * dimR + d] = v[d];
+              }
+            }
+          }
         } else {
           PetscReal *cD = &cellDr[nc * dim * offset];
 
           DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),PetscRealPart);
+          for (p = 0; p < nq; p++) {
+            for (g = 0; g < nc; g++) {
+              for (d = 0; d < dimR; d++) {
+                v[d] = 0.;
+                for (e = 0; e < dimR; e++) {
+                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
+                }
+              }
+              for (d = 0; d < dimR; d++) {
+                cD[(nc * p + g) * dimR + d] = v[d];
+              }
+            }
+          }
         }
       }
       if (H) {
@@ -277,18 +314,72 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
           PetscScalar *cH = &cellHs[nc * dim * dim * offset];
 
           DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),(PetscScalar));
+          for (p = 0; p < nq; p++) {
+            for (g = 0; g < nc * dimR; g++) {
+              for (d = 0; d < dimR; d++) {
+                v[d] = 0.;
+                for (e = 0; e < dimR; e++) {
+                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
+                }
+              }
+              for (d = 0; d < dimR; d++) {
+                cH[(nc * dimR * p + g) * dimR + d] = v[d];
+              }
+            }
+            for (g = 0; g < nc; g++) {
+              for (f = 0; f < dimR; f++) {
+                for (d = 0; d < dimR; d++) {
+                  v[d] = 0.;
+                  for (e = 0; e < dimR; e++) {
+                    v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
+                  }
+                }
+                for (d = 0; d < dimR; d++) {
+                  cH[((nc * p + g) * dimR + d) * dimR + f] = v[d];
+                }
+              }
+            }
+          }
         } else {
           PetscReal *cH = &cellHr[nc * dim * dim * offset];
 
           DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),PetscRealPart);
+          for (p = 0; p < nq; p++) {
+            for (g = 0; g < nc * dimR; g++) {
+              for (d = 0; d < dimR; d++) {
+                v[d] = 0.;
+                for (e = 0; e < dimR; e++) {
+                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
+                }
+              }
+              for (d = 0; d < dimR; d++) {
+                cH[(nc * dimR * p + g) * dimR + d] = v[d];
+              }
+            }
+            for (g = 0; g < nc; g++) {
+              for (f = 0; f < dimR; f++) {
+                for (d = 0; d < dimR; d++) {
+                  v[d] = 0.;
+                  for (e = 0; e < dimR; e++) {
+                    v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
+                  }
+                }
+                for (d = 0; d < dimR; d++) {
+                  cH[((nc * p + g) * dimR + d) * dimR + f] = v[d];
+                }
+              }
+            }
+          }
         }
       }
       ierr = DMPlexVecRestoreClosure(field->dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
+      ierr = PetscFERestoreTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
     }
     offset += nq;
   }
   {
     MPI_Datatype origtype;
+
     if (datatype == PETSC_SCALAR) {
       origtype = MPIU_SCALAR;
     } else {
@@ -297,7 +388,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     if (B) {
       MPI_Datatype Btype;
 
-      ierr = MPI_Type_contiguous(origtype, nc, &Btype);CHKERRQ(ierr);
+      ierr = MPI_Type_contiguous(nc, origtype, &Btype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Btype);CHKERRQ(ierr);
       ierr = PetscSFScatterBegin(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
       ierr = PetscSFScatterEnd(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
@@ -306,7 +397,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     if (D) {
       MPI_Datatype Dtype;
 
-      ierr = MPI_Type_contiguous(origtype, nc * dim, &Dtype);CHKERRQ(ierr);
+      ierr = MPI_Type_contiguous(nc * dim, origtype, &Dtype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Dtype);CHKERRQ(ierr);
       ierr = PetscSFScatterBegin(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
       ierr = PetscSFScatterEnd(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
@@ -315,13 +406,14 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
     if (H) {
       MPI_Datatype Htype;
 
-      ierr = MPI_Type_contiguous(origtype, nc * dim * dim, &Htype);CHKERRQ(ierr);
+      ierr = MPI_Type_contiguous(nc * dim * dim, origtype, &Htype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Htype);CHKERRQ(ierr);
       ierr = PetscSFScatterBegin(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
       ierr = PetscSFScatterEnd(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
       ierr = MPI_Type_free(&Htype);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree4(v,J,invJ,detJ);CHKERRQ(ierr);
   ierr = PetscFree3(cellBr, cellDr, cellHr);CHKERRQ(ierr);
   ierr = PetscFree3(cellBs, cellDs, cellHs);CHKERRQ(ierr);
   ierr = PetscFree3(cellPoints,coordsReal,coordsRef);CHKERRQ(ierr);

@@ -322,7 +322,7 @@ int main(int argc, char **argv)
   test:
     suffix: ds
     requires: !complex triangle
-    args: -dm_type plex -dim 2 -num_components 2  -num_fe_tests 2  -dmfield_view -petscspace_order 2 -num_quad_points 1
+    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2  -dmfield_view -petscspace_order 2 -num_quad_points 1
 
   test:
     suffix: ds_simplex_0
