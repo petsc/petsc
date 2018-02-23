@@ -10,6 +10,7 @@
 /*
    Version for when blocks are 9 by 9
  */
+#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C =B;
@@ -334,7 +335,7 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
     a2 = _mm256_maskload_pd((&(aa+bs2*adiag[i])[80]), _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63));
     w2 = _mm256_fmadd_pd(a2,v0,w2);
 
-         _mm256_storeu_pd(&(t+i*bs)[0], w0); _mm256_storeu_pd(&(t+i*bs)[4], w1); _mm256_maskstore_pd(&(t+i*bs)[8], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), w2);
+    _mm256_storeu_pd(&(t+i*bs)[0], w0); _mm256_storeu_pd(&(t+i*bs)[4], w1); _mm256_maskstore_pd(&(t+i*bs)[8], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), w2);
 
     ierr = PetscMemcpy(x+i*bs,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
   }
@@ -344,3 +345,4 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif

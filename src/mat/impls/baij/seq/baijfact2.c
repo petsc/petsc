@@ -237,7 +237,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   if (both_identity) {
     switch (bs) {
     case  9:
+#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
       C->ops->solve = MatSolve_SeqBAIJ_9_NaturalOrdering;
+#else
+      C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
+#endif
       break;
     case 11:
       C->ops->solve = MatSolve_SeqBAIJ_11_NaturalOrdering;
