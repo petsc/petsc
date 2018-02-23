@@ -58,7 +58,7 @@ static PetscErrorCode VecSet_Node(Vec v,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = VecSet_Seq(v,alpha);CHKERRQ(ierr);
-  s->array[-1]++; /* update local object state counter if this routine changes values of v */
+  s->array[-1] += 1.0; /* update local object state counter if this routine changes values of v */
   /* printf("VecSet_Node s->array[-1] %g\n",s->array[-1]); */
   PetscFunctionReturn(0);
 }
