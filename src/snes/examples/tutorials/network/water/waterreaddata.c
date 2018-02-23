@@ -109,24 +109,26 @@ int CheckDataSegmentEnd(const char *line)
 /* Gets the file pointer positiion for the start of the data segment and the 
    number of data segments (lines) read
 */
-void GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos,PetscInt *ndatalines)
+PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos,PetscInt *ndatalines)
 {
   PetscInt data_segment_end;
   PetscInt nlines=0;
 
+  PetscFunctionBegin;
   data_segment_end = 0;
   fgetpos(fp,data_segment_start_pos);
-  fgets(line,MAXLINE,fp);
+  if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
   while(LineStartsWith(line,";")) {
     fgetpos(fp,data_segment_start_pos);
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
   }
   while(!data_segment_end) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data segment from file");
     nlines++;
     data_segment_end = CheckDataSegmentEnd(line);
   }
   *ndatalines = nlines;
+  PetscFunctionReturn(0);
 }
 
 
@@ -204,7 +206,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Junctions */
   fsetpos(fp,&junc_start_pos);
   for (i=0; i < water->njunction; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read junction from file");
     vert[nv].type = VERTEX_TYPE_JUNCTION;
     /*    printf("%s\n",line); */
     junction = &vert[nv].junc;
@@ -217,7 +219,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Reservoirs */
   fsetpos(fp,&res_start_pos);
   for (i=0; i < water->nreservoir; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read reservoir from file");
     vert[nv].type = VERTEX_TYPE_RESERVOIR;
     /*    printf("%s\n",line); */
     reservoir = &vert[nv].res;
@@ -229,7 +231,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Tanks */
   fsetpos(fp,&tank_start_pos);
   for (i=0; i < water->ntank; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data tank from file");
     vert[nv].type = VERTEX_TYPE_TANK;
     /*    printf("%s\n",line); */
     tank = &vert[nv].tank;
@@ -241,7 +243,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Pipes */
   fsetpos(fp,&pipe_start_pos);
   for (i=0; i < water->npipe; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pipe from file");
     edge[ne].type = EDGE_TYPE_PIPE;
     /*    printf("%s\n",line); */
     pipe = &edge[ne].pipe;
@@ -261,7 +263,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Pumps */
   fsetpos(fp,&pump_start_pos);
   for (i=0; i < water->npump; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data pump from file");
     edge[ne].type = EDGE_TYPE_PUMP;
     /*    printf("%s\n",line); */
     pump = &edge[ne].pump;
@@ -273,7 +275,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   /* Curves */
   fsetpos(fp,&curve_start_pos);
   for (i=0; i < ncurve; i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data curve from file");
     /*    printf("%s\n",line); */
     ndata = sscanf(line,"%d %lf %lf",&curve_id,&curve_x,&curve_y);
     /* Check for pump with the curve_id */
