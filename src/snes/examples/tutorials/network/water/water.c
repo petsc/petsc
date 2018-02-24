@@ -131,12 +131,13 @@ int main(int argc,char ** argv)
 
    build:
      depends: waterreaddata.c waterfunctions.c
+     requires: !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       args: -water_snes_converged_reason -options_left no
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double
 
    test:
       suffix: 2
@@ -144,6 +145,6 @@ int main(int argc,char ** argv)
       args: -water_snes_converged_reason -options_left no
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double
 
 TEST*/
