@@ -1849,8 +1849,6 @@ PETSC_EXTERN PetscErrorCode PetscStartMatlab(MPI_Comm,const char[],const char[],
 PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 PETSC_EXTERN PetscErrorCode PetscGetPetscDir(const char*[]);
 
-PETSC_EXTERN PetscErrorCode PetscPopUpSelect(MPI_Comm,const char*,const char*,int,const char**,int*);
-
 /*S
      PetscContainer - Simple PETSc object that contains a pointer to any required data
 

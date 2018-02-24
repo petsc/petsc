@@ -551,7 +551,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
 Note: This routine should be called after all TS options have been set
 
-    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate

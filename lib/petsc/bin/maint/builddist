@@ -116,7 +116,7 @@ make ACTION=clean tree_basic
 
 # now tar up the PETSc tree
 cd $PETSC_DIR/..
-cat ${PETSC_DIR}/bin/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
+cat ${PETSC_DIR}/lib/petsc/bin/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
 /bin/tar --create --file $tmpdir/petsc.tar --exclude-from  $tmpdir/xclude $pdir
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
@@ -159,7 +159,7 @@ cat include/petscversion.h.bak | \
 # eliminate misc files mercurial leaves
 /usr/bin/find . -type f -name "*.orig" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
-cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
+cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
 
 # Set the correct file permissions.
 cd $tmpdir
@@ -176,7 +176,7 @@ cd $tmpdir
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
 # recreate EMACS-TAGS [after deletion]
-cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
+cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
 # generate PKG-INFO for updating petsc version at pypy
 cd $tmpdir/petsc$version && python setup.py egg_info && /bin/cp petsc.egg-info/PKG-INFO . && /bin/rm -rf petsc.egg-info config/pypi
 

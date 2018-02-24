@@ -19,7 +19,7 @@ Usage: examplesMkParse.py <-p petsc_dir> <-m makefile> <-v verbosity>
 
 In general:
     cd src/ksp/ksp/examples/tutorials
-    ../../../../../bin/maint/examplesMkParse.py -v 1
+    ../../../../../lib/petsc/bin/maint/examplesMkParse.py -v 1
  
 """
 

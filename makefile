@@ -162,16 +162,16 @@ test_build:
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
 	@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/bin/petscdiff runex19_hypre; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_hypre; \
          fi;
 	@if [ "${MUMPS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff runex19_fieldsplit_mumps; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_fieldsplit_mumps; \
          fi;
 	@if [ "${SUPERLU_DIST_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff runex19_superlu_dist; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
          fi;
 	@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff runex19_ml; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
          fi;
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
 	@if [ "${PETSC4PY}" = "yes" ]; then \
@@ -302,7 +302,7 @@ stream:
 #  See the users manual for how the tags files may be used from Emacs and Vi/Vim
 #
 alletags:
-	-@${PYTHON} bin/maint/generateetags.py
+	-@${PYTHON} lib/petsc/bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 # obtain gtags from http://www.gnu.org/s/global/
@@ -311,8 +311,8 @@ allgtags:
 
 allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
-	@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
-	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
+	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
+	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
@@ -323,11 +323,11 @@ cmakegen:
 #
 
 BMAKEFILES = conf/variables conf/rules conf/test 
-SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bugReport.py bin/maint/buildconfigtest bin/maint/builddistlite \
-             bin/maint/buildtest bin/maint/checkBuilds.py bin/maint/copylognightly bin/maint/copylognightly.tao bin/maint/countfiles bin/maint/findbadfiles \
-             bin/maint/fixinclude bin/maint/getexlist bin/maint/getpdflabels.py bin/maint/helpindex.py bin/maint/hosts.local bin/maint/hosts.solaris  \
-             bin/maint/lex.py  bin/maint/mapnameslatex.py bin/maint/startnightly bin/maint/startnightly.tao bin/maint/submitPatch.py \
-             bin/maint/update-docs.py  bin/maint/wwwindex.py bin/maint/xcludebackup bin/maint/xcludecblas bin/maint/zap bin/maint/zapall \
+SCRIPTS    = lib/petsc/bin/maint/builddist  lib/petsc/bin/maint/wwwman lib/petsc/bin/maint/xclude lib/petsc/bin/maint/bugReport.py lib/petsc/bin/maint/buildconfigtest lib/petsc/bin/maint/builddistlite \
+             lib/petsc/bin/maint/buildtest lib/petsc/bin/maint/checkBuilds.py lib/petsc/bin/maint/copylognightly lib/petsc/bin/maint/copylognightly.tao lib/petsc/bin/maint/countfiles lib/petsc/bin/maint/findbadfiles \
+             lib/petsc/bin/maint/fixinclude lib/petsc/bin/maint/getexlist lib/petsc/bin/maint/getpdflabels.py lib/petsc/bin/maint/helpindex.py lib/petsc/bin/maint/hosts.local lib/petsc/bin/maint/hosts.solaris  \
+             lib/petsc/bin/maint/lex.py  lib/petsc/bin/maint/mapnameslatex.py lib/petsc/bin/maint/startnightly lib/petsc/bin/maint/startnightly.tao lib/petsc/bin/maint/submitPatch.py \
+             lib/petsc/bin/maint/update-docs.py  lib/petsc/bin/maint/wwwindex.py lib/petsc/bin/maint/xcludebackup lib/petsc/bin/maint/xcludecblas lib/petsc/bin/maint/zap lib/petsc/bin/maint/zapall \
              config/PETSc/Configure.py config/PETSc/Options.py \
              config/PETSc/utilities/*.py
 
@@ -337,7 +337,7 @@ alldoc: allcite allpdf alldoc1 alldoc2 alldoc3 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
-	-${PYTHON} bin/maint/countpetsccits.py
+	-${PYTHON} lib/petsc/bin/maint/countpetsccits.py
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
@@ -359,17 +359,17 @@ allmanexamples: chk_loc allmanpages
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 	-${OMAKE} manimplementations LOC=${LOC}
-	-${PYTHON} bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} manconcepts LOC=${LOC}
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
-	-${PYTHON} bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} lib/petsc/bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
-	-${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #
 # Builds HTML versions of Matlab scripts
 alldoc3: chk_loc
@@ -423,7 +423,7 @@ deletemanualpages: chk_loc
           ${RM} ${LOC}/docs/exampleconcepts ;\
           ${RM} ${LOC}/docs/manconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
-          ${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
+          ${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
 allcleanhtml:
@@ -439,7 +439,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR} master
+	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} master
 
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
@@ -479,10 +479,10 @@ createfastbuild:
 #  See script for details
 #
 gcov:
-	-@${PETSC_DIR}/bin/maint/gcov.py -run_gcov
+	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
 
 mergegcov:
-	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
+	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 ########################
 #

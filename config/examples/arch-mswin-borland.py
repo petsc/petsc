@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  # path set to $PETSC_DIR/bin/win32fe
+  # path set to $PETSC_DIR/lib/petsc/bin/win32fe
   '--with-vendor-compilers=borland',
   '--with-fc=0',
   '--with-ranlib=true',

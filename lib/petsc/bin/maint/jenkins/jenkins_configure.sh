@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#for fname in bin/maint/jenkins/jenkins_make.sh bin/maint/jenkins/jenkins_test.sh config/examples/arch-jenkins-linux-gcc-g++-c-no-yes-real-no-_float128.py config/examples/arch-jenkins-linux-gcc-gfortran-g++-c-yes-no-real-yes-double.py config/examples/arch-jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double.py config/examples/arch-jenkins-osx-clang-gfortran-clang++-yes-yes-complex-no-single.py; do
+#for fname in lib/petsc/bin/maint/jenkins/jenkins_make.sh lib/petsc/bin/maint/jenkins/jenkins_test.sh config/examples/arch-jenkins-linux-gcc-g++-c-no-yes-real-no-_float128.py config/examples/arch-jenkins-linux-gcc-gfortran-g++-c-yes-no-real-yes-double.py config/examples/arch-jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double.py config/examples/arch-jenkins-osx-clang-gfortran-clang++-yes-yes-complex-no-single.py; do
 #  if [ ! -e ${fname} ]; then
 #    git checkout sarich/feature-jenkins-submit ${fname}
 #  fi

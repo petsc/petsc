@@ -335,8 +335,8 @@ class Configure(config.package.Package):
     #  use MPI-Uni can find them.
     self.include = [os.path.abspath(os.path.join('include', 'petsc','mpiuni'))]
     self.framework.packages.append(self)
-    self.mpiexec = '${PETSC_DIR}/bin/petsc-mpiexec.uni'
-    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/petsc-mpiexec.uni')
+    self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
+    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)

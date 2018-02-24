@@ -19,14 +19,14 @@ Quick start
 
 Architecture independent (just analyze makefiles):
 
-  bin/maint/examplesWalker.py -f examplesAnalyze src
+  lib/petsc/bin/maint/examplesWalker.py -f examplesAnalyze src
 
      Show tests source files and tests as organized by type (TESTEXAMPLES*), 
      Output: 
         MakefileAnalysis-tests.txt      MakefileSummary-tests.txt
         MakefileAnalysis-tutorials.txt  MakefileSummary-tutorials.txt
 
-  bin/maint/examplesWalker.py -f examplesConsistency src
+  lib/petsc/bin/maint/examplesWalker.py -f examplesConsistency src
      Show consistency between the EXAMPLES* variables and TESTEXAMPLES* variables
      Output: 
         ConsistencyAnalysis-tests.txt      ConsistencySummary-tests.txt
@@ -34,11 +34,11 @@ Architecture independent (just analyze makefiles):
 
 Architecture dependent (need to modify files and run tests - see below):
 
-  bin/maint/examplesWalker.py -f getFileSizes src
+  lib/petsc/bin/maint/examplesWalker.py -f getFileSizes src
      Give the example file sizes for the tests (see below)
      Output:  FileSizes.txt
 
-  bin/maint/examplesWalker.py -m <output of make alltests>
+  lib/petsc/bin/maint/examplesWalker.py -m <output of make alltests>
      Show examples that are run
      Output:  
         RunArchAnalysis-tests.txt      RunArchSummary-tests.txt
@@ -76,7 +76,7 @@ Currently the actions are:
          action to calculate the file sizes of those executables
 
 One other mode:
-  bin/maint/examplesWalker.py -m <output of make alltests>
+  lib/petsc/bin/maint/examplesWalker.py -m <output of make alltests>
       -- If lib/petsc/conf/tests is modified to turn on output
          the tests run, then one can see the tests are written
          out to the summary.  We then process that output and 

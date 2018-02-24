@@ -108,7 +108,7 @@ class Configure(config.package.GNUPackage):
         self.logWrite('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import os,sys
-          sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))
+          sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
