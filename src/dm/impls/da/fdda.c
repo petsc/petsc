@@ -843,7 +843,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   ierr = ISRestoreIndices(is_glob,&idx);CHKERRQ(ierr);
   ierr = ISDestroy(&is_glob);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nb,gidx,PETSC_USE_POINTER,&is_loc_filt);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,dof,nb,gidx,PETSC_USE_POINTER,&is_loc_filt);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is_loc_filt,&ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&is_loc_filt);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(lJ,ltog,ltog);CHKERRQ(ierr);
