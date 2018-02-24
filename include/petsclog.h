@@ -364,7 +364,7 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
  ((petsc_send_ct++,0) || PetscMPITypeSize(&petsc_send_len,count,datatype) || MPI_Send(buf,count,datatype,dest,tag,comm))
 
 #define MPI_Wait(request,status) \
- ((petsc_wait_ct++,petsc_sum_of_waits_ct++,0) || MPI_Wait(request,status))
+  ((petsc_wait_ct++,petsc_sum_of_waits_ct++,MPI_Wait(request,status)))
 
 #define MPI_Waitany(a,b,c,d) \
  ((petsc_wait_any_ct++,petsc_sum_of_waits_ct++,0) || MPI_Waitany(a,b,c,d))
