@@ -148,6 +148,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   Pipe           *pipe=NULL;
   Pump           *pump=NULL;
   PetscScalar    curve_x,curve_y;
+  double         v1,v2,v3,v4,v5,v6;
 
   PetscFunctionBegin;
   water->nvertex = water->nedge = 0;
@@ -210,7 +211,9 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     vert[nv].type = VERTEX_TYPE_JUNCTION;
     /*    printf("%s\n",line); */
     junction = &vert[nv].junc;
-    ndata = sscanf(line,"%d %lf %lf %d",&vert[nv].id,&junction->elev,&junction->demand,&junction->dempattern);
+    ndata = sscanf(line,"%d %lf %lf %d",&vert[nv].id,&v1,&v2,&junction->dempattern);
+    junction->elev   = (PetscScalar)v1;
+    junction->demand = (PetscScalar)v2;
     junction->demand *= GPM_CFS;
     junction->id = vert[nv].id;
     nv++;
@@ -223,8 +226,9 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     vert[nv].type = VERTEX_TYPE_RESERVOIR;
     /*    printf("%s\n",line); */
     reservoir = &vert[nv].res;
-    ndata = sscanf(line,"%d %lf %d",&vert[nv].id,&reservoir->head,&reservoir->headpattern);
-    reservoir->id = vert[nv].id;
+    ndata = sscanf(line,"%d %lf %d",&vert[nv].id,&v1,&reservoir->headpattern);
+    reservoir->head = (PetscScalar)v1;
+    reservoir->id   = vert[nv].id;
     nv++;
   }
 
@@ -235,8 +239,14 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     vert[nv].type = VERTEX_TYPE_TANK;
     /*    printf("%s\n",line); */
     tank = &vert[nv].tank;
-    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&vert[nv].id,&tank->elev,&tank->initlvl,&tank->minlvl,&tank->maxlvl,&tank->diam,&tank->minvolume,&tank->volumecurve);
-    tank->id = vert[nv].id;
+    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&vert[nv].id,&v1,&v2,&v3,&v4,&v5,&v6,&tank->volumecurve);
+    tank->elev      = (PetscScalar)v1;
+    tank->initlvl   = (PetscScalar)v2;
+    tank->minlvl    = (PetscScalar)v3;
+    tank->maxlvl    = (PetscScalar)v4;
+    tank->diam      = (PetscScalar)v5;
+    tank->minvolume = (PetscScalar)v6;
+    tank->id        = vert[nv].id;
     nv++;
   }
 
@@ -247,8 +257,12 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     edge[ne].type = EDGE_TYPE_PIPE;
     /*    printf("%s\n",line); */
     pipe = &edge[ne].pipe;
-    ndata = sscanf(line,"%d %d %d %lf %lf %lf %lf %s",&pipe->id,&pipe->node1,&pipe->node2,&pipe->length,&pipe->diam,&pipe->roughness,&pipe->minorloss,pipe->stat);
-    edge[ne].id = pipe->id;
+    ndata = sscanf(line,"%d %d %d %lf %lf %lf %lf %s",&pipe->id,&pipe->node1,&pipe->node2,&v1,&v2,&v3,&v4,pipe->stat);
+    pipe->length    = (PetscScalar)v1;
+    pipe->diam      = (PetscScalar)v2;
+    pipe->roughness = (PetscScalar)v3;
+    pipe->minorloss = (PetscScalar)v4;
+    edge[ne].id     = pipe->id;
     if (strcmp(pipe->stat,"OPEN") == 0) pipe->status = PIPE_STATUS_OPEN;
     if (ndata < 8) {
       strcpy(pipe->stat,"OPEN"); /* default OPEN */
@@ -277,7 +291,9 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   for (i=0; i < ncurve; i++) {
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data curve from file");
     /*    printf("%s\n",line); */
-    ndata = sscanf(line,"%d %lf %lf",&curve_id,&curve_x,&curve_y);
+    ndata = sscanf(line,"%d %lf %lf",&curve_id,&v1,&v2);
+    curve_x = (PetscScalar)v1;
+    curve_y = (PetscScalar)v2;
     /* Check for pump with the curve_id */
     for (j=water->npipe;j < water->npipe+water->npump;j++) {
       if(water->edge[j].pump.paramid == curve_id) {
