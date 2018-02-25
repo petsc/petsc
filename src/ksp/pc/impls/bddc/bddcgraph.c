@@ -371,12 +371,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         }
       }
 
-#if 0
-      printf("RANK %d: start  %d (%g %g) (size %d)\n",PetscGlobalRank,shared[ns][0],wdist[0],wdist[1],n_shared[ns]);
-      printf("RANK %d: point1 %d (%g %g)\n",PetscGlobalRank,shared[ns][point1],wdist[point1*cdim + 0],wdist[point1*cdim + 1]);
-      printf("RANK %d: point2 %d (%g %g)\n",PetscGlobalRank,shared[ns][point2],wdist[point2*cdim + 0],wdist[point2*cdim + 1]);
-      printf("RANK %d: point3 %d (%g %g)\n",PetscGlobalRank,shared[ns][point3],wdist[point3*cdim + 0],wdist[point3*cdim + 1]);
-#endif
       /* all dofs having the same coordinates will be primal */
       for (j=0;j<n_shared[ns];j++) {
         PetscBool same[3] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};

@@ -3297,7 +3297,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               if (!scal) {
                 PetscBLASInt B_neigs2;
 
-                bb[0] = uthresh; bb[1] = PETSC_MAX_REAL;
+                bb[0] = PetscMax(lthresh*lthresh,uthresh); bb[1] = PETSC_MAX_REAL;
                 ierr = PetscMemcpy(S,Sarray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
                 ierr = PetscMemcpy(St,Starray+cumarray,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
