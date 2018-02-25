@@ -1,6 +1,38 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
+static PetscErrorCode PCBDDCViewNullSpaceCorrectionPC(PC pc,PetscViewer view)
+{
+  PetscErrorCode          ierr;
+  PetscBool               isascii;
+  NullSpaceCorrection_ctx pc_ctx;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&pc_ctx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(view,"inner preconditioner:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
+    ierr = PCView(pc_ctx->local_pc,view);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
+
+    ierr = PetscViewerPushFormat(view,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(view,"Lbasis:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
+    ierr = MatView(pc_ctx->Lbasis_mat,view);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(view,"Kbasis:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
+    ierr = MatView(pc_ctx->Kbasis_mat,view);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
+
+    ierr = PetscViewerPopFormat(view);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y)
 {
   NullSpaceCorrection_ctx pc_ctx;
@@ -63,7 +95,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscInt                 basis_dofs,basis_size,nnsp_size,i,k;
   PetscBool                nnsp_has_cnst;
   PetscReal                test_err,lambda_min,lambda_max;
-  PetscBool                setsym,issym=PETSC_FALSE;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -95,6 +126,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
    /* Create shell ctx */
   ierr = PetscNew(&shell_ctx);CHKERRQ(ierr);
   shell_ctx->apply_scaling = needscaling;
+  shell_ctx->scale = 1.0;
 
   /* Create work vectors in shell context */
   ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
@@ -135,7 +167,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
-
   /* Assemble another Mat object in shell context */
   ierr = MatTransposeMatMult(shell_ctx->basis_mat,shell_ctx->Kbasis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&small_mat);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&matinfo);CHKERRQ(ierr);
@@ -170,26 +201,29 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(newpc,shell_ctx);CHKERRQ(ierr);
   ierr = PCShellSetApply(newpc,PCBDDCApplyNullSpaceCorrectionPC);CHKERRQ(ierr);
+  ierr = PCShellSetView(newpc,PCBDDCViewNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyNullSpaceCorrectionPC);CHKERRQ(ierr);
+  ierr = PCSetUp(shell_ctx->local_pc);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
   ierr = KSPSetPC(local_ksp,newpc);CHKERRQ(ierr);
   ierr = KSPSetUp(local_ksp);CHKERRQ(ierr);
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   if (needscaling) {
-    KSP check_ksp;
-    Vec *workv;
+    KSP         check_ksp;
+    Vec         *workv;
+    const char* prefix;
 
     ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(check_ksp,pc->erroriffailure);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(local_ksp,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(check_ksp,"approxscale_");CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(check_ksp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPSetOperators(check_ksp,local_mat,local_mat);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(check_ksp,1.e-4,1.e-12,PETSC_DEFAULT,basis_dofs);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
-    if (issym) {
-      ierr = KSPSetType(check_ksp,KSPCG);CHKERRQ(ierr);
-    }
     ierr = VecDuplicateVecs(shell_ctx->work_full_1,2,&workv);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
     ierr = KSPSetPC(check_ksp,newpc);CHKERRQ(ierr);
     ierr = KSPSetUp(check_ksp);CHKERRQ(ierr);
     ierr = VecSetRandom(workv[1],NULL);CHKERRQ(ierr);
@@ -224,9 +258,9 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
   PC                       check_pc;
   Mat                      test_mat,local_mat;
   PetscReal                test_err,lambda_min,lambda_max;
-  PetscBool                setsym,issym=PETSC_FALSE;
   Vec                      work1,work2,work3;
   PetscInt                 k;
+  const char               *prefix;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -267,14 +301,14 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
+  ierr = KSPGetOptionsPrefix(local_ksp,&prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(check_ksp,"approxcheck_");CHKERRQ(ierr);
   ierr = KSPSetErrorIfNotConverged(check_ksp,pc->erroriffailure);CHKERRQ(ierr);
   ierr = KSPSetOperators(check_ksp,local_mat,local_mat);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(check_ksp,1.e-10,1.e-8,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(check_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
-  if (issym) {
-    ierr = KSPSetType(check_ksp,KSPCG);CHKERRQ(ierr);
-  }
+  ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
   ierr = KSPSetPC(check_ksp,check_pc);CHKERRQ(ierr);
   ierr = KSPSetUp(check_ksp);CHKERRQ(ierr);
   ierr = VecSetRandom(work1,NULL);CHKERRQ(ierr);
