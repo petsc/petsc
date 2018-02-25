@@ -55,7 +55,7 @@ Sorted = ["PetscBarrier",
          "PCApplyMultiple",
          "PCApplySymmLeft",
          "PCApplySymmRight",
-         "PCApplyOnMproc",
+         "",
          "PCModifySubMatri",
 
          "PCGAMGGraph_AGG",
