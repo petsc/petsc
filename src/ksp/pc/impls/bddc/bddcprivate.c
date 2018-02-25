@@ -3671,6 +3671,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   /* determine if can use MatSolve routines instead of calling KSPSolve on ksp_R */
   ierr = KSPGetPC(pcbddc->ksp_R,&pc_R);CHKERRQ(ierr);
+  ierr = PCSetUp(pc_R);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc_R,PCLU,&isLU);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc_R,PCILU,&isILU);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc_R,PCCHOLESKY,&isCHOL);CHKERRQ(ierr);
@@ -5109,8 +5110,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
       ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
     }
-    /* Set Up KSP for Dirichlet problem of BDDC */
-    ierr = KSPSetUp(pcbddc->ksp_D);CHKERRQ(ierr);
     /* set ksp_D into pcis data */
     ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)pcbddc->ksp_D);CHKERRQ(ierr);
@@ -5249,8 +5248,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
 
       ierr = KSPSetPC(pcbddc->ksp_R,reuse_solver->correction_solver);CHKERRQ(ierr);
     }
-    /* Set Up KSP for Neumann problem of BDDC */
-    ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
   }
 
   if (pcbddc->dbg_flag) {

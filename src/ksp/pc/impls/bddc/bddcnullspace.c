@@ -86,7 +86,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PC                       newpc;
   NullSpaceCorrection_ctx  shell_ctx;
   Mat                      local_mat,local_pmat,small_mat,inv_small_mat;
-  const Vec                *nullvecs;
+  Vec                      *nullvecs;
   VecScatter               scatter_ctx;
   IS                       is_aux,local_dofs;
   MatFactorInfo            matinfo;
@@ -100,11 +100,15 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscFunctionBegin;
   ierr = MatGetNullSpace(matis->A,&NullSpace);CHKERRQ(ierr);
   if (!NullSpace) {
+    ierr = MatGetNearNullSpace(matis->A,&NullSpace);CHKERRQ(ierr);
+  }
+  if (!NullSpace) {
     if (pcbddc->dbg_flag) {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d doesn't have local nullspace: no need for correction in %s solver \n",PetscGlobalRank,isdir ? "Dirichlet" : "Neumann");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n",PetscGlobalRank,isdir ? "Dirichlet" : "Neumann");CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
+
   /* Infer the local solver */
   if (isdir) {
     /* Dirichlet solver */
@@ -119,7 +123,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = KSPGetOperators(local_ksp,&local_mat,&local_pmat);CHKERRQ(ierr);
 
   /* Get null space vecs */
-  ierr = MatNullSpaceGetVecs(NullSpace,&nnsp_has_cnst,&nnsp_size,&nullvecs);CHKERRQ(ierr);
+  ierr = MatNullSpaceGetVecs(NullSpace,&nnsp_has_cnst,&nnsp_size,(const Vec**)&nullvecs);CHKERRQ(ierr);
   basis_size = nnsp_size;
   if (nnsp_has_cnst) basis_size++;
 
@@ -151,19 +155,35 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     ierr = VecPlaceArray(shell_ctx->work_full_1,(const PetscScalar*)&basis_mat[k*basis_dofs]);CHKERRQ(ierr);
     ierr = VecScatterBegin(scatter_ctx,nullvecs[k],shell_ctx->work_full_1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter_ctx,nullvecs[k],shell_ctx->work_full_1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecPlaceArray(shell_ctx->work_full_2,(const PetscScalar*)&Kbasis_mat[k*basis_dofs]);CHKERRQ(ierr);
-    ierr = MatMult(local_mat,shell_ctx->work_full_1,shell_ctx->work_full_2);CHKERRQ(ierr);
     ierr = VecResetArray(shell_ctx->work_full_1);CHKERRQ(ierr);
-    ierr = VecResetArray(shell_ctx->work_full_2);CHKERRQ(ierr);
   }
   if (nnsp_has_cnst) {
     ierr = VecPlaceArray(shell_ctx->work_full_1,(const PetscScalar*)&basis_mat[k*basis_dofs]);CHKERRQ(ierr);
     ierr = VecSet(shell_ctx->work_full_1,one);CHKERRQ(ierr);
+    ierr = VecResetArray(shell_ctx->work_full_1);CHKERRQ(ierr);
+  }
+
+  ierr = PetscMalloc1(basis_size,&nullvecs);CHKERRQ(ierr);
+  for (k=0;k<basis_size;k++) {
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,basis_dofs,basis_mat + k*basis_dofs,&nullvecs[k]);CHKERRQ(ierr);
+  }
+  ierr = PCBDDCOrthonormalizeVecs(basis_size,nullvecs);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_FALSE,basis_size,nullvecs,&NullSpace);CHKERRQ(ierr);
+  ierr = MatSetNearNullSpace(local_mat,NullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&NullSpace);CHKERRQ(ierr);
+  for (k=0;k<basis_size;k++) {
+    ierr = VecDestroy(&nullvecs[k]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(nullvecs);CHKERRQ(ierr);
+
+  for (k=0;k<basis_size;k++) {
+    ierr = VecPlaceArray(shell_ctx->work_full_1,(const PetscScalar*)&basis_mat[k*basis_dofs]);CHKERRQ(ierr);
     ierr = VecPlaceArray(shell_ctx->work_full_2,(const PetscScalar*)&Kbasis_mat[k*basis_dofs]);CHKERRQ(ierr);
     ierr = MatMult(local_mat,shell_ctx->work_full_1,shell_ctx->work_full_2);CHKERRQ(ierr);
     ierr = VecResetArray(shell_ctx->work_full_1);CHKERRQ(ierr);
     ierr = VecResetArray(shell_ctx->work_full_2);CHKERRQ(ierr);
   }
+
   ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
@@ -203,7 +223,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = PCShellSetApply(newpc,PCBDDCApplyNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCShellSetView(newpc,PCBDDCViewNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyNullSpaceCorrectionPC);CHKERRQ(ierr);
-  ierr = PCSetUp(shell_ctx->local_pc);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
   ierr = KSPSetPC(local_ksp,newpc);CHKERRQ(ierr);
   ierr = KSPSetUp(local_ksp);CHKERRQ(ierr);
@@ -265,7 +284,12 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
 
   PetscFunctionBegin;
   ierr = MatGetNullSpace(matis->A,&NullSpace);CHKERRQ(ierr);
-  if (!NullSpace) PetscFunctionReturn(0);
+  if (!NullSpace) {
+    ierr = MatGetNearNullSpace(matis->A,&NullSpace);CHKERRQ(ierr);
+  }
+  if (!NullSpace) {
+    PetscFunctionReturn(0);
+  }
   if (!pcbddc->dbg_flag) PetscFunctionReturn(0);
   if (isdir) local_ksp = pcbddc->ksp_D;
   else local_ksp = pcbddc->ksp_R;
