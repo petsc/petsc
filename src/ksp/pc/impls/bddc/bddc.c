@@ -107,14 +107,12 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   PC_BDDC              *pcbddc = (PC_BDDC*)pc->data;
   PC_IS                *pcis = (PC_IS*)pc->data;
   PetscErrorCode       ierr;
-  PetscBool            isascii,isstring;
+  PetscBool            isascii;
   PetscSubcomm         subcomm;
   PetscViewer          subviewer;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  /* Nothing printed for the String viewer */
   /* ASCII viewer */
   if (isascii) {
     PetscMPIInt   color,rank,size;
