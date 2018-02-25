@@ -4,7 +4,7 @@
 #include <petscbt.h>
 #include <petscblaslapack.h>
 
-#ifdef __INTEL_COMPILER
+#if defined(PETSC_HAVE_IMMINTRIN_H)
 #include <immintrin.h>
 #endif
 
@@ -663,7 +663,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
 PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -1682,7 +1682,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
 PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;

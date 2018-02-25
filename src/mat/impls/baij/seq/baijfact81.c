@@ -4,13 +4,13 @@
  */
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
-#ifdef __INTEL_COMPILER
+#if defined(PETSC_HAVE_IMMINTRIN_H)
 #include <immintrin.h>
 #endif
 /*
    Version for when blocks are 9 by 9
  */
-#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C =B;

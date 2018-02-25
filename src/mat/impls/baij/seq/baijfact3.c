@@ -35,7 +35,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscBool natural)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
       break;
     case 9:
-#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering;
 #else
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;

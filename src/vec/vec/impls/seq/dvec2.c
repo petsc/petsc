@@ -6,7 +6,7 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/kernels/petscaxpy.h>
 
-#if defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H)
 #include <immintrin.h>
 #define _MM256_TRANSPOSE4_PD(row0, row1, row2, row3) {      \
   __m256d tmp3, tmp2, tmp1, tmp0;                         \
@@ -106,7 +106,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 }
 
 #else
-#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
 PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode    ierr;
