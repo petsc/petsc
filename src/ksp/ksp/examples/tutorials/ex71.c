@@ -1,5 +1,6 @@
 static char help[] =  "This example illustrates the use of PCBDDC/FETI-DP with 2D/3D DMDA.\n\
-It solves the Poisson problem or the Elasticity problem\n\n";
+It solves the constant coefficient Poisson problem or the Elasticity problem \n\
+on a uniform grid of [0,cells_x] x [0,cells_y] x [0,cells_z]\n\n";
 
 /* Contributed by Wim Vanroose <wim@vanroo.se> */
 
@@ -214,7 +215,7 @@ int main(int argc,char **args)
     default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %D",user.dim);
     }
   }
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0.0,1.0*user.cells[0],0.0,1.0*user.cells[1],0.0,1.0*user.cells[2]);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
@@ -224,11 +225,25 @@ int main(int argc,char **args)
     ierr = PetscMalloc1(nel*nen,&e_glo);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyBlock(map,nen*nel,e_loc,e_glo);CHKERRQ(ierr);
   }
+
+  /* we reorder the indices since the element matrices are given in lexicographic order,
+     whereas the elements indices returned by DMDAGetElements follow the usual FEM ordering
+     i.e., element matrices     DMDA ordering
+               2---3              3---2
+              /   /              /   /
+             0---1              0---1
+  */
   for (i = 0; i < nel; ++i) {
+    PetscInt ord[8] = {0,1,3,2,4,5,7,6};
+    PetscInt j,idxs[8];
+
+    if (nen > 8) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not coded");
     if (!e_glo) {
-      ierr = MatSetValuesBlockedLocal(A,nen,e_loc+i*nen,nen,e_loc+i*nen,user.elemMat,ADD_VALUES);CHKERRQ(ierr);
+      for (j=0;j<nen;j++) idxs[j] = e_loc[i*nen+ord[j]];
+      ierr = MatSetValuesBlockedLocal(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES);CHKERRQ(ierr);
     } else {
-      ierr = MatSetValuesBlocked(A,nen,e_glo+i*nen,nen,e_glo+i*nen,user.elemMat,ADD_VALUES);CHKERRQ(ierr);
+      for (j=0;j<nen;j++) idxs[j] = e_glo[i*nen+ord[j]];
+      ierr = MatSetValuesBlocked(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = DMDARestoreElements(da,&nel,&nen,&e_loc);CHKERRQ(ierr);
