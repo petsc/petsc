@@ -6837,12 +6837,14 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
   ierr = PetscMalloc1(n,&alphas);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  ierr = VecNormalize(vecs[0],NULL);CHKERRQ(ierr);
+  for (i=1;i<n;i++) {
+    ierr = VecMDot(vecs[i],i,vecs,alphas);CHKERRQ(ierr);
+    for (j=0;j<i;j++) alphas[j] = PetscConj(-alphas[j]);
+    ierr = VecMAXPY(vecs[i],i,alphas,vecs);CHKERRQ(ierr);
     ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
-    ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],alphas);CHKERRQ(ierr);
-    for (j=0;j<n-i-1;j++) alphas[j] = PetscConj(-alphas[j]);
-    ierr = VecMAXPY(vecs[j],n-i-1,alphas,vecs+i);CHKERRQ(ierr);
   }
   ierr = PetscFree(alphas);CHKERRQ(ierr);
   PetscFunctionReturn(0);
