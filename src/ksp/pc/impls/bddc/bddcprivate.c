@@ -5063,6 +5063,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     /* Matrix for Dirichlet problem is pcis->A_II */
     n_D = pcis->n - pcis->n_B;
     if (!pcbddc->ksp_D) { /* create object if not yet build */
+      void (*f)(void) = 0;
+
       ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
       /* default */
@@ -5077,6 +5079,24 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)pc_temp,"PCSetCoordinates_C",&f);CHKERRQ(ierr);
+      if (f && pcbddc->mat_graph->cloc) {
+        PetscReal      *coords = pcbddc->mat_graph->coords,*scoords;
+        const PetscInt *idxs;
+        PetscInt       cdim = pcbddc->mat_graph->cdim,nl,i,d;
+
+        ierr = ISGetLocalSize(pcis->is_I_local,&nl);CHKERRQ(ierr);
+        ierr = ISGetIndices(pcis->is_I_local,&idxs);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nl*cdim,&scoords);CHKERRQ(ierr);
+        for (i=0;i<nl;i++) {
+          for (d=0;d<cdim;d++) {
+            scoords[i*cdim+d] = coords[idxs[i]*cdim+d];
+          }
+        }
+        ierr = ISRestoreIndices(pcis->is_I_local,&idxs);CHKERRQ(ierr);
+        ierr = PCSetCoordinates(pc_temp,cdim,nl,scoords);CHKERRQ(ierr);
+        ierr = PetscFree(scoords);CHKERRQ(ierr);
+      }
     }
     ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
     if (sub_schurs && sub_schurs->reuse_solver) {
@@ -5182,6 +5202,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = MatSetOption(A_RR,MAT_SYMMETRIC,pcbddc->local_mat->symmetric_set);CHKERRQ(ierr);
     }
     if (!pcbddc->ksp_R) { /* create object if not present */
+      void (*f)(void) = 0;
+
       ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
       /* default */
@@ -5196,6 +5218,24 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)pc_temp,"PCSetCoordinates_C",&f);CHKERRQ(ierr);
+      if (f && pcbddc->mat_graph->cloc) {
+        PetscReal      *coords = pcbddc->mat_graph->coords,*scoords;
+        const PetscInt *idxs;
+        PetscInt       cdim = pcbddc->mat_graph->cdim,nl,i,d;
+
+        ierr = ISGetLocalSize(pcbddc->is_R_local,&nl);CHKERRQ(ierr);
+        ierr = ISGetIndices(pcbddc->is_R_local,&idxs);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nl*cdim,&scoords);CHKERRQ(ierr);
+        for (i=0;i<nl;i++) {
+          for (d=0;d<cdim;d++) {
+            scoords[i*cdim+d] = coords[idxs[i]*cdim+d];
+          }
+        }
+        ierr = ISRestoreIndices(pcbddc->is_R_local,&idxs);CHKERRQ(ierr);
+        ierr = PCSetCoordinates(pc_temp,cdim,nl,scoords);CHKERRQ(ierr);
+        ierr = PetscFree(scoords);CHKERRQ(ierr);
+      }
     }
     /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
     if (!n_R) {
