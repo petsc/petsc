@@ -81,7 +81,10 @@ typedef struct {
   PetscBool     use_vertices;
   PetscBool     use_faces;
   PetscBool     use_edges;
+
   /* Some customization is possible */
+  PetscBool           corner_selection;
+  PetscBool           corner_selected;
   PetscBool           recompute_topography;
   PetscBool           graphanalyzed;
   PCBDDCGraph         mat_graph;

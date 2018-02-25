@@ -1628,6 +1628,15 @@ PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC pc, IS primalv)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode func_coords_private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *out, void *ctx)
+{
+  PetscInt f, *comp  = (PetscInt *)ctx;
+
+  PetscFunctionBegin;
+  for (f=0;f<Nf;f++) out[f] = X[*comp];
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
 {
   PetscErrorCode ierr;
@@ -1770,10 +1779,52 @@ boundary:
           ierr = ISCreateBlock(PetscObjectComm((PetscObject)pc),bs,n,idxout,PETSC_OWN_POINTER,&corners);CHKERRQ(ierr);
           ierr = PCBDDCAddPrimalVerticesLocalIS(pc,corners);CHKERRQ(ierr);
           ierr = ISDestroy(&corners);CHKERRQ(ierr);
+          pcbddc->corner_selected = PETSC_TRUE;
         } else { /* not from DMDA */
           ierr = DMDARestoreSubdomainCornersIS(dm,&corners);CHKERRQ(ierr);
         }
       }
+    }
+  }
+  if (pcbddc->corner_selection && !pcbddc->mat_graph->cdim) {
+    DM dm;
+
+    ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+    if (!dm) {
+      ierr = MatGetDM(pc->pmat,&dm);CHKERRQ(ierr);
+    }
+    if (dm) {
+      Vec            vcoords;
+      PetscSection   section;
+      PetscReal      *coords;
+      PetscInt       d,cdim,nl,nf,**ctxs;
+      PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *);
+
+      ierr = DMGetCoordinateDim(dm,&cdim);CHKERRQ(ierr);
+      ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+      ierr = PetscSectionGetNumFields(section,&nf);CHKERRQ(ierr);
+      ierr = DMCreateGlobalVector(dm,&vcoords);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(vcoords,&nl);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nl*cdim,&coords);CHKERRQ(ierr);
+      ierr = PetscMalloc2(nf,&funcs,nf,&ctxs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nf,&ctxs[0]);CHKERRQ(ierr);
+      for (d=0;d<nf;d++) funcs[d] = func_coords_private;
+      for (d=1;d<nf;d++) ctxs[d] = ctxs[d-1] + 1;
+      for (d=0;d<cdim;d++) {
+        PetscInt          i;
+        const PetscScalar *v;
+
+        for (i=0;i<nf;i++) ctxs[i][0] = d;
+        ierr = DMProjectFunction(dm,0.0,funcs,(void**)ctxs,INSERT_VALUES,vcoords);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(vcoords,&v);CHKERRQ(ierr);
+        for (i=0;i<nl;i++) coords[i*cdim+d] = PetscRealPart(v[i]);
+        ierr = VecRestoreArrayRead(vcoords,&v);CHKERRQ(ierr);
+      }
+      ierr = VecDestroy(&vcoords);CHKERRQ(ierr);
+      ierr = PCSetCoordinates(pc,cdim,nl,coords);CHKERRQ(ierr);
+      ierr = PetscFree(coords);CHKERRQ(ierr);
+      ierr = PetscFree(ctxs[0]);CHKERRQ(ierr);
+      ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -3512,6 +3563,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = PCBDDCSubSchursDestroy(&pcbddc->sub_schurs);CHKERRQ(ierr);
   pcbddc->graphanalyzed        = PETSC_FALSE;
   pcbddc->recompute_topography = PETSC_TRUE;
+  pcbddc->corner_selected      = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -6794,6 +6846,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       pcbddc->mat_graph->cnloc  = n;
     }
     if (pcbddc->mat_graph->cnloc && pcbddc->mat_graph->cnloc != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local subdomain coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pcbddc->mat_graph->nvtxs);
+    pcbddc->mat_graph->active_coords = (PetscBool)(pcbddc->corner_selection && !pcbddc->corner_selected);
 
     /* Setup of Graph */
     pcbddc->mat_graph->commsizelimit = 0; /* don't use the COMM_SELF variant of the graph */

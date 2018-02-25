@@ -291,25 +291,120 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   MPI_Comm       interface_comm;
   PetscMPIInt    size;
   PetscInt       i;
+  PetscBT        cornerp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* compute connected components locally */
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&interface_comm);CHKERRQ(ierr);
   ierr = PCBDDCGraphComputeConnectedComponentsLocal(graph);CHKERRQ(ierr);
+
+  cornerp = NULL;
+  if (graph->active_coords) { /* face based corner selection */
+    PetscReal      *wdist;
+    PetscInt       n_neigh,*neigh,*n_shared,**shared;
+    PetscInt       maxc, ns;
+
+    ierr = PetscBTCreate(graph->nvtxs,&cornerp);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    for (ns = 1, maxc = 0; ns < n_neigh; ns++) maxc = PetscMax(maxc,n_shared[ns]);
+    ierr = PetscMalloc1(maxc*graph->cdim,&wdist);CHKERRQ(ierr);
+
+    for (ns = 1; ns < n_neigh; ns++) { /* first proc is self */
+      PetscReal *anchor,mdist;
+      PetscInt  j,k,d,cdim = graph->cdim;
+      PetscInt  point1,point2,point3;
+/*
+      PetscBool isface = PETSC_FALSE;
+
+      for (i=0;i<n_shared[ns];i++) {
+        if (graph->count[shared[ns][i]] == 1) {
+          isface = PETSC_TRUE;
+          break;
+        }
+      }
+      if (!isface) continue;
+*/
+      /* import coordinates on shared interface */
+      for (j=0,k=0;j<n_shared[ns];j++)
+        for (d=0;d<cdim;d++)
+          wdist[k++] = graph->coords[shared[ns][j]*cdim+d];
+
+      /* the dofs are sorted by global numbering, so each rank start from the same id and will detect the same corners */
+      anchor = wdist;
+
+      /* find the farthest point from the starting one */
+      mdist = -1.0;
+      for (j=0,point1=0;j<n_shared[ns];j++) {
+        PetscReal dist = 0.0;
+
+        for (d=0;d<cdim;d++) dist += (wdist[j*cdim+d]-anchor[d])*(wdist[j*cdim+d]-anchor[d]);
+        if (dist > mdist) { mdist = dist; point1 = j; }
+      }
+
+      /* find the farthest point from point1 */
+      anchor = wdist + point1*cdim;
+      mdist  = -1.0;
+      for (j=0,point2=0;j<n_shared[ns];j++) {
+        PetscReal dist = 0.0;
+
+        for (d=0;d<cdim;d++) dist += (wdist[j*cdim+d]-anchor[d])*(wdist[j*cdim+d]-anchor[d]);
+        if (dist > mdist) { mdist = dist; point2 = j; }
+      }
+
+      /* find the third point maximizing the triangle area */
+      point3 = point2;
+      if (cdim > 2) {
+        PetscReal a = 0.0;
+
+        for (d=0;d<cdim;d++) a += (wdist[point1*cdim+d]-wdist[point2*cdim+d])*(wdist[point1*cdim+d]-wdist[point2*cdim+d]);
+        mdist = -1.0;
+        for (j=0,point3=0;j<n_shared[ns];j++) {
+          PetscReal area,b = 0.0, c = 0.0;
+
+          for (d=0;d<cdim;d++) {
+            b += (wdist[point1*cdim+d]-wdist[j*cdim+d])*(wdist[point1*cdim+d]-wdist[j*cdim+d]);
+            c += (wdist[point2*cdim+d]-wdist[j*cdim+d])*(wdist[point2*cdim+d]-wdist[j*cdim+d]);
+          }
+          area = (a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c); /* Heron's formula without divisions by 2 */
+          if (area > mdist) { mdist = area; point3 = j; }
+        }
+      }
+
+#if 0
+      printf("RANK %d: start  %d (%g %g) (size %d)\n",PetscGlobalRank,shared[ns][0],wdist[0],wdist[1],n_shared[ns]);
+      printf("RANK %d: point1 %d (%g %g)\n",PetscGlobalRank,shared[ns][point1],wdist[point1*cdim + 0],wdist[point1*cdim + 1]);
+      printf("RANK %d: point2 %d (%g %g)\n",PetscGlobalRank,shared[ns][point2],wdist[point2*cdim + 0],wdist[point2*cdim + 1]);
+      printf("RANK %d: point3 %d (%g %g)\n",PetscGlobalRank,shared[ns][point3],wdist[point3*cdim + 0],wdist[point3*cdim + 1]);
+#endif
+      /* all dofs having the same coordinates will be primal */
+      for (j=0;j<n_shared[ns];j++) {
+        PetscBool same[3] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
+
+        for (d=0;d<cdim;d++) {
+          same[0] = (PetscBool)(same[0] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point1*cdim+d]) < PETSC_SMALL));
+          same[1] = (PetscBool)(same[1] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point2*cdim+d]) < PETSC_SMALL));
+          same[2] = (PetscBool)(same[2] && (PetscAbsReal(wdist[j*cdim + d]-wdist[point3*cdim+d]) < PETSC_SMALL));
+        }
+        if (same[0] || same[1] || same[2]) {
+          ierr = PetscBTSet(cornerp,shared[ns][j]);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = PetscFree(wdist);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  }
+
   /* check consistency of connected components among neighbouring subdomains -> it adapt them in case it is needed */
   ierr = MPI_Comm_size(interface_comm,&size);CHKERRQ(ierr);
   adapt_interface_reduced = PETSC_FALSE;
   if (size > 1) {
     PetscInt i;
-    PetscBool adapt_interface = PETSC_FALSE;
-    for (i=0;i<graph->n_subsets;i++) {
+    PetscBool adapt_interface = cornerp ? PETSC_TRUE : PETSC_FALSE;
+    for (i=0;i<graph->n_subsets && !adapt_interface;i++) {
       /* We are not sure that on a given subset of the local interface,
          with two connected components, the latters be the same among sharing subdomains */
-      if (graph->subset_ncc[i] > 1) {
-        adapt_interface = PETSC_TRUE;
-        break;
-      }
+      if (graph->subset_ncc[i] > 1) adapt_interface = PETSC_TRUE;
     }
     ierr = MPIU_Allreduce(&adapt_interface,&adapt_interface_reduced,1,MPIU_BOOL,MPI_LOR,interface_comm);CHKERRQ(ierr);
   }
@@ -323,12 +418,33 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     PetscInt    *labels;
     PetscInt    ncc,cum_queue,mss,mns,j,k,s;
     PetscInt    **refine_buffer=NULL,*private_labels = NULL;
+    PetscBool   *subset_has_corn,*recv_buffer_bool;
 
+    ierr = PetscCalloc1(graph->n_subsets,&subset_has_corn);CHKERRQ(ierr);
+    if (cornerp) {
+      for (i=0;i<graph->n_subsets;i++) {
+        for (j=0;j<graph->subset_size[i];j++) {
+          if (PetscBTLookup(cornerp,graph->subset_idxs[i][j])) {
+            subset_has_corn[i] = PETSC_TRUE;
+            break;
+          }
+        }
+      }
+    }
     ierr = PetscMalloc1(graph->nvtxs,&labels);CHKERRQ(ierr);
     ierr = PetscMemzero(labels,graph->nvtxs*sizeof(*labels));CHKERRQ(ierr);
-    for (i=0;i<graph->ncc;i++)
-      for (j=graph->cptr[i];j<graph->cptr[i+1];j++)
-        labels[graph->queue[j]] = i;
+    for (i=0,k=0;i<graph->ncc;i++) {
+      PetscInt s = 1;
+      for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+        if (cornerp && PetscBTLookup(cornerp,graph->queue[j])) {
+          labels[graph->queue[j]] = k+s;
+          s += 1;
+        } else {
+          labels[graph->queue[j]] = k;
+        }
+      }
+      k += s;
+    }
 
     /* allocate some space */
     ierr = PetscMalloc1(graph->n_subsets+1,&cum_recv_counts);CHKERRQ(ierr);
@@ -337,7 +453,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     /* first count how many neighbours per connected component I will receive from */
     cum_recv_counts[0] = 0;
     for (i=0;i<graph->n_subsets;i++) cum_recv_counts[i+1] = cum_recv_counts[i]+graph->count[graph->subset_idxs[i][0]];
-    ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&recv_buffer);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&recv_buffer_bool);CHKERRQ(ierr);
     ierr = PetscMalloc2(cum_recv_counts[graph->n_subsets],&send_requests,cum_recv_counts[graph->n_subsets],&recv_requests);CHKERRQ(ierr);
     for (i=0;i<cum_recv_counts[graph->n_subsets];i++) {
       send_requests[i] = MPI_REQUEST_NULL;
@@ -350,13 +466,15 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       PetscMPIInt neigh,tag;
       PetscInt    count,*neighs;
 
-      count = graph->count[graph->subset_idxs[i][0]];
+      count  = graph->count[graph->subset_idxs[i][0]];
       neighs = graph->neighbours_set[graph->subset_idxs[i][0]];
-      ierr = PetscMPIIntCast(2*graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
+      ierr   = PetscMPIIntCast(2*graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
       for (k=0;k<count;k++) {
+        PetscBool ss = (PetscBool)(graph->subset_ncc[i] > 1 || subset_has_corn[i]);
+
         ierr = PetscMPIIntCast(neighs[k],&neigh);CHKERRQ(ierr);
-        ierr = MPI_Isend(&graph->subset_ncc[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-        ierr = MPI_Irecv(&recv_buffer[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Isend(&ss,1,MPIU_BOOL,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Irecv(&recv_buffer_bool[sum_requests],1,MPIU_BOOL,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
       }
     }
@@ -367,25 +485,26 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscBTCreate(graph->n_subsets,&subset_cc_adapt);CHKERRQ(ierr);
     ierr = PetscBTMemzero(graph->n_subsets,subset_cc_adapt);CHKERRQ(ierr);
     for (i=0;i<graph->n_subsets;i++) {
-      if (graph->subset_ncc[i] > 1) {
+      if (graph->subset_ncc[i] > 1 || subset_has_corn[i]) {
         ierr = PetscBTSet(subset_cc_adapt,i);CHKERRQ(ierr);
         continue;
       }
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
-         if (recv_buffer[j] > 1) {
+         if (recv_buffer_bool[j]) {
           ierr = PetscBTSet(subset_cc_adapt,i);CHKERRQ(ierr);
           break;
         }
       }
     }
-    ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
+    ierr = PetscFree(recv_buffer_bool);CHKERRQ(ierr);
+    ierr = PetscFree(subset_has_corn);CHKERRQ(ierr);
 
     /* determine send/recv buffers sizes */
     j = 0;
     mss = 0;
     for (i=0;i<graph->n_subsets;i++) {
       if (PetscBTLookup(subset_cc_adapt,i)) {
-        j += graph->subset_size[i];
+        j  += graph->subset_size[i];
         mss = PetscMax(graph->subset_size[i],mss);
       }
     }
@@ -393,7 +512,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     mns = 0;
     for (i=0;i<graph->n_subsets;i++) {
       if (PetscBTLookup(subset_cc_adapt,i)) {
-        k += (cum_recv_counts[i+1]-cum_recv_counts[i])*graph->subset_size[i];
+        k  += (cum_recv_counts[i+1]-cum_recv_counts[i])*graph->subset_size[i];
         mns = PetscMax(cum_recv_counts[i+1]-cum_recv_counts[i],mns);
       }
     }
@@ -409,13 +528,13 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     /* now exchange the data */
     start_of_recv = 0;
     start_of_send = 0;
-    sum_requests = 0;
+    sum_requests  = 0;
     for (i=0;i<graph->n_subsets;i++) {
       if (PetscBTLookup(subset_cc_adapt,i)) {
         PetscMPIInt neigh,tag;
         PetscInt    size_of_send = graph->subset_size[i];
 
-        j = graph->subset_idxs[i][0];
+        j    = graph->subset_idxs[i][0];
         ierr = PetscMPIIntCast(2*graph->subset_ref_node[i]+1,&tag);CHKERRQ(ierr);
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
@@ -448,7 +567,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         /* compute pointers */
         for (j=1;j<buffer_size;j++) refine_buffer[j] = refine_buffer[j-1] + sharingprocs;
         /* analyze contributions from subdomains that share the i-th subset
-           The stricture of refine_buffer is suitable to find intersections of ccs among sharingprocs.
+           The structure of refine_buffer is suitable to find intersections of ccs among sharingprocs.
            supposing the current subset is shared by 3 processes and has dimension 5 with global dofs 0,1,2,3,4 (local 0,4,3,1,2)
            sharing procs connected components:
              neigh 0: [0 1 4], [2 3], labels [4,7]  (2 connected components)
@@ -492,9 +611,9 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
             }
           }
         }
-        graph->cptr[ncc] = cum_queue;
+        graph->cptr[ncc]     = cum_queue;
         graph->subset_ncc[i] = subset_counter;
-        graph->queue_sorted = PETSC_FALSE;
+        graph->queue_sorted  = PETSC_FALSE;
       } else { /* this subset does not need to be adapted */
         ierr = PetscMemcpy(graph->queue+cum_queue,graph->subset_idxs[i],graph->subset_size[i]*sizeof(PetscInt));CHKERRQ(ierr);
         ncc++;
@@ -503,7 +622,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       }
     }
     graph->cptr[ncc] = cum_queue;
-    graph->ncc = ncc;
+    graph->ncc       = ncc;
     if (mss) {
       ierr = PetscFree2(refine_buffer[0],private_labels);CHKERRQ(ierr);
       ierr = PetscFree(refine_buffer);CHKERRQ(ierr);
@@ -515,6 +634,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscFree(cum_recv_counts);CHKERRQ(ierr);
     ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
   }
+  ierr = PetscBTDestroy(&cornerp);CHKERRQ(ierr);
 
   /* Determine if we are in 2D or 3D */
   if (!graph->twodimset) {
@@ -594,11 +714,20 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
         }
       }
     }
-  } else { /* sub info only */
+  } else if (havesubs) { /* sub info only */
     PetscInt sid = graph->local_subs[queue_tip[-n_prev]];
     for (j=0;j<graph->subset_size[pid-1];j++) { /* pid \in [1,graph->n_subsets] */
       PetscInt dof = graph->subset_idxs[pid-1][j];
       if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid && graph->local_subs[dof] == sid) {
+        ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
+        queue_tip[n] = dof;
+        n++;
+      }
+    }
+  } else {
+    for (j=0;j<graph->subset_size[pid-1];j++) { /* pid \in [1,graph->n_subsets] */
+      PetscInt dof = graph->subset_idxs[pid-1][j];
+      if (!PetscBTLookup(touched,dof) && graph->subset[dof] == pid) {
         ierr = PetscBTSet(touched,dof);CHKERRQ(ierr);
         queue_tip[n] = dof;
         n++;
