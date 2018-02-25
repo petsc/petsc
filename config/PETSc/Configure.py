@@ -228,12 +228,12 @@ proc ModulesHelp { } {
 }
 module-whatis "PETSc - Portable, Extensible Toolkit for Scientific Computation"
 
-set petsc_dir   %s
-set petsc_arch  %s
+set petsc_dir   "%s"
+set petsc_arch  "%s"
 
-setenv PETSC_ARCH $petsc_arch
-setenv PETSC_DIR $petsc_dir
-prepend-path PATH %s
+setenv PETSC_ARCH "$petsc_arch"
+setenv PETSC_DIR "$petsc_dir"
+prepend-path PATH "%s"
 ''' % (self.petscdir.version, installdir, installarch, installpath))
     fd.close()
     return
