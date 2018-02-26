@@ -74,6 +74,18 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
   ierr = DMLocalToGlobalEnd(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Floc);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
+  {
+    char     name[PETSC_MAX_PATH_LEN];
+    PetscInt it;
+
+    ierr = SNESGetIterationNumber(snes, &it);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Solution, Iterate %d", (int) it);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) X, name);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(X, NULL, "-dmsnes_solution_vec_view");CHKERRQ(ierr);
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Residual, Iterate %d", (int) it);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) F, name);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(F, NULL, "-dmsnes_residual_vec_view");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
