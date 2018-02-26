@@ -1788,7 +1788,7 @@ After inserting the language into the file, one can test the parsing
 by executuing:
 %
 \begin{bashlisting}
-${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+${PETSC_DIR}/lib/petsc/bin/maint/testparse.py -t <test src file>
 \end{bashlisting}
 
 A dictionary will be pretty-printed out.  From this dictionary
@@ -1926,7 +1926,7 @@ The above indicates that three tests have failed and should be investigated. One
 \begin{outputlisting}
 arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/runex4_4.sh  -v
 ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
-not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
+not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
 #	2a3,14
 #	> Testing PetscViewerASCIIPrintf 0
 #	> Testing PetscViewerASCIIPrintf 1

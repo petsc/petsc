@@ -3,9 +3,9 @@
 # Compiles and tests PETSc on one particular machine with one particular PETSC_ARCH
 #
 #  Three wasy to run:
-#     cd $PETSC_DIR ; ./bin/maint/buildtest PETSC_ARCH
-#     /fullpathtopetsc/bin/maint/buildtest PETSC_ARCH
-#     PETSC_DIR=/fullpathtopetsc  anypath/bin/maint/buildtest PETSC_ARCH
+#     cd $PETSC_DIR ; ./lib/petsc/bin/maint/buildtest PETSC_ARCH
+#     /fullpathtopetsc/lib/petsc/bin/maint/buildtest PETSC_ARCH
+#     PETSC_DIR=/fullpathtopetsc  anypath/lib/petsc/bin/maint/buildtest PETSC_ARCH
 #
 # The file ${PETSC_DIR}/config/examples/${PETSC_ARCH}.py must exist
 # and defines the options PETSc is tested with
@@ -102,8 +102,8 @@ if ( $? ) then
   set VALGRIND='DUMMYARGUMENT=foobar'
   set TIMEOUT=600
 else
-  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
-  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
+  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind"`
+  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp"
   set TIMEOUT=7200
 endif
 #

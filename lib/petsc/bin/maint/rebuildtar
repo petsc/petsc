@@ -46,7 +46,7 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/ln -s petsc-${VERSION} petsc-${RELEASE}"
 
 #######################################
-# M bin/maint/update-docs.py
+# M lib/petsc/bin/maint/update-docs.py
 # M include/petscversion.h
 # M src/docs/tex/manual/intro.tex
 # M src/docs/tex/manual/manual.tex
@@ -58,6 +58,6 @@ ssh petsc@login.mcs.anl.gov " \
 # M src/docs/website/index.html
 # A src/docs/website/documentation/changes/31.html
 
-# ? bin/win32fe/win32fe.exe
-# ? bin/win32fe/win32feutils.dll
+# ? lib/petsc/bin/win32fe/win32fe.exe
+# ? lib/petsc/bin/win32fe/win32feutils.dll
 

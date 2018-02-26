@@ -18,8 +18,8 @@ class Configure(config.base.Configure):
     return
 
   def configureInstallationMethod(self):
-    if os.path.exists(os.path.join(self.petscdir.dir,'bin','maint')):
-      self.logPrint('bin/maint exists. This appears to be a repository clone')
+    if os.path.exists(os.path.join(self.petscdir.dir,'lib','petsc','bin','maint')):
+      self.logPrint('lib/petsc/bin/maint exists. This appears to be a repository clone')
       self.isClone = 1
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         self.logPrint('.git directory exists')

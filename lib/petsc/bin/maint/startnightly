@@ -2,7 +2,7 @@
 #
 # usage: startnightly tname1[:branch1] tname2[:branch2] ...
 #
-#  tname1 is the name of a file in $PETSC_DIR/bin/maint/confignightly that defines
+#  tname1 is the name of a file in $PETSC_DIR/lib/petsc/bin/maint/confignightly that defines
 #  a machine, a PETSC_DIR on that machine, and PETSC_ARCH on which the script buildtest
 #  should be run.
 #
@@ -41,8 +41,8 @@ foreach TEST ($*)
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${PETSC_DIR}
   endif
-  echo "Starting: $SSH $USR@$MACH $DASHN $PETSC_DIR/bin/maint/buildtest $PETSC_ARCH"
-  $SSH $USR@$MACH $DASHN "cd $PETSC_DIR; $PETSC_DIR/bin/maint/buildtest $PETSC_ARCH" &
+  echo "Starting: $SSH $USR@$MACH $DASHN $PETSC_DIR/lib/petsc/bin/maint/buildtest $PETSC_ARCH"
+  $SSH $USR@$MACH $DASHN "cd $PETSC_DIR; $PETSC_DIR/lib/petsc/bin/maint/buildtest $PETSC_ARCH" &
   sleep 15 # perhaps ease the nfs load
 end
 wait

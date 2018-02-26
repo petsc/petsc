@@ -2,7 +2,7 @@
 
 configure_options = [
   # Autodetect MPICH & Intel MKL
-  # path set to $PETSC_DIR/bin/win32fe
+  # path set to $PETSC_DIR/lib/petsc/bin/win32fe
   # Note: comment out MPI_DISPLACEMENT_CURRENT in mpif.h for MPICH2 to work with Compaq F90
   '--with-cc=win32fe cl',
   '--with-fc=win32fe f90',

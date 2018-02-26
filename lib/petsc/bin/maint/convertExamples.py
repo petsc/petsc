@@ -20,11 +20,11 @@ Based on examplesWalker.py
 Quick start
 -----------
 
-  bin/maint/convertExamples.py -f genAllRunFiles src
+  lib/petsc/bin/maint/convertExamples.py -f genAllRunFiles src
      - Generate scripts from the makefiles
      - Try to abstract the scripts and put the metadata into the source code
 
-  bin/maint/convertExamples.py -f cleanAllRunFiles src
+  lib/petsc/bin/maint/convertExamples.py -f cleanAllRunFiles src
 
 """
 
