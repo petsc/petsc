@@ -35,6 +35,21 @@ int main(int argc,char **argv)
   */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  /* test insertion with negative indices */
+  ierr = VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
+  for (i=0; i<6; i++) values[i] = -4.0*i;
+  indices[0] = -1;
+  indices[1] = 2;
+
+  ierr = VecSetValuesBlocked(x,2,indices,values,ADD_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+
+  /*
+      Resulting vector should be 0 4 8  0 0 0 0 0 0
+  */
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
