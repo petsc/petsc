@@ -422,6 +422,229 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataType type, void *B, void *D, void *H)
+{
+  DMField_DS      *dsfield = (DMField_DS *) field->data;
+  PetscInt         h, imin;
+  PetscInt         dim;
+  PetscClassId     id;
+  PetscQuadrature  quad = NULL;
+  PetscBool        isAffine;
+  PetscFEGeom      *geom;
+  PetscInt         Nq, Nc, dimC, qNc, N;
+  PetscInt         numPoints;
+  void            *qB = NULL, *qD = NULL, *qH = NULL;
+  const PetscReal *weights;
+  MPI_Datatype     mpitype = type == PETSC_SCALAR ? MPIU_SCALAR : MPIU_REAL;
+  PetscObject      disc;
+  DMField          coordField;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  Nc = field->numComponents;
+  dsfield = (DMField_DS *) field->data;
+  ierr = DMGetCoordinateDim(field->dm, &dimC);CHKERRQ(ierr);
+  ierr = DMGetDimension(field->dm, &dim);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(pointIS, &numPoints);
+  ierr = ISGetMinMax(pointIS,&imin,NULL);CHKERRQ(ierr);
+  for (h = 0; h < dsfield->height; h++) {
+    PetscInt hEnd;
+
+    ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
+    if (imin < hEnd) break;
+  }
+  dim -= h;
+  ierr = DMFieldDSGetHeightDisc(field,h,&disc);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
+  if (id != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported\n");
+  ierr = DMGetCoordinateField(field->dm, &coordField);CHKERRQ(ierr);
+  ierr = DMFieldGetFEInvariance(coordField, pointIS, NULL, &isAffine, NULL);CHKERRQ(ierr);
+  if (isAffine) {
+    ierr = DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad);CHKERRQ(ierr);
+  }
+  if (!quad) {ierr = DMFieldCreateDefaultQuadrature(field, pointIS, &quad);CHKERRQ(ierr);}
+  if (!quad) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages\n");
+  ierr = DMFieldCreateFEGeom(coordField,pointIS,quad,PETSC_FALSE,&geom);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &weights);CHKERRQ(ierr);
+  if (qNc != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components\n");
+  N = numPoints * Nq * Nc;
+  if (B) ierr = DMGetWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);
+  if (D) ierr = DMGetWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);
+  if (H) ierr = DMGetWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);
+  ierr = DMFieldEvaluateFE(field,pointIS,quad,type,qB,qD,qH);CHKERRQ(ierr);
+  if (B) {
+    PetscInt i, j, k;
+
+    if (type == PETSC_SCALAR) {
+      PetscScalar * sB  = (PetscScalar *) B;
+      PetscScalar * sqB = (PetscScalar *) qB;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc; j++) {sB[i * Nc + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            sB[i * Nc + j] += geom->detJ[i * Nq + k] * weights[k] * sqB[ (i * Nq + k) * Nc + j];
+          }
+        }
+        for (k = 0; k < Nq * Nc; k++) sB[i * Nq * Nc + k] /= vol;
+      }
+    } else {
+      PetscReal * rB  = (PetscReal *) B;
+      PetscReal * rqB = (PetscReal *) qB;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc; j++) {rB[i * Nc + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            rB[i * Nc + j] += weights[k] * rqB[ (i * Nq + k) * Nc + j];
+          }
+        }
+        for (k = 0; k < Nc; k++) rB[i * Nc + k] /= vol;
+      }
+    }
+  }
+  if (D) {
+    PetscInt i, j, k, l, m;
+
+    if (type == PETSC_SCALAR) {
+      PetscScalar * sD  = (PetscScalar *) D;
+      PetscScalar * sqD = (PetscScalar *) qD;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc * dimC; j++) {sD[i * Nc * dimC + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            PetscScalar pD[3] = {0.,0.,0.};
+
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dim; m++) {
+                pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * sqD[((i * Nq + k) * Nc + j) * dim + m];
+              }
+            }
+            for (l = 0; l < dimC; l++) {
+              sD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l];
+            }
+          }
+        }
+        for (k = 0; k < Nc * dimC; k++) sD[i * Nc * dimC + k] /= vol;
+      }
+    } else {
+      PetscReal * rD  = (PetscReal *) D;
+      PetscReal * rqD = (PetscReal *) qD;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc * dimC; j++) {rD[i * Nc * dimC + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            PetscReal pD[3] = {0.,0.,0.};
+
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dim; m++) {
+                pD[l] += geom->invJ[((i * Nq + k) * dimC + m) * dimC + l] * rqD[((i * Nq + k) * Nc + j) * dim + m];
+              }
+            }
+            for (l = 0; l < dimC; l++) {
+              rD[(i * Nc + j) * dimC + l] += geom->detJ[i * Nq + k] * weights[k] * pD[l];
+            }
+          }
+        }
+        for (k = 0; k < Nc * dimC; k++) rD[i * Nc * dimC + k] /= vol;
+      }
+    }
+  }
+  if (H) {
+    PetscInt i, j, k, l, m, q, r;
+
+    if (type == PETSC_SCALAR) {
+      PetscScalar * sH  = (PetscScalar *) H;
+      PetscScalar * sqH = (PetscScalar *) qH;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc * dimC * dimC; j++) {sH[i * Nc * dimC * dimC + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          const PetscScalar *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
+
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            PetscScalar pH[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+            const PetscScalar *spH = &sqH[((i * Nq + k) * Nc + j) * dimC * dimC];
+
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dimC; m++) {
+                for (q = 0; q < dim; q++) {
+                  for (r = 0; r < dim; r++) {
+                    pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * spH[q * dim + r];
+                  }
+                }
+              }
+            }
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dimC; m++) {
+                sH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m];
+              }
+            }
+          }
+        }
+        for (k = 0; k < Nc * dimC * dimC; k++) sH[i * Nc * dimC * dimC + k] /= vol;
+      }
+    } else {
+      PetscReal * rH  = (PetscReal *) H;
+      PetscReal * rqH = (PetscReal *) qH;
+
+      for (i = 0; i < numPoints; i++) {
+        PetscReal vol = 0.;
+
+        for (j = 0; j < Nc * dimC * dimC; j++) {rH[i * Nc * dimC * dimC + j] = 0.;}
+        for (k = 0; k < Nq; k++) {
+          const PetscReal *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
+
+          vol += geom->detJ[i * Nq + k] * weights[k];
+          for (j = 0; j < Nc; j++) {
+            PetscReal pH[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+            const PetscReal *rpH = &rqH[((i * Nq + k) * Nc + j) * dimC * dimC];
+
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dimC; m++) {
+                for (q = 0; q < dim; q++) {
+                  for (r = 0; r < dim; r++) {
+                    pH[l][m] += invJ[q * dimC + l] * invJ[r * dimC + m] * rpH[q * dim + r];
+                  }
+                }
+              }
+            }
+            for (l = 0; l < dimC; l++) {
+              for (m = 0; m < dimC; m++) {
+                rH[(i * Nc + j) * dimC * dimC + l * dimC + m] += geom->detJ[i * Nq + k] * weights[k] * pH[l][m];
+              }
+            }
+          }
+        }
+        for (k = 0; k < Nc * dimC * dimC; k++) rH[i * Nc * dimC * dimC + k] /= vol;
+      }
+    }
+  }
+  if (B) ierr = DMRestoreWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);
+  if (D) ierr = DMRestoreWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);
+  if (H) ierr = DMRestoreWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);
+  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, PetscBool *isConstant, PetscBool *isAffine, PetscBool *isQuadratic)
 {
   DMField_DS     *dsfield;
@@ -798,6 +1021,7 @@ static PetscErrorCode DMFieldInitialize_DS(DMField field)
   field->ops->destroy                 = DMFieldDestroy_DS;
   field->ops->evaluate                = DMFieldEvaluate_DS;
   field->ops->evaluateFE              = DMFieldEvaluateFE_DS;
+  field->ops->evaluateFV              = DMFieldEvaluateFV_DS;
   field->ops->getFEInvariance         = DMFieldGetFEInvariance_DS;
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DS;
   field->ops->view                    = DMFieldView_DS;
