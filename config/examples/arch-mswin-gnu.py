@@ -6,6 +6,7 @@ configure_options = [
   '--with-shared-libraries=0',
   '--with-debugging=0',
   '--with-visibility=0',
+  'FFLAGS=-fno-backtrace',
   ]
 
 if __name__ == '__main__':
