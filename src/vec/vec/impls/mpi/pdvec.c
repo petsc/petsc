@@ -1004,7 +1004,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       if ((row = bs*ix[i]) >= start && row < end) {
         for (j=0; j<bs; j++) xx[row-start+j] = y[j];
       } else if (!xin->stash.donotstash) {
-        if (ix[i] < 0) continue;
+        if (ix[i] < 0) { y += bs; continue; }
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] >= xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
 #endif
@@ -1017,7 +1017,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       if ((row = bs*ix[i]) >= start && row < end) {
         for (j=0; j<bs; j++) xx[row-start+j] += y[j];
       } else if (!xin->stash.donotstash) {
-        if (ix[i] < 0) continue;
+        if (ix[i] < 0) { y += bs; continue; }
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] > xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
 #endif
