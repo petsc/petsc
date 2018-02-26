@@ -1108,9 +1108,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
     self.executeTest(self.configureViewFromOptions)
-    # dummy rules, always needed except for remote builds
-    self.addMakeRule('remote','')
-    self.addMakeRule('remoteclean','')
 
     self.Dump()
     self.dumpConfigInfo()
