@@ -2021,7 +2021,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
@@ -2639,7 +2639,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
@@ -2679,7 +2679,7 @@ PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, vo
   PetscFunctionBegin;
   ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }

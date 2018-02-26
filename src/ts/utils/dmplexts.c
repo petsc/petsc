@@ -113,7 +113,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
@@ -199,7 +199,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
@@ -237,7 +237,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex,&depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "hybrid", depth, &cellIS);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
   if (!cellIS) {
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
