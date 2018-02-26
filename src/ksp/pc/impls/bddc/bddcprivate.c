@@ -1524,6 +1524,11 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingGetInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&n_neigh,&maxneighs,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  if (!maxneighs) {
+    ierr  = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    *nnsp = NULL;
+    PetscFunctionReturn(0);
+  }
   maxsize = 0;
   for (i=0;i<n_neigh;i++) maxsize = PetscMax(n_shared[i],maxsize);
   ierr = PetscMalloc1(maxsize,&vals);CHKERRQ(ierr);

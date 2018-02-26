@@ -1547,12 +1547,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     }
   }
 
-  /* propagate relevant information -> TODO remove*/
-#if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
-  if (matis->A->symmetric_set) {
-    ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
-  }
-#endif
+  /* propagate relevant information */
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
   }
@@ -1584,8 +1579,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       if (!pcbddc->divudotp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       /* TODO what if a nearnullspace is already attached? */
-      ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
+      if (nnfnnsp) {
+        ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
+      }
     }
   }
 
