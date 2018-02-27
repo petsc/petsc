@@ -49,6 +49,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
+    ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject)ls)->tablevel);CHKERRQ(ierr);
     if (((PetscObject)ls)->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:(%s)\n",((PetscObject)ls)->prefix);CHKERRQ(ierr);
     } else {
@@ -62,9 +63,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"type: not set yet\n");CHKERRQ(ierr);
     }
     if (ls->ops->view) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ls->ops->view)(ls,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->max_funcs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%g, rtol=%g, gtol=%g\n",(double)ls->ftol,(double)ls->rtol,(double)ls->gtol);CHKERRQ(ierr);
@@ -77,7 +76,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"Termination reason: %d\n",(int)ls->reason);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-
+    ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject)ls)->tablevel);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TaoLineSearchGetType(ls,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
