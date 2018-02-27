@@ -511,10 +511,10 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
            its own KSP object.
 
    Options Database Keys:
-.  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
++  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
+-  -pc_bjacobi_blocks <n> - use n total blocks
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Defaults to one block per processor.
+   Notes: Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
@@ -527,10 +527,13 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
          performance.  Different block partitioning may lead to additional data transfers
          between host and GPU that lead to degraded performance.
 
+     The options prefix for each block is sub_, for example -sub_pc_type lu.
+
+     When multiple processes share a single block, each block encompasses exactly all the unknowns owned its set of processes.
+
    Level: beginner
 
    Concepts: block Jacobi
-
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
@@ -1170,9 +1173,9 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
 
   /* apply preconditioner on each matrix block */
-  ierr = PetscLogEventBegin(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(jac->ksp[0],&reason);CHKERRQ(ierr);
   if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;

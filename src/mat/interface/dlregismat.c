@@ -243,7 +243,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatTrnColorCreate", MAT_CLASSID,&MAT_TransposeColoringCreate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatRedundantMat",  MAT_CLASSID,&MAT_RedundantMat);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetMultiProcBlock", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetMultiProcB", MAT_CLASSID,&MAT_GetMultiProcBlock);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetRandom",     MAT_CLASSID,&MAT_SetRandom);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
