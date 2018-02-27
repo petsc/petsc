@@ -128,9 +128,6 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
     PetscInt     feDim, i;
     PetscReal    *fB = NULL, *fD = NULL, *fH = NULL;
 
-    if (dim == meshDim - 1) {
-      /* TODO */
-    }
     ierr = PetscFEGetDimension(fe,&feDim);CHKERRQ(ierr);
     ierr = PetscFEGetTabulation(fe,nq,qpoints,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
     for (i = 0; i < numCells; i++) {

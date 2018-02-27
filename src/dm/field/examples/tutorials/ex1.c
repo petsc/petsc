@@ -161,6 +161,68 @@ static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscRea
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType type, void *B, void *D, void *H)
+{
+  Vec                ctxVec = NULL;
+  const PetscScalar *mult;
+  PetscInt           dim;
+  const PetscScalar *x;
+  PetscInt           Nc, n, i, j, k, l;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMFieldGetNumComponents(field, &Nc);CHKERRQ(ierr);
+  ierr = DMFieldShellGetContext(field, (void *) &ctxVec);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(points, &dim);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(points, &n);CHKERRQ(ierr);
+  n /= Nc;
+  ierr = VecGetArrayRead(ctxVec, &mult);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(points, &x);CHKERRQ(ierr);
+  for (i = 0; i < n; i++) {
+    PetscReal r2 = 0.;
+
+    for (j = 0; j < dim; j++) {r2 += PetscSqr(x[i * dim + j]);}
+    for (j = 0; j < Nc; j++) {
+      PetscReal m = PetscRealPart(mult[j]);
+      if (B) {
+        if (type == PETSC_SCALAR) {
+          ((PetscScalar *)B)[i * Nc + j] = m * r2;
+        } else {
+          ((PetscReal *)B)[i * Nc + j] = m * r2;
+        }
+      }
+      if (D) {
+        if (type == PETSC_SCALAR) {
+          for (k = 0; k < dim; k++) ((PetscScalar *)D)[(i * Nc + j) * dim + k] = 2. * m * x[i * dim + k];
+        } else {
+          for (k = 0; k < dim; k++) ((PetscReal   *)D)[(i * Nc + j) * dim + k] = 2. * m * PetscRealPart(x[i * dim + k]);
+        }
+      }
+      if (H) {
+        if (type == PETSC_SCALAR) {
+          for (k = 0; k < dim; k++) for (l = 0; l < dim; l++) ((PetscScalar *)H)[((i * Nc + j) * dim + k) * dim + l] = (k == l) ? 2. * m : 0.;
+        } else {
+          for (k = 0; k < dim; k++) for (l = 0; l < dim; l++) ((PetscReal   *)H)[((i * Nc + j) * dim + k) * dim + l] = (k == l) ? 2. * m : 0.;
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(points, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(ctxVec, &mult);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TestShellDestroy(DMField field)
+{
+  Vec                ctxVec = NULL;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMFieldShellGetContext(field, (void *) &ctxVec);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctxVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM              dm = NULL;
@@ -175,6 +237,7 @@ int main(int argc, char **argv)
   PetscQuadrature quad = NULL;
   PetscInt        pointsPerEdge = 2;
   PetscInt        numPoint = 0, numFE = 0, numFV = 0;
+  PetscBool       testShell = PETSC_FALSE;
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
@@ -187,6 +250,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-num_point_tests", "Number of test points for DMFieldEvaluate()", "ex1.c", numPoint, &numPoint, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
@@ -238,21 +302,36 @@ int main(int argc, char **argv)
       }
     }
     ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = PetscFECreateDefault(dm,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-    ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dm,&fieldvec);CHKERRQ(ierr);
-    {
-      PetscErrorCode (*func[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt, PetscScalar *,void *);
-      void            *ctxs[1];
+    if (testShell) {
+      Vec ctxVec;
+      PetscInt i;
+      PetscScalar *array;
 
-      func[0] = radiusSquared;
-      ctxs[0] = NULL;
+      ierr = VecCreateSeq(PETSC_COMM_SELF, nc, &ctxVec);CHKERRQ(ierr);
+      ierr = VecSetUp(ctxVec);CHKERRQ(ierr);
+      ierr = VecGetArray(ctxVec,&array);CHKERRQ(ierr);
+      for (i = 0; i < nc; i++) array[i] = i + 1.;
+      ierr = VecRestoreArray(ctxVec,&array);CHKERRQ(ierr);
+      ierr = DMFieldCreateShell(dm, nc, DMFIELD_VERTEX, (void *) ctxVec, &field);CHKERRQ(ierr);
+      ierr = DMFieldShellSetEvaluate(field, TestShellEvaluate);CHKERRQ(ierr);
+      ierr = DMFieldShellSetDestroy(field, TestShellDestroy);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFECreateDefault(dm,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+      ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
+      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(dm,&fieldvec);CHKERRQ(ierr);
+      {
+        PetscErrorCode (*func[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt, PetscScalar *,void *);
+        void            *ctxs[1];
 
-      ierr = DMProjectFunctionLocal(dm,0.0,func,ctxs,INSERT_ALL_VALUES,fieldvec);CHKERRQ(ierr);
+        func[0] = radiusSquared;
+        ctxs[0] = NULL;
+
+        ierr = DMProjectFunctionLocal(dm,0.0,func,ctxs,INSERT_ALL_VALUES,fieldvec);CHKERRQ(ierr);
+      }
+      ierr = DMFieldCreateDS(dm,0,fieldvec,&field);CHKERRQ(ierr);
+      ierr = VecDestroy(&fieldvec);CHKERRQ(ierr);
     }
-    ierr = DMFieldCreateDS(dm,0,fieldvec,&field);CHKERRQ(ierr);
-    ierr = VecDestroy(&fieldvec);CHKERRQ(ierr);
   } else if (isda) {
     PetscInt       i;
     PetscScalar    *cv;
@@ -368,5 +447,10 @@ int main(int argc, char **argv)
     suffix: ds_tensor_3_2
     requires: !complex
     args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 2 -simplex 0
+
+  test:
+    suffix: shell
+    requires: !complex triangle
+    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -num_quad_points 1 -test_shell
 
 TEST*/
