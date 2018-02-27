@@ -130,8 +130,8 @@ int main(int argc,char ** argv)
 /*TEST
 
    build:
-     depends: waterreaddata.c waterfunctions.c
-     requires: !complex !define(PETSC_USE_64BIT_INDICES)
+      depends: waterreaddata.c waterfunctions.c
+      requires: !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       args: -water_snes_converged_reason -options_left no
