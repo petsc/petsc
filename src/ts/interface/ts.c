@@ -2023,8 +2023,14 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  using absolute error tolerance of %g\n",(double)ts->atol);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);
-    if (ts->snes && ts->usessnes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (ts->snes && ts->usessnes)  {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
     ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
   } else if (isstring) {
