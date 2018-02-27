@@ -257,9 +257,16 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
   ierr = VecDuplicate(pcis->vec1_B,&pcbddc->work_scaling);CHKERRQ(ierr);
   /* always rebuild pcis->D */
   if (pcis->use_stiffness_scaling) {
+    PetscScalar *a;
+    PetscInt    i,n;
+
     ierr = MatGetDiagonal(pcbddc->local_mat,pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(pcis->D,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->D,&a);CHKERRQ(ierr);
+    for (i=0;i<n;i++) if (PetscAbsScalar(a[i])<PETSC_SMALL) a[i] = 1.0;
+    ierr = VecRestoreArray(pcis->D,&a);CHKERRQ(ierr);
   }
   ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
