@@ -287,8 +287,10 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     DM               dm;
     PetscErrorCode   (*cJ)(SNES,Vec,Mat,Mat,void*);
     void             *ctx;
+    PetscInt         tabs;
 
-    ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (!snes->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  SNES has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -334,7 +336,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     } else if (cJ == SNESComputeJacobianDefaultColor) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences with coloring\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isstring) {
     const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);

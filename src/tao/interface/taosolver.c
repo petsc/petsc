@@ -576,7 +576,9 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+    PetscInt        tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer);CHKERRQ(ierr);
 
     if (tao->ops->view) {
@@ -584,14 +586,14 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       ierr = (*tao->ops->view)(tao,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (tao->linesearch) {
-      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
-    }
     if (tao->ksp) {
       ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    if (tao->linesearch) {
+      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
     }
 
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -703,7 +705,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       }
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, tabs); CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
@@ -1474,7 +1476,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       its;
+  PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
 
@@ -1483,13 +1485,19 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  if (its == 0 && ((PetscObject)tao)->prefix) {
+     ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+   }
   ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
   if (gnorm >= PETSC_INFINITY) {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: Inf \n");CHKERRQ(ierr);
   } else {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %g \n",(double)gnorm);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

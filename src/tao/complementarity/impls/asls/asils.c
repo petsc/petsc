@@ -281,7 +281,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 + -tao_ssls_delta - descent test fraction
 - -tao_ssls_rho - descent test power
 
-  Level: beginner 
+  Level: beginner
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
@@ -315,11 +315,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
   asls->identifier = 1e-5;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, armijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
 
@@ -337,5 +339,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-
-
