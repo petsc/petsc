@@ -1,12 +1,14 @@
-
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/vecimpl.h>
 
-#define G(a,b)    (plcg->G[((b)*(max_it+1))+(a)])
-#define gamma(a)  (plcg->gamma[(a)])
-#define delta(a)  (plcg->delta[(a)])
-#define sigma(a)  (plcg->sigma[(a)])
-#define req(a)    (plcg->req[(a)])
+#define offset(j)      PetscMax(((j) - (2*l)), 0)
+#define shift(i,j)     ((i) - offset((j)))
+#define G(i,j)         (plcg->G[((j)*(2*l+1))+(shift((i),(j))) ])
+#define G_noshift(i,j) (plcg->G[((j)*(2*l+1))+(i)])
+#define gamma(a)       (plcg->gamma[(a)])
+#define delta(a)       (plcg->delta[(a)])
+#define sigma(a)       (plcg->sigma[(a)])
+#define req(a)         (plcg->req[(a)])
 
 typedef struct KSP_CG_PIPE_L_s KSP_CG_PIPE_L;
 struct KSP_CG_PIPE_L_s {
@@ -15,7 +17,7 @@ struct KSP_CG_PIPE_L_s {
   Vec         *V;     /* V vector (original base) */
   Vec         z_2;    /* additional vector needed when l == 1 */
   Vec         p,u,up,upp; /* some work vectors */
-  PetscScalar *G;     /* such that Z = VG (actually a band matrix, storage could be improved to save memory)*/
+  PetscScalar *G;     /* such that Z = VG (band matrix)*/
   PetscScalar *gamma,*delta;
   PetscReal   lmin,lmax; /* min and max eigen values estimates to compute base shifts */
   PetscScalar *sigma; /* base shifts */
@@ -31,19 +33,13 @@ struct KSP_CG_PIPE_L_s {
 static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*) ksp->data;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
   PetscInt       l=plcg->l,max_it=ksp->max_it;
 
   PetscFunctionBegin;
-  if (max_it < 1) {
-    SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
-  }
-  if (l < 1) {
-    SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
-  }
-  if (l > max_it) {
-    SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
-  }
+  if (max_it < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
+  if (l < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
+  if (l > max_it) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
 
   ierr = KSPSetWorkVecs(ksp,4);CHKERRQ(ierr); /* get work vectors needed by PIPELCG */
   plcg->p   = ksp->work[0];
@@ -53,43 +49,41 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 
   ierr = VecDuplicateVecs(plcg->p,l+1,&plcg->Z);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(plcg->p,2*l+1,&plcg->V);CHKERRQ(ierr);
+  ierr = PetscCalloc1(l,&plcg->sigma);CHKERRQ(ierr);
   if (l == 1) {
     ierr = VecDuplicate(plcg->p,&plcg->z_2);CHKERRQ(ierr);
   }
 
-  ierr = PetscCalloc1((max_it+1)*(max_it+1),&plcg->G);CHKERRQ(ierr);
-  ierr = PetscCalloc1(max_it+1,&plcg->gamma);CHKERRQ(ierr);
-  ierr = PetscCalloc1(max_it+1,&plcg->delta);CHKERRQ(ierr);
-  ierr = PetscCalloc1(l,&plcg->sigma);CHKERRQ(ierr);
-  ierr = PetscCalloc1(max_it+1,&plcg->req);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
+static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
+{
+  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
+  PetscInt      ierr=0,l=plcg->l;
 
+  PetscFunctionBegin;
+  ierr = PetscFree(plcg->sigma);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(l+1,&plcg->Z);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(2*l+1,&plcg->V);CHKERRQ(ierr);
+  ierr = VecDestroy(&plcg->z_2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*) ksp->data;
-  PetscInt      ierr=0,l=plcg->l;
+  PetscInt ierr=0;
 
-  ierr = PetscFree(plcg->G);CHKERRQ(ierr);
-  ierr = PetscFree(plcg->gamma);CHKERRQ(ierr);
-  ierr = PetscFree(plcg->delta);CHKERRQ(ierr);
-  ierr = PetscFree(plcg->sigma);CHKERRQ(ierr);
-  ierr = PetscFree(plcg->req);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(l+1,&plcg->Z);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(2*l+1,&plcg->V);CHKERRQ(ierr);
-  if (l == 1) {
-    ierr = VecDestroy(&plcg->z_2);CHKERRQ(ierr);
-  }
-  KSPDestroyDefault(ksp);
+  PetscFunctionBegin;
+  ierr = KSPReset_PIPELCG(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscInt      ierr=0;
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*) ksp->data;
+  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
   PetscBool     flag=PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -104,6 +98,20 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
+{
+  PetscErrorCode ierr=0;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+  ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
+#else
+  ierr = MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
+  *request = MPI_REQUEST_NULL;
+#endif
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
 {
   KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
@@ -114,11 +122,11 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %d\n", plcg->l);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Pipeline depth: %D\n", plcg->l);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Minimal eigen value estimate %g\n",plcg->lmin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Maximal eigen value estimate %g\n",plcg->lmax);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"  Pipeline depth: %d\n", plcg->l);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"  Pipeline depth: %D\n", plcg->l);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer,"  Minimal eigen value estimate %g\n",plcg->lmin);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer,"  Maximal eigen value estimate %g\n",plcg->lmax);CHKERRQ(ierr);
   }
@@ -127,7 +135,7 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
 
 static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*) ksp->data;
+  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
   Mat           A=NULL,Pmat=NULL;
   PetscInt      it=0,max_it=ksp->max_it,ierr=0,l=plcg->l,i=0,j=0,k=0;
   PetscInt      start=0,middle=0,end=0;
@@ -136,6 +144,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   PetscScalar   sum_dummy=0.0,beta=0.0,eta=0.0,zeta=0.0,lam=0.0,invbeta2=0.0;
   PetscReal     dp=0.0;
 
+  PetscFunctionBegin;
   x   = ksp->vec_sol;
   p   = plcg->p;
   u   = plcg->u;
@@ -178,7 +187,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     if (it >= l) {
       if (it == l) {
         /* MPI_Wait for G(0,0),scale V0 and Z and u vectors with 1/beta */
-        MPI_Wait(&req(0),MPI_STATUS_IGNORE);
+        ierr = MPI_Wait(&req(0),MPI_STATUS_IGNORE);CHKERRQ(ierr);
         beta = PetscSqrtScalar(G(0,0));
         G(0,0) = 1.0;
         ierr = VecAXPY(V[2*l],1.0/beta,p);CHKERRQ(ierr);
@@ -191,7 +200,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
 
       /* MPI_Wait until the dot products,started l iterations ago,are completed */
-      MPI_Wait(&req(it-l+1),MPI_STATUS_IGNORE);
+      ierr = MPI_Wait(&req(it-l+1),MPI_STATUS_IGNORE);CHKERRQ(ierr);
       if (it <= 2*l-1) {
         invbeta2 = 1.0 / (beta * beta);
         /* scale column 1 up to column l of G with 1/beta^2 */
@@ -215,12 +224,12 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
       /* Breakdown check */
       if (G(it-l+1,it-l+1) - sum_dummy < 0) {
-        PetscPrintf(PETSC_COMM_WORLD,"sqrt breakdown in iteration %d: value is %e\n",ksp->its+1,G(it-l+1,it-l+1) - sum_dummy);
+        PetscPrintf(PETSC_COMM_WORLD,"sqrt breakdown in iteration %d: value is %e. Iteration was restarted.\n",ksp->its+1,G(it-l+1,it-l+1) - sum_dummy);
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;
         end = PetscMin(it+1,max_it+1);  /* !warning! 'it' can actually be greater than 'max_it' */
         for (i = start; i < end; ++i) {
-          MPI_Wait(&req(i),MPI_STATUS_IGNORE);
+          ierr = MPI_Wait(&req(i),MPI_STATUS_IGNORE);CHKERRQ(ierr);
         }
         break;
       }
@@ -234,14 +243,8 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
                          - delta(it-l-1) * G(it-l-1,it-l)) / G(it-l,it-l);
         }
         delta(it-l) = G(it-l+1,it-l+1) / G(it-l,it-l);
-      } else if (it == 2*l) {
-        gamma(it-l) = (G(it-l,it-l) * gamma(it-2*l)
-                       + G(it-l,it-l+1) * delta(it-2*l)
-                       - G(it-l-1,it-l) * delta(it-l-1)) / G(it-l,it-l);
-        delta(it-l) = (G(it-l+1,it-l+1) * delta(it-2*l)) / G(it-l,it-l);
       } else {
-        gamma(it-l) = (G(it-l,it-l-1) * delta(it-2*l-1)
-                       + G(it-l,it-l) * gamma(it-2*l)
+        gamma(it-l) = (G(it-l,it-l) * gamma(it-2*l)
                        + G(it-l,it-l+1) * delta(it-2*l)
                        - G(it-l-1,it-l) * delta(it-l-1)) / G(it-l,it-l);
         delta(it-l) = (G(it-l+1,it-l+1) * delta(it-2*l)) / G(it-l,it-l);
@@ -292,21 +295,21 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     if (it < l) {
       /* dot-product (Z_{it+1},z_j) */
       for (j = 0; j < it+2; ++j) {
-        u->ops->dot_local(u,Z[l-j],&G(j,it+1));
+        ierr = (*u->ops->dot_local)(u,Z[l-j],&G(j,it+1));CHKERRQ(ierr);
       }
-      MPI_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(it+1));
+      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(it+1));CHKERRQ(ierr);
     } else if ((it >= l) && (it < max_it)) {
       start = PetscMax(0,it-2*l+1);
       middle = it-l+2;
       end = it+2;
       for (j = start; j < middle; ++j) { /* dot-product (Z_{it+1},v_j) */
         temp = (it < 3*l) ? plcg->V[2*l-j] : plcg->V[it-l+1-j];
-        u->ops->dot_local(u,temp,&G(j,it+1));
+        ierr = (*u->ops->dot_local)(u,temp,&G(j,it+1));CHKERRQ(ierr);
       }
       for (j = middle; j < end; ++j) { /* dot-product (Z_{it+1},z_j) */
-        u->ops->dot_local(u,plcg->Z[it+1-j],&G(j,it+1));
+        ierr = (*u->ops->dot_local)(u,plcg->Z[it+1-j],&G(j,it+1));CHKERRQ(ierr);
       }
-      MPI_Iallreduce(MPI_IN_PLACE,&G(start,it+1),end-start,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(it+1));
+      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(start,it+1),end-start,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(it+1));CHKERRQ(ierr);
     }
 
     /* ----------------------------------------- */
@@ -352,7 +355,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         start = it-l+2;
         end = PetscMin(it+2,max_it+1); /* !warning! 'it' can actually be greater than 'max_it' */
         for (i = start; i < end; ++i) {
-          MPI_Wait(&req(i),MPI_STATUS_IGNORE);
+          ierr = MPI_Wait(&req(i),MPI_STATUS_IGNORE);CHKERRQ(ierr);
         }
         break;
       }
@@ -363,7 +366,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
 static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*) ksp->data;
+  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
   PetscInt      ierr=0,i=0,j=0,l=plcg->l,max_it=ksp->max_it;
 
   PetscFunctionBegin;
@@ -375,11 +378,11 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
   for (i = 0; i < (2*l+1); ++i) {
     ierr = VecSet(plcg->V[i],0.0);CHKERRQ(ierr);
   }
-  for (i = 0; i < (max_it+1); ++i) {
-    gamma(i) = 0.0;
-    delta(i) = 0.0;
-    for (j = 0; j < (max_it+1); ++j) {
-      G(i,j) = 0.0;
+  for (j = 0; j < (max_it+1); ++j) {
+    gamma(j) = 0.0;
+    delta(j) = 0.0;
+    for (i = 0; i < (max_it+1); ++i) {
+      G_noshift(i,j) = 0.0;
     }
   }
   PetscFunctionReturn(0);
@@ -395,13 +398,13 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
 static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr=0;
-  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*) ksp->data;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
   Mat            A=NULL,Pmat=NULL;
   Vec            b=NULL,x=NULL,p=NULL,u=NULL;
   PetscInt       max_it=ksp->max_it,l=plcg->l;
   PetscInt       i=0,outer_it=0,curr_guess_zero=0;
   PetscScalar    lmin=plcg->lmin,lmax=plcg->lmax;
-  PetscBool      diagonalscale=PETSC_FALSE;
+  PetscBool      diagonalscale=PETSC_FALSE,ispcnone=PETSC_FALSE;
   PCType         pctype=PCNONE;
 
   PetscFunctionBegin;
@@ -415,12 +418,18 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   p = plcg->p;
   u = plcg->u;
 
+  ierr = PetscCalloc1((max_it+1)*(2*l+1),&plcg->G);CHKERRQ(ierr);
+  ierr = PetscCalloc1(max_it+1,&plcg->gamma);CHKERRQ(ierr);
+  ierr = PetscCalloc1(max_it+1,&plcg->delta);CHKERRQ(ierr);
+  ierr = PetscCalloc1(max_it+1,&plcg->req);CHKERRQ(ierr);
+
   ierr = PCGetOperators(ksp->pc,&A,&Pmat);CHKERRQ(ierr);
   ierr = PCGetType(ksp->pc,&pctype);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"PCType is: %s \n",pctype);
   PetscPrintf(PETSC_COMM_WORLD,"KSPNormType is: %d \n",ksp->normtype);
 
-  if (strcmp(pctype,PCNONE) == 0) {
+  ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&ispcnone);CHKERRQ(ierr);
+  if (ispcnone) {
     for (i = 0; i < l; ++i) {
       sigma(i) = (0.5*(lmin+lmax) + (0.5*(lmax-lmin) * PetscCosReal(PETSC_PI*(2.0*i+1.0)/(2.0*l))));
     }
@@ -451,8 +460,8 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
       ierr = KSPSolve_ReInitData_PIPELCG(ksp);CHKERRQ(ierr);
     }
 
-    u->ops->dot_local(u,p,&G(0,0));
-    MPI_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(0));
+    ierr = (*u->ops->dot_local)(u,p,&G(0,0));CHKERRQ(ierr);
+    ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPI_SUM,PETSC_COMM_WORLD,&req(0));CHKERRQ(ierr);
     ierr = VecCopy(p,plcg->Z[l]);CHKERRQ(ierr);
 
     ierr = KSPSolve_InnerLoop_PIPELCG(ksp);CHKERRQ(ierr);
@@ -465,6 +474,10 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   if (ksp->its >= max_it-1) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
+  ierr = PetscFree(plcg->G);CHKERRQ(ierr);
+  ierr = PetscFree(plcg->gamma);CHKERRQ(ierr);
+  ierr = PetscFree(plcg->delta);CHKERRQ(ierr);
+  ierr = PetscFree(plcg->req);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -479,18 +492,18 @@ PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&plcg);CHKERRQ(ierr);
-  ksp->data = (void*) plcg;
+  ksp->data = (void*)plcg;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPELCG;
   ksp->ops->solve          = KSPSolve_PIPELCG;
+  ksp->ops->reset          = KSPReset_PIPELCG;
   ksp->ops->destroy        = KSPDestroy_PIPELCG;
   ksp->ops->view           = KSPView_PIPELCG;
   ksp->ops->setfromoptions = KSPSetFromOptions_PIPELCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-
   PetscFunctionReturn(0);
 }
