@@ -23,9 +23,9 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,int *edgelist)
   if (netview) {
     for (i=0; i<pfdata->nbus; i++) {
       if (pfdata->bus[i].ngen) {
-        printf(" bus %d: gen\n",i);
+        ierr = PetscPrintf(" bus %D: gen\n",i);CHKERRQ(ierr);
       } else if (pfdata->bus[i].nload) {
-        printf(" bus %d: load\n",i);
+        ierr = PetscPrintf(" bus %D: load\n",i);CHKERRQ(ierr);
       }
     }
   }
