@@ -4,6 +4,10 @@
 #include <petscbt.h>
 #include <petscblaslapack.h>
 
+#if defined(PETSC_HAVE_IMMINTRIN_H)
+#include <immintrin.h>
+#endif
+
 PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt ov)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -658,6 +662,128 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(98.0*a->nz - 7.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar    *z = 0,*work,*workt,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode ierr;
+  PetscInt       mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  const PetscInt *idx,*ii,*ridx=NULL;
+  PetscInt       ncols,k;
+  PetscBool      usecprow=a->compressedrow.use;
+
+  __m256d a0,a1,a2,a3,a4,a5;
+  __m256d w0,w1,w2,w3,w4,w5;
+  __m256d z0,z1,z2;
+  __m256i mask1 = _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63);
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    ierr = PetscMemzero(zarray,bs*a->mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = zarray;
+  }
+
+  if (!a->mult_work) {
+    k    = PetscMax(A->rmap->n,A->cmap->n);
+    ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
+  }
+
+  work = a->mult_work;
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    ncols       = n*bs;
+    workt       = work;
+    for (j=0; j<n; j++) {
+      xb = x + bs*(*idx++);
+      for (k=0; k<bs; k++) workt[k] = xb[k];
+      workt += bs;
+    }
+    if (usecprow) z = zarray + bs*ridx[i];
+
+    z0 = _mm256_setzero_pd(); z1 = _mm256_setzero_pd(); z2 = _mm256_setzero_pd();
+
+    for (j=0; j<n; j++) {
+      // first column of a
+      w0 = _mm256_set1_pd(work[j*9  ]);
+      a0 = _mm256_loadu_pd(&v[j*81  ]); z0 = _mm256_fmadd_pd(a0,w0,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+4]); z1 = _mm256_fmadd_pd(a1,w0,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+8]); z2 = _mm256_fmadd_pd(a2,w0,z2);
+
+      // second column of a
+      w1 = _mm256_set1_pd(work[j*9+ 1]);
+      a0 = _mm256_loadu_pd(&v[j*81+ 9]); z0 = _mm256_fmadd_pd(a0,w1,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+13]); z1 = _mm256_fmadd_pd(a1,w1,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+17]); z2 = _mm256_fmadd_pd(a2,w1,z2);
+
+      // third column of a
+      w2 = _mm256_set1_pd(work[j*9 +2]);
+      a3 = _mm256_loadu_pd(&v[j*81+18]); z0 = _mm256_fmadd_pd(a3,w2,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+22]); z1 = _mm256_fmadd_pd(a4,w2,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+26]); z2 = _mm256_fmadd_pd(a5,w2,z2);
+
+      // fourth column of a
+      w3 = _mm256_set1_pd(work[j*9+ 3]);
+      a0 = _mm256_loadu_pd(&v[j*81+27]); z0 = _mm256_fmadd_pd(a0,w3,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+31]); z1 = _mm256_fmadd_pd(a1,w3,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+35]); z2 = _mm256_fmadd_pd(a2,w3,z2);
+
+      // fifth column of a
+      w0 = _mm256_set1_pd(work[j*9+ 4]);
+      a3 = _mm256_loadu_pd(&v[j*81+36]); z0 = _mm256_fmadd_pd(a3,w0,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+40]); z1 = _mm256_fmadd_pd(a4,w0,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+44]); z2 = _mm256_fmadd_pd(a5,w0,z2);
+
+      // sixth column of a
+      w1 = _mm256_set1_pd(work[j*9+ 5]);
+      a0 = _mm256_loadu_pd(&v[j*81+45]); z0 = _mm256_fmadd_pd(a0,w1,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+49]); z1 = _mm256_fmadd_pd(a1,w1,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+53]); z2 = _mm256_fmadd_pd(a2,w1,z2);
+
+      // seventh column of a
+      w2 = _mm256_set1_pd(work[j*9+ 6]);
+      a0 = _mm256_loadu_pd(&v[j*81+54]); z0 = _mm256_fmadd_pd(a0,w2,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
+
+      // eigth column of a
+      w3 = _mm256_set1_pd(work[j*9+ 7]);
+      a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+71]); z2 = _mm256_fmadd_pd(a5,w3,z2);
+
+      // ninth column of a
+      w0 = _mm256_set1_pd(work[j*9+ 8]);
+      a0 = _mm256_loadu_pd(&v[j*81+72]); z0 = _mm256_fmadd_pd(a0,w0,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+76]); z1 = _mm256_fmadd_pd(a1,w0,z1);
+      a2 = _mm256_maskload_pd(&v[j*81+80],mask1); z2 = _mm256_fmadd_pd(a2,w0,z2);
+    }
+
+    _mm256_storeu_pd(&z[ 0], z0); _mm256_storeu_pd(&z[ 4], z1); _mm256_maskstore_pd(&z[8], mask1, z2);
+
+    v += n*bs2;
+    if (!usecprow) z += bs;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz*bs2 - bs*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 PetscErrorCode MatMult_SeqBAIJ_11(Mat A,Vec xx,Vec zz)
 {
@@ -1556,6 +1682,128 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar    *z = 0,*work,*workt,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode ierr;
+  PetscInt       mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscInt       ncols,k;
+  PetscBool      usecprow=a->compressedrow.use;
+  const PetscInt *idx,*ii,*ridx=NULL;
+
+  __m256d a0,a1,a2,a3,a4,a5;
+  __m256d w0,w1,w2,w3,w4,w5;
+  __m256d z0,z1,z2;
+  __m256i mask1 = _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63);
+
+  PetscFunctionBegin;
+  ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow) {
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+  } else {
+    mbs = a->mbs;
+    ii  = a->i;
+    z   = zarray;
+  }
+
+  if (!a->mult_work) {
+    k    = PetscMax(A->rmap->n,A->cmap->n);
+    ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
+  }
+
+  work = a->mult_work;
+  for (i=0; i<mbs; i++) {
+    n           = ii[1] - ii[0]; ii++;
+    ncols       = n*bs;
+    workt       = work;
+    for (j=0; j<n; j++) {
+      xb = x + bs*(*idx++);
+      for (k=0; k<bs; k++) workt[k] = xb[k];
+      workt += bs;
+    }
+    if (usecprow) z = zarray + bs*ridx[i];
+
+    z0 = _mm256_loadu_pd(&z[ 0]); z1 = _mm256_loadu_pd(&z[ 4]); z2 = _mm256_set1_pd(z[ 8]);
+
+    for (j=0; j<n; j++) {
+      // first column of a
+      w0 = _mm256_set1_pd(work[j*9  ]);
+      a0 = _mm256_loadu_pd(&v[j*81  ]); z0 = _mm256_fmadd_pd(a0,w0,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+4]); z1 = _mm256_fmadd_pd(a1,w0,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+8]); z2 = _mm256_fmadd_pd(a2,w0,z2);
+
+      // second column of a
+      w1 = _mm256_set1_pd(work[j*9+ 1]);
+      a0 = _mm256_loadu_pd(&v[j*81+ 9]); z0 = _mm256_fmadd_pd(a0,w1,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+13]); z1 = _mm256_fmadd_pd(a1,w1,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+17]); z2 = _mm256_fmadd_pd(a2,w1,z2);
+
+      // third column of a
+      w2 = _mm256_set1_pd(work[j*9+ 2]);
+      a3 = _mm256_loadu_pd(&v[j*81+18]); z0 = _mm256_fmadd_pd(a3,w2,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+22]); z1 = _mm256_fmadd_pd(a4,w2,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+26]); z2 = _mm256_fmadd_pd(a5,w2,z2);
+
+      // fourth column of a
+      w3 = _mm256_set1_pd(work[j*9+ 3]);
+      a0 = _mm256_loadu_pd(&v[j*81+27]); z0 = _mm256_fmadd_pd(a0,w3,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+31]); z1 = _mm256_fmadd_pd(a1,w3,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+35]); z2 = _mm256_fmadd_pd(a2,w3,z2);
+
+      // fifth column of a
+      w0 = _mm256_set1_pd(work[j*9+ 4]);
+      a3 = _mm256_loadu_pd(&v[j*81+36]); z0 = _mm256_fmadd_pd(a3,w0,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+40]); z1 = _mm256_fmadd_pd(a4,w0,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+44]); z2 = _mm256_fmadd_pd(a5,w0,z2);
+
+      // sixth column of a
+      w1 = _mm256_set1_pd(work[j*9+ 5]);
+      a0 = _mm256_loadu_pd(&v[j*81+45]); z0 = _mm256_fmadd_pd(a0,w1,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+49]); z1 = _mm256_fmadd_pd(a1,w1,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+53]); z2 = _mm256_fmadd_pd(a2,w1,z2);
+
+      // seventh column of a
+      w2 = _mm256_set1_pd(work[j*9+ 6]);
+      a0 = _mm256_loadu_pd(&v[j*81+54]); z0 = _mm256_fmadd_pd(a0,w2,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+58]); z1 = _mm256_fmadd_pd(a1,w2,z1);
+      a2 = _mm256_loadu_pd(&v[j*81+62]); z2 = _mm256_fmadd_pd(a2,w2,z2);
+
+      // eigth column of a
+      w3 = _mm256_set1_pd(work[j*9+ 7]);
+      a3 = _mm256_loadu_pd(&v[j*81+63]); z0 = _mm256_fmadd_pd(a3,w3,z0);
+      a4 = _mm256_loadu_pd(&v[j*81+67]); z1 = _mm256_fmadd_pd(a4,w3,z1);
+      a5 = _mm256_loadu_pd(&v[j*81+71]); z2 = _mm256_fmadd_pd(a5,w3,z2);
+
+      // ninth column of a
+      w0 = _mm256_set1_pd(work[j*9+ 8]);
+      a0 = _mm256_loadu_pd(&v[j*81+72]); z0 = _mm256_fmadd_pd(a0,w0,z0);
+      a1 = _mm256_loadu_pd(&v[j*81+76]); z1 = _mm256_fmadd_pd(a1,w0,z1);
+      a2 = _mm256_maskload_pd(&v[j*81+80],mask1); z2 = _mm256_fmadd_pd(a2,w0,z2);
+    }
+
+    _mm256_storeu_pd(&z[ 0], z0); _mm256_storeu_pd(&z[ 4], z1); _mm256_maskstore_pd(&z[8], mask1, z2);
+
+    v += n*bs2;
+    if (!usecprow) z += bs;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
+  ierr = PetscLogFlops(162.0*a->nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1600,7 +1848,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
     for (j=0; j<n; j++) {
       xb    = x + 11*(*idx++);
       x1    = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];x8 = xb[7]; x9 = xb[8]; x10 = xb[9]; x11 = xb[10];
-      sum1 += v[0]*x1 + v[11]*x2  + v[2*11]*x3  + v[3*11]*x4 + v[4*11]*x5 + v[5*11]*x6 + v[6*11]*x7+ v[7*11]*x8 + v[8*11]*x9  + v[9*11]*x10  + v[10*11]*x11;
+      sum1 += v[  0]*x1 + v[  11]*x2  + v[2*11]*x3  + v[3*11]*x4 + v[4*11]*x5 + v[5*11]*x6 + v[6*11]*x7+ v[7*11]*x8 + v[8*11]*x9  + v[9*11]*x10  + v[10*11]*x11;
       sum2 += v[1+0]*x1 + v[1+11]*x2  + v[1+2*11]*x3  + v[1+3*11]*x4 + v[1+4*11]*x5 + v[1+5*11]*x6 + v[1+6*11]*x7+ v[1+7*11]*x8 + v[1+8*11]*x9  + v[1+9*11]*x10  + v[1+10*11]*x11;
       sum3 += v[2+0]*x1 + v[2+11]*x2  + v[2+2*11]*x3  + v[2+3*11]*x4 + v[2+4*11]*x5 + v[2+5*11]*x6 + v[2+6*11]*x7+ v[2+7*11]*x8 + v[2+8*11]*x9  + v[2+9*11]*x10  + v[2+10*11]*x11;
       sum4 += v[3+0]*x1 + v[3+11]*x2  + v[3+2*11]*x3  + v[3+3*11]*x4 + v[3+4*11]*x5 + v[3+5*11]*x6 + v[3+6*11]*x7+ v[3+7*11]*x8 + v[3+8*11]*x9  + v[3+9*11]*x10  + v[3+10*11]*x11;

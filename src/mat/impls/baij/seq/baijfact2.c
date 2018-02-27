@@ -236,6 +236,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   both_identity = (PetscBool) (row_identity && col_identity);
   if (both_identity) {
     switch (bs) {
+    case  9:
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+      C->ops->solve = MatSolve_SeqBAIJ_9_NaturalOrdering;
+#else
+      C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
+#endif
+      break;
     case 11:
       C->ops->solve = MatSolve_SeqBAIJ_11_NaturalOrdering;
       break;
