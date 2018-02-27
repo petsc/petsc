@@ -2218,7 +2218,7 @@ static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A,PetscBool  *missing,Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar **vals)
+static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar **vals)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
 
@@ -2228,7 +2228,7 @@ static PetscErrorCode MatGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar **val
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
+static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
 {
   PetscFunctionBegin;
   *vals = 0; /* user cannot accidently use the array later */
@@ -2617,14 +2617,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqdense_C",MatTransposeMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultSymbolic_seqaijmkl_seqdense_C",MatTransposeMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultNumeric_seqaijmkl_seqdense_C",MatTransposeMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetColumn_C",MatGetColumn_SeqDense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreColumn_C",MatRestoreColumn_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetColumn_C",MatDenseGetColumn_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreColumn_C",MatDenseRestoreColumn_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   MatDenseGetColumn - gives access to a column of a dense matrix. You MUST call MastDenseRestoreColumn to avoid memory bleeding.
+   MatDenseGetColumn - gives access to a column of a dense matrix. This is only the local part of the column. You MUST call MatDenseRestoreColumn() to avoid memory bleeding.
 
    Not Collective
 
