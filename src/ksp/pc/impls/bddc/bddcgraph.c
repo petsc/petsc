@@ -412,7 +412,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     PetscInt    *labels;
     PetscInt    ncc,cum_queue,mss,mns,j,k,s;
     PetscInt    **refine_buffer=NULL,*private_labels = NULL;
-    PetscBool   *subset_has_corn,*recv_buffer_bool;
+    PetscBool   *subset_has_corn,*recv_buffer_bool,*send_buffer_bool;
 
     ierr = PetscCalloc1(graph->n_subsets,&subset_has_corn);CHKERRQ(ierr);
     if (cornerp) {
@@ -447,6 +447,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     /* first count how many neighbours per connected component I will receive from */
     cum_recv_counts[0] = 0;
     for (i=0;i<graph->n_subsets;i++) cum_recv_counts[i+1] = cum_recv_counts[i]+graph->count[graph->subset_idxs[i][0]];
+    ierr = PetscMalloc1(graph->n_subsets,&send_buffer_bool);CHKERRQ(ierr);
     ierr = PetscMalloc1(cum_recv_counts[graph->n_subsets],&recv_buffer_bool);CHKERRQ(ierr);
     ierr = PetscMalloc2(cum_recv_counts[graph->n_subsets],&send_requests,cum_recv_counts[graph->n_subsets],&recv_requests);CHKERRQ(ierr);
     for (i=0;i<cum_recv_counts[graph->n_subsets];i++) {
@@ -457,6 +458,9 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     /* exchange with my neighbours the number of my connected components on the subset of interface */
     sum_requests = 0;
     for (i=0;i<graph->n_subsets;i++) {
+      send_buffer_bool[i] = (PetscBool)(graph->subset_ncc[i] > 1 || subset_has_corn[i]);
+    }
+    for (i=0;i<graph->n_subsets;i++) {
       PetscMPIInt neigh,tag;
       PetscInt    count,*neighs;
 
@@ -464,11 +468,10 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       neighs = graph->neighbours_set[graph->subset_idxs[i][0]];
       ierr   = PetscMPIIntCast(2*graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
       for (k=0;k<count;k++) {
-        PetscBool ss = (PetscBool)(graph->subset_ncc[i] > 1 || subset_has_corn[i]);
 
         ierr = PetscMPIIntCast(neighs[k],&neigh);CHKERRQ(ierr);
-        ierr = MPI_Isend(&ss,1,MPIU_BOOL,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-        ierr = MPI_Irecv(&recv_buffer_bool[sum_requests],1,MPIU_BOOL,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Isend(send_buffer_bool + i,           1,MPIU_BOOL,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
+        ierr = MPI_Irecv(recv_buffer_bool + sum_requests,1,MPIU_BOOL,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
       }
     }
@@ -490,6 +493,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         }
       }
     }
+    ierr = PetscFree(send_buffer_bool);CHKERRQ(ierr);
     ierr = PetscFree(recv_buffer_bool);CHKERRQ(ierr);
     ierr = PetscFree(subset_has_corn);CHKERRQ(ierr);
 
