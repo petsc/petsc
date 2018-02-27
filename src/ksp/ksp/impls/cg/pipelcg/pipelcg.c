@@ -381,7 +381,7 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
   for (j = 0; j < (max_it+1); ++j) {
     gamma(j) = 0.0;
     delta(j) = 0.0;
-    for (i = 0; i < (max_it+1); ++i) {
+    for (i = 0; i < (2*l+1); ++i) {
       G_noshift(i,j) = 0.0;
     }
   }
