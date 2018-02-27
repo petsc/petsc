@@ -1218,7 +1218,7 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool      isascii;
-  PetscInt       nits;
+  // PetscInt       nits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
