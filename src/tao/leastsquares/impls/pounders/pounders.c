@@ -1218,7 +1218,6 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool      isascii;
-  // PetscInt       nits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1230,9 +1229,6 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
     if (mfqP->usegqt) {
       ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: gqt\n");CHKERRQ(ierr);
     } else {
-      // ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: %s\n",((PetscObject)mfqP->subtao)->type_name);CHKERRQ(ierr);
-      // ierr = TaoGetTotalIterationNumber(mfqP->subtao,&nits);CHKERRQ(ierr);
-      // ierr = PetscViewerASCIIPrintf(viewer, "total subproblem iterations: %D\n",nits);CHKERRQ(ierr);
       ierr = TaoView(mfqP->subtao, viewer);CHKERRQ(ierr);
     }
   }
