@@ -420,7 +420,9 @@ int main(int argc,char **argv)
   ierr = DMNetworkRegisterComponent(networkdm,"edge_water",sizeof(struct _p_EDGE_Water),&appctx_water->compkey_edge);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&appctx_water->compkey_vtx);CHKERRQ(ierr);
 
-  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] Total local nvertices %D + %D = %D, nedges %D + %D = %D\n",crank,numVertices[0],numVertices[1],numVertices[0]+numVertices[1],numEdges[0],numEdges[1],numEdges[0]+numEdges[1]);}
+  if (!crank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] Total local nvertices %D + %D = %D, nedges %D + %D = %D\n",crank,numVertices[0],numVertices[1],numVertices[0]+numVertices[1],numEdges[0],numEdges[1],numEdges[0]+numEdges[1]);CHKERRQ(ierr);
+  }
   ierr = DMNetworkSetSizes(networkdm,nsubnet-1,1,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
   /* Add edge connectivity */
