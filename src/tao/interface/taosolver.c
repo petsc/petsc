@@ -586,14 +586,14 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       ierr = (*tao->ops->view)(tao,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+    if (tao->linesearch) {
+      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
+    }
     if (tao->ksp) {
       ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
-    if (tao->linesearch) {
-      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
     }
 
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
