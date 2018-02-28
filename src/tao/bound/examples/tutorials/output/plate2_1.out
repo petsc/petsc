@@ -8,6 +8,15 @@ iter =   3, Function value 1.50566, Residual: < 1.0e-6
 Tao Object: 1 MPI processes
   type: tron
   Total PG its: 9,  PG tolerance: 0.001 
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: 1
   KSP Object: 1 MPI processes
     type: stcg
     maximum iterations=10000, initial guess is zero
@@ -37,15 +46,6 @@ Tao Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
   total KSP iterations: 12
-  TaoLineSearch Object: 1 MPI processes
-    type: more-thuente
-    maximum function evaluations=30
-    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
-    total number of function evaluations=0
-    total number of gradient evaluations=0
-    total number of function/gradient evaluations=1
-    using variable bounds
-    Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=1.4512e-11
