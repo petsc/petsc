@@ -355,7 +355,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetCostGradients(ts,1,user->lambda,user->mup);CHKERRQ(ierr);
 
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

@@ -289,7 +289,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ctx.ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ctx.ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ctx.ts,ctx.Jac,ctx.Jac,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ctx.ts,ctx.Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ctx.ts,ctx.Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   if (ctx.sa == SA_ADJ) {
     ierr = MatCreateVecs(ctx.Jac,&lambda[0],NULL);CHKERRQ(ierr);
