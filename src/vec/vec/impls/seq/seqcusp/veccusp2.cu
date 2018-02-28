@@ -6,6 +6,7 @@
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
+#include <petsccusp.h>
 #include <petsc/private/vecimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
