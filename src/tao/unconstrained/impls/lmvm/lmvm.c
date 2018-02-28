@@ -82,7 +82,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ++lmP->sgrad;
       stepType = LMVM_SCALED_GRADIENT;
     } else {
-      if (1 == lmP->bfgs) {
+      if (1 == lmP->bfgs && !lmP->recycle) {
         /*  The first BFGS direction is always the scaled gradient */
         ++lmP->sgrad;
         stepType = LMVM_SCALED_GRADIENT;
@@ -185,6 +185,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   if (!lmP->D) {ierr = VecDuplicate(tao->solution,&lmP->D);CHKERRQ(ierr);  }
   if (!lmP->Xold) {ierr = VecDuplicate(tao->solution,&lmP->Xold);CHKERRQ(ierr);  }
   if (!lmP->Gold) {ierr = VecDuplicate(tao->solution,&lmP->Gold);CHKERRQ(ierr);  }
+  lmP->recycle = PETSC_FALSE;
 
   /*  Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
@@ -240,9 +241,11 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
+  TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS information between subsequent TaoSolve() calls.","TaoSolve_LMVM",lmP->recycle,&lmP->recycle,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -262,6 +265,11 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", lm->bfgs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", lm->sgrad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lm->grad);CHKERRQ(ierr);
+    if (lm->recycle) {
+      ierr = PetscViewerASCIIPrintf(viewer, "recycle: on\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "recycle: off\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
