@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatSetValues(user->B,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(user->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user->B,&base,NULL);
+  ierr = MatCreateVecs(user->B,&base,NULL);CHKERRQ(ierr);
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
   ierr = MatSetUp(S);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
