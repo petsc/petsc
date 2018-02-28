@@ -200,7 +200,8 @@
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
       <ul>
-        <li>New shorter calling sequence for PetscError() from Fortran</li>
+        <li>PETSC_NULL_INTEGER, PETSC_NULL_REAL etc are now declared as arrays of size one instead of as scalar values.</li>
+        <li>New shorter calling sequence for PetscError() from Fortran</li>        
         <li>SETERRQ(), and CHKERRQ from Fortran now have the same behavior as in C and automatically return on errors, they do not abort.
             Correspondingly SERERRA() and CHKERRA() should be used in 'program main' - as return is not possible from it.
             These macros should be used from .F90 files because they require long lines</li>
