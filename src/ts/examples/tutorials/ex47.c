@@ -233,14 +233,16 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscDS         prob, probAux;
   PetscFE         fe,   feAux;
   PetscQuadrature q;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, ctx->simplex, "phi_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, ctx->simplex, "phi_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "phi");CHKERRQ(ierr);
   /* Create velocity */
-  ierr = PetscFECreateDefault(dm, dim, dim, ctx->simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, ctx->simplex, "vel_", -1, &feAux);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject) dm), &probAux);CHKERRQ(ierr);
