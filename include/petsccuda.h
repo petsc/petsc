@@ -2,6 +2,7 @@
 #define __PETSCCUDA_H
 
 #include <petscvec.h>
+#include <cublas_v2.h>
 
 PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, PetscScalar **a);
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, PetscScalar **a);
