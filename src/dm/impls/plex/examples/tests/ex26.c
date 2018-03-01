@@ -11,27 +11,12 @@ static char help[] = "Test FEM layout with DM and ExodusII storage\n\n";
 
 #include <petsc/private/dmpleximpl.h>
 
-static PetscErrorCode DMCreateGlobalToNatural(DM dm, PetscSF migrationSF, PetscSF migrationSFInv)
-{
-  PetscSection   section, sectionSeq;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionSeq);CHKERRQ(ierr);
-  ierr = PetscSFDistributeSection(migrationSFInv, section, NULL, sectionSeq);CHKERRQ(ierr);
-  ierr = DMPlexCreateGlobalToNaturalSF(dm, sectionSeq, migrationSF, &dm->sfNatural);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
-  dm->useNatural = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 int main(int argc, char **argv) {
   DM                dm, dmU, dmA, dmS, dmUA;
   Vec               X, U, A, S, UA;
   IS                isU, isA, isS, isUA;
   PetscSection      section;
-  PetscSF           migrationSF, migrationSFInv;
+  PetscSF           migrationSF;
   const PetscInt    fieldU = 0;
   const PetscInt    fieldA = 2;
   const PetscInt    fieldS = 1;
@@ -278,23 +263,12 @@ int main(int argc, char **argv) {
     IO_word_size  = 0;
     exoid = ex_open_par(ofilename, EXO_mode, &CPU_word_size, &IO_word_size, &EXO_version, PetscObjectComm((PetscObject) dm), mpi_info);
   }
-
   /* Get DM and IS for each field of dm */
   ierr = DMCreateSubDM(dm, 1, &fieldU, &isU,  &dmU);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
 
-  /* The Natural to Global SF is not created as part of DMCreateSubDM */
-  if (size > 1) {
-    ierr = PetscSFCreateInverseSF(migrationSF, &migrationSFInv);CHKERRQ(ierr);
-    ierr = DMCreateGlobalToNatural(dmU,  migrationSF, migrationSFInv);CHKERRQ(ierr);
-    ierr = DMCreateGlobalToNatural(dmA,  migrationSF, migrationSFInv);CHKERRQ(ierr);
-    ierr = DMCreateGlobalToNatural(dmS,  migrationSF, migrationSFInv);CHKERRQ(ierr);
-    ierr = DMCreateGlobalToNatural(dmUA, migrationSF, migrationSFInv);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&migrationSFInv);CHKERRQ(ierr);
-  }
-  ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm,   &X);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmU,  &U);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmA,  &A);CHKERRQ(ierr);
@@ -443,6 +417,7 @@ int main(int argc, char **argv) {
   ierr = DMDestroy(&dmS);CHKERRQ(ierr); ierr = ISDestroy(&isS);CHKERRQ(ierr);
   ierr = DMDestroy(&dmUA);CHKERRQ(ierr);ierr = ISDestroy(&isUA);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = PetscFree2(pStartDepth, pEndDepth);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

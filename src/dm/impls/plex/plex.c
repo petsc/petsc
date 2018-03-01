@@ -2135,6 +2135,23 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionBegin;
   if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
   ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  if (dm->sfMigration) {
+    (*subdm)->sfMigration = dm->sfMigration;
+    if (dm->useNatural) {
+      PetscSF        sfMigrationInv,sfNatural;
+      PetscSection   section, sectionSeq;
+
+      ierr = DMGetDefaultSection((*subdm), &section);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = PetscSFCreateInverseSF((*subdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*subdm)), &sectionSeq);CHKERRQ(ierr);
+      ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
+    
+      ierr = DMPlexCreateGlobalToNaturalSF(*subdm, sectionSeq, (*subdm)->sfMigration, &sfNatural);CHKERRQ(ierr);  
+      ierr = DMPlexSetGlobalToNaturalSF(*subdm,sfNatural);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

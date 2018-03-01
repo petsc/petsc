@@ -1,6 +1,73 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 /*@
+  DMPlexSetMigrationSF - Sets the SF for migrating from a parent DM into this DM
+
++ dm          - The DM
+. naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexGetMigrationSF()
+@*/
+PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) 
+{
+  PetscFunctionBegin;
+  dm->sfMigration = migrationSF;
+  /* PetscSF does not have a refct so I cannot increment it here */
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetMigrationSF - Gets the SF for migrating from a parent DM into this DM
+
++ dm          - The DM
+. *migrationSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexSetMigrationSF
+@*/
+PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF) 
+{
+  PetscFunctionBegin;
+  *migrationSF = dm->sfMigration;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetGlobalToNaturalSF - Sets the SF for mapping Global Vec to the Natural Vec
+
++ dm          - The DM
+. naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexGetGlobaltoNaturalSF()
+@*/
+PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) 
+{
+  PetscFunctionBegin;
+  dm->sfNatural = naturalSF;
+  dm->useNatural = PETSC_TRUE;
+  /* PetscSF does not have a refct so I cannot increment it here */
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetGlobalToNaturalSF - Gets the SF for mapping Global Vec to the Natural Vec
+
++ dm          - The DM
+. *naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexSetGlobaltoNaturalSF
+@*/
+PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF) 
+{
+  PetscFunctionBegin;
+  *naturalSF = dm->sfNatural;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexCreateGlobalToNaturalSF - Creates the SF for mapping Global Vec to the Natural Vec
 
   Input Parameters:

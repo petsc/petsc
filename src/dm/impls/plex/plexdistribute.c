@@ -1758,9 +1758,9 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
     ierr = DMSetUseNatural(*dmParallel, PETSC_TRUE);CHKERRQ(ierr);
   }
+  (*dmParallel)->sfMigration = sfMigration;
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
-  else    {ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
