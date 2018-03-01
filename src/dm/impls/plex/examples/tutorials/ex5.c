@@ -33,12 +33,33 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
+static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], PetscViewerFormat format, DM *dm_new)
+{
+  DM             dmnew;
+  PetscViewer    v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(v, format);CHKERRQ(ierr);
+  ierr = DMView(dm, v);CHKERRQ(ierr);
+
+  ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
+  ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
+  ierr = DMLoad(dmnew, v);
+
+  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
+  *dm_new = dmnew;
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM             dm, dmnew;
   PetscPartitioner part;
   AppCtx         user;
-  PetscViewer    v;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -62,17 +83,7 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
-  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
-  ierr = DMView(dm, v);CHKERRQ(ierr);
-
-  ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), &dmnew);CHKERRQ(ierr);
-  ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
-
-  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
+  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
 
   ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
