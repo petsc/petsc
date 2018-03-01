@@ -810,7 +810,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
   ierr = PetscViewerASCIIGetTab(v, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(v, ((PetscObject)dm)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(v, ((PetscObject)dm)->tablevel);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)dm,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
