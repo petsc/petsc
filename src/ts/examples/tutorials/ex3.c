@@ -517,4 +517,18 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
       args: -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason -time_dependent_rhs
       filter: sed "s/ATOL/RTOL/g"
 
+    test:
+      requires: !single
+      suffix: pod_guess
+      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type pod -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
+      suffix: fischer_guess
+      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
+      suffix: fischer_guess_2
+      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
 TEST*/
