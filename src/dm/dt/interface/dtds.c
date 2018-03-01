@@ -134,10 +134,11 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", prob->Nf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   for (f = 0; f < prob->Nf; ++f) {
-    PetscObject  obj;
-    PetscClassId id;
-    const char  *name;
-    PetscInt     Nc;
+    PetscObject     obj;
+    PetscClassId    id;
+    PetscQuadrature q;
+    const char     *name;
+    PetscInt        Nc, Nq, Nqc;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -145,9 +146,11 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "Field %s", name ? name : "<unknown>");CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {
       ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetQuadrature((PetscFE) obj, &q);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " FEM");CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);
+      ierr = PetscFVGetQuadrature((PetscFV) obj, &q);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " FVM");CHKERRQ(ierr);
     }
     else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
@@ -162,6 +165,8 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       if (prob->adjacency[f*2+1]) {ierr = PetscViewerASCIIPrintf(viewer, " (adj FEM)");CHKERRQ(ierr);}
       else                        {ierr = PetscViewerASCIIPrintf(viewer, " (adj FUNKY)");CHKERRQ(ierr);}
     }
+    ierr = PetscQuadratureGetData(q, NULL, &Nqc, &Nq, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
