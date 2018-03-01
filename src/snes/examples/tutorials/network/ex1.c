@@ -631,13 +631,14 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
+     requires: !complex !define(PETSC_USE_64BIT_INDICES)
      depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:
       args: -coupled_snes_converged_reason -options_left no
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double
 
    test:
       suffix: 2
@@ -645,6 +646,6 @@ int main(int argc,char **argv)
       args: -coupled_snes_converged_reason -options_left no
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double
 
 TEST*/
