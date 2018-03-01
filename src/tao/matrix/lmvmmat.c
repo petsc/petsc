@@ -259,6 +259,17 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatLMVMGetUpdates(Mat M, PetscInt *nupdates)
+{
+  PetscErrorCode ierr;
+  MatLMVMCtx     *ctx;
+  
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(M, (void**)&ctx);CHKERRQ(ierr);
+  *nupdates = ctx->nupdates;
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode MatLMVMSetRecycleFlag(Mat M, PetscBool flg)
 {
   PetscErrorCode ierr;
