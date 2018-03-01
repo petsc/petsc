@@ -10,6 +10,7 @@ typedef struct {
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
   PetscViewerFormat format;               /* Format to write and read */
+  PetscBool second_write_read;            /* Write and read for the 2nd time */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -22,6 +23,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
   options->format = PETSC_VIEWER_DEFAULT;
+  options->second_write_read = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex5.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
@@ -29,6 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex5.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex5.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-format", "Format to write and read", "ex5.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex5.c", options->second_write_read, &options->second_write_read, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -85,6 +88,12 @@ int main(int argc, char **argv)
 
   ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
 
+  if (user.second_write_read) {
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm = dmnew;
+    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
+  }
+
   ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
@@ -139,6 +148,14 @@ int main(int argc, char **argv)
     suffix: 3
     requires: hdf5 exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare
+
+  # Load HDF5 file in XDMF format in parallel, write, read dm1, write, read dm2, and compare dm1 and dm2
+  test:
+    suffix: 4
+    requires: hdf5
+    nsize: {{1 2 3 4 8}}
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
+    args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
 
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
