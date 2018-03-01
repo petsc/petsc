@@ -185,7 +185,6 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   if (!lmP->D) {ierr = VecDuplicate(tao->solution,&lmP->D);CHKERRQ(ierr);  }
   if (!lmP->Xold) {ierr = VecDuplicate(tao->solution,&lmP->Xold);CHKERRQ(ierr);  }
   if (!lmP->Gold) {ierr = VecDuplicate(tao->solution,&lmP->Gold);CHKERRQ(ierr);  }
-  lmP->recycle = PETSC_FALSE;
 
   /*  Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
@@ -245,9 +244,9 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS information between subsequent TaoSolve() calls.","TaoSolve_LMVM",lmP->recycle,&lmP->recycle,NULL);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS information between subsequent TaoSolve() calls.","",PETSC_FALSE,&lmP->recycle,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -325,6 +324,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->Xold = 0;
   lmP->Gold = 0;
   lmP->H0   = NULL;
+  lmP->recycle = PETSC_FALSE;
 
   tao->data = (void*)lmP;
   /* Override default settings (unless already changed) */
