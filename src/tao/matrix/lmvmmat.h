@@ -82,7 +82,6 @@ typedef struct{
   PetscBool useScale;
   Vec scale;
 
-
 } MatLMVMCtx;
 
 

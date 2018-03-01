@@ -244,9 +244,9 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS information between subsequent TaoSolve() calls.","",PETSC_FALSE,&lmP->recycle,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS matrix between subsequent TaoSolve() calls","",lmP->recycle,&lmP->recycle,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -265,9 +265,7 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", lm->sgrad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lm->grad);CHKERRQ(ierr);
     if (lm->recycle) {
-      ierr = PetscViewerASCIIPrintf(viewer, "recycle: on\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "recycle: off\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Recycle: on\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
