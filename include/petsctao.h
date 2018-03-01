@@ -47,6 +47,7 @@ J*/
 #define TAONTR      "ntr"
 #define TAONTL      "ntl"
 #define TAOCG       "cg"
+#define TAOPGD      "pgd"
 #define TAOTRON     "tron"
 #define TAOOWLQN    "owlqn"
 #define TAOBMRM     "bmrm"

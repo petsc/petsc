@@ -135,6 +135,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     tron->n_free_last = tron->n_free;
     ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
 
+    /* Generate index set (IS) of which bound constraints are active */
     ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
     ierr = VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&tron->Free_Local);CHKERRQ(ierr);
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);CHKERRQ(ierr);

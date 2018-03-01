@@ -942,5 +942,10 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
       nsize: 3
       args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -pc_type none -tao_type gpcg -tao_gttol 1.e-5
       requires: !single
+      
+   test:
+      suffix: 8
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type pgd -tao_gttol 1.e-5
+      requires: !single
 
 TEST*/
