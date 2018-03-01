@@ -331,7 +331,7 @@ int main(int argc,char **args)
   ierr = DMGetCoordinatesLocal(da,&xcoorl);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
   if (ismatis) {
-    MatNullSpace lnullsp;
+    MatNullSpace lnullsp = NULL;
     Mat          lA;
 
     ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
