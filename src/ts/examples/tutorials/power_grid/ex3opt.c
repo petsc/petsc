@@ -501,5 +501,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
    test:
       suffix: 2
+      output_file: output/ex3opt_1.out
       args: -sa_method tlm -ts_type cn -pc_type lu -tao_monitor
 TEST*/
