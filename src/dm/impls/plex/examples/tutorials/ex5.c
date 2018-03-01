@@ -9,6 +9,7 @@ typedef struct {
   PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
+  PetscViewerFormat format;               /* Format to write and read */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -20,12 +21,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->distribute = PETSC_TRUE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
+  options->format = PETSC_VIEWER_DEFAULT;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex5.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex5.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex5.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex5.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-format", "Format to write and read", "ex5.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -36,7 +39,6 @@ int main(int argc, char **argv)
   PetscPartitioner part;
   AppCtx         user;
   PetscViewer    v;
-  PetscViewerFormat f;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -60,10 +62,8 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
-  f = PETSC_VIEWER_DEFAULT;
-  ierr = PetscOptionsGetEnum(NULL, NULL, "-format", PetscViewerFormats, (PetscEnum*)&f, NULL);
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(v, f);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
   ierr = DMView(dm, v);CHKERRQ(ierr);
 
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
