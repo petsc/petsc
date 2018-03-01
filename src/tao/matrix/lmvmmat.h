@@ -81,6 +81,8 @@ typedef struct{
 
   PetscBool useScale;
   Vec scale;
+  
+  PetscBool recycle;
 
 } MatLMVMCtx;
 
@@ -110,6 +112,8 @@ int MatNorm_LMVM(Mat,NormType,PetscReal *);
 
 /* Functions used by TAO */
 PetscErrorCode MatLMVMReset(Mat);
+PetscErrorCode MatLMVMSetRecycleFlag(Mat, PetscBool);
+PetscErrorCode MatLMVMGetRecycleFlag(Mat, PetscBool*);
 PetscErrorCode MatLMVMUpdate(Mat,Vec, Vec);
 PetscErrorCode MatLMVMSetDelta(Mat,PetscReal);
 PetscErrorCode MatLMVMSetScale(Mat,Vec);

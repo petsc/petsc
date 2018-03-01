@@ -14,6 +14,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscReal                    delta;
   PetscErrorCode               ierr;
   PetscInt                     stepType;
+  PetscBool                    recycle;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
@@ -41,9 +42,12 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = MatLMVMSetDelta(lmP->M,delta);CHKERRQ(ierr);
 
   /*  Set counter for gradient/reset steps */
-  lmP->bfgs = 0;
-  lmP->sgrad = 0;
-  lmP->grad = 0;
+  ierr = MatLMVMGetRecycleFlag(lmP->M, &recycle);CHKERRQ(ierr);
+  if (!recycle) {
+    lmP->bfgs = 0;
+    lmP->sgrad = 0;
+    lmP->grad = 0;
+  }
 
   /*  Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
@@ -82,7 +86,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ++lmP->sgrad;
       stepType = LMVM_SCALED_GRADIENT;
     } else {
-      if (1 == lmP->bfgs && !lmP->recycle) {
+      if (1 == lmP->bfgs && !recycle) {
         /*  The first BFGS direction is always the scaled gradient */
         ++lmP->sgrad;
         stepType = LMVM_SCALED_GRADIENT;
@@ -240,11 +244,9 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
-  TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_lmvm_recycle","Recycle the BFGS matrix between subsequent TaoSolve() calls","",lmP->recycle,&lmP->recycle,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -254,7 +256,7 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
 static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 {
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
-  PetscBool      isascii;
+  PetscBool      isascii, recycle;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -264,7 +266,8 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", lm->bfgs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", lm->sgrad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lm->grad);CHKERRQ(ierr);
-    if (lm->recycle) {
+    ierr = MatLMVMGetRecycleFlag(lm->M, &recycle);CHKERRQ(ierr);
+    if (recycle) {
       ierr = PetscViewerASCIIPrintf(viewer, "Recycle: on\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -322,7 +325,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->Xold = 0;
   lmP->Gold = 0;
   lmP->H0   = NULL;
-  lmP->recycle = PETSC_FALSE;
 
   tao->data = (void*)lmP;
   /* Override default settings (unless already changed) */
