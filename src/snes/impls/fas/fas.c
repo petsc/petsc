@@ -117,7 +117,11 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
       }
       /* set the injection from the DM */
       if (!fas->inject) {
-        ierr = DMCreateInjection(next->dm, snes->dm, &fas->inject);CHKERRQ(ierr);
+        PetscBool flg;
+        ierr = DMHasCreateInjection(next->dm, &flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = DMCreateInjection(next->dm, snes->dm, &fas->inject);CHKERRQ(ierr);
+        }
       }
     }
   }
