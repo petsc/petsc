@@ -11,7 +11,7 @@ ALLTESTS_CHECK_FAILURES = no
 
 alltests:
 	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@if [ x${PETSC_ARCH} != x -a -d "${PETSC_ARCH}" ]; then \
+	+@if [ x${PETSC_ARCH} != x -a -d "${PETSC_ARCH}" ]; then \
             ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log ;\
             ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
           else \
@@ -25,10 +25,10 @@ alltests:
           fi;
 
 allgtest-tap:
-	-@${OMAKE} -f gmakefile.test -j ${MAKE_TEST_NP} test V=0
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) $(MAKEFLAGS)" ${OMAKE} -f gmakefile.test test V=0
 
 allgtest:
-	-@${OMAKE} -k -f gmakefile.test -j ${MAKE_TEST_NP} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) $(MAKEFLAGS)" ${OMAKE} -k -f gmakefile.test test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
 
 
 

@@ -15,29 +15,6 @@ chk_petscdir:
 chk_upgrade:
 	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/petscnagupgrade.py
 
-chk_makej:
-	@parallel=false;\
-        mflags=`echo _${MFLAGS}_ | sed "s+ +_+g"`;\
-        mflags_j=`echo $${mflags} | sed "s+_-j_+DUMMY+g"`;\
-        mflags_j1=`echo $${mflags} | sed "s+_-j_1_+DUMMY+g"`;\
-        if [ "$${mflags_j}" != "$${mflags}" -a "$${mflags_j1}" = "$${mflags}" ]; then parallel=true; fi;\
-        makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
-        makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
-        if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
-        if [ "$${parallel}" = "true" ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"********************* ERROR **********************\n" ; \
-          if [ "${PETSC_BUILD_USING_CMAKE}" != "" -o "${MAKE_IS_GNUMAKE}" != "" ]; then \
-             echo "PETSc toplevel makefile does not support -j option.";\
-             echo "Instead - use: \"make MAKE_NP=<np>\". Current value of MAKE_NP is ${MAKE_NP}.";\
-          else \
-             echo "Parallel build with 'make -j' is not supported    ";\
-             echo "for PETSc legacy builds. Run without -j <np>      ";\
-             echo "or configure PETSc with gnumake using --download-make";\
-             echo "to enable parallel builds with PETSc              ";\
-          fi;\
-          printf "**************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
-          exit 1; fi;
-
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
@@ -56,7 +33,7 @@ lssrc:
 	  ls ${SOURCEALL} | cat;\
 	 fi
 
-chklib_dir: chk_makej
+chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
@@ -89,22 +66,20 @@ chkopts: chk_upgrade
 
 #
 # uses the cmake infrastructure to build/rebuild the libraries
-ccmake: chk_makej
-	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
+ccmake:
 	@echo "=========================================="
-	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=${VERBOSE}
+	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
-cmake: chk_makej
-	@${OMAKE} ccmake VERBOSE=1
+cmake:
+	+@MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
 
-gnumake: chk_makej
-	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
+gnumake:
 	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} ${MAKE_PAR_OUT_FLG} V=${V}
+	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
@@ -968,7 +943,7 @@ shared: shared_nomesg
 	    echo "Shared libraries disabled"; \
           fi
 
-shared_nomesg: chk_makej
+shared_nomesg:
 	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
             cwd=`pwd`; \

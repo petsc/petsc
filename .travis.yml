@@ -94,8 +94,8 @@ before_install:
   - if [[ -n "$MPI" ]]; then export CC=mpicc CXX=mpicxx FC=mpifort; fi
 install:
   - ./configure --with-cc=$CC --with-cxx=$CXX --with-fc=$FC --with-clanguage=${LANGUAGE:-C} --with-64-bit-indices=${INT64:-0} --with-scalar-type=${SCALAR:-real} --with-precision=${PRECISION:-double} --with-mpi=${MPI:-0} $BLASLAPACK
-  - make MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make -j2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
 
 script:
-  - make check    MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
-# - make alltests MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot
+  - make check    -j2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+# - make alltests -j2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot
