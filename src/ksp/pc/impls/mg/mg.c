@@ -133,6 +133,7 @@ PetscErrorCode PCReset_MG(PC pc)
       ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->inject);CHKERRQ(ierr);
       ierr = VecDestroy(&mglevels[i+1]->rscale);CHKERRQ(ierr);
     }
 
