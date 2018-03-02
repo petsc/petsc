@@ -3026,6 +3026,30 @@ PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+
+/*@
+    DMHasCreateInjection - does the DM object have a method of providing an injection?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the DM has facilities for DMCreateInjection().
+
+    Level: developer
+
+.seealso DMHasFunction(), DMCreateInjection()
+
+@*/
+PetscErrorCode  DMHasCreateInjection(DM dm,PetscBool  *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->getinjection) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*@C
     DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
 
