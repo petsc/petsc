@@ -1,8 +1,4 @@
 
-/*T
-   requires: define(PETSC_USE_REAL_DOUBLE) !define(USE_64BIT_INDICES)
-T*/
-
 #include <petscmat.h>
 
 static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only the lower triangle). \n\
@@ -29,9 +25,8 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
   ierr = PetscFinalize();
-  return 0;
-#endif
-
+  return ierr;
+#else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Uniprocessor Example only\n");
 
@@ -94,6 +89,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
+#endif
 }
 
 
