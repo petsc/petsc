@@ -692,6 +692,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
   } else if (isglvis) {
+    ierr = PetscObjectReference((PetscObject)xin);CHKERRQ(ierr);
     ierr = VecView_GLVis(xin,viewer);CHKERRQ(ierr);
   } else {
 #if defined(PETSC_HAVE_MPIIO)
