@@ -192,9 +192,9 @@ int main(int argc,char **argv)
       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
         form[0]='\0';
         for (j=0; j < i+2; j++) {
-          ierr = PetscStrcat(form,"%*d ");CHKERRQ(ierr);
+          ierr = PetscStrlcat(form,"%*d ",sizeof(form));CHKERRQ(ierr);
         }
-        ierr = PetscStrcat(form,"%d");CHKERRQ(ierr);
+        ierr = PetscStrlcat(form,"%d",sizeof(form));CHKERRQ(ierr);
 
         sscanf(str,form,&dtmp);
         user.AdjM[user.Nvlocal][i] = dtmp;

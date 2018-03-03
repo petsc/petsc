@@ -1446,7 +1446,7 @@ PETSC_EXTERN PetscErrorCode PetscStrcasecmp(const char[],const char[],PetscBool 
 PETSC_EXTERN PetscErrorCode PetscStrncmp(const char[],const char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscStrcpy(char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscStrcat(char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscStrncat(char[],const char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscStrlcat(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrncpy(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrchr(const char[],char,char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrtolower(char[]);

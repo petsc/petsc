@@ -181,13 +181,13 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
     ierr = PetscSectionGetFieldComponents(s, f, &Nc);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldName(s, f, &fname);CHKERRQ(ierr);
 
-    if (v->hdr.prefix) {ierr = PetscStrcpy(prefix, v->hdr.prefix);CHKERRQ(ierr);}
+    if (v->hdr.prefix) {ierr = PetscStrncpy(prefix, v->hdr.prefix,sizeof(prefix));CHKERRQ(ierr);}
     else               {prefix[0] = '\0';}
     if (Nf > 1) {
       ierr = DMCreateSubDM(dm, 1, &f, &fis, &fdm);CHKERRQ(ierr);
       ierr = VecGetSubVector(v, fis, &fv);CHKERRQ(ierr);
-      ierr = PetscStrcat(prefix, fname);CHKERRQ(ierr);
-      ierr = PetscStrcat(prefix, "_");CHKERRQ(ierr);
+      ierr = PetscStrlcat(prefix, fname,sizeof(prefix));CHKERRQ(ierr);
+      ierr = PetscStrlcat(prefix, "_",sizeof(prefix));CHKERRQ(ierr);
     }
     for (comp = 0; comp < Nc; ++comp, ++w) {
       PetscInt nmax = 2;

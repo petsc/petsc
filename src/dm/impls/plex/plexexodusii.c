@@ -53,7 +53,7 @@ static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type,
     PetscStackCallStandard(ex_get_variable_name,(exoid, obj_type, i+1, var_name));
     for (j = 0; j < num_suffix; ++j){
       ierr = PetscStrncpy(ext_name, name, MAX_STR_LENGTH);CHKERRQ(ierr);
-      ierr = PetscStrncat(ext_name, suffix[j], MAX_STR_LENGTH);CHKERRQ(ierr);
+      ierr = PetscStrlcat(ext_name, suffix[j], MAX_STR_LENGTH);CHKERRQ(ierr);
       ierr = PetscStrcasecmp(ext_name, var_name, &flg);
       if (flg) {
         *varIndex = i+1;

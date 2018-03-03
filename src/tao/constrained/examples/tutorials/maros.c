@@ -142,9 +142,9 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
   ierr = PetscStrncpy(filebase,user->name,sizeof(filebase));CHKERRQ(ierr);
-  ierr = PetscStrncat(filebase,"/",sizeof(filebase));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filebase,"/",sizeof(filebase));CHKERRQ(ierr);
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"f",sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"f",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&user->d);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   user->n = nrows;
 
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"H",sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"H",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&user->H);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
 
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"Aeq",sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"Aeq",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);
   if (ierr) {
     user->Aeq = NULL;
@@ -184,7 +184,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   }
 
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"Beq",sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"Beq",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
   if (ierr) {
     user->beq = 0;

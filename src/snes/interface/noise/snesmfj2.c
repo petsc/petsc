@@ -241,8 +241,8 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   } else mfctx->data = 0;
 
   ierr = PetscOptionsHasName(((PetscObject)snes)->options,NULL,"-help",&flg);CHKERRQ(ierr);
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (((PetscObject)snes)->prefix) PetscStrcat(p,((PetscObject)snes)->prefix);
+  ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
+  if (((PetscObject)snes)->prefix) {ierr = PetscStrlcat(p,((PetscObject)snes)->prefix,sizeof(p));CHKERRQ(ierr);}
   if (flg) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes)," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %g)\n",p,(double)mfctx->error_rel);CHKERRQ(ierr);

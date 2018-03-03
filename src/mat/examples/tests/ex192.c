@@ -34,29 +34,29 @@ int main(int argc,char **args)
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
   if (!data_provided) { /* get matrices from PETSc distribution */
-    ierr = PetscStrcpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
+    ierr = PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file));CHKERRQ(ierr);
     if (symm) {
 #if defined (PETSC_USE_COMPLEX)
-      ierr = PetscStrcat(file,"hpd-complex-");CHKERRQ(ierr);
+      ierr = PetscStrlcat(file,"hpd-complex-",sizeof(file));CHKERRQ(ierr);
 #else
-      ierr = PetscStrcat(file,"spd-real-");CHKERRQ(ierr);
+      ierr = PetscStrlcat(file,"spd-real-",sizeof(file));CHKERRQ(ierr);
 #endif
     } else {
 #if defined (PETSC_USE_COMPLEX)
-      ierr = PetscStrcat(file,"nh-complex-");CHKERRQ(ierr);
+      ierr = PetscStrlcat(file,"nh-complex-",sizeof(file));CHKERRQ(ierr);
 #else
-      ierr = PetscStrcat(file,"ns-real-");CHKERRQ(ierr);
+      ierr = PetscStrlcat(file,"ns-real-",sizeof(file));CHKERRQ(ierr);
 #endif
     }
 #if defined(PETSC_USE_64BIT_INDICES)
-    ierr = PetscStrcat(file,"int64-");CHKERRQ(ierr);
+    ierr = PetscStrlcat(file,"int64-",sizeof(file));CHKERRQ(ierr);
 #else
-    ierr = PetscStrcat(file,"int32-");CHKERRQ(ierr);
+    ierr = PetscStrlcat(file,"int32-",sizeof(file));CHKERRQ(ierr);
 #endif
 #if defined (PETSC_USE_REAL_SINGLE)
-    ierr = PetscStrcat(file,"float32");CHKERRQ(ierr);
+    ierr = PetscStrlcat(file,"float32",sizeof(file));CHKERRQ(ierr);
 #else
-    ierr = PetscStrcat(file,"float64");CHKERRQ(ierr);
+    ierr = PetscStrlcat(file,"float64",sizeof(file));CHKERRQ(ierr);
 #endif
   }
   /* Load matrix A */

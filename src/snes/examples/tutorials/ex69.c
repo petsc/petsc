@@ -3251,8 +3251,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     int         snum, d;
 
     if (user->simplex) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Citom grids do not use simplices. Use -simplex 0");
-    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
-    ierr = PetscStrcat(filename, "_vects.ascii");CHKERRQ(ierr);
+    ierr = PetscStrncpy(filename, user->mantleBasename,sizeof(filename));CHKERRQ(ierr);
+    ierr = PetscStrlcat(filename, "_vects.ascii",sizeof(filename));CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
@@ -3495,8 +3495,8 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 
     ierr = DMGetDefaultSection(dmAux, &s);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dmAux, 0, &vStart, NULL);CHKERRQ(ierr);
-    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
-    ierr = PetscStrcat(filename, "_therm.bin");CHKERRQ(ierr);
+    ierr = PetscStrncpy(filename, user->mantleBasename,sizeof(filename));CHKERRQ(ierr);
+    ierr = PetscStrlcat(filename, "_therm.bin",sizeof(filename));CHKERRQ(ierr);
     ierr = PetscViewerCreate(PetscObjectComm((PetscObject) dm), &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);

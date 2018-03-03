@@ -1308,7 +1308,7 @@ PetscErrorCode PetscOptionsFindPair_Private(PetscOptions options,const char pre[
     ierr = PetscStrncpy(ptr,pre,tmp+sizeof(tmp)-ptr);CHKERRQ(ierr);
     tmp[sizeof(tmp)-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,namep+1,sizeof(tmp));CHKERRQ(ierr);
+    ierr = PetscStrlcat(tmp,namep+1,sizeof(tmp));CHKERRQ(ierr);
   } else {
     ierr = PetscStrncpy(tmp,name+1,sizeof(tmp));CHKERRQ(ierr);
     tmp[sizeof(tmp)-1] = 0;
@@ -1357,8 +1357,8 @@ PetscErrorCode PetscOptionsFindPair_Private(PetscOptions options,const char pre[
       for (i=0; i<cnt; i++) {
         ierr = PetscStrcpy(tmp2,"-");CHKERRQ(ierr);
         ierr = PetscStrncpy(tmp3,tmp,locs[i]+1);CHKERRQ(ierr);
-        ierr = PetscStrncat(tmp2,tmp3,sizeof(tmp2));CHKERRQ(ierr);
-        ierr = PetscStrncat(tmp2,tmp+loce[i],sizeof(tmp2));CHKERRQ(ierr);
+        ierr = PetscStrlcat(tmp2,tmp3,sizeof(tmp2));CHKERRQ(ierr);
+        ierr = PetscStrlcat(tmp2,tmp+loce[i],sizeof(tmp2));CHKERRQ(ierr);
         ierr = PetscOptionsFindPair_Private(options,NULL,tmp2,value,flg);CHKERRQ(ierr);
         if (*flg) break;
       }
@@ -1394,7 +1394,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
     ierr = PetscStrncpy(ptr,pre,tmp+sizeof(tmp)-ptr);CHKERRQ(ierr);
     tmp[sizeof(tmp)-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,namep+1,sizeof(tmp));CHKERRQ(ierr);
+    ierr = PetscStrlcat(tmp,namep+1,sizeof(tmp));CHKERRQ(ierr);
   } else {
     ierr = PetscStrncpy(tmp,name+1,sizeof(tmp));CHKERRQ(ierr);
     tmp[sizeof(tmp)-1] = 0;

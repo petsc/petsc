@@ -355,7 +355,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
     ierr = PetscStrlen(body,&len);CHKERRQ(ierr);
     image = image->next;
   }
-  ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
+  ierr = PetscStrlcat(body,"<br>\n",sizeof(body));CHKERRQ(ierr);
   if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
   PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
   PetscFunctionReturn(0);

@@ -20,8 +20,8 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
-      ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
-      ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
+      ierr = PetscStrncpy(par,"gzip ",sizeof(par));CHKERRQ(ierr);
+      ierr = PetscStrlcat(par,vascii->filename,sizeof(par));CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
