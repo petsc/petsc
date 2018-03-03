@@ -136,7 +136,6 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   char           *basename,registername[128];
   PetscDLHandle  handle;
   PetscErrorCode (*func)(void) = NULL;
-  size_t         len;
 
   PetscFunctionBegin;
   PetscValidCharPointer(path,2);
@@ -181,9 +180,8 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
     ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr);
   }
   for (s=basename; *s; s++) if (*s == '-') *s = '_';
-  ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
-  ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
-  ierr = PetscStrncat(registername,basename,len);CHKERRQ(ierr);
+  ierr = PetscStrncpy(registername,"PetscDLLibraryRegister_",sizeof(registername));CHKERRQ(ierr);
+  ierr = PetscStrncat(registername,basename,sizeof(registername));CHKERRQ(ierr);
   ierr = PetscDLSym(handle,registername,(void**)&func);CHKERRQ(ierr);
   if (func) {
     ierr = PetscInfo1(0,"Loading registered routines from %s\n",libname);CHKERRQ(ierr);
