@@ -3182,22 +3182,22 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     */
 
     /* 1) See if a specialized converter is known to the current DM and the desired class */
-    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(convname,"DMConvert_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,((PetscObject) dm)->type_name,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)dm,convname,&conv);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 2)  See if a specialized converter is known to the desired DM class. */
     ierr = DMCreate(PetscObjectComm((PetscObject)dm), &B);CHKERRQ(ierr);
     ierr = DMSetType(B, newtype);CHKERRQ(ierr);
-    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(convname,"DMConvert_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,((PetscObject) dm)->type_name,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = DMDestroy(&B);CHKERRQ(ierr);

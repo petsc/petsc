@@ -168,9 +168,9 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       } else {
         ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       }
-      ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
+      ierr = PetscStrncpy(subname, name,sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, "_",sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, fname,sizeof(subname));CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}

@@ -346,7 +346,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
 
   Concepts: string copy
 
-.seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat()
+.seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
 
 @*/
 
@@ -382,7 +382,7 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
 
   Concepts: string copy
 
-.seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
+.seealso: PetscStrcpy(), PetscStrcat(), PetscStrlcat()
 
 @*/
 PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
@@ -415,7 +415,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 
   Concepts: string copy
 
-.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
+.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
 
 @*/
 PetscErrorCode  PetscStrcat(char s[],const char t[])
@@ -427,28 +427,36 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
 }
 
 /*@C
-   PetscStrncat - Concatenates a string onto a given string, up to a given length
+   PetscStrlcat - Concatenates a string onto a given string, up to a given length
 
    Not Collective
 
    Input Parameters:
 +  s - pointer to string to be added to end
 .  t - string to be added to
-.  n - maximum length to copy
+.  n - length of the original allocated string
 
    Level: intermediate
 
   Notes:    Not for use in Fortran
+
+  Unlike the system call strncat() the length passed in is the length of the original allocated
+  space, it is not the length of the left-over space. This is similar to the BSD system call 
+  strlcat()
 
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
 
 @*/
-PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
+PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
 {
+  size_t         len;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  strncat(s,t,n);
+  ierr = PetscStrlen(t,&len);CHKERRQ(ierr);
+  strncat(s,t,n - len);
   PetscFunctionReturn(0);
 }
 

@@ -74,17 +74,14 @@ PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
         ierr    = PetscStrncpy(tmp4,tmp1,m);CHKERRQ(ierr);
         tmp4[m] = 0;
         ierr    = PetscStrlen(tmp4,&len);CHKERRQ(ierr);
-        ierr    = PetscStrncat(tmp4,"/",PETSC_MAX_PATH_LEN - len);CHKERRQ(ierr);
-        ierr    = PetscStrlen(tmp4,&len);CHKERRQ(ierr);
-        ierr    = PetscStrncat(tmp4,tmp3,PETSC_MAX_PATH_LEN - len);CHKERRQ(ierr);
+        ierr    = PetscStrlcat(tmp4,"/",PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        ierr    = PetscStrlcat(tmp4,tmp3,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
         ierr    = PetscGetRealPath(tmp4,rpath);CHKERRQ(ierr);
-        ierr    = PetscStrlen(rpath,&len);CHKERRQ(ierr);
-        ierr    = PetscStrncat(rpath,path+N,PETSC_MAX_PATH_LEN - len);CHKERRQ(ierr);
+        ierr    = PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       } else {
         ierr = PetscGetRealPath(tmp3,tmp1);CHKERRQ(ierr);
         ierr = PetscStrncpy(rpath,tmp1,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-        ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
-        ierr = PetscStrncat(rpath,path+N,PETSC_MAX_PATH_LEN - len);CHKERRQ(ierr);
+        ierr = PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
     }

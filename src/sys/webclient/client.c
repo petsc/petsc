@@ -346,7 +346,7 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(work,"\"");CHKERRQ(ierr);
-  ierr = PetscStrncat(work,key,250);CHKERRQ(ierr);
+  ierr = PetscStrlcat(work,key,sizeof(work));CHKERRQ(ierr);
   ierr = PetscStrcat(work,"\":");CHKERRQ(ierr);
   ierr = PetscStrstr(buff,work,&v);CHKERRQ(ierr);
   ierr = PetscStrlen(work,&len);CHKERRQ(ierr);

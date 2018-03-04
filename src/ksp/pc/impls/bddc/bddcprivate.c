@@ -4897,22 +4897,23 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   ierr = PetscStrcpy(dir_prefix,"");CHKERRQ(ierr);
   ierr = PetscStrcpy(neu_prefix,"");CHKERRQ(ierr);
   if (!pcbddc->current_level) {
-    ierr = PetscStrcpy(dir_prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-    ierr = PetscStrcpy(neu_prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-    ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
-    ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
+    ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,sizeof(dir_prefix));CHKERRQ(ierr);
+    ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,sizeof(neu_prefix));CHKERRQ(ierr);
+    ierr = PetscStrlcat(dir_prefix,"pc_bddc_dirichlet_",sizeof(dir_prefix));CHKERRQ(ierr);
+    ierr = PetscStrlcat(neu_prefix,"pc_bddc_neumann_",sizeof(neu_prefix));CHKERRQ(ierr);
   } else {
     ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
     ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
     len -= 15; /* remove "pc_bddc_coarse_" */
     if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
     if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
+    /* Nonstandard use of PetscStrncpy() to only copy a portion of the input string */
     ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
     ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
-    ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
-    ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
-    ierr = PetscStrcat(dir_prefix,str_level);CHKERRQ(ierr);
-    ierr = PetscStrcat(neu_prefix,str_level);CHKERRQ(ierr);
+    ierr = PetscStrlcat(dir_prefix,"pc_bddc_dirichlet_",sizeof(dir_prefix));CHKERRQ(ierr);
+    ierr = PetscStrlcat(neu_prefix,"pc_bddc_neumann_",sizeof(neu_prefix));CHKERRQ(ierr);
+    ierr = PetscStrlcat(dir_prefix,str_level,sizeof(dir_prefix));CHKERRQ(ierr);
+    ierr = PetscStrlcat(neu_prefix,str_level,sizeof(neu_prefix));CHKERRQ(ierr);
   }
 
   /* DIRICHLET PROBLEM */
@@ -7809,7 +7810,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PetscViewerASCIIAddTab(dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
     }
     if (!pcbddc->coarse_ksp) {
-      char prefix[256],str_level[16];
+      char   prefix[256],str_level[16];
       size_t len;
 
       ierr = KSPCreate(PetscObjectComm((PetscObject)coarse_mat),&pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -7826,15 +7827,16 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PetscStrcpy(prefix,"");CHKERRQ(ierr);
       ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
       if (!pcbddc->current_level) {
-        ierr = PetscStrcpy(prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-        ierr = PetscStrcat(prefix,"pc_bddc_coarse_");CHKERRQ(ierr);
+        ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,sizeof(prefix));CHKERRQ(ierr);
+        ierr = PetscStrlcat(prefix,"pc_bddc_coarse_",sizeof(prefix));CHKERRQ(ierr);
       } else {
         ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
         if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
         if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
+        /* Nonstandard use of PetscStrncpy() to copy only a portion of the string */
         ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
         ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
-        ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
+        ierr = PetscStrlcat(prefix,str_level,sizeof(prefix));CHKERRQ(ierr);
       }
       ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
       /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */

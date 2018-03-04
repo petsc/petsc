@@ -177,8 +177,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscStrncpy(str,"KSP: ",sizeof(str));CHKERRQ(ierr);
+      ierr   = PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str));CHKERRQ(ierr);
       ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
