@@ -17,6 +17,12 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
+# This makefile contains a lot of PHONY targets with improperly specified prerequisites
+# where correct execution instead depends on the targets being processed in the correct
+# order.  This is gross, but this makefile doesn't really do any work.  Sub-makes still
+# benefit from parallelism.
+.NOTPARALLEL:
+
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
@@ -62,6 +68,7 @@ all-gnumake-local: info gnumake matlabbin mpi4py-build petsc4py-build libmesh-bu
 all-cmake-local: info cmakegen cmake matlabbin mpi4py-build petsc4py-build
 
 all-legacy-local: chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py-build
+
 #
 # Prints information about the system and version of PETSc being compiled
 #
