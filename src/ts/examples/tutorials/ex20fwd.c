@@ -247,7 +247,6 @@ int main(int argc,char **argv)
     test:
       suffix: 2
       requires: !complex !single
-      output_file: output/ex20fwd_1.out
       args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
 
 TEST*/
