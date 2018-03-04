@@ -174,7 +174,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   double         *vertexcoords=NULL;
   PetscInt       i,j,ndata,ctr=0,nsubnet;
   PetscInt       k,netid,vid;
-  int            *edgelist_couple=NULL;
+  PetscInt       *edgelist_couple=NULL;
 
   PetscFunctionBegin;
   if (network->nVertices) {
@@ -215,7 +215,21 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   }
 #endif
 
-  ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES)
+  {
+    int      *edges;
+    PetscInt ii;
+    ierr = PetscMalloc1(network->nEdges*numCorners,&edges);CHKERRQ(ierr);
+    for (ii=0; ii<network->nEdges*numCorners; ii++) {
+      edges[ii] = (int) network->edges[ii];
+    }
+    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
+    ierr = PetscFree(edges);
+  }
+#else
+    ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nVertices,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
+ #endif
+
   if (network->nVertices) {
     ierr = PetscFree(vertexcoords);CHKERRQ(ierr);
   }

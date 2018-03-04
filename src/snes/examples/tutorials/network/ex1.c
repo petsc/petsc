@@ -307,7 +307,7 @@ int main(int argc,char **argv)
   PetscMPIInt      crank;
   PetscInt         nsubnet = 3,numVertices[3],NumVertices[3],numEdges[3],NumEdges[3];
   PetscInt         i,j,nv,ne;
-  int              *edgelist[3];
+  PetscInt         *edgelist[3];
   const PetscInt   *vtx,*edges;
   Vec              X,F;
   SNES             snes,snes_power,snes_water;
@@ -631,7 +631,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: !complex
      depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:

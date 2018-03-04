@@ -638,7 +638,7 @@ int main(int argc,char ** argv)
      args: -snes_rtol 1.e-3
      localrunfiles: poweroptions case9.m
      output_file: output/power2_1.out
-     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double !complex
 
    test:
      suffix: 2
@@ -646,6 +646,6 @@ int main(int argc,char ** argv)
      nsize: 4
      localrunfiles: poweroptions case9.m
      output_file: output/power2_1.out
-     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double !complex
 
 TEST*/
