@@ -110,7 +110,7 @@ typedef struct{
 } WATERDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode WaterReadData(WATERDATA*,char*);
-extern PetscErrorCode GetListofEdges_Water(WATERDATA*,int*);
+extern PetscErrorCode GetListofEdges_Water(WATERDATA*,PetscInt*);
 extern PetscErrorCode WaterSetInitialGuess(DM,Vec);
 extern PetscErrorCode WaterFormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunction_Water(DM,Vec,Vec,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);

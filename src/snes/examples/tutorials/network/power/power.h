@@ -140,7 +140,7 @@ typedef struct{
 } PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
-extern PetscErrorCode GetListofEdges_Power(PFDATA*,int*);
+extern PetscErrorCode GetListofEdges_Power(PFDATA*,PetscInt*);
 extern PetscErrorCode FormJacobian_Power(SNES,Vec, Mat,Mat,void*);
 extern PetscErrorCode FormJacobian_Power_private(DM,Vec,Mat,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
 extern PetscErrorCode FormFunction_Power(DM,Vec,Vec,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);

@@ -9,21 +9,21 @@
 
 PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 {
-  PetscErrorCode ierr;
-  Wash           wash=(Wash)ctx;
-  DM             networkdm;
-  Vec            localX,localXdot,localF;
-  const PetscInt *cone;
-  PetscInt       vfrom,vto,offsetfrom,offsetto,type,varoffset;
-  PetscInt       v,vStart,vEnd,e,eStart,eEnd;
-  PetscBool      ghost;
-  PetscScalar    *farr,*vf,*juncx,*juncf;
-  Pipe           pipe;
-  PipeField      *pipex,*pipexdot,*pipef;
-  DMDALocalInfo  info;
-  Junction       junction;
-  MPI_Comm       comm;
-  PetscMPIInt    rank,size;
+  PetscErrorCode    ierr;
+  Wash              wash=(Wash)ctx;
+  DM                networkdm;
+  Vec               localX,localXdot,localF;
+  const PetscInt    *cone;
+  PetscInt          vfrom,vto,offsetfrom,offsetto,type,varoffset;
+  PetscInt          v,vStart,vEnd,e,eStart,eEnd;
+  PetscBool         ghost;
+  PetscScalar       *farr,*vf,*juncx,*juncf;
+  Pipe              pipe;
+  PipeField         *pipex,*pipexdot,*pipef;
+  DMDALocalInfo     info;
+  Junction          junction;
+  MPI_Comm          comm;
+  PetscMPIInt       rank,size;
   const PetscScalar *xarr,*xdotarr;
 
 
@@ -317,7 +317,7 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
+PetscErrorCode WashNetworkCleanUp(Wash wash,PetscInt *edgelist)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -331,14 +331,14 @@ PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,int **elist)
+PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,PetscInt **elist)
 {
   PetscErrorCode ierr;
   PetscInt       nnodes,npipes;
   PetscMPIInt    rank;
   Wash           wash;
   PetscInt       i,numVertices,numEdges;
-  int            *edgelist;
+  PetscInt       *edgelist;
   Junction       junctions=NULL;
   Pipe           pipes=NULL;
 
@@ -527,7 +527,7 @@ int main(int argc,char ** argv)
   Junction          junctions,junction;
   Pipe              pipe,pipes;
   PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
-  int               *edgelist = NULL,*edgelists[1];
+  PetscInt          *edgelist = NULL,*edgelists[1];
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,type,varoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;

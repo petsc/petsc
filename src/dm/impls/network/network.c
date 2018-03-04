@@ -128,7 +128,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt NsubnetCouple,P
 
 .seealso: DMNetworkCreate, DMNetworkSetSizes
 @*/
-PetscErrorCode DMNetworkSetEdgeList(DM dm,int *edgelist[],int *edgelistCouple[])
+PetscErrorCode DMNetworkSetEdgeList(DM dm,PetscInt *edgelist[],PetscInt *edgelistCouple[])
 {
   DM_Network *network = (DM_Network*) dm->data;
   PetscInt   i,nsubnet,ncsubnet=network->ncsubnet;

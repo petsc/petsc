@@ -56,19 +56,19 @@ typedef struct {
   This can be substituted by an external parser.
 */
 
-PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
+PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          nnode, nbranch, i;
   Branch            *branch;
   Node              *node;
-  int               *edgelist;
+  PetscInt          *edgelist;
 
   nnode   = 4;
   nbranch = 6;
 
-  ierr = PetscCalloc1(nnode*sizeof(Node),&node);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nbranch*sizeof(Branch),&branch);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nnode,&node);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nbranch,&branch);CHKERRQ(ierr);
 
   for (i = 0; i < nnode; i++) {
     node[i].id  = i;
@@ -99,7 +99,7 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
       edgelist[2*i + 1] = to node
   */
 
-  ierr = PetscCalloc1(2*nbranch*sizeof(int), &edgelist);CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*nbranch, &edgelist);CHKERRQ(ierr);
 
   for (i = 0; i < nbranch; i++) {
     switch (i) {
@@ -259,7 +259,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist = NULL;
+  PetscInt          *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;

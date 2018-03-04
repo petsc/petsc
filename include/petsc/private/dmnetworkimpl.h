@@ -51,7 +51,7 @@ typedef struct {
   PetscInt  Nedge,nedge;    /* Number of global/local edges */
   PetscInt eStart, eEnd;    /* Range of edge numbers (start, end+1) */
   PetscInt vStart, vEnd;    /* Range of vertex numbers (start, end+1) */
-  int      *edgelist;       /* User provided list of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
+  PetscInt *edgelist;       /* User provided list of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
   PetscInt  *vertices;      /* Vertices for this subnetwork. These are mapped to the vertex numbers for the whole network */
   PetscInt *edges;          /* Edges for this subnetwork. These are mapped to the edge numbers for the whole network */
 } DMSubnetwork;
@@ -62,7 +62,7 @@ typedef struct {
   PetscInt                          NVertices;   /* Number of global vertices */
   PetscInt                          nEdges;      /* Number of local edges */
   PetscInt                          nVertices;   /* Number of local vertices */
-  int                               *edges;      /* Edge list */
+  PetscInt                          *edges;      /* Edge list */
   PetscInt                          pStart,pEnd; /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd; /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd; /* Start and end indices for edges */

@@ -39,14 +39,14 @@ PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
   Routing of Multipoint Connections, Bernard M. Waxman. 1988
 */
 
-PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,PetscInt seed)
+PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,PetscInt **pedgelist,PetscInt seed)
 {
   PetscErrorCode ierr;
   PetscInt       i, j, nedges = 0;
-  int            *edgelist;
+  PetscInt       *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
-  PetscReal    maxdist = 0.0, dist, alpha, beta, prob;
+  PetscReal      maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
@@ -272,7 +272,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist = NULL;
+  PetscInt          *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;

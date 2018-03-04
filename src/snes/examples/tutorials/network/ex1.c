@@ -322,17 +322,17 @@ int main(int argc,char **argv)
   char             pfdata_file[PETSC_MAX_PATH_LEN]="power/case9.m";
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
-  int              *edgelist_power=NULL;
+  PetscInt         *edgelist_power=NULL;
   PetscScalar      Sbase;
 
   /* Water subnetwork */
   AppCtx_Water     *appctx_water = &user.appctx_water;
   WATERDATA        *waterdata;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="water/sample1.inp";
-  int              *edgelist_water=NULL;
+  PetscInt         *edgelist_water=NULL;
 
   /* Coupling subnetwork */
-  int              *edgelist_couple=NULL;
+  PetscInt         *edgelist_couple=NULL;
 
   ierr = PetscInitialize(&argc,&argv,"ex1options",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&crank);CHKERRQ(ierr);

@@ -428,7 +428,7 @@ int main(int argc,char ** argv)
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata1,*pfdata2;
   PetscInt         numEdges1=0,numVertices1=0,numEdges2=0,numVertices2=0;
-  int              *edgelist1 = NULL,*edgelist2 = NULL;
+  PetscInt         *edgelist1 = NULL,*edgelist2 = NULL;
   DM               networkdm;
   PetscInt         componentkey[4];
   UserCtx_Power    User;

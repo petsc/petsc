@@ -157,7 +157,7 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode GetListofEdges_Water(WATERDATA *water,int *edgelist)
+PetscErrorCode GetListofEdges_Water(WATERDATA *water,PetscInt *edgelist)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,node1,node2;

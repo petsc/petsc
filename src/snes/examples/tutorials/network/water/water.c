@@ -20,7 +20,7 @@ int main(int argc,char ** argv)
   PetscLogStage    stage1,stage2;
   PetscMPIInt      crank;
   DM               networkdm;
-  int              *edgelist = NULL;
+  PetscInt         *edgelist = NULL;
   PetscInt         nv,ne,i;
   const PetscInt   *vtx,*edges;
   Vec              X,F;

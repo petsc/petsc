@@ -30,6 +30,6 @@ struct _p_Wash
 };
 typedef struct _p_Wash *Wash;
 
-extern PetscErrorCode WashNetworkCreate(MPI_Comm,PetscInt,Wash*,int**);
-extern PetscErrorCode WashNetworkCleanUp(Wash,int*);
+extern PetscErrorCode WashNetworkCreate(MPI_Comm,PetscInt,Wash*,PetscInt**);
+extern PetscErrorCode WashNetworkCleanUp(Wash,PetscInt*);
 #endif

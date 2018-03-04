@@ -56,13 +56,13 @@ typedef struct {
   This can be substituted by an external parser.
 */
 
-PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
+PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          nnode, nbranch, i;
   Branch            *branch;
   Node              *node;
-  int               *edgelist;
+  PetscInt          *edgelist;
 
   PetscFunctionBeginUser;
   nnode   = 4;
@@ -238,7 +238,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist = NULL;
+  PetscInt          *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;

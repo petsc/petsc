@@ -2,7 +2,7 @@
 
 #include "power.h"
 
-PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,int *edgelist)
+PetscErrorCode GetListofEdges_Power(PFDATA *pfdata,PetscInt *edgelist)
 {
   PetscErrorCode ierr;
   PetscInt       i,fbus,tbus,nbranches=pfdata->nbranch;
