@@ -479,10 +479,10 @@ createfastbuild:
 #  See script for details
 #
 gcov:
-	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
 
 mergegcov:
-	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 ########################
 #
