@@ -678,6 +678,11 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
     ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
     osm->dm_subdomains = PETSC_FALSE;
   }
+  ierr = PetscOptionsInt("-pc_asm_local_blocks","Number of local subdomains","PCASMSetLocalSubdomains",osm->n_local_true,&blocks,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCASMSetLocalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
+    osm->dm_subdomains = PETSC_FALSE;
+  }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr);
@@ -891,6 +896,11 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
          (or NULL for PETSc to determine subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
          (or NULL to not provide these)
+
+    Options Database Key:
+    To set the total number of subdomain blocks rather than specify the
+    index sets, use the option
+.    -pc_asm_local_blocks <blks> - Sets local blocks
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
