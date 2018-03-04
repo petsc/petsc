@@ -22,11 +22,6 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-  ierr = PetscFinalize();
-  return ierr;
-#else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Uniprocessor Example only\n");
 
@@ -89,7 +84,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
-#endif
 }
 
 
@@ -97,10 +91,10 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires:  !define(PETSC_USE_64BIT_INDICES)
+      requires:  !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout outputfile
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double
 
 TEST*/
