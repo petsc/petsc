@@ -133,7 +133,6 @@ PetscErrorCode  PetscSetDisplay(void)
   if (str[0] != ':' || singlehost) {
     ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
   } else if (!rank) {
-    size_t len;
     ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
     ierr = PetscStrlcat(display,str,sizeof(display));CHKERRQ(ierr);
   }
