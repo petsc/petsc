@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '840b0e38a7390ecd53614f68b9b5def6b4a3fbd2'
+    self.gitcommit         = '329a8299a5297ec09badd6c1be300a8f3c285089'
     self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
@@ -19,12 +19,6 @@ class Configure(config.package.CMakePackage):
     self.hdf5    = framework.require('config.packages.hdf5', self)
     self.deps = [self.hdf5,self.netcdf,self.pnetcdf]
     return
-
-  def configureLibrary(self):
-    self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
-    if hasattr(self.compilers, 'FC'):
-      self.liblist.append(['libexoIIv2for.a'])
-    config.package.Package.configureLibrary(self)
 
   def formCMakeConfigureArgs(self):
     import os
@@ -46,11 +40,12 @@ class Configure(config.package.CMakePackage):
       self.setCompilers.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER:FILEPATH="'+self.setCompilers.getCompiler()+'"')
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=ON')
+      args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=ON')
       self.setCompilers.popLanguage()
     else:
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=OFF')
+      args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=OFF')
     args.append('-DSEACASProj_ENABLE_SEACASExodus=ON')
-    args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=OFF')
     args.append('-DSEACASProj_ENABLE_TESTS=ON')
     args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
     args.append('-DTPL_ENABLE_Matio:BOOL=OFF')

@@ -5349,8 +5349,12 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscValidPointer(ids, 3);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
   *ids = NULL;
-  if (!label) PetscFunctionReturn(0);
-  ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
+ if (label) {
+    ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
+  } else {
+    /* returning an empty IS */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,NULL,PETSC_USE_POINTER,ids);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
