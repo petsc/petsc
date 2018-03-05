@@ -103,6 +103,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
 
     while (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER && (stepType != LMVM_GRADIENT)) {
       /*  Linesearch failed */
+      ierr = PetscInfo(lmP, "WARNING: Linesearch failed!\n");
       /*  Reset factors and use scaled gradient step */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution);CHKERRQ(ierr);
@@ -217,8 +218,12 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscErrorCode ierr;
+  PetscBool      recycle;
 
   PetscFunctionBegin;
+  ierr = MatLMVMGetRecycleFlag(lmP->M, &recycle);
+  if (recycle) ierr = PetscInfo(lmP, "WARNING: TaoDestroy() called when LMVM recycling is enabled!\n");
+  
   if (tao->setupcalled) {
     ierr = VecDestroy(&lmP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&lmP->Gold);CHKERRQ(ierr);

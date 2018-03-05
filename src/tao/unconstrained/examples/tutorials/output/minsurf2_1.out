@@ -22,7 +22,7 @@ iter =  16, Function value 1.41776, Residual: 0.00261023
 iter =  17, Function value 1.41776, Residual: 0.00187318 
 Tao Object: 1 MPI processes
   type: lmvm
-    BFGS steps: 33
+    BFGS steps: 16
     Scaled gradient steps: 1
     Gradient steps: 0
   TaoLineSearch Object: 1 MPI processes
