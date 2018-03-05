@@ -524,6 +524,11 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 
     test:
       requires: !single
+      suffix: pod_guess_Ainner
+      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type pod -ksp_guess_pod_Ainner -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
       suffix: fischer_guess
       args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
 
