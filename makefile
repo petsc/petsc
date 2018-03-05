@@ -124,6 +124,8 @@ info:
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
+	-@echo "------------------------------------------"
+	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) $(MAKEFLAGS)"
 	-@echo "=========================================="
 
 #
