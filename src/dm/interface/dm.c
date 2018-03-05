@@ -670,9 +670,12 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
-  /* ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr); */
-  /* We do not destroy sfMigration or sfNatural because they may be shared with opther DM */
-
+  if ((*dm)->useNatural) {
+    if ((*dm)->sfNatural) {
+      ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectDereference((PetscObject) (*dm)->sfMigration);CHKERRQ(ierr);
+  }
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
     ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
   }

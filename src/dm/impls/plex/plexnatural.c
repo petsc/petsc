@@ -11,9 +11,10 @@
 @*/
 PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) 
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   dm->sfMigration = migrationSF;
-  /* PetscSF does not have a refct so I cannot increment it here */
+  ierr = PetscObjectReference((PetscObject) migrationSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -44,10 +45,11 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 @*/
 PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) 
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   dm->sfNatural = naturalSF;
+  ierr = PetscObjectReference((PetscObject) naturalSF);CHKERRQ(ierr);
   dm->useNatural = PETSC_TRUE;
-  /* PetscSF does not have a refct so I cannot increment it here */
   PetscFunctionReturn(0);
 }
 

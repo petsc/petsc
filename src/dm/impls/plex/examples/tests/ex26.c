@@ -16,7 +16,6 @@ int main(int argc, char **argv) {
   Vec               X, U, A, S, UA;
   IS                isU, isA, isS, isUA;
   PetscSection      section;
-  PetscSF           migrationSF;
   const PetscInt    fieldU = 0;
   const PetscInt    fieldA = 2;
   const PetscInt    fieldS = 1;
@@ -248,7 +247,7 @@ int main(int argc, char **argv) {
     DM pdm;
 
     ierr = DMSetUseNatural(dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, 0, &migrationSF, &pdm);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, 0, NULL, &pdm);CHKERRQ(ierr);
     if (pdm) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm = pdm;
@@ -424,7 +423,6 @@ int main(int argc, char **argv) {
   ierr = DMDestroy(&dmS);CHKERRQ(ierr); ierr = ISDestroy(&isS);CHKERRQ(ierr);
   ierr = DMDestroy(&dmUA);CHKERRQ(ierr);ierr = ISDestroy(&isUA);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = PetscFree2(pStartDepth, pEndDepth);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
