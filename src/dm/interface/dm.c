@@ -5144,7 +5144,7 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(dm, useNatural, 2);
+  PetscValidLogicalCollectiveBool(dm, useNatural, 2);
   dm->useNatural = useNatural;
   PetscFunctionReturn(0);
 }

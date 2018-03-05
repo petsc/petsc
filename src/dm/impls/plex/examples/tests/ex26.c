@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
   ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-dm_section_view");CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
 
+
   {
     /* TODO: Replace with ExodusII viewer */
     /* Create the exodus result file */
@@ -181,18 +182,22 @@ int main(int argc, char **argv) {
     char    *nodalVarName[4];
     char    *zonalVarName[6];
     int     *truthtable;
-    int      numNodalVar, numZonalVar, i;
+    PetscInt      numNodalVar, numZonalVar, i;
     int      CPU_word_size, IO_word_size, EXO_mode;
 
     ex_opts(EX_VERBOSE+EX_DEBUG);
     if (!rank) {
       CPU_word_size = sizeof(PetscReal);
-      IO_word_size  = 0;
+      IO_word_size  = sizeof(PetscReal);
       EXO_mode      = EX_CLOBBER;
+#if defined(PETSC_USE_64BIT_INDICES)
+      EXO_mode += EX_ALL_INT64_API;
+#endif
       exoid = ex_create(ofilename, EXO_mode, &CPU_word_size, &IO_word_size);
       if (exoid < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to open exodus file %\n", ofilename);
     }
     ierr = DMPlexView_ExodusII_Internal(dm, exoid, order);CHKERRQ(ierr);
+
     if (!rank) {
       /* "Format" the exodus result file, i.e. allocate space for nodal and zonal variables */
       switch (sdim) {
@@ -250,7 +255,6 @@ int main(int argc, char **argv) {
       ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
     }
   }
-
   {
     /* TODO Replace with ExodusII viewer */
     /* Reopen the exodus result file on all processors */
@@ -260,7 +264,10 @@ int main(int argc, char **argv) {
 
     EXO_mode      = EX_WRITE;
     CPU_word_size = sizeof(PetscReal);
-    IO_word_size  = 0;
+    IO_word_size  = sizeof(PetscReal);
+#if defined(PETSC_USE_64BIT_INDICES)
+      EXO_mode += EX_ALL_INT64_API;
+#endif
     exoid = ex_open_par(ofilename, EXO_mode, &CPU_word_size, &IO_word_size, &EXO_version, PetscObjectComm((PetscObject) dm), mpi_info);
   }
   /* Get DM and IS for each field of dm */
