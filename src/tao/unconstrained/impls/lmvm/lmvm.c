@@ -47,7 +47,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     lmP->bfgs = 0;
     lmP->sgrad = 0;
     lmP->grad = 0;
-    ierr = MatLMVMReset(lmP->M);
+    ierr = MatLMVMReset(lmP->M); CHKERRQ(ierr);
   }
 
   /*  Have not converged; continue with Newton method */
