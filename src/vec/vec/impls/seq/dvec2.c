@@ -112,15 +112,14 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n,i,j,nv_rem,j_rem;
   PetscScalar       sum0,sum1,sum2,sum3,x0,x1,x2,x3;
-  PetscScalar       sum4,sum5,sum6,sum7,x4,x5,x6,x7;
-  PetscScalar       sum8,sum9,sum10,sum11,x8,x9,x10,x11;
-  PetscScalar       sum12,sum13,sum14,sum15,x12,x13,x14,x15;
+  PetscScalar       sum4,sum5,sum6,sum7;
+  PetscScalar       sum8,sum9,sum10,sum11;
+  PetscScalar       sum12,sum13,sum14,sum15;
   const PetscScalar *yy0,*yy1,*yy2,*yy3,*x,*xbase;
   const PetscScalar *yy4,*yy5,*yy6,*yy7,*yy8,*yy9,*yy10,*yy11,*yy12,*yy13,*yy14,*yy15;
   Vec               *yy;
-  __m256i mask;
   __m256d s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15;
-  __m256d v0,v1,v2,v3;
+  __m256d v0;
   __m256d y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15;
   __m256d t0,t1,t2,t3,t4,t5,t6,t7;
 
@@ -392,25 +391,25 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
            _MM256_TRANSPOSE4_PD(s12, s13, s14, s15);
       t6 = _mm256_add_pd(s12,s13);
       t7 = _mm256_add_pd(s14,s15);
       s12= _mm256_add_pd(t6,t7);
-           _mm256_store_pd(&z[12], s12);
+           _mm256_storeu_pd(&z[12], s12);
 
       z   += 16;
       i   -= 16;
@@ -557,25 +556,25 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
            _MM256_TRANSPOSE4_PD(s12, s13, s14, s15);
       t6 = _mm256_add_pd(s12,s13);
       t7 = _mm256_add_pd(s14,s15);
       s12= _mm256_add_pd(t6,t7);
-           _mm256_store_pd(&z[12], s12);
+           _mm256_storeu_pd(&z[12], s12);
 
       z   += 16;
       i   -= 16;
@@ -699,19 +698,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
       z   += 12;
       i   -= 12;
@@ -829,19 +828,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
       z   += 12;
       i   -= 12;
@@ -911,7 +910,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
       z   += 4;
       i   -= 4;
@@ -1023,19 +1022,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
       z   += 12;
       i   -= 12;
@@ -1153,19 +1152,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
       z   += 12;
       i   -= 12;
@@ -1285,19 +1284,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
            _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
       t4 = _mm256_add_pd(s8,s9);
       t5 = _mm256_add_pd(s10,s11);
       s8 = _mm256_add_pd(t4,t5);
-           _mm256_store_pd(&z[8], s8);
+           _mm256_storeu_pd(&z[8], s8);
 
       z   += 12;
       i   -= 12;
@@ -1392,13 +1391,13 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
       z   += 8;
       i   -= 8;
@@ -1539,25 +1538,25 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
        t0 = _mm256_add_pd(s0,s1);
        t1 = _mm256_add_pd(s2,s3);
        s0 = _mm256_add_pd(t0,t1);
-            _mm256_store_pd(&z[0], s0);
+            _mm256_storeu_pd(&z[0], s0);
 
             _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
        t2 = _mm256_add_pd(s4,s5);
        t3 = _mm256_add_pd(s6,s7);
        s4 = _mm256_add_pd(t2,t3);
-            _mm256_store_pd(&z[4], s4);
+            _mm256_storeu_pd(&z[4], s4);
 
             _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
        t4 = _mm256_add_pd(s8,s9);
        t5 = _mm256_add_pd(s10,s11);
        s8 = _mm256_add_pd(t4,t5);
-            _mm256_store_pd(&z[8], s8);
+            _mm256_storeu_pd(&z[8], s8);
 
             _MM256_TRANSPOSE4_PD(s12, s13, s14, s15);
        t6 = _mm256_add_pd(s12,s13);
        t7 = _mm256_add_pd(s14,s15);
        s12= _mm256_add_pd(t6,t7);
-            _mm256_store_pd(&z[12], s12);
+            _mm256_storeu_pd(&z[12], s12);
 
        z   += 16;
        i   -= 16;
@@ -1681,19 +1680,19 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
        t0 = _mm256_add_pd(s0,s1);
        t1 = _mm256_add_pd(s2,s3);
        s0 = _mm256_add_pd(t0,t1);
-            _mm256_store_pd(&z[0], s0);
+            _mm256_storeu_pd(&z[0], s0);
 
             _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
        t2 = _mm256_add_pd(s4,s5);
        t3 = _mm256_add_pd(s6,s7);
        s4 = _mm256_add_pd(t2,t3);
-            _mm256_store_pd(&z[4], s4);
+            _mm256_storeu_pd(&z[4], s4);
 
             _MM256_TRANSPOSE4_PD(s8, s9, s10, s11);
        t4 = _mm256_add_pd(s8,s9);
        t5 = _mm256_add_pd(s10,s11);
        s8 = _mm256_add_pd(t4,t5);
-            _mm256_store_pd(&z[8], s8);
+            _mm256_storeu_pd(&z[8], s8);
 
        z   += 12;
        i   -= 12;
@@ -1789,13 +1788,13 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
            _MM256_TRANSPOSE4_PD(s4, s5, s6, s7);
       t2 = _mm256_add_pd(s4,s5);
       t3 = _mm256_add_pd(s6,s7);
       s4 = _mm256_add_pd(t2,t3);
-           _mm256_store_pd(&z[4], s4);
+           _mm256_storeu_pd(&z[4], s4);
 
       z   += 8;
       i   -= 8;
@@ -1862,7 +1861,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       t0 = _mm256_add_pd(s0,s1);
       t1 = _mm256_add_pd(s2,s3);
       s0 = _mm256_add_pd(t0,t1);
-           _mm256_store_pd(&z[0], s0);
+           _mm256_storeu_pd(&z[0], s0);
 
       z   += 4;
       i   -= 4;
