@@ -409,7 +409,6 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   PetscInt       i=0,outer_it=0,curr_guess_zero=0;
   PetscScalar    lmin=plcg->lmin,lmax=plcg->lmax;
   PetscBool      diagonalscale=PETSC_FALSE,ispcnone=PETSC_FALSE;
-  PCType         pctype=PCNONE;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -430,10 +429,6 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   ierr = PetscCalloc1(max_it+1,&plcg->req);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&A,&Pmat);CHKERRQ(ierr);
-  ierr = PCGetType(ksp->pc,&pctype);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"PCType is: %s \n",pctype);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"KSPNormType is: %d \n",ksp->normtype);CHKERRQ(ierr);
-
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&ispcnone);CHKERRQ(ierr);
   if (ispcnone) {
     for (i = 0; i < l; ++i) {
