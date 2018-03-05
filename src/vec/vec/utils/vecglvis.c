@@ -145,6 +145,5 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
     ierr = PetscViewerGLVisRestoreWindow_Private(viewer,i,&view);CHKERRQ(ierr);
   }
   ierr = PetscViewerGLVisPause_Private(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
