@@ -47,6 +47,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     lmP->bfgs = 0;
     lmP->sgrad = 0;
     lmP->grad = 0;
+    ierr = MatLMVMReset(lmP->M);
   }
 
   /*  Have not converged; continue with Newton method */
@@ -304,7 +305,8 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 .     -tao_lmm_rescale_beta - beta factor for rescaling diagonal
 .     -tao_lmm_scalar_history - amount of history for scalar scaling
 .     -tao_lmm_rescale_history - amount of history for rescaling diagonal
--     -tao_lmm_eps - rejection tolerance
+.     -tao_lmm_eps - rejection tolerance
+-     -tao_lmm_recycle - enable recycling LMVM updates between TaoSolve() calls
 
   Level: beginner
 M*/
