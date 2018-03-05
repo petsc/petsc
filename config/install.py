@@ -288,7 +288,7 @@ class Installer(script.Script):
     for file in ['rules', 'variables','petscrules', 'petscvariables']:
       self.fixConfFile(os.path.join(self.destConfDir,file))
     self.fixConfFile(os.path.join(self.destLibDir,'pkgconfig','PETSc.pc'))
-    self.fixConfFile(os.path.join(self.installIncludeDir,'petscconf.h'))
+    self.fixConfFile(os.path.join(self.destIncludeDir,'petscconf.h'))
     return
 
   def createUninstaller(self):
