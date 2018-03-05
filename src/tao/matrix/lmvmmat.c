@@ -259,7 +259,7 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatLMVMGetUpdates(Mat M, PetscInt *nupdates)
+PETSC_EXTERN PetscErrorCode MatLMVMGetUpdates(Mat M, PetscInt *nupdates)
 {
   PetscErrorCode ierr;
   MatLMVMCtx     *ctx;
@@ -270,7 +270,7 @@ extern PetscErrorCode MatLMVMGetUpdates(Mat M, PetscInt *nupdates)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatLMVMSetRecycleFlag(Mat M, PetscBool flg)
+PETSC_EXTERN PetscErrorCode MatLMVMSetRecycleFlag(Mat M, PetscBool flg)
 {
   PetscErrorCode ierr;
   MatLMVMCtx     *ctx;
@@ -281,7 +281,7 @@ extern PetscErrorCode MatLMVMSetRecycleFlag(Mat M, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatLMVMGetRecycleFlag(Mat M, PetscBool *flg)
+PETSC_EXTERN PetscErrorCode MatLMVMGetRecycleFlag(Mat M, PetscBool *flg)
 {
   PetscErrorCode ierr;
   MatLMVMCtx     *ctx;
