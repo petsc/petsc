@@ -403,6 +403,8 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar *[]);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);

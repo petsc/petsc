@@ -24,12 +24,10 @@ PetscErrorCode  TSForwardSetUp(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->forwardsetupcalled) PetscFunctionReturn(0);
 
-  if (ts->vec_costintegral && !ts->vecs_integral_sensi && !ts->vecs_integral_sensip ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSForwardSetIntegralGradients() before TSSetCostIntegrand()");
+  if (ts->vec_costintegral && !ts->vecs_integral_sensip ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSForwardSetIntegralGradients() before TSSetCostIntegrand()");
 
-  if (ts->vecs_integral_sensi || ts->vecs_integral_sensip) {
-    ierr = VecDuplicateVecs(ts->vec_sol,ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-  }
   if (ts->vecs_integral_sensip) {
+    ierr = VecDuplicateVecs(ts->vec_sol,ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(ts->vecs_integral_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
   }
   if (ts->ops->forwardsetup) {
@@ -39,80 +37,13 @@ PetscErrorCode  TSForwardSetUp(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  TSForwardSetRHSJacobianP - Sets the function that computes the Jacobian of G w.r.t. the parameters p where y_t = G(y,p,t), as well as the location to store the vector array.
-
-  Logically Collective on TS
-
-  Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
-
-  Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec y,Vec* a,void *ctx);
-+   t - current timestep
-.   y - input vector (current ODE solution)
-.   a - output vector array
--   ctx - [optional] user-defined function context
-
-  Level: intermediate
-
-  Notes: the number of vectors in a is the same as the number of parameters and each vector is of the same size as the system dimension.
-
-.keywords: TS, forward sensitivity
-
-.seealso: TSForwardSetSensitivities(), TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
-@*/
-PetscErrorCode  TSForwardSetRHSJacobianP(TS ts,Vec* a,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  PetscValidPointer(a,2);
-
-  ts->vecsrhsjacobianp    = func;
-  ts->vecsrhsjacobianpctx = ctx;
-  if(a) ts->vecs_jacp = a;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  TSForwardComputeRHSJacobianP - Runs the user-defined JacobianP function.
-
-  Collective on TS
-
-  Input Parameters:
-. ts   - The TS context obtained from TSCreate()
-
-  Level: developer
-
-.keywords: TS, forward sensitivity
-
-.seealso: TSForwardSetRHSJacobianP()
-@*/
-PetscErrorCode  TSForwardComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Vec* A )
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  PetscValidPointer(A,4);
-  if (ts->vecsrhsjacobianp) {
-    PetscStackPush("TS user JacobianP function for sensitivity analysis");
-    ierr = (*ts->vecsrhsjacobianp)(ts,t,X,A,ts->vecsrhsjacobianpctx); CHKERRQ(ierr);
-    PetscStackPop;
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@
   TSForwardSetIntegralGradients - Set the vectors holding forward sensitivities of the integral term.
 
   Input Parameter:
 . ts- the TS context obtained from TSCreate()
 . numfwdint- number of integrals
-. v  = the vectors containing the gradients for each integral wrt initial values
-. vp = the vectors containing the gradients for each integral wrt parameters
+. vp = the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: intermediate
 
@@ -120,14 +51,13 @@ PetscErrorCode  TSForwardComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Vec* A )
 
 .seealso: TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
 @*/
-PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp,Vec *v)
+PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->numcost && ts->numcost!=numfwdint) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand()");
   if (!ts->numcost) ts->numcost = numfwdint;
 
-  ts->vecs_integral_sensi  = v;
   ts->vecs_integral_sensip = vp;
   PetscFunctionReturn(0);
 }
@@ -139,8 +69,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp,Ve
 . ts- the TS context obtained from TSCreate()
 
   Output Parameter:
-. v  = the vectors containing the gradients for each integral wrt initial values
-. vp = the vectors containing the gradients for each integral wrt parameters
+. vp = the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: intermediate
 
@@ -148,13 +77,12 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp,Ve
 
 .seealso: TSForwardSetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
 @*/
-PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **v,Vec **vp)
+PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(v,2);
+  PetscValidPointer(vp,3);
   if (numfwdint) *numfwdint = ts->numcost;
-  if (v) *v = ts->vecs_integral_sensi;
   if (vp) *vp = ts->vecs_integral_sensip;
   PetscFunctionReturn(0);
 }
@@ -195,9 +123,7 @@ PetscErrorCode TSForwardStep(TS ts)
   Input Parameters:
 + ts - the TS context obtained from TSCreate()
 . nump - number of parameters
-. sp - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
-. num - number of initial values
-- s - sensitivities with respect to the (selected) initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+- Smat - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
   Level: beginner
 
@@ -205,29 +131,24 @@ PetscErrorCode TSForwardStep(TS ts)
   Forward sensitivity is also called 'trajectory sensitivity' in some fields such as power systems.
   This function turns on a flag to trigger TSSolve() to compute forward sensitivities automatically.
   You must call this function before TSSolve().
-  The entries in these vectors must be correctly initialized with the values s_i = dy/dp|startingtime.
-  The two user-provided sensitivity vector arrays will be packed into one big array to simplify implementation.
+  The entries in the sensitivity matrix must be correctly initialized with the values S = dy/dp|startingtime.
 
 .keywords: TS, timestep, set, forward sensitivity, initial values
 
 .seealso: TSForwardGetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
 @*/
-PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Vec *sp,PetscInt num,Vec *s)
+PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 {
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->forward_solve     = PETSC_TRUE;
-  ts->num_parameters    = sp ? nump:0;
-  ts->num_initialvalues = s ? num:0;
-  /* pack fwdsensi and fwdsensip into a big array */
-  if (!ts->vecs_fwdsensipacked) {
-    ierr = PetscMalloc1(num+nump,&ts->vecs_fwdsensipacked);CHKERRQ(ierr);
-  }
-  for (i=0; i<num; i++) ts->vecs_fwdsensipacked[i] = s[i];
-  for (i=0; i<nump; i++) ts->vecs_fwdsensipacked[i+num] = sp[i];
+  PetscValidHeaderSpecific(Smat,MAT_CLASSID,3);
+  ts->forward_solve  = PETSC_TRUE;
+  ts->num_parameters = nump;
+  ierr = PetscObjectReference((PetscObject)Smat);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
+  ts->mat_sensip = Smat;
   PetscFunctionReturn(0);
 }
 
@@ -239,9 +160,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Vec *sp,PetscInt nu
   Output Parameter:
 + ts - the TS context obtained from TSCreate()
 . nump - number of parameters
-. sp - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
-. num - number of initial values
-- s - sensitivities with respect to the (selected) initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+- Smat - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
   Level: intermediate
 
@@ -249,12 +168,11 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Vec *sp,PetscInt nu
 
 .seealso: TSForwardSetSensitivities(), TSForwardSetIntegralGradients(), TSForwardGetIntegralGradients(), TSForwardStep()
 @*/
-PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Vec **sp,PetscInt *num,Vec **s)
+PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (nump) *nump = ts->num_parameters;
-  if (num) *num   = ts->num_initialvalues;
-  if (sp) *sp     = &ts->vecs_fwdsensipacked[(*num)];
-  if (s) *s       = ts->vecs_fwdsensipacked;
+  if (Smat) *Smat = ts->mat_sensip;
   PetscFunctionReturn(0);
 }

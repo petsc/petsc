@@ -4,7 +4,7 @@ FFLAGS          =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c ex5.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3sa.c ex3opt.c ex3opt_fd.c ex5.c \
                 ex6.c ex7.c ex8.c ex9adj.c ex9.c ex9opt.c
 EXAMPLESF       =
 EXAMPLESFH      =
@@ -35,12 +35,9 @@ ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
 	${RM} ex3.o
 
-ex3fwd: ex3fwd.o  chkopts
-	-${CLINKER} -o ex3fwd ex3fwd.o  ${PETSC_TS_LIB}
-
-ex3adj: ex3adj.o  chkopts
-	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
-	${RM} ex3adj.o
+ex3sa: ex3sa.o  chkopts
+	-${CLINKER} -o ex3sa ex3sa.o  ${PETSC_TS_LIB}
+	${RM} ex3sa.o
 
 ex3opt: ex3opt.o  chkopts
 	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
@@ -49,9 +46,6 @@ ex3opt: ex3opt.o  chkopts
 ex3opt_fd: ex3opt_fd.o  chkopts
 	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_LIB}
 	${RM} ex3opt_fd.o
-
-ex3opt_fwd: ex3opt_fwd.o  chkopts
-	-${CLINKER} -o ex3opt_fwd ex3opt_fwd.o  ${PETSC_LIB}
 
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}

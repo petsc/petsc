@@ -2767,8 +2767,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
-
-  ierr = PetscFree(ts->vecs_fwdsensipacked);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
