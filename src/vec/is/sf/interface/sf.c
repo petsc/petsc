@@ -510,7 +510,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sf),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sf,1,viewer,2);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  if (sf->graphset) {ierr = PetscSFSetUp(sf);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
@@ -519,6 +519,11 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
+    if (!sf->graphset) {
+      ierr = PetscViewerASCIIPrintf(viewer,"PetscSFSetGraph() has not been called yet\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
