@@ -116,8 +116,8 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
               else:
                 raise Exception(err)
 
-
-  return newTestStr
+  # Allow line continuation character '\'
+  return newTestStr.replace('\\\n', ' ')
 
 def parseLoopArgs(varset):
   """
