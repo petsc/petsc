@@ -304,7 +304,7 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(flg,2);
-  *flg = da->interptype == DMDA_Q1;
+  *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
