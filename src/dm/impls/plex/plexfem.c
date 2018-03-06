@@ -1554,7 +1554,14 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
             if (qNc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in quadrature %D does not match coarse field %D", qNc, NcJ);
             for (p = 0; p < Np; ++p, ++k) {
               for (j = 0; j < cpdim; ++j) {
-                /* NOTE: This is not quite right, unless fpdim == number of fine grid functional quad points */
+                /*
+                   cTotDim:            Total columns in element interpolation matrix, sum of number of dual basis functionals in each field
+                   offsetI, offsetJ:   Offsets into the larger element interpolation matrix for different fields
+                   fpdim, i, cpdim, j: Dofs for fine and coarse grids, correspond to dual space basis functionals
+                   qNC, Nc, Ncj, c:    Number of components in this field
+                   Np, p:              Number of quad points in the fine grid functional i
+                   k:                  i*Np + p, overall point number for the interpolation
+                */
                 for (c = 0; c < Nc; ++c) elemMat[(offsetI + i)*cTotDim + offsetJ + j] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p*qNc+c];
               }
             }
@@ -1582,9 +1589,9 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
           }
         }
       }
-      offsetJ += cpdim*NcJ;
+      offsetJ += cpdim;
     }
-    offsetI += fpdim*Nc;
+    offsetI += fpdim;
     ierr = PetscFree(points);CHKERRQ(ierr);
   }
   if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(0, name, rTotDim, cTotDim, elemMat);CHKERRQ(ierr);}
@@ -2177,7 +2184,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
       ierr = PetscDualSpaceGetDimension(Q, &fNb);CHKERRQ(ierr);
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
     }
-    fTotDim += fNb*Nc;
+    fTotDim += fNb;
   }
   ierr = PetscDSGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(cTotDim,&cmap);CHKERRQ(ierr);
@@ -2185,13 +2192,14 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     PetscFE        feC;
     PetscFV        fvC;
     PetscDualSpace QF, QC;
-    PetscInt       NcF, NcC, fpdim, cpdim;
+    PetscInt       order = -1, NcF, NcC, fpdim, cpdim;
 
     if (feRef[field]) {
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &feC);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(feC, &NcC);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(feRef[field], &NcF);CHKERRQ(ierr);
       ierr = PetscFEGetDualSpace(feRef[field], &QF);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetOrder(QF, &order);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(QF, &fpdim);CHKERRQ(ierr);
       ierr = PetscFEGetDualSpace(feC, &QC);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(QC, &cpdim);CHKERRQ(ierr);
@@ -2207,42 +2215,41 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     if (NcF != NcC) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", NcF, NcC);
     for (c = 0; c < cpdim; ++c) {
       PetscQuadrature  cfunc;
-      const PetscReal *cqpoints;
-      PetscInt         NpC;
+      const PetscReal *cqpoints, *cqweights;
+      PetscInt         NqcC, NpC;
       PetscBool        found = PETSC_FALSE;
 
       ierr = PetscDualSpaceGetFunctional(QC, c, &cfunc);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(cfunc, NULL, NULL, &NpC, &cqpoints, NULL);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(cfunc, NULL, &NqcC, &NpC, &cqpoints, &cqweights);CHKERRQ(ierr);
+      if (NqcC != NcC) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %D must match number of field components", NqcC, NcC);
       if (NpC != 1 && feRef[field]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
       for (f = 0; f < fpdim; ++f) {
         PetscQuadrature  ffunc;
-        const PetscReal *fqpoints;
+        const PetscReal *fqpoints, *fqweights;
         PetscReal        sum = 0.0;
-        PetscInt         NpF, comp;
+        PetscInt         NqcF, NpF;
 
         ierr = PetscDualSpaceGetFunctional(QF, f, &ffunc);CHKERRQ(ierr);
-        ierr = PetscQuadratureGetData(ffunc, NULL, NULL, &NpF, &fqpoints, NULL);CHKERRQ(ierr);
+        ierr = PetscQuadratureGetData(ffunc, NULL, &NqcF, &NpF, &fqpoints, &fqweights);CHKERRQ(ierr);
+        if (NqcF != NcF) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of quadrature components %D must match number of field components", NqcF, NcF);
         if (NpC != NpF) continue;
         for (d = 0; d < dim; ++d) sum += PetscAbsReal(cqpoints[d] - fqpoints[d]);
         if (sum > 1.0e-9) continue;
-        for (comp = 0; comp < NcC; ++comp) {
-          cmap[(offsetC+c)*NcC+comp] = (offsetF+f)*NcF+comp;
-        }
+        for (d = 0; d < NcC; ++d) sum += PetscAbsReal(cqweights[d]*fqweights[d]);
+        if (sum < 1.0e-9) continue;
+        cmap[offsetC+c] = offsetF+f;
         found = PETSC_TRUE;
         break;
       }
       if (!found) {
         /* TODO We really want the average here, but some asshole put VecScatter in the interface */
-        if (fvRef[field]) {
-          PetscInt comp;
-          for (comp = 0; comp < NcC; ++comp) {
-            cmap[(offsetC+c)*NcC+comp] = (offsetF+0)*NcF+comp;
-          }
+        if (fvRef[field] || (feRef[field] && order == 0)) {
+          cmap[offsetC+c] = offsetF+0;
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate matching functional for injection");
       }
     }
-    offsetC += cpdim*NcC;
-    offsetF += fpdim*NcF;
+    offsetC += cpdim;
+    offsetF += fpdim;
   }
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);ierr = PetscFVDestroy(&fvRef[f]);CHKERRQ(ierr);}
   ierr = PetscFree2(feRef,fvRef);CHKERRQ(ierr);
