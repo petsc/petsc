@@ -130,6 +130,8 @@
       <h4>SNES:</h4>
       <ul>
         <li>Removed SNESHasDM() because there is always a DM in SNES.</li>
+        <li>The SNESType of SNESTEST has been removed, the testing code can now be accessed with the options -snes_test_jacobian, -snes_test_jacobian_display -snes_test_jacobian_display_threshold <threshold> and is
+            called each time SNES computes a new Jacobian.
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
