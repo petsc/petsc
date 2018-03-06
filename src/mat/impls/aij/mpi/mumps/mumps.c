@@ -5,6 +5,7 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I  "petscmat.h"  I*/
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
+#include <../src/mat/impls/sell/mpi/mpisell.h>
 
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
@@ -81,7 +82,6 @@ typedef struct {
   PetscInt     *irn,*jcn,nz,sym;
   PetscScalar  *val;
   MPI_Comm     comm_mumps;
-  PetscBool    isAIJ;
   PetscInt     ICNTL9_pre;           /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
@@ -206,7 +206,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
     r, c, v - row and col index, matrix values (matrix triples)
 
   The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
-  freed with PetscFree((mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
+  freed with PetscFree(mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
   that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
 
  */
@@ -238,6 +238,33 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
       }
     }
     *r = row; *c = col;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvertToTriples_seqsell_seqaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
+{
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
+  PetscInt    *ptr;
+
+  PetscFunctionBegin;
+  *v = a->val;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscInt       nz,i,j,row;
+    PetscErrorCode ierr;
+
+    nz   = a->sliidx[a->totalslices];
+    *nnz = nz;
+    ierr = PetscMalloc1(2*nz, &ptr);CHKERRQ(ierr);
+    *r   = ptr;
+    *c   = ptr + nz;
+
+    for (i=0; i<a->totalslices; i++) {
+      for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+        *ptr++ = 8*i + row + shift;
+      }
+    }
+    for (i=0;i<nz;i++) *ptr++ = a->colidx[i] + shift;
   }
   PetscFunctionReturn(0);
 }
@@ -322,11 +349,11 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   PetscBool         missing;
 
   PetscFunctionBegin;
-  ai   =aa->i; aj=aa->j;av=aa->a;
-  adiag=aa->diag;
+  ai    = aa->i; aj = aa->j; av = aa->a;
+  adiag = aa->diag;
   ierr  = MatMissingDiagonal_SeqAIJ(A,&missing,&i);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    /* count nz in the uppper triangular part of A */
+    /* count nz in the upper triangular part of A */
     nz = 0;
     if (missing) {
       for (i=0; i<M; i++) {
@@ -2263,9 +2290,8 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
 
-  mumps->isAIJ    = PETSC_TRUE;
   B->ops->destroy = MatDestroy_MUMPS;
-  B->data        = (void*)mumps;
+  B->data         = (void*)mumps;
 
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
@@ -2327,9 +2353,8 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
 
-  mumps->isAIJ    = PETSC_FALSE;
   B->ops->destroy = MatDestroy_MUMPS;
-  B->data        = (void*)mumps;
+  B->data         = (void*)mumps;
 
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
@@ -2381,9 +2406,62 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
 
-  mumps->isAIJ    = PETSC_TRUE;
   B->ops->destroy = MatDestroy_MUMPS;
-  B->data        = (void*)mumps;
+  B->data         = (void*)mumps;
+
+  ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
+
+  *F = B;
+  PetscFunctionReturn(0);
+}
+
+/* MatGetFactor for Seq and MPI SELL matrices */
+static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat            B;
+  PetscErrorCode ierr;
+  Mat_MUMPS      *mumps;
+  PetscBool      isSeqSELL;
+
+  PetscFunctionBegin;
+  /* Create the factorization matrix */
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSELL,&isSeqSELL);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("mumps",&((PetscObject)B)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
+
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
+
+  B->ops->view        = MatView_MUMPS;
+  B->ops->getinfo     = MatGetInfo_MUMPS;
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetIcntl_C",MatMumpsGetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetCntl_C",MatMumpsGetCntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInfo_C",MatMumpsGetInfo_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInfog_C",MatMumpsGetInfog_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
+
+  if (ftype == MAT_FACTOR_LU) {
+    B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
+    B->factortype            = MAT_FACTOR_LU;
+    if (isSeqSELL) mumps->ConvertToTriples = MatConvertToTriples_seqsell_seqaij;
+    else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"To be implemented");
+    mumps->sym = 0;
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"To be implemented");
+
+  /* set solvertype */
+  ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERMUMPS,&B->solvertype);CHKERRQ(ierr);
+
+  B->ops->destroy = MatDestroy_MUMPS;
+  B->data         = (void*)mumps;
 
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
@@ -2406,6 +2484,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_LU,MatGetFactor_baij_mumps);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_baij_mumps);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_sell_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

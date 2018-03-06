@@ -887,6 +887,11 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      args: -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 50 -par 6.0 -snes_type newtonls
 
    test:
+     suffix: 5_ls_sell_sor
+     args: -da_grid_x 81 -da_grid_y 81 -snes_monitor_short -snes_max_it 50 -par 6.0 -snes_type newtonls -dm_mat_type sell -pc_type sor
+     output_file: output/ex5_5_ls.out
+
+   test:
      suffix: 5_nasm
      nsize: 4
      args: -snes_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type nasm -snes_nasm_type restrict -snes_max_it 10

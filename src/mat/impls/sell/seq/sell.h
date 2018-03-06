@@ -36,15 +36,15 @@ PetscBool   pivotinblocks;     /* pivot inside factorization of each diagonal bl
 Mat         parent;            /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
 means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
 PetscInt    *sliidx;           /* slice index */ \
-PetscInt    totalslices       /* total number of slices */ \
+PetscInt    totalslices;       /* total number of slices */ \
+PetscInt    *getrowcols;       /* workarray for MatGetRow_SeqSELL */ \
+PetscScalar *getrowvals        /* workarray for MatGetRow_SeqSELL */ \
 
 typedef struct {
   SEQSELLHEADER(MatScalar);
   MatScalar   *saved_values;             /* location for stashing nonzero values of matrix */
   PetscScalar *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
   PetscBool   idiagvalid;                /* current idiag[] and mdiag[] are valid */
-  PetscScalar *ibdiag;                   /* inverses of block diagonals */
-  PetscBool   ibdiagvalid;               /* inverses of block diagonals are valid. */
   PetscScalar fshift,omega;              /* last used omega and fshift */
   ISColoring  coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqSELL;
