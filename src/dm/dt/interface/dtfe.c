@@ -2649,6 +2649,36 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscViewer viewer)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  const char         *cnt = lag->continuous ? "Continuous" : "Discontinuous";
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  if (sp->Nc > 1) {
+    if (lag->tensorSpace) {ierr = PetscViewerASCIIPrintf(viewer, "%s Tensor Lagrange space of degree %D with %D components\n", cnt, sp->order, sp->Nc);CHKERRQ(ierr);}
+    else                  {ierr = PetscViewerASCIIPrintf(viewer, "%s Lagrange space of degree %D with %D components\n", cnt, sp->order, sp->Nc);CHKERRQ(ierr);}
+  } else {
+    if (lag->tensorSpace) {ierr = PetscViewerASCIIPrintf(viewer, "%s Tensor Lagrange space of degree %D\n", cnt, sp->order);CHKERRQ(ierr);}
+    else                  {ierr = PetscViewerASCIIPrintf(viewer, "%s Lagrange space of degree %D\n", cnt, sp->order);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscDualSpaceLagrangeView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace *spNew)
 {
   PetscInt       order, Nc;
@@ -3944,7 +3974,7 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   PetscSpace        basis;
   PetscDualSpace    dual;
   PetscQuadrature   q = NULL;
-  PetscInt          dim, Nc, Nq;
+  PetscInt          dim = 0, Nc, Nq = 0;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
@@ -3953,7 +3983,7 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   ierr = PetscFEGetDualSpace(fe, &dual);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
+  if (q) {ierr = PetscQuadratureGetData(q, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Basic Finite Element:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
@@ -3961,7 +3991,7 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);
+    if (q) {ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
