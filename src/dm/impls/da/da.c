@@ -628,8 +628,6 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveEnum(da,ctype,2);
   dd->interptype = ctype;
-  /* Injection not coded for Q0 yet. */
-  if (ctype == DMDA_Q0) da->ops->getinjection = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -957,7 +955,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   ierr = DMDASetDof(da2,dd->w);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da2,dd->stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da2,dd->s);CHKERRQ(ierr);
-  ierr = DMDASetInterpolationType(da2,dd->interptype);CHKERRQ(ierr);
   if (dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz);CHKERRQ(ierr);
@@ -986,6 +983,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   da2->ops->creatematrix = da->ops->creatematrix;
   /* da2->ops->createinterpolation = da->ops->createinterpolation; this causes problem with SNESVI */
   da2->ops->getcoloring = da->ops->getcoloring;
+  dd2->interptype       = dd->interptype;
 
   /* copy fill information if given */
   if (dd->dfill) {
@@ -1119,7 +1117,6 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   ierr = DMDASetDof(da2,dd->w);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da2,dd->stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da2,dd->s);CHKERRQ(ierr);
-  ierr = DMDASetInterpolationType(da2,dd->interptype);CHKERRQ(ierr);
   if (dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,&lx,dd->n,&ly,dd->p,&lz);CHKERRQ(ierr);
@@ -1148,6 +1145,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   /* da2->ops->createinterpolation = da->ops->createinterpolation; copying this one causes trouble for DMSetVI */
   da2->ops->creatematrix = da->ops->creatematrix;
   da2->ops->getcoloring  = da->ops->getcoloring;
+  dd2->interptype        = dd->interptype;
 
   /* copy fill information if given */
   if (dd->dfill) {

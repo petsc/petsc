@@ -10,6 +10,15 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
 
+static PetscErrorCode DMHasCreateInjection_Default(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -73,6 +82,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   ierr = PetscNew(&(v->labels));CHKERRQ(ierr);
   v->labels->refct = 1;
+
+  v->ops->hascreateinjection = DMHasCreateInjection_Default;
+
   *dm = v;
   PetscFunctionReturn(0);
 }
@@ -3045,8 +3057,10 @@ PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
 @*/
 PetscErrorCode  DMHasCreateInjection(DM dm,PetscBool  *flg)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  *flg =  (dm->ops->getinjection) ? PETSC_TRUE : PETSC_FALSE;
+  if (!dm->ops->hascreateinjection) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMHasCreateInjection not implemented for this type");
+  ierr = (*dm->ops->hascreateinjection)(dm,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
