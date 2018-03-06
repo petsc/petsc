@@ -388,7 +388,7 @@ PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
 -  l - the level (0 is coarsest) to supply [Do not supply 0]
 
    Output Parameter:
-.  mat - the restriction matrix
+.  mat - the restriction matrix (may be NULL if no injection is available).
 
    Level: advanced
 
@@ -406,7 +406,6 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
   if (mat) PetscValidPointer(mat,3);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l <= 0 || mg->nlevels <= l) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
-  if (!mglevels[l]->inject) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInjection() before calling");
   if (mat) *mat = mglevels[l]->inject;
   PetscFunctionReturn(0);
 }
