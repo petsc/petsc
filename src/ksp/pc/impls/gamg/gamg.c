@@ -437,7 +437,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* just do Galerkin grids */
       Mat          B,dA,dB;
 
-     if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
+      if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
         ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
