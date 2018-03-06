@@ -2755,6 +2755,21 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDSCopyBoundary - Copy all boundary condition objects to the new problem
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. newprob - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
 {
   DSBoundary     b, next, *lastnext;
@@ -2799,6 +2814,69 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscDSSelectEquations - Copy pointwise function pointers to the new problem with different field layout
+
+  Not collective
+
+  Input Parameter:
++ prob - The PetscDS object
+. numFields - Number of new fields
+- fields - Old field number for each new field
+
+  Output Parameter:
+. newprob - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
+{
+  PetscInt       Nf, Nfn, fn, gn;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (fields) PetscValidPointer(fields, 3);
+  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(newprob, &Nfn);CHKERRQ(ierr);
+  if (numFields > Nfn) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields %D to transfer must not be greater then the total number of fields %D", numFields, Nfn);
+  for (fn = 0; fn < numFields; ++fn) {
+    const PetscInt   f = fields ? fields[fn] : fn;
+    PetscPointFunc   obj;
+    PetscPointFunc   f0, f1;
+    PetscBdPointFunc f0Bd, f1Bd;
+    PetscRiemannFunc r;
+
+    if (f >= Nf) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", f, Nf);
+    ierr = PetscDSGetObjective(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetResidual(prob, f, &f0, &f1);CHKERRQ(ierr);
+    ierr = PetscDSGetBdResidual(prob, f, &f0Bd, &f1Bd);CHKERRQ(ierr);
+    ierr = PetscDSGetRiemannSolver(prob, f, &r);CHKERRQ(ierr);
+    ierr = PetscDSSetObjective(newprob, fn, obj);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(newprob, fn, f0, f1);CHKERRQ(ierr);
+    ierr = PetscDSSetBdResidual(newprob, fn, f0Bd, f1Bd);CHKERRQ(ierr);
+    ierr = PetscDSSetRiemannSolver(newprob, fn, r);CHKERRQ(ierr);
+    for (gn = 0; gn < numFields; ++gn) {
+      const PetscInt  g = fields ? fields[gn] : gn;
+      PetscPointJac   g0, g1, g2, g3;
+      PetscPointJac   g0p, g1p, g2p, g3p;
+      PetscBdPointJac g0Bd, g1Bd, g2Bd, g3Bd;
+
+      if (g >= Nf) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Field %D must be in [0, %D)", g, Nf);
+      ierr = PetscDSGetJacobian(prob, f, g, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
+      ierr = PetscDSGetJacobianPreconditioner(prob, f, g, &g0p, &g1p, &g2p, &g3p);CHKERRQ(ierr);
+      ierr = PetscDSGetBdJacobian(prob, f, g, &g0Bd, &g1Bd, &g2Bd, &g3Bd);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(newprob, fn, gn, g0, g1, g2, g3);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobianPreconditioner(prob, fn, gn, g0p, g1p, g2p, g3p);CHKERRQ(ierr);
+      ierr = PetscDSSetBdJacobian(newprob, fn, gn, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
 
@@ -2812,11 +2890,11 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
 
   Level: intermediate
 
-.seealso: PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+.seealso: PetscDSCopyBoundary(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
 {
-  PetscInt       Nf, Ng, f, g;
+  PetscInt       Nf, Ng;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2825,29 +2903,35 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(newprob, &Ng);CHKERRQ(ierr);
   if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);
-  for (f = 0; f < Nf; ++f) {
-    PetscPointFunc   obj;
-    PetscPointFunc   f0, f1;
-    PetscPointJac    g0, g1, g2, g3;
-    PetscBdPointFunc f0Bd, f1Bd;
-    PetscBdPointJac  g0Bd, g1Bd, g2Bd, g3Bd;
-    PetscRiemannFunc r;
+  ierr = PetscDSSelectEquations(prob, Nf, NULL, newprob);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/*@
+  PetscDSCopyConstants - Copy all constants to the new problem
 
-    ierr = PetscDSGetObjective(prob, f, &obj);CHKERRQ(ierr);
-    ierr = PetscDSGetResidual(prob, f, &f0, &f1);CHKERRQ(ierr);
-    ierr = PetscDSGetBdResidual(prob, f, &f0Bd, &f1Bd);CHKERRQ(ierr);
-    ierr = PetscDSGetRiemannSolver(prob, f, &r);CHKERRQ(ierr);
-    ierr = PetscDSSetObjective(newprob, f, obj);CHKERRQ(ierr);
-    ierr = PetscDSSetResidual(newprob, f, f0, f1);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(newprob, f, f0Bd, f1Bd);CHKERRQ(ierr);
-    ierr = PetscDSSetRiemannSolver(newprob, f, r);CHKERRQ(ierr);
-    for (g = 0; g < Nf; ++g) {
-      ierr = PetscDSGetJacobian(prob, f, g, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
-      ierr = PetscDSGetBdJacobian(prob, f, g, &g0Bd, &g1Bd, &g2Bd, &g3Bd);CHKERRQ(ierr);
-      ierr = PetscDSSetJacobian(newprob, f, g, g0, g1, g2, g3);CHKERRQ(ierr);
-      ierr = PetscDSSetBdJacobian(newprob, f, g, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
-    }
-  }
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. newprob - The PetscDS copy
+
+  Level: intermediate
+
+.seealso: PetscDSCopyBoundary(), PetscDSCopyEquations(), PetscDSSetResidual(), PetscDSSetJacobian(), PetscDSSetRiemannSolver(), PetscDSSetBdResidual(), PetscDSSetBdJacobian(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
+{
+  PetscInt           Nc;
+  const PetscScalar *constants;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
+  ierr = PetscDSGetConstants(prob, &Nc, &constants);CHKERRQ(ierr);
+  ierr = PetscDSSetConstants(newprob, Nc, (PetscScalar *) constants);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
