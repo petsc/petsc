@@ -665,7 +665,7 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 +     rtol = relative tolerance,
 .     abstol = absolute tolerance.
 .     dtol = divergence tolerance,
--     rnorm_0 is the two norm of the right hand side (or the preconditioned norm, depending on what was set with 
+-     rnorm_0 is the two norm of the right hand side (or the preconditioned norm, depending on what was set with
           KSPSetNormType(). When initial guess is non-zero you
           can call KSPConvergedDefaultSetUIRNorm() to use the norm of (b - A*(initial guess))
           as the starting point for relative norm convergence testing, that is as rnorm_0

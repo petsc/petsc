@@ -60,7 +60,7 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
  problems.
 
  The linear system solve should be done with a conjugate gradient
- method, although any method can be used. 
+ method, although any method can be used.
 */
 
 #define NLS_NEWTON              0
@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Initialize trust-region radius when using nash, stcg, or gltr
      Command automatically ignored for other methods
-     Will be reset during the first iteration 
+     Will be reset during the first iteration
   */
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
   ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
@@ -1109,14 +1109,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   nlsP->update_type     = NLS_UPDATE_STEP;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -293,7 +293,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   }
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleLeft(A,y);CHKERRQ(ierr);
-  
+
   if (shell->axpy) {
     if (!shell->left_work) {ierr = MatCreateVecs(A,&shell->left_work,NULL);CHKERRQ(ierr);}
     ierr = MatMult(shell->axpy,x,shell->left_work);CHKERRQ(ierr);
@@ -442,7 +442,7 @@ PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   shell->vscale *= a;
   shell->vshift *= a;
@@ -771,7 +771,7 @@ $
       apply a MatScale(s) you get s*vscale*A + s*diag(shift). But if you first scale and then shift
       you get s*vscale*A + diag(shift)
 
-          A is the user provided function. 
+          A is the user provided function.
 
 .keywords: matrix, shell, create
 
@@ -1059,6 +1059,7 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
   case MATOP_GET_DIAGONAL:
     if (shell->managescalingshifts) shell->ops->getdiagonal = (PetscErrorCode (*)(Mat,Vec))f;
     else mat->ops->getdiagonal = (PetscErrorCode (*)(Mat,Vec))f;
+    break;
   case MATOP_VIEW:
     if (!mat->ops->viewnative) {
       mat->ops->viewnative = mat->ops->view;
@@ -1079,6 +1080,7 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     break;
   default:
     (((void(**)(void))mat->ops)[op]) = f;
+    break;
   }
   PetscFunctionReturn(0);
 }

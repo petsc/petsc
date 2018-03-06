@@ -121,11 +121,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
   ssls->rho = 2.1;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Note: linesearch objective and objectivegradient routines are set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
 
   /* Override default settings (unless already changed) */
@@ -142,5 +144,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-
-

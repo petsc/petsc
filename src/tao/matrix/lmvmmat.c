@@ -56,12 +56,12 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   ctx->r_beta = 0.5;
   ctx->mu = 1.0;
   ctx->nu = 100.0;
-  
+
   ctx->phi = 0.125;
-  
+
   ctx->scalar_history = 1;
   ctx->rescale_history = 1;
-  
+
   ctx->delta_min = 1e-7;
   ctx->delta_max = 100.0;
 
@@ -769,6 +769,7 @@ extern PetscErrorCode MatLMVMSetH0(Mat m, Mat H0)
   ctx->useDefaultH0 = PETSC_FALSE;
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)H0), &ctx->H0_ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->H0_ksp, (PetscObject)ctx, 1);CHKERRQ(ierr);
   ierr = KSPSetOperators(ctx->H0_ksp, H0, H0);CHKERRQ(ierr);
   /* its options prefix and setup is handled in TaoSolve_LMVM/TaoSolve_BLMVM */
   PetscFunctionReturn(0);
@@ -877,4 +878,3 @@ extern PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
   ctx->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-

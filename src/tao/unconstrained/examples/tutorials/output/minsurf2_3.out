@@ -17,11 +17,17 @@ iter =  11, Function value 1.41847, Residual: 0.00245715
 iter =  12, Function value 1.41847, Residual: 0.00149195 
 Tao Object: 3 MPI processes
   type: cg
-      CG Type: fr
-      Gradient steps: 0
-      Reset steps: 0
+    CG Type: fr
+    Gradient steps: 0
+    Reset steps: 0
   TaoLineSearch Object: 3 MPI processes
     type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=2
+    Termination reason: 1
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
   Residual in Function/Gradient:=0.00149195
   Objective value=1.41847
