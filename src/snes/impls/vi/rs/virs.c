@@ -37,6 +37,7 @@ typedef struct {
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);  /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   DM dm;                                                  /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
@@ -177,6 +178,7 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   dmsnesvi->dm->ops->createinterpolation = dmsnesvi->createinterpolation;
   dmsnesvi->dm->ops->coarsen             = dmsnesvi->coarsen;
   dmsnesvi->dm->ops->createglobalvector  = dmsnesvi->createglobalvector;
+  dmsnesvi->dm->ops->getinjection        = dmsnesvi->getinjection;
   /* need to clear out this vectors because some of them may not have a reference to the DM
     but they are counted as having references to the DM in DMDestroy() */
   ierr = DMClearGlobalVectors(dmsnesvi->dm);CHKERRQ(ierr);
@@ -217,6 +219,9 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
     dm->ops->coarsen              = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector  = dm->ops->createglobalvector;
     dm->ops->createglobalvector   = DMCreateGlobalVector_SNESVI;
+    dmsnesvi->getinjection        = dm->ops->getinjection;
+    /* XXX: Needs to be added */
+    dm->ops->getinjection         = NULL;
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);
