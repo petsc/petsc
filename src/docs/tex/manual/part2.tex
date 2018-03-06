@@ -5468,7 +5468,7 @@ TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 
 If $F()$ is a function of $p$ one needs to also provide the Jacobian $-F_p$ with
 \begin{lstlisting}
-TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{lstlisting}
 The arguments for the function \lstinline{fp()}
 are the timestep context, current time, $y$, and the (optional) user-provided context.
@@ -5525,7 +5525,7 @@ with respect to the parameter $p_m$. $numcost$ is $1$ since it is a scalar funct
 For ODE solution, PETSc requires user-provided functions to evaluate the system $F(t,y,\dot{y},p)$ (set by \lstinline{TSSetIFunction()} )
 and its corresponding Jacobian $F_y + \sigma F_{\dot y}$ (set by \lstinline{TSSetIJacobian()}).
 Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here.
-For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSAdjointSetRHSJacobian()},
+For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSASetRHSJacobianP()},
 and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using \lstinline{TSSetCostIntegrand()}.
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$.

@@ -307,7 +307,7 @@ int main(int argc,char **argv)
   ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

@@ -203,7 +203,7 @@ int main(int argc,char **argv)
     ierr = MatZeroEntries(user.sp);CHKERRQ(ierr);
   }
   ierr = TSForwardSetSensitivities(ts,cols,user.sp);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

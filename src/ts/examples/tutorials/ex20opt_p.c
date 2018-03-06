@@ -292,7 +292,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,user_ptr);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user_ptr->A,user_ptr->A,IJacobian,user_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set time

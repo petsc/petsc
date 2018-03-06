@@ -398,4 +398,11 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
+struct _n_TSMonitorDrawCtx {
+  PetscViewer   viewer;
+  Vec           initialsolution;
+  PetscBool     showinitial;
+  PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool     showtimestepandtime;
+};
 #endif

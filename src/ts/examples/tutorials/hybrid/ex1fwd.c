@@ -291,7 +291,7 @@ int main(int argc,char **argv)
 
   ierr = TSForwardSetSensitivities(ts,3,sp);CHKERRQ(ierr);
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options

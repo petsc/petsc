@@ -320,7 +320,7 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
   if (sa == SA_ADJ) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Save trajectory of solution so that TSAdjointSolve() may be used
