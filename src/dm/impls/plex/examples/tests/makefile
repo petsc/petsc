@@ -89,6 +89,10 @@ ex23: ex23.o  chkopts
 	${DSYMUTIL} ex23
 	${RM} -f ex23.o
 
+ex24: ex24.o  chkopts
+	-${CLINKER} -o ex24 ex24.o ${PETSC_DM_LIB}
+	${RM} -f ex24.o
+
 ex25: ex25.o  chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_DM_LIB}
 	${DSYMUTIL} ex25

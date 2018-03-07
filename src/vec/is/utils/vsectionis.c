@@ -19,7 +19,8 @@ PetscClassId PETSC_SECTION_CLASSID;
 
   Level: developer
 
-  Notes: Typical calling sequence
+  Notes:
+  Typical calling sequence
 $       PetscSectionCreate(MPI_Comm,PetscSection *);
 $       PetscSectionSetNumFields(PetscSection, numFields);
 $       PetscSectionSetChart(PetscSection,low,high);
@@ -28,8 +29,8 @@ $       PetscSectionSetUp(PetscSection);
 $       PetscSectionGetOffset(PetscSection,point,PetscInt *);
 $       PetscSectionDestroy(PetscSection);
 
-       The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
-       recommended they not be used in user codes unless you really gain something in their use.
+  The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
+  recommended they not be used in user codes unless you really gain something in their use.
 
 .seealso: PetscSection, PetscSectionDestroy()
 @*/
@@ -167,6 +168,111 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   PetscValidPointer(newSection, 2);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), newSection);CHKERRQ(ierr);
   ierr = PetscSectionCopy(section, *newSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionCompare - Compares two sections
+
+  Collective on PetscSection
+
+  Input Parameterss:
++ s1 - the first PetscSection
+- s2 - the second PetscSection
+
+  Output Parameter:
+. congruent - PETSC_TRUE if the two sections are congruent, PETSC_FALSE otherwise 
+
+  Level: developer
+
+  Notes:
+  Field names are disregarded.
+
+.seealso: PetscSection, PetscSectionCreate(), PetscSectionCopy(), PetscSectionClone()
+@*/
+PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *congruent)
+{
+  PetscInt pStart, pEnd, nfields, ncdof, nfcdof, p, f, n1, n2;
+  const PetscInt *idx1, *idx2;
+  IS perm1, perm2;
+  PetscBool flg;
+  PetscMPIInt mflg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s1, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(s2, PETSC_SECTION_CLASSID, 2);
+  PetscValidIntPointer(congruent,3);
+  flg = PETSC_FALSE;
+
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)s1),PetscObjectComm((PetscObject)s2),&mflg);CHKERRQ(ierr);
+  if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
+    *congruent = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscSectionGetChart(s1, &pStart, &pEnd);
+  ierr = PetscSectionGetChart(s2, &n1, &n2);
+  if (pStart != n1 || pEnd != n2) goto not_congruent;
+
+  ierr = PetscSectionGetPermutation(s1, &perm1);CHKERRQ(ierr);
+  ierr = PetscSectionGetPermutation(s2, &perm2);CHKERRQ(ierr);
+  if (perm1 && perm2) {
+    ierr = ISEqual(perm1, perm2, congruent);CHKERRQ(ierr);
+    if (!(*congruent)) goto not_congruent;
+  } else if (perm1 != perm2) goto not_congruent;
+
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionGetOffset(s1, p, &n1);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(s2, p, &n2);CHKERRQ(ierr);
+    if (n1 != n2) goto not_congruent;
+
+    ierr = PetscSectionGetDof(s1, p, &n1);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(s2, p, &n2);CHKERRQ(ierr);
+    if (n1 != n2) goto not_congruent;
+
+    ierr = PetscSectionGetConstraintDof(s1, p, &ncdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s2, p, &n2);CHKERRQ(ierr);
+    if (ncdof != n2) goto not_congruent;
+
+    ierr = PetscSectionGetConstraintIndices(s1, p, &idx1);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintIndices(s2, p, &idx2);CHKERRQ(ierr);
+    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);
+    if (!(*congruent)) goto not_congruent;
+  }
+
+  ierr = PetscSectionGetNumFields(s1, &nfields);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s2, &n2);CHKERRQ(ierr);
+  if (nfields != n2) goto not_congruent;
+
+  for (f = 0; f < nfields; ++f) {
+    ierr = PetscSectionGetFieldComponents(s1, f, &n1);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(s2, f, &n2);CHKERRQ(ierr);
+    if (n1 != n2) goto not_congruent;
+
+    for (p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionGetFieldOffset(s1, p, f, &n1);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldOffset(s2, p, f, &n2);CHKERRQ(ierr);
+      if (n1 != n2) goto not_congruent;
+
+      ierr = PetscSectionGetFieldDof(s1, p, f, &n1);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(s2, p, f, &n2);CHKERRQ(ierr);
+      if (n1 != n2) goto not_congruent;
+
+      ierr = PetscSectionGetFieldConstraintDof(s1, p, f, &nfcdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(s2, p, f, &n2);CHKERRQ(ierr);
+      if (nfcdof != n2) goto not_congruent;
+
+      ierr = PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2);CHKERRQ(ierr);
+      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);
+      if (!(*congruent)) goto not_congruent;
+    }
+  }
+
+  flg = PETSC_TRUE;
+not_congruent:
+  ierr = MPIU_Allreduce(&flg,congruent,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)s1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
