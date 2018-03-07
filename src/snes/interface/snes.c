@@ -2280,7 +2280,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   Vec            x = snes->vec_sol,f = snes->vec_func;
   PetscErrorCode ierr;
   PetscReal      nrm,gnorm;
-  PetscReal      threshold = 1.e-5;;
+  PetscReal      threshold = 1.e-5;
   PetscInt       m,n,M,N;
   void           *functx;
   PetscBool      complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE;
