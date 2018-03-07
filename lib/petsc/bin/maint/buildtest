@@ -78,7 +78,7 @@ endif
 set PETSC_OPTIONS="${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout"
 
 # Run Configure
-./config/examples/${CONFIGURE_FILE}.py --with-no-output PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+./config/examples/${CONFIGURE_FILE}.py PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
 if ( $err ) exit
