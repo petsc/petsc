@@ -5,7 +5,7 @@ CONFIGDIR := config
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
 mkfile_path := $(abspath $(MAKEFILE_LIST))
-TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))src
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include $(PETSC_DIR)/lib/petsc/conf/variables
@@ -13,7 +13,7 @@ include $(PETSC_DIR)/lib/petsc/conf/variables
 TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
 TESTLOGFILE = $(TESTDIR)/examples_$(PETSC_ARCH).log
-EXAMPLESDIR := .
+EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -344,6 +344,6 @@ help-test:
 	-@echo "    make -f ${makefile} print VAR=TESTTARGETS search='sys%'"
 	-@echo
 	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/src/sys/examples/tests/ex1'
+	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/examples/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
 	-@echo

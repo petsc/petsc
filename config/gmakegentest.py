@@ -101,11 +101,7 @@ class generateExamples(Petsc):
       self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
       self.srcdir=os.path.join(self.petsc_dir,'src')
 
-    # If full path given, then use it, otherwise assume relative to arch_dir
-    if testdir.strip().startswith(os.path.sep):
-      self.testroot_dir=testdir.strip()
-    else:
-      self.testroot_dir=os.path.join(self.arch_dir,testdir.strip())
+    self.testroot_dir=os.path.abspath(testdir)
 
     self.ptNaming=True
     self.verbose=verbose
@@ -144,7 +140,7 @@ class generateExamples(Petsc):
     """
     Get relative path to source directory
     """
-    return os.path.join('src',os.path.relpath(rdir,self.srcdir))
+    return os.path.relpath(rdir,self.srcdir)
 
   def getInInstallDir(self,thisscriptdir):
     """
@@ -171,7 +167,7 @@ class generateExamples(Petsc):
     """
     if self.ptNaming:
       if srcfile.startswith('run'): srcfile=re.sub('^run','',srcfile) 
-      cdir=srcdir.split('src')[1].lstrip("/").rstrip("/")
+      cdir=srcdir
       prefix=cdir.replace('/examples/','_').replace("/","_")+"-"
       nameString=prefix+srcfile
     else:
@@ -280,7 +276,7 @@ class generateExamples(Petsc):
       Put into data structure that allows easy generation of makefile
     """
     rpath=self.srcrelpath(root)
-    pkg=rpath.split(os.path.sep)[1]
+    pkg=rpath.split(os.path.sep)[0]
     relpfile=os.path.join(rpath,exfile)
     lang=self.getLanguage(exfile)
     if not lang: return
@@ -304,7 +300,7 @@ class generateExamples(Petsc):
       Organized by languages to allow testing of languages
     """
     rpath=self.srcrelpath(root)
-    pkg=rpath.split("/")[1]
+    pkg=rpath.split("/")[0]
     #nmtest=self.nameSpace(test,root)
     nmtest=os.path.join(rpath,test)
     lang=self.getLanguage(exfile)
@@ -348,7 +344,7 @@ class generateExamples(Petsc):
 
     # Others
     subst['subargs']=''  # Default.  For variables override
-    subst['srcdir']=os.path.join(os.path.dirname(self.srcdir),rpath)
+    subst['srcdir']=os.path.join(os.path.dirname(self.srcdir), 'src', rpath)
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
@@ -389,7 +385,7 @@ class generateExamples(Petsc):
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
     if not "_" in defroot: defroot=defroot+"_1"
     subst['defroot']=defroot
-    subst['label']=self.nameSpace(defroot,subst['srcdir'])
+    subst['label']=self.nameSpace(defroot,self.srcrelpath(subst['srcdir']))
     subst['redirect_file']=defroot+".tmp"
     if 'output_file' not in testDict: 
       subst['output_file']="output/"+defroot+".out"
@@ -914,7 +910,7 @@ class generateExamples(Petsc):
 
           # Deps
           exfile=self.tests[pkg][lang][ftest]['exfile']
-          fullex=os.path.join(os.path.dirname(self.srcdir),exfile)
+          fullex=os.path.join(self.srcdir,exfile)
           localexec=self.tests[pkg][lang][ftest]['exec']
           execname=os.path.join(testdir,localexec)
           fullscript=os.path.join(testdir,script)
