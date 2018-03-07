@@ -904,7 +904,7 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
       requires: !complex
 
    test:
-      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type tron
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type tron -tao_gttol 1.e-5
       requires: !single
 
    test:
@@ -945,7 +945,7 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
       
    test:
       suffix: 8
-      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type pgd -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type pgd -tao_gttol 1.e-3 -tao_gatol 1e-4
       requires: !single
 
 TEST*/

@@ -64,57 +64,6 @@ iter =  59, Function value 1.50566, Residual: 0.000578657
 iter =  60, Function value 1.50566, Residual: 0.000522073 
 iter =  61, Function value 1.50566, Residual: 0.000484231 
 iter =  62, Function value 1.50566, Residual: 0.000436874 
-iter =  63, Function value 1.50566, Residual: 0.000405201 
-iter =  64, Function value 1.50566, Residual: 0.000365569 
-iter =  65, Function value 1.50566, Residual: 0.00033906 
-iter =  66, Function value 1.50566, Residual: 0.000305894 
-iter =  67, Function value 1.50566, Residual: 0.000283709 
-iter =  68, Function value 1.50566, Residual: 0.000255955 
-iter =  69, Function value 1.50566, Residual: 0.000237389 
-iter =  70, Function value 1.50566, Residual: 0.000214165 
-iter =  71, Function value 1.50566, Residual: 0.000198629 
-iter =  72, Function value 1.50566, Residual: 0.000179196 
-iter =  73, Function value 1.50566, Residual: 0.000166195 
-iter =  74, Function value 1.50566, Residual: 0.000149934 
-iter =  75, Function value 1.50566, Residual: 0.000139056 
-iter =  76, Function value 1.50566, Residual: 0.00012545 
-iter =  77, Function value 1.50566, Residual: 0.000116347 
-iter =  78, Function value 1.50566, Residual: 0.000104963 
-iter =  79, Function value 1.50566, Residual: 9.73462e-05 
-iter =  80, Function value 1.50566, Residual: 8.78208e-05 
-iter =  81, Function value 1.50566, Residual: 8.14479e-05 
-iter =  82, Function value 1.50566, Residual: 7.3478e-05 
-iter =  83, Function value 1.50566, Residual: 6.81457e-05 
-iter =  84, Function value 1.50566, Residual: 6.14773e-05 
-iter =  85, Function value 1.50566, Residual: 5.70158e-05 
-iter =  86, Function value 1.50566, Residual: 5.14364e-05 
-iter =  87, Function value 1.50566, Residual: 4.77035e-05 
-iter =  88, Function value 1.50566, Residual: 4.30353e-05 
-iter =  89, Function value 1.50566, Residual: 3.9912e-05 
-iter =  90, Function value 1.50566, Residual: 3.60063e-05 
-iter =  91, Function value 1.50566, Residual: 3.3393e-05 
-iter =  92, Function value 1.50566, Residual: 3.01252e-05 
-iter =  93, Function value 1.50566, Residual: 2.79388e-05 
-iter =  94, Function value 1.50566, Residual: 2.52046e-05 
-iter =  95, Function value 1.50566, Residual: 2.33753e-05 
-iter =  96, Function value 1.50566, Residual: 2.10878e-05 
-iter =  97, Function value 1.50566, Residual: 1.95573e-05 
-iter =  98, Function value 1.50566, Residual: 1.76432e-05 
-iter =  99, Function value 1.50566, Residual: 1.63629e-05 
-iter = 100, Function value 1.50566, Residual: 1.47613e-05 
-iter = 101, Function value 1.50566, Residual: 1.36903e-05 
-iter = 102, Function value 1.50566, Residual: 1.23502e-05 
-iter = 103, Function value 1.50566, Residual: 1.14541e-05 
-iter = 104, Function value 1.50566, Residual: 1.03329e-05 
-iter = 105, Function value 1.50566, Residual: 9.58319e-06 
-iter = 106, Function value 1.50566, Residual: 8.64503e-06 
-iter = 107, Function value 1.50566, Residual: 8.0178e-06 
-iter = 108, Function value 1.50566, Residual: 7.23305e-06 
-iter = 109, Function value 1.50566, Residual: 6.70824e-06 
-iter = 110, Function value 1.50566, Residual: 6.05157e-06 
-iter = 111, Function value 1.50566, Residual: 5.61233e-06 
-iter = 112, Function value 1.50566, Residual: 5.06319e-06 
-iter = 113, Function value 1.50566, Residual: 4.69556e-06 
 Tao Object: 1 MPI processes
   type: pgd
   TaoLineSearch Object: 1 MPI processes
@@ -127,9 +76,9 @@ Tao Object: 1 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
-  Residual in Function/Gradient:=4.69556e-06
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.001
+  Residual in Function/Gradient:=0.000436874
   Objective value=1.50566
-  total number of iterations=113,                          (max: 2000)
-  total number of function/gradient evaluations=233,      (max: 4000)
+  total number of iterations=62,                          (max: 2000)
+  total number of function/gradient evaluations=131,      (max: 4000)
   Solution converged:    ||g(X)||/||g(X0)|| <= gttol
