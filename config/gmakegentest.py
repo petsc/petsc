@@ -19,8 +19,8 @@ import example_template
 
 """
 
-There are 3 modes of running tests: Normal builds, test installs from builds,
-test installs from within install dir.  They affect where to find things:
+There are 2 modes of running tests: Normal builds and run from prefix of
+install.  They affect where to find things:
 
 
 Case 1.  Normal builds:
@@ -42,26 +42,7 @@ Case 1.  Normal builds:
      +---------------------+----------------------------------+
 
 
-Case 2.  Test immediately after build through makefile & lib/petsc/conf/test: 
-    (Not in installDir, but using prefix dir.  PETSC_ARCH='')
-
-     +---------------------+----------------------------------+
-     | PETSC_DIR           | <prefix dir>                     |
-     +---------------------+----------------------------------+
-     | PETSC_ARCH          | ''                               |
-     +---------------------+----------------------------------+
-     | PETSC_LIBDIR        | PETSC_DIR/PETSC_ARCH/lib         |
-     +---------------------+----------------------------------+
-     | PETSC_EXAMPLESDIR   | PETSC_SRC_DIR/src                |
-     +---------------------+----------------------------------+
-     | PETSC_TESTDIR       | PETSC_DIR/PETSC_ARCH/tests       |
-     +---------------------+----------------------------------+
-     | PETSC_GMAKEFILETEST | PETSC_DIR/gmakefile.test         |
-     +---------------------+----------------------------------+
-     | PETSC_GMAKEGENTEST  | PETSC_DIR/config/gmakegentest.py |
-     +---------------------+----------------------------------+
-
-Case 3.  From install dir:
+Case 2.  From install dir:
 
      +---------------------+-------------------------------------------------------+
      | PETSC_DIR           | <prefix dir>                                          |
@@ -80,12 +61,25 @@ Case 3.  From install dir:
      +---------------------+-------------------------------------------------------+
 
 """
+
+def install_files(source, destdir):
+  """Install file or directory 'source' to 'destdir'.  Does not preserve
+  mode (permissions).
+  """
+  if not os.path.isdir(destdir):
+    os.makedirs(destdir)
+  if os.path.isdir(source):
+    for name in os.listdir(source):
+      install_files(os.path.join(source, name), os.path.join(destdir, os.path.basename(source)))
+  else:
+    shutil.copyfile(source, os.path.join(destdir, os.path.basename(source)))
+
 class generateExamples(Petsc):
   """
     gmakegen.py has basic structure for finding the files, writing out
       the dependencies, etc.
   """
-  def __init__(self,petsc_dir=None, petsc_arch=None, testdir=None, verbose=False, single_ex=False, srcdir=None):
+  def __init__(self,petsc_dir=None, petsc_arch=None, testdir='tests', verbose=False, single_ex=False, srcdir=None):
     super(generateExamples, self).__init__(petsc_dir, petsc_arch, verbose)
 
     self.single_ex=single_ex
@@ -93,32 +87,25 @@ class generateExamples(Petsc):
     # Set locations to handle movement
     self.inInstallDir=self.getInInstallDir(thisscriptdir)
 
-    if not self.inInstallDir:
-      if not petsc_arch == '':
-        # Case 1 discussed above
-        self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
-        self.srcdir=os.path.join(self.petsc_dir,'src')
-      else:
-        # Case 2 discussed above
-        self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
-        self.srcdir=os.path.join(os.path.dirname(thisscriptdir),'src')
-    else:
-      # Case 3 discussed above
+    if self.inInstallDir:
+      # Case 2 discussed above
       # set PETSC_ARCH to install directory to allow script to work in both
       dirlist=thisscriptdir.split(os.path.sep)
       installdir=os.path.sep.join(dirlist[0:len(dirlist)-4])
       self.arch_dir=installdir
       self.srcdir=os.path.join(os.path.dirname(thisscriptdir),'src')
-
-    # Do some initialization
-    if testdir:
-      # If full path given, then use it, otherwise assume relative to arch_dir
-      if testdir.strip().startswith(os.path.sep):
-        self.testroot_dir=testdir.strip()
-      else:
-        self.testroot_dir=os.path.join(self.arch_dir,testdir.strip())
     else:
-      self.testroot_dir=os.path.join(self.arch_dir,"tests")
+      if petsc_arch == '':
+        raise RuntimeError('PETSC_ARCH must be set when running from build directory')
+      # Case 1 discussed above
+      self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
+      self.srcdir=os.path.join(self.petsc_dir,'src')
+
+    # If full path given, then use it, otherwise assume relative to arch_dir
+    if testdir.strip().startswith(os.path.sep):
+      self.testroot_dir=testdir.strip()
+    else:
+      self.testroot_dir=os.path.join(self.arch_dir,testdir.strip())
 
     self.ptNaming=True
     self.verbose=verbose
@@ -385,19 +372,13 @@ class generateExamples(Petsc):
       subst['mpiexec']=self.conf['MPIEXEC']
     subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
     subst['petsc_arch']=self.petsc_arch
-    if not self.inInstallDir:
-      if not self.petsc_arch == '':
-        # Case 1
-        subst['CONFIG_DIR']=os.path.join(self.petsc_dir,'config')
-        subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
-      else:
-        # Case 2
-        subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
-        subst['PETSC_BINDIR']=os.path.join(os.path.dirname(self.srcdir),'lib','petsc','bin')
-    else:
-      # Case 3
+    if self.inInstallDir:
+      # Case 2
       subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
-      subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,self.petsc_arch,'bin')
+    else:
+      # Case 1
+      subst['CONFIG_DIR']=os.path.join(self.petsc_dir,'config')
+    subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
     subst['grep']=self.conf['GREP']
@@ -556,21 +537,11 @@ class generateExamples(Petsc):
 
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
-      fullfile=os.path.join(root,lfile)
-      if os.path.isdir(fullfile):
-        if not os.path.isdir(os.path.join(runscript_dir,lfile)):
-          shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
-      else:
-        shutil.copy(fullfile,runscript_dir)
+      install_files(os.path.join(root, lfile), runscript_dir)
     # Check subtests for local runfiles
     for stest in subst.get("subtests",[]):
       for lfile in testDict[stest].get('localrunfiles','').split():
-        fullfile=os.path.join(root,lfile)
-        if os.path.isdir(fullfile):
-          if not os.path.isdir(os.path.join(runscript_dir,lfile)):
-            shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
-        else:
-          shutil.copy(fullfile,self.runscript_dir)
+        install_files(os.path.join(root, lfile), runscript_dir)
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
@@ -899,7 +870,7 @@ class generateExamples(Petsc):
     """
     return self.sources[pkg]
 
-  def write_gnumake(self,dataDict):
+  def write_gnumake(self, dataDict, output=None):
     """
      Write out something similar to files from gmakegen.py
 
@@ -912,8 +883,7 @@ class generateExamples(Petsc):
     compileExecsFirst=False
 
     # Open file
-    arch_files = os.path.join(self.arch_dir,'lib','petsc','conf', 'testfiles')
-    fd = open(arch_files, 'w')
+    fd = open(output, 'w')
 
     # Write out the sources
     gendeps = self.gen_gnumake(fd)
@@ -968,28 +938,18 @@ class generateExamples(Petsc):
     fd.close()
     return
 
-  def writeHarness(self,output,dataDict):
-    """
-     This is set up to write out multiple harness even if only gnumake
-     is supported now
-    """
-    eval("self.write_"+output+"(dataDict)")
-    return
-
-def main(petsc_dir=None, petsc_arch=None, output=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
-    if output is None:
-        output = 'gnumake'
-
+def main(petsc_dir=None, petsc_arch=None, verbose=False, single_ex=False, srcdir=None, testdir=None):
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
     if petsc_arch: 
         if len(petsc_arch.split(os.path.sep))>1:
             petsc_dir,petsc_arch=os.path.split(petsc_arch.rstrip(os.path.sep))
+    output = os.path.join(testdir, 'testfiles')
 
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
                          testdir=testdir)
     dataDict=pEx.walktree(os.path.join(pEx.srcdir))
-    pEx.writeHarness(output,dataDict)
+    pEx.write_gnumake(dataDict, output)
 
 if __name__ == '__main__':
     import optparse
@@ -998,17 +958,18 @@ if __name__ == '__main__':
     parser.add_option('--petsc-dir', help='Set PETSC_DIR different from environment', default=os.environ.get('PETSC_DIR'))
     parser.add_option('--petsc-arch', help='Set PETSC_ARCH different from environment', default=os.environ.get('PETSC_ARCH'))
     parser.add_option('--srcdir', help='Set location of sources different from PETSC_DIR/src', default=None)
-    parser.add_option('--output', help='Location to write output file', default=None)
     parser.add_option('-s', '--single_executable', dest='single_executable', action="store_false", help='Whether there should be single executable per src subdir.  Default is false')
-    parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory: PETSC_DIR/PETSC_ARCH/testdir.  Default is "tests"')
+    parser.add_option('-t', '--testdir', dest='testdir',  help='Test directory [$PETSC_ARCH/tests]')
 
     opts, extra_args = parser.parse_args()
     if extra_args:
         import sys
         sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
         exit(1)
+    if opts.testdir is None:
+      opts.testdir = os.path.join(opts.petsc_arch, 'tests')
 
-    main(petsc_dir=opts.petsc_dir, petsc_arch=opts.petsc_arch, 
-         output=opts.output, verbose=opts.verbose,
-         single_ex=opts.single_executable, srcdir=opts.srcdir, 
+    main(petsc_dir=opts.petsc_dir, petsc_arch=opts.petsc_arch,
+         verbose=opts.verbose,
+         single_ex=opts.single_executable, srcdir=opts.srcdir,
          testdir=opts.testdir)

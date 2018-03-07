@@ -5,7 +5,7 @@ include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
-LIBDIR := $(abspath $(PETSC_ARCH)/lib)
+LIBDIR := $(PETSC_ARCH)/lib
 
 pkgs := sys vec mat dm ksp snes ts tao
 
