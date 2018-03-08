@@ -15,6 +15,8 @@ import sys
 from   time import gmtime,strftime
 
 PETSC_DIR = os.environ['PETSC_DIR']
+PETSC_ARCH = os.environ['PETSC_ARCH']
+OBJDIR = os.path.join(PETSC_DIR, PETSC_ARCH, 'obj')
 
 def run_gcov(gcov_dir):
 
@@ -36,12 +38,13 @@ def run_gcov(gcov_dir):
             csrc_file = file_name.endswith('.c')
             if csrc_file:
                 c_file = file_name.split('.c')[0]
-                gcov_graph_file = c_file+".gcno"
-                gcov_data_file  = c_file+".gcda"
-                if os.path.isfile(os.path.join(gcov_graph_file)) & os.path.isfile(os.path.join(gcov_data_file)):
+                objpath = os.path.join(OBJDIR, os.path.relpath(c_file, PETSC_DIR))
+                gcov_graph_file = objpath+".gcno"
+                gcov_data_file  = objpath+".gcda"
+                if os.path.isfile(gcov_graph_file) and os.path.isfile(gcov_data_file):
                     # gcov created .gcno and .gcda files => create .gcov file,parse it and save the untested code line
                     # numbers in .lines file
-                    os.system("gcov "+file_name)
+                    os.system('gcov --object-directory "%s" "%s"' % (os.path.dirname(gcov_data_file), file_name))
                     gcov_file = file_name+".gcov"
                     try:
                         gcov_fid = open(gcov_file,'r')

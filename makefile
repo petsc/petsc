@@ -17,13 +17,19 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
+# This makefile contains a lot of PHONY targets with improperly specified prerequisites
+# where correct execution instead depends on the targets being processed in the correct
+# order.  This is gross, but this makefile doesn't really do any work.  Sub-makes still
+# benefit from parallelism.
+.NOTPARALLEL:
+
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all: chk_makej
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
+all:
+	+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
-	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
+	+@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
 	   ${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
 	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log \
@@ -33,7 +39,7 @@ all: chk_makej
                 | ${GREP} -v "has no symbols"; \
 	 fi
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/error.log > /dev/null
-	@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then \
+	+@if test -s ${PETSC_ARCH}/lib/petsc/conf/error.log; then \
            printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/lib/petsc/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/lib/petsc/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log;\
@@ -57,15 +63,16 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake matlabbin mpi4py-build petsc4py-build libmesh-build slepc-build
+all-gnumake-local: info gnumake matlabbin mpi4py-build petsc4py-build libmesh-build slepc-build
 
-all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py-build petsc4py-build
+all-cmake-local: info cmakegen cmake matlabbin mpi4py-build petsc4py-build
 
-all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py-build
+all-legacy-local: chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py-build
+
 #
 # Prints information about the system and version of PETSc being compiled
 #
-info: chk_makej
+info:
 	-@echo "=========================================="
 	-@echo " "
 	-@echo "See documentation/faq.html and documentation/bugreporting.html"
@@ -117,6 +124,8 @@ info: chk_makej
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
+	-@echo "------------------------------------------"
+	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) $(MAKEFLAGS)"
 	-@echo "=========================================="
 
 #
@@ -124,7 +133,7 @@ info: chk_makej
 # This target also builds fortran77 and f90 interface
 # files and compiles .F files
 #
-build: chk_makej
+build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
@@ -240,9 +249,9 @@ ranlib:
 	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 
 # Deletes PETSc libraries
-deletelibs: chk_makej
+deletelibs:
 	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
-deletemods: chk_makej
+deletemods:
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build
@@ -479,10 +488,10 @@ createfastbuild:
 #  See script for details
 #
 gcov:
-	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -run_gcov
 
 mergegcov:
-	-@${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
+	-@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 ########################
 #

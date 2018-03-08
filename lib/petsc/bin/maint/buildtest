@@ -109,11 +109,6 @@ endif
 #
 #check gcov
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
-if ( "${GCOV}" != "" ) then
-  set BUILDTARGET="all-legacy"
-else
-  set BUILDTARGET="all"
-endif
 #
 # check for prefix install
 set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`
@@ -124,7 +119,7 @@ else
 endif
 #
 # do build/install
-${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
+${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR all ${INSTALLTARGET} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
