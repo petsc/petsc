@@ -76,7 +76,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PetscBool          is_nash,is_stcg,is_gltr;
   KSPConvergedReason ksp_reason;
   PC                 pc;
-  TaoConvergedReason reason;
   PetscReal          fmin, ftrial, prered, actred, kappa, sigma, beta;
   PetscReal          tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal          f, gnorm;
@@ -122,8 +121,11 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Inf or NaN");
   needH = 1;
 
-  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
-  if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,1.0);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Create vectors for the limited memory preconditioner */
   if ((NTR_PC_BFGS == tr->pc_type) && (BFGS_SCALE_BFGS != tr->bfgs_scale_type)) {
@@ -276,8 +278,10 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         needH = 1;
 
-        ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
-        if (reason != TAO_CONTINUE_ITERATING) {
+        ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+        ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,1.0);CHKERRQ(ierr);
+        ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+        if (tao->reason != TAO_CONTINUE_ITERATING) {
           PetscFunctionReturn(0);
         }
       }
@@ -309,7 +313,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   }
 
   /* Have not converged; continue with Newton method */
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     tao->ksp_its=0;
     /* Compute the Hessian */
@@ -332,7 +336,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       ++bfgsUpdates;
     }
 
-    while (reason == TAO_CONTINUE_ITERATING) {
+    while (tao->reason == TAO_CONTINUE_ITERATING) {
       ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
 
       /* Solve the trust region subproblem */
@@ -539,20 +543,24 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
       /* The step computed was not good and the radius was decreased.
          Monitor the radius to terminate. */
-      ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
+      ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,tao->trust);CHKERRQ(ierr);
+      ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     }
 
     /* The radius may have been increased; modify if it is too large */
     tao->trust = PetscMin(tao->trust, tr->max_radius);
 
-    if (reason == TAO_CONTINUE_ITERATING) {
+    if (tao->reason == TAO_CONTINUE_ITERATING) {
       ierr = VecCopy(tr->W, tao->solution);CHKERRQ(ierr);
       f = ftrial;
       ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       needH = 1;
-      ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
+      ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,tao->trust);CHKERRQ(ierr);
+      ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

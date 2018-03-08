@@ -2438,7 +2438,7 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
    Level: developer
 
 @*/
-PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoConvergedReason *reason)
+PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2452,15 +2452,10 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   if (!its) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }
-  TaoLogConvergenceHistory(tao,f,res,cnorm,tao->ksp_its);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(res)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-  if (tao->ops->convergencetest) {
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  }
   for (i=0;i<tao->numbermonitors;i++) {
     ierr = (*tao->monitor[i])(tao,tao->monitorcontext[i]);CHKERRQ(ierr);
   }
-  *reason = tao->reason;
   PetscFunctionReturn(0);
 }
 
