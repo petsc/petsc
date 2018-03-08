@@ -183,13 +183,29 @@ struct _p_TS {
   Vec       *vecs_drdu;
   Vec       *vecs_drdp;
 
+  /* first-order adjoint */
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
   PetscErrorCode (*drdufunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
+  /* second-order adjoint */
+  Vec *vecs_sensi2;
+  Vec *vecs_sensip2;
+  Vec vec_dir; /* directional vector for optimization */
+  Vec *vecs_fuu;
+  Vec *vecs_fup;
+  Vec *vecs_fpu;
+  Vec *vecs_fpp;
+  void *ihessianproductctx;
+  PetscErrorCode (*ihessianproduct_fuu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fup)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fpu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*ihessianproduct_fpp)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+
   /* specific to forward sensitivity analysis */
   Mat       mat_sensip;              /* matrix storing forward sensitivities */
+  Vec       vec_sensip_col;          /* space for a column of the sensip matrix */
   Vec       *vecs_integral_sensip;   /* one vector for each integral */
   PetscInt  num_parameters;
   PetscInt  num_initialvalues;

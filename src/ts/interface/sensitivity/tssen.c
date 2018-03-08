@@ -6,13 +6,15 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep;
 /* ------------------------ Sensitivity Context ---------------------------*/
 
 /*@C
-  TSSetRHSJacobianP - Sets the function that computes the Jacobian of G w.r.t. the parameters p where U_t = G(U,P,t), as well as the location to store the matrix.
+  TSSetRHSJacobianP - Sets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
 
   Logically Collective on TS
 
   Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
++ ts - TS context obtained from TSCreate()
+. Amat - JacobianP matrix
+. func - function
+- ctx - [optional] user-defined function context
 
   Calling sequence of func:
 $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
@@ -145,7 +147,7 @@ PetscErrorCode TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscE
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    TSGetCostIntegral - Returns the values of the integral term in the cost functions.
    It is valid to call the routine after a backward run.
 
@@ -172,7 +174,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
 
    Input Parameters:
@@ -215,7 +217,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec Q)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSComputeDRDUFunction - Runs the user-defined DRDU function.
 
   Collective on TS
@@ -226,7 +228,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec Q)
 - U - stata vector
 
   Output Parameters:
-. DRDU - vecotr array to hold the outputs
+. DRDU - vector array to hold the outputs
 
   Notes:
   TSComputeDRDUFunction() is typically used for sensitivity implementation,
@@ -251,7 +253,7 @@ PetscErrorCode TSComputeDRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSComputeDRDPFunction - Runs the user-defined DRDP function.
 
   Collective on TS
@@ -262,7 +264,7 @@ PetscErrorCode TSComputeDRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU)
 - U - stata vector
 
   Output Parameters:
-. DRDP - vecotr array to hold the outputs
+. DRDP - vector array to hold the outputs
 
   Notes:
   TSComputeDRDPFunction() is typically used for sensitivity implementation,
@@ -283,6 +285,189 @@ PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
 
   PetscStackPush("TS user DRDP function for sensitivity analysis");
   ierr = (*ts->drdpfunction)(ts,t,U,DRDP,ts->costintegrandctx); CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of F (IFunction) w.r.t. the state variable.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts - TS context obtained from TSCreate()
+. ihp1 - an array of vectors storing the result of vector-Hessian-vector product for F_UU
+. hessianproductfunc1 - vector-Hessian-vector product function for F_UU
+. ihp2 - an array of vectors storing the result of vector-Hessian-vector product for F_UP
+. hessianproductfunc2 - vector-Hessian-vector product function for F_UP
+. ihp3 - an array of vectors storing the result of vector-Hessian-vector product for F_PU
+. hessianproductfunc3 - vector-Hessian-vector product function for F_PU
+. ihp4 - an array of vectors storing the result of vector-Hessian-vector product for F_PP
+. hessianproductfunc4 - vector-Hessian-vector product function for F_PP
+
+  Calling sequence of ihessianproductfunc:
+$ ihessianproductfunc (TS ts,PetscReal t,Vec U,Vec Vl,Vec Vr,Vec VHV,void *ctx);
++   t - current timestep
+.   U - input vector (current ODE solution)
+.   Vl - input vector to be left-multiplied with the Hessian
+.   Vr - input vector to be right-multiplied with the Hessian
+.   VHV - output vector for vector-Hessian-vector product
+-   ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+Note: The first Hessian function and the working array are required.
+
+.keywords: TS, sensitivity
+
+.seealso:
+@*/
+PetscErrorCode TSSetIHessianProduct(TS ts,Vec *ihp1,PetscErrorCode (*ihessianproductfunc1)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *ihp2,PetscErrorCode (*ihessianproductfunc2)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *ihp3,PetscErrorCode (*ihessianproductfunc3)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *ihp4,PetscErrorCode (*ihessianproductfunc4)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                    void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(ihp1,2);
+
+  ts->ihessianproductctx = ctx;
+  if (ihp1) ts->vecs_fuu = ihp1;
+  if (ihp2) ts->vecs_fup = ihp2;
+  if (ihp3) ts->vecs_fpu = ihp3;
+  if (ihp4) ts->vecs_fpp = ihp4;
+  ts->ihessianproduct_fuu = ihessianproductfunc1;
+  ts->ihessianproduct_fup = ihessianproductfunc2;
+  ts->ihessianproduct_fpu = ihessianproductfunc3;
+  ts->ihessianproduct_fpp = ihessianproductfunc4;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeIHessianProductFunction1 - Runs the user-defined vector-Hessian-vector product function for Fuu.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeIHessianProductFunction1() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetIHessianProduct()
+@*/
+PetscErrorCode TSComputeIHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user IHessianProduct function 1 for sensitivity analysis");
+  ierr = (*ts->ihessianproduct_fuu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeIHessianProductFunction2 - Runs the user-defined vector-Hessian-vector product function for Fup.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeIHessianProductFunction2() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetIHessianProduct()
+@*/
+PetscErrorCode TSComputeIHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user IHessianProduct function 2 for sensitivity analysis");
+  ierr = (*ts->ihessianproduct_fup)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeIHessianProductFunction3 - Runs the user-defined vector-Hessian-vector product function for Fpu.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeIHessianProductFunction3() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetIHessianProduct()
+@*/
+PetscErrorCode TSComputeIHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
+  ierr = (*ts->ihessianproduct_fpu)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeIHessianProductFunction4 - Runs the user-defined vector-Hessian-vector product function for Fpp.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeIHessianProductFunction4() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetIHessianProduct()
+@*/
+PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user IHessianProduct function 3 for sensitivity analysis");
+  ierr = (*ts->ihessianproduct_fpp)(ts,t,U,Vl,Vr,VHV,ts->ihessianproductctx);CHKERRQ(ierr);
   PetscStackPop;
   PetscFunctionReturn(0);
 }
@@ -308,6 +493,8 @@ PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec U,Vec *DRDP)
    After TSAdjointSolve() is called the lamba and the mu contain the computed sensitivities
 
 .keywords: TS, timestep, set, sensitivity, initial values
+
+.seealso TSGetCostGradients()
 @*/
 PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
@@ -335,9 +522,9 @@ PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 
    Level: intermediate
 
-.seealso: TSGetTimeStep()
-
 .keywords: TS, timestep, get, sensitivity
+
+.seealso: TSSetCostGradients()
 @*/
 PetscErrorCode TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
 {
@@ -346,6 +533,104 @@ PetscErrorCode TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
   if (numcost) *numcost = ts->numcost;
   if (lambda)  *lambda  = ts->vecs_sensi;
   if (mu)      *mu      = ts->vecs_sensip;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetCostHessianProducts - Sets the initial value of the Hessian-vector products of the cost function w.r.t. initial values and w.r.t. the problem parameters
+      for use by the TSAdjoint routines.
+
+   Logically Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  numcost - number of cost functions
+.  lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+.  mu2 - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+-  dir - the direction vector that are multiplied with the Hessian of the cost functions
+
+   Level: beginner
+
+   Notes: Hessian of the cost function is completely different from Hessian of the ODE/DAE system
+
+   For second-order adjoint, one needs to call this function and then TSAdjointInitializeForward() before TSSolve().
+
+   After TSAdjointSolve() is called, the lamba2 and the mu2 will contain the computed second-order adjoint sensitivities, and can be used to produce Hessian-vector product (not the full Hessian matrix). Users must provide a direction vector; it is usually generated by an optimization solver.
+
+.keywords: TS, sensitivity, second-order adjoint
+
+.seealso: TSAdjointInitializeForward()
+@*/
+PetscErrorCode TSSetCostHessianProducts(TS ts,PetscInt numcost,Vec *lambda2,Vec *mu2,Vec dir)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(lambda2,2);
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
+  ts->numcost       = numcost;
+  ts->vecs_sensi2   = lambda2;
+  ts->vecs_sensip2  = mu2;
+  ts->vec_dir       = dir;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetCostHessianProducts - Returns the gradients from the TSAdjointSolve()
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
++  numcost - number of cost functions
+.  lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+.  mu2 - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+-  dir - the direction vector that are multiplied with the Hessian of the cost functions
+
+   Level: intermediate
+
+.keywords: TS, sensitivity, second-order adjoint
+
+.seealso: TSSetCostHessianProducts()
+@*/
+PetscErrorCode TSGetCostHessianProducts(TS ts,PetscInt *numcost,Vec **lambda2,Vec **mu2, Vec *dir)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (numcost) *numcost = ts->numcost;
+  if (lambda2) *lambda2 = ts->vecs_sensi2;
+  if (mu2)     *mu2     = ts->vecs_sensip2;
+  if (dir)     *dir     = ts->vec_dir;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSAdjointInitializeForward - Trigger the tangent linear solver and initialize the forward sensitivities
+
+  Logically Collective on TS and Mat
+
+  Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  didp - the derivative of initial values w.r.t. parameters
+
+  Level: intermediate
+
+  Notes: When computing sensitivies w.r.t. initial condition, set didp to NULL so that the solver will take it as an identity matrix mathematically.
+
+.keywords: TS, sensitivity, second-order adjoint
+
+.seealso: TSSetCostHessianProducts()
+@*/
+PetscErrorCode TSAdjointInitializeForward(TS ts,Mat didp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ts->forward_solve = PETSC_TRUE; /* turn on tangent linear mode */
+  if (!ts->vecs_sensi2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetCostHessianProducts() first");
+  if (ts->vecs_sensip2 && !didp) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The fourth argument is not NULL, indicating parametric sensitivities are desired, so the dIdP matrix must be provided"); /* check conflicted settings */
+  ierr = TSForwardSetInitialSensitivities(ts,didp);CHKERRQ(ierr); /* if didp is NULL, identity matrix is assumed */
   PetscFunctionReturn(0);
 }
 
@@ -1091,7 +1376,9 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(Smat,MAT_CLASSID,3);
   ts->forward_solve  = PETSC_TRUE;
-  ts->num_parameters = nump;
+  if (nump == PETSC_DEFAULT) {
+    ierr = MatGetSize(Smat,NULL,&ts->num_parameters);CHKERRQ(ierr);
+  } else ts->num_parameters = nump;
   ierr = PetscObjectReference((PetscObject)Smat);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
   ts->mat_sensip = Smat;
@@ -1144,5 +1431,53 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSForwardSetInitialSensitivities - Set initial values for tangent linear sensitivities
+
+  Collective on TS and Mat
+
+  Input Parameter
++ ts - the TS context obtained from TSCreate()
+- didp - parametric sensitivities of the initial condition
+
+  Level: intermediate
+
+  Notes: TSSolve() allows users to pass the initial solution directly to TS. But the tangent linear variables cannot be initialized in this way. This function is used to set initial values for tangent linear variables.
+
+.seealso: TSForwardSetSensitivities()
+@*/
+PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
+{
+  Vec            sp;
+  PetscInt       lsize;
+  PetscScalar    *xarr;
+  PetscErrorCode ierr;
+
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->vec_dir) { /* indicates second-order adjoint caculation */
+    if (!ts->mat_sensip ) { /* create a single-column dense matrix */
+      ierr = VecGetLocalSize(ts->vec_dir,&lsize);CHKERRQ(ierr);
+      ierr = MatCreateDense(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,PETSC_DECIDE,1,NULL,&ts->mat_sensip);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicate(ts->vec_dir,&sp);CHKERRQ(ierr);
+    ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
+    ierr = VecPlaceArray(sp,xarr);CHKERRQ(ierr);
+    if (didp) {
+      ierr = MatMult(didp,ts->vec_dir,sp);CHKERRQ(ierr);
+    } else { /* identity matrix assumed */
+      ierr = VecCopy(ts->vec_dir,sp);CHKERRQ(ierr);
+    }
+    ierr = VecResetArray(sp);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumn(ts->mat_sensip,&xarr);CHKERRQ(ierr);
+    ierr = VecDestroy(&sp);CHKERRQ(ierr);
+  } else {
+    PetscValidHeaderSpecific(didp,MAT_CLASSID,2);
+    if (!ts->mat_sensip) {
+      ierr = TSForwardSetSensitivities(ts,PETSC_DEFAULT,didp);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
