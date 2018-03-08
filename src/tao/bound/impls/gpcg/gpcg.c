@@ -227,10 +227,10 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
     }
 
     tao->niter++;
+    gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     ierr = TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-    gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
 
