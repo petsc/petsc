@@ -12,9 +12,9 @@ static char help[] = "Test FEM layout with DM and ExodusII storage\n\n";
 #include <petsc/private/dmpleximpl.h>
 
 int main(int argc, char **argv) {
-  DM                dm, dmU, dmA, dmS, dmUA;
-  Vec               X, U, A, S, UA;
-  IS                isU, isA, isS, isUA;
+  DM                dm, dmU, dmA, dmS, dmUA, dmUA2, *dmList;
+  Vec               X, U, A, S, UA, UA2;
+  IS                isU, isA, isS, isUA, *isList;
   PetscSection      section;
   const PetscInt    fieldU = 0;
   const PetscInt    fieldA = 2;
@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
   {
     /* TODO: Replace with ExodusII viewer */
     /* Create the exodus result file */
-    PetscInt numstep = 2, step;
+    PetscInt numstep = 3, step;
     char    *nodalVarName[4];
     char    *zonalVarName[6];
     int     *truthtable;
@@ -274,17 +274,31 @@ int main(int argc, char **argv) {
   ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2,&dmList,2,&isList);CHKERRQ(ierr);
+  dmList[0] = dmU;
+  dmList[1] = dmA;
+  isList[0] = isU;
+  isList[1] = isA;
+  /* We temporarily disable dmU->useNatural to test that we can reconstruct the 
+     NaturaltoGlobal SF from any of the dm in dms
+  */
+  dmU->useNatural = PETSC_FALSE;
+  ierr = DMCreateSuperDM(dmList,2,&isList,&dmUA2);
+  dmU->useNatural = PETSC_TRUE;
+  ierr = PetscFree2(dmList,isList);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm,   &X);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmU,  &U);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmA,  &A);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmS,  &S);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmUA, &UA);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmUA2, &UA2);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) U,  "U");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) A,  "Alpha");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) S,  "Sigma");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) UA, "UAlpha");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) UA2, "UAlpha2");CHKERRQ(ierr);
   ierr = VecSet(X, -111.);CHKERRQ(ierr);
   /* Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
   {
@@ -335,6 +349,9 @@ int main(int argc, char **argv) {
     /* Restrict to U and Alpha */
     ierr = VecISCopy(X, isU, SCATTER_REVERSE, U);CHKERRQ(ierr);
     ierr = VecISCopy(X, isA, SCATTER_REVERSE, A);CHKERRQ(ierr);
+    /* restrict to UA2 */
+    ierr = VecISCopy(X, isUA, SCATTER_REVERSE, UA2);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(UA2, NULL, "-ua2_vec_view");CHKERRQ(ierr);
   }
 
   {
@@ -360,6 +377,19 @@ int main(int argc, char **argv) {
     ierr = VecNorm(UA, NORM_INFINITY, &norm);CHKERRQ(ierr);
     if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g\n", (double) norm);
     ierr = DMRestoreGlobalVector(dmUA, &tmpVec);CHKERRQ(ierr);
+
+    /* same thing with the UA2 Vec obtained from the superDM */
+    ierr = DMGetGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
+    ierr = VecCopy(UA2, tmpVec);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) tmpVec, "U");CHKERRQ(ierr);
+    ierr = VecViewPlex_ExodusII_Nodal_Internal(tmpVec, exoid, 3);CHKERRQ(ierr);
+    /* Reading nodal variables in Exodus file */
+    ierr = VecSet(tmpVec, -1000.0);CHKERRQ(ierr);
+    ierr = VecLoadPlex_ExodusII_Nodal_Internal(tmpVec, exoid, 3);CHKERRQ(ierr);
+    ierr = VecAXPY(UA2, -1.0, tmpVec);CHKERRQ(ierr);
+    ierr = VecNorm(UA2, NORM_INFINITY, &norm);CHKERRQ(ierr);
+    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g\n", (double) norm);
+    ierr = DMRestoreGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
 
     /* Building and saving Sigma
        We set sigma_0 = rank (to see partitioning)
@@ -413,6 +443,7 @@ int main(int argc, char **argv) {
   }
 
   ierr = ex_close(exoid);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmUA2, &UA2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmUA, &UA);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmS,  &S);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmA,  &A);CHKERRQ(ierr);
@@ -422,6 +453,7 @@ int main(int argc, char **argv) {
   ierr = DMDestroy(&dmA);CHKERRQ(ierr); ierr = ISDestroy(&isA);CHKERRQ(ierr);
   ierr = DMDestroy(&dmS);CHKERRQ(ierr); ierr = ISDestroy(&isS);CHKERRQ(ierr);
   ierr = DMDestroy(&dmUA);CHKERRQ(ierr);ierr = ISDestroy(&isUA);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmUA2);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFree2(pStartDepth, pEndDepth);CHKERRQ(ierr);
   ierr = PetscFinalize();
