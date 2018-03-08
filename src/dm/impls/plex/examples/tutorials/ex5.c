@@ -135,6 +135,10 @@ int main(int argc, char **argv)
     args: -petscpartitioner_type chaco
     args: -new_dm_view ascii::ascii_info_detail
     args: -format {{hdf5_xdmf hdf5_viz}separate output}
+  test:
+    suffix: 3
+    requires: hdf5 exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare
 
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
