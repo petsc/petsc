@@ -976,7 +976,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
-      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','petscvariables')+'\n')
+      fd.write('include '+os.path.join('$(PETSC_DIR)','$(PETSC_ARCH)','lib','petsc','conf','petscvariables')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
     elif os.path.isfile(conffile):
