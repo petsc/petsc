@@ -29,44 +29,16 @@ packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","M
 
 # Helper function: Obtain execution time from log file:
 def execution_time(logfilename):
-  start_hh = 0;
-  start_mm = 0;
-  start_ss = 0;
-
-  end_hh = 0;
-  end_mm = 0;
-  end_ss = 0;
-
+  import dateutil.parser
   foundStart = False
   for line in open(logfilename):
     if not foundStart and re.search(r'^Starting (Configure|make|test|examples) (Run|run)', line):
       foundStart = True
-      match = re.search(r'.*?([0-9]*[0-9]):([0-9][0-9]):([0-9][0-9]).*', line)
-      start_hh = match.group(1)
-      start_mm = match.group(2)
-      start_ss = match.group(3)
-
+      starttime = dateutil.parser.parse(line.split(' at ')[1])
     if re.search(r'^Finishing (Configure|make|test|examples) (Run|run)', line):
-      match = re.search(r'.*?([0-9]*[0-9]):([0-9][0-9]):([0-9][0-9]).*', line)
-      end_hh = match.group(1)
-      end_mm = match.group(2)
-      end_ss = match.group(3)
-
-  starttime = int(start_hh) * 3600 + int(start_mm) * 60 + int(start_ss)
-  endtime   = int(  end_hh) * 3600 + int(  end_mm) * 60 + int(  end_ss)
-
-  if starttime > endtime:
-    if int(start_hh) < 13:  #12 hour format
-      endtime += 12*3600
-    else:
-      endtime += 24*3600
-
-  #print "Start time: " + str(start_hh) + ":" + str(start_mm) + ":" + str(start_ss)
-  #print "End time: " + str(end_hh) + ":" + str(end_mm) + ":" + str(end_ss)
-  #print "starttime: " + str(starttime)
-  #print "endtime: " + str(endtime)
-
-  return endtime - starttime
+      endtime = dateutil.parser.parse(line.split(' at ')[1])
+  exectime = endtime - starttime
+  return exectime.seconds
 
 # Helper function: Convert number of seconds to format hh:mm:ss
 def format_time(time_in_seconds):
