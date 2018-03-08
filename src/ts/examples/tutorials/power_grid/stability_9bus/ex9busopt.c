@@ -905,7 +905,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *user)
+static PetscErrorCode DRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU,Userctx *user)
 {
   PetscErrorCode ierr;
   Vec            Xgen,Xnet,Dgen,Dnet;
@@ -917,7 +917,7 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Dgen,&Dnet);CHKERRQ(ierr);
   ierr = DMCompositeScatter(user->dmpgrid,U,Xgen,Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,drdy[0],Dgen,Dnet);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(user->dmpgrid,DRDU[0],Dgen,Dnet);CHKERRQ(ierr);
 
   ierr = VecGetArray(Xgen,&xgen);CHKERRQ(ierr);
   ierr = VecGetArray(Dgen,&dgen);CHKERRQ(ierr);
@@ -931,7 +931,7 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   }
 
   ierr = VecRestoreArray(Dgen,&dgen);CHKERRQ(ierr);
-  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,drdy[0],Dgen,Dnet);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,DRDU[0],Dgen,Dnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Dgen,&Dnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1307,7 +1307,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDUFunction,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetSteps(ts,steps3);CHKERRQ(ierr);

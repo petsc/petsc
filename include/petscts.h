@@ -255,7 +255,7 @@ PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode TSComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSComputeDRDUFunction(TS,PetscReal,Vec,Vec*);
 
 /*S
      TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)

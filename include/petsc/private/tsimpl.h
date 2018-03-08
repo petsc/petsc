@@ -180,12 +180,12 @@ struct _p_TS {
   Mat       Jacp;
   void      *rhsjacobianpctx;
   void      *costintegrandctx;
-  Vec       *vecs_drdy;
+  Vec       *vecs_drdu;
   Vec       *vecs_drdp;
 
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
-  PetscErrorCode (*drdyfunction)(TS,PetscReal,Vec,Vec*,void*);
+  PetscErrorCode (*drdufunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */

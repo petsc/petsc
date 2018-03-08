@@ -2688,7 +2688,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdu);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
 
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);

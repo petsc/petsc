@@ -142,7 +142,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx)
+static PetscErrorCode DRDUFunction(TS ts,PetscReal t,Vec U,Vec *DRDU,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
   PetscScalar       *ry;
@@ -150,9 +150,9 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(drdy[0],&ry);CHKERRQ(ierr);
+  ierr = VecGetArray(DRDU[0],&ry);CHKERRQ(ierr);
   ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(drdy[0],&ry);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(DRDU[0],&ry);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -307,7 +307,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDUFunction,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_TRUE,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
