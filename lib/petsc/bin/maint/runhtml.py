@@ -37,8 +37,10 @@ def execution_time(logfilename):
   end_mm = 0;
   end_ss = 0;
 
+  foundStart = False
   for line in open(logfilename):
-    if re.search(r'^Build on', line) or re.search(r'^Starting on', line) or re.search(r'^Starting Configure', line):
+    if not foundStart and (re.search(r'^Build on', line) or re.search(r'^Starting on', line) or re.search(r'^Starting Configure', line)):
+      foundStart = True
       match = re.search(r'.*?([0-9]*[0-9]):([0-9][0-9]):([0-9][0-9]).*', line)
       start_hh = match.group(1)
       start_mm = match.group(2)
