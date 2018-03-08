@@ -257,7 +257,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   PetscErrorCode     ierr;
   PetscInt           its;
   PetscReal          d1,d2,ksptol,sigmamu;
-  PetscReal          dstep,pstep,step=0;
+  PetscReal          gnorm,dstep,pstep,step=0;
   PetscReal          gap[4];
   PetscBool          getdiagop;
 
@@ -308,8 +308,9 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   while (1) {
 
     /* Check Stopping Condition      */
-    ierr = TaoLogConvergenceHistory(tao,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas,step);CHKERRQ(ierr);
+    gnorm = PetscSqrtScalar(qp->gap + qp->dinfeas);
+    ierr = TaoLogConvergenceHistory(tao,qp->pobj,gnorm,qp->pinfeas,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,qp->pobj,gnorm,qp->pinfeas,step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
     tao->niter++;

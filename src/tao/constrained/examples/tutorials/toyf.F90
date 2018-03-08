@@ -25,7 +25,7 @@
       Tao                  tao
       KSP                  ksp
       PC                   pc
-      PetscReal            zero
+!      PetscReal            zero
 
       external FormFunctionGradient,FormHessian
       external FormInequalityConstraints,FormEqualityConstraints
@@ -61,8 +61,8 @@
       call KSPSetType(ksp,KSPPREONLY,ierr);CHKERRA(ierr)
       call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
 
-      zero = 0;
-      call TaoSetTolerances(tao,zero,zero,zero,ierr);CHKERRA(ierr)
+!      zero = 0;
+!      call TaoSetTolerances(tao,zero,zero,zero,ierr);CHKERRA(ierr)
 
       ! Solve
       call TaoSolve(tao,ierr);CHKERRA(ierr)
@@ -311,7 +311,7 @@
 !
 !   test:
 !      requires: superlu
-!      args: -tao_monitor -tao_converged_reason
+!      args: -tao_monitor -tao_view -tao_gatol 1e-8
 !      filter: Error: grep -v IEEE_DENORMAL
 !
 !TEST*/

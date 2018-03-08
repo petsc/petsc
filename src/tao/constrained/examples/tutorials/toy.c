@@ -75,7 +75,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetJacobianEqualityRoutine(tao,user.Ae,user.Ae,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ai,user.Ai,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
+  /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -90,7 +90,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
+  /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = DestroyProblem(&user);CHKERRQ(ierr);
@@ -268,6 +268,6 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
 
    test:
       requires: superlu
-      args: -tao_converged_reason
+      args: -tao_smonitor -tao_view -tao_gatol 1e-8
 
 TEST*/
