@@ -5,10 +5,11 @@
 #define shift(i,j)     ((i) - offset((j)))
 #define G(i,j)         (plcg->G[((j)*(2*l+1))+(shift((i),(j))) ])
 #define G_noshift(i,j) (plcg->G[((j)*(2*l+1))+(i)])
-#define gamma(a)       (plcg->gamma[(a)])
-#define delta(a)       (plcg->delta[(a)])
-#define sigma(a)       (plcg->sigma[(a)])
-#define req(a)         (plcg->req[(a)])
+#define alpha(i)       (plcg->alpha[(i)])
+#define gamma(i)       (plcg->gamma[(i)])
+#define delta(i)       (plcg->delta[(i)])
+#define sigma(i)       (plcg->sigma[(i)])
+#define req(i)         (plcg->req[(i)])
 
 typedef struct KSP_CG_PIPE_L_s KSP_CG_PIPE_L;
 struct KSP_CG_PIPE_L_s {
@@ -18,7 +19,7 @@ struct KSP_CG_PIPE_L_s {
   Vec         z_2;    /* additional vector needed when l == 1 */
   Vec         p,u,up,upp; /* some work vectors */
   PetscScalar *G;     /* such that Z = VG (band matrix)*/
-  PetscScalar *gamma,*delta;
+  PetscScalar *gamma,*delta,*alpha;
   PetscReal   lmin,lmax; /* min and max eigen values estimates to compute base shifts */
   PetscScalar *sigma; /* base shifts */
   MPI_Request *req;   /* request array for asynchronous global collective */
@@ -51,6 +52,7 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 
   ierr = VecDuplicateVecs(plcg->p,l+1,&plcg->Z);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(plcg->p,2*l+1,&plcg->V);CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*l,&plcg->alpha);CHKERRQ(ierr);
   ierr = PetscCalloc1(l,&plcg->sigma);CHKERRQ(ierr);
   if (l == 1) {
     ierr = VecDuplicate(plcg->p,&plcg->z_2);CHKERRQ(ierr);
@@ -66,6 +68,7 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscFree(plcg->sigma);CHKERRQ(ierr);
+  ierr = PetscFree(plcg->alpha);CHKERRQ(ierr);
   ierr = VecDestroyVecs(l+1,&plcg->Z);CHKERRQ(ierr);
   ierr = VecDestroyVecs(2*l+1,&plcg->V);CHKERRQ(ierr);
   ierr = VecDestroy(&plcg->z_2);CHKERRQ(ierr);
@@ -142,7 +145,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   PetscInt      it=0,max_it=ksp->max_it,ierr=0,l=plcg->l,i=0,j=0,k=0;
   PetscInt      start=0,middle=0,end=0;
   Vec           *Z = plcg->Z,*V=plcg->V;
-  Vec           x=NULL,p=NULL,u=NULL,up=NULL,upp=NULL,temp=NULL,z_2=NULL;
+  Vec           x=NULL,p=NULL,u=NULL,up=NULL,upp=NULL,temp=NULL,temp2[2],z_2=NULL;
   PetscScalar   sum_dummy=0.0,beta=0.0,eta=0.0,zeta=0.0,lam=0.0,invbeta2=0.0;
   PetscReal     dp=0.0;
   MPI_Comm      comm;
@@ -260,9 +263,10 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       /* Recurrence V vectors */
       if (it < 3*l) {
         ierr = VecAXPY(V[3*l-it-1],1.0/G(it-l+1,it-l+1),Z[l]);CHKERRQ(ierr);
-        for (j = PetscMax(it-3*l+1,0); j <= it-l; ++j) {
-          ierr = VecAXPY(V[3*l-it-1],-G(j,it-l+1)/G(it-l+1,it-l+1),V[2*l-j]);CHKERRQ(ierr);
+        for (j = 0; j <= it-l; ++j) {
+          alpha(it-l-j) = -G(j,it-l+1)/G(it-l+1,it-l+1);
         }
+        ierr = VecMAXPY(V[3*l-it-1],it-l+1,&alpha(0),&V[3*l-it]);CHKERRQ(ierr);
       } else {
         /* Shift the V vector pointers */
         temp = V[2*l];
@@ -273,23 +277,29 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
         ierr = VecSet(V[0],0.0);CHKERRQ(ierr);
         ierr = VecAXPY(V[0],1.0/G(it-l+1,it-l+1),Z[l]);CHKERRQ(ierr);
-        for (j = PetscMax(it-3*l+1,0); j <= it-l; ++j) {
-          ierr = VecAXPY(V[0],-G(j,it-l+1)/G(it-l+1,it-l+1),V[it-l+1-j]);CHKERRQ(ierr);
+        for (j = 0; j < 2*l; ++j) {
+          k = (it-3*l+1)+j;
+          alpha(2*l-1-j) = -G(k,it-l+1)/G(it-l+1,it-l+1);
         }
+        ierr = VecMAXPY(V[0],2*l,&alpha(0),&V[1]);CHKERRQ(ierr);
       }
-      /* Recurrence Z vectors */
-      if (it > l) {
-        if (l == 1) {
-          ierr = VecAXPY(Z[0],-delta(it-l-1),z_2);CHKERRQ(ierr);
-        } else {
-          ierr = VecAXPY(Z[0],-delta(it-l-1),Z[2]);CHKERRQ(ierr);
-        }
-        ierr = VecAXPY(u,-delta(it-l-1),upp);CHKERRQ(ierr); /* Recurrence u vectors */
+      /* Recurrence Z and U vectors */
+      if (it <= l) {
+        ierr = VecAXPY(Z[0],-gamma(it-l),Z[1]);CHKERRQ(ierr);
+        ierr = VecAXPY(u,-gamma(it-l),up);CHKERRQ(ierr);
+      } else {
+        alpha(0) = -delta(it-l-1);
+        alpha(1) = -gamma(it-l);
+
+        temp2[0] = (l==1) ? z_2 : Z[2];
+        temp2[1] = Z[1];
+        ierr = VecMAXPY(Z[0],2,&alpha(0),temp2);CHKERRQ(ierr);
+
+        temp2[0] = upp;
+        temp2[1] = up;
+        ierr = VecMAXPY(u,2,&alpha(0),temp2);CHKERRQ(ierr);
       }
-      ierr = VecAXPY(Z[0],-gamma(it-l),Z[1]);CHKERRQ(ierr);
       ierr = VecScale(Z[0],1.0/delta(it-l));CHKERRQ(ierr);
-      /* Recurrence u vectors */
-      ierr = VecAXPY(u,-gamma(it-l),up);CHKERRQ(ierr);
       ierr = VecScale(u,1.0/delta(it-l));CHKERRQ(ierr);
     }
 
