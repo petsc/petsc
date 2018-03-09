@@ -13,7 +13,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscReal                    step = 1.0;
   PetscReal                    delta;
   PetscErrorCode               ierr;
-  PetscInt                     stepType;
+  PetscInt                     stepType, nupdates;
+  PetscBool                    recycle;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
