@@ -62,7 +62,7 @@ PETSC_EXTERN void fortranmaxpy2_(void*,void*,void*,const void*,const void*,Petsc
   case 3: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
   case 2: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
   case 1: *U++    += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;\
-  n -= 4;case 0:break;}
+  n -= 4;case 0:break;}\
   while (n>0) {U[0]+=a1*p1[0]+a2*p2[0]+a3*p3[0]+a4*p4[0];U[1]+=a1*p1[1]+a2*p2[1]+a3*p3[1]+a4*p4[1];U[2]+=a1*p1[2]+a2*p2[2]+a3*p3[2]+a4*p4[2];U[3]+=a1*p1[3]+a2*p2[3]+a3*p3[3]+a4*p4[3];U+=4;p1+=4;p2+=4;p3+=4;p4+=4;n-=4;}}
 
 #elif defined(PETSC_USE_WHILE_KERNELS)
