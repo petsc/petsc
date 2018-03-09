@@ -93,11 +93,11 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP PIPELCG options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_pipel","Pipeline length","",plcg->l,&plcg->l,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_pipelcg_pipel","Pipeline length","",plcg->l,&plcg->l,&flag);CHKERRQ(ierr);
   if (!flag) plcg->l = 1;
-  ierr = PetscOptionsReal("-ksp_lmin","Estimate for smallest eigenvalue","",plcg->lmin,&plcg->lmin,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_pipelcg_lmin","Estimate for smallest eigenvalue","",plcg->lmin,&plcg->lmin,&flag);CHKERRQ(ierr);
   if (!flag) plcg->lmin = 0.0;
-  ierr = PetscOptionsReal("-ksp_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_pipelcg_lmax","Estimate for largest eigenvalue","",plcg->lmax,&plcg->lmax,&flag);CHKERRQ(ierr);
   if (!flag) plcg->lmax = 0.0;
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
