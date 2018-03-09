@@ -46,7 +46,8 @@ int main(int argc,char **argv)
   Mat                H;
   Tao                tao;                   /* Tao solver context */
   PetscBool          flg;
-  PetscMPIInt        size,rank,cycle;                  /* number of processes running */
+  PetscInt           cycle;
+  PetscMPIInt        size,rank;                  /* number of processes running */
   AppCtx             user;                  /* user-defined application context */
   TaoConvergedReason reason;
 
@@ -89,7 +90,7 @@ int main(int argc,char **argv)
   cycle = 1;
   reason = TAO_CONTINUE_ITERATING;
   while (reason != TAO_CONVERGED_GATOL) {
-    if (rank == 0) PetscPrintf(PETSC_COMM_WORLD,"Solve cycle: %D\n",cycle);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solve cycle: %D\n",cycle); CHKERRQ(ierr);
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
     ++cycle;
