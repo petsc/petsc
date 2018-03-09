@@ -646,7 +646,7 @@ Arg class, which wraps the usual value.'''
       self.writeLogLine('No dictionary to load in this file: '+self.saveFilename)
     return
 
-  def save(self, force = 0):
+  def save(self, force = 1):
     '''Save the dictionary after 5 seconds, ignoring all subsequent calls until the save
        - Giving force = True will cause an immediate save'''
     if self.readonly: return
