@@ -26,53 +26,37 @@ packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","M
 
 
 ######### Helper routines #########
+nowtimestr = time.strftime('%a %b %d %H:%M:%S %Z %Y')
 
 # Helper function: Obtain execution time from log file:
 def execution_time(logfilename):
-  start_hh = 0;
-  start_mm = 0;
-  start_ss = 0;
-
-  end_hh = 0;
-  end_mm = 0;
-  end_ss = 0;
-
+  import dateutil.parser
   foundStart = False
   for line in open(logfilename):
-    if not foundStart and (re.search(r'^Build on', line) or re.search(r'^Starting on', line) or re.search(r'^Starting Configure', line)):
+    if not foundStart and re.search(r'^Starting (configure|make|test|examples) run', line):
       foundStart = True
-      match = re.search(r'.*?([0-9]*[0-9]):([0-9][0-9]):([0-9][0-9]).*', line)
-      start_hh = match.group(1)
-      start_mm = match.group(2)
-      start_ss = match.group(3)
-
-    if re.search(r'Finished Build on', line) or re.search(r'^Finishing at', line) or re.search(r'^Finishing Configure', line):
-      match = re.search(r'.*?([0-9]*[0-9]):([0-9][0-9]):([0-9][0-9]).*', line)
-      end_hh = match.group(1)
-      end_mm = match.group(2)
-      end_ss = match.group(3)
-
-  starttime = int(start_hh) * 3600 + int(start_mm) * 60 + int(start_ss)
-  endtime   = int(  end_hh) * 3600 + int(  end_mm) * 60 + int(  end_ss)
-
-  if starttime > endtime:
-    if int(start_hh) < 13:  #12 hour format
-      endtime += 12*3600
-    else:
-      endtime += 24*3600
-
-  #print "Start time: " + str(start_hh) + ":" + str(start_mm) + ":" + str(start_ss)
-  #print "End time: " + str(end_hh) + ":" + str(end_mm) + ":" + str(end_ss)
-  #print "starttime: " + str(starttime)
-  #print "endtime: " + str(endtime)
-
-  return endtime - starttime
+      starttime = dateutil.parser.parse(line.split(' at ')[1])
+    if re.search(r'^Finishing (configure|make|test|examples) run', line):
+      endtime = dateutil.parser.parse(line.split(' at ')[1])
+  nowtime = dateutil.parser.parse(nowtimestr)
+  exectime = endtime - starttime
+  try:
+    agetime  = nowtime - starttime
+  except:
+    agetime  = nowtime.replace(tzinfo=None) - starttime
+  if agetime.total_seconds() > 12*60*60:
+    return -int(agetime.total_seconds())
+  else:
+    return int(exectime.total_seconds())
 
 # Helper function: Convert number of seconds to format hh:mm:ss
 def format_time(time_in_seconds):
   #print "time_in_seconds: " + str(time_in_seconds)
   time_string = "";
-  if time_in_seconds > 1800:
+  if time_in_seconds < 0:
+    time_string = "<td class=\"red\">";
+    time_in_seconds = -time_in_seconds
+  elif time_in_seconds > 1800:
     time_string = "<td class=\"yellow\">";
   else:
     time_string = "<td class=\"green\">";
