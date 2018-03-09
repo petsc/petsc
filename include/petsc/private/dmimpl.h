@@ -32,6 +32,7 @@ struct _DMOps {
   PetscErrorCode (*createrestriction)(DM,DM,Mat*);
   PetscErrorCode (*createmassmatrix)(DM,DM,Mat*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
+  PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
   PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);

@@ -297,6 +297,17 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
+{
+  DM_DA          *da = (DM_DA *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscErrorCode ierr;
@@ -430,6 +441,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->refinehierarchy             = DMRefineHierarchy_DA;
   da->ops->coarsenhierarchy            = DMCoarsenHierarchy_DA;
   da->ops->getinjection                = DMCreateInjection_DA;
+  da->ops->hascreateinjection          = DMHasCreateInjection_DA;
   da->ops->getaggregates               = DMCreateAggregates_DA;
   da->ops->destroy                     = DMDestroy_DA;
   da->ops->view                        = 0;

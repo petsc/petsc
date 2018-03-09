@@ -782,6 +782,22 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMHasCreateInjection_Shell(DM dm, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) {
+    *flg = PETSC_FALSE;
+  } else {
+    *flg = dm->ops->getinjection ? PETSC_TRUE : PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
 /*@C
    DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
 
@@ -958,6 +974,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   dm->ops->createsubdm        = DMCreateSubDM_Shell;
+  dm->ops->hascreateinjection = DMHasCreateInjection_Shell;
   PetscFunctionReturn(0);
 }
 

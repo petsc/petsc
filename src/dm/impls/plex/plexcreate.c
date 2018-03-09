@@ -2117,6 +2117,15 @@ static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPI
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMHasCreateInjection_Plex(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMInitialize_Plex(DM dm)
 {
   PetscErrorCode ierr;
@@ -2140,6 +2149,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createmassmatrix                = DMCreateMassMatrix_Plex;
   dm->ops->getaggregates                   = NULL;
   dm->ops->getinjection                    = DMCreateInjection_Plex;
+  dm->ops->hascreateinjection              = DMHasCreateInjection_Plex;
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;

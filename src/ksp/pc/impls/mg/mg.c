@@ -133,6 +133,7 @@ PetscErrorCode PCReset_MG(PC pc)
       ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->inject);CHKERRQ(ierr);
       ierr = VecDestroy(&mglevels[i+1]->rscale);CHKERRQ(ierr);
     }
 
@@ -623,7 +624,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     */
     for (i=n-2; i>-1; i--) {
       DMKSP     kdm;
-      PetscBool dmhasrestrict;
+      PetscBool dmhasrestrict, dmhasinject;
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (!needRestricts) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
@@ -642,6 +643,12 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (dmhasrestrict && !mglevels[i+1]->restrct){
         ierr = DMCreateRestriction(dms[i],dms[i+1],&p);CHKERRQ(ierr);
         ierr = PCMGSetRestriction(pc,i+1,p);CHKERRQ(ierr);
+        ierr = MatDestroy(&p);CHKERRQ(ierr);
+      }
+      ierr = DMHasCreateInjection(dms[i],&dmhasinject);CHKERRQ(ierr);
+      if (dmhasinject && !mglevels[i+1]->inject){
+        ierr = DMCreateInjection(dms[i],dms[i+1],&p);CHKERRQ(ierr);
+        ierr = PCMGSetInjection(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
     }
@@ -731,7 +738,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr   = KSPGetDM(mglevels[i]->smoothd,&dmcoarse);CHKERRQ(ierr);
       ierr   = PCMGGetRestriction(pc,i+1,&Restrict);CHKERRQ(ierr);
       ierr   = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
-      Inject = NULL;      /* Callback should create it if it needs Injection */
+      ierr   = PCMGGetInjection(pc,i+1,&Inject);CHKERRQ(ierr);
       ierr   = DMRestrict(dmfine,Restrict,rscale,Inject,dmcoarse);CHKERRQ(ierr);
     }
   }
