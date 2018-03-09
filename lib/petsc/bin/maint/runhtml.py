@@ -40,7 +40,10 @@ def execution_time(logfilename):
       endtime = dateutil.parser.parse(line.split(' at ')[1])
   nowtime = dateutil.parser.parse(nowtimestr)
   exectime = endtime - starttime
-  agetime  = nowtime - starttime
+  try:
+    agetime  = nowtime - starttime
+  except:
+    agetime  = nowtime.replace(tzinfo=None) - starttime
   if agetime.total_seconds() > 12*60*60:
     return -int(agetime.total_seconds())
   else:
