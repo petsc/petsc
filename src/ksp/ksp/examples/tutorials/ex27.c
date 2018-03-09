@@ -169,7 +169,14 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
 
 TEST*/
