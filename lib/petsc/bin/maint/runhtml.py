@@ -26,25 +26,34 @@ packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","M
 
 
 ######### Helper routines #########
+nowtimestr = time.strftime('%a %b %d %H:%M:%S %Z %Y')
 
 # Helper function: Obtain execution time from log file:
 def execution_time(logfilename):
   import dateutil.parser
   foundStart = False
   for line in open(logfilename):
-    if not foundStart and re.search(r'^Starting (Configure|make|test|examples) (Run|run)', line):
+    if not foundStart and re.search(r'^Starting (configure|make|test|examples) run', line):
       foundStart = True
       starttime = dateutil.parser.parse(line.split(' at ')[1])
-    if re.search(r'^Finishing (Configure|make|test|examples) (Run|run)', line):
+    if re.search(r'^Finishing (configure|make|test|examples) run', line):
       endtime = dateutil.parser.parse(line.split(' at ')[1])
+  nowtime = dateutil.parser.parse(nowtimestr)
   exectime = endtime - starttime
-  return exectime.seconds
+  agetime  = nowtime - starttime
+  if agetime.total_seconds() > 12*60*60:
+    return -int(agetime.total_seconds())
+  else:
+    return int(exectime.total_seconds())
 
 # Helper function: Convert number of seconds to format hh:mm:ss
 def format_time(time_in_seconds):
   #print "time_in_seconds: " + str(time_in_seconds)
   time_string = "";
-  if time_in_seconds > 1800:
+  if time_in_seconds < 0:
+    time_string = "<td class=\"red\">";
+    time_in_seconds = -time_in_seconds
+  elif time_in_seconds > 1800:
     time_string = "<td class=\"yellow\">";
   else:
     time_string = "<td class=\"green\">";
