@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.dir = ''
     return
 
   def __str__(self):
@@ -38,6 +39,8 @@ class Configure(config.base.Configure):
     self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
       self.dir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
+      self.petscDir = self.dir
+      self.petscArch = ''
       self.addMakeMacro('PREFIXDIR',self.dir)
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
@@ -47,6 +50,8 @@ class Configure(config.base.Configure):
         self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+      self.petscDir = self.petscdir.dir
+      self.petscArch = self.arch.arch
     self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
 
   def configureInstallDir(self):
