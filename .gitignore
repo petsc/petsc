@@ -135,10 +135,15 @@ src/snes/examples/tutorials/ex12_gpu.h
 src/snes/examples/tutorials/ex12_gpu_inline.h
 src/tao/unconstrained/examples/tutorials/eptorsion1
 src/tao/unconstrained/examples/tutorials/eptorsion2
+src/tao/unconstrained/examples/tutorials/eptorsion2f
+src/tao/unconstrained/examples/tutorials/minsurf1
 src/tao/unconstrained/examples/tutorials/minsurf2
 src/tao/unconstrained/examples/tutorials/rosenbrock1
-src/tao/unconstrained/examples/tutorials/eptorsion2f
+src/tao/unconstrained/examples/tutorials/rosenbrock2
 src/tao/unconstrained/examples/tutorials/rosenbrock1f
+src/tao/unconstrained/examples/tutorials/spectraladjointassimilation
+src/tao/unconstrained/examples/tutorials/burgers_spectral
+src/tao/unconstrained/examples/tutorials/heat-data-assimulation
 src/tao/bound/examples/tutorials/plate2
 src/tao/bound/examples/tutorials/jbearing2
 src/tao/bound/examples/tutorials/plate2f

@@ -32,6 +32,10 @@ heat-data-assimulation: heat-data-assimulation.o chkopts
 rosenbrock1: rosenbrock1.o chkopts
 	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
 	${RM} rosenbrock1.o
+	
+rosenbrock2: rosenbrock2.o chkopts
+	-${CLINKER} -o rosenbrock2 rosenbrock2.o ${PETSC_TAO_LIB}
+	${RM} rosenbrock2.o
 
 eptorsion2: eptorsion2.o chkopts
 	-${CLINKER} -o eptorsion2 eptorsion2.o ${PETSC_TAO_LIB}

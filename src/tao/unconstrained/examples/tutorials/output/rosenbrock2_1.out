@@ -1,0 +1,92 @@
+Solve cycle: 1
+  0 TAO,  Function value: 1.,  Residual: 2. 
+  1 TAO,  Function value: 0.773446,  Residual: 6.07754 
+  2 TAO,  Function value: 0.648599,  Residual: 3.22619 
+  3 TAO,  Function value: 0.560405,  Residual: 5.47111 
+  4 TAO,  Function value: 0.379185,  Residual: 3.01163 
+  5 TAO,  Function value: 0.280758,  Residual: 2.6864 
+  6 TAO,  Function value: 0.187322,  Residual: 3.78999 
+  7 TAO,  Function value: 0.129225,  Residual: 6.25728 
+  8 TAO,  Function value: 0.10936,  Residual: 0.457052 
+  9 TAO,  Function value: 0.0850793,  Residual: 0.9475 
+ 10 TAO,  Function value: 0.0601238,  Residual: 3.23463 
+ 11 TAO,  Function value: 0.0405988,  Residual: 3.6698 
+Tao Object: 1 MPI processes
+  type: lmvm
+    BFGS steps: 10
+    Scaled gradient steps: 1
+    Gradient steps: 0
+    Recycle: on
+    Total recycled iterations: 11
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=3.6698
+  Objective value=0.0405988
+  total number of iterations=11,                          (max: 10)
+  total number of function/gradient evaluations=16,      (max: 4000)
+  Solver terminated: -2   Maximum Iterations
+Solve cycle: 2
+  0 TAO,  Function value: 0.0405988,  Residual: 3.6698 
+  1 TAO,  Function value: 0.0184967,  Residual: 1.7436 
+  2 TAO,  Function value: 0.00898914,  Residual: 0.107259 
+  3 TAO,  Function value: 0.00553533,  Residual: 1.48455 
+  4 TAO,  Function value: 0.00353862,  Residual: 1.42651 
+  5 TAO,  Function value: 0.000594656,  Residual: 0.176892 
+  6 TAO,  Function value: 0.000129296,  Residual: 0.425951 
+  7 TAO,  Function value: 5.17587e-06,  Residual: 0.0681965 
+  8 TAO,  Function value: 3.43742e-08,  Residual: 0.00754746 
+  9 TAO,  Function value: 6.71678e-11,  Residual: 9.78418e-05 
+ 10 TAO,  Function value: 3.90223e-13,  Residual: 1.19886e-05 
+ 11 TAO,  Function value: 1.91123e-19,  Residual: 1.92566e-08 
+Tao Object: 1 MPI processes
+  type: lmvm
+    BFGS steps: 21
+    Scaled gradient steps: 1
+    Gradient steps: 0
+    Recycle: on
+    Total recycled iterations: 22
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.92566e-08
+  Objective value=1.91123e-19
+  total number of iterations=11,                          (max: 10)
+  total number of function/gradient evaluations=14,      (max: 4000)
+  Solver terminated: -2   Maximum Iterations
+Solve cycle: 3
+  0 TAO,  Function value: 1.91123e-19,  Residual: 1.92566e-08 
+  1 TAO,  Function value: 4.37184e-24,  Residual: 8.41251e-11 
+Tao Object: 1 MPI processes
+  type: lmvm
+    BFGS steps: 22
+    Scaled gradient steps: 1
+    Gradient steps: 0
+    Recycle: on
+    Total recycled iterations: 23
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.41251e-11
+  Objective value=4.37184e-24
+  total number of iterations=1,                          (max: 10)
+  total number of function/gradient evaluations=2,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol
