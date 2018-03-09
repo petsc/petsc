@@ -23,7 +23,7 @@
 #echo "(8) got the users manual CLEARED by ANL publications for release"
 
 # If version specified on the commandline, set the version
-echo "Starting date: `date`"
+echo "Starting date: `date -R`"
 
 if [ $# = 3 ]; then
   petscrepo=$1
@@ -186,4 +186,4 @@ cd $tmpdir
 #cleanup
 /bin/rm -rf $tmpdir
 
-echo "Ending date: `date`"
+echo "Ending date: `date -R`"

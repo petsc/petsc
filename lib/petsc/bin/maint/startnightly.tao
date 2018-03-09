@@ -15,7 +15,7 @@ foreach CONF ($*)
   set BITKEEPER=yes
   source $dir/confignightly/${CONF}
 
-  echo "start TAO build at `date`:$SSH $USR@$MACH $DASHN $TAO_LOC/lib/petsc/bin/maint/buildtest $CONF $LOC" 
+  echo "start TAO build at `date -R`:$SSH $USR@$MACH $DASHN $TAO_LOC/lib/petsc/bin/maint/buildtest $CONF $LOC" 
   if ("${BITKEEPER}" == "yes") then
     $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/lib/petsc/bin/maint/buildtest $CONF $LOC" &
   else

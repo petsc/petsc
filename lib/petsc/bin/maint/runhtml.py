@@ -26,7 +26,7 @@ packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","M
 
 
 ######### Helper routines #########
-nowtimestr = time.strftime('%a %b %d %H:%M:%S %Z %Y')
+nowtimestr = time.strftime('%a, %d %b %Y %H:%M:%S %z')
 
 # Helper function: Obtain execution time from log file:
 def execution_time(logfilename):
@@ -180,7 +180,7 @@ td.centered {
 <body><div class="main"> """)
 
 
-outfile.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc Test Summary</span><br />Last update: " + time.strftime("%c") + "</center>\n")
+outfile.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc Test Summary</span><br />Last update: " + time.strftime('%a, %d %b %Y %H:%M:%S %z') + "</center>\n")
 
 outfile.write("<center><table border=\"0\">\n");
 
