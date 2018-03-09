@@ -48,7 +48,7 @@ endif
 set MACH=`hostname`
 cd $nPETSC_DIR
 rm -f build.log
-echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date` " > build.log
+echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date -R` " > build.log
 
 # Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
@@ -122,7 +122,7 @@ endif
 ${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR all ${INSTALLTARGET} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finishing build run on $MACH $PETSC_ARCH at `date`" >>& build.log
+echo "Finishing build run on $MACH $PETSC_ARCH at `date -R`" >>& build.log
 if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
 #
 # change PETSC_DIR/PETSC_ARCH for prefix install
@@ -135,7 +135,7 @@ endif
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finishing test run on $MACH $nPETSC_ARCH at `date`" >>& build.log
+echo "Finishing test run on $MACH $nPETSC_ARCH at `date -R`" >>& build.log
 if ( $err ) exit
 #
 # check analyzer
@@ -153,7 +153,7 @@ else
 endif
 #
 rm -f examples.log
-echo "Starting examples run on $MACH $nPETSC_ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} at `date` " > examples.log
+echo "Starting examples run on $MACH $nPETSC_ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} at `date -R` " > examples.log
 echo '******************************************************' >>& examples.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
 $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
@@ -168,7 +168,7 @@ if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
 
-echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date`" >>& examples.log
+echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date -R`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
 
 

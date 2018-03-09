@@ -11,7 +11,7 @@ echo Master process running on `hostname`
 echo Directory is `pwd`
 echo PBS has allocated the following nodes:
 echo `cat $PBS_NODEFILE`
-echo Starting execution at `date`
+echo Starting execution at `date -R`
 NPROCS=`wc -l < $PBS_NODEFILE`
 echo This job has allocated $NPROCS CPUs
 # execute an MPI program

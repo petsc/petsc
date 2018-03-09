@@ -822,7 +822,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import time, sys
     self.log.write(('='*80)+'\n')
     self.log.write(('='*80)+'\n')
-    self.log.write('Starting configure run at '+time.strftime('%a %b %d %H:%M:%S %Z %Y')+'\n')
+    self.log.write('Starting configure run at '+time.strftime('%a, %d %b %Y %H:%M:%S %z')+'\n')
     self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
     self.log.write('Machine platform:\n' + str(platform.uname())+'\n')

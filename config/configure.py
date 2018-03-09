@@ -320,7 +320,7 @@ def move_configure_log(framework):
 def print_final_timestamp(framework):
   import time
   framework.log.write(('='*80)+'\n')
-  framework.log.write('Finishing configure run at '+time.strftime('%a %b %d %H:%M:%S %Z %Y')+'\n')
+  framework.log.write('Finishing configure run at '+time.strftime('%a, %d %b %Y %H:%M:%S %z')+'\n')
   framework.log.write(('='*80)+'\n')
   return
 
