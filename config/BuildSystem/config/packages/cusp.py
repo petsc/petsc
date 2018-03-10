@@ -12,8 +12,8 @@ class Configure(config.package.Package):
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.complex         = 0   # Currently CUSP with complex numbers is not supported
-    self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 
-    self.CUSPVersionStr  = str(int(self.CUSPVersion)/1000) + '.' + str(int(self.CUSPVersion)%100)
+    self.CUSPVersion     = ''
+    self.CUSPMinVersion  = '400' # Minimal cusp version is 0.4
     return
 
   def setupDependencies(self, framework):
@@ -49,20 +49,26 @@ class Configure(config.package.Package):
     yield os.path.join('/usr','local','cuda','cusp')
     return
 
+  def verToStr(self,ver):
+    return str(int(ver)/100000) + '.' + str(int(ver)/100%1000) + '.' + str(int(ver)% 100)
+
   def checkCUSPVersion(self):
-    if 'known-cusp-version' in self.argDB:
-      if self.argDB['known-cusp-version'] < self.CUSPVersion:
-        raise RuntimeError('CUSP version error '+self.argDB['known-cusp-version']+' < '+self.CUSPVersion+': PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher')
-    elif not self.argDB['with-batch']:
-      self.pushLanguage('CUDA')
-      oldFlags = self.compilers.CUDAPPFLAGS
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
-      if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
-        raise RuntimeError('CUSP version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher.')
-      self.compilers.CUDAPPFLAGS = oldFlags
-      self.popLanguage()
-    else:
-      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cusp-version')
+    import re
+    HASHLINESPACE = ' *(?:\n#.*\n *)*'
+    self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    cusp_test = '#include <cusp/version.h>\nint cusp_ver = CUSP_VERSION;\n'
+    if self.checkCompile(cusp_test):
+      buf = self.outputPreprocess(cusp_test)
+      try:
+        self.CUSPVersion = re.compile('\nint cusp_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
+      except:
+        self.logPrint('Unable to parse CUSP version from header. Probably a buggy preprocessor')
+    self.compilers.CUDAPPFLAGS = oldFlags
+    self.popLanguage()
+    if self.CUSPVersion and self.CUSPVersion < self.CUSPMinVersion:
+      raise RuntimeError('CUSP version error: PETSC currently requires CUSP version '+self.verToStr(self.CUSPMinVersion)+' or higher. Found version '+self.verToStr(self.CUSPVersion))
     return
 
   def configureLibrary(self):
