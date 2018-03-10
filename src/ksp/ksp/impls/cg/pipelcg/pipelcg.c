@@ -340,7 +340,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         ierr = VecScale(p,1.0/eta);CHKERRQ(ierr);
         ierr = VecAXPY(x,zeta,p);CHKERRQ(ierr);
 
-        dp         = (PetscReal)beta;
+        dp         = PetscAbsScalar(beta);
         ksp->rnorm = dp;
         ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
         ierr       = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         ierr = VecAXPY(p,1.0/eta,(it < 3*l) ? V[3*l-it] : V[1]);CHKERRQ(ierr);
         ierr = VecAXPY(x,zeta,p);CHKERRQ(ierr);
 
-        dp         = PetscAbsReal(zeta);
+        dp         = PetscAbsScalar(zeta);
         ksp->rnorm = dp;
         ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
         ierr       = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
