@@ -11,7 +11,7 @@ LOGFILE=visibleprivatefunctions.lst
 
 echo ========================================== > ${LOGFILE}
 echo "Starting visibleprivatefunctions:" >> ${LOGFILE}
-echo "`date -R`, for `git describe --match 'v*'`" >> ${LOGFILE}
+echo "`date +'%a, %d %b %Y %H:%M:%S %z'`, for `git describe --match 'v*'`" >> ${LOGFILE}
 echo ========================================== >> ${LOGFILE}
 echo "Symbols with missing namespacine" >> ${LOGFILE}
 echo " "  >> ${LOGFILE}
