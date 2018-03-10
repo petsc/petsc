@@ -12,8 +12,8 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
-    self.CUDAVersion      = '5000' # Minimal cuda version is 5.0
-    self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/10%10)
+    self.CUDAVersion      = ''
+    self.CUDAMinVersion   = '5000' # Minimal cuda version is 5.0
     self.hastests         = 0
     self.hastestsdatafiles= 0
     return
@@ -105,34 +105,26 @@ class Configure(config.package.Package):
     self.checkSizeofVoidP()
     return
 
+  def verToStr(self,ver):
+    return str(int(ver)/1000) + '.' + str(int(ver)/10%10)
+
   def checkCUDAVersion(self):
-    if 'known-cuda-version' in self.argDB:
-      if self.argDB['known-cuda-version'] < self.CUDAVersion:
-        raise RuntimeError('CUDA version error '+self.argDB['known-cuda-version']+' < '+self.CUDAVersion+': PETSC currently requires CUDA version '+self.CUDAVersionStr+' or higher when compiling with CUDA')
-    elif not self.argDB['with-batch']:
-      self.pushLanguage('CUDA')
-      oldFlags = self.compilers.CUDAPPFLAGS
-      if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + self.CUDAVersion +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
-        raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.CUDAVersionStr+' or higher - when compiling with CUDA')
-      self.compilers.CUDAPPFLAGS = oldFlags
-      self.popLanguage()
-    else:
-      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
-    if self.defaultScalarType.lower() == 'complex':
-      CUDAVersionComplex    = '7050' # Minimal cuda version for complex is 7.5
-      CUDAVersionComplexStr = str(int(CUDAVersionComplex)/1000) + '.' + str(int(CUDAVersionComplex)/10%10)
-      if 'known-cuda-version' in self.argDB:
-        if self.argDB['known-cuda-version'] < CUDAVersionComplex:
-          raise RuntimeError('CUDA version error '+self.argDB['known-cuda-version']+' < '+CUDAVersionComplex+': PETSC currently requires CUDA version '+CUDAVersionComplexStr+' or higher when compiling with CUDA')
-      elif not self.argDB['with-batch']:
-        self.pushLanguage('CUDA')
-        oldFlags = self.compilers.CUDAPPFLAGS
-        if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + CUDAVersionComplex +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
-          raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+CUDAVersionComplexStr+' or higher - when compiling with CUDA and complex scalars')
-        self.compilers.CUDAPPFLAGS = oldFlags
-        self.popLanguage()
-      else:
-        raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
+    import re
+    HASHLINESPACE = ' *(?:\n#.*\n *)*'
+    self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+    cuda_test = '#include <cuda.h>\nint cuda_ver = CUDA_VERSION;\n'
+    if self.checkCompile(cuda_test):
+      buf = self.outputPreprocess(cuda_test)
+      try:
+        self.CUDAVersion = re.compile('\nint cuda_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
+      except:
+        self.logPrint('Unable to parse CUDA version from header. Probably a buggy preprocessor')
+    self.compilers.CUDAPPFLAGS = oldFlags
+    self.popLanguage()
+    if self.CUDAVersion and self.CUDAVersion < self.CUDAMinVersion:
+      raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.verToStr(self.CUDAMinVersion)+' or higher. Found version '+self.verToStr(self.CUDAVersion))
     return
 
   def checkNVCCDoubleAlign(self):
@@ -168,6 +160,7 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
+    if self.defaultScalarType.lower() == 'complex': self.CUDAMinVersion = '7050'
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
     self.configureTypes()
