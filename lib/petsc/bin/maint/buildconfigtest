@@ -10,7 +10,7 @@ else
   cd $TMP
 
 # /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
-  echo Buildconfigtest on $MACH $ARCH `date -R`                                       > buildconfig.log
+  echo Buildconfigtest on $MACH $ARCH `date +'%a, %d %b %Y %H:%M:%S %z'`              > buildconfig.log
   echo bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX   >>& buildconfig.log
   echo '===========================================================================' >>& buildconfig.log
   bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX        >>& buildconfig.log

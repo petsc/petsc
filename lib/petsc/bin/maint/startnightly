@@ -27,7 +27,7 @@ foreach TEST ($*)
   source $dir/confignightly/default
   source $dir/confignightly/${TNAME}
 
-  echo "Starting $TEST : $PETSC_ARCH build at `date -R`"
+  echo "Starting $TEST : $PETSC_ARCH build at `date +'%a, %d %b %Y %H:%M:%S %z'`"
   if ("${GIT}" == "yes") then
     $SSH $USR@$MACH $DASHN test "\( -d  $PETSC_DIR \)"
     if ("$?" != "0") then
