@@ -5,7 +5,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download        = ['git://https://github.com/cusplibrary/cusplibrary.git']
-    self.gitcommit       = '6ef9eca83df5b8774321cda07148023ae7458deb'
+    self.gitcommit       = 'v0.5.1'
     self.includes        = ['cusp/version.h']
     self.includedir      = ['','include']
     self.libdir          = ''
@@ -76,4 +76,9 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.checkCUSPVersion()
     return
+
+  def configure(self):
+    if self.cuda.CUDAVersion >= '9000':
+      self.gitcommit = '116b090' # cusp/cuda9 branch
+    return config.package.Package.configure(self)
 
