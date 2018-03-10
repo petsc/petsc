@@ -230,7 +230,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
 
       /* Breakdown check */
-      if (G(it-l+1,it-l+1) - sum_dummy < 0) {
+      if (PetscRealPart(G(it-l+1,it-l+1) - sum_dummy) < 0.0) {
         ierr = PetscPrintf(comm,"sqrt breakdown in iteration %d: value is %e. Iteration was restarted.\n",ksp->its+1,G(it-l+1,it-l+1) - sum_dummy);CHKERRQ(ierr);
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;
@@ -340,7 +340,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         ierr = VecScale(p,1.0/eta);CHKERRQ(ierr);
         ierr = VecAXPY(x,zeta,p);CHKERRQ(ierr);
 
-        dp         = beta;
+        dp         = (PetscReal)beta;
         ksp->rnorm = dp;
         ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
         ierr       = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
