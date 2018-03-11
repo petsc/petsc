@@ -102,6 +102,9 @@
       <li>The scripts in $PETSC_DIR/bin are now in $PETSC_DIR/lib/petsc/bin</li>
       <li>PetscStrncat() renamed to PetscStrlcat() now takes the length of the original allocated space in the string instead of the part left after strings have been copied or concatenated in</li>
       <h4>Configure/Build:</h4>
+      <ul>
+        <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relavent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
+      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
