@@ -119,10 +119,10 @@ info:
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using system modules: ${LOADEDMODULES}"
-	-@TESTFILE=`mktemp -q -t petscmpi-XXXXXXXX.c` && \
-           echo '#include <mpi.h>' > $${TESTFILE} && \
-           BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTFILE} |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
-           echo Using mpi.h: $${BUF}; ${RM} $${TESTFILE}
+	-@TESTFILE=`mktemp -q -t petscmpi-XXXXXXXX` && \
+           echo '#include <mpi.h>' > $${TESTFILE} && mv $${TESTFILE} $${TESTFILE}.c && \
+           BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTFILE}.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           echo Using mpi.h: $${BUF}; ${RM} $${TESTFILE}.c
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
