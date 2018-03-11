@@ -61,7 +61,6 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     if not len(self.arch):
       raise RuntimeError('PETSC_ARCH cannot be empty string. Use a valid string or do not set one. Currently set with '+msg)
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.addDefine('ARCH', '"'+self.arch+'"')
     return
 
   def configure(self):
