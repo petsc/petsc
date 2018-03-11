@@ -169,6 +169,21 @@ PetscErrorCode  DMFieldGetType(DMField field, DMFieldType *type)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldGetNumComponents - Returns the number of components in the field
+
+  Not collective
+
+  Input Parameter:
+. field - The DMField object
+
+  Output Parameter:
+. nc - The number of field components
+
+  Level: intermediate
+
+.seealso: DMFieldEvaluate()
+@*/
 PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
 {
   PetscFunctionBegin;
@@ -178,6 +193,21 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldGetDM - Returns the DM for the manifold over which the field is defined.
+
+  Not collective
+
+  Input Parameter:
+. field - The DMField object
+
+  Output Parameter:
+. dm - The DM object
+
+  Level: intermediate
+
+.seealso: DMFieldEvaluate()
+@*/
 PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 {
   PetscFunctionBegin;
@@ -187,6 +217,36 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldEvaluate - Evaluate the field and its derivatives on a set of points
+
+  Collective on Vec
+
+  Input Parameter:
++ field - The DMField object
+. points - The points at which to evaluate the field.  Should have size d x n,
+           where d is the coordinate dimension of the manifold and n is the number
+           of points
+- datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
+             If the field is complex and datatype is PETSC_REAL, the real part of the
+             field is returned.
+
+
+  Output Parameter:
++ B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
+      If B is not NULL, the values of the field are written in this array, varying first by component,
+      then by point.
+. D - pointer to data of size d * c * n * sizeof(datatype).
+      If D is not NULL, the values of the field's spatial derivatives are written in this array,
+      varying first by the partial derivative component, then by field component, then by point.
+- H - pointer to data of size d * d * c * n * sizeof(datatype).
+      If H is not NULL, the values of the field's second spatial derivatives are written in this array,
+      varying first by the second partial derivative component, then by field component, then by point.
+
+  Level: intermediate
+
+.seealso: DMFieldGetDM(), DMFieldGetNumComponents(), DMFieldEvaluateFE(), DMFieldEvaluateFV()
+@*/
 PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
 {
   PetscErrorCode ierr;
@@ -203,6 +263,37 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldEvaluateFE - Evaluate the field and its derivatives on a set of points mapped from
+  quadrature points on a reference point.  The derivatives are taken with respect to the
+  reference coordinates.
+
+  Not collective
+
+  Input Parameter:
++ field - The DMField object
+. cellIS - Index set for cells on which to evaluate the field
+. points - The quadature containing the points in the reference cell at which to evaluate the field.
+- datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
+             If the field is complex and datatype is PETSC_REAL, the real part of the
+             field is returned.
+
+
+  Output Parameter:
++ B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
+      If B is not NULL, the values of the field are written in this array, varying first by component,
+      then by point.
+. D - pointer to data of size d * c * n * sizeof(datatype).
+      If D is not NULL, the values of the field's spatial derivatives are written in this array,
+      varying first by the partial derivative component, then by field component, then by point.
+- H - pointer to data of size d * d * c * n * sizeof(datatype).
+      If H is not NULL, the values of the field's second spatial derivatives are written in this array,
+      varying first by the second partial derivative component, then by field component, then by point.
+
+  Level: intermediate
+
+.seealso: DMFieldGetNumComponents(), DMFieldEvaluate(), DMFieldEvaluateFV()
+@*/
 PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H)
 {
   PetscErrorCode ierr;
@@ -220,6 +311,34 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldEvaluateFV - Evaluate the mean of a field and its finite volume derivatives on a set of points.
+
+  Not collective
+
+  Input Parameter:
++ field - The DMField object
+. cellIS - Index set for cells on which to evaluate the field
+- datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
+             If the field is complex and datatype is PETSC_REAL, the real part of the
+             field is returned.
+
+
+  Output Parameter:
++ B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
+      If B is not NULL, the values of the field are written in this array, varying first by component,
+      then by point.
+. D - pointer to data of size d * c * n * sizeof(datatype).
+      If D is not NULL, the values of the field's spatial derivatives are written in this array,
+      varying first by the partial derivative component, then by field component, then by point.
+- H - pointer to data of size d * d * c * n * sizeof(datatype).
+      If H is not NULL, the values of the field's second spatial derivatives are written in this array,
+      varying first by the second partial derivative component, then by field component, then by point.
+
+  Level: intermediate
+
+.seealso: DMFieldGetNumComponents(), DMFieldEvaluate(), DMFieldEvaluateFE()
+@*/
 PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H)
 {
   PetscErrorCode ierr;
@@ -236,6 +355,25 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldGetFEInvariance - Get information about the complexity of a field when pulled back onto the
+  reference element
+
+  Not collective
+
+  Input Arguments:
++ field - the DMField object
+- cellIS - the index set of points over which we want know the invariance
+
+  Output Arguments:
++ isConstant - Returns PETSC_TRUE if the pullback of the field is constant for each point in the index set
+. isAffine - Returns PETSC_TRUE if the pullback of the field is affine for each point in the index set
+- isQuadratic - Returns PETSC_TRUE if the pullback of the field is quadratic for each point in the index set
+
+  Level: intermediate
+
+.seealso: DMFieldEvaluateFE()
+@*/
 PetscErrorCode DMFieldGetFEInvariance(DMField field, IS cellIS, PetscBool *isConstant, PetscBool *isAffine, PetscBool *isQuadratic)
 {
   PetscErrorCode ierr;
@@ -257,6 +395,23 @@ PetscErrorCode DMFieldGetFEInvariance(DMField field, IS cellIS, PetscBool *isCon
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMFieldCreateDefaultQuadrature - Creates a quadrature sufficient to integrate the field on the selected
+  points via pullback onto the reference element
+
+  Not collective
+
+  Input Arguments:
++ field - the DMField object
+- pointIS - the index set of points over which we wish to integrate the field
+
+  Output Arguments:
+. quad - a PetscQuadrature object
+
+  Level: developer
+
+.seealso: DMFieldEvaluteFE(), DMFIeldGetFEInvariance()
+@*/
 PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
 {
   PetscErrorCode ierr;
@@ -273,6 +428,25 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMFieldCreateFEGeom - Compute and create the geometric factors of a coordinate field
+
+  Not collective
+
+  Input Arguments:
++ field - the DMField object
+. pointIS - the index set of points over which we wish to integrate the field
+. quad - the quadrature points at which to evaluate the geometric factors
+- faceData - whether additional data for facets (the normal vectors and adjacent cells) should
+  be calculated
+
+  Output Arguments:
+. geom - the geometric factors
+
+  Level: developer
+
+.seealso: DMFieldEvaluateFE(), DMFieldCreateDefaulteQuadrature(), DMFIeldGetFEInvariance()
+C@*/
 PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
 {
   PetscInt       dim, dE;
