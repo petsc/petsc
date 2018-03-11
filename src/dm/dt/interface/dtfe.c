@@ -244,7 +244,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscspace_order", "The approximation order", "PetscSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_order", "The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
@@ -336,9 +336,9 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   ierr = PetscHeaderCreate(s, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView);CHKERRQ(ierr);
 
-  s->order = 0;
-  s->Nc    = 1;
-  s->Nv    = 0;
+  s->degree = 0;
+  s->Nc     = 1;
+  s->Nv     = 0;
   ierr = DMShellCreate(comm, &s->dm);CHKERRQ(ierr);
   ierr = PetscSpaceSetType(s, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
 
@@ -357,7 +357,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   Level: intermediate
 
-.seealso: PetscSpaceGetOrder(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceGetDegree(), PetscSpaceCreate(), PetscSpace
 @*/
 PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
@@ -372,43 +372,45 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 }
 
 /*@
-  PetscSpaceGetOrder - Return the order of approximation for this space
+  PetscSpaceGetDegree - Return the polynomial degrees that characterize this space
 
   Input Parameter:
 . sp - The PetscSpace
 
   Output Parameter:
-. order - The approximation order
++ minDegree - The degree of the largest polynomial space contained in the space
+- maxDegree - The degree of the smallest polynomial space containing the space
+
 
   Level: intermediate
 
-.seealso: PetscSpaceSetOrder(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceSetDegree(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
 @*/
-PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
+PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(order, 2);
-  *order = sp->order;
+  *order = sp->degree;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscSpaceSetOrder - Set the order of approximation for this space
+  PetscSpaceSetDegree - Set the degree of approximation for this space.
 
   Input Parameters:
 + sp - The PetscSpace
-- order - The approximation order
+- degree - The degree of the largest polynomial space contained in the space
 
   Level: intermediate
 
-.seealso: PetscSpaceGetOrder(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceGetDegree(), PetscSpaceCreate(), PetscSpace
 @*/
-PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
+PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  sp->order = order;
+  sp->degree = order;
   PetscFunctionReturn(0);
 }
 
@@ -563,8 +565,8 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space of degree %D\n", sp->order);CHKERRQ(ierr);}
-  else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space of degree %D\n", sp->order);CHKERRQ(ierr);}
+  if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space of degree %D\n", sp->degree);CHKERRQ(ierr);}
+  else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space of degree %D\n", sp->degree);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -584,7 +586,7 @@ PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
 PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
-  PetscInt         ndegree = sp->order+1;
+  PetscInt         ndegree = sp->degree+1;
   PetscInt         deg;
   PetscErrorCode   ierr;
 
@@ -619,7 +621,7 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
 PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
-  PetscInt         deg  = sp->order;
+  PetscInt         deg  = sp->degree;
   PetscInt         n    = sp->Nv, i;
   PetscReal        D    = 1.0;
 
@@ -780,7 +782,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   DM               dm      = sp->dm;
   PetscInt         Nc      = sp->Nc;
-  PetscInt         ndegree = sp->order+1;
+  PetscInt         ndegree = sp->degree+1;
   PetscInt        *degrees = poly->degrees;
   PetscInt         dim     = sp->Nv;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
@@ -819,7 +821,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           B[(p*pdim + i)*Nc*Nc] = 1.0;
           for (d = 0; d < dim; ++d) {
@@ -830,7 +832,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     } else {
       i = 0;
-      for (o = 0; o <= sp->order; ++o) {
+      for (o = 0; o <= sp->degree; ++o) {
         ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
@@ -860,7 +862,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           for (der = 0; der < dim; ++der) {
             D[(p*pdim + i)*Nc*Nc*dim + der] = 1.0;
@@ -877,7 +879,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     } else {
       i = 0;
-      for (o = 0; o <= sp->order; ++o) {
+      for (o = 0; o <= sp->degree; ++o) {
         ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
@@ -915,7 +917,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->degree+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           for (der = 0; der < dim; ++der) {
             H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der] = 1.0;
@@ -943,7 +945,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     } else {
       i = 0;
-      for (o = 0; o <= sp->order; ++o) {
+      for (o = 0; o <= sp->degree; ++o) {
         ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
@@ -1007,7 +1009,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
 
   Level: beginner
 
-.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpaceSetNumVariables()
+.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
 @*/
 PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 {
@@ -1032,7 +1034,7 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 
   Level: beginner
 
-.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpaceSetNumVariables()
+.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetDegree(), PetscSpaceSetNumVariables()
 @*/
 PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
@@ -1075,7 +1077,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   PetscFunctionBegin;
   ierr = PetscSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
   ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDegree(sp, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(sp, &tensor);CHKERRQ(ierr);
   if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
   if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
@@ -1085,7 +1087,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
 
       ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
-      ierr = PetscSpaceSetOrder(sub, order);CHKERRQ(ierr);
+      ierr = PetscSpaceSetDegree(sub, order);CHKERRQ(ierr);
       ierr = PetscSpaceSetType(sub, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumVariables(sub, dim-height);CHKERRQ(ierr);
       ierr = PetscSpacePolynomialSetTensor(sub, tensor);CHKERRQ(ierr);
@@ -1203,9 +1205,9 @@ PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!pt->quad->points && sp->order >= 0) {
+  if (!pt->quad->points && sp->degree >= 0) {
     ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature(sp->Nv, sp->Nc, PetscMax(sp->order + 1, 1), -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(sp->Nv, sp->Nc, PetscMax(sp->degree + 1, 1), -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1864,8 +1866,8 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   ierr = PetscSpaceSetType(*subspace,PETSCSPACESUBSPACE);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumVariables(*subspace,subDim);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(*subspace,subNc);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(origSpace,&order);CHKERRQ(ierr);
-  ierr = PetscSpaceSetOrder(*subspace,order);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDegree(origSpace,&order,NULL);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(*subspace,order);CHKERRQ(ierr);
   subsp = (PetscSpace_Subspace *) (*subspace)->data;
   subsp->Nb = subNb;
   switch (copymode) {
@@ -6400,7 +6402,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
       ierr = PetscDSGetDiscretization(probAux, f, (PetscObject *) &feAux);CHKERRQ(ierr);
       ierr = PetscFEGetBasisSpace(feAux, &P);CHKERRQ(ierr);
-      ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+      ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
       if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
   }
@@ -7504,7 +7506,7 @@ PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, Pe
   ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);

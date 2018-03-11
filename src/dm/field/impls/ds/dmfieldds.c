@@ -674,24 +674,15 @@ static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, Petsc
   ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
   if (id == PETSCFE_CLASSID) {
     PetscFE    fe = (PetscFE) disc;
-    PetscInt   order, maxOrder;
+    PetscInt   minDegree, maxDegree;
     PetscBool  tensor = PETSC_FALSE;
     PetscSpace sp;
 
     ierr = PetscFEGetBasisSpace(fe, &sp);CHKERRQ(ierr);
-    ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
-    ierr = PetscSpacePolynomialGetTensor(sp,&tensor);CHKERRQ(ierr);
-    if (tensor) {
-      PetscInt dim;
-
-      ierr = DMGetDimension(field->dm,&dim);CHKERRQ(ierr);
-      maxOrder = order * dim;
-    } else {
-      maxOrder = order;
-    }
-    if (isConstant)  *isConstant  = (maxOrder < 1) ? PETSC_TRUE : PETSC_FALSE;
-    if (isAffine)    *isAffine    = (maxOrder < 2) ? PETSC_TRUE : PETSC_FALSE;
-    if (isQuadratic) *isQuadratic = (maxOrder < 3) ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscSpaceGetDegree(sp, &minDegree, &maxDegree);CHKERRQ(ierr);
+    if (isConstant)  *isConstant  = (maxDegree < 1) ? PETSC_TRUE : PETSC_FALSE;
+    if (isAffine)    *isAffine    = (maxDegree < 2) ? PETSC_TRUE : PETSC_FALSE;
+    if (isQuadratic) *isQuadratic = (maxDegree < 3) ? PETSC_TRUE : PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -1094,7 +1085,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     ierr = MPI_Allreduce(&localConeSize,&coneSize,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
     isSimplex = (coneSize == (dim + 1)) ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
-    ierr = PetscSpaceSetOrder(P, 1);CHKERRQ(ierr);
+    ierr = PetscSpaceSetDegree(P, 1);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumComponents(P, numComponents);CHKERRQ(ierr);
     ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
