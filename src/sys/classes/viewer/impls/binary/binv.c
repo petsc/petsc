@@ -45,6 +45,7 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
     ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
+    (*outviewer)->setupcalled = PETSC_TRUE;
   } else {
     *outviewer = NULL;
   }
