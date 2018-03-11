@@ -1054,6 +1054,215 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 
 
 % -----------------------------------------------------------------------------------
+\chapter{How the Solvers Handle User Provided Callbacks}
+\label{sec:dmksp}
+
+The solver objects in PETSc, KSP (optionally), SNES, and TS require
+user provided callback functions (and contexts for the functions) that define the problem to be
+solved. These functions are supplied by the user with calls such as
+SNESSetFunction(SNES,...) and TSSetRHSFunction(TS,...). One would naturally think
+that the functions provided would be attached to the appropriate
+solver object, that is the SNES callbacks would be attached to the
+SNES object and TS callbacks to the TS object. This is not the
+case. Or possibly one might think the callbacks would be attached to
+the DM object associated with the solver object. This is also not the
+case. Rather the callback functions are attached to an inner nonpublic DMXXX object
+(XXX is KSP, SNES, or TS) that is attached to the DM that is attached
+to the XXX solver object. This convoluted design is to support
+multilevel and multidomain solvers where different levels and
+different domains may (or may not) share the same callback function or call
+back context. One can control exactly what XXX/DM objects share a common DMXXX object.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+\draw (0,1) node[above] {$KSP_1$};
+\draw[->] (0,1) -- (0,0) node[below] {$DM_1$};
+\draw[->] (0,-.8) -- (0,-1.8) node[below] {$DMKSP$};
+
+\draw (2,1) node[above] {$KSP_2$};
+\draw[->] (2,1) -- (2,0) node[below] {$DM_2$};
+\draw[->] (2,-.8) -- (0,-1.8);
+
+\draw (4,1) node[above] {$KSP_3$};
+\draw[->] (4,1) -- (4,0) node[below] {$DM_3$};
+\draw[->] (4,-.8) -- (0,-1.8);
+\end{tikzpicture}
+\caption{Three levels of $KSP/DM$ share the same DMKSP}
+\label{fig_dmksp}
+\end{figure}
+
+In Figure \ref{fig_dmksp} we depict how three levels of KSP objects share a common DMKSP object. The code to access the inner DMKSP object is
+\begin{lstlisting}
+  DM    dm_2;
+  DMKSP dmksp;
+  KSPGetDM(ksp_2,&dm_2);
+  DMGetDMKSP(dm_2,&dmksp);
+\end{lstlisting}
+To obtain a new DMKSP object for which one can change the callback functions (or their contexts) without affecting the original DMKSP one calls
+\begin{lstlisting}
+  DM    dm_2;
+  DMKSP dmksp;
+  KSPGetDM(ksp_2,&dm_2);
+  DMGetDMKSPWrite(dm_2,&dmksp_2);
+\end{lstlisting}
+This results in the object organization as indicated in Figure \ref{fig_dmksp2}
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+\draw (0,1) node[above] {$KSP_1$};
+\draw[->] (0,1) -- (0,0) node[below] {$DM_1$};
+\draw[->] (0,-.8) -- (0,-1.8) node[below] {$DMKSP$};
+
+\draw (2,1) node[above] {$KSP_2$};
+\draw[->] (2,1) -- (2,0) node[below] {$DM_2$};
+\draw[->] (2,-.8) -- (2,-1.8) node[below] {$DMKSP_2$};
+
+\draw (4,1) node[above] {$KSP_3$};
+\draw[->] (4,1) -- (4,0) node[below] {$DM_3$};
+\draw[->] (4,-.8) -- (0,-1.8);
+\end{tikzpicture}
+\caption{Two levels of $KSP/DM$ share the same DMKSP, one has its own private copy}
+\label{fig_dmksp2}
+\end{figure}
+
+The DMKSP object is essentially the list of callback functions and their contexts.
+\begin{lstlisting}
+typedef struct _p_DMKSP *DMKSP;
+typedef struct _DMKSPOps *DMKSPOps;
+struct _DMKSPOps {
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
+  PetscErrorCode (*computerhs)(KSP,Vec,void*);
+  PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
+  PetscErrorCode (*destroy)(DMKSP*);
+  PetscErrorCode (*duplicate)(DMKSP,DMKSP);
+};
+
+struct _p_DMKSP {
+  PETSCHEADER(struct _DMKSPOps);
+  void *operatorsctx;
+  void *rhsctx;
+  void *initialguessctx;
+  void *data;
+  DM originaldm;
+
+  void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the DMKSP instead of the DM */
+};
+\end{lstlisting}
+
+We now explore in more detail exactly how the solver calls set by the user are passed down to the inner DMKSP object. For each user
+level solver routine for setting a callback there exists a similar routine at the DM level, thus XXXSetY(XXX,...) has a routine DMXXXSetY(DM,...).
+\begin{lstlisting}
+PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeOperators(dm,func,ctx);CHKERRQ(ierr);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The implementation of DMXXXSetY(DM,...) gets a ``writable'' version of the DMXXX object via DMGetDMXXXWrite(DM,DMXXX*) and sets the function callback
+and its context into the DMXXX object.
+\begin{lstlisting}
+PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMKSP          kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMKSPWrite(dm,&kdm);CHKERRQ(ierr);
+  if (func) kdm->ops->computeoperators = func;
+  if (ctx) kdm->operatorsctx = ctx;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The routine for DMGetDMXXXWrite(DM,DMXXX*) entails a duplication of the object unless the DM associated with the DMXXX object is the original DM that
+the DMXXX object was created with. This can be seen in the following code.
+\begin{lstlisting}
+PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
+{
+  PetscErrorCode ierr;
+  DMKSP          kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  if (!kdm->originaldm) kdm->originaldm = dm;
+  if (kdm->originaldm != dm) {  /* Copy on write */
+    DMKSP oldkdm = kdm;
+    ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm);CHKERRQ(ierr);
+    ierr      = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
+    ierr      = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject)kdm;
+  }
+  *kspdm = kdm;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The routine DMGetDMXXX(DM,DMXXX*) has the form
+\begin{lstlisting}
+PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *kspdm = (DMKSP) dm->dmksp;
+  if (!*kspdm) {
+    ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject) *kspdm;
+    ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+This routine uses DMCoarsenHookAdd and DMCoarsenHookAdd to attach to the DM object two functions that are automatically called when the object is coarsened or refined.
+The hooks DMCoarsenHook\_DMXXX() and DMCoarsenHook\_DMXXX() have the form.
+\begin{lstlisting}
+static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCopyDMKSP(dm,dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+where
+\begin{lstlisting}
+PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
+  ierr          = DMKSPDestroy((DMKSP*)&dmdest->dmksp);CHKERRQ(ierr);
+  dmdest->dmksp = dmsrc->dmksp;
+  ierr          = PetscObjectReference(dmdest->dmksp);CHKERRQ(ierr);
+  ierr          = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  ierr          = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+insures that the new DM shares the same DMXXX as the parent DM and also inherits the hooks if it is refined or coarsened.
+
+If you provide callbacks to a solver {\em after} the DM associated with a solver has been refined or coarsened those child DM's will not share a common DMXXX.
+
+The TS object manages its callback functions in a way similar to KSP
+and SNES though there are no multi-level TS implementations so in
+theory the DMTS object is currently unneeded.
+
 
 % -----------------------------------------------------------------------------------
 \chapter{The Various Matrix Classes}
