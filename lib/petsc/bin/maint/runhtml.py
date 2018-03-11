@@ -7,6 +7,7 @@ import sys
 import time
 import re
 import fnmatch
+import dateutil.parser
 
 ## Early checks:
 
@@ -26,20 +27,21 @@ packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","M
 
 
 ######### Helper routines #########
-nowtimestr = time.strftime('%a, %d %b %Y %H:%M:%S %z')
+nowtime = dateutil.parser.parse(time.strftime('%a, %d %b %Y %H:%M:%S %z'))
 
 # Helper function: Obtain execution time from log file:
 def execution_time(logfilename):
-  import dateutil.parser
   foundStart = False
-  for line in open(logfilename):
-    if not foundStart and re.search(r'^Starting (configure|make|test|examples) run', line):
-      foundStart = True
-      starttime = dateutil.parser.parse(line.split(' at ')[1])
-    if re.search(r'^Finishing (configure|make|test|examples) run', line):
-      endtime = dateutil.parser.parse(line.split(' at ')[1])
-  nowtime = dateutil.parser.parse(nowtimestr)
-  exectime = endtime - starttime
+  try:
+    for line in open(logfilename):
+      if not foundStart and re.search(r'^Starting (configure|make|test|examples) run', line):
+        foundStart = True
+        starttime = dateutil.parser.parse(line.split(' at ')[1])
+      if re.search(r'^Finishing (configure|make|test|examples) run', line):
+        endtime = dateutil.parser.parse(line.split(' at ')[1])
+    exectime = endtime - starttime
+  except:
+    return 0
   try:
     agetime  = nowtime - starttime
   except:
