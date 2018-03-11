@@ -371,7 +371,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldGetFEInvariance_DA(DMField field, IS pointIS, PetscBool *isConstant, PetscBool *isAffine, PetscBool *isQuadratic)
+static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree)
 {
   DM             dm;
   PetscInt       dim, h, imin;
@@ -388,9 +388,8 @@ static PetscErrorCode DMFieldGetFEInvariance_DA(DMField field, IS pointIS, Petsc
     if (imin < hEnd) break;
   }
   dim -= h;
-  if (isConstant)  *isConstant  = (dim < 1) ? PETSC_TRUE : PETSC_FALSE;
-  if (isAffine)    *isAffine    = (dim < 2) ? PETSC_TRUE : PETSC_FALSE;
-  if (isQuadratic) *isQuadratic = (dim < 3) ? PETSC_TRUE : PETSC_FALSE;
+  if (minDegree) *minDegree = 1;
+  if (maxDegree) *maxDegree = dim;
   PetscFunctionReturn(0);
 }
 
@@ -432,7 +431,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   field->ops->evaluate                = DMFieldEvaluate_DA;
   field->ops->evaluateFE              = DMFieldEvaluateFE_DA;
   field->ops->evaluateFV              = DMFieldEvaluateFV_DA;
-  field->ops->getFEInvariance         = DMFieldGetFEInvariance_DA;
+  field->ops->getDegree               = DMFieldGetDegree_DA;
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DA;
   field->ops->view                    = DMFieldView_DA;
   dm = field->dm;

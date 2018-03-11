@@ -28,7 +28,8 @@ struct _PetscSpaceOps {
 struct _p_PetscSpace {
   PETSCHEADER(struct _PetscSpaceOps);
   void                   *data;          /* Implementation object */
-  PetscInt                order;         /* The approximation order of the space */
+  PetscInt                degree;        /* The approximation order of the space */
+  PetscInt                maxDegree;     /* The containing approximation order of the space */
   PetscInt                Nc;            /* The number of components */
   PetscInt                Nv;            /* The number of variables in the space, e.g. x and y */
   DM                      dm;            /* Shell to use for temp allocation */

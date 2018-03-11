@@ -197,7 +197,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,v);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(v, "Space in %D variables of order %D with %D components\n", sp->Nv, sp->order, sp->Nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "Space in %D variables of order %D with %D components\n", sp->Nv, sp->degree, sp->Nc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
@@ -390,8 +390,9 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(order, 2);
-  *order = sp->degree;
+  if (minDegree) PetscValidPointer(minDegree, 2);
+  if (maxDegree) PetscValidPointer(minDegree, 3);
+  if (minDegree) *minDegree = sp->degree;
   PetscFunctionReturn(0);
 }
 
@@ -593,6 +594,11 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscFunctionBegin;
   ierr = PetscMalloc1(ndegree, &poly->degrees);CHKERRQ(ierr);
   for (deg = 0; deg < ndegree; ++deg) poly->degrees[deg] = deg;
+  if (poly->tensor) {
+    sp->maxDegree = sp->degree + PetscMax(sp->Nv - 1,0);
+  } else {
+    sp->maxDegree = sp->degree;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1293,6 +1299,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
   sp->data = pt;
 
   sp->Nv = 0;
+  sp->maxDegree = PETSC_MAX_INT;
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL);CHKERRQ(ierr);
 
