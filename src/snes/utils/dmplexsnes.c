@@ -2596,7 +2596,6 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
     }
     ierr = DMPlexVecSetClosure(dm, section, Z, c, z, ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = PetscFree6(u,u_t,elemMat,elemMatD,y,z);CHKERRQ(ierr);
   if (dmAux) {
     ierr = PetscFree(a);CHKERRQ(ierr);
