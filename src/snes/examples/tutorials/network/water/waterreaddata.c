@@ -211,7 +211,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read junction from file");
     vert[nv].type = VERTEX_TYPE_JUNCTION;
     junction = &vert[nv].junc;
-    ndata = sscanf(line,"%d %lf %lf %d",&id,&v1,&v2,&pattern);if (ndata != 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read junction data");
+    ndata = sscanf(line,"%d %lf %lf %d",&id,&v1,&v2,&pattern);if (ndata < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read junction data");
     vert[nv].id          = id;
     junction->dempattern = pattern;
     junction->elev   = (PetscScalar)v1;
@@ -228,7 +228,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read reservoir from file");
     vert[nv].type = VERTEX_TYPE_RESERVOIR;
     reservoir = &vert[nv].res;
-    ndata = sscanf(line,"%d %lf %d",&id,&v1,&pattern);if (ndata != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read reservoir data");
+    ndata = sscanf(line,"%d %lf %d",&id,&v1,&pattern);if (ndata < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read reservoir data");
     vert[nv].id            = id;
     reservoir->headpattern = pattern; 
     reservoir->head = (PetscScalar)v1;
@@ -243,7 +243,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Cannot read data tank from file");
     vert[nv].type = VERTEX_TYPE_TANK;
     tank = &vert[nv].tank;
-    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&id,&v1,&v2,&v3,&v4,&v5,&v6,&curve);if (ndata != 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read tank data");
+    ndata = sscanf(line,"%d %lf %lf %lf %lf %lf %lf %d",&id,&v1,&v2,&v3,&v4,&v5,&v6,&curve);if (ndata < 7) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read tank data");
     vert[nv].id       = id;
     tank->volumecurve = curve;
     tank->elev      = (PetscScalar)v1;
