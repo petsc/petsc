@@ -75,6 +75,14 @@ PETSC_EXTERN PetscErrorCode PCDiagonalScaleLeft(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCDiagonalScaleRight(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 
+PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
+PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
+
+PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
+PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
+
 /* ------------- options specific to particular preconditioners --------- */
 
 PETSC_EXTERN PetscErrorCode PCJacobiSetType(PC,PCJacobiType);
@@ -230,15 +238,7 @@ PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetComputeSubmatrix(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*);
 
-PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
-
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
-
-PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
-PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
-
-PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
-PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
 
 PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
