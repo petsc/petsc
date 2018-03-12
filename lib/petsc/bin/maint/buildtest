@@ -145,18 +145,11 @@ endif
 #
 # Run examples
 #
-grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables > /dev/null
-if ( $? ) then
-  set TESTMODE='testexamples'
-else
-  set TESTMODE='buildexamples'
-endif
-#
 rm -f examples.log
-echo "Starting examples run on $MACH $nPETSC_ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} at `date +'%a, %d %b %Y %H:%M:%S %z'` " > examples.log
+echo "Starting examples run on $MACH $nPETSC_ARCH $nPETSC_DIR ${VALGRIND} ${ANALYZER_PCC} at `date +'%a, %d %b %Y %H:%M:%S %z'` " > examples.log
 echo '******************************************************' >>& examples.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
-$ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
+$ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
 echo '******************************************************' >>& examples.log
 
 if ( "${ANALYZER}" != "" ) then
