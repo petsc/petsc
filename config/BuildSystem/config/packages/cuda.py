@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     self.complex          = 1
     self.cudaArch         = ''
     self.CUDAVersion      = ''
-    self.CUDAMinVersion   = '5000' # Minimal cuda version is 5.0
+    self.CUDAMinVersion   = '7050' # Minimal cuda version is 7.5
     self.hastests         = 0
     self.hastestsdatafiles= 0
     return
@@ -142,7 +142,6 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    if self.defaultScalarType.lower() == 'complex': self.CUDAMinVersion = '7050'
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
     self.configureTypes()
