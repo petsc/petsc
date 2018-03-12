@@ -1,5 +1,6 @@
 
 #include <petsc/private/pcimpl.h>
+#include <petsc/private/pcpatchimpl.h> /* For new events */
 #include <petsc/private/kspimpl.h>
 
 static const char *const PCSides_Shifted[]    = {"DEFAULT","LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
@@ -9,6 +10,7 @@ const char *const        PCGASMTypes[]        = {"NONE","RESTRICT","INTERPOLATE"
 const char *const        PCCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};
 const char *const        PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlobalType","PC_PARMS_",0};
 const char *const        PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",0};
+const char *const        PCPatchConstructTypes[] = {"star", "vanka", "user", "python", "PCPatchSetConstructType", "PC_PATCH_", 0};
 
 const char *const        PCFailedReasons[]    = {"FACTOR_NOERROR","FACTOR_STRUCT_ZEROPIVOT","FACTOR_NUMERIC_ZEROPIVOT","FACTOR_OUTMEMORY","FACTOR_OTHER","SUBPC_ERROR",0};
 
@@ -69,6 +71,13 @@ PetscErrorCode  PCInitializePackage(void)
   ierr = PetscLogEventRegister("PCApplySymmLeft",  PC_CLASSID,&PC_ApplySymmetricLeft);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCApplySymmRight", PC_CLASSID,&PC_ApplySymmetricRight);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCModifySubMatri", PC_CLASSID,&PC_ModifySubMatrices);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister("PCPATCHCreate",    PC_CLASSID, &PC_Patch_CreatePatches);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCPATCHComputeOp", PC_CLASSID, &PC_Patch_ComputeOp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCPATCHSolve",     PC_CLASSID, &PC_Patch_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCPATCHApply",     PC_CLASSID, &PC_Patch_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCPATCHScatter",   PC_CLASSID, &PC_Patch_Scatter);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCPATCHPrealloc",  PC_CLASSID, &PC_Patch_Prealloc);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("KSPSolve_FS_0",    KSP_CLASSID,&KSP_Solve_FS_0);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve_FS_1",    KSP_CLASSID,&KSP_Solve_FS_1);CHKERRQ(ierr);

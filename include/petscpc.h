@@ -344,4 +344,19 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
+PETSC_EXTERN PetscErrorCode PCPatchSetSaveOperators(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetSaveOperators(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetPartitionOfUnity(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetPartitionOfUnity(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetMultiplicative(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetMultiplicative(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetSubMatType(PC, MatType);
+PETSC_EXTERN PetscErrorCode PCPatchGetSubMatType(PC, MatType *);
+PETSC_EXTERN PetscErrorCode PCPatchSetCellNumbering(PC, PetscSection);
+PETSC_EXTERN PetscErrorCode PCPatchGetCellNumbering(PC, PetscSection *);
+PETSC_EXTERN PetscErrorCode PCPatchSetConstructType(PC, PCPatchConstructType,   PetscErrorCode (*)(PC, PetscInt *, IS **, IS *, void *), void *);
+PETSC_EXTERN PetscErrorCode PCPatchGetConstructType(PC, PCPatchConstructType *, PetscErrorCode (**)(PC, PetscInt *, IS **, IS *, void *), void **);
+PETSC_EXTERN PetscErrorCode PCPatchSetDiscretisationInfo(PC, PetscInt, DM *, PetscInt *, PetscInt *, const PetscInt **, const PetscInt *, PetscInt, const PetscInt *, PetscInt, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperator(PC, PetscErrorCode (*)(PC,Mat,PetscInt,const PetscInt *,PetscInt,const PetscInt *,void *), void *);
+
 #endif /* __PETSCPC_H */
