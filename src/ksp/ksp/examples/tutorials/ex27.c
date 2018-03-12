@@ -72,7 +72,6 @@ int main(int argc,char **args)
   ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
     PetscScalar one = 1.0;
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
