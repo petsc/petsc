@@ -1613,7 +1613,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PCCreate_PATCH(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
 {
   PC_PATCH      *patch;
   PetscErrorCode ierr;
