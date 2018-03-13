@@ -1574,7 +1574,9 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, 
     ierr = DMFieldGetFEInvariance(coordField,cellIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
     if (isAffine) {
       ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&affineQuad);CHKERRQ(ierr);
-      ierr = DMSNESGetFEGeom(coordField,cellIS,affineQuad,PETSC_FALSE,&affineGeom);CHKERRQ(ierr);
+      if (affineQuad) {
+        ierr = DMSNESGetFEGeom(coordField,cellIS,affineQuad,PETSC_FALSE,&affineGeom);CHKERRQ(ierr);
+      }
     } else {
       ierr = PetscCalloc2(Nf,&quads,Nf,&geoms);CHKERRQ(ierr);
       for (f = 0; f < Nf; ++f) {
@@ -1632,6 +1634,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, 
   numChunks     = 1;
   cellChunkSize = numCells/numChunks;
   faceChunkSize = (fEnd - fStart)/numChunks;
+  numChunks     = PetscMin(1,numCells);
   for (chunk = 0; chunk < numChunks; ++chunk) {
     PetscScalar     *elemVec, *fluxL, *fluxR;
     PetscReal       *vol;

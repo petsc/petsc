@@ -391,7 +391,6 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!refiner) PetscFunctionReturn(0);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
@@ -410,6 +409,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
     DM_Plex *plex = (DM_Plex *) rdm->data;
     ierr = DMLabelGetState(depthLabel, &plex->depthState);CHKERRQ(ierr);
   }
+  if (!refiner) PetscFunctionReturn(0);
   switch (refiner) {
   case REFINER_SIMPLEX_1D:
     /* All cells have 2 vertices */

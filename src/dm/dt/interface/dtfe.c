@@ -2763,7 +2763,7 @@ PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace sp, PetscQuad
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(sp,&spdim);CHKERRQ(ierr);
   if (!spdim) {
-    ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)sp),allPoints);CHKERRQ(ierr);
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(*allPoints,0,0,0,NULL,NULL);CHKERRQ(ierr);
   }
   ierr = PetscDualSpaceGetFunctional(sp,0,&q);CHKERRQ(ierr);
@@ -2787,7 +2787,7 @@ PetscErrorCode PetscDualSpaceCreateAllPointsDefault(PetscDualSpace sp, PetscQuad
     }
     offset += Np * dim;
   }
-  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)sp),allPoints);CHKERRQ(ierr);
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF,allPoints);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*allPoints,dim,0,numPoints,points,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

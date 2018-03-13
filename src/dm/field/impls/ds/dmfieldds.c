@@ -646,13 +646,19 @@ static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, Petsc
 {
   DMField_DS     *dsfield;
   PetscObject    disc;
-  PetscInt       h, imin;
+  PetscInt       h, imin, imax;
   PetscClassId   id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dsfield = (DMField_DS *) field->data;
-  ierr = ISGetMinMax(pointIS,&imin,NULL);CHKERRQ(ierr);
+  ierr = ISGetMinMax(pointIS,&imin,&imax);CHKERRQ(ierr);
+  if (imin >= imax) {
+    if (isConstant) {*isConstant = PETSC_TRUE;}
+    if (isAffine) {*isAffine = PETSC_TRUE;}
+    if (isQuadratic) {*isQuadratic = PETSC_TRUE;}
+    PetscFunctionReturn(0);
+  }
   for (h = 0; h < dsfield->height; h++) {
     PetscInt hEnd;
 
