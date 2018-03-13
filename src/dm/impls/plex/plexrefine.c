@@ -402,10 +402,10 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
   ierr = DMCreateLabel(rdm,"depth");CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(rdm,&depthLabel);CHKERRQ(ierr);
-  ierr = DMLabelSetStratumBounds(depthLabel, depth, cStartNew, cEndNew);CHKERRQ(ierr);
-  if (depth > 0) ierr = DMLabelSetStratumBounds(depthLabel, 0, vStartNew, vEndNew);CHKERRQ(ierr);
-  if (depth > 1) ierr = DMLabelSetStratumBounds(depthLabel, depth - 1, fStartNew, fEndNew);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumBounds(depthLabel, 0, vStartNew, vEndNew);CHKERRQ(ierr);
   if (depth > 2) ierr = DMLabelSetStratumBounds(depthLabel, 1, eStartNew, eEndNew);CHKERRQ(ierr);
+  if (depth > 1) ierr = DMLabelSetStratumBounds(depthLabel, depth - 1, fStartNew, fEndNew);CHKERRQ(ierr);
+  if (depth > 0) ierr = DMLabelSetStratumBounds(depthLabel, depth, cStartNew, cEndNew);CHKERRQ(ierr);
   {
     DM_Plex *plex = (DM_Plex *) rdm->data;
     ierr = DMLabelGetState(depthLabel, &plex->depthState);CHKERRQ(ierr);
