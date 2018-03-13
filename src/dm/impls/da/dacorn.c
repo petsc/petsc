@@ -17,7 +17,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
 {
   PetscReal      gmin[3], gmax[3];
-  PetscReal      corners[24];
+  PetscScalar    corners[24];
   PetscInt       dim;
   PetscInt       i, j;
   DM             cdm;

@@ -30,7 +30,7 @@ PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscScalar *val)
+PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscReal *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)

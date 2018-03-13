@@ -1650,7 +1650,7 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
 {
   PetscSpace_Subspace *subsp;
 

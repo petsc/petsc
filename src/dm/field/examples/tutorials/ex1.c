@@ -19,9 +19,9 @@ static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, 
   ierr = PetscViewerASCIIPrintf(viewer,"rB:\n");CHKERRQ(ierr);
   ierr = PetscRealView(N,rB,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"rD:\n");CHKERRQ(ierr);
-  ierr = PetscScalarView(N*dim,rD,viewer);CHKERRQ(ierr);
+  ierr = PetscRealView(N*dim,rD,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"rH:\n");CHKERRQ(ierr);
-  ierr = PetscScalarView(N*dim*dim,rH,viewer);CHKERRQ(ierr);
+  ierr = PetscRealView(N*dim*dim,rH,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +181,7 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
   for (i = 0; i < n; i++) {
     PetscReal r2 = 0.;
 
-    for (j = 0; j < dim; j++) {r2 += PetscSqr(x[i * dim + j]);}
+    for (j = 0; j < dim; j++) {r2 += PetscSqr(PetscRealPart(x[i * dim + j]));}
     for (j = 0; j < Nc; j++) {
       PetscReal m = PetscRealPart(mult[j]);
       if (B) {

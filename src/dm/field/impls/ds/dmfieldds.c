@@ -248,7 +248,7 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
       PetscQuadrature quad;
       PetscInt d, e, f, g;
 
-      for (p = 0; p < dim * nq; p++) coordsReal[p] = cellPoints[dim * offset + p];
+      for (p = 0; p < dim * nq; p++) coordsReal[p] = PetscRealPart(cellPoints[dim * offset + p]);
       ierr = DMPlexCoordinatesToReference(field->dm, c, nq, coordsReal, coordsRef);CHKERRQ(ierr);
       ierr = PetscFEGetTabulation(cellFE,nq,coordsRef,B ? &fB : NULL,D ? &fD : NULL,H ? &fH : NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &quad);CHKERRQ(ierr);
@@ -276,14 +276,16 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
           DMFieldDSdot(cD,fD,elem,nq,feDim,(nc * dim),(PetscScalar));
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc; g++) {
+              PetscScalar vs[3];
+
               for (d = 0; d < dimR; d++) {
-                v[d] = 0.;
+                vs[d] = 0.;
                 for (e = 0; e < dimR; e++) {
-                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
+                  vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cD[(nc * p + g) * dimR + e];
                 }
               }
               for (d = 0; d < dimR; d++) {
-                cD[(nc * p + g) * dimR + d] = v[d];
+                cD[(nc * p + g) * dimR + d] = vs[d];
               }
             }
           }
@@ -313,26 +315,30 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
           DMFieldDSdot(cH,fH,elem,nq,feDim,(nc * dim * dim),(PetscScalar));
           for (p = 0; p < nq; p++) {
             for (g = 0; g < nc * dimR; g++) {
+              PetscScalar vs[3];
+
               for (d = 0; d < dimR; d++) {
-                v[d] = 0.;
+                vs[d] = 0.;
                 for (e = 0; e < dimR; e++) {
-                  v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
+                  vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[(nc * dimR * p + g) * dimR + e];
                 }
               }
               for (d = 0; d < dimR; d++) {
-                cH[(nc * dimR * p + g) * dimR + d] = v[d];
+                cH[(nc * dimR * p + g) * dimR + d] = vs[d];
               }
             }
             for (g = 0; g < nc; g++) {
               for (f = 0; f < dimR; f++) {
+                PetscScalar vs[3];
+
                 for (d = 0; d < dimR; d++) {
-                  v[d] = 0.;
+                  vs[d] = 0.;
                   for (e = 0; e < dimR; e++) {
-                    v[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
+                    vs[d] += invJ[dimR * dimR * p + e * dimR + d] * cH[((nc * p + g) * dimR + e) * dimR + f];
                   }
                 }
                 for (d = 0; d < dimR; d++) {
-                  cH[((nc * p + g) * dimR + d) * dimR + f] = v[d];
+                  cH[((nc * p + g) * dimR + d) * dimR + f] = vs[d];
                 }
               }
             }
@@ -387,8 +393,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
       ierr = MPI_Type_contiguous(nc, origtype, &Btype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Btype);CHKERRQ(ierr);
-      ierr = PetscSFScatterBegin(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
-      ierr = PetscSFScatterEnd(cellSF,Btype,(datatype == PETSC_SCALAR) ? cellBs : cellBr, B);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Btype,(datatype == PETSC_SCALAR) ? (void *) cellBs : (void *) cellBr, B);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Btype,(datatype == PETSC_SCALAR) ? (void *) cellBs : (void *) cellBr, B);CHKERRQ(ierr);
       ierr = MPI_Type_free(&Btype);CHKERRQ(ierr);
     }
     if (D) {
@@ -396,8 +402,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
       ierr = MPI_Type_contiguous(nc * dim, origtype, &Dtype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Dtype);CHKERRQ(ierr);
-      ierr = PetscSFScatterBegin(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
-      ierr = PetscSFScatterEnd(cellSF,Dtype,(datatype == PETSC_SCALAR) ? cellDs : cellDr, D);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Dtype,(datatype == PETSC_SCALAR) ? (void *) cellDs : (void *) cellDr, D);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Dtype,(datatype == PETSC_SCALAR) ? (void *) cellDs : (void *) cellDr, D);CHKERRQ(ierr);
       ierr = MPI_Type_free(&Dtype);CHKERRQ(ierr);
     }
     if (H) {
@@ -405,8 +411,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
 
       ierr = MPI_Type_contiguous(nc * dim * dim, origtype, &Htype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&Htype);CHKERRQ(ierr);
-      ierr = PetscSFScatterBegin(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
-      ierr = PetscSFScatterEnd(cellSF,Htype,(datatype == PETSC_SCALAR) ? cellHs : cellHr, H);CHKERRQ(ierr);
+      ierr = PetscSFScatterBegin(cellSF,Htype,(datatype == PETSC_SCALAR) ? (void *) cellHs : (void *) cellHr, H);CHKERRQ(ierr);
+      ierr = PetscSFScatterEnd(cellSF,Htype,(datatype == PETSC_SCALAR) ? (void *) cellHs : (void *) cellHr, H);CHKERRQ(ierr);
       ierr = MPI_Type_free(&Htype);CHKERRQ(ierr);
     }
   }
@@ -573,7 +579,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
 
         for (j = 0; j < Nc * dimC * dimC; j++) {sH[i * Nc * dimC * dimC + j] = 0.;}
         for (k = 0; k < Nq; k++) {
-          const PetscScalar *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
+          const PetscReal *invJ = &geom->invJ[(i * Nq + k) * dimC * dimC];
 
           vol += geom->detJ[i * Nq + k] * weights[k];
           for (j = 0; j < Nc; j++) {
@@ -956,8 +962,8 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     }
     for (f = 0; f < coneSize; f++) {
       PetscInt face = coneK[f];
-      PetscScalar v0[3];
-      PetscScalar J[9];
+      PetscReal v0[3];
+      PetscReal J[9];
       PetscInt numCells, offset;
       PetscInt *cells;
       IS suppIS;

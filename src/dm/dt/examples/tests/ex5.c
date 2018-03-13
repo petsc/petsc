@@ -38,7 +38,8 @@ int main(int argc, char **argv)
       const PetscInt *cone;
       PetscInt        point, nSub, nFull;
       PetscReal       xi0[3] = {-1., -1., -1.};
-      PetscReal       *testSub, *testFull, *outSub, *outFull;
+      PetscScalar     *outSub, *outFull;
+      PetscReal       *testSub, *testFull;
       PetscReal       *Bsub, *Bfull;
       PetscReal       J[9], detJ;
       PetscInt        i, j;

@@ -29,5 +29,5 @@ struct _p_DMField {
   void *data;
 };
 
-PetscErrorCode DMFieldCreate(DM,PetscInt,DMFieldContinuity,DMField*);
+PETSC_INTERN PetscErrorCode DMFieldCreate(DM,PetscInt,DMFieldContinuity,DMField*);
 #endif

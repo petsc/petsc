@@ -320,7 +320,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   DMDALocalInfo  info;
   PetscInt       cStart, cEnd, numCells;
   PetscInt       nc;
-  PetscReal      *points;
+  PetscScalar    *points;
   DMField_DA     *dafield;
   PetscBool      isStride;
   const PetscInt *cells = NULL;
@@ -424,7 +424,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   DM             dm;
   Vec            coords = NULL;
   PetscInt       dim, i, j, k;
-  DMField_DA     *dafield = field->data;
+  DMField_DA     *dafield = (DMField_DA *) field->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -467,8 +467,8 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
     }
   }
   for (j = 0; j < dim; j++) {
-    PetscScalar avg = 0.5 * (dafield->coordRange[j][1] + dafield->coordRange[j][0]);
-    PetscScalar dif = 0.5 * (dafield->coordRange[j][1] - dafield->coordRange[j][0]);
+    PetscReal avg = 0.5 * (dafield->coordRange[j][1] + dafield->coordRange[j][0]);
+    PetscReal dif = 0.5 * (dafield->coordRange[j][1] - dafield->coordRange[j][0]);
 
     dafield->coordRange[j][0] = avg;
     dafield->coordRange[j][1] = dif;
