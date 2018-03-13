@@ -97,13 +97,13 @@ class Configure(config.base.Configure):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','options')):
+    for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+    for utility in sorted(os.listdir(os.path.join('config','BuildSystem','config','utilities'))):
       self.registerPythonFile(utility,'config.utilities')
 
-    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+    for package in sorted(os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages'))):
       obj = self.registerPythonFile(package,'config.packages')
       if obj:
         obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)

@@ -116,6 +116,8 @@ class Petsc(object):
         for lang in LANGS:
             pkgsrcs[lang] = []
         for root, dirs, files in os.walk(os.path.join(self.petsc_dir, 'src', pkg)):
+            dirs.sort()
+            files.sort()
             makefile = os.path.join(root,'makefile')
             if not os.path.exists(makefile):
                 dirs[:] = []

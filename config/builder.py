@@ -1248,6 +1248,8 @@ class DirectoryTreeWalker(logger.Logger):
     if not self.checkDir(rootDir):
       self.logPrint('Nothing to be done in '+rootDir)
     for root, dirs, files in os.walk(rootDir):
+      dirs.sort()
+      files.sort()
       yield root, files
       for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
         dirs.remove(badDir)
@@ -1884,12 +1886,14 @@ class PETScMaker(script.Script):
        futures = []
        for d in dirs:
          for root, files in walker.walk(d):
+           files.sort()
            futures += self.buildDirParallel(root, files, objDir)
        for future in futures:
          objects += future.finish()
      else:
        for d in dirs:
          for root, files in walker.walk(d):
+           files.sort()
            objects += self.buildDir(root, files, objDir)
 
    if len(objects):
@@ -1905,6 +1909,7 @@ class PETScMaker(script.Script):
    walker              = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
 
    for root, files in walker.walk(rootDir):
+     files.sort()
      depBuilder.buildDependencies(root, files)
    if not len(self.sourceDatabase):
      self.logPrint('No dependency information found -- disabling dependency tracking')
