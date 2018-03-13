@@ -238,7 +238,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
     }
     connectSize = nodes[cs][0] + nodes[cs][1] + nodes[cs][2] + nodes[cs][3];
     ierr = PetscMalloc1(PetscMax(27,connectSize), &connect);CHKERRQ(ierr);
-    PetscStackCallStandard(ex_put_block,(exoid, EX_ELEM_BLOCK, cs, elem_type, csSize, connectSize, 0, 0, 1));
+    PetscStackCallStandard(ex_put_block,(exoid, EX_ELEM_BLOCK, csIdx[cs], elem_type, csSize, connectSize, 0, 0, 1));
     /* Find number of vertices, edges, and faces in the closure */
     verticesInClosure = nodes[cs][0];
     if (depth > 1) {
@@ -304,7 +304,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
           temp = connect[25]; connect[25] = connect[26]; connect[26] = temp;
         }
       }
-      PetscStackCallStandard(ex_put_partial_conn,(exoid, EX_ELEM_BLOCK, cs, c+1, 1, connect, NULL, NULL));
+      PetscStackCallStandard(ex_put_partial_conn,(exoid, EX_ELEM_BLOCK, csIdx[cs], c+1, 1, connect, NULL, NULL));
       ierr = DMPlexRestoreTransitiveClosure(dm, cells[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     skipCells += (nodes[cs][3] == 0)*csSize;
