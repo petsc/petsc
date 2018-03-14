@@ -2323,31 +2323,6 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscViewer viewer)
-{
-  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer, "%s %sLagrange dual space of order %D", lag->continuous ? "Continuous" : "Discontinuous", lag->tensorSpace ? "Tensor " : "", sp->order, sp->Nc);CHKERRQ(ierr);
-  if (sp->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " with %D components", sp->Nc);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer viewer)
-{
-  PetscBool      iascii;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscDualSpaceLagrangeView_Ascii(sp, viewer);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2652,17 +2627,12 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscViewer viewer)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  const char         *cnt = lag->continuous ? "Continuous" : "Discontinuous";
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (sp->Nc > 1) {
-    if (lag->tensorSpace) {ierr = PetscViewerASCIIPrintf(viewer, "%s Tensor Lagrange space of degree %D with %D components\n", cnt, sp->order, sp->Nc);CHKERRQ(ierr);}
-    else                  {ierr = PetscViewerASCIIPrintf(viewer, "%s Lagrange space of degree %D with %D components\n", cnt, sp->order, sp->Nc);CHKERRQ(ierr);}
-  } else {
-    if (lag->tensorSpace) {ierr = PetscViewerASCIIPrintf(viewer, "%s Tensor Lagrange space of degree %D\n", cnt, sp->order);CHKERRQ(ierr);}
-    else                  {ierr = PetscViewerASCIIPrintf(viewer, "%s Lagrange space of degree %D\n", cnt, sp->order);CHKERRQ(ierr);}
-  }
+  ierr = PetscViewerASCIIPrintf(viewer, "%s %sLagrange dual space of order %D", lag->continuous ? "Continuous" : "Discontinuous", lag->tensorSpace ? "Tensor " : "", sp->order);CHKERRQ(ierr);
+  if (sp->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " with %D components", sp->Nc);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
