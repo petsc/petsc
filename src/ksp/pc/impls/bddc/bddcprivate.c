@@ -3409,6 +3409,25 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
                 B_neigs += B_neigs2;
               }
               break;
+            case 5: /* same as before: first compute all eigenvalues, then filter */
+#if defined(PETSC_USE_COMPLEX)
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","A","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
+#else
+              PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","A","L",&B_N,St,&B_N,S,&B_N,&bb[0],&bb[1],&B_IL,&B_IU,&eps,&B_neigs,eigs,eigv,&B_N,work,&B_lwork,B_iwork,B_ifail,&B_ierr));
+#endif
+              {
+                PetscInt e,k,ne;
+                for (e=0,ne=0;e<B_neigs;e++) {
+                  if (eigs[e] < lthresh || eigs[e] > uthresh) {
+                    for (k=0;k<B_N;k++) S[ne*B_N+k] = eigv[e*B_N+k];
+                    eigs[ne] = eigs[e];
+                    ne++;
+                  }
+                }
+                ierr = PetscMemcpy(eigv,S,B_N*ne*sizeof(PetscScalar));CHKERRQ(ierr);
+                B_neigs = ne;
+              }
+              break;
             default:
               SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unknown recipe %D",recipe);
               break;
