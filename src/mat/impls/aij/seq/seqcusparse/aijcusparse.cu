@@ -858,8 +858,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
     CsrMatrix *matrix = (CsrMatrix*)matstruct->mat;
     CsrMatrix *matrixT= new CsrMatrix;
-    matrixT->num_rows = A->rmap->n;
-    matrixT->num_cols = A->cmap->n;
+    matrixT->num_rows = A->cmap->n;
+    matrixT->num_cols = A->rmap->n;
     matrixT->num_entries = a->nz;
     matrixT->row_offsets = new THRUSTINTARRAY32(A->rmap->n+1);
     matrixT->column_indices = new THRUSTINTARRAY32(a->nz);
@@ -950,6 +950,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
   }
   /* assign the compressed row indices */
   matstructT->cprowIndices = new THRUSTINTARRAY;
+  matstructT->cprowIndices->resize(A->cmap->n);
+  thrust::sequence(matstructT->cprowIndices->begin(), matstructT->cprowIndices->end());
 
   /* assign the pointer */
   ((Mat_SeqAIJCUSPARSE*)A->spptr)->matTranspose = matstructT;
@@ -1547,7 +1549,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
 
     /* scatter the data from the temporary into the full vector with a += operation */
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))),
-        thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))) + cusparsestruct->workVector->size(),
+        thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstructT->cprowIndices->begin()))) + A->cmap->n,
         VecCUDAPlusEquals());
 
     ierr = VecCUDARestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
