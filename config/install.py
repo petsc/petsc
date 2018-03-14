@@ -295,12 +295,19 @@ class Installer(script.Script):
     # Could use the Python AST to do this
     f.write('#!'+sys.executable+'\n')
     f.write('import os\n')
-
-    f.write('copies = '+repr(self.copies).replace(self.destDir,self.installDir))
+    f.write('prefixdir = "'+self.installDir+'"\n')
+    files = [dst.replace(self.destDir,self.installDir) for src, dst in self.copies]
+    files.append(uninstallscript.replace(self.destDir,self.installDir))
+    f.write('files = '+repr(files))
     f.write('''
-for src, dst in copies:
-  if os.path.exists(dst):
-    os.remove(dst)
+for file in files:
+  if os.path.exists(file) or os.path.islink(file):
+    os.remove(file)
+    dir = os.path.dirname(file)
+    while dir not in [prefixdir,'/']:
+      if not os.listdir(dir):
+        os.rmdir(dir)
+      dir = os.path.dirname(dir)
 ''')
     f.close()
     os.chmod(uninstallscript,0744)
