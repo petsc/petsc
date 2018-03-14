@@ -2542,7 +2542,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
+PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells)
 {
   PetscInt      *cone, c, p;
   PetscErrorCode ierr;
@@ -2558,6 +2558,7 @@ PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt numCells, PetscI
     for (p = 0; p < numCorners; ++p) {
       cone[p] = cells[c*numCorners+p]+numCells;
     }
+    if (invertCells) { ierr = DMPlexInvertCell(spaceDim, numCorners, cone);CHKERRQ(ierr); }
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -2662,7 +2663,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Internal(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
