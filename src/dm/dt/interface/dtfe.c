@@ -7506,7 +7506,7 @@ PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
   if (geom->n) {
     for (i = 0; i < N; i++) {
       for (j = 0; j < dE; j++) {
-        geom->n[dE*i + j] = geom->J[dE*dE*i + dE*j + dE-1];
+        geom->n[dE*i + j] = geom->J[dE*dE*i + dE*j + dE-1] * ((dE == 2) ? -1. : 1.);
       }
     }
   }
