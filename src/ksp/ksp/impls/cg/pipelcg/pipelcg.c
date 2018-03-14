@@ -21,7 +21,7 @@ struct KSP_CG_PIPE_L_s {
   PetscScalar *G;     /* such that Z = VG (band matrix)*/
   PetscScalar *gamma,*delta,*alpha;
   PetscReal   lmin,lmax; /* min and max eigen values estimates to compute base shifts */
-  PetscScalar *sigma; /* base shifts */
+  PetscReal   *sigma; /* base shifts */
   MPI_Request *req;   /* request array for asynchronous global collective */
 };
 
@@ -146,8 +146,8 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   PetscInt      start=0,middle=0,end=0;
   Vec           *Z = plcg->Z,*V=plcg->V;
   Vec           x=NULL,p=NULL,u=NULL,up=NULL,upp=NULL,temp=NULL,temp2[2],z_2=NULL;
-  PetscScalar   sum_dummy=0.0,beta=0.0,eta=0.0,zeta=0.0,lam=0.0,invbeta2=0.0;
-  PetscReal     dp=0.0;
+  PetscScalar   sum_dummy=0.0,eta=0.0,zeta=0.0,lambda=0.0;
+  PetscReal     dp=0.0,tmp=0.0,beta=0.0,invbeta2=0.0;
   MPI_Comm      comm;
 
   PetscFunctionBegin;
@@ -195,7 +195,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       if (it == l) {
         /* MPI_Wait for G(0,0),scale V0 and Z and u vectors with 1/beta */
         ierr = MPI_Wait(&req(0),MPI_STATUS_IGNORE);CHKERRQ(ierr);
-        beta = PetscSqrtScalar(G(0,0));
+        beta = PetscSqrtReal(PetscRealPart(G(0,0)));
         G(0,0) = 1.0;
         ierr = VecAXPY(V[2*l],1.0/beta,p);CHKERRQ(ierr);
         for (j = 0; j <= l; ++j) {
@@ -230,8 +230,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       }
 
       /* Breakdown check */
-      if (PetscRealPart(G(it-l+1,it-l+1) - sum_dummy) < 0.0) {
-        ierr = PetscPrintf(comm,"sqrt breakdown in iteration %d: value is %e. Iteration was restarted.\n",ksp->its+1,PetscRealPart(G(it-l+1,it-l+1) - sum_dummy));CHKERRQ(ierr);
+      tmp = PetscRealPart(G(it-l+1,it-l+1) - sum_dummy);
+      if (tmp < 0) {
+        ierr = PetscPrintf(comm,"sqrt breakdown in iteration %d: value is %e. Iteration was restarted.\n",ksp->its+1,tmp);CHKERRQ(ierr);
         /* End hanging dot-products in the pipeline before exiting for-loop */
         start = it-l+2;
         end = PetscMin(it+1,max_it+1);  /* !warning! 'it' can actually be greater than 'max_it' */
@@ -240,7 +241,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         }
         break;
       }
-      G(it-l+1,it-l+1) = PetscSqrtReal(PetscRealPart(G(it-l+1,it-l+1) - sum_dummy));
+      G(it-l+1,it-l+1) = PetscSqrtReal(tmp);
 
       if (it < 2*l) {
         if (it == l) {
@@ -348,12 +349,12 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       } else if (it > l) {
         k = it-l;
         ++ ksp->its;
-        lam  = delta(k-1) / eta;
-        eta  = gamma(k) - lam * delta(k-1);
-        zeta = -lam * zeta;
-        ierr = VecScale(p,-delta(k-1)/eta);CHKERRQ(ierr);
-        ierr = VecAXPY(p,1.0/eta,(it < 3*l) ? V[3*l-it] : V[1]);CHKERRQ(ierr);
-        ierr = VecAXPY(x,zeta,p);CHKERRQ(ierr);
+        lambda  = delta(k-1) / eta;
+        eta     = gamma(k) - lambda * delta(k-1);
+        zeta    = -lambda * zeta;
+        ierr    = VecScale(p,-delta(k-1)/eta);CHKERRQ(ierr);
+        ierr    = VecAXPY(p,1.0/eta,(it < 3*l) ? V[3*l-it] : V[1]);CHKERRQ(ierr);
+        ierr    = VecAXPY(x,zeta,p);CHKERRQ(ierr);
 
         dp         = PetscAbsScalar(zeta);
         ksp->rnorm = dp;
@@ -417,7 +418,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   Vec            b=NULL,x=NULL,p=NULL,u=NULL;
   PetscInt       max_it=ksp->max_it,l=plcg->l;
   PetscInt       i=0,outer_it=0,curr_guess_zero=0;
-  PetscScalar    lmin=plcg->lmin,lmax=plcg->lmax;
+  PetscReal      lmin=plcg->lmin,lmax=plcg->lmax;
   PetscBool      diagonalscale=PETSC_FALSE,ispcnone=PETSC_FALSE;
   MPI_Comm       comm;
 
