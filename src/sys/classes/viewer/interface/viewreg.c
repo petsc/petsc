@@ -350,6 +350,8 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       if (loc2_fmt && *loc2_fmt) {
         ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)format,&flag);CHKERRQ(ierr);
         if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
+      } else if (viewer && (cnt == 6)) { /* Get format from VTK viewer */
+        ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
       }
       ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
     }
