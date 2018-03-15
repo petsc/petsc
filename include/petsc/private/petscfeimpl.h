@@ -39,12 +39,19 @@ struct _p_PetscSpace {
 };
 
 typedef struct {
-  PetscInt    numVariables; /* The number of variables in the space, e.g. x and y */
   PetscBool   symmetric;    /* Use only symmetric polynomials */
   PetscBool   tensor;       /* Flag for tensor product */
   PetscInt   *degrees;      /* Degrees of single variable which we need to compute */
   PetscSpace *subspaces;    /* Subspaces for each dimension */
 } PetscSpace_Poly;
+
+typedef struct {
+  PetscSpace *spaces;
+  PetscInt    numSpaces;
+  PetscInt    dim;
+  PetscBool   uniform;
+  PetscBool   setupCalled;
+} PetscSpace_Tensor;
 
 typedef struct {
   PetscQuadrature quad;         /* The points defining the space */

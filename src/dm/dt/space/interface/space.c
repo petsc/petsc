@@ -205,7 +205,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
       }
     }
   }
-  ierr = PetscOptionsInt("-petscspace_degree", "The polynomial degree contained by the space", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_degree", "The (maximally included) polynomial degree", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
