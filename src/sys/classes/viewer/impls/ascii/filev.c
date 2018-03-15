@@ -690,6 +690,7 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(name,2);
   ierr = PetscUseMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,const char**),(viewer,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
