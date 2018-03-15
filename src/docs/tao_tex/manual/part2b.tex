@@ -725,6 +725,35 @@ lower bounds on some of the variables.
 These solvers use the bounds on the variables as well as objective
 function, gradient, and possibly Hessian information.
 
+\subsection{Projected Gradient Descent Method}
+\label{sec:pgd}
+
+PGD is a steepest descent algorithm with projected gradients and a 
+bounded More-Thuente line search. The method can be set by using the 
+TAO solver {\tt TAO\_PGD} or the {\tt -tao\_type pgd} flag, and 
+serves as a useful worst-case benchmarking tool when developing 
+more advanced bound-constrained algorithms.
+
+\subsection{Bounded Nonlinear Conjugate Gradient}
+\label{sec:bncg}
+
+BNCG extends the unconstrained nonlinear conjugate gradient algorithm to 
+bound constraints via gradient projections and a bounded More-Thuente line search. 
+Like its unconstrained counterpart, BNCG offers a variety of CG updates: Fletched-Reeves, 
+Polak-Ribi\'ere, Polak-Ribi\'ere-Plus, Hestenes-Stiefel, and the Dai-Yuan. These 
+conjugate gradient methods can be specified by using the command line argument 
+{\tt -tao\_bncg\_type <fr,pr,prp,hs,dy>}, respectively. The default value is {\tt dy}.
+BNCS is available via the TAO solver {\tt TAO\_BNCG} or the {\tt -tao\_type bncg} flag.
+
+In addition to automatic restarts under orthogonality conditions, BNCG also features 
+selective step restarts for previously active bounds that become inactive at a new 
+iterate, and a weak check on descent direction such that 
+$\nabla f(x_k)^T d_k \leq -\rho||d_k||^p$. Parameters for this weak check have 
+default values of $\rho = 10^{-4}$ and $p = 2.1$, respectively, and can be 
+modified using {\tt -tao\_bncg\_rho} and {\tt -tao\_bncg\_pow} flags. Finally, the 
+default orthogonality tolerance has been slightly relaxed compared to the 
+unconstrained version to improve convergence.
+
 \subsection{Trust-Region Newton Method}\label{sec:tron} \sindex{Newtons
 method} \sindex{trust region}
 The TRON \cite{lin_c3} algorithm is an active-set method that uses a 
