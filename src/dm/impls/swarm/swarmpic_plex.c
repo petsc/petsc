@@ -631,7 +631,7 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[])
+PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
   PetscErrorCode ierr;
   PetscInt f,dim;
@@ -643,7 +643,7 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt pro
       for (f=0; f<nfields; f++) {
         PetscReal *swarm_field;
         
-        ierr = DataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
+        ierr = DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
         ierr = DMSwarmProjectField_ApproxP1_PLEX_2D(swarm,swarm_field,celldm,vecs[f]);CHKERRQ(ierr);
       }
       break;

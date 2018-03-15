@@ -15,12 +15,12 @@ PETSC_EXTERN PetscLogEvent DMSWARM_Migrate,
                            DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
 
 
-typedef struct _p_DataField* DataField;
-typedef struct _p_DataBucket* DataBucket;
+typedef struct _p_DMSwarmDataField* DMSwarmDataField;
+typedef struct _p_DMSwarmDataBucket* DMSwarmDataBucket;
 typedef struct _p_DMSwarmSort* DMSwarmSort;
 
 typedef struct {
-  DataBucket db;
+  DMSwarmDataBucket db;
 
   PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;

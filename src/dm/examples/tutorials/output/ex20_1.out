@@ -5,7 +5,7 @@ DM Object: 1 MPI processes
 Processor [0] M 25 N 13 m 1 n 1 w 1 s 1
 X range of indices: 0 25, Y range of indices: 0 13
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 3492 
   buffer             = 0 
   allocated          = 3492 
