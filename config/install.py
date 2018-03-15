@@ -293,9 +293,9 @@ for file in files:
   if os.path.exists(file) or os.path.islink(file):
     os.remove(file)
     dir = os.path.dirname(file)
-    while dir not in [prefixdir,'/']:
-      if not os.listdir(dir):
-        os.rmdir(dir)
+    while dir not in [os.path.dirname(prefixdir),'/']:
+      try: os.rmdir(dir)
+      except: break
       dir = os.path.dirname(dir)
 ''')
     f.close()
