@@ -659,15 +659,14 @@ static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *m
   dsfield = (DMField_DS *) field->data;
   ierr = ISGetMinMax(pointIS,&imin,&imax);CHKERRQ(ierr);
   if (imin >= imax) {
-    if (minDegree) *minDegree = 0;
-    if (maxDegree) *maxDegree = 0;
-    PetscFunctionReturn(0);
-  }
-  for (h = 0; h < dsfield->height; h++) {
-    PetscInt hEnd;
+    h = 0;
+  } else {
+    for (h = 0; h < dsfield->height; h++) {
+      PetscInt hEnd;
 
-    ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
-    if (imin < hEnd) break;
+      ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
+      if (imin < hEnd) break;
+    }
   }
   ierr = DMFieldDSGetHeightDisc(field,h,&disc);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
