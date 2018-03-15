@@ -11,6 +11,5 @@ if __name__ == '__main__':
     '--with-precision=single',
     '--download-openblas', # default ATLAS blas on Ubuntu 14.04 breaks runex76 in src/mat/examples/tests
     '--with-clanguage=c',
-    '--with-cuda-arch=sm_20'
   ]
   configure.petsc_configure(configure_options)

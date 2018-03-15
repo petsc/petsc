@@ -10,7 +10,5 @@ if __name__ == '__main__':
     '--download-cusp=1',
     '--with-precision=double',
     '--with-clanguage=c',
-    '--with-cuda-arch=sm_20'
-
   ]
   configure.petsc_configure(configure_options)
