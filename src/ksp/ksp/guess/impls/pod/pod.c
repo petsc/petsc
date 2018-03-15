@@ -328,15 +328,17 @@ complete_request:
   else if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
 
   /* dimension of lower dimensional system */ 
+  pod->st = -1;
   for (i=0,toten=0;i<pod->n;i++) {
-    pod->eigs[i] = PetscAbsReal(pod->eigs[i]);
+    pod->eigs[i] = PetscMax(pod->eigs[i],0.0);
     toten += pod->eigs[i];
+    if (!pod->eigs[i]) pod->st = i;
   }
   pod->nen = 0;
-  for (i=pod->n-1,parten=0;i>=0 && toten > 0;i--) {
+  for (i=pod->n-1,parten=0;i>pod->st && toten > 0;i--) {
     pod->nen++;
     parten += pod->eigs[i];
-    if (parten/toten > 1.0 - pod->tol) break;
+    if (parten + toten*pod->tol >= toten) break;
   }
   pod->st = pod->n - pod->nen;
 
