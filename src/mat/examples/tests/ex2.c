@@ -159,6 +159,7 @@ int main(int argc,char **argv)
       suffix: 23
       nsize: 3
       args: -mat_type mpiaij
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 24
@@ -170,13 +171,15 @@ int main(int argc,char **argv)
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
       requires: veccuda
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 2_aijcusparse_2
       nsize: 3
       args: -mat_type mpiaijcusparse
-      output_file: output/ex2_23_aijcusparse.out
+      output_file: output/ex2_23.out
       requires: veccuda
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 3
