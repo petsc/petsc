@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dt.c dtfv.c dtds.c
+SOURCEC  = dualspace.c
 SOURCEF  =
 SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC = DT
-LOCDIR   = src/dm/dt/interface/
+LOCDIR   = src/dm/dt/dualspace/interface
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

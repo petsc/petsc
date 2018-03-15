@@ -1,15 +1,15 @@
+#requirespackage 'PETSC_HAVE_OPENCL'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dt.c dtfv.c dtds.c
+SOURCEC  = feopencl.c
 SOURCEF  =
-SOURCEH  =
 LIBBASE  = libpetscdm
+DIRS     = 
+LOCDIR   = src/dm/dt/fe/impls/opencl
 MANSEC   = DM
-SUBMANSEC = DT
-LOCDIR   = src/dm/dt/interface/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

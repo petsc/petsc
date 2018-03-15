@@ -13,6 +13,9 @@ PETSC_EXTERN PetscErrorCode PetscSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 
+PETSC_EXTERN PetscBool FEcite;
+PETSC_EXTERN const char FECitation[];
+
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscSpace);
@@ -391,4 +394,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscReal, PetscScalar []);
 #endif
