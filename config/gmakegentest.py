@@ -837,6 +837,7 @@ class generateExamples(Petsc):
       # Ignore emacs and other temporary files
       if exfile.startswith("."): continue
       if exfile.startswith("#"): continue
+      if exfile.endswith("~"): continue
 
       # Convenience
       fullex=os.path.join(root,exfile)
