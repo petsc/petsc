@@ -930,10 +930,6 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
               xi[0] = geom->xi[2 * q];
               xi[1] = geom->xi[2 * q + 1];
               switch (oabs) {
-              case 0:
-                xio[0] = xi[0];
-                xio[1] = xi[1];
-                break;
               case 1:
                 xio[0] = xi[1];
                 xio[1] = -xi[0];
@@ -944,6 +940,11 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
               case 3:
                 xio[0] = -xi[1];
                 xio[1] = xi[0];
+              case 0:
+              default:
+                xio[0] = xi[0];
+                xio[1] = xi[1];
+                break;
               }
               if (orient < 0) {
                 xio[0] = -xio[0];
