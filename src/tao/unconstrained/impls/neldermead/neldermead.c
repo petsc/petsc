@@ -130,7 +130,6 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
 {
   PetscErrorCode     ierr;
   TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
-  TaoConvergedReason reason;
   PetscReal          *x;
   PetscInt           i;
   Vec                Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
@@ -172,12 +171,14 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
     ierr = VecAXPY(Xbar,1.0,nm->simplex[nm->indices[i]]);CHKERRQ(ierr);
   }
   ierr = VecScale(Xbar,nm->oneOverN);CHKERRQ(ierr);
-  reason = TAO_CONTINUE_ITERATING;
+  tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter++,nm->f_values[nm->indices[0]],nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]],0.0,1.0,&reason);CHKERRQ(ierr);
-    if (reason != TAO_CONTINUE_ITERATING) break;
+    ierr = TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, 1.0);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
 
     /* x(mu) = (1 + mu)Xbar - mu*X_N+1 */
     ierr = VecAXPBYPCZ(Xmur,1+nm->mu_r,-nm->mu_r,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);

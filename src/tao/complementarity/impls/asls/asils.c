@@ -131,7 +131,6 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
   PetscInt                     nf;
   PetscErrorCode               ierr;
-  TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
@@ -147,11 +146,14 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,asls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(asls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
+  tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Check the termination criteria */
     ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, tao->niter, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
-    if (TAO_CONTINUE_ITERATING != reason) break;
+    ierr = TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (TAO_CONTINUE_ITERATING != tao->reason) break;
     tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
