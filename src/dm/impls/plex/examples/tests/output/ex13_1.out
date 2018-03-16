@@ -1,9 +1,8 @@
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 4
+Supports:
+[0] Max support size: 4
 [0]: 4 ----> 11
 [0]: 4 ----> 12
 [0]: 5 ----> 10
@@ -34,7 +33,7 @@ cap --> base:
 [0]: 17 ----> 2
 [0]: 17 ----> 3
 [0]: 18 ----> 3
-[1] Max sizes cone: 3 support: 4
+[1] Max support size: 4
 [1]: 4 ----> 10
 [1]: 4 ----> 12
 [1]: 5 ----> 10
@@ -65,7 +64,8 @@ cap --> base:
 [1]: 16 ----> 3
 [1]: 17 ----> 3
 [1]: 18 ----> 3
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 11 (0)
 [0]: 0 <---- 12 (0)
 [0]: 0 <---- 13 (0)
@@ -96,6 +96,7 @@ base <-- cap:
 [0]: 17 <---- 5 (0)
 [0]: 18 <---- 8 (0)
 [0]: 18 <---- 7 (0)
+[1] Max cone size: 3
 [1]: 0 <---- 10 (0)
 [1]: 0 <---- 11 (0)
 [1]: 0 <---- 12 (0)
@@ -206,9 +207,8 @@ Proc 1 Comp 0:
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 4
+Supports:
+[0] Max support size: 4
 [0]: 4 ----> 11
 [0]: 4 ----> 12
 [0]: 5 ----> 10
@@ -239,7 +239,7 @@ cap --> base:
 [0]: 17 ----> 2
 [0]: 17 ----> 3
 [0]: 18 ----> 3
-[1] Max sizes cone: 3 support: 4
+[1] Max support size: 4
 [1]: 4 ----> 10
 [1]: 4 ----> 12
 [1]: 5 ----> 10
@@ -270,7 +270,8 @@ cap --> base:
 [1]: 16 ----> 3
 [1]: 17 ----> 3
 [1]: 18 ----> 3
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 11 (0)
 [0]: 0 <---- 12 (0)
 [0]: 0 <---- 13 (0)
@@ -301,6 +302,7 @@ base <-- cap:
 [0]: 17 <---- 5 (0)
 [0]: 18 <---- 8 (0)
 [0]: 18 <---- 7 (0)
+[1] Max cone size: 3
 [1]: 0 <---- 10 (0)
 [1]: 0 <---- 11 (0)
 [1]: 0 <---- 12 (0)
