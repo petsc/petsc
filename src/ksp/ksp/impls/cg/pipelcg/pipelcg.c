@@ -341,7 +341,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         ierr = VecScale(p,1.0/eta);CHKERRQ(ierr);
         ierr = VecAXPY(x,zeta,p);CHKERRQ(ierr);
 
-        dp         = PetscRealPart(beta);
+        dp         = beta;
         ksp->rnorm = dp;
         ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
         ierr       = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
