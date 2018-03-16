@@ -210,7 +210,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
   for (cs = 0; cs < num_cs; ++cs) {
     IS              stratumIS;
     const PetscInt *cells;
-    PetscInt       *connect;
+    PetscInt       *connect, off = 0;
     PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0;
     PetscInt        csSize, c, connectSize, closureSize;
     char           *elem_type = NULL;
@@ -237,7 +237,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
       else if (degree == 2) elem_type = elem_type_hex27;
     }
     connectSize = nodes[cs][0] + nodes[cs][1] + nodes[cs][2] + nodes[cs][3];
-    ierr = PetscMalloc1(PetscMax(27,connectSize), &connect);CHKERRQ(ierr);
+    ierr = PetscMalloc1(PetscMax(27,connectSize)*csSize, &connect);CHKERRQ(ierr);
     PetscStackCallStandard(ex_put_block,(exoid, EX_ELEM_BLOCK, csIdx[cs], elem_type, csSize, connectSize, 0, 0, 1));
     /* Find number of vertices, edges, and faces in the closure */
     verticesInClosure = nodes[cs][0];
@@ -261,52 +261,53 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
       ierr = DMPlexGetTransitiveClosure(dm, cells[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (i = 0; i < connectSize; ++i) {
         if (i < nodes[cs][0]) {/* Vertices */
-          connect[i] = closure[(i+edgesInClosure+facesInClosure+1)*2] + 1;
-          connect[i] -= cellsNotInConnectivity;
+          connect[i+off] = closure[(i+edgesInClosure+facesInClosure+1)*2] + 1;
+          connect[i+off] -= cellsNotInConnectivity;
         } else if (i < nodes[cs][0]+nodes[cs][1]) { /* Edges */
-          connect[i] = closure[(i-verticesInClosure+facesInClosure+1)*2] + 1;
-          if (nodes[cs][2] == 0) connect[i] -= numFaces;
-          connect[i] -= cellsNotInConnectivity;
+          connect[i+off] = closure[(i-verticesInClosure+facesInClosure+1)*2] + 1;
+          if (nodes[cs][2] == 0) connect[i+off] -= numFaces;
+          connect[i+off] -= cellsNotInConnectivity;
         } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]){ /* Cells */
-          connect[i] = closure[0] + 1;
-          connect[i] -= skipCells;
+          connect[i+off] = closure[0] + 1;
+          connect[i+off] -= skipCells;
         } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]+nodes[cs][2]){ /* Faces */
-          connect[i] = closure[(i-edgesInClosure-verticesInClosure)*2] + 1;
-          connect[i] -= cellsNotInConnectivity;
+          connect[i+off] = closure[(i-edgesInClosure-verticesInClosure)*2] + 1;
+          connect[i+off] -= cellsNotInConnectivity;
         } else {
-          connect[i] = -1;
+          connect[i+off] = -1;
         }
       }
       /* Tetrahedra are inverted */
       if (type[cs] == TET) {
-        temp = connect[0]; connect[0] = connect[1]; connect[1] = temp;
+        temp = connect[0+off]; connect[0+off] = connect[1+off]; connect[1+off] = temp;
         if (degree == 2) {
-          temp = connect[5]; connect[5] = connect[6]; connect[6] = temp;
-          temp = connect[7]; connect[7] = connect[8]; connect[8] = temp;
+          temp = connect[5+off]; connect[5+off] = connect[6+off]; connect[6+off] = temp;
+          temp = connect[7+off]; connect[7+off] = connect[8+off]; connect[8+off] = temp;
         }
       }
       /* Hexahedra are inverted */
       if (type[cs] == HEX) {
-        temp = connect[1]; connect[1] = connect[3]; connect[3] = temp;
+        temp = connect[1+off]; connect[1+off] = connect[3+off]; connect[3+off] = temp;
         if (degree == 2) {
-          temp = connect[8];  connect[8]  = connect[11]; connect[11] = temp;
-          temp = connect[9];  connect[9]  = connect[10]; connect[10] = temp;
-          temp = connect[16]; connect[16] = connect[17]; connect[17] = temp;
-          temp = connect[18]; connect[18] = connect[19]; connect[19] = temp;
+          temp = connect[8+off];  connect[8+off]  = connect[11+off]; connect[11+off] = temp;
+          temp = connect[9+off];  connect[9+off]  = connect[10+off]; connect[10+off] = temp;
+          temp = connect[16+off]; connect[16+off] = connect[17+off]; connect[17+off] = temp;
+          temp = connect[18+off]; connect[18+off] = connect[19+off]; connect[19+off] = temp;
 
-          temp = connect[12]; connect[12] = connect[16]; connect[16] = temp;
-          temp = connect[13]; connect[13] = connect[17]; connect[17] = temp;
-          temp = connect[14]; connect[14] = connect[18]; connect[18] = temp;
-          temp = connect[15]; connect[15] = connect[19]; connect[19] = temp;
+          temp = connect[12+off]; connect[12+off] = connect[16+off]; connect[16+off] = temp;
+          temp = connect[13+off]; connect[13+off] = connect[17+off]; connect[17+off] = temp;
+          temp = connect[14+off]; connect[14+off] = connect[18+off]; connect[18+off] = temp;
+          temp = connect[15+off]; connect[15+off] = connect[19+off]; connect[19+off] = temp;
 
-          temp = connect[23]; connect[23] = connect[26]; connect[26] = temp;
-          temp = connect[24]; connect[24] = connect[25]; connect[25] = temp;
-          temp = connect[25]; connect[25] = connect[26]; connect[26] = temp;
+          temp = connect[23+off]; connect[23+off] = connect[26+off]; connect[26+off] = temp;
+          temp = connect[24+off]; connect[24+off] = connect[25+off]; connect[25+off] = temp;
+          temp = connect[25+off]; connect[25+off] = connect[26+off]; connect[26+off] = temp;
         }
       }
-      PetscStackCallStandard(ex_put_partial_conn,(exoid, EX_ELEM_BLOCK, csIdx[cs], c+1, 1, connect, NULL, NULL));
+      off += connectSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, cells[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
+    PetscStackCallStandard(ex_put_conn,(exoid, EX_ELEM_BLOCK, csIdx[cs], connect, 0, 0));
     skipCells += (nodes[cs][3] == 0)*csSize;
     ierr = PetscFree(connect);CHKERRQ(ierr);
     ierr = ISRestoreIndices(stratumIS, &cells);CHKERRQ(ierr);
