@@ -62,23 +62,9 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
-    DMLabel  spmap;
     PetscInt subp;
 
-    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
-    if (spmap) {
-      IS              subpointIS;
-      const PetscInt *subpoints;
-      PetscInt        numSubpoints;
-
-      ierr = DMPlexCreateSubpointIS(dmAux, &subpointIS);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
-      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-      ierr = PetscFindInt(p, numSubpoints, subpoints, &subp);CHKERRQ(ierr);
-      if (subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
-      ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-    } else subp = p;
+    ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr);
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);

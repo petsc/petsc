@@ -3570,3 +3570,44 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
   }
   PetscFunctionReturn(0);
 }
+
+/*@
+  DMPlexGetSubpoint - Return the subpoint corresponding to a point in the original mesh. If the DM
+                      is not a submesh, just return the input point.
+
+  Note collective
+
+  Input Parameters:
++ dm - The submesh DM
+- p  - The point in the original, from which the submesh was created
+
+  Output Parameter:
+. subp - The point in the submesh
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexGetSubpoint(DM dm, PetscInt p, PetscInt *subp)
+{
+  DMLabel        spmap;
+  PetscErrorCode ierr;
+
+  *subp = p;
+  ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+  if (spmap) {
+    IS              subpointIS;
+    const PetscInt *subpoints;
+    PetscInt        numSubpoints;
+
+    /* TODO Cache the IS, making it look like an index */
+    ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    ierr = PetscFindInt(p, numSubpoints, subpoints, subp);CHKERRQ(ierr);
+    if (*subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
+    ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
