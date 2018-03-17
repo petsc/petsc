@@ -1875,7 +1875,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
   Input Parameters:
 + sp      - The PetscDualSpace
-. dim     - The spatial dimension
+. dim     - The spatial/topological dimension
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
   Output Parameter:
@@ -2945,7 +2945,7 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   ierr = PetscCalloc1(s->dim, &sp->functional);CHKERRQ(ierr);
   ierr = PetscFree(s->numDof);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &spatialDim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &spatialDim);CHKERRQ(ierr);
   ierr = PetscCalloc1(spatialDim+1, &s->numDof);CHKERRQ(ierr);
   s->numDof[spatialDim] = dim;
   PetscFunctionReturn(0);
@@ -3387,7 +3387,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 }
 
 /*@
-  PetscFEGetSpatialDimension - Returns the spatial dimension of the element
+  PetscFEGetSpatialDimension - Returns the spatial/topological dimension of the element
 
   Not collective
 
@@ -3395,7 +3395,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 . fem - The PetscFE object
 
   Output Parameter:
-. dim - The spatial dimension
+. dim - The spatial/topological dimension
 
   Level: intermediate
 
@@ -3790,6 +3790,7 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
+/* This tabulates the cell basis functions on each face bounding the cell */
 PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
 {
   PetscErrorCode   ierr;
