@@ -1245,17 +1245,17 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 -  -pc_gamg_square_graph <n,default=1> - number of levels to square the graph before aggregating it
 
-   Multigrid options(inherited):
-+  -pc_mg_cycles <v>: v or w (PCMGSetCycleType())
-.  -pc_mg_distinct_smoothup: configure the up and down smoothers separately (PCMGSetDistinctSmoothUp())
-.  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
+   Multigrid options:
++  -pc_mg_cycles <v> - v or w, see PCMGSetCycleType()
+.  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
+.  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
 
 
   Notes: In order to obtain good performance for PCGAMG for vector valued problems you must
-$       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
-$       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
-$       See the Users Manual Chapter 4 for more details
+       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
+       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
+       See the Users Manual Chapter 4 for more details
 
   Level: intermediate
 

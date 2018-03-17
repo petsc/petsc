@@ -1865,7 +1865,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].
 
-.seealso: MatSetNearNullSpace
+.seealso: MatSetNearNullSpace()
 @*/
 PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {
