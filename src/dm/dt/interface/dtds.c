@@ -343,7 +343,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
-  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dim,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dimEmbed,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
   ierr = PetscMalloc6(NqMax*NcMax,&prob->f0,NqMax*NcMax*dim,&prob->f1,NqMax*NcMax*NcMax,&prob->g0,NqMax*NcMax*NcMax*dim,&prob->g1,NqMax*NcMax*NcMax*dim,&prob->g2,NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
   if (prob->ops->setup) {ierr = (*prob->ops->setup)(prob);CHKERRQ(ierr);}
   prob->setup = PETSC_TRUE;
