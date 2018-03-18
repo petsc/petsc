@@ -1,0 +1,7 @@
+iter = 0, Function value: 36.037,  Residual: 0.577738   Constraint: 0.00153606 
+iter = 0, Function value: 36.0373,  Residual: 0.577738   Constraint: 0.00145613 
+iter = 1, Function value: 13.9135,  Residual: 0.401034   Constraint: 0.149261 
+KSP Iterations = 140
+KSP iterations within initialization: 89
+Total KSP iterations over 1 trial(s): 229
+KSP iterations per trial: 140
