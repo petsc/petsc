@@ -533,11 +533,13 @@ class generateExamples(Petsc):
 
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
-      install_files(os.path.join(root, lfile), runscript_dir)
+      install_files(os.path.join(root, lfile),
+                    os.path.join(runscript_dir, os.path.dirname(lfile)))
     # Check subtests for local runfiles
     for stest in subst.get("subtests",[]):
       for lfile in testDict[stest].get('localrunfiles','').split():
-        install_files(os.path.join(root, lfile), runscript_dir)
+        install_files(os.path.join(root, lfile),
+                      os.path.join(runscript_dir, os.path.dirname(lfile)))
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
