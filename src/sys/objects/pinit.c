@@ -1058,7 +1058,7 @@ PetscErrorCode  PetscFreeMPIResources(void)
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_table - Calls PetscOptionsView()
++  -options_view - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
 .  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 .  -mpidump - Calls PetscMPIDump()
