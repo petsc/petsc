@@ -100,6 +100,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
   PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
   if (--((PetscObject)(*guess))->refct > 0) {*guess = 0; PetscFunctionReturn(0);}
   if ((*guess)->ops->destroy) { ierr = (*(*guess)->ops->destroy)(*guess);CHKERRQ(ierr); }
+  ierr = MatDestroy(&(*guess)->A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(guess);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -329,7 +330,9 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
     ierr = PetscObjectStateGet((PetscObject)guess->A,&omatstate);CHKERRQ(ierr);
     ierr = MatGetSize(guess->A,&oM,&oN);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&guess->A);CHKERRQ(ierr);
   ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)guess->A);CHKERRQ(ierr);
   ierr = MatGetSize(guess->A,&M,&N);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
   if (omatstate != matstate || M != oM || N != oN) {
