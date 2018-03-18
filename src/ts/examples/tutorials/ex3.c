@@ -3,6 +3,7 @@ static char help[] ="Solves a simple time-dependent linear PDE (the heat equatio
 Input parameters include:\n\
   -m <points>, where <points> = number of grid points\n\
   -time_dependent_rhs : Treat the problem as having a time-dependent right-hand side\n\
+  -use_ifunc          : Use IFunction/IJacobian interface\n\
   -debug              : Activate debugging printouts\n\
   -nox                : Deactivate x-window graphics\n\n";
 
@@ -67,8 +68,10 @@ typedef struct {
   PetscInt    m;                 /* total number of grid points */
   PetscReal   h;                 /* mesh width h = 1/(m-1) */
   PetscBool   debug;             /* flag (1 indicates activation of debugging printouts) */
-  PetscViewer viewer1,viewer2;  /* viewers for the solution and error */
-  PetscReal   norm_2,norm_max;  /* error norms */
+  PetscViewer viewer1,viewer2;   /* viewers for the solution and error */
+  PetscReal   norm_2,norm_max;   /* error norms */
+  Mat         A;                 /* RHS mat, used with IFunction interface */
+  PetscReal   oshift;            /* old shift applied, prevent to recompute the IJacobian */
 } AppCtx;
 
 /*
@@ -76,6 +79,8 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
+extern PetscErrorCode IFunctionHeat(TS,PetscReal,Vec,Vec,Vec,void*);
+extern PetscErrorCode IJacobianHeat(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
@@ -158,27 +163,42 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    /*
-       For linear problems with a time-dependent f(u,t) in the equation
-       u_t = f(u,t), the user provides the discretized right-hand-side
-       as a time-dependent matrix.
-    */
-    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_ifunc",&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {
+    appctx.A = NULL;
+    ierr = PetscOptionsGetBool(NULL,NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
+    if (flg) {
+      /*
+         For linear problems with a time-dependent f(u,t) in the equation
+         u_t = f(u,t), the user provides the discretized right-hand-side
+         as a time-dependent matrix.
+      */
+      ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+      ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+    } else {
+      /*
+         For linear problems with a time-independent f(u) in the equation
+         u_t = f(u), the user provides the discretized right-hand-side
+         as a matrix only once, and then sets the special Jacobian evaluation
+         routine TSComputeRHSJacobianConstant() which will NOT recompute the Jacobian.
+      */
+      ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
+      ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+      ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
+    }
   } else {
-    /*
-       For linear problems with a time-independent f(u) in the equation
-       u_t = f(u), the user provides the discretized right-hand-side
-       as a matrix only once, and then sets the special Jacobian evaluation
-       routine TSComputeRHSJacobianConstant() which will NOT recompute the Jacobian.
-    */
-    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
-  }
+    Mat J;
 
+    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
+    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,IFunctionHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,J,J,IJacobianHeat,&appctx);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
+
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    appctx.A = A;
+    appctx.oshift = PETSC_MIN_REAL;
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -234,6 +254,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&appctx.viewer2);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
+  ierr = MatDestroy(&appctx.A);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -492,6 +513,30 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
   return 0;
 }
 
+PetscErrorCode IFunctionHeat(TS ts,PetscReal t,Vec X,Vec Xdot,Vec r,void *ctx)
+{
+  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  PetscErrorCode ierr;
+
+  ierr = MatMult(appctx->A,X,r);CHKERRQ(ierr);
+  ierr = VecAYPX(r,-1.0,Xdot);CHKERRQ(ierr);
+  return 0;
+}
+
+PetscErrorCode IJacobianHeat(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s,Mat A,Mat B,void *ctx)
+{
+  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  PetscErrorCode ierr;
+
+  if (appctx->oshift == s) return 0;
+  ierr = MatCopy(appctx->A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatScale(A,-1);CHKERRQ(ierr);
+  ierr = MatShift(A,s);CHKERRQ(ierr);
+  ierr = MatCopy(A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  appctx->oshift = s;
+  return 0;
+}
+
 /*TEST
 
     test:
@@ -503,7 +548,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 
     test:
       suffix: 3
-      args:  -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason 
+      args:  -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason
       filter: sed "s/ATOL/RTOL/g"
       requires: !single
 
@@ -520,20 +565,20 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
     test:
       requires: !single
       suffix: pod_guess
-      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type pod -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type pod -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: pod_guess_Ainner
-      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type pod -ksp_guess_pod_Ainner -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type pod -ksp_guess_pod_Ainner -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: fischer_guess
-      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -pc_type none -ksp_converged_reason
 
     test:
       requires: !single
       suffix: fischer_guess_2
-      args: -nox -ts_type beuler -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
 TEST*/
