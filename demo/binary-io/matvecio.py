@@ -1,3 +1,6 @@
+try: range = xrange
+except NameError: pass
+
 import sys, petsc4py
 petsc4py.init(sys.argv)
 
@@ -10,7 +13,7 @@ A.setSizes([m*n, m*n])
 A.setFromOptions()
 A.setUp()
 Istart, Iend = A.getOwnershipRange()
-for I in xrange(Istart, Iend) :
+for I in range(Istart, Iend):
     A[I,I] = 4
     i = I//n
     if i>0  : J = I-n; A[I,J] = -1
