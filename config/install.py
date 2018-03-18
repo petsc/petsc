@@ -194,10 +194,10 @@ class Installer(script.Script):
     top=os.path.relpath(src,os.path.abspath(os.curdir))
     for root, dirs, files in os.walk(top, topdown=False):
         if not os.path.basename(root) == "examples": continue
-        self.copies.extend(self.copytree(root, os.path.join(dst,root),exclude_ext=['DSYM']))
+        self.copies.extend(self.copytree(root, os.path.join(dst,root)))
     return
 
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= [], recurse = 1):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= ['.DSYM','.o','.pyc'], recurse = 1):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
        The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
@@ -314,7 +314,7 @@ for file in files:
 
   def installConf(self):
     self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','files','testfiles','RDict.db']))
     return
 
   def installBin(self):
@@ -353,9 +353,7 @@ for file in files:
         pass
       os.symlink(linkto, dst)
       return
-    # Do not install object files
-    if not os.path.splitext(src)[1] == '.o':
-      shutil.copy2(src, dst)
+    shutil.copy2(src, dst)
     if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
