@@ -30,6 +30,8 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   and visualise in paraview with ../../../../petsc_gen_xdmf.py solution.h5.
 
   Toggle the Riesz map (-use_riesz 0) to see the difference setting the Riesz maps makes.
+
+  TODO: broken for parallel runs
 F*/
 
 #include <petsc.h>
@@ -57,23 +59,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   DM             distributedMesh = NULL;
   PetscErrorCode ierr;
   const PetscInt dim = 2;
-  const PetscInt vertices_per_cell = 3;
   char filename[2048];
   PetscBool flg;
-  PetscViewer viewer;
-  Vec coordinates;
-  Vec topology;
-  PetscInt numCells;
-  PetscInt numVertices;
-  PetscScalar* coords;
-  PetscScalar* topo_f;
-  PetscInt*    cells;
-  PetscInt     j;
-  DMLabel      label;
-
 
   PetscFunctionBeginUser;
-
   ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");CHKERRQ(ierr);
   filename[0] = '\0';
   user->use_riesz = PETSC_TRUE;
@@ -85,6 +74,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!flg) {
     ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
+#if defined(PETSC_HAVE_HDF5)
+    const PetscInt vertices_per_cell = 3;
+    PetscViewer    viewer;
+    Vec            coordinates;
+    Vec            topology;
+    PetscInt       numCells;
+    PetscInt       numVertices;
+    PetscScalar*   coords;
+    PetscScalar*   topo_f;
+    PetscInt*      cells;
+    PetscInt       j;
+    DMLabel        label;
+
     /* Read in FEniCS HDF5 output */
     ierr = PetscViewerHDF5Open(comm, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
 
@@ -142,6 +144,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscFree(cells);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&topology);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-hdf5");
+#endif
   }
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
@@ -383,8 +388,8 @@ int main(int argc, char **argv)
 
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  ierr = PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) u, NULL, "-sol_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -399,11 +404,17 @@ int main(int argc, char **argv)
 /*TEST
 
     build:
-      requires: hdf5 !complex !single
+      requires: !complex !single
 
     test:
+      requires: hdf5 double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
       args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
-      requires: double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
+      filter: sed -e "s/-nan/nan/g"
+
+    test:
+      suffix: guess_pod
+      requires: double triangle
+      args: -laplace_ksp_type cg -laplace_pc_type gamg -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_converged_reason -laplace_ksp_converged_reason -tao_monitor -petscspace_order 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_h0_ksp_guess_type pod
       filter: sed -e "s/-nan/nan/g"
 
 TEST*/
