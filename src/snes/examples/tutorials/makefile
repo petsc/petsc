@@ -98,6 +98,7 @@ ex16: ex16.o chkopts
 	${RM} ex16.o
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} ex17
 	${RM} ex17.o
 ex18: ex18.o chkopts
 	-${CLINKER} -o ex18 ex18.o ${PETSC_SNES_LIB}
