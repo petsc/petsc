@@ -345,7 +345,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 +  ksp - Krylov method
 .  normtype - supported norm type
 .  pcside - preconditioner side that can be used with this norm
--  preference - integer preference for this combination, larger values have higher priority
+-  priority - positive integer preference for this combination; larger values have higher priority
 
    Level: developer
 
@@ -353,10 +353,6 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    This function should be called from the implementation files KSPCreate_XXX() to declare
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
-
-   KSP_NORM_NONE is supported by default with all KSP methods and any PC side at priority 1.  If a KSP explicitly does
-   not support KSP_NORM_NONE, it should set this by setting priority=0.  Since defaulting to KSP_NORM_NONE is usually
-   undesirable, more desirable norms should usually have priority 2 or higher.
 
 .seealso: KSPSetNormType(), KSPSetPCSide()
 @*/
