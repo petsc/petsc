@@ -49,9 +49,10 @@ struct _KSPGuessOps {
 */
 struct _p_KSPGuess {
   PETSCHEADER(struct _KSPGuessOps);
-  KSP  ksp;     /* the parent KSP */
-  Mat  A;       /* the current linear operator */
-  void *data;   /* pointer to the specific implementation */
+  KSP              ksp;       /* the parent KSP */
+  Mat              A;         /* the current linear operator */
+  PetscObjectState omatstate; /* previous linear operator state */
+  void             *data;     /* pointer to the specific implementation */
 };
 
 PETSC_EXTERN PetscErrorCode KSPGuessCreate_Fischer(KSPGuess);
