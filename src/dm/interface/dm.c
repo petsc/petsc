@@ -4755,42 +4755,32 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 {
   DM             cdm;
   PetscSection   coordSection;
-  PetscInt       cStart, cEnd, c, sStart, sEnd, dof;
-  PetscBool      alreadyLocalized, alreadyLocalizedGlobal;
+  PetscInt       cStart, cEnd, sStart, sEnd, c, dof;
+  PetscBool      isPlex, alreadyLocalized;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->periodic) {
-    *areLocalized = PETSC_FALSE;
-    PetscFunctionReturn(0);
-  }
+  PetscValidPointer(areLocalized, 2);
+
+  *areLocalized = PETSC_FALSE;
+  if (!dm->periodic) PetscFunctionReturn(0); /* This is a hideous optimization hack! */
+
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  {
-    PetscBool isplex;
-
-    ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isplex);CHKERRQ(ierr);
-    if (isplex) {
-      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
-  }
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
-  alreadyLocalized = alreadyLocalizedGlobal = PETSC_FALSE;
+  ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  if (!isPlex) SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
+
+  ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &sStart, &sEnd);CHKERRQ(ierr);
+  alreadyLocalized = PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
-    if (c < sStart || c >= sEnd) {
-      alreadyLocalized = PETSC_FALSE;
-      break;
-    }
+    if (c < sStart || c >= sEnd) continue;
     ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-    if (dof) {
-      alreadyLocalized = PETSC_TRUE;
-      break;
-    }
+    if (dof) { alreadyLocalized = PETSC_TRUE; break; }
   }
-  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  *areLocalized = alreadyLocalizedGlobal;
+  ierr = MPIU_Allreduce(&alreadyLocalized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
