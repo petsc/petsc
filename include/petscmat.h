@@ -403,6 +403,8 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar *[]);
 
 PETSC_EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultDiagonalBlock(Mat,Vec,Vec);
@@ -1023,6 +1025,7 @@ PETSC_EXTERN PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat,PetscInt,const Pet
 PETSC_EXTERN PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatMPIAdjToSeq(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetPreallocation(Mat,PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
@@ -1377,7 +1380,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning,P
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning,PetscBool);
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool);
 
-typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
+typedef enum { MP_PTSCOTCH_DEFAULT,MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
 PETSC_EXTERN const char *const MPPTScotchStrategyTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);
@@ -1546,9 +1549,13 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_DESTROYSUBMATRICES=145
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat,MatOperation,void(**)(void));
 PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
+PETSC_EXTERN PetscErrorCode MatShellTestMult(Mat,PetscErrorCode (*)(void*,Vec,Vec),Vec,void*,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatShellTestMultTranspose(Mat,PetscErrorCode (*)(void*,Vec,Vec),Vec,void*,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
 
 /*
    Codes for matrices stored on disk. By default they are
@@ -1606,6 +1613,7 @@ PETSC_EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMAIJGetAIJ(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatComputeExplicitOperator(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatComputeExplicitOperatorTranspose(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 
@@ -1672,6 +1680,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat,Mat);
 #endif
 
 /*

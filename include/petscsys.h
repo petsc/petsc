@@ -1446,7 +1446,7 @@ PETSC_EXTERN PetscErrorCode PetscStrcasecmp(const char[],const char[],PetscBool 
 PETSC_EXTERN PetscErrorCode PetscStrncmp(const char[],const char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscStrcpy(char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscStrcat(char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscStrncat(char[],const char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscStrlcat(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrncpy(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrchr(const char[],char,char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrtolower(char[]);
@@ -1848,8 +1848,6 @@ PETSC_EXTERN PetscErrorCode PetscSynchronizedFGets(MPI_Comm,FILE*,size_t,char[])
 PETSC_EXTERN PetscErrorCode PetscStartMatlab(MPI_Comm,const char[],const char[],FILE**);
 PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 PETSC_EXTERN PetscErrorCode PetscGetPetscDir(const char*[]);
-
-PETSC_EXTERN PetscErrorCode PetscPopUpSelect(MPI_Comm,const char*,const char*,int,const char**,int*);
 
 /*S
      PetscContainer - Simple PETSc object that contains a pointer to any required data

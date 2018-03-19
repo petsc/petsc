@@ -198,7 +198,7 @@ int main(int argc,char **args)
 
    test:
       suffix: 2_aijcusparse
-      requires: cusparse veccuda
+      requires: veccuda
       args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
 
    test:
@@ -207,12 +207,12 @@ int main(int argc,char **args)
 
    test:
       suffix: 3_aijcusparse
-      requires: cusparse veccuda
+      requires: veccuda
       args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
 
    test:
       suffix: aijcusparse
-      requires: cusparse veccuda
+      requires: veccuda
       args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
       output_file: output/ex1_1_aijcusparse.out
 

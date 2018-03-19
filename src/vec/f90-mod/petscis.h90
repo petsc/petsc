@@ -4,6 +4,24 @@
 !
 
       Interface
+        Subroutine PetscLayoutFindOwner(a,b,z)
+          use petscisdef
+          PetscLayout a
+          PetscInt b
+          PetscErrorCode  z
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscLayoutFindOwnerIndex(a,b,c,z)
+          use petscisdef
+          PetscLayout a
+          PetscInt b,c
+          PetscErrorCode  z
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine ISGetIndicesF90(i,array,ierr)
           use petscisdef
           PetscInt, pointer :: array(:)

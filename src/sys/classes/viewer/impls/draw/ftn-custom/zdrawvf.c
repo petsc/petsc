@@ -3,14 +3,25 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petsc_viewer_draw__       PETSC_VIEWER_DRAW_BROKEN
 #define petscviewerdrawgetdraw_   PETSCVIEWERDRAWGETDRAW
 #define petscviewerdrawgetdrawlg_ PETSCVIEWERDRAWGETDRAWLG
 #define petscviewerdrawopen_       PETSCVIEWERDRAWOPEN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petsc_viewer_draw__       petsc_viewer_draw_
 #define petscviewerdrawgetdraw_   petscviewerdrawgetdraw
 #define petscviewerdrawgetdrawlg_ petscviewerdrawgetdrawlg
 #define petscviewerdrawopen_       petscviewerdrawopen
 #endif
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define petsc_viewer_draw__      petsc_viewer_draw___
+#endif
+
+PETSC_EXTERN PetscViewer PETSC_STDCALL petsc_viewer_draw__(MPI_Comm *comm)
+{
+  return PETSC_VIEWER_DRAW_(MPI_Comm_f2c(*(MPI_Fint*)&*comm));
+}
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerdrawgetdraw_(PetscViewer *vin,int *win,PetscDraw *draw,PetscErrorCode *ierr)
 {

@@ -1610,7 +1610,7 @@ $
     Level: intermediate
 
   Notes:
-   In calls to VecScatter() you can use different vectors than the xin and
+   In calls to VecScatterBegin() and VecScatterEnd() you can use different vectors than the xin and
    yin you used above; BUT they must have the same parallel data layout, for example,
    they could be obtained from VecDuplicate().
    A VecScatter context CANNOT be used in two or more simultaneous scatters;
@@ -1618,10 +1618,11 @@ $
    context until the VecScatterEnd() has been called on the first VecScatterBegin().
    In this case a separate VecScatter is needed for each concurrent scatter.
 
+  Developer Notes:
    Currently the MPI_Send(), MPI_Ssend() and MPI_Rsend() all use PERSISTENT versions.
    (this unfortunately requires that the same in and out arrays be used for each use, this
     is why when not using MPI_alltoallw() we always need to pack the input into the work array before sending
-    and unpack upon receeving instead of using MPI datatypes to avoid the packing/unpacking).
+    and unpack upon receiving instead of using MPI datatypes to avoid the packing/unpacking).
 
    Both ix and iy cannot be NULL at the same time.
 

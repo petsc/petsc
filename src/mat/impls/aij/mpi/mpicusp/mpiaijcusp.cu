@@ -158,6 +158,20 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatAssemblyEnd_MPIAIJCUSP(Mat A,MatAssemblyType mode)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *mpiaij;
+
+  PetscFunctionBegin;
+  mpiaij = (Mat_MPIAIJ*)A->data;
+  ierr = MatAssemblyEnd_MPIAIJ(A,mode);CHKERRQ(ierr);
+  if (!A->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
+    ierr = VecSetType(mpiaij->lvec,VECSEQCUSP);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
@@ -200,6 +214,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
   err = cudaStreamCreate(&(cuspStruct->stream));
   if (err!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", cudaGetErrorString(err));
 
+  A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSP;
   A->ops->mult           = MatMult_MPIAIJCUSP;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;

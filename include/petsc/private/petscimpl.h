@@ -826,10 +826,6 @@ E*/
 typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
 #endif
 
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA)
-PETSC_EXTERN cublasHandle_t cublasv2handle;
-#endif
-
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
 #define REDUCE_SUM  0

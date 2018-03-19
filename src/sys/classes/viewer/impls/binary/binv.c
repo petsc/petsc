@@ -45,6 +45,7 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
     ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
+    (*outviewer)->setupcalled = PETSC_TRUE;
   } else {
     *outviewer = NULL;
   }
@@ -652,8 +653,8 @@ static PetscErrorCode PetscViewerFileClose_Binary(PetscViewer v)
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
       /* compress the file */
-      ierr = PetscStrcpy(par,"gzip -f ");CHKERRQ(ierr);
-      ierr = PetscStrcat(par,vbinary->ogzfilename ? vbinary->ogzfilename : vbinary->filename);CHKERRQ(ierr);
+      ierr = PetscStrncpy(par,"gzip -f ",sizeof(par));CHKERRQ(ierr);
+      ierr = PetscStrlcat(par,vbinary->ogzfilename ? vbinary->ogzfilename : vbinary->filename,sizeof(par));CHKERRQ(ierr);
       ierr = PetscFree(vbinary->ogzfilename);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,par,"r",&fp);CHKERRQ(ierr);
@@ -1186,7 +1187,7 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
   if (!vbinary->skipinfo && (!rank || type == FILE_MODE_READ)) {
     char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];
 
-    ierr = PetscStrcpy(infoname,vbinary->filename);CHKERRQ(ierr);
+    ierr = PetscStrncpy(infoname,vbinary->filename,sizeof(infoname));CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
     if (gz) {
@@ -1194,7 +1195,7 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
       if (len == 3) *gz = 0;
     }
 
-    ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
+    ierr = PetscStrlcat(infoname,".info",sizeof(infoname));CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
@@ -1245,7 +1246,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
   if (!vbinary->skipinfo && (!rank || type == FILE_MODE_READ)) {
     char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];
 
-    ierr = PetscStrcpy(infoname,vbinary->filename);CHKERRQ(ierr);
+    ierr = PetscStrncpy(infoname,vbinary->filename,sizeof(infoname));CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
     if (gz) {
@@ -1253,7 +1254,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
       if (len == 3) *gz = 0;
     }
 
-    ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
+    ierr = PetscStrlcat(infoname,".info",sizeof(infoname));CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);

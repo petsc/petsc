@@ -8,7 +8,7 @@
 /* Logging support */
 PetscClassId  PC_CLASSID;
 PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
+PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 PetscInt      PetscMGLevelId;
 
 PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
@@ -274,7 +274,7 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 
 /*@
    PCSetUseAmat - Sets a flag to indicate that when the preconditioner needs to apply (part of) the
-   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(), 
+   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
    TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
 
    Logically Collective on PC
@@ -315,7 +315,7 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 
    Notes:
     Normally PETSc continues if a linear solver fails due to a failed setup of a preconditioner, you can call KSPGetConvergedReason() after a KSPSolve()
-    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is 
+    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is
     detected.
 
     This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
@@ -841,7 +841,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 .  pc - the preconditioner context
 
    Output Parameter:
-.  reason - the reason it failed, currently only -1 
+.  reason - the reason it failed, currently only -1
 
    Level: advanced
 
@@ -1632,7 +1632,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 #endif
 
   if (iascii) {
+    PetscInt    tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)pc)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -1660,6 +1663,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
         if (pc->pmat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
+      ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
@@ -1835,6 +1839,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1860,7 +1865,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].
 
-.seealso: MatSetNearNullSpace
+.seealso: MatSetNearNullSpace()
 @*/
 PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {

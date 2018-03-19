@@ -68,7 +68,7 @@ int main(int argc,char **argv)
    test:
       suffix: bts
       nsize: 2
-      args: -vec_assembly_bts
+      args: -vec_assembly_legacy
       output_file: output/ex11_1.out
 
 TEST*/

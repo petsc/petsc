@@ -636,9 +636,7 @@ PetscErrorCode  MatDiagonalSet_IS(Mat A,Vec D,InsertMode insmode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!D) { /* this code branch is used by MatShift_IS */
-    ierr = VecSet(is->y,1.);CHKERRQ(ierr);
-  } else {
+  if (D) { /* MatShift_IS pass D = NULL */
     ierr = VecScatterBegin(is->rctx,D,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(is->rctx,D,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -649,9 +647,11 @@ PetscErrorCode  MatDiagonalSet_IS(Mat A,Vec D,InsertMode insmode)
 
 PetscErrorCode  MatShift_IS(Mat A,PetscScalar a)
 {
+  Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecSet(is->y,a);CHKERRQ(ierr);
   ierr = MatDiagonalSet_IS(A,NULL,ADD_VALUES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

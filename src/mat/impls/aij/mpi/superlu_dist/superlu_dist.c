@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #endif
 
-#if defined(PETSC_USE_64BIT_INDICES)
-/* ugly SuperLU_Dist variable telling it to use long long int */
-#define _LONGINT
-#endif
-
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
 #include <superlu_zdefs.h>

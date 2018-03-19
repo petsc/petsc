@@ -28,20 +28,20 @@ typedef struct {
 PetscErrorCode MyMonitor(TS ts,PetscInt stepnum,PetscReal time,Vec U,void *ctx)
 {
   AppCtx            *actx=(AppCtx*)ctx;
-  Vec               *s,*sp;
-  const PetscScalar *u;
-  PetscInt          nump,num;
+  Mat               sp;
+  PetscScalar       *u;
+  PetscInt          nump;
   FILE              *f;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (time >= actx->print_time) {
     actx->print_time += 1./256.;
-    ierr = TSForwardGetSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(sp[0],&u);CHKERRQ(ierr);
+    ierr = TSForwardGetSensitivities(ts,&nump,&sp);CHKERRQ(ierr);
+    ierr = MatDenseGetColumn(sp,2,&u);CHKERRQ(ierr);
     f = fopen("fwd_sp.out", "a");
     ierr = PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",time,u[0],u[1]);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(sp[0],&u);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumn(sp,&u);CHKERRQ(ierr);
     fclose(f);
   }
   PetscFunctionReturn(0);
@@ -66,16 +66,16 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
 
 PetscErrorCode ShiftGradients(TS ts,Vec U,AppCtx *actx)
 {
-  Vec               *sp,*s;
+  Mat               sp;
   PetscScalar       *x;
-  const PetscScalar *u;
+  PetscScalar       *u;
   PetscErrorCode    ierr;
   PetscScalar       tmp[2],A1[2][2],A2[2],denorm;
-  PetscInt          num,nump;
+  PetscInt          nump;
 
   PetscFunctionBegin;
-  ierr = TSForwardGetSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = TSForwardGetSensitivities(ts,&nump,&sp);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
 
   if (actx->mode==1) {
     denorm = -actx->lambda1*(u[0]-100.*u[1])+1.*(10.*u[0]+u[1]);
@@ -97,28 +97,28 @@ PetscErrorCode ShiftGradients(TS ts,Vec U,AppCtx *actx)
     A2[1] = 0;
   }
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
 
-  ierr   = VecGetArray(s[0],&x);CHKERRQ(ierr);
+  ierr   = MatDenseGetColumn(sp,0,&x);CHKERRQ(ierr);
   tmp[0] = A1[0][0]*x[0]+A1[0][1]*x[1];
   tmp[1] = A1[1][0]*x[0]+A1[1][1]*x[1];
   x[0]   = tmp[0];
   x[1]   = tmp[1];
-  ierr   = VecRestoreArray(s[0],&x);CHKERRQ(ierr);
+  ierr   = MatDenseRestoreColumn(sp,&x);CHKERRQ(ierr);
 
-  ierr   = VecGetArray(s[1],&x);CHKERRQ(ierr);
+  ierr   = MatDenseGetColumn(sp,1,&x);CHKERRQ(ierr);
   tmp[0] = A1[0][0]*x[0]+A1[0][1]*x[1];
   tmp[1] = A1[1][0]*x[0]+A1[1][1]*x[1];
   x[0]   = tmp[0];
   x[1]   = tmp[1];
-  ierr   = VecRestoreArray(s[1],&x);CHKERRQ(ierr);
+  ierr   = MatDenseRestoreColumn(sp,&x);CHKERRQ(ierr);
 
-  ierr   = VecGetArray(sp[0],&x);CHKERRQ(ierr);
+  ierr   = MatDenseGetColumn(sp,2,&x);CHKERRQ(ierr);
   tmp[0] = A1[0][0]*x[0]+A1[0][1]*x[1];
   tmp[1] = A1[1][0]*x[0]+A1[1][1]*x[1];
   x[0]   = tmp[0]+A2[0];
   x[1]   = tmp[1]+A2[1];
-  ierr   = VecRestoreArray(sp[0],&x);CHKERRQ(ierr);
+  ierr   = MatDenseRestoreColumn(sp,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -208,7 +208,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 }
 
 /* Matrix JacobianP is constant so that it only needs to be evaluated once */
-static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Vec *Ap, void *ctx)
+static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat Ap,void *ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
@@ -219,7 +219,7 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  Vec            Ap[3];         /* dfdp */
+  Mat            Ap;            /* Jacobian dfdp */
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 2;
@@ -227,7 +227,7 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[1];
   PetscBool      terminate[1];
-  Vec            sp[1],s[2];
+  Mat            sp;
   PetscReal      tend;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -240,7 +240,7 @@ int main(int argc,char **argv)
   app.lambda2 = 0.36;
   app.print_time = 1./256.;
   tend = 0.125;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1adj options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1fwd options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-lambda1","","",app.lambda1,&app.lambda1,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-lambda2","","",app.lambda2,&app.lambda2,NULL);CHKERRQ(ierr);
@@ -259,27 +259,21 @@ int main(int argc,char **argv)
 
   ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(A,&Ap[0],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&sp[0],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&s[0],NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&s[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&Ap);CHKERRQ(ierr);
+  ierr = MatSetSizes(Ap,n,3,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(Ap,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Ap);CHKERRQ(ierr);
+  ierr = MatSetUp(Ap);CHKERRQ(ierr);
+  ierr = MatZeroEntries(Ap);CHKERRQ(ierr);
+
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,3,NULL,&sp);CHKERRQ(ierr);
+  ierr = MatZeroEntries(sp);CHKERRQ(ierr);
+  ierr = MatShift(sp,1.0);CHKERRQ(ierr);
 
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   u[0] = 0;
   u[1] = 1;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-
-  ierr = VecGetArray(s[0],&u);CHKERRQ(ierr);
-  u[0] = 1;
-  u[1] = 0;
-  ierr = VecRestoreArray(s[0],&u);CHKERRQ(ierr);
-
-  ierr = VecGetArray(s[1],&u);CHKERRQ(ierr);
-  u[0] = 0;
-  u[1] = 1;
-  ierr = VecRestoreArray(s[1],&u);CHKERRQ(ierr);
-
-  ierr = VecZeroEntries(sp[0]);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -295,9 +289,9 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
-  ierr = TSForwardSetSensitivities(ts,1,sp,2,s);CHKERRQ(ierr);
-    /*   Set RHS JacobianP */
-  ierr = TSForwardSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
+  ierr = TSForwardSetSensitivities(ts,3,sp);CHKERRQ(ierr);
+  /*   Set RHS JacobianP */
+  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
@@ -316,11 +310,6 @@ int main(int argc,char **argv)
      Run timestepping solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
-  /*
-  ierr = VecView(s[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(s[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(sp[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
@@ -329,10 +318,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&Ap[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&sp[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&s[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&s[1]);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ap);CHKERRQ(ierr);
+  ierr = MatDestroy(&sp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(ierr);
 }

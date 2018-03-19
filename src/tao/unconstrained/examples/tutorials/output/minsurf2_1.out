@@ -22,11 +22,17 @@ iter =  16, Function value 1.41776, Residual: 0.00261023
 iter =  17, Function value 1.41776, Residual: 0.00187318 
 Tao Object: 1 MPI processes
   type: lmvm
-      BFGS steps: 33
-      Scaled gradient steps: 1
-      Gradient steps: 0
+    BFGS steps: 16
+    Scaled gradient steps: 1
+    Gradient steps: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
   Residual in Function/Gradient:=0.00187318
   Objective value=1.41776

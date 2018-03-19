@@ -435,7 +435,7 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   /* Get boundary mesh */
   ierr = DMLabelCreate(bdName, &bdLabelFull);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, bdLabelFull);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabelFull);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(bdLabelFull, 1, &bdIS);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(bdLabelFull, 1, &numBdFaces);CHKERRQ(ierr);
   ierr = ISGetIndices(bdIS, &bdFacesFull);CHKERRQ(ierr);

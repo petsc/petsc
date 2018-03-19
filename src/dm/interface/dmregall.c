@@ -71,6 +71,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner);
 
 /*@C
   PetscPartitionerRegisterAll - Registers all of the PetscPartitioner components in the DM package.
@@ -99,6 +100,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather);CHKERRQ(ierr);
+  ierr = PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/

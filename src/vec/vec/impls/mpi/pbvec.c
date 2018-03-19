@@ -379,17 +379,22 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 
 static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
 {
+#if !defined(PETSC_HAVE_MPIUNI)
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE,set;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"VecMPI Options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-vec_assembly_bts","Use BuildTwoSided version of assembly","",flg,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-vec_assembly_legacy","Use MPI 1 version of assembly","",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {
-    X->ops->assemblybegin = flg ? VecAssemblyBegin_MPI_BTS : VecAssemblyBegin_MPI;
-    X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI_BTS   : VecAssemblyEnd_MPI;
+    X->ops->assemblybegin = flg ? VecAssemblyBegin_MPI : VecAssemblyBegin_MPI_BTS;
+    X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI   : VecAssemblyEnd_MPI_BTS;
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+#else
+  X->ops->assemblybegin =  VecAssemblyBegin_MPI;
+  X->ops->assemblyend   =  VecAssemblyEnd_MPI;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -415,8 +420,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecPointwiseMult_Seq,
                                 VecPointwiseDivide_Seq,
                                 VecSetValues_MPI, /* 20 */
-                                VecAssemblyBegin_MPI,
-                                VecAssemblyEnd_MPI,
+                                VecAssemblyBegin_MPI_BTS,
+                                VecAssemblyEnd_MPI_BTS,
                                 0,
                                 VecGetSize_MPI,
                                 VecGetSize_Seq,

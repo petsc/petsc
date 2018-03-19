@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=ipro
-set USR=petsc
-set LOC=/Users/petsc/${RNAME}-3
-set CONF=arch-osx-10.6-cxx-cmplx-pkgs-dbg

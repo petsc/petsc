@@ -352,7 +352,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

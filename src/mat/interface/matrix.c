@@ -4084,12 +4084,12 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 
     /* 1) See if a specialized converter is known to the current matrix and the desired class */
     for (i=0; i<3; i++) {
-      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,issame ? ((PetscObject)mat)->type_name : newtype);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscStrncpy(convname,"MatConvert_",sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,((PetscObject)mat)->type_name,sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,prefix[i],sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,issame ? ((PetscObject)mat)->type_name : newtype,sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)mat,convname,&conv);CHKERRQ(ierr);
       if (conv) goto foundconv;
     }
@@ -4099,12 +4099,12 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
     ierr = MatSetSizes(B,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,newtype);CHKERRQ(ierr);
     for (i=0; i<3; i++) {
-      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscStrncpy(convname,"MatConvert_",sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,((PetscObject)mat)->type_name,sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,prefix[i],sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
       if (conv) {
         ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -4221,9 +4221,9 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 @*/
 PetscErrorCode MatSolverTypeRegister(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
-  PetscBool                      flg;
+  PetscBool                   flg;
   MatSolverTypeForSpecifcType inext,iprev = NULL;
 
   PetscFunctionBegin;
@@ -4333,7 +4333,7 @@ PetscErrorCode MatSolverTypeGet(MatSolverType package,const MatType mtype,MatFac
 
 PetscErrorCode MatSolverTypeDestroy(void)
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
   MatSolverTypeForSpecifcType inext,iprev;
 
@@ -5032,7 +5032,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
    Concepts: matrices^diagonal scaling
    Concepts: diagonal scaling of matrices
 
-.seealso: MatScale()
+.seealso: MatScale(), MatShift(), MatDiagonalSet()
 @*/
 PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
@@ -9252,11 +9252,11 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   } else {
     /* dispatch based on the type of A and P from their PetscObject's PetscFunctionLists. */
     char ptapname[256];
-    ierr = PetscStrcpy(ptapname,"MatPtAP_");CHKERRQ(ierr);
-    ierr = PetscStrcat(ptapname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(ptapname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(ptapname,((PetscObject)P)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(ptapname,"_C");CHKERRQ(ierr); /* e.g., ptapname = "MatPtAP_seqdense_seqaij_C" */
+    ierr = PetscStrncpy(ptapname,"MatPtAP_",sizeof(ptapname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(ptapname,((PetscObject)A)->type_name,sizeof(ptapname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(ptapname,"_",sizeof(ptapname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(ptapname,((PetscObject)P)->type_name,sizeof(ptapname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(ptapname,"_C",sizeof(ptapname));CHKERRQ(ierr); /* e.g., ptapname = "MatPtAP_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,&ptap);CHKERRQ(ierr);
     if (!ptap) SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s (Misses composed function %s)",((PetscObject)A)->type_name,((PetscObject)P)->type_name,ptapname);
   }
@@ -9617,11 +9617,11 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   } else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
-    ierr = PetscStrcpy(multname,"MatMatMult_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
+    ierr = PetscStrncpy(multname,"MatMatMult_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)A)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&mult);CHKERRQ(ierr);
     if (!mult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
@@ -9696,11 +9696,11 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
     symbolic = Bsymbolic;
   } else { /* dispatch based on the type of A and B */
     char symbolicname[256];
-    ierr = PetscStrcpy(symbolicname,"MatMatMultSymbolic_");CHKERRQ(ierr);
-    ierr = PetscStrcat(symbolicname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(symbolicname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(symbolicname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(symbolicname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(symbolicname,"MatMatMultSymbolic_",sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(symbolicname,((PetscObject)A)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(symbolicname,"_",sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(symbolicname,((PetscObject)B)->type_name,sizeof(symbolicname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(symbolicname,"_C",sizeof(symbolicname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,symbolicname,&symbolic);CHKERRQ(ierr);
     if (!symbolic) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMultSymbolic requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
@@ -9875,11 +9875,11 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   } else {
     /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char multname[256];
-    ierr = PetscStrcpy(multname,"MatTransposeMatMult_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
+    ierr = PetscStrncpy(multname,"MatTransposeMatMult_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)A)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&transposematmult);CHKERRQ(ierr);
     if (!transposematmult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
@@ -9967,13 +9967,13 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
   } else {
     /* dispatch based on the type of A, B and C from their PetscObject's PetscFunctionLists. */
     char multname[256];
-    ierr = PetscStrcpy(multname,"MatMatMatMult_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,((PetscObject)C)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(multname,"MatMatMatMult_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)A)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)B)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_",sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,((PetscObject)C)->type_name,sizeof(multname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(multname,"_C",sizeof(multname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,&mult);CHKERRQ(ierr);
     if (!mult) SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatMatMult requires A, %s, to be compatible with B, %s, C, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);
   }

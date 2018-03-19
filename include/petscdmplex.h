@@ -27,6 +27,7 @@ typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERSHELL    "shell"
 #define PETSCPARTITIONERSIMPLE   "simple"
 #define PETSCPARTITIONERGATHER   "gather"
+#define PETSCPARTITIONERMATPARTITIONING "matpartitioning"
 
 PETSC_EXTERN PetscFunctionList PetscPartitionerList;
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
@@ -45,6 +46,8 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, DM, Pets
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
@@ -250,7 +253,7 @@ PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM, PetscRe
                                                                      void *, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM, PetscReal, Vec, Vec, Vec, PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscInt [],
                                                               PetscErrorCode (*)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, PetscInt, DMLabel);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt, const PetscInt [], const PetscInt [], PetscInt, const PetscInt [], const IS [], const IS [], IS, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexGetSubdomainSection(DM, PetscSection*);

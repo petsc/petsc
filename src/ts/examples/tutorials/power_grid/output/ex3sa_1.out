@@ -1,0 +1,15 @@
+
+ lambda: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]
+Vec Object: 1 MPI processes
+  type: seq
+-174.765
+15064.4
+
+ mu: d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]
+Vec Object: 1 MPI processes
+  type: seq
+444.994
+
+ cost function=11.4129
+
+ gradient=346.502

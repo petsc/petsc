@@ -131,7 +131,6 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
   PetscReal                    psi,ndpsi, normd, innerd, t=0;
   PetscInt                     nf;
   PetscErrorCode               ierr;
-  TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
@@ -147,11 +146,14 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,asls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(asls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
+  tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Check the termination criteria */
     ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, tao->niter, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
-    if (TAO_CONTINUE_ITERATING != reason) break;
+    ierr = TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (TAO_CONTINUE_ITERATING != tao->reason) break;
     tao->niter++;
 
     /* We are going to solve a linear system of equations.  We need to
@@ -281,7 +283,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 + -tao_ssls_delta - descent test fraction
 - -tao_ssls_rho - descent test power
 
-  Level: beginner 
+  Level: beginner
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
@@ -315,11 +317,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
   asls->identifier = 1e-5;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, armijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
 
@@ -337,5 +341,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-
-

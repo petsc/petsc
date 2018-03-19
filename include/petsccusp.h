@@ -3,6 +3,7 @@
 
 #include <petscvec.h>
 #include <cusp/array1d.h>
+#include <cublas_v2.h>
 
 PETSC_EXTERN PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, cusp::array1d<PetscScalar,cusp::device_memory> **a);
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, cusp::array1d<PetscScalar,cusp::device_memory> **a);
@@ -25,5 +26,6 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec v, PetscScalar **a)
 PETSC_EXTERN PetscErrorCode VecCUSPPlaceArray(Vec, cusp::array1d<PetscScalar,cusp::device_memory>*);
 PETSC_EXTERN PetscErrorCode VecCUSPReplaceArray(Vec, cusp::array1d<PetscScalar,cusp::device_memory>*);
 PETSC_EXTERN PetscErrorCode VecCUSPResetArray(Vec);
+PETSC_EXTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle);
 
 #endif

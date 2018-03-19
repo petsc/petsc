@@ -37,6 +37,8 @@ typedef struct {
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);  /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
+  PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
 
   DM dm;                                                  /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
@@ -56,6 +58,15 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
   if (!isnes) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
   ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),dmsnesvi->n,PETSC_DETERMINE,vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMHasCreateInjection_SNESVI(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -177,6 +188,8 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   dmsnesvi->dm->ops->createinterpolation = dmsnesvi->createinterpolation;
   dmsnesvi->dm->ops->coarsen             = dmsnesvi->coarsen;
   dmsnesvi->dm->ops->createglobalvector  = dmsnesvi->createglobalvector;
+  dmsnesvi->dm->ops->getinjection        = dmsnesvi->getinjection;
+  dmsnesvi->dm->ops->hascreateinjection  = dmsnesvi->hascreateinjection;
   /* need to clear out this vectors because some of them may not have a reference to the DM
     but they are counted as having references to the DM in DMDestroy() */
   ierr = DMClearGlobalVectors(dmsnesvi->dm);CHKERRQ(ierr);
@@ -217,6 +230,10 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
     dm->ops->coarsen              = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector  = dm->ops->createglobalvector;
     dm->ops->createglobalvector   = DMCreateGlobalVector_SNESVI;
+    dmsnesvi->getinjection        = dm->ops->getinjection;
+    dm->ops->getinjection         = NULL;
+    dmsnesvi->hascreateinjection  = dm->ops->hascreateinjection;
+    dm->ops->hascreateinjection   = DMHasCreateInjection_SNESVI;
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);

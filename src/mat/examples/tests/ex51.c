@@ -161,6 +161,6 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      args: -mat_block_size {{1 2 3 4 5 6 7 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}}
+      args: -mat_block_size {{1 2  5 7 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}}
 
 TEST*/

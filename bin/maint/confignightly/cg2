@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=cg
-set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-2
-set CONF=arch-linux-without-fc

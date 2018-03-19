@@ -47,6 +47,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DEL_PREVENT_METIS_DOWNLOAD=ON')
     args.append('-DEL_PREVENT_PARMETIS_DOWNLOAD=ON')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
+    args.append('-DPARMETIS_TEST_RUNS=TRUE')
     args.append('-DEL_DISABLE_SCALAPACK=ON')
     args.append('-DEL_DISABLE_MPFR=ON')
     args.append('-DCMAKE_INSTALL_LIBDIR:STRING="lib"')

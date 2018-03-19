@@ -49,9 +49,10 @@ class Installer(script.Script):
 
   def setupModules(self):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
-    self.arch          = self.framework.require('PETSc.options.arch',        None)
-    self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
+    self.arch          = self.framework.require('PETSc.options.arch',          None)
+    self.petscdir      = self.framework.require('PETSc.options.petscdir',      None)
     self.compilers     = self.framework.require('config.compilers',            None)
+    self.mpi           = self.framework.require('config.packages.MPI',         None)
     return
 
   def setup(self):
@@ -70,15 +71,15 @@ class Installer(script.Script):
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
     self.rootConfDir       = os.path.join(self.rootDir, 'lib','petsc','conf')
     self.archConfDir       = os.path.join(self.rootDir, self.arch, 'lib','petsc','conf')
-    self.rootBinDir        = os.path.join(self.rootDir, 'bin')
+    self.rootBinDir        = os.path.join(self.rootDir, 'lib','petsc','bin')
     self.archBinDir        = os.path.join(self.rootDir, self.arch, 'bin')
     self.archLibDir        = os.path.join(self.rootDir, self.arch, 'lib')
     self.destIncludeDir    = os.path.join(self.destDir, 'include')
     self.destConfDir       = os.path.join(self.destDir, 'lib','petsc','conf')
     self.destLibDir        = os.path.join(self.destDir, 'lib')
-    self.destBinDir        = os.path.join(self.destDir, 'bin')
+    self.destBinDir        = os.path.join(self.destDir, 'lib','petsc','bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
-    self.installBinDir     = os.path.join(self.installDir, 'bin')
+    self.installBinDir     = os.path.join(self.installDir, 'lib','petsc','bin')
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
     self.rootSrcDir        = os.path.join(self.rootDir, 'src')
@@ -207,7 +208,7 @@ class Installer(script.Script):
 
     return
 
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [],recurse = 1):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
        The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
@@ -234,9 +235,9 @@ class Installer(script.Script):
         if symlinks and os.path.islink(srcname):
           linkto = os.readlink(srcname)
           os.symlink(linkto, dstname)
-        elif os.path.isdir(srcname):
+        elif os.path.isdir(srcname) and recurse and not os.path.basename(srcname) in exclude:
           copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude))
-        elif not os.path.basename(srcname) in exclude:
+        elif os.path.isfile(srcname) and not os.path.basename(srcname) in exclude:
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
@@ -298,45 +299,39 @@ class Installer(script.Script):
     f.write('copies = '+repr(self.copies).replace(self.destDir,self.installDir))
     f.write('''
 for src, dst in copies:
-  try:
+  if os.path.exists(dst):
     os.remove(dst)
-  except:
-    pass
-''')
-    #TODO: need to delete libXXX.YYY.dylib.dSYM directory on Mac
-    dirs = [os.path.join('include','petsc','finclude'),os.path.join('include','petsc','mpiuni'),os.path.join('include','petsc','private'),os.path.join('bin'),os.path.join('lib','petsc','conf')]
-    newdirs = []
-    for dir in dirs: newdirs.append(os.path.join(self.installDir,dir))
-    f.write('dirs = '+str(newdirs))
-    f.write('''
-for dir in dirs:
-  import shutil
-  try:
-    shutil.rmtree(dir)
-  except:
-    pass
 ''')
     f.close()
     os.chmod(uninstallscript,0744)
     return
 
   def installIncludes(self):
-    # TODO: should exclude petsc-mpi.uni except for uni builds
-    # TODO: should exclude petsc/finclude except for fortran builds
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = ['makefile']))
+    exclude = ['makefile']
+    if not hasattr(self.compilers.setCompilers, 'FC'):
+      exclude.append('finclude')
+    if not self.mpi.usingMPIUni:
+      exclude.append('mpiuni')
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = exclude))
     self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
   def installConf(self):
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp']))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log']))
     return
 
   def installBin(self):
-    self.copies.extend(self.copytree(os.path.join(self.rootBinDir), os.path.join(self.destBinDir)))
-    # TODO: should copy over petsc-mpiexec.uni only for uni builds
-    self.copies.extend(self.copyfile(os.path.join(self.rootBinDir,'petsc-mpiexec.uni'), self.destBinDir))
-    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = ['bfort','bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']))
+    exclude = ['bfort','bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']
+    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = exclude ))
+    exclude = ['maint']
+    if not self.mpi.usingMPIUni:
+      exclude.append('petsc-mpiexec.uni')
+    self.setCompilers.pushLanguage('C')
+    if not self.setCompilers.isWindows(self.setCompilers.getCompiler(),self.log):
+      exclude.append('win32fe')
+    self.setCompilers.popLanguage()
+    self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir, exclude = exclude ))
     return
 
   def installShare(self):
@@ -377,7 +372,8 @@ for dir in dirs:
     return
 
   def installLib(self):
-    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR', 'sowing']))
+    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
+    self.copies.extend(self.copytree(os.path.join(self.archLibDir,'pkgconfig'), os.path.join(self.destLibDir,'pkgconfig'), copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
     return
 
 

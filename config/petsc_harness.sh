@@ -84,6 +84,7 @@ shift $(( $OPTIND - 1 ))
 
 # Individual tests can extend the default
 TIMEOUT=$((TIMEOUT*timeoutfactor))
+STARTTIME=`date +%s`
 
 if test -n "$extra_args"; then
   args="$args $extra_args"
@@ -199,6 +200,8 @@ function petsc_testend() {
   if test ${skip} -gt 0; then
     printf "skip $skip\n" >> $logfile
   fi
+  ENDTIME=`date +%s`
+  printf "time $(($ENDTIME - $STARTTIME))\n" >> $logfile
   if $cleanup; then
     echo "Cleaning up"
     /bin/rm -f $rmfiles

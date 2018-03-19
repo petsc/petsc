@@ -407,8 +407,8 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   if (part->ops->destroy) {
     ierr              = (*part->ops->destroy)(part);CHKERRQ(ierr);
-    part->ops->destroy = NULL;
   }
+  ierr = PetscMemzero(part->ops, sizeof(struct _PetscPartitionerOps));CHKERRQ(ierr);
   ierr = (*r)(part);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) part, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1587,6 +1587,11 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  {
+    PetscBool flg = PETSC_TRUE;
+    ierr = PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_ptscotch_vertex_weight", &flg, NULL);CHKERRQ(ierr);
+    if (!flg) velotab = NULL;
+  }
   ierr = SCOTCH_graphInit(&grafdat);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_graphBuild(&grafdat, 0, vertnbr, xadj, xadj + 1, velotab, NULL, edgenbr, adjncy, edlotab);CHKERRPTSCOTCH(ierr);
   ierr = SCOTCH_stratInit(&stradat);CHKERRPTSCOTCH(ierr);
@@ -1618,6 +1623,11 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  {
+    PetscBool flg = PETSC_TRUE;
+    ierr = PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_ptscotch_vertex_weight", &flg, NULL);CHKERRQ(ierr);
+    if (!flg) veloloctab = NULL;
+  }
   ierr = MPI_Comm_size(comm, &procglbnbr);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &proclocnum);CHKERRQ(ierr);
   vertlocnbr = vtxdist[proclocnum + 1] - vtxdist[proclocnum];

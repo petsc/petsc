@@ -84,21 +84,18 @@
       call MatMult(A, u, b, ierr)
 
       call MatFactorInfoInitialize(info,ierr)
+      call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)
       if (wmumps) then
           write(*,*) 'use MUMPS LU...'
           call MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,fact,ierr)
-          call MatLUFactorSymbolic(fact, A, PETSC_NULL_IS,                               &
-     &                    PETSC_NULL_IS,info, ierr)
       else
          write(*,*) 'use PETSc LU...'
-         call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)
          call MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,fact,ierr)
-
-         call MatLUFactorSymbolic(fact, A, perm, iperm,                                   &
-     &         info, ierr)
-         call ISDestroy(perm,ierr)
-         call ISDestroy(iperm,ierr)
       endif
+      call MatLUFactorSymbolic(fact, A, perm, iperm,                                   &
+     &         info, ierr)
+      call ISDestroy(perm,ierr)
+      call ISDestroy(iperm,ierr)
 
       call MatLUFactorNumeric(fact, A, info, ierr)
       call MatSolve(fact, b, x,ierr)

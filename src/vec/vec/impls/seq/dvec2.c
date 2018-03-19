@@ -1,7 +1,7 @@
 
 /*
    Defines some vector operation functions that are shared by
-  sequential and parallel vectors.
+   sequential and parallel vectors.
 */
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/kernels/petscaxpy.h>
@@ -672,8 +672,8 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
 #include <../src/vec/vec/impls/seq/ftn-kernels/fwaxpy.h>
 /*
    IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
-  to be slower than a regular C loop.  Hence,we do not include it.
-  void ?zaxpy(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*);
+   to be slower than a regular C loop.  Hence,we do not include it.
+   void ?zaxpy(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*);
 */
 
 PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)

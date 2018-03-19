@@ -144,12 +144,10 @@ struct _p_TS {
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */
-  Vec       *vecs_fwdsensipacked;    /* packed vector array for forward sensitivitis */
-  Vec       *vecs_integral_sensi;    /* one vector for each integral */
+  Mat       mat_sensip;              /* matrix storing forward sensitivities */
   Vec       *vecs_integral_sensip;   /* one vector for each integral */
   PetscInt  num_parameters;
   PetscInt  num_initialvalues;
-  Vec       *vecs_jacp;
   void      *vecsrhsjacobianpctx;
   PetscInt  forwardsetupcalled;
   PetscBool forward_solve;
@@ -217,6 +215,8 @@ struct _p_TS {
   Vec       vatol,vrtol;            /* Relative and absolute tolerance in vector form */
   PetscReal cfltime,cfltime_local;
 
+  PetscBool testjacobian;
+  PetscBool testjacobiantranspose;
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
   Vec      *work;
@@ -398,4 +398,11 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
+struct _n_TSMonitorDrawCtx {
+  PetscViewer   viewer;
+  Vec           initialsolution;
+  PetscBool     showinitial;
+  PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool     showtimestepandtime;
+};
 #endif

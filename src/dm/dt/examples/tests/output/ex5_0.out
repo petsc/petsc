@@ -18,3 +18,4 @@ Basic Finite Element:
         type: poly
         Space in 2 variables of order 1 with 3 components
         Polynomial space of degree 1
+  Continuous Lagrange dual space of order 1   with 3 components  

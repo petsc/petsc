@@ -187,7 +187,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-with-alternatives=<bool>',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
+    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to unpack and run the build process for downloaded packages'))
     help.addArgument('Framework', '-with-batch=<bool>',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
     help.addArgument('Framework', '-with-file-create-pause=<bool>', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help
@@ -419,6 +419,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if output.find('warning: ISO C90 does not support') >= 0: return output
     if output.find('warning: ISO C does not support') >= 0: return output
     if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
+    if output.find('(E) Invalid statement found within an interface block. Executable statement, statement function or syntax error encountered.') >= 0: return output
     elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
@@ -821,7 +822,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import time, sys
     self.log.write(('='*80)+'\n')
     self.log.write(('='*80)+'\n')
-    self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
+    self.log.write('Starting configure run at '+time.strftime('%a, %d %b %Y %H:%M:%S %z')+'\n')
     self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
     self.log.write('Machine platform:\n' + str(platform.uname())+'\n')

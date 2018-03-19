@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,FormIJacobian,&user);CHKERRQ(ierr);
-  ftime = 142;
+  ftime = 22;
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 

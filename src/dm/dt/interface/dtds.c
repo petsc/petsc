@@ -163,10 +163,10 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       else                        {ierr = PetscViewerASCIIPrintf(viewer, " (adj FUNKY)");CHKERRQ(ierr);}
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
-      else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
-    }
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
+    else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (numConstants) {
@@ -274,7 +274,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) prob);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscDSViewFromOptions(prob, NULL, "-petscds_view");CHKERRQ(ierr);
+  if (prob->Nf) {ierr = PetscDSViewFromOptions(prob, NULL, "-petscds_view");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

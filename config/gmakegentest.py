@@ -389,11 +389,11 @@ class generateExamples(Petsc):
       if not self.petsc_arch == '':
         # Case 1
         subst['CONFIG_DIR']=os.path.join(self.petsc_dir,'config')
-        subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'bin')
+        subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
       else:
         # Case 2
         subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')
-        subst['PETSC_BINDIR']=os.path.join(os.path.dirname(self.srcdir),'bin')
+        subst['PETSC_BINDIR']=os.path.join(os.path.dirname(self.srcdir),'lib','petsc','bin')
     else:
       # Case 3
       subst['CONFIG_DIR']=os.path.join(os.path.dirname(self.srcdir),'config')

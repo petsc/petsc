@@ -310,8 +310,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
 PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetDistinctSmoothUp(PC);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
@@ -326,6 +325,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetR(PC,PetscInt,Vec);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRestriction(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetRestriction(PC,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode PCMGSetInjection(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGGetInjection(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInterpolation(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);

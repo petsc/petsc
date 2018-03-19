@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=n-gage
+set USR=petsc
+set PETSC_DIR=/export/home/petsc/${RNAME}
+set PETSC_ARCH=arch-opensolaris-pkgs-opt

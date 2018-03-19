@@ -81,17 +81,16 @@ typedef struct{
 
   PetscBool useScale;
   Vec scale;
-
+  
+  PetscBool recycle;
 
 } MatLMVMCtx;
 
-
-extern PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
-
+PETSC_EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 /* PETSc Mat overrides */
-extern PetscErrorCode MatView_LMVM(Mat,PetscViewer);
-extern PetscErrorCode MatDestroy_LMVM(Mat);
+PETSC_EXTERN PetscErrorCode MatView_LMVM(Mat, PetscViewer);
+PETSC_EXTERN PetscErrorCode MatDestroy_LMVM(Mat);
 
 /*
 int MatMultTranspose_LMVM(Mat,Vec,Vec);
@@ -110,19 +109,21 @@ int MatNorm_LMVM(Mat,NormType,PetscReal *);
 */
 
 /* Functions used by TAO */
-PetscErrorCode MatLMVMReset(Mat);
-PetscErrorCode MatLMVMUpdate(Mat,Vec, Vec);
-PetscErrorCode MatLMVMSetDelta(Mat,PetscReal);
-PetscErrorCode MatLMVMSetScale(Mat,Vec);
-PetscErrorCode MatLMVMGetRejects(Mat,PetscInt*);
-PetscErrorCode MatLMVMSetH0(Mat,Mat);
-PetscErrorCode MatLMVMGetH0(Mat,Mat*);
-PetscErrorCode MatLMVMGetH0KSP(Mat,KSP*);
-PetscErrorCode MatLMVMSetPrev(Mat,Vec,Vec);
-PetscErrorCode MatLMVMGetX0(Mat,Vec);
-PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
-PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);
-PetscErrorCode MatLMVMSolve(Mat, Vec, Vec);
-
+PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMGetUpdates(Mat, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatLMVMSetRecycleFlag(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatLMVMGetRecycleFlag(Mat, PetscBool *);
+PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMSetDelta(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatLMVMSetScale(Mat, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetRejects(Mat, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatLMVMSetH0(Mat, Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMGetH0(Mat, Mat *);
+PETSC_EXTERN PetscErrorCode MatLMVMGetH0KSP(Mat, KSP *);
+PETSC_EXTERN PetscErrorCode MatLMVMSetPrev(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetX0(Mat, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);
+PETSC_EXTERN PetscErrorCode MatLMVMSolve(Mat, Vec, Vec);
 
 #endif

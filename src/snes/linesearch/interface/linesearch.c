@@ -22,7 +22,7 @@ PetscLogEvent SNESLINESEARCH_Apply;
    Notes:
    There is no way to clear one specific monitor from a SNESLineSearch object.
 
-   This does not clear the monitor set with SNESLineSearchSetDefaultMonitor() use SNESLineSearchSetDefaultMonitor(ls,NULL) to cancel 
+   This does not clear the monitor set with SNESLineSearchSetDefaultMonitor() use SNESLineSearchSetDefaultMonitor(ls,NULL) to cancel
    that one.
 
    Level: intermediate
@@ -108,7 +108,7 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      identical;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,SNESLINESEARCH_CLASSID,1);
   for (i=0; i<ls->numbermonitors;i++) {
@@ -341,11 +341,11 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
 
    Level: advanced
 
-.seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck() 
+.seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck()
 M*/
 
 /*@C
-   SNESLineSearchSetPreCheck - Sets a user function that is called after the initial search direction has been computed but 
+   SNESLineSearchSetPreCheck - Sets a user function that is called after the initial search direction has been computed but
          before the line search routine has been applied. Allows the user to adjust the result of (usually a linear solve) that
          determined the search direction.
 
@@ -738,8 +738,8 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
 
    Level: intermediate
 
-   Developer Note: This monitor is implemented differently than the other SNESLineSearchMonitors that are set with 
-     SNESLineSearchMonitorSet() since it is called in many locations of the line search routines to display aspects of the 
+   Developer Note: This monitor is implemented differently than the other SNESLineSearchMonitors that are set with
+     SNESLineSearchMonitorSet() since it is called in many locations of the line search routines to display aspects of the
      line search that are not visible to the other monitors.
 
 .seealso: SNESLineSearchGetDefaultMonitor(), PetscViewer, SNESLineSearchSetMonitor()
@@ -884,7 +884,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   ierr = SNESLineSearchMonitorSetFromOptions(linesearch,"-snes_linesearch_monitor_solution_update","View correction at each iteration","SNESLineSearchMonitorSolutionUpdate",SNESLineSearchMonitorSolutionUpdate,NULL);CHKERRQ(ierr);
-  
+
   /* tolerances */
   ierr = PetscOptionsReal("-snes_linesearch_minlambda","Minimum step length","SNESLineSearchSetTolerances",linesearch->steptol,&linesearch->steptol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_maxstep","Maximum step size","SNESLineSearchSetTolerances",linesearch->maxstep,&linesearch->maxstep,NULL);CHKERRQ(ierr);
@@ -950,6 +950,9 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    PetscInt     tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer);CHKERRQ(ierr);
     if (linesearch->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -969,6 +972,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
     if (linesearch->ops->postcheck) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n", linesearch->max_its);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

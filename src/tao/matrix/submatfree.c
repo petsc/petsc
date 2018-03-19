@@ -16,8 +16,7 @@
 .  J - New matrix
 
    Notes:
-   The user provides the input data and is responsible for destroying
-   this data after matrix J has been destroyed.
+   The caller is responsible for destroying the input objects after matrix J has been destroyed.
 
    Level: developer
 
@@ -28,22 +27,16 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   MPI_Comm         comm=PetscObjectComm((PetscObject)mat);
   MatSubMatFreeCtx ctx;
   PetscErrorCode   ierr;
-  PetscMPIInt      size;
   PetscInt         mloc,nloc,m,n;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&ctx);CHKERRQ(ierr);
-  ctx->A=mat;
-  ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = VecCreateSeq(comm,n,&ctx->VC);CHKERRQ(ierr);
-  } else {
-    ierr = VecCreateMPI(comm,nloc,n,&ctx->VC);CHKERRQ(ierr);
-  }
-  ctx->VR=ctx->VC;
-  ierr =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr    = PetscNew(&ctx);CHKERRQ(ierr);
+  ctx->A  = mat;
+  ierr    = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr    = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);
+  ierr    = MatCreateVecs(mat,NULL,&ctx->VC);CHKERRQ(ierr);
+  ctx->VR = ctx->VC;
+  ierr    =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
 
 
   ctx->Rows = Rows;
@@ -51,7 +44,7 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ierr = PetscObjectReference((PetscObject)Rows);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)Cols);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,mloc,nloc,m,n,ctx,J);CHKERRQ(ierr);
-
+  ierr = MatShellSetManageScalingShifts(*J);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_SMF);CHKERRQ(ierr);
@@ -298,18 +291,6 @@ PetscErrorCode MatGetColumnVector_SMF(Mat mat,Vec Y, PetscInt col)
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = MatGetColumnVector(ctx->A,Y,col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatConvert_SMF(Mat mat,MatType newtype,Mat *NewMat)
-{
-  PetscErrorCode    ierr;
-  PetscMPIInt       size;
-  MatSubMatFreeCtx  ctx;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  PetscFunctionReturn(1);
 }
 
 PetscErrorCode MatNorm_SMF(Mat mat,NormType type,PetscReal *norm)

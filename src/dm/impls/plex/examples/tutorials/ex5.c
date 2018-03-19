@@ -85,5 +85,11 @@ int main(int argc, char **argv)
     requires: exodusii broken
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+  # reproduce PetscSFView() crash - fixed, left as regression test
+  test:
+    suffix: new_dm_view
+    requires: exodusii
+    nsize: 2
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
 
 TEST*/

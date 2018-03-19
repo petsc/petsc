@@ -315,8 +315,8 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatShift\n");CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
-    ierr = MatShift(A2,1.0);CHKERRQ(ierr);
-    ierr = MatShift(B2,1.0);CHKERRQ(ierr);
+    ierr = MatShift(A2,2.0);CHKERRQ(ierr);
+    ierr = MatShift(B2,2.0);CHKERRQ(ierr);
     ierr = CheckMat(A2,B2,PETSC_FALSE,"MatShift");CHKERRQ(ierr);
     ierr = MatDestroy(&A2);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);

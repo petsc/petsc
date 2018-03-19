@@ -1,0 +1,6 @@
+#! /bin/csh
+
+set MACH=ipro
+set USR=petsc
+set PETSC_DIR=/Users/petsc/${RNAME}
+set PETSC_ARCH=arch-osx-10.6

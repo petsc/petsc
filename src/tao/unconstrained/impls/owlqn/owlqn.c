@@ -63,7 +63,6 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   PetscErrorCode               ierr;
   PetscInt                     stepType;
   PetscInt                     iter = 0;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -82,8 +81,11 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
-  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
-  if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
   if (f != 0.0) {
@@ -99,7 +101,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   lmP->grad = 0;
 
   /* Have not converged; continue with Newton method */
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
@@ -231,7 +233,9 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
     ierr = VecNorm(lmP->GV,NORM_2,&gnorm);CHKERRQ(ierr);
 
     iter++;
-    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
     if ((int)ls_status < 0) break;
   }
@@ -349,10 +353,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,owarmijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

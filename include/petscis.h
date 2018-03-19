@@ -64,6 +64,7 @@ PETSC_EXTERN PetscErrorCode ISView(IS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode ISLoad(IS,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
+PETSC_EXTERN PetscErrorCode ISEqualUnsorted(IS,IS,PetscBool *);
 PETSC_EXTERN PetscErrorCode ISSort(IS);
 PETSC_EXTERN PetscErrorCode ISSortRemoveDups(IS);
 PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);
@@ -210,7 +211,7 @@ struct _n_PetscLayout{
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
 };
 
-/*@
+/*@C
      PetscLayoutFindOwner - Find the owning rank for a global index
 
     Not Collective
@@ -307,6 +308,7 @@ PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCopy(PetscSection, PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionCompare(PetscSection, PetscSection, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);

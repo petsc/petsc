@@ -287,7 +287,10 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     DM               dm;
     PetscErrorCode   (*cJ)(SNES,Vec,Mat,Mat,void*);
     void             *ctx;
+    PetscInt         tabs;
 
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (!snes->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  SNES has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -333,6 +336,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     } else if (cJ == SNESComputeJacobianDefaultColor) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences with coloring\n");CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isstring) {
     const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
@@ -360,8 +364,8 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 
     ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(str,"SNES: ");CHKERRQ(ierr);
-    ierr   = PetscStrcat(str,((PetscObject)snes)->type_name);CHKERRQ(ierr);
+    ierr   = PetscStrncpy(str,"SNES: ",sizeof(str));CHKERRQ(ierr);
+    ierr   = PetscStrlcat(str,((PetscObject)snes)->type_name,sizeof(str));CHKERRQ(ierr);
     ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
@@ -390,15 +394,11 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 #endif
   }
   if (snes->linesearch) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (snes->npc && snes->usesnpc) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = SNESView(snes->npc, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = DMGetDMSNES(snes->dm,&dmsnes);CHKERRQ(ierr);
@@ -406,9 +406,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (snes->usesksp) {
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (isdraw) {
     PetscDraw draw;
@@ -1436,7 +1434,7 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
    Notes:
    This counter is reset to zero for each successive call to SNESSolve() unless SNESSetCountersReset() is used.
 
-   If the linear solver fails inside the SNESSolve() the iterations for that call to the linear solver are not included. If you wish to count them 
+   If the linear solver fails inside the SNESSolve() the iterations for that call to the linear solver are not included. If you wish to count them
    then call KSPGetIterationNumber() after the failed solve.
 
    Level: intermediate
@@ -2609,7 +2607,7 @@ M*/
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, J, 
+.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, J,
           SNESSetPicard(), SNESJacobianFunction
 @*/
 PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
@@ -3538,11 +3536,11 @@ PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
   PetscInt       i,n = snes->numbermonitors;
 
   PetscFunctionBegin;
-  ierr = VecLockPush(snes->vec_sol);CHKERRQ(ierr);  
+  ierr = VecLockPush(snes->vec_sol);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*snes->monitor[i])(snes,iter,rnorm,snes->monitorcontext[i]);CHKERRQ(ierr);
   }
-  ierr = VecLockPop(snes->vec_sol);CHKERRQ(ierr);    
+  ierr = VecLockPop(snes->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

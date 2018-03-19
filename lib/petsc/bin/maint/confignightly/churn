@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=churn
+set USR=petsc
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-pkgs-dbg-ftn-interfaces

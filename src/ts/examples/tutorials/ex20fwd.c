@@ -12,7 +12,7 @@ Input parameters include:\n";
 */
 /* ------------------------------------------------------------------------
 
-   This code demonstrates two ways of computing trajectory sensitivties w.r.t. intial values and the stiffness parameter mu.
+   This code demonstrates how to compute trajectory sensitivties w.r.t. the stiffness parameter mu.
    1) Use two vectors s and sp for sensitivities w.r.t. intial values and paraeters respectively. This case requires the original Jacobian matrix and a JacobianP matrix for the only parameter mu.
    2) Consider the intial values to be parameters as well. Then there are three parameters in total. The JacobianP matrix will be combined matrix of the Jacobian matrix and JacobianP matrix in the previous case. This choice can be selected by using command line option '-combined'
 
@@ -24,16 +24,14 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
-
+  PetscBool combined;
   /* Sensitivity analysis support */
   PetscInt  steps;
   PetscReal ftime;
-  Mat       A;                      /* Jacobian matrix */
-  Vec       jacp_combined[3];       /* JacobianP matrix (p includes initial values)*/
-  Vec       jacp[1];                /* JacobianP matrix */
+  Mat       Jac;                    /* Jacobian matrix */
+  Mat       Jacp;                   /* JacobianP matrix */
   Vec       x;
-  Vec       s_combined[3];          /* forward sensitivity variables */
-  Vec       s[2],sp[1];
+  Mat       sp;                     /* forward sensitivity variables */
 };
 
 /*
@@ -68,10 +66,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   PetscFunctionBeginUser;
   ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
-
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
@@ -84,36 +80,24 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobianP_Combined(TS ts,PetscReal t,Vec X,Vec *J,void *ctx)
+static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 {
-  PetscErrorCode    ierr;
-  PetscScalar       *j;
+  User              user = (User)ctx;
+  PetscInt          row[] = {0,1},col[]={0};
+  PetscScalar       J[2][1];
   const PetscScalar *x;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecZeroEntries(J[0]);CHKERRQ(ierr);
-  ierr = VecZeroEntries(J[1]);CHKERRQ(ierr);
+  if (user->combined) col[0] = 2;
+  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  J[0][0] = 0;
+  J[1][0] = (1.-x[0]*x[0])*x[1]-x[0];
+  ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
-  ierr = VecGetArray(J[2],&j);CHKERRQ(ierr);
-  j[0] = 0;
-  j[1] = (1.-x[0]*x[0])*x[1]-x[0];
-  ierr = VecRestoreArray(J[2],&j);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Vec *J,void *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *j;
-  const PetscScalar *x;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(J[0],&j);CHKERRQ(ierr);
-  j[0] = 0;
-  j[1] = (1.-x[0]*x[0])*x[1]-x[0];
-  ierr = VecRestoreArray(J[0],&j);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,10 +131,11 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 int main(int argc,char **argv)
 {
   TS             ts;
-  PetscBool      monitor = PETSC_FALSE,combined = PETSC_FALSE;
-  PetscScalar    *x_ptr,*y_ptr;
+  PetscBool      monitor = PETSC_FALSE;
+  PetscScalar    *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
+  PetscInt       rows,cols;
   PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -168,33 +153,29 @@ int main(int argc,char **argv)
   user.mu          = 1.0e6;
   user.steps       = 0;
   user.ftime       = 0.5;
+  user.combined    = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-combined",&combined,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-combined",&user.combined,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&user.A);CHKERRQ(ierr);
-  ierr = MatSetSizes(user.A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user.A);CHKERRQ(ierr);
-  ierr = MatSetUp(user.A);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.A,&user.x,NULL);CHKERRQ(ierr);
+  rows = 2;
+  cols = user.combined ? 3 : 1;
+  ierr = MatCreate(PETSC_COMM_WORLD,&user.Jac);CHKERRQ(ierr);
+  ierr = MatSetSizes(user.Jac,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(user.Jac);CHKERRQ(ierr);
+  ierr = MatSetUp(user.Jac);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jac,&user.x,NULL);CHKERRQ(ierr);
 
-  if (combined) {
-    ierr = MatCreateVecs(user.A,&user.jacp_combined[0],NULL);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.jacp_combined[1],NULL);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.jacp_combined[2],NULL);CHKERRQ(ierr);
-  } else {
-    ierr = MatCreateVecs(user.A,&user.jacp[0],NULL);CHKERRQ(ierr);
-  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,user.Jac,user.Jac,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,user.ftime);CHKERRQ(ierr);
   if (monitor) {
@@ -209,41 +190,20 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,1.0/1024.0);CHKERRQ(ierr);
 
-  if (combined) {
-    ierr = MatCreateVecs(user.A,&user.s_combined[0],NULL);CHKERRQ(ierr);
-    /*   Set initial conditions for the adjoint integration */
-    ierr = VecGetArray(user.s_combined[0],&y_ptr);CHKERRQ(ierr);
-    y_ptr[0] = 1.0; y_ptr[1] = 0.0;
-    ierr = VecRestoreArray(user.s_combined[0],&y_ptr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.s_combined[1],NULL);CHKERRQ(ierr);
-    ierr = VecGetArray(user.s_combined[1],&y_ptr);CHKERRQ(ierr);
-    y_ptr[0] = 0.0; y_ptr[1] = 1.0;
-    ierr = VecRestoreArray(user.s_combined[1],&y_ptr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.s_combined[2],NULL);CHKERRQ(ierr);
-    ierr = VecZeroEntries(user.s_combined[2]);CHKERRQ(ierr);
+  /* Set up forward sensitivity */
+  ierr = MatCreate(PETSC_COMM_WORLD,&user.Jacp);CHKERRQ(ierr);
+  ierr = MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,rows,cols);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(user.Jacp);CHKERRQ(ierr);
+  ierr = MatSetUp(user.Jacp);CHKERRQ(ierr);
+  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,NULL,&user.sp);CHKERRQ(ierr);
+  if (user.combined) {
+    ierr = MatZeroEntries(user.sp);CHKERRQ(ierr);
+    ierr = MatShift(user.sp,1.0);CHKERRQ(ierr);
   } else {
-    ierr = MatCreateVecs(user.A,&user.s[0],NULL);CHKERRQ(ierr);
-    /*   Set initial conditions for the adjoint integration */
-    ierr = VecGetArray(user.s[0],&y_ptr);CHKERRQ(ierr);
-    y_ptr[0] = 1.0; y_ptr[1] = 0.0;
-    ierr = VecRestoreArray(user.s[0],&y_ptr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.s[1],NULL);CHKERRQ(ierr);
-    ierr = VecGetArray(user.s[1],&y_ptr);CHKERRQ(ierr);
-    y_ptr[0] = 0.0; y_ptr[1] = 1.0;
-    ierr = VecRestoreArray(user.s[1],&y_ptr);CHKERRQ(ierr);
-    ierr = MatCreateVecs(user.A,&user.sp[0],NULL);CHKERRQ(ierr);
-    ierr = VecZeroEntries(user.sp[0]);CHKERRQ(ierr);
+    ierr = MatZeroEntries(user.sp);CHKERRQ(ierr);
   }
-
-  if (combined) {
-    ierr = TSForwardSetSensitivities(ts,3,user.s_combined,0,NULL);CHKERRQ(ierr);
-    /*   Set RHS JacobianP */
-    ierr = TSForwardSetRHSJacobianP(ts,user.jacp_combined,RHSJacobianP_Combined,&user);CHKERRQ(ierr);
-  } else {
-    ierr = TSForwardSetSensitivities(ts,1,user.sp,2,user.s);CHKERRQ(ierr);
-    /*   Set RHS JacobianP */
-    ierr = TSForwardSetRHSJacobianP(ts,user.jacp,RHSJacobianP,&user);CHKERRQ(ierr);
-  }
+  ierr = TSForwardSetSensitivities(ts,cols,user.sp);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -257,43 +217,20 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n");CHKERRQ(ierr);
   ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[z(tf)]/d[y0]\n");CHKERRQ(ierr);
-  if (combined) {
-    ierr = VecView(user.s_combined[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (user.combined) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[y0 z0 mu]\n");CHKERRQ(ierr);
   } else {
-    ierr = VecView(user.s[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity: d[y(tf) z(tf)]/d[mu]\n");CHKERRQ(ierr);
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[y(tf)]/d[z0]  d[z(tf)]/d[z0]\n");CHKERRQ(ierr);
-  if (combined) {
-    ierr = VecView(user.s_combined[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }else {
-    ierr = VecView(user.s[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: d[y(tf)]/d[mu] d[z(tf)]/d[mu]\n");CHKERRQ(ierr);
-  if (combined) {
-    ierr = VecView(user.s_combined[2],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  } else {
-    ierr = VecView(user.sp[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
+  ierr = MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&user.A);CHKERRQ(ierr);
-  if (combined) {
-    ierr = VecDestroy(&user.jacp_combined[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.jacp_combined[1]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.jacp_combined[2]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.s_combined[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.s_combined[1]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.s_combined[2]);CHKERRQ(ierr);
-  } else {
-    ierr = VecDestroy(&user.jacp[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.s[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.s[1]);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.sp[0]);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&user.Jac);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.sp);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
@@ -304,13 +241,12 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
-      requires: !complex !single
-      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
+      requires:  !complex !single
 
     test:
       suffix: 2
-      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
-      requires:  !complex !single
-      output_file: output/ex20fwd_1.out
+      requires: !complex !single
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
 
 TEST*/

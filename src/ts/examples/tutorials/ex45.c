@@ -101,7 +101,7 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscFunctionBeginUser;
   ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -153,7 +153,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "temperature");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);

@@ -72,7 +72,6 @@ int main(int argc,char **args)
   ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
     PetscScalar one = 1.0;
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
@@ -169,7 +168,14 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
 
 TEST*/

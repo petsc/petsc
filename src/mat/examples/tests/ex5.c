@@ -154,6 +154,7 @@ int main(int argc,char **args)
    test:
       suffix: 11_A
       args: -mat_type seqaij -rectA
+      filter: grep -v type
 
    test:
       args: -mat_type seqdense -rectA
@@ -162,6 +163,7 @@ int main(int argc,char **args)
    test:
       args: -mat_type seqaij -rectB
       suffix: 11_B
+      filter: grep -v type
 
    test:
       args: -mat_type seqdense -rectB
@@ -170,6 +172,7 @@ int main(int argc,char **args)
    test:
       suffix: 21
       args: -mat_type mpiaij
+      filter: grep -v type
 
    test:
       suffix: 22
@@ -179,6 +182,7 @@ int main(int argc,char **args)
       suffix: 23
       nsize: 3
       args: -mat_type mpiaij
+      filter: grep -v type
 
    test:
       suffix: 24
@@ -187,22 +191,23 @@ int main(int argc,char **args)
 
    test:
       suffix: 2_aijcusparse_1
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda
+      filter: grep -v type
       output_file: output/ex5_21.out
       requires: veccuda
 
    test:
       suffix: 2_aijcusparse_2
       nsize: 3
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda
+      filter: grep -v type
       output_file: output/ex5_23.out
       requires: veccuda
 
    test:
       suffix: 31
       args: -mat_type mpiaij -test_diagonalscale
+      filter: grep -v type
 
    test:
       suffix: 32
@@ -213,6 +218,7 @@ int main(int argc,char **args)
       suffix: 33
       nsize: 3
       args: -mat_type mpiaij -test_diagonalscale
+      filter: grep -v type
 
    test:
       suffix: 34
@@ -222,30 +228,30 @@ int main(int argc,char **args)
 
    test:
       suffix: 3_aijcusparse_1
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
+      filter: grep -v type
       output_file: output/ex5_31.out
       requires: veccuda
 
    test:
       suffix: 3_aijcusparse_2
       nsize: 3
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
+      filter: grep -v type
       output_file: output/ex5_33.out
       requires: veccuda
 
    test:
       suffix: aijcusparse_1
-      requires: cusparse
       args: -mat_type seqaijcusparse -vec_type cuda -rectA
+      filter: grep -v type
       output_file: output/ex5_11_A.out
       requires: veccuda
 
    test:
       suffix: aijcusparse_2
-      requires: cusparse
       args: -mat_type seqaijcusparse -vec_type cuda -rectB
+      filter: grep -v type
       output_file: output/ex5_11_B.out
       requires: veccuda
 

@@ -27,11 +27,11 @@ T*/
   replaces the input with scaled noise.
 
   To test with an inner Krylov method instead of noise, use PCKSP,  e.g.
-  $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0 -ksp_type fcg -pc_type ksp -ksp_ksp_rtol 1e-1 -ksp_ksp_type cg -ksp_pc_type none
+  mpiexec -n 2 ./ex60 -eta 0 -ksp_type fcg -pc_type ksp -ksp_ksp_rtol 1e-1 -ksp_ksp_type cg -ksp_pc_type none
   (note that eta is ignored here, and we specify the analogous quantity, the tolerance of the inner KSP solve,with -ksp_ksp_rtol)
 
   To test by adding noise to a PC of your choosing (say ilu), run e.g.
-  $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0.1 -ksp_type fcg -sub_0_pc_type ilu
+  mpiexec -n 2 ./ex60 -eta 0.1 -ksp_type fcg -sub_0_pc_type ilu
 
   Contributed by Patrick Sanan
 */

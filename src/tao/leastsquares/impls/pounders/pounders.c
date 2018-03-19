@@ -630,7 +630,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   TAO_POUNDERS       *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt           i,ii,j,k,l;
   PetscReal          step=1.0;
-  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
   PetscInt           low,high;
   PetscReal          minnorm;
   PetscReal          *x,*f;
@@ -701,7 +700,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<mfqP->n+1;++i) {
     ierr = VecCopy(mfqP->Xhist[0],mfqP->Xhist[i]);CHKERRQ(ierr);
- 
+
     if (i-1 >= low && i-1 < high) {
       ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
       x[i-1-low] += mfqP->delta;
@@ -809,12 +808,17 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   gnorm *= mfqP->delta;
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
   ierr = PetscInfo1(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
@@ -967,7 +971,9 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     gnorm *= mfqP->delta;
     /*  final criticality test */
-    ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     /* test for repeated model */
     if (mfqP->nmodelpoints==mfqP->last_nmodelpoints) {
       same = PETSC_TRUE;
@@ -987,7 +993,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
     if (same && mfqP->delta == deltaold) {
       ierr = PetscInfo(tao,"Identical model used in successive iterations\n");CHKERRQ(ierr);
-      reason = TAO_CONVERGED_STEPTOL;
       tao->reason = TAO_CONVERGED_STEPTOL;
     }
   }
@@ -1105,6 +1110,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
     ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)mfqP, 1);CHKERRQ(ierr);
     ierr = TaoSetType(mfqP->subtao,TAOTRON);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
     ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
@@ -1217,24 +1223,19 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool      isascii;
-  PetscInt       nits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "initial delta: %g\n",(double)mfqP->delta0);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "final delta: %g\n",(double)mfqP->delta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "model points: %D\n",mfqP->nmodelpoints);CHKERRQ(ierr);
     if (mfqP->usegqt) {
       ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: gqt\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "subproblem solver: %s\n",((PetscObject)mfqP->subtao)->type_name);CHKERRQ(ierr);
-      ierr = TaoGetTotalIterationNumber(mfqP->subtao,&nits);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "total subproblem iterations: %D\n",nits);CHKERRQ(ierr);
+      ierr = TaoView(mfqP->subtao, viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1247,7 +1248,7 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 - -tao_pounders_gqt - use gqt algorithm for subproblem instead of TRON
 
   Level: beginner
- 
+
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
@@ -1283,5 +1284,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->workxvec = 0;
   PetscFunctionReturn(0);
 }
-
-

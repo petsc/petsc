@@ -3208,14 +3208,14 @@ The commands above can also be set from the options database. The option
 names are \trl{-pc_mg_type [multiplicative, additive, full, kaskade]},
 and \trl{-pc_mg_cycle_type} \trl{<ctype>}. \findex{-pc_mg_type} \findex{-pc_mg_cycle_type}
 
-The user can control the amount of pre- and postsmoothing
-\sindex{smoothing} \sindex{relaxation} by using
-either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
-\trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
-the routines
+The user can control the amount of smoothing
+\sindex{smoothing} \sindex{relaxation} by configuring the solvers on
+the levels.  By default, the up and down smoothers are identical.  If
+separate configuration of up and down smooths is required, it can be
+requested with the option \findex{-pc_mg_distinct_smoothup}
+\trl{-pc_mg_distinct_smoothup} or the routine
 \begin{lstlisting}
-PCMGSetNumberSmoothUp(PC pc,PetscInt m);
-PCMGSetNumberSmoothDown(PC pc,PetscInt n);
+PCMGSetDistinctSmoothUp(PC pc);
 \end{lstlisting}
 
 The multigrid routines, which determine
@@ -4318,6 +4318,15 @@ the problem probably lies with the hand-coded
 matrix. \sindex{Jacobian, debugging}
 See the note in Section \ref{sec_snesjacobian} about assembling your Jabobian
 in the ``preconditioner'' slot \lstinline{B}.
+
+The correctness of user provided MATSHELL Jacobians in general can be checked with
+MatShellTestMultTranspose and MatShellTestMult.
+
+The correctness of user provided MATSHELL Jacobians via TSSetRHSJacobian can be checked with
+TSRHSJacobianTestTranspose and TSRHSJacobianTest that check the correction of the matrix-transpose vector product and the matrix-product. From
+the command line these can be checked with \trl{-ts_rhs_jacobian_test_mult_transpose} \trl{-mat_shell_test_mult_transpose_view}  and \trl{-ts_rhs_jacobian_test_mult} \trl{-mat_shell_test_mult_view}.
+
+
 
 \section{Inexact Newton-like Methods}
 
@@ -5459,7 +5468,7 @@ TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 
 If $F()$ is a function of $p$ one needs to also provide the Jacobian $-F_p$ with
 \begin{lstlisting}
-TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{lstlisting}
 The arguments for the function \lstinline{fp()}
 are the timestep context, current time, $y$, and the (optional) user-provided context.
@@ -5516,7 +5525,7 @@ with respect to the parameter $p_m$. $numcost$ is $1$ since it is a scalar funct
 For ODE solution, PETSc requires user-provided functions to evaluate the system $F(t,y,\dot{y},p)$ (set by \lstinline{TSSetIFunction()} )
 and its corresponding Jacobian $F_y + \sigma F_{\dot y}$ (set by \lstinline{TSSetIJacobian()}).
 Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here.
-For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSAdjointSetRHSJacobian()},
+For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSASetRHSJacobianP()},
 and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using \lstinline{TSSetCostIntegrand()}.
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$.

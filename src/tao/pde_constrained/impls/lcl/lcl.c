@@ -174,7 +174,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
   PetscInt                     phase2_iter,nlocal,its;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,f, descent, aldescent;
   PetscReal                    cnorm, mnorm;
@@ -242,9 +241,12 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
 
   /* Monitor convergence */
-  ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)
@@ -380,8 +382,10 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     /* Check convergence */
     ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
-    if (reason != TAO_CONTINUE_ITERATING){
+    ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING){
       break;
     }
 
@@ -558,7 +562,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
     /* Monitor convergence */
     tao->niter++;
-    ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -608,11 +614,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   lclP->solve_type=2;
   lclP->tau[0] = lclP->tau[1] = lclP->tau[2] = lclP->tau[3] = 1.0e-4;
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

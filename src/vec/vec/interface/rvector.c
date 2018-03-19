@@ -1277,7 +1277,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
-      if (n%bs || bs == 1) bs = -1; /* Do not decide block size if we do not have to */
+      if (n%bs || bs == 1 || !n) bs = -1; /* Do not decide block size if we do not have to */
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state) {

@@ -1413,6 +1413,8 @@ static PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultNumeric_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetColumn_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreColumn_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2202,7 +2204,6 @@ static PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
@@ -2265,6 +2266,22 @@ static PetscErrorCode MatMissingDiagonal_SeqDense(Mat A,PetscBool  *missing,Pets
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar **vals)
+{
+  Mat_SeqDense *a = (Mat_SeqDense*)A->data;
+
+  PetscFunctionBegin;
+  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  *vals = a->v+col*a->lda;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
+{
+  PetscFunctionBegin;
+  *vals = 0; /* user cannot accidently use the array later */
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
@@ -2650,6 +2667,57 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqdense_C",MatTransposeMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultSymbolic_seqaijmkl_seqdense_C",MatTransposeMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultNumeric_seqaijmkl_seqdense_C",MatTransposeMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetColumn_C",MatDenseGetColumn_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreColumn_C",MatDenseRestoreColumn_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseGetColumn - gives access to a column of a dense matrix. This is only the local part of the column. You MUST call MatDenseRestoreColumn() to avoid memory bleeding.
+
+   Not Collective
+
+   Input Parameter:
++  mat - a MATSEQDENSE or MATMPIDENSE matrix
+-  col - column index
+
+   Output Parameter:
+.  vals - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatDenseRestoreColumn()
+@*/
+PetscErrorCode MatDenseGetColumn(Mat A,PetscInt col,PetscScalar **vals)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatDenseGetColumn_C",(Mat,PetscInt,PetscScalar**),(A,col,vals));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseRestoreColumn - returns access to a column of a dense matrix which is returned by MatDenseGetColumn().
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQDENSE or MATMPIDENSE matrix
+
+   Output Parameter:
+.  vals - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatDenseGetColumn()
+@*/
+PetscErrorCode MatDenseRestoreColumn(Mat A,PetscScalar **vals)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatDenseRestoreColumn_C",(Mat,PetscScalar**),(A,vals));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

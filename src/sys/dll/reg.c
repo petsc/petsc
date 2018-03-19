@@ -19,14 +19,14 @@ PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}/libpetsc");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+  ierr = PetscStrncpy(libs,"${PETSC_LIB_DIR}/libpetsc",sizeof(libs));CHKERRQ(ierr);
+  ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
   if (*found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrcpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc");CHKERRQ(ierr);
-    ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+    ierr = PetscStrncpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc",sizeof(libs));CHKERRQ(ierr);
+    ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
     if (*found) {
       ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
@@ -460,8 +460,8 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
   PetscFunctionBegin;
   if (!fd) fd = PETSC_STDOUT;
 
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
+  ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
+  if (prefix) {ierr = PetscStrlcat(p,prefix,sizeof(p));CHKERRQ(ierr);}
   ierr = PetscFPrintf(comm,fd,"  %s%s <%s>: %s (one of)",p,name+1,def,text);CHKERRQ(ierr);
 
   while (list) {

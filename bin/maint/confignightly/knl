@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=knl
-set USR=petsc
-set LOC=/home/petsc/${RNAME}
-set CONF=arch-linux-knl

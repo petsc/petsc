@@ -2049,12 +2049,8 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  if (!v) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);
-  }
-  if (sp->ops->view) {
-    ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);
-  }
+  if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -3173,6 +3169,31 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscViewer viewer)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer, "%s %sLagrange dual space of order %D", lag->continuous ? "Continuous" : "Discontinuous", lag->tensorSpace ? "Tensor " : "", sp->order, sp->Nc);CHKERRQ(ierr);
+  if (sp->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " with %D components", sp->Nc);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscDualSpaceLagrangeView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -3652,7 +3673,7 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   PetscFunctionBegin;
   sp->ops->setfromoptions    = PetscDualSpaceSetFromOptions_Lagrange;
   sp->ops->setup             = PetscDualSpaceSetUp_Lagrange;
-  sp->ops->view              = NULL;
+  sp->ops->view              = PetscDualSpaceView_Lagrange;
   sp->ops->destroy           = PetscDualSpaceDestroy_Lagrange;
   sp->ops->duplicate         = PetscDualSpaceDuplicate_Lagrange;
   sp->ops->getdimension      = PetscDualSpaceGetDimension_Lagrange;
@@ -4043,12 +4064,8 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (!v) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fem), &v);CHKERRQ(ierr);
-  }
-  if (fem->ops->view) {
-    ierr = (*fem->ops->view)(fem, v);CHKERRQ(ierr);
-  }
+  if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) fem), &v);CHKERRQ(ierr);}
+  if (fem->ops->view) {ierr = (*fem->ops->view)(fem, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -4797,17 +4814,13 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   ierr = PetscQuadratureGetData(q, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Basic Finite Element:\n");CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  components:      %d\n", Nc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  components:      %d\n", Nc);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscSpaceView(basis, viewer);CHKERRQ(ierr);
@@ -7319,7 +7332,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Collective on DM
 
   Input Parameters:
-+ dm        - The underlying DM for the domain
++ comm      - The MPI comm
 . dim       - The spatial dimension
 . Nc        - The number of components
 . isSimplex - Flag for simplex reference cell, otherwise its a tensor product
@@ -7334,7 +7347,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 .keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
+PetscErrorCode PetscFECreateDefault(MPI_Comm comm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
   PetscQuadrature q, fq;
   DM              K;
@@ -7346,7 +7359,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool 
 
   PetscFunctionBegin;
   /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
+  ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
@@ -7356,7 +7369,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool 
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
   /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
   ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
@@ -7368,7 +7381,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool 
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
+  ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);
   ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);

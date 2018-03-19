@@ -257,10 +257,9 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   PetscErrorCode     ierr;
   PetscInt           its;
   PetscReal          d1,d2,ksptol,sigmamu;
-  PetscReal          dstep,pstep,step=0;
+  PetscReal          gnorm,dstep,pstep,step=0;
   PetscReal          gap[4];
   PetscBool          getdiagop;
-  TaoConvergedReason reason;
 
   PetscFunctionBegin;
   qp->dobj        = 0.0;
@@ -305,11 +304,15 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   ierr = QPIPComputeResidual(qp,tao);CHKERRQ(ierr);
 
   /* Enter main loop */
+  tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
 
     /* Check Stopping Condition      */
-    ierr = TaoMonitor(tao,tao->niter,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),qp->pinfeas,step,&reason);CHKERRQ(ierr);
-    if (reason != TAO_CONTINUE_ITERATING) break;
+    gnorm = PetscSqrtScalar(qp->gap + qp->dinfeas);
+    ierr = TaoLogConvergenceHistory(tao,qp->pobj,gnorm,qp->pinfeas,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,qp->pobj,gnorm,qp->pinfeas,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
     tao->niter++;
     tao->ksp_its = 0;
 
@@ -574,6 +577,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   tao->data    = (void*)qp;
 
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(tao->ksp,1e-14,1e-30,1e30,PetscMax(10,qp->n));CHKERRQ(ierr);

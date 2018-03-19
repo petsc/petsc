@@ -213,13 +213,15 @@ int main(int argc,char **args)
     if (size == 1) {
 #if !defined(PETSC_HAVE_SUPERLU)
       SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU");
-#endif
+#else
       ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+#endif
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
       SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU_DIST");
-#endif
+#else
       ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
+#endif
     }
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);

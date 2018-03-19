@@ -20,6 +20,7 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscSF
       type PetscSFNode
+        sequence
         PetscInt    rank
         PetscInt    index
       end type PetscSFNode

@@ -408,14 +408,16 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2];
   PetscQuadrature q;
   PetscDS         prob;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, user->simplex, "vel_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, user->simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
@@ -714,6 +716,12 @@ int main(int argc, char **argv)
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 3
     args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+  test:
+    suffix: 20_parmetis
+    requires: triangle !single
+    filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
+    nsize: 3
+    args: -run_type full -petscpartitioner_type parmetis -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 21
     requires: triangle !single

@@ -172,7 +172,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
 }
 
 /*@
-   PCMGSetRestriction - Sets the function to be used to restrict vector
+   PCMGSetRestriction - Sets the function to be used to restrict dual vectors
    from level l to l-1.
 
    Logically Collective on PC and Mat
@@ -196,7 +196,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
 
 .keywords: MG, set, multigrid, restriction, level
 
-.seealso: PCMGSetInterpolation()
+.seealso: PCMGSetInterpolation(), PCMGetSetInjection()
 @*/
 PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 {
@@ -217,7 +217,7 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 }
 
 /*@
-   PCMGGetRestriction - Gets the function to be used to restrict vector
+   PCMGGetRestriction - Gets the function to be used to restrict dual vectors
    from level l to l-1.
 
    Logically Collective on PC and Mat
@@ -233,7 +233,7 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 
 .keywords: MG, get, multigrid, restriction, level
 
-.seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale()
+.seealso: PCMGGetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGGetInjection()
 @*/
 PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
 {
@@ -267,11 +267,11 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
    Level: advanced
 
    Notes:
-       When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.
+       When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGSetInjection() to control moving primal vectors.
 
 .keywords: MG, set, multigrid, restriction, level
 
-.seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale()
+.seealso: PCMGSetInterpolation(), PCMGSetRestriction(), PCMGGetRScale(), PCMGSetInjection()
 @*/
 PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
 {
@@ -303,11 +303,11 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
    Level: advanced
 
    Notes:
-       When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.
+       When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.  It is preferable to use PCMGGetInjection() to control moving primal vectors.
 
 .keywords: MG, set, multigrid, restriction, level
 
-.seealso: PCMGSetInterpolation(), PCMGGetRestriction()
+.seealso: PCMGSetInterpolation(), PCMGGetRestriction(), PCMGGetInjection()
 @*/
 PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
 {
@@ -339,6 +339,74 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
     mglevels[l]->rscale = coarse;
   }
   *rscale = mglevels[l]->rscale;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGSetInjection - Sets the function to be used to inject primal vectors
+   from level l to l-1.
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc - the multigrid context
+.  l - the level (0 is coarsest) to supply [Do not supply 0]
+-  mat - the injection matrix
+
+   Level: advanced
+
+.keywords: MG, set, multigrid, restriction, injection, level
+
+.seealso: PCMGSetRestriction()
+@*/
+PetscErrorCode  PCMGSetInjection(PC pc,PetscInt l,Mat mat)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mglevels[l]->inject);CHKERRQ(ierr);
+
+  mglevels[l]->inject = mat;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGGetInjection - Gets the function to be used to inject primal vectors
+   from level l to l-1.
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc - the multigrid context
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Output Parameter:
+.  mat - the restriction matrix (may be NULL if no injection is available).
+
+   Level: advanced
+
+.keywords: MG, get, multigrid, restriction, injection, level
+
+.seealso: PCMGSetInjection(), PCMGetGetRestriction()
+@*/
+PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (mat) PetscValidPointer(mat,3);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l <= 0 || mg->nlevels <= l) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
+  if (mat) *mat = mglevels[l]->inject;
   PetscFunctionReturn(0);
 }
 

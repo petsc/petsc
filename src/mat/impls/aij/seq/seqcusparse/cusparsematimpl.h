@@ -16,6 +16,7 @@
 #include <thrust/device_ptr.h>
 #include <thrust/transform.h>
 #include <thrust/functional.h>
+#include <thrust/sequence.h>
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)  

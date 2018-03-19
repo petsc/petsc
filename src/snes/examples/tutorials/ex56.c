@@ -262,7 +262,7 @@ int main(int argc,char **args)
     IS              is;
     ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
     if (run_type==0) {
       ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
@@ -392,7 +392,7 @@ int main(int argc,char **args)
       PetscDS        prob;
       DM             cdm = dm;
 
-      ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
+      ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
       /* FEM prob */
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);

@@ -1,6 +1,7 @@
 import config.base
 import os
 import re
+import nargs
 
 class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt):
@@ -25,6 +26,9 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
+        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
+        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
+          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt == 'g':
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
@@ -105,6 +109,9 @@ class CompilerOptions(config.base.Configure):
         # flags.extend([('-x','c++')])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
+        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
+        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
+          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt in ['g']:
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])

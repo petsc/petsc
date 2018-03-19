@@ -53,10 +53,8 @@ static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)gpcg->pg_ftol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,7 +134,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   PetscInt                     its;
   PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal                    xtHx;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -167,9 +164,12 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING){
+  while (tao->reason == TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
 
     ierr = GPCGGradProjections(tao);CHKERRQ(ierr);
@@ -227,9 +227,11 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
     }
 
     tao->niter++;
-    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
-    if (reason!=TAO_CONTINUE_ITERATING) break;
+    ierr = TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);
@@ -359,17 +361,14 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
   gpcg->Hsub_pre=NULL;
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-

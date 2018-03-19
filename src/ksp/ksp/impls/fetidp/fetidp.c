@@ -546,8 +546,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   ierr = KSPGetOperators(ksp,&A,&Ap);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Amat should be of type MATIS");
-  ierr = PetscObjectTypeCompare((PetscObject)Ap,MATIS,&ismatis);CHKERRQ(ierr);
-  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pmat should be of type MATIS");
 
   /* Quiet return if the matrix states are unchanged.
      Needed only for the saddle point case since it uses MatZeroRows
@@ -572,7 +570,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   }
 
   if (!fetidp->saddlepoint) {
-    ierr = PCSetOperators(fetidp->innerbddc,A,Ap);CHKERRQ(ierr);
+    ierr = PCSetOperators(fetidp->innerbddc,A,A);CHKERRQ(ierr);
   } else {
     Mat      nA,lA;
     Mat      PPmat;

@@ -598,7 +598,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 @*/
 PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,ierrp=0;
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
   char           *fname = NULL;
@@ -616,8 +616,10 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,p,n,type);CHKERRQ(ierr);
+    ierrp = PetscBinaryRead(fd,p,n,type);
   }
+  ierr = MPI_Bcast(&ierrp,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  CHKERRQ(ierrp);
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
   ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
 

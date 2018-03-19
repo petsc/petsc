@@ -124,6 +124,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
+    PetscInt    tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -151,6 +154,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
     MPI_Comm    comm;
@@ -177,8 +181,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscStrncpy(str,"KSP: ",sizeof(str));CHKERRQ(ierr);
+      ierr   = PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str));CHKERRQ(ierr);
       ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {

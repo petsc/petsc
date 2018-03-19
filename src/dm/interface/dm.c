@@ -11,6 +11,15 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 
+static PetscErrorCode DMHasCreateInjection_Default(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -74,6 +83,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   ierr = PetscNew(&(v->labels));CHKERRQ(ierr);
   v->labels->refct = 1;
+
+  v->ops->hascreateinjection = DMHasCreateInjection_Default;
+
   *dm = v;
   PetscFunctionReturn(0);
 }
@@ -801,6 +813,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscBool         isbinary;
   PetscMPIInt       size;
   PetscViewerFormat format;
+  PetscInt          tabs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -809,7 +822,9 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   }
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
-  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);  
+  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
+  ierr = PetscViewerASCIIGetTab(v, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(v, ((PetscObject)dm)->tablevel);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)dm,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
@@ -823,6 +838,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIISetTab(v, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3028,6 +3044,32 @@ PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+
+/*@
+    DMHasCreateInjection - does the DM object have a method of providing an injection?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the DM has facilities for DMCreateInjection().
+
+    Level: developer
+
+.seealso DMHasFunction(), DMCreateInjection()
+
+@*/
+PetscErrorCode  DMHasCreateInjection(DM dm,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!dm->ops->hascreateinjection) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMHasCreateInjection not implemented for this type");
+  ierr = (*dm->ops->hascreateinjection)(dm,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
     DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
 
@@ -3184,22 +3226,22 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     */
 
     /* 1) See if a specialized converter is known to the current DM and the desired class */
-    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(convname,"DMConvert_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,((PetscObject) dm)->type_name,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)dm,convname,&conv);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 2)  See if a specialized converter is known to the desired DM class. */
     ierr = DMCreate(PetscObjectComm((PetscObject)dm), &B);CHKERRQ(ierr);
     ierr = DMSetType(B, newtype);CHKERRQ(ierr);
-    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscStrncpy(convname,"DMConvert_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,((PetscObject) dm)->type_name,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_",sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,newtype,sizeof(convname));CHKERRQ(ierr);
+    ierr = PetscStrlcat(convname,"_C",sizeof(convname));CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = DMDestroy(&B);CHKERRQ(ierr);
@@ -5380,8 +5422,12 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscValidPointer(ids, 3);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
   *ids = NULL;
-  if (!label) PetscFunctionReturn(0);
-  ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
+ if (label) {
+    ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
+  } else {
+    /* returning an empty IS */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,NULL,PETSC_USE_POINTER,ids);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

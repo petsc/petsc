@@ -51,10 +51,8 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",tron->total_gp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)tron->pg_ftol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -90,7 +88,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
   PetscInt                     its;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
@@ -123,8 +120,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tron->pgstepsize=1.0;
   tron->stepsize=tao->trust;
 
-  ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize,&reason);CHKERRQ(ierr);
-  while (reason==TAO_CONTINUE_ITERATING){
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  while (tao->reason==TAO_CONTINUE_ITERATING){
 
     /* Perform projected gradient iterations */
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
@@ -137,6 +137,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     tron->n_free_last = tron->n_free;
     ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
 
+    /* Generate index set (IS) of which bound constraints are active */
     ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
     ierr = VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&tron->Free_Local);CHKERRQ(ierr);
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);CHKERRQ(ierr);
@@ -144,10 +145,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     /* If no free variables */
     if (tron->n_free == 0) {
       ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
-      if (!reason) {
-        reason = TAO_CONVERGED_STEPTOL;
-        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+      ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+      if (!tao->reason) {
+        tao->reason = TAO_CONVERGED_STEPTOL;
       }
       break;
     }
@@ -238,7 +240,9 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
     tao->niter++;
-    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
   PetscFunctionReturn(0);
 }
@@ -262,7 +266,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 
     if (-actred <= (tron->pg_ftol)*actred_max) break;
 
-    ++tron->gp_iterates; 
+    ++tron->gp_iterates;
     ++tron->total_gp_its;
     f_new=tron->f;
 
@@ -370,11 +374,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   tao->subset_type = TAO_SUBSET_SUBVEC;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);

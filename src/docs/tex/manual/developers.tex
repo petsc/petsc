@@ -148,7 +148,7 @@ We use several conventions:
   which is capitalized, for example \lstinline{KSPSolve()} and
       \lstinline{MatGetOrdering()}.
 \item All enum elements and macro variables are named with all capital letters. When
-      they consist of several complete words, there is an underscore between each word. 
+      they consist of several complete words, there is an underscore between each word.
       For example, \lstinline{MAT_FINAL_ASSEMBLY} or \lstinline{PETSC_USE_COMPLEX}.
 \item Functions that are private to PETSc (not callable by the
       application code) either
@@ -160,7 +160,7 @@ We use several conventions:
       \end{itemize}
 
       In addition, functions that are not intended for use outside
-      of a particular file are declared \lstinline{static}. 
+      of a particular file are declared \lstinline{static}.
       Also see item \ref{styleitem:petscextern} in Section \ref{sec:stylepetsc}.
 \item Function names in structures are the same as the base application
       function name without the object prefix, and are in small letters.
@@ -190,7 +190,7 @@ so that the code is uniform and easily maintained.
 \item Wrapping lines should be avoided whenever possible.
 \item Source code lines do not have a hard length limit; generally, we like them less than 150 characters wide.
 \item The local variable declarations should be aligned. For example,
-      use the style 
+      use the style
 \begin{lstlisting}
 PetscScalar a;
 PetscInt    i,j;
@@ -233,12 +233,12 @@ if ( ) {
 \end{lstlisting}
 \item {\em Never} have
 \begin{lstlisting}
-if ( ) 
+if ( )
   a single indented line /* Incorrect */
 \end{lstlisting}
 or
 \begin{lstlisting}
-for ( ) 
+for ( )
   a single indented line /* Incorrect */
 \end{lstlisting}
 instead use either
@@ -273,8 +273,8 @@ never
 \end{lstlisting}
 See item \ref{styleitem:bracenextline} for an exception.
  The closing brace should {\em always} be on its own line.
-\item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments. 
-  This is an exception to item \ref{styleitem:bracesameline}. 
+\item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments.
+  This is an exception to item \ref{styleitem:bracesameline}.
 \item Do not leave chunks of commented-out code in the source files.
 \item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
 \item All variables must be declared at the beginning of the code block (C89 style) never mixed in with code.
@@ -323,15 +323,15 @@ PetscFunctionReturn( somefunction(...) ); /* Incorrect */
 \end{lstlisting}
 \item Do {\em not} put a blank line immediately after \lstinline{PetscFunctionBegin;} or
   a blank line immediately before \lstinline{PetscFunctionReturn(0);}.
-\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, etc. directly in PETSc C/C++ source code or examples (usage is fine in Fortran source code). 
-  Rather, use \lstinline{PetscSqrtScalar()}, \lstinline{PetscSqrtReal()}, etc., depending on the context. 
+\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, etc. directly in PETSc C/C++ source code or examples (usage is fine in Fortran source code).
+  Rather, use \lstinline{PetscSqrtScalar()}, \lstinline{PetscSqrtReal()}, etc., depending on the context.
   See \trl{petscmath.h} for expressions to use.
 \item \trl{assert.h} should not be included in PETSc source and \lstinline{assert()} should not be used. It doesn't play well in the parallel MPI world.
-\item The macros \lstinline{SETERRQ()} and \lstinline{CHKERRQ()} should be on the 
+\item The macros \lstinline{SETERRQ()} and \lstinline{CHKERRQ()} should be on the
   same line as the routine to be checked unless this violates the
   150 character width rule. Try to make error messages short, but
   informative.
-\item Do not include a space before \lstinline{CHKXXX()}. 
+\item Do not include a space before \lstinline{CHKXXX()}.
   That is, do not write
 \begin{lstlisting}
 ierr = PetscMalloc1(10,&a); CHKERRQ(ierr); /* Incorrect */
@@ -341,8 +341,8 @@ but instead write
 ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \end{lstlisting}
 \item Except in code that may be called before PETSc is fully initialized, always use \lstinline{PetscMallocN()} (for example \lstinline{PetscMalloc1()}), \lstinline{PetscCallocN()}, \lstinline{PetscNew()}, and \lstinline{PetscFree()}, not \lstinline{malloc()} and \lstinline{free()}.
-\item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate \trl{./configure} checks and \lstinline{#if defined()} checks. 
- Code should also be provided that works if the MPI feature is not available. For example, 
+\item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate \trl{./configure} checks and \lstinline{#if defined()} checks.
+ Code should also be provided that works if the MPI feature is not available. For example,
 \begin{lstlisting}
 #if defined(PETSC_HAVE_MPI_IN_PLACE)
   ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,
@@ -352,15 +352,15 @@ ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
                         displs,MPIU_INT,comm);CHKERRQ(ierr);
 #endif
 \end{lstlisting}
-\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. 
-  For example, one should not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it. 
+\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine.
+  For example, one should not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it.
   One should use \lstinline{MPI_Allreduce()} directly in the code.
 \item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
-\item \label{styleitem:petscextern} Library functions should be declared \lstinline{PETSC_INTERN} if they are intended to be visible only within a single shared library. 
-They should be declared \lstinline{PETSC_EXTERN} if intended to be visible across shared libraries. 
+\item \label{styleitem:petscextern} Library functions should be declared \lstinline{PETSC_INTERN} if they are intended to be visible only within a single shared library.
+They should be declared \lstinline{PETSC_EXTERN} if intended to be visible across shared libraries.
 Note that PETSc can be configured to build a separate shared library for each top-level class (\lstinline{Mat}, \lstinline{Vec}, \lstinline{KSP}, etc.) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may be marked \lstinline{PETSC_EXTERN}.
-For example, 
+For example,
 \begin{itemize}
 \item \lstinline{MatStashCreate_Private} is marked \lstinline{PETSC_INTERN} as it is used across compilation units, but only within the \lstinline{Mat} package.
 \item All functions, such as \lstinline{KSPCreate()}, included in the public headers (\trl{include/petsc*.h}) should be marked \lstinline{PETSC_EXTERN}.
@@ -370,7 +370,7 @@ For example,
 
 \section{Formatted Comments}
 
-PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing,gropp1993sowing2} to generate documentation (manual pages) and the Fortran interfaces. 
+PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing,gropp1993sowing2} to generate documentation (manual pages) and the Fortran interfaces.
 Documentation for Sowing and the formatting may be found at \href{http://wgropp.cs.illinois.edu/projects/software/sowing/}{http://wgropp.cs.illinois.edu/projects/software/sowing/}; in particular, see the documentation for \trl{doctext}.
 
 \begin{itemize}
@@ -379,7 +379,7 @@ Documentation for Sowing and the formatting may be found at \href{http://wgropp.
         both documentation and a Fortran interface.
     \item
       \trl{/*@C}\\    a formatted comment of a function that will be used only for
-        documentation, not to generate a Fortran interface, in general such labeled C functions should have a custom Fortran interface provided. Functions that take \trl{char*} or function pointer arguments must have the \trl{C} symbol. 
+        documentation, not to generate a Fortran interface, in general such labeled C functions should have a custom Fortran interface provided. Functions that take \trl{char*} or function pointer arguments must have the \trl{C} symbol.
     \item
       \trl{/*E}\\     a formatted comment of an enum used for documentation only, note that
         each of these needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as
@@ -390,15 +390,14 @@ Documentation for Sowing and the formatting may be found at \href{http://wgropp.
       \trl{/*S}\\     a formatted comment for a data type such as \lstinline{KSP}, note that each of these
         needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as a \trl{nativeptr}.
     \item
-    \item
       \trl{/*MC}\\    a formatted comment of a CPP macro or enum value for documentation.
 \end{itemize}
 
-The Fortran interface files supplied by user go into the two directories  \trl{ftn-custom} and \trl{ftn-f90} while those generated by Sowing go into \trl{ftn-auto},.
+The Fortran interface files supplied by user go into the two directories  \trl{ftn-custom} and \trl{ftn-f90} while those generated by Sowing go into \trl{ftn-auto}.
 
 \subsection{Manual Page Format}
 Each function, typedef, class, macro, enum, etc. in the public API should include the following data, correctly formatted
-(see above section) to generate complete manual pages and Fortran interfaces with Sowing. 
+(see above section) to generate complete manual pages and Fortran interfaces with Sowing.
 All entries below should be separated by blank lines.
 \begin{itemize}
   \item The item's name, followed by a dash and brief (one-sentence) description
@@ -411,7 +410,7 @@ All entries below should be separated by blank lines.
   \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
   \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
   \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
-  \item (Optional) a \trl{Notes: } section, with a newline after \trl{Notes:}. In-depth discussion, technical caveats, special cases, and so on should be listed here. 
+  \item (Optional) a \trl{Notes: } section, with a newline after \trl{Notes:}. In-depth discussion, technical caveats, special cases, and so on should be listed here.
     If it is ambiguous whether returned pointers need to be freed by the user or not, this information should be mentioned here.
   \item (If applicable) a \trl{Fortran Notes: } section, with a newline after \trl{Fortran Notes:}, detailing any relevant differences in calling or using the item from Fortran.
   \item \trl{Level: } followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}
@@ -453,10 +452,10 @@ For maximum flexibility, the basic data types \trl{int}, \trl{double}, etc. are
   \item \lstinline{PetscBT} - bit storage of logical true and false
 \end{tightitemize}
 \lstinline{PetscInt} can be set using \trl{./configure} to be either \trl{int} (32 bit, the default) or \trl{long long}
-(64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays. 
-\lstinline{PetscMPIInt} are used for integers passed to MPI as counts and sizes. 
-These are always \lstinline{int} since that is what the MPI standard uses. 
-Similarly, \lstinline{PetscBLASInt} is for counts, etc. passed to BLAS and LAPACK routines. 
+(64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays.
+\lstinline{PetscMPIInt} are used for integers passed to MPI as counts and sizes.
+These are always \lstinline{int} since that is what the MPI standard uses.
+Similarly, \lstinline{PetscBLASInt} is for counts, etc. passed to BLAS and LAPACK routines.
 These are almost always \lstinline{int} unless one is using a special ``64 bit integer'' BLAS/LAPACK (this is available, for
 example,  with Intel's MKL and OpenBLAS).
 
@@ -473,7 +472,7 @@ These are currently always \lstinline{int} but their use clarifies the code.
 PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code.
 The public include file for error handling is
- \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}, 
+ \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}},
  and the source code for the PETSc error handling is in \trl{src/sys/error/}.
 
 \subsection{Simplified Interface}
@@ -489,11 +488,11 @@ The macro \lstinline{SETERRQ()} is given by
   return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,error code,error type,"Error message");
 \end{lstlisting}
 It calls the error handler with the current function name and location: line number,
-file and directory, plus an error code and an error message. 
+file and directory, plus an error code and an error message.
 Normally \trl{comm} is \lstinline{PETSC_COMM_SELF}; it can only be another communicator if
-one is absolutely sure the same error will be generated on all processes in the communicator. 
-This is to prevent the same error message from being printed by many processes. 
-The \lstinline{error type} is \lstinline{PETSC_ERROR_INITIAL} on detection of the initial error and \lstinline{PETSC_ERROR_REPEAT} for any additional calls. 
+one is absolutely sure the same error will be generated on all processes in the communicator.
+This is to prevent the same error message from being printed by many processes.
+The \lstinline{error type} is \lstinline{PETSC_ERROR_INITIAL} on detection of the initial error and \lstinline{PETSC_ERROR_REPEAT} for any additional calls.
 This is so that the detailed error information is only printed once instead of for all levels of returned errors.
 
 The macro \lstinline{CHKERRQ()} is defined by
@@ -536,16 +535,16 @@ struct _EH {
 \end{lstlisting}
 
 One can set a new error handler with the command \lstinline{PetscPushErrorHandler()},
-which maintains a linked list of error handlers. 
+which maintains a linked list of error handlers.
 The most recent error handler is removed
 via \lstinline{PetscPopErrorHandler()}.
 
 PETSc provides several default error handlers:
 \begin{tightitemize}
-  \item \lstinline{PetscTraceBackErrorHandler()}, 
+  \item \lstinline{PetscTraceBackErrorHandler()},
   \item \lstinline{PetscAbortErrorHandler()}, called with \trl{-on_error_abort},
   \item \lstinline{PetscReturnErrorHandler()},
-  \item \lstinline{PetscEmacsClientErrorHandler()}, 
+  \item \lstinline{PetscEmacsClientErrorHandler()},
   \item \lstinline{PetscMPIAbortErrorHandler()}, and
   \item \lstinline{PetscAttachDebuggerErrorHandler()}, called with \trl{-on_error_attach_debugger}.
 \end{tightitemize}
@@ -554,8 +553,8 @@ PETSc provides several default error handlers:
 
 The PETSc error handler takes a generic error code.
 The generic error codes are defined in
-\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}. 
-The same generic error code is used many times in the libraries. 
+\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}.
+The same generic error code is used many times in the libraries.
 For example, the generic error code \lstinline{PETSC_ERR_MEM} is used whenever requested memory allocation is not available.
 
 \subsection{Detailed Error Messages}
@@ -567,9 +566,9 @@ PETSc provides the replaceable function pointer
 (*PetscErrorPrintf)("Format",...);
 \end{lstlisting}
 that, by default prints to standard out. Thus, error messages should not
-be printed with \lstinline{printf()} or \lstinline{fprintf()}. 
+be printed with \lstinline{printf()} or \lstinline{fprintf()}.
 Rather, they should be printed with
-\lstinline{(*PetscErrorPrintf)()}. 
+\lstinline{(*PetscErrorPrintf)()}.
 One can direct all error messages to \lstinline{stderr}, instead of the default \lstinline{stdout}, with the command line options \trl{-error_output_stderr}.
 
 \section{Memory Management}
@@ -584,8 +583,8 @@ PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *file
 \end{lstlisting}
 which allow the use of any number of profiling and error checking wrappers for \lstinline{malloc(), calloc()} and \lstinline{free()}.
 Both \lstinline{PetscMallocA()} and \lstinline{PetscFreeA()} call the function pointer values  \lstinline{(*PetscTrMalloc)} and \lstinline{(*PetscTrFree)}.
-\lstinline{PetscMallocSet()} is used to set these function pointers. 
-The functions are guaranteed to support requests for zero bytes of memory correctly. Freeing memory locations also sets the pointer value to zero preventing later code from accidently using memory that has been freed. All PETSc memory allocation calls are memory lined on at least double precision boundaries, the macro generated by configure \lstinline{{PETSC_MEMALIGN} indicates in bytes what alignment all allocations have. This can be controlled at configure time with the option \lstinline{-with-memalign=<4,8,16,32,64>}. 
+\lstinline{PetscMallocSet()} is used to set these function pointers.
+The functions are guaranteed to support requests for zero bytes of memory correctly. Freeing memory locations also sets the pointer value to zero preventing later code from accidently using memory that has been freed. All PETSc memory allocation calls are memory lined on at least double precision boundaries, the macro generated by configure \lstinline{{PETSC_MEMALIGN} indicates in bytes what alignment all allocations have. This can be controlled at configure time with the option \lstinline{-with-memalign=<4,8,16,32,64>}.
 
 
 \lstinline{PetscMallocA()} supports a request for up to 7 distinct memory locations of possibly different types. This serves two purposes, it reduces the number of system  \lstinline{malloc()} calls, thus potentially increasing performance and it clarifies in the code related memory allocations that should be freed together.
@@ -690,8 +689,8 @@ does {\em not} ``know'' how the data is stored internally.
 
 \section{Introduction}
 
-PETSc is designed around several classes including, for example, \lstinline{Vec} (vectors) and 
-\lstinline{Mat} (matrices, both dense and sparse)). Each class is 
+PETSc is designed around several classes including, for example, \lstinline{Vec} (vectors) and
+\lstinline{Mat} (matrices, both dense and sparse)). Each class is
 implemented using a C \lstinline{struct} that contains the data and function pointers
 for operations on the data (much like virtual functions in C++ classes).
 Each class consists of three parts:
@@ -759,7 +758,7 @@ All PETSc/PETSc objects have the following common header structures
 defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/petscimpl.h.html}{\trl{include/petsc/private/petscimpl.h}}:
 
 \begin{lstlisting}[caption=Function table common to all PETSc compatible classes]
-typedef struct { 
+typedef struct {
   PetscErrorCode (*getcomm)(PetscObject,MPI_Comm*);
   PetscErrorCode (*view)(PetscObject,Viewer);
   PetscErrorCode (*destroy)(PetscObject);
@@ -771,22 +770,22 @@ typedef struct {
 \end{lstlisting}
 \begin{lstlisting}[caption=Data structure header common to all PETSc compatible classes]
 struct _p_<class> {
-  PetscClassId     classid;                                  
-  PetscOps         *bops;                                   
-  <class>Ops       *ops;                                    
-  MPI_Comm         comm;                                    
-  PetscLogDouble   flops,time,mem;                          
-  int              id;                                      
-  int              refct;                                   
-  int              tag;                                     
-  DLList           qlist;                                   
-  OList            olist;                                   
-  char             *type_name;                              
-  PetscObject      parent;                                  
-  char             *name;                                    
-  char             *prefix;                                 
+  PetscClassId     classid;
+  PetscOps         *bops;
+  <class>Ops       *ops;
+  MPI_Comm         comm;
+  PetscLogDouble   flops,time,mem;
+  int              id;
+  int              refct;
+  int              tag;
+  DLList           qlist;
+  OList            olist;
+  char             *type_name;
+  PetscObject      parent;
+  char             *name;
+  char             *prefix;
   void             *cpp;
-  void             **fortran_func_pointers;       
+  void             **fortran_func_pointers;
   ..........
   CLASS-SPECIFIC DATASTRUCTURES
 };
@@ -877,7 +876,7 @@ capitalized.
 
 \item \lstinline{view(PetscObject,Viewer)} allows one to store or visualize the data inside
       an object. If the Viewer is NULL than should cause the object to print
-      information on the object to lstinline{stdout}. 
+      information on the object to lstinline{stdout}.
 
 \item \lstinline{destroy(PetscObject)} causes the reference count of the object to be decreased
       by one or the object to be destroyed and all memory used by the object to be freed when
@@ -928,7 +927,7 @@ composed with a PETSc object.
 % --------------------------------------------------------------------------------------
 \section{Object Function Implementation}
 
-This section discusses how PETSc implements the \lstinline{compose()}, \lstinline{query()}, 
+This section discusses how PETSc implements the \lstinline{compose()}, \lstinline{query()},
 \lstinline{composefunction()}, and \lstinline{queryfunction()} functions for its object implementations.
 Other PETSc compatible class implementations are free to manage these functions in any
 manner; but, unless there is a specific reason, they should use the PETSc defaults so that the library writer does
@@ -973,13 +972,13 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char *name,PetscObje
 
   PetscFunctionBegin;
   PetscObjectListFind(obj->olist,name,ptr);
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 \end{lstlisting}
 
 \subsection{Compose and Query Functions}
 
-PETSc allows one to compose functions by specifying a name and function pointer. 
+PETSc allows one to compose functions by specifying a name and function pointer.
 In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html}{\trl{src/sys/dll/reg.c}},
 PETSc defines the linked list structure
 
@@ -992,7 +991,7 @@ struct _n_PetscFunctionList {
 };
 \end{lstlisting}
 
-Each PETSc object contains a \lstinline{PetscFunctionList} object. 
+Each PETSc object contains a \lstinline{PetscFunctionList} object.
 The \lstinline{composefunction()} and \lstinline{queryfunction()} are given by
 
 \begin{lstlisting}
@@ -1030,13 +1029,13 @@ vs \lstinline{_p_Vec}.
 The PETSc source code is divided into the following
 library level packages: \trl{sys}, \trl{Vec}, \trl{Mat}, \trl{DM}, \trl{KSP}, \trl{SNES}, \trl{TS}, \trl{TAO}. Each
 of these has a directory under the \trl{src} directory in the PETSc
-true and, optionally, can be compiled into separate libraries. Each
+tree and, optionally, can be compiled into separate libraries. Each
 package defines one or more classes, for example the \trl{KSP} package
-defines the \trl{KSP} and \trl{PC} classes, as well as several utility
+defines the \lstinline{KSP} and \lstinline{PC} classes, as well as several utility
 classes. In addition each library level package may contain several class level packages associated with individual classes in the library level package. In general most ``important'' classes in PETSc have their own class level package.
 Each package provides a registration
 function \lstinline{XXXInitializePackage()}, for
-example, \trl{KSPInitializePackage()} which registers all the classes
+example \trl{KSPInitializePackage()}, which registers all the classes
 and events for that package. They also register a finalization
 routine, \lstinline{XXXFinalizePackage()} that releases all the
 resources used in registering the package,
@@ -1054,6 +1053,216 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 
 
 % -----------------------------------------------------------------------------------
+\chapter{How the Solvers Handle User Provided Callbacks}
+\label{sec:dmksp}
+
+The solver objects in PETSc, \lstinline{KSP} (optionally), \lstinline{SNES}, and
+\lstinline{TS} require user provided callback functions (and contexts for the
+functions) that define the problem to be solved. These functions are supplied by
+the user with calls such as \lstinline{SNESSetFunction(SNES,...)}
+and \lstinline{TSSetRHSFunction(TS,...)}. One would naturally think
+that the functions provided would be attached to the appropriate
+solver object, that is the SNES callbacks would be attached to the
+\lstinline{SNES} object and \lstinline{TS} callbacks to the \lstinline{TS} object. This is not the
+case. Or possibly one might think the callbacks would be attached to
+the \lstinline{DM} object associated with the solver object. This is also not the
+case. Rather the callback functions are attached to an inner nonpublic \lstinline{DMXXX} object
+(\lstinline{XXX} is \lstinline{KSP}, \lstinline{SNES}, or \lstinline{TS}) that is attached to the \lstinline{DM} that is attached
+to the \lstinline{XXX} solver object. This convoluted design is to support
+multilevel and multidomain solvers where different levels and
+different domains may (or may not) share the same callback function or call
+back context. One can control exactly what \lstinline{XXX}/\lstinline{DM} objects share a common \lstinline{DMXXX} object.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+\draw (0,1) node[above] {$KSP_1$};
+\draw[->] (0,1) -- (0,0) node[below] {$DM_1$};
+\draw[->] (0,-.8) -- (0,-1.8) node[below] {$DMKSP$};
+
+\draw (2,1) node[above] {$KSP_2$};
+\draw[->] (2,1) -- (2,0) node[below] {$DM_2$};
+\draw[->] (2,-.8) -- (0,-1.8);
+
+\draw (4,1) node[above] {$KSP_3$};
+\draw[->] (4,1) -- (4,0) node[below] {$DM_3$};
+\draw[->] (4,-.8) -- (0,-1.8);
+\end{tikzpicture}
+  \caption{Three levels of KSP/DM share the same DMKSP}
+\label{fig_dmksp}
+\end{figure}
+
+In Figure \ref{fig_dmksp} we depict how three levels of \lstinline{KSP} objects share a common \lstinline{DMKSP} object. The code to access the inner \lstinline{DMKSP} object is
+\begin{lstlisting}
+  DM    dm_2;
+  DMKSP dmksp;
+  KSPGetDM(ksp_2,&dm_2);
+  DMGetDMKSP(dm_2,&dmksp);
+\end{lstlisting}
+To obtain a new DMKSP object for which one can change the callback functions (or their contexts) without affecting the original DMKSP one calls
+\begin{lstlisting}
+  DM    dm_2;
+  DMKSP dmksp;
+  KSPGetDM(ksp_2,&dm_2);
+  DMGetDMKSPWrite(dm_2,&dmksp_2);
+\end{lstlisting}
+This results in the object organization as indicated in Figure \ref{fig_dmksp2}
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+\draw (0,1) node[above] {$KSP_1$};
+\draw[->] (0,1) -- (0,0) node[below] {$DM_1$};
+\draw[->] (0,-.8) -- (0,-1.8) node[below] {$DMKSP$};
+
+\draw (2,1) node[above] {$KSP_2$};
+\draw[->] (2,1) -- (2,0) node[below] {$DM_2$};
+\draw[->] (2,-.8) -- (2,-1.8) node[below] {$DMKSP_2$};
+
+\draw (4,1) node[above] {$KSP_3$};
+\draw[->] (4,1) -- (4,0) node[below] {$DM_3$};
+\draw[->] (4,-.8) -- (0,-1.8);
+\end{tikzpicture}
+  \caption{Two levels of KSP/DM share the same DMKSP, one has its own private copy}
+\label{fig_dmksp2}
+\end{figure}
+
+The \lstinline{DMKSP} object is essentially the list of callback functions and their contexts.
+\begin{lstlisting}
+typedef struct _p_DMKSP *DMKSP;
+typedef struct _DMKSPOps *DMKSPOps;
+struct _DMKSPOps {
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
+  PetscErrorCode (*computerhs)(KSP,Vec,void*);
+  PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
+  PetscErrorCode (*destroy)(DMKSP*);
+  PetscErrorCode (*duplicate)(DMKSP,DMKSP);
+};
+
+struct _p_DMKSP {
+  PETSCHEADER(struct _DMKSPOps);
+  void *operatorsctx;
+  void *rhsctx;
+  void *initialguessctx;
+  void *data;
+  DM originaldm;
+
+  void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the DMKSP instead of the DM */
+};
+\end{lstlisting}
+
+We now explore in more detail exactly how the solver calls set by the user are passed down to the inner \lstinline{DMKSP} object. For each user
+level solver routine for setting a callback there exists a similar routine at the \lstinline{DM} level, thus \lstinline{XXXSetY(XXX,...)} has a routine \lstinline{DMXXXSetY(DM,...)}.
+\begin{lstlisting}
+PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeOperators(dm,func,ctx);CHKERRQ(ierr);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The implementation of \lstinline{DMXXXSetY(DM,...)} gets a ``writable'' version of the \lstinline{DMXXX} object via \lstinline{DMGetDMXXXWrite(DM,DMXXX*)} and sets the function callback
+and its context into the \lstinline{DMXXX} object.
+\begin{lstlisting}
+PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMKSP          kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMKSPWrite(dm,&kdm);CHKERRQ(ierr);
+  if (func) kdm->ops->computeoperators = func;
+  if (ctx) kdm->operatorsctx = ctx;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The routine for \lstinline{DMGetDMXXXWrite(DM,DMXXX*)} entails a duplication of the object unless the \lstinline{DM} associated with the \lstinline{DMXXX} object is the original \lstinline{DM} that
+the \lstinline{DMXXX} object was created with. This can be seen in the following code.
+\begin{lstlisting}
+PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
+{
+  PetscErrorCode ierr;
+  DMKSP          kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  if (!kdm->originaldm) kdm->originaldm = dm;
+  if (kdm->originaldm != dm) {  /* Copy on write */
+    DMKSP oldkdm = kdm;
+    ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm);CHKERRQ(ierr);
+    ierr      = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
+    ierr      = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject)kdm;
+  }
+  *kspdm = kdm;
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+The routine \lstinline{DMGetDMXXX(DM,DMXXX*)} has the form
+\begin{lstlisting}
+PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *kspdm = (DMKSP) dm->dmksp;
+  if (!*kspdm) {
+    ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject) *kspdm;
+    ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+This routine uses \lstinline{DMCoarsenHookAdd()} and \lstinline{DMCoarsenHookAdd()} to attach to the \lstinline{DM} object two functions that are automatically called when the object is coarsened or refined.
+The hooks \lstinline{DMCoarsenHook_DMXXX()} and \lstinline{DMCoarsenHook_DMXXX()} have the form.
+\begin{lstlisting}
+static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCopyDMKSP(dm,dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+where
+\begin{lstlisting}
+PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
+  ierr          = DMKSPDestroy((DMKSP*)&dmdest->dmksp);CHKERRQ(ierr);
+  dmdest->dmksp = dmsrc->dmksp;
+  ierr          = PetscObjectReference(dmdest->dmksp);CHKERRQ(ierr);
+  ierr          = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  ierr          = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{lstlisting}
+insures that the new \lstinline{DM} shares the same \lstinline{DMXXX} as the parent \lstinline{DM} and also inherits the hooks if it is refined or coarsened.
+
+If you provide callbacks to a solver {\em after} the \lstinline{DM} associated with a solver has been refined or coarsened those child \lstinline{DM}'s will not share a common \lstinline{DMXXX}.
+
+The \lstinline{TS} object manages its callback functions in a way similar to \lstinline{KSP}
+and \lstinline{SNES} though there are no multi-level \lstinline{TS} implementations so in
+theory the \lstinline{DMTS} object is currently unneeded.
+
 
 % -----------------------------------------------------------------------------------
 \chapter{The Various Matrix Classes}
@@ -1312,7 +1521,7 @@ static char help[] = "A simple MOAB example\n\
      requires: !complex
    testset:
      suffix: 2
-     args: -debug -fields v1,v2,v3 
+     args: -debug -fields v1,v2,v3
      test:
      test:
        args: -foo bar
@@ -1322,7 +1531,7 @@ TEST*/
 For our language, a \emph{test} is associated with:
 \begin{tightitemize}
   \item A single shell script
-  \item A single makefile 
+  \item A single makefile
   \item A single output file that represents the \emph{expected
        esults}.
   \item Two or more command tests.  Usually, one (or more) mpiexec
@@ -1399,7 +1608,7 @@ With this background, these keywords are are:
      \end{itemize}
 
 
-   \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
+   \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:}
                  \lstinline{output_file = "output/" + testname + ".out"})
       \begin{itemize}
 
@@ -1523,7 +1732,7 @@ diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
 
         \item Tests are limited to a set time that is found at the top of \lstinline{"config/petsc_harness.sh"}.
               and can be overwritten by passing in the \lstinline{TIMEOUT} argument to \lstinline{gmakefile} (see
-              \lstinline{make -f gmakefile help}.  
+              \lstinline{make -f gmakefile help}.
 
         \item This parameters allows one to extend the default timeout for an individual test such that the new timeout time is \lstinline{timeout=(default timeout) x (timeoutfactor)}.
 
@@ -1578,28 +1787,28 @@ See examples below for how it works in practice.
   \label{test-block-examples}%
 }
 
-% Note: we using outputlisting here, instead of lstlisting, 
-%  as it's smaller, and allows literal $ (which we use an an escape character for 
+% Note: we using outputlisting here, instead of lstlisting,
+%  as it's smaller, and allows literal $ (which we use an an escape character for
 %  C code)
 
 This is the simplest test block:
 %
 \begin{outputlisting}
 /*TESTS
-  test: 
+  test:
 TESTS*/
 \end{outputlisting}
 which is equivalent to:
 \begin{outputlisting}
 /*TESTS
-  testset: 
-    test: 
+  testset:
+    test:
 TESTS*/
 \end{outputlisting}
 which is equivalent to:
 \begin{outputlisting}
 /*TESTS
-  testset: 
+  testset:
 TESTS*/
 \end{outputlisting}
 
@@ -1611,7 +1820,7 @@ For Fortran, the equivalent is:
 %
 \begin{outputlisting}
 !/*TESTS
-!  test: 
+!  test:
 !TESTS*/
 \end{outputlisting}
 
@@ -1619,7 +1828,7 @@ A fuller example would be:
 %
 \begin{outputlisting}
 /*TESTS
-  test: 
+  test:
   test:
     suffix: 1
     nsize: 2
@@ -1646,7 +1855,7 @@ output file:
     args: -ksp_type cg -pc_type icc -pc_factor_levels 2
     test:
     test:
-      args: -mat_type seqsbaij 
+      args: -mat_type seqsbaij
 */TESTS
 \end{outputlisting}
 
@@ -1666,7 +1875,7 @@ different output:
       suffix: 4
       args: -pc_type lu
     test:
-      suffix: 5 
+      suffix: 5
 */TESTS
 \end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, there would be two shell
@@ -1694,8 +1903,8 @@ arguments, but both are diffed with the same file.
 
 An example for showing the hierarchical nature of the test specification is:
 %
-\begin{outputlisting} 
-testset: 
+\begin{outputlisting}
+testset:
   suffix:2
   output_file: output/ex138_1.out
   args: -f ${DATAFILESPATH}/matrices/small -mat_type baij
@@ -1712,7 +1921,7 @@ testset:
   suffix: 19
   requires: datafilespath
   args: -f0 ${DATAFILESPATH}/matrices/poisson1
-  args: -ksp_type cg -pc_type icc 
+  args: -ksp_type cg -pc_type icc
   args: -pc_factor_levels {{0 2 4}separate output}
   test:
   test:
@@ -1726,7 +1935,7 @@ runex10_19_pc_factor_levels-2.sh
 runex10_19_pc_factor_levels-4.sh
 \end{outputlisting}
 Each shell script would invoke \trl{mpiexec} twice.
- 
+
 \subsection{Build language options%
   \label{build-language-options}%
 }
@@ -1735,7 +1944,7 @@ It is possible to specify issues related to the compilation of the
 source file with the \lstinline{build:} block.  The language is:
 %
 \begin{itemize}
-  \item \textbf{requires:} (\emph{Optional}; \emph{Default:} \lstinline{""}) 
+  \item \textbf{requires:} (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
 \item Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
 but also requirements related to types:
@@ -1788,12 +1997,12 @@ After inserting the language into the file, one can test the parsing
 by executuing:
 %
 \begin{bashlisting}
-${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+${PETSC_DIR}/lib/petsc/bin/maint/testparse.py -t <test src file>
 \end{bashlisting}
 
 A dictionary will be pretty-printed out.  From this dictionary
 print-out, it is usually obvious if there is a problem in the parsing.
-This python file is used by 
+This python file is used by
 \begin{bashlisting}
 ${PETSC_DIR}/config/gmakegentest.py
 \end{bashlisting}
@@ -1912,6 +2121,8 @@ make -f gmakefile.test test
 # todo 91/3915 tests (2.3%)
 # skip 770/3915 tests (19.7%)
 #
+# Approximate time (not incl. build time): 429 sec
+#
 # To rerun failed tests:
 #     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
 \end{outputlisting}
@@ -1924,7 +2135,7 @@ The above indicates that three tests have failed and should be investigated. One
 \begin{outputlisting}
 arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/runex4_4.sh  -v
 ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
-not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
+not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
 #	2a3,14
 #	> Testing PetscViewerASCIIPrintf 0
 #	> Testing PetscViewerASCIIPrintf 1
@@ -1937,7 +2148,7 @@ not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/bin/petsc
 #	> Testing PetscViewerASCIIPrintf 0
 #	> Testing PetscViewerASCIIPrintf 1
 #	> Testing PetscViewerASCIIPrintf 0
-#	> Testing PetscViewerASCIIPrintf 1 
+#	> Testing PetscViewerASCIIPrintf 1
 \end{outputlisting}
 This suggests that the output does not match the reference output.
 \item Take a look in the directory where the test was run from.
@@ -1947,7 +2158,7 @@ cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
 \item Examine the scripts and output files there. In this example, these are \trl{runex4_4.sh} and \trl{runex4_4/}, which contains \trl{sys_classes_viewer_tests-ex4_4.sh} along with various output files.
 \item By examining these files, one can determine that
 \begin{tightitemize}
-\item The command to run the test was 
+\item The command to run the test was
 \begin{outputlisting}
 /Users/patrick/petsc-master/arch-darwin-master-double-debug/bin/mpiexec  -n 1 ../ex4 -myviewer ascii:ex4a1.tmp::append
 \end{outputlisting}
@@ -1960,6 +2171,18 @@ cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
 \item Repeat with other errors.
 \end{enumerate}
 
+To rerun just the reporting,
+\begin{bashlisting}
+config/report_tests.py
+\end{bashlisting}
+To see the full options:
+\begin{bashlisting}
+config/report_tests.py -h
+\end{bashlisting}
+To see the full timing information for the 5 most expensive tests:
+\begin{bashlisting}
+config/report_tests.py -t 5
+\end{bashlisting}
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
 

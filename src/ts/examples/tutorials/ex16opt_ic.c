@@ -142,6 +142,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,user.ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (monitor) {
@@ -257,6 +258,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,user);CHKERRQ(ierr);
+  /*   Set RHS Jacobian  for the adjoint integration */
+  ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set time
@@ -298,8 +301,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
 
-  /*   Set RHS Jacobian  for the adjoint integration */
-  ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -312,8 +313,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 /*TEST
     build:
       requires: !single !complex
+
     test:
       suffix: 1
       args: -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 -ts_trajectory_dirname ex16opt_icdir
+
+    test:
+      suffix: 2
+      args: -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view -tao_max_it 1 -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view
 
 TEST*/

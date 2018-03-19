@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=n-gage
-set USR=petsc
-set LOC=/export/home/petsc/${RNAME}-2
-set CONF=arch-opensolaris-misc

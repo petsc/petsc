@@ -42,13 +42,14 @@ static PetscErrorCode MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
+static PetscErrorCode MatDiagonalSet_ADA(Mat M,Vec D, InsertMode mode)
 {
   TaoMatADACtx   ctx;
   PetscReal      zero=0.0,one = 1.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (mode == INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"Cannot insert diagonal entries of this matrix type, can only add");
   ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx->D2){
     ierr = VecDuplicate(D,&ctx->D2);CHKERRQ(ierr);
@@ -164,7 +165,7 @@ static PetscErrorCode MatTranspose_ADA(Mat mat,MatReuse reuse,Mat *B)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatADAComputeDiagonal(Mat mat)
+static PetscErrorCode MatADAComputeDiagonal(Mat mat)
 {
   PetscErrorCode ierr;
   PetscInt       i,m,n,low,high;
@@ -177,7 +178,6 @@ PetscErrorCode MatADAComputeDiagonal(Mat mat)
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n,&dtemp );CHKERRQ(ierr);
-
   for (i=0; i<n; i++){
     ierr = MatGetColumnVector(ctx->A, ctx->W, i);CHKERRQ(ierr);
     ierr = VecPointwiseMult(ctx->W,ctx->W,ctx->W);CHKERRQ(ierr);
@@ -205,9 +205,9 @@ static PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = MatADAComputeDiagonal(mat);CHKERRQ(ierr);
-  ierr=VecCopy(ctx->ADADiag,v);CHKERRQ(ierr);
+  ierr = VecCopy(ctx->ADADiag,v);CHKERRQ(ierr);
   if (ctx->D2){
-    ierr=VecAXPY(v, one, ctx->D2);CHKERRQ(ierr);
+    ierr = VecAXPY(v, one, ctx->D2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -381,8 +381,8 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 
    Input Parameters:
 +  mat - matrix of arbitrary type
-.  d1 - A vector with diagonal elements of D1
--  d2 - A vector
+.  d1 - A vector defining a diagonal matrix
+-  d2 - A vector defining a diagonal matrix 
 
    Output Parameters:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.
@@ -390,11 +390,6 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
    Notes:
    The user provides the input data and is responsible for destroying
    this data after matrix J has been destroyed.
-   The operation MatMult(A,D2,D1) must be well defined.
-   Before calling the operation MatGetDiagonal(), the function
-   MatADAComputeDiagonal() must be called.  The matrices A and D1 must
-   be the same during calls to MatADAComputeDiagonal() and
-   MatGetDiagonal().
 
    Level: developer
 
@@ -402,7 +397,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 @*/
 PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 {
-  MPI_Comm       comm=PetscObjectComm((PetscObject)mat);
+  MPI_Comm       comm = PetscObjectComm((PetscObject)mat);
   TaoMatADACtx   ctx;
   PetscErrorCode ierr;
   PetscInt       nloc,n;
@@ -427,14 +422,14 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
     ctx->ADADiag = NULL;
   }
 
-  ctx->GotDiag=0;
+  ctx->GotDiag = 0;
   ierr =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
 
   ierr=VecGetLocalSize(d2,&nloc);CHKERRQ(ierr);
   ierr=VecGetSize(d2,&n);CHKERRQ(ierr);
 
   ierr = MatCreateShell(comm,nloc,nloc,n,n,ctx,J);CHKERRQ(ierr);
-
+  ierr = MatShellSetManageScalingShifts(*J);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))MatDestroy_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))MatView_ADA);CHKERRQ(ierr);

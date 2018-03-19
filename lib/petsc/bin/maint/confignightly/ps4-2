@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=ps4
+set USR=petsc
+set PETSC_DIR=/home/petsc/${RNAME}-2
+set PETSC_ARCH=arch-mswin-intel

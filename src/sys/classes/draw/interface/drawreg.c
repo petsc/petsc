@@ -69,8 +69,8 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(str,"PetscDraw: ");CHKERRQ(ierr);
-    ierr   = PetscStrcat(str,((PetscObject)indraw)->type_name);CHKERRQ(ierr);
+    ierr   = PetscStrncpy(str,"PetscDraw: ",sizeof(str));CHKERRQ(ierr);
+    ierr   = PetscStrlcat(str,((PetscObject)indraw)->type_name,sizeof(str));CHKERRQ(ierr);
     ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);

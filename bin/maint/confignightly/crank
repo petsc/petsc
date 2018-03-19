@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=crank
-set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-pkgs-opt

@@ -3,6 +3,7 @@ pipelines:
     maint: &default-step
       - step:
           script:
+            - sudo apt-get update
             - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev
             - ./configure --with-clanguage=C++ --with-64-bit-indices=1 --with-scalar-type=complex --with-mpi=0
             - make all

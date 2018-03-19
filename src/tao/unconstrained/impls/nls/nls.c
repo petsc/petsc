@@ -60,7 +60,7 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
  problems.
 
  The linear system solve should be done with a conjugate gradient
- method, although any method can be used. 
+ method, although any method can be used.
 */
 
 #define NLS_NEWTON              0
@@ -76,7 +76,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscBool                    is_nash,is_stcg,is_gltr;
   KSPConvergedReason           ksp_reason;
   PC                           pc;
-  TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
 
   PetscReal                    fmin, ftrial, f_full, prered, actred, kappa, sigma;
@@ -114,7 +113,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
   /* Initialize trust-region radius when using nash, stcg, or gltr
      Command automatically ignored for other methods
-     Will be reset during the first iteration 
+     Will be reset during the first iteration
   */
   ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
   ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
@@ -142,9 +141,12 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-
-  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
-  if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* create vectors for the limited memory preconditioner */
   if ((NLS_PC_BFGS == nlsP->pc_type) && (BFGS_SCALE_BFGS != nlsP->bfgs_scale_type)) {
@@ -284,8 +286,10 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
-          ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
-          if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+          ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+          ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
+          ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+          if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
         }
       }
       tao->trust = PetscMax(tao->trust, max_radius);
@@ -321,7 +325,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   nlsP->grad = 0;
 
   /* Have not converged; continue with Newton method */
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     tao->ksp_its=0;
 
@@ -655,7 +659,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = VecCopy(nlsP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(nlsP->Gold, tao->gradient);CHKERRQ(ierr);
       step = 0.0;
-      reason = TAO_DIVERGED_LS_FAILURE;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
       break;
     }
@@ -823,7 +826,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
-    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1109,14 +1114,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   nlsP->update_type     = NLS_UPDATE_STEP;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

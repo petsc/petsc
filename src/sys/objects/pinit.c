@@ -14,10 +14,6 @@ extern PetscErrorCode PetscLogInitialize(void);
 PetscFPT PetscFPTData = 0;
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-cublasHandle_t cublasv2handle = NULL;
-#endif
-
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
@@ -723,9 +719,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
-#if defined(PETSC_HAVE_CUDA)
-  cublasStatus_t cberr;
-#endif
 #if defined(PETSC_HAVE_HWLOC)
   PetscViewer    viewer;
 #endif
@@ -980,20 +973,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-  flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscMPIInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {
-        cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
-      }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-  }
-#endif
-
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;
@@ -1103,9 +1082,6 @@ PetscErrorCode  PetscFinalize(void)
   PetscBool      flg;
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
-#endif
-#if defined(PETSC_HAVE_CUDA)
-  cublasStatus_t cberr;
 #endif
 
   if (!PetscInitializeCalled) {
@@ -1458,22 +1434,6 @@ PetscErrorCode  PetscFinalize(void)
      Close any open dynamic libraries
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUDA)
-  flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {
-        if (cublasv2handle) {
-          cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
-        }
-      }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-  }
-#endif
 
   /* Can be destroyed only after all the options are used */
   ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);

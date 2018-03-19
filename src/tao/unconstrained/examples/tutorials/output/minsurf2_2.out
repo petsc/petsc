@@ -8,15 +8,34 @@ iter =   1, Function value 1.41867, Residual: 0.0159523
 iter =   2, Function value 1.41847, Residual: 0.000149091 
 Tao Object: 2 MPI processes
   type: nls
-      Rejected matrix updates: 0
-      Newton steps: 2
-      BFGS steps: 0
-      Scaled gradient steps: 0
-      Gradient steps: 0
+    Rejected matrix updates: 0
+    Newton steps: 2
+    BFGS steps: 0
+    Scaled gradient steps: 0
+    Gradient steps: 0
   TaoLineSearch Object: 2 MPI processes
     type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
   KSP Object: 2 MPI processes
     type: stcg
+    maximum iterations=15, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: 2 MPI processes
+    type: shell
+      bfgs
+    linear system matrix = precond matrix:
+    Mat Object: 2 MPI processes
+      type: mpiaij
+      rows=100, cols=100
+      total: nonzeros=784, allocated nonzeros=784
+      total number of mallocs used during MatSetValues calls =0
   total KSP iterations: 30
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
   Residual in Function/Gradient:=0.000149091

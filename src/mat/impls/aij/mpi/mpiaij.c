@@ -3793,7 +3793,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   PetscBool      nooffprocentries;
 
   PetscFunctionBegin;
-  if (Ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
+  if (Ii && Ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
   ierr   = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr   = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
@@ -3804,13 +3804,13 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
 
   ierr = PetscMalloc2(m,&d_nnz,m,&o_nnz);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUGGING)
+#if defined(PETSC_USE_DEBUG)
   for (i=0; i<m; i++) {
     nnz = Ii[i+1]- Ii[i];
     JJ  = J + Ii[i];
     if (nnz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
-    if (nnz && (JJ[0] < 0)) SETERRRQ1(PETSC_ERR_ARG_WRONGSTATE,"Row %D starts with negative column index",i,j);
-    if (nnz && (JJ[nnz-1] >= B->cmap->N) SETERRRQ3(PETSC_ERR_ARG_WRONGSTATE,"Row %D ends with too large a column index %D (max allowed %D)",i,JJ[nnz-1],B->cmap->N);
+    if (nnz && (JJ[0] < 0)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Row %D starts with negative column index",i,JJ[0]);
+    if (nnz && (JJ[nnz-1] >= B->cmap->N)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Row %D ends with too large a column index %D (max allowed %D)",i,JJ[nnz-1],B->cmap->N);
   }
 #endif
 
@@ -4106,7 +4106,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (i && i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);

@@ -245,35 +245,35 @@ int main(int argc,char **args)
 
    test:
       suffix: mpiaijcusp
-      requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp
+      requires: cusp
+      args: -ksp_monitor_short -mat_type aijcusp -vec_type cusp
 
    test:
       suffix: mpiaijcusp_2
       nsize: 2
-      requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp
+      requires: cusp
+      args: -ksp_monitor_short -mat_type aijcusp -vec_type cusp
 
    test:
       suffix: mpiaijcusp_simple
-      requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusp_simple_2
       nsize: 2
-      requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse
-      requires: cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type mpicuda
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
 
    test:
       suffix: mpiaijcusparse_2
       nsize: 2
-      requires: cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type mpicuda
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
 
 TEST*/

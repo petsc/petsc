@@ -126,18 +126,18 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      nsize: {{1 2 3 4}}
+      nsize: {{1  3}}
       args: one -dof {{1 2 3}} -stencil_type {{0 1}}
 
    test:
       suffix: 3
-      nsize: {{1 2 3 4}}
-      args: two -dof {{1 2 3}} -stencil_type {{0 1}}
+      nsize: {{2 4}}
+      args: two -dof {{1 3}} -stencil_type {{0 1}}
 
    test:
       suffix: 4
-      nsize: {{1 2 3 4}}
-      args: three -dof {{1 2 3}} -stencil_type {{0 1}}
+      nsize: {{1 4}}
+      args: three -dof {{2 3}} -stencil_type {{0 1}}
 
    test:
       suffix: 2

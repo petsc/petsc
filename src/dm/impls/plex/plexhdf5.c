@@ -168,9 +168,9 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       } else {
         ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       }
-      ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
+      ierr = PetscStrncpy(subname, name,sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, "_",sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, fname,sizeof(subname));CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
@@ -200,6 +200,7 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   DM             dm;
   Vec            locv;
   const char    *name;
+  PetscReal      time;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -209,9 +210,11 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+  ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
-  ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+  ierr = VecView_Plex_Local_HDF5_Internal(locv, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);

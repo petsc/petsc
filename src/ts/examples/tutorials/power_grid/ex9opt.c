@@ -490,7 +490,7 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
