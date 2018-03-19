@@ -609,12 +609,12 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
-  lu->npcol = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
-  if (!lu->npcol) lu->npcol = 1;
-  while (lu->npcol > 0) {
-    lu->nprow = (int_t) (size/lu->npcol);
+  lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
+  if (!lu->nprow) lu->nprow = 1;
+  while (lu->nprow > 0) {
+    lu->npcol = (int_t) (size/lu->nprow);
     if (size == lu->nprow * lu->npcol) break;
-    lu->npcol--;
+    lu->nprow--;
   }
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
