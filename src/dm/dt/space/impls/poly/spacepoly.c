@@ -198,9 +198,9 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   pdim /= Nc;
   ierr = DMGetWorkArray(dm, npoints, MPIU_REAL, &lpoints);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, npoints*ndegree*3, MPIU_REAL, &tmp);CHKERRQ(ierr);
-  if (B) {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LB);CHKERRQ(ierr);}
-  if (D) {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LD);CHKERRQ(ierr);}
-  if (H) {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LH);CHKERRQ(ierr);}
+  if (B || D || H) {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LB);CHKERRQ(ierr);}
+  if (D || H)      {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LD);CHKERRQ(ierr);}
+  if (H)           {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LH);CHKERRQ(ierr);}
   for (d = 0; d < dim; ++d) {
     for (p = 0; p < npoints; ++p) {
       lpoints[p] = points[p*dim+d];
@@ -209,9 +209,9 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     /* LB, LD, LH (ndegree * dim x npoints) */
     for (deg = 0; deg < ndegree; ++deg) {
       for (p = 0; p < npoints; ++p) {
-        if (B) LB[(deg*dim + d)*npoints + p] = tmp[(0*npoints + p)*ndegree+deg];
-        if (D) LD[(deg*dim + d)*npoints + p] = tmp[(1*npoints + p)*ndegree+deg];
-        if (H) LH[(deg*dim + d)*npoints + p] = tmp[(2*npoints + p)*ndegree+deg];
+        if (B || D || H) LB[(deg*dim + d)*npoints + p] = tmp[(0*npoints + p)*ndegree+deg];
+        if (D || H)      LD[(deg*dim + d)*npoints + p] = tmp[(1*npoints + p)*ndegree+deg];
+        if (H)           LH[(deg*dim + d)*npoints + p] = tmp[(2*npoints + p)*ndegree+deg];
       }
     }
   }
@@ -393,9 +393,9 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     }
   }
   ierr = PetscFree2(ind,tup);CHKERRQ(ierr);
-  if (B) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LB);CHKERRQ(ierr);}
-  if (D) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LD);CHKERRQ(ierr);}
-  if (H) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LH);CHKERRQ(ierr);}
+  if (H)           {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LH);CHKERRQ(ierr);}
+  if (D || H)      {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LD);CHKERRQ(ierr);}
+  if (B || D || H) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LB);CHKERRQ(ierr);}
   ierr = DMRestoreWorkArray(dm, npoints*ndegree*3, MPIU_REAL, &tmp);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, npoints, MPIU_REAL, &lpoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
