@@ -312,7 +312,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       for (j = 0; j < it+2; ++j) {
         ierr = (*u->ops->dot_local)(u,Z[l-j],&G(j,it+1));CHKERRQ(ierr);
       }
-      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPI_SUM,comm,&req(it+1));CHKERRQ(ierr);
+      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,it+1),it+2,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1));CHKERRQ(ierr);
     } else if ((it >= l) && (it < max_it)) {
       start = PetscMax(0,it-2*l+1);
       middle = it-l+2;
@@ -324,7 +324,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       for (j = middle; j < end; ++j) { /* dot-product (Z_{it+1},z_j) */
         ierr = (*u->ops->dot_local)(u,plcg->Z[it+1-j],&G(j,it+1));CHKERRQ(ierr);
       }
-      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(start,it+1),end-start,MPIU_SCALAR,MPI_SUM,comm,&req(it+1));CHKERRQ(ierr);
+      ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(start,it+1),end-start,MPIU_SCALAR,MPIU_SUM,comm,&req(it+1));CHKERRQ(ierr);
     }
 
     /* ----------------------------------------- */
@@ -473,7 +473,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     }
 
     ierr = (*u->ops->dot_local)(u,p,&G(0,0));CHKERRQ(ierr);
-    ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPI_SUM,comm,&req(0));CHKERRQ(ierr);
+    ierr = MPIPetsc_Iallreduce(MPI_IN_PLACE,&G(0,0),1,MPIU_SCALAR,MPIU_SUM,comm,&req(0));CHKERRQ(ierr);
     ierr = VecCopy(p,plcg->Z[l]);CHKERRQ(ierr);
 
     ierr = KSPSolve_InnerLoop_PIPELCG(ksp);CHKERRQ(ierr);
