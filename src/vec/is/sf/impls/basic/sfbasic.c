@@ -868,9 +868,9 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscSFBasicPack link,next;
 
   PetscFunctionBegin;
+  if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   ierr = PetscFree2(bas->iranks,bas->ioffset);CHKERRQ(ierr);
   ierr = PetscFree(bas->irootloc);CHKERRQ(ierr);
-  if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (link=bas->avail; link; link=next) {
     PetscInt i;
     next = link->next;
@@ -890,6 +890,7 @@ static PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFReset_Basic(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1110,7 +1111,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Basic;
 
-  ierr     = PetscNewLog(sf,&bas);CHKERRQ(ierr);
+  ierr = PetscNewLog(sf,&bas);CHKERRQ(ierr);
   sf->data = (void*)bas;
   PetscFunctionReturn(0);
 }
