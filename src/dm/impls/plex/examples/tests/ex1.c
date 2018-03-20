@@ -519,6 +519,11 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_11
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape -dm_refine 1
+  test:
+    suffix: gmsh_12
+    nsize: 4
+    requires: !single mpiio
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -viewer_binary_mpiio -petscpartitioner_type simple -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
   test:
