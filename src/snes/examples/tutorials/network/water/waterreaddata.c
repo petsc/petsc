@@ -152,7 +152,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
 
   PetscFunctionBegin;
   water->nvertex = water->nedge = 0;
-  fp = fopen(filename,"r");
+  fp = fopen(filename,"rb");
   /* Check for valid file */
   if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open EPANET data file %s",filename);
 
