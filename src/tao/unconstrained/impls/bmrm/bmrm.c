@@ -49,7 +49,6 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
   PetscErrorCode     ierr;
-  TaoConvergedReason reason;
   TAO_DF             df;
   TAO_BMRM           *bmrm = (TAO_BMRM*)tao->data;
 
@@ -88,7 +87,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   }
 
   df.tol = 1e-6;
-  reason = TAO_CONTINUE_ITERATING;
+  tao->reason = TAO_CONTINUE_ITERATING;
 
   /*-----------------Algorithm Begins------------------------*/
   /* make the scatter */
@@ -98,8 +97,11 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   /* NOTE: In application pass the sub-gradient of Remp(W) */
   ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step,&reason);CHKERRQ(ierr);
-  while (reason == TAO_CONTINUE_ITERATING) {
+  ierr = TaoLogConvergenceHistory(tao,f,1.0,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,1.0,0.0,tao->step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
     ierr = VecDot(W, G, &bt);CHKERRQ(ierr);
     bt = f - bt;
@@ -177,7 +179,9 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     }
 
     tao->niter++;
-    ierr = TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,min_jw,epsilon,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,min_jw,epsilon,0.0,tao->step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
 
   /* free all the memory */

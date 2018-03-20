@@ -134,7 +134,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   PetscInt                     its;
   PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
   PetscReal                    xtHx;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -165,9 +164,12 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING){
+  while (tao->reason == TAO_CONTINUE_ITERATING){
     tao->ksp_its=0;
 
     ierr = GPCGGradProjections(tao);CHKERRQ(ierr);
@@ -225,9 +227,11 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
     }
 
     tao->niter++;
-    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,gpcg->step,&reason);CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
-    if (reason!=TAO_CONTINUE_ITERATING) break;
+    ierr = TaoLogConvergenceHistory(tao,f,gpcg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING) break;
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);

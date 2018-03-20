@@ -34,7 +34,6 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 {
   PetscErrorCode     ierr;
   TAO_IPM            *ipmP = (TAO_IPM*)tao->data;
-  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
   PetscInt           its,i;
   PetscScalar        stepsize=1.0;
   PetscScalar        step_s,step_l,alpha,tau,sigma,phi_target;
@@ -46,9 +45,13 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = VecCopy(tao->solution,ipmP->rhs_x);CHKERRQ(ierr);
   ierr = IPMEvaluate(tao);CHKERRQ(ierr);
   ierr = IPMComputeKKT(tao);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);CHKERRQ(ierr);
-
-  while (reason == TAO_CONTINUE_ITERATING) {
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,1.0);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
     ierr = IPMUpdateK(tao);CHKERRQ(ierr);
     /*
@@ -187,7 +190,9 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
       alpha /= 2.0;
     }
 
-    ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     tao->niter++;
   }
   PetscFunctionReturn(0);

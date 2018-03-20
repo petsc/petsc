@@ -15,7 +15,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscErrorCode               ierr;
   PetscInt                     stepType, nupdates;
   PetscBool                    recycle;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -29,9 +28,12 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
 
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-
-  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
-  if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /*  Set initial scaling for the function */
   if (f != 0.0) {
@@ -51,7 +53,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   }
 
   /*  Have not converged; continue with Newton method */
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     /*  Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
@@ -159,7 +161,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ierr = VecCopy(lmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient);CHKERRQ(ierr);
       step = 0.0;
-      reason = TAO_DIVERGED_LS_FAILURE;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
     }
 
@@ -167,7 +168,9 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
 
     tao->niter++;
-    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

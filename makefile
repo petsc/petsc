@@ -119,7 +119,10 @@ info:
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using system modules: ${LOADEDMODULES}"
-	-@echo Using mpi.h: `echo '#include <mpi.h>' > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/mpitest.c; ${CPP} ${PETSC_CCPPFLAGS} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/mpitest.c |grep 'mpi\.h' |  ( head -1 ; cat > /dev/null )`
+	-@TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
+           echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
+           BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
@@ -199,50 +202,6 @@ testx_build:
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
-
-testexamples: info
-	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines some of the numbers may not match exactly."
-	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree
-	-@echo "Completed compiling and running test examples"
-	-@echo "========================================="
-testfortran: info
-	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
-	-@echo "========================================="
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines or the way Fortran formats numbers"
-	-@echo "some of the results may not match exactly."
-	-@echo "========================================="
-	-@if [ "${FC}" != "" ]; then \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_Fortran tree; \
-            echo "Completed compiling and running Fortran test examples"; \
-          else \
-            echo "Error: No FORTRAN compiler available"; \
-          fi
-	-@echo "========================================="
-testexamples_uni: info
-	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines some of the numbers may not match exactly."
-	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree
-	-@echo "Completed compiling and running uniprocessor test examples"
-	-@echo "========================================="
-testfortran_uni: info
-	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR FORTRAN EXAMPLES"
-	-@echo "Due to different numerical round-off on certain"
-	-@echo "machines some of the numbers may not match exactly."
-	-@echo "========================================="
-	-@if [ "${FC}" != "" ]; then \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_Fortran_MPIUni  tree; \
-            echo "Completed compiling and running uniprocessor fortran test examples"; \
-          else \
-            echo "Error: No FORTRAN compiler available"; \
-          fi
-	-@
-	-@echo "========================================="
 
 # Ranlib on the libraries
 ranlib:
@@ -581,7 +540,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
+.PHONY: info info_h all build ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
         start_configure configure_petsc configure_clean matlabbin install

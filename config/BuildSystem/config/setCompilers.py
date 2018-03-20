@@ -93,7 +93,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
@@ -674,7 +674,7 @@ class Configure(config.base.Configure):
       yield self.argDB['CUDAPP']
     else:
       if hasattr(self, 'CUDAC'):
-        yield self.CUDAC+' -arch=sm_30 -E'
+        yield self.CUDAC+' -E'
     return
 
   def checkCUDAPreprocessor(self):

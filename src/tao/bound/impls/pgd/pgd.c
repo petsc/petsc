@@ -4,7 +4,6 @@ static PetscErrorCode TaoSolve_PGD(Tao tao)
 {
   TAO_PGD                      *pg = (TAO_PGD *)tao->data;
   PetscErrorCode               ierr;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -25,9 +24,13 @@ static PetscErrorCode TaoSolve_PGD(Tao tao)
   ierr = VecNorm(tao->gradient,NORM_2,&pg->gnorm);CHKERRQ(ierr);
   
   /* Check convergence and give info to monitors */
-  ierr = TaoMonitor(tao,tao->niter,pg->f,pg->gnorm,0.0,pg->stepsize,&reason);CHKERRQ(ierr);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,pg->f,pg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,pg->f,pg->gnorm,0.0,pg->stepsize);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Set step direction to steepest descent */
     ierr = VecCopy(pg->unprojected_gradient,tao->stepdirection);CHKERRQ(ierr);
     ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
@@ -36,7 +39,7 @@ static PetscErrorCode TaoSolve_PGD(Tao tao)
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &pg->f, pg->unprojected_gradient, tao->stepdirection, &pg->stepsize, &ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-    if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) reason = TAO_DIVERGED_LS_FAILURE;
+    if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) tao->reason = TAO_DIVERGED_LS_FAILURE;
 
     /* Project the gradient and calculate the norm */
     ierr = VecBoundGradientProjection(pg->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
@@ -44,7 +47,9 @@ static PetscErrorCode TaoSolve_PGD(Tao tao)
     
     /* Check convergence and give info to monitors */
     tao->niter++;
-    ierr = TaoMonitor(tao,tao->niter,pg->f,pg->gnorm,0.0,pg->stepsize,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,pg->f,pg->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,pg->f,pg->gnorm,0.0,pg->stepsize);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

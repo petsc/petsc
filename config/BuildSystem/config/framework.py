@@ -187,7 +187,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-with-alternatives=<bool>',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
+    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to unpack and run the build process for downloaded packages'))
     help.addArgument('Framework', '-with-batch=<bool>',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
     help.addArgument('Framework', '-with-file-create-pause=<bool>', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help

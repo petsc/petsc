@@ -1216,17 +1216,15 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
   for (l = numLabels-1; l >= 0; --l) {
     DMLabel     label = NULL, labelNew = NULL;
-    PetscBool   isdepth;
+    PetscBool   isDepth, lisOutput = PETSC_TRUE, isOutput;
 
-    if (hasLabels) {
-      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
-      /* Skip "depth" because it is recreated */
-      ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
-    }
-    ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-    if (isdepth && !sendDepth) continue;
+    if (hasLabels) {ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);}
+    /* Skip "depth" because it is recreated */
+    if (hasLabels) {ierr = PetscStrcmp(label->name, "depth", &isDepth);CHKERRQ(ierr);}
+    ierr = MPI_Bcast(&isDepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+    if (isDepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
-    if (isdepth) {
+    if (isDepth) {
       /* Put in any missing strata which can occur if users are managing the depth label themselves */
       PetscInt gdepth;
 
@@ -1236,10 +1234,14 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
         PetscBool has;
 
         ierr = DMLabelHasStratum(labelNew, d, &has);CHKERRQ(ierr);
-        if (!has) ierr = DMLabelAddStratum(labelNew, d);CHKERRQ(ierr);
+        if (!has) {ierr = DMLabelAddStratum(labelNew, d);CHKERRQ(ierr);}
       }
     }
     ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
+    /* Put the output flag in the new label */
+    if (hasLabels) {ierr = DMGetLabelOutput(dm, label->name, &lisOutput);CHKERRQ(ierr);}
+    ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+    ierr = DMSetLabelOutput(dmParallel, labelNew->name, isOutput);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -15,8 +15,6 @@ import sys
 from   time import gmtime,strftime
 
 PETSC_DIR = os.environ['PETSC_DIR']
-PETSC_ARCH = os.environ['PETSC_ARCH']
-OBJDIR = os.path.join(PETSC_DIR, PETSC_ARCH, 'obj')
 
 def run_gcov(gcov_dir):
 
@@ -38,6 +36,8 @@ def run_gcov(gcov_dir):
             csrc_file = file_name.endswith('.c')
             if csrc_file:
                 c_file = file_name.split('.c')[0]
+                PETSC_ARCH = os.environ['PETSC_ARCH']
+                OBJDIR = os.path.join(PETSC_DIR, PETSC_ARCH, 'obj')
                 objpath = os.path.join(OBJDIR, os.path.relpath(c_file, PETSC_DIR))
                 gcov_graph_file = objpath+".gcno"
                 gcov_data_file  = objpath+".gcda"

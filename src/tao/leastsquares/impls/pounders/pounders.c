@@ -630,7 +630,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   TAO_POUNDERS       *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt           i,ii,j,k,l;
   PetscReal          step=1.0;
-  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
   PetscInt           low,high;
   PetscReal          minnorm;
   PetscReal          *x,*f;
@@ -809,12 +808,17 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   gnorm *= mfqP->delta;
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
   ierr = PetscInfo1(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
@@ -967,7 +971,9 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     gnorm *= mfqP->delta;
     /*  final criticality test */
-    ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,minnorm,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,minnorm,gnorm,0.0,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     /* test for repeated model */
     if (mfqP->nmodelpoints==mfqP->last_nmodelpoints) {
       same = PETSC_TRUE;
@@ -987,7 +993,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
     if (same && mfqP->delta == deltaold) {
       ierr = PetscInfo(tao,"Identical model used in successive iterations\n");CHKERRQ(ierr);
-      reason = TAO_CONVERGED_STEPTOL;
       tao->reason = TAO_CONVERGED_STEPTOL;
     }
   }

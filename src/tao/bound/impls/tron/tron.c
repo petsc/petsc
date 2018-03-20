@@ -88,7 +88,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
   PetscInt                     its;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
@@ -121,8 +120,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tron->pgstepsize=1.0;
   tron->stepsize=tao->trust;
 
-  ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize,&reason);CHKERRQ(ierr);
-  while (reason==TAO_CONTINUE_ITERATING){
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  while (tao->reason==TAO_CONTINUE_ITERATING){
 
     /* Perform projected gradient iterations */
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
@@ -143,10 +145,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     /* If no free variables */
     if (tron->n_free == 0) {
       ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
-      if (!reason) {
-        reason = TAO_CONVERGED_STEPTOL;
-        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+      ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+      if (!tao->reason) {
+        tao->reason = TAO_CONVERGED_STEPTOL;
       }
       break;
     }
@@ -237,7 +240,9 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
     tao->niter++;
-    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
   PetscFunctionReturn(0);
 }
