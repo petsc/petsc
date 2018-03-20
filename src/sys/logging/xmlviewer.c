@@ -38,7 +38,7 @@ PetscErrorCode PetscViewerInitASCII_XML(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");CHKERRQ(ierr);
-  ierr = PetscStrreplace(comm,"<?xml-stylesheet type=\"text/xsl\" href=\"${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl\"?>",PerfScript,sizeof(PerfScript));CHKERRQ(ierr);
+  ierr = PetscStrreplace(comm,"<?xml-stylesheet type=\"text/xsl\" href=\"performance_xml2html.xsl\"?>",PerfScript,sizeof(PerfScript));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%s\n",PerfScript);CHKERRQ(ierr);
   XMLSectionDepth = 0;
   ierr = PetscViewerXMLStartSection(viewer, "root", NULL);CHKERRQ(ierr);
