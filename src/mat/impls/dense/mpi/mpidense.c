@@ -1234,7 +1234,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqDense
+                                /*144*/ MatCreateMPIMatConcatenateSeqMat_MPIDense
 };
 
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
