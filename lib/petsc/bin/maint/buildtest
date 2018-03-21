@@ -112,10 +112,11 @@ set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 #
 # check for prefix install
 set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`
-if ( "${PREFIXDIR}" != "" ) then
-  set INSTALLTARGET="install"
-else
+grep 'Now to install the libraries do' $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscrules > /dev/null
+if ( $? ) then
   set INSTALLTARGET=""
+else
+  set INSTALLTARGET="install"
 endif
 #
 # do build/install
@@ -126,7 +127,7 @@ echo "Finishing build run on $MACH $PETSC_ARCH at `date +'%a, %d %b %Y %H:%M:%S 
 if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
 #
 # change PETSC_DIR/PETSC_ARCH for prefix install
-if ( "${PREFIXDIR}" != "" ) then
+if ( "${INSTALLTARGET}" == "install" ) then
   set PETSC_DIR="${PREFIXDIR}"
   set PETSC_ARCH=""
 endif

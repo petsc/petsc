@@ -41,7 +41,6 @@ class Configure(config.base.Configure):
       self.dir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
       self.petscDir = self.dir
       self.petscArch = ''
-      self.addMakeMacro('PREFIXDIR',self.dir)
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
@@ -52,6 +51,7 @@ class Configure(config.base.Configure):
       self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
       self.petscDir = self.petscdir.dir
       self.petscArch = self.arch.arch
+    self.addMakeMacro('PREFIXDIR',self.dir)
     self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
 
   def configureInstallDir(self):

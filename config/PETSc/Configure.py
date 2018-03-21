@@ -413,7 +413,6 @@ prepend-path PATH "%s"
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
 
-    self.addMakeMacro('DESTDIR',self.installdir.dir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:

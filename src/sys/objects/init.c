@@ -518,7 +518,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
-      sprintf(name,"%s.%d",mname,rank);
+      PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
