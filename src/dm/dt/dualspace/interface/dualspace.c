@@ -152,7 +152,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 . sp - the PetscDualSpace object to set options for
 
   Options Database:
-. -petscspace_order the approximation order of the space
+. -petscspace_degree the approximation order of the space
 
   Level: developer
 
@@ -181,7 +181,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscDualSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscdualspace_degree", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);

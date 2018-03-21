@@ -245,6 +245,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -petscspace_order 2 -tensor_petscspace_order 2
+    args: -petscspace_degree 2 -tensor_petscspace_degree 2
 
 TEST*/

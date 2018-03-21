@@ -1,6 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-#ifdef PETSC_HAVE_OPENCL
+#if defined(PETSC_HAVE_OPENCL)
 
 PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {
@@ -599,6 +599,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   ierr = PetscFEOpenCLGetIntegrationKernel(fem, useAux, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
+  if (cgeom->numPoints > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support affine geometry for OpenCL integration right now");
   if (sizeof(PetscReal) != realSize) {
     switch (ocl->realType) {
     case PETSC_FLOAT:
@@ -607,9 +608,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
       ierr = PetscMalloc4(Ne*N_bt,&f_coeff,Ne,&f_coeffAux,Ne*dim*dim,&f_invJ,Ne,&f_detJ);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
-        f_detJ[c] = (float) cgeom[c].detJ;
+        f_detJ[c] = (float) cgeom->detJ[c];
         for (d = 0; d < dim*dim; ++d) {
-          f_invJ[c*dim*dim+d] = (float) cgeom[c].invJ[d];
+          f_invJ[c*dim*dim+d] = (float) cgeom->invJ[c * dim * dim + d];
         }
         for (b = 0; b < N_bt; ++b) {
           f_coeff[c*N_bt+b] = (float) coefficients[c*N_bt+b];
@@ -636,9 +637,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
       ierr = PetscMalloc4(Ne*N_bt,&d_coeff,Ne,&d_coeffAux,Ne*dim*dim,&d_invJ,Ne,&d_detJ);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
-        d_detJ[c] = (double) cgeom[c].detJ;
+        d_detJ[c] = (double) cgeom->detJ[c];
         for (d = 0; d < dim*dim; ++d) {
-          d_invJ[c*dim*dim+d] = (double) cgeom[c].invJ[d];
+          d_invJ[c*dim*dim+d] = (double) cgeom->invJ[c * dim * dim + d];
         }
         for (b = 0; b < N_bt; ++b) {
           d_coeff[c*N_bt+b] = (double) coefficients[c*N_bt+b];
@@ -667,9 +668,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
     ierr = PetscMalloc2(Ne*dim*dim,&r_invJ,Ne,&r_detJ);CHKERRQ(ierr);
     for (c = 0; c < Ne; ++c) {
-      r_detJ[c] = cgeom[c].detJ;
+      r_detJ[c] = cgeom->detJ[c];
       for (d = 0; d < dim*dim; ++d) {
-        r_invJ[c*dim*dim+d] = cgeom[c].invJ[d];
+        r_invJ[c*dim*dim+d] = cgeom->invJ[c * dim * dim + d];
       }
     }
     oclCoeff    = (void *) coefficients;

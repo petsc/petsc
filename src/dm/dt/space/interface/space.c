@@ -164,7 +164,7 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 . sp - the PetscSpace object to set options for
 
   Options Database:
-. -petscspace_order the approximation order of the space
+. -petscspace_degree the approximation order of the space
 
   Level: developer
 
@@ -174,7 +174,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 {
   const char    *defaultType;
   char           name[256];
-  PetscBool      flg;
+  PetscBool      flg, orderflg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -193,7 +193,19 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-petscspace_order", "The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsInt("-petscspace_order", "DEPRECATED: The approximation order", "PetscSpaceSetDegree", sp->degree, &sp->degree, &orderflg);CHKERRQ(ierr);
+    if (orderflg) {
+      int compare;
+
+      ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)sp), PETSC_COMM_WORLD, &compare);CHKERRQ(ierr);
+
+      if (compare == MPI_IDENT || compare == MPI_CONGRUENT) {
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp), "Warning: -petscspace_order is deprecated.  Use -petscspace_degree\n");CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscOptionsInt("-petscspace_degree", "The polynomial degree contained by the space", "PetscSpaceSetDegree", sp->degree, &sp->degree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_variables", "The number of different variables, e.g. x and y", "PetscSpaceSetNumVariables", sp->Nv, &sp->Nv, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
