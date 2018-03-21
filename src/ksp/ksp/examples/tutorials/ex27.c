@@ -23,10 +23,12 @@ int main(int argc,char **args)
   Mat            A,N;                /* matrix */
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[PETSC_MAX_PATH_LEN];     /* input file name */
+  char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
+  char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
+  PetscBool      nonzero_guess=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -34,6 +36,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -78,11 +81,25 @@ int main(int argc,char **args)
   }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  if (file_x0[0]) {
+    nonzero_guess=PETSC_TRUE;
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(x,fd);
+    ierr = PetscPopErrorHandler();CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+    if (ierrp) nonzero_guess=PETSC_FALSE;
+  }
+  if (!nonzero_guess) {
+    /* initial guess not specified or failed to load, use zeros */
+    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  }
 
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                     Setup solve for system
@@ -102,6 +119,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /*
@@ -177,5 +195,19 @@ int main(int argc,char **args)
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
+
+   test:
+      suffix: 3
+      nsize: {{1 2}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
+      args: -f_x0 ${DATAFILESPATH}/matrices/shallow_water1    # use RHS as initial guess for now
+
+   test:
+      suffix: 3a
+      nsize: {{1 2}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
+      args: -f_x0 NONEXISTING_FILE
 
 TEST*/
