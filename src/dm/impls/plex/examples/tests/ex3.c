@@ -1131,13 +1131,13 @@ int main(int argc, char **argv)
     args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 0 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 1 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 2 -non_affine_coords -convergence
 
   # 2D Q_2 on a quadrilaterial
   test:
@@ -1152,6 +1152,25 @@ int main(int argc, char **argv)
     suffix: q2_2d_plex_2
     requires: mpi_type_get_envelope
     args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
+  test:
+    suffix: q2_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
+  test:
+    suffix: q2_2d_plex_4
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
+  test:
+    suffix: q2_2d_plex_5
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 0 -non_affine_coords -convergence
+  test:
+    suffix: q2_2d_plex_6
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 1 -non_affine_coords -convergence
+  test:
+    suffix: q2_2d_plex_7
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
 
 
   # 2D P_3 on a triangle
@@ -1267,15 +1286,15 @@ int main(int argc, char **argv)
   # Nonconforming tests
   test:
     suffix: constraints
-    args: -simplex 0 -petscspace_poly_tensor -petscspace_degree 1 -qorder 0 -constraints
+    args: -simplex 0 -petscspace_type tensor -petscspace_degree 1 -qorder 0 -constraints
   test:
     suffix: nonconforming_tensor_2
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_3
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_degree 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_2_fv
     nsize: 4
