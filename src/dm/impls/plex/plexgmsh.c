@@ -209,7 +209,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   int            i, numVertices = 0, numCells = 0, trueNumCells = 0, numRegions = 0, snum, shift = 1;
   PetscMPIInt    rank;
   char           line[PETSC_MAX_PATH_LEN];
-  PetscBool      binary, mpiio, byteSwap = PETSC_FALSE, zerobase = PETSC_FALSE, isbd = PETSC_FALSE, periodic = PETSC_FALSE, usemarker = PETSC_FALSE;
+  PetscBool      binary, byteSwap = PETSC_FALSE, zerobase = PETSC_FALSE, isbd = PETSC_FALSE, periodic = PETSC_FALSE, usemarker = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -225,15 +225,14 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = PetscLogEventBegin(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &binary);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer, &mpiio);CHKERRQ(ierr);
 
   /* Binary viewers read on all ranks, get subviewer to read only in rank 0 */
-  if (binary && !mpiio) {
+  if (binary) {
     parentviewer = viewer;
     ierr = PetscViewerGetSubViewer(parentviewer, PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
   }
 
-  if (!rank || mpiio) {
+  if (!rank) {
     PetscBool match;
     int       fileType, dataSize;
     float     version;
@@ -375,13 +374,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       /* remove periodic vertices */
       numVertices = numVertices - pVert;
     }
-  }
-
-  /* For (binary) MPI I/O we read on all ranks, but only build the plex on rank 0 */
-  if (mpiio && rank) {
-    numVertices = 0; numCells = 0; trueNumCells = 0;
-    ierr = PetscFree(periodicMap);CHKERRQ(ierr);
-    ierr = PetscFree(periodicMapI);CHKERRQ(ierr);
   }
 
   if (parentviewer) {
