@@ -1155,11 +1155,8 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
       /* possibly get the file from remote site or compressed file */
       ierr  = PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
-      if (!rank && !found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
-      else if (!found) {
-        ierr  = PetscInfo(viewer,"Nonzero processor did not locate readonly file\n");CHKERRQ(ierr);
-        fname = 0;
-      }
+      /* comm below may be global as all ranks go here for FILE_MODE_READ and output 'found' of PetscFileRetrieve() is valid on all processes */
+      if (!found) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
     } else fname = vbinary->filename;
 
 #if defined(PETSC_HAVE_O_BINARY)
