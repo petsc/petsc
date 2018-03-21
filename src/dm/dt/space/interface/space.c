@@ -340,8 +340,9 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (minDegree) PetscValidPointer(minDegree, 2);
-  if (maxDegree) PetscValidPointer(minDegree, 3);
+  if (maxDegree) PetscValidPointer(maxDegree, 3);
   if (minDegree) *minDegree = sp->degree;
+  if (maxDegree) *maxDegree = sp->maxDegree;
   PetscFunctionReturn(0);
 }
 
