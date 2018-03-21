@@ -173,8 +173,9 @@ static PetscErrorCode VecView_Node(Vec x,PetscViewer viewer)
 
 static PetscErrorCode VecGetArray_Node(Vec x,PetscScalar **a)
 {
+  Vec_Node       *s = (Vec_Node*)x->data;
   PetscFunctionBegin;
-  *a = *((PetscScalar**)x->data);
+  *a = s->array;
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +342,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Node(Vec v)
     ierr               = PetscLogObjectMemory((PetscObject)v,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr               = PetscMemzero(s->array,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array++;    /* create initial space for object state counter */
-    s->array_allocated = s->array;
 
     ierr = MPI_Comm_size(shmcomm,&msize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(shmcomm,&mrank);CHKERRQ(ierr);
