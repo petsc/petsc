@@ -12,7 +12,7 @@
 typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5 } DMSwarmDataBucketViewType;
 
 struct _p_DMSwarmDataField {
-	char          *registeration_function;
+	char          *registration_function;
 	PetscInt      L,bs;
 	PetscBool     active;
 	size_t        atomic_size;
@@ -36,12 +36,12 @@ struct _p_DMSwarmDataBucket {
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscBool *val);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringFindInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscInt *index);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldCreate(const char registeration_function[],const char name[],const size_t size,const PetscInt L,DMSwarmDataField *DF);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldCreate(const char registration_function[],const char name[],const size_t size,const PetscInt L,DMSwarmDataField *DF);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldDestroy(DMSwarmDataField *DF);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreate(DMSwarmDataBucket *DB);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroy(DMSwarmDataBucket *DB);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryForActiveFields(DMSwarmDataBucket db,PetscBool *any_active_fields);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db,const char registeration_function[],const char field_name[],size_t atomic_size,DMSwarmDataField *_gfield);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db,const char registration_function[],const char field_name[],size_t atomic_size,DMSwarmDataField *_gfield);
 
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetNumEntries(DMSwarmDataField df,PetscInt *sum);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldSetBlockSize(DMSwarmDataField df,PetscInt blocksize);

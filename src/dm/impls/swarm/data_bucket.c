@@ -37,7 +37,7 @@ PetscErrorCode DMSwarmDataFieldStringFindInList(const char name[],const PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmDataFieldCreate(const char registeration_function[],const char name[],const size_t size,const PetscInt L,DMSwarmDataField *DF)
+PetscErrorCode DMSwarmDataFieldCreate(const char registration_function[],const char name[],const size_t size,const PetscInt L,DMSwarmDataField *DF)
 {
   DMSwarmDataField df;
   PetscErrorCode   ierr;
@@ -45,7 +45,7 @@ PetscErrorCode DMSwarmDataFieldCreate(const char registeration_function[],const 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataField), &df);CHKERRQ(ierr);
   ierr = PetscMemzero(df, sizeof(struct _p_DMSwarmDataField));CHKERRQ(ierr);
-  ierr = PetscStrallocpy(registeration_function, &df->registeration_function);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(registration_function, &df->registration_function);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, &df->name);CHKERRQ(ierr);
   df->atomic_size = size;
   df->L  = L;
@@ -63,7 +63,7 @@ PetscErrorCode DMSwarmDataFieldDestroy(DMSwarmDataField *DF)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(df->registeration_function);CHKERRQ(ierr);
+  ierr = PetscFree(df->registration_function);CHKERRQ(ierr);
   ierr = PetscFree(df->name);CHKERRQ(ierr);
   ierr = PetscFree(df->data);CHKERRQ(ierr);
   ierr = PetscFree(df);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode DMSwarmDataBucketQueryForActiveFields(DMSwarmDataBucket db,PetscB
 
 PetscErrorCode DMSwarmDataBucketRegisterField(
                               DMSwarmDataBucket db,
-                              const char registeration_function[],
+                              const char registration_function[],
                               const char field_name[],
                               size_t atomic_size, DMSwarmDataField *_gfield)
 {
@@ -151,7 +151,7 @@ PetscErrorCode DMSwarmDataBucketRegisterField(
   /* create new space for data */
   ierr = PetscRealloc(sizeof(DMSwarmDataField)*(db->nfields+1), &db->field);CHKERRQ(ierr);
   /* add field */
-  ierr = DMSwarmDataFieldCreate(registeration_function, field_name, atomic_size, db->allocated, &fp);CHKERRQ(ierr);
+  ierr = DMSwarmDataFieldCreate(registration_function, field_name, atomic_size, db->allocated, &fp);CHKERRQ(ierr);
   db->field[db->nfields] = fp;
   db->nfields++;
   if (_gfield != NULL) {
