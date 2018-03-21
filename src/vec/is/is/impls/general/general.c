@@ -425,11 +425,11 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 #endif
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
-
-  /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_SUM,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+
+  /* determine maximum message to arrive */
+  ierr = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 
   ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
   if (!rank) {
