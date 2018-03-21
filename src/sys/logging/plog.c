@@ -1679,8 +1679,7 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer);
   Options Database Keys:
 +  -log_view [:filename] - Prints summary of log information
 .  -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
-.  -log_view :filename.xml:ascii_xml - Saves a summary of the logging information in a nested format, use a browser to open this file, for example on
-             Apple MacOS systems use open -a Safari filename.xml
+.  -log_view :filename.xml:ascii_xml - Saves a summary of the logging information in a nested format (see below for how to view it)
 .  -log_all - Saves a file Log.rank for each MPI process with details of each step of the computation
 -  -log_trace [filename] - Displays a trace of what each process is doing
 
@@ -1691,6 +1690,14 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer);
   Before calling this routine you must have called either PetscLogDefaultBegin() or PetscLogNestedBegin()
 
   If PETSc is configured with --with-logging=0 then this functionality is not available
+
+  To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current 
+  directory then open filename.xml with your browser. Specific notes for certain browsers
+$    Firefox and Internet explorer - simply open the file
+$    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
+$    Safari - see http://ccm.net/faq/36342-safari-how-to-enable-local-file-access
+  or one can use the package http://xmlsoft.org/XSLT/xsltproc2.html to translate the xml file to html and then open it with 
+  your browser.
 
   The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
 
