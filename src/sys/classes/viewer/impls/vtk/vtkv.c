@@ -56,7 +56,9 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscFree(vtk);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerVTKAddField_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -96,19 +98,27 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vtr",&isvtr);CHKERRQ(ierr);
   if (isvtk) {
-    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
+    if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_ASCII_VTK;
     if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvts) {
-    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTS);CHKERRQ(ierr);}
+    if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_VTK_VTS;
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtu) {
-    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
+    if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_VTK_VTU;
     if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtu' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtr) {
-    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTR);CHKERRQ(ierr);}
+    if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_VTK_VTR;
     if (viewer->format != PETSC_VIEWER_VTK_VTR) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtr' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  PetscViewerFileGetName_VTK(PetscViewer viewer,const char **name)
+{
+  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
+  PetscFunctionBegin;
+  *name = vtk->filename;
   PetscFunctionReturn(0);
 }
 
@@ -117,8 +127,16 @@ PetscErrorCode  PetscViewerFileSetMode_VTK(PetscViewer viewer,PetscFileMode type
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   vtk->btype = type;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  PetscViewerFileGetMode_VTK(PetscViewer viewer,PetscFileMode *type)
+{
+  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
+
+  PetscFunctionBegin;
+  *type = vtk->btype;
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +193,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   vtk->filename   = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerVTKAddField_C",PetscViewerVTKAddField_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
