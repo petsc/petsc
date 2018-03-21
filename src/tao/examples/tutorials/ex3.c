@@ -181,7 +181,7 @@ void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 /* data we seek to match */
 PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
 {
-  *y = 1.0/(2*M_PI*M_PI) * sin(M_PI*x[0]) * sin(M_PI*x[1]);
+  *y = 1.0/(2*PETSC_PI*PETSC_PI) * PetscSinReal(PETSC_PI*x[0]) * PetscSinReal(PETSC_PI*x[1]);
   /* the associated control is sin(pi*x[0])*sin(pi*x[1]) */
   return 0;
 }
