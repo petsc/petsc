@@ -63,8 +63,8 @@ class Installer(script.Script):
 
   def setupDirectories(self):
     self.rootDir    = self.petscdir.dir
-    self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
+    self.destDir    = os.path.abspath(self.argDB['destDir']+self.installDir)
     self.arch       = self.arch.arch
     self.archDir           = os.path.join(self.rootDir, self.arch)
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
@@ -146,15 +146,6 @@ class Installer(script.Script):
       raise shutil.Error, errors
     return copies
 
-  def copyexamplefiles(self, src, dst, copyFunc = shutil.copy2):
-    """Copies all files, but not directories in a single file    """
-    names  = os.listdir(src)
-    for name in names:
-      if not name.endswith('.html'):
-        srcname = os.path.join(src, name)
-        if os.path.isfile(srcname):
-           self.copyfile(srcname,dst)
-
   def fixExamplesMakefile(self, src):
     '''Change ././${PETSC_ARCH} in makefile in root petsc directory with ${PETSC_DIR}'''
     lines   = []
@@ -187,14 +178,14 @@ class Installer(script.Script):
     if not os.path.isdir(dst):
       raise shutil.Error, 'Destination is not a directory'
 
-    self.copyfile('gmakefile.test',dst)
+    self.copies.extend(self.copyfile('gmakefile.test',dst))
     newConfigDir=os.path.join(dst,'config')  # Am not renaming at present
     if not os.path.isdir(newConfigDir): os.mkdir(newConfigDir)
     testConfFiles="gmakegentest.py gmakegen.py testparse.py example_template.py".split()
     testConfFiles+="petsc_harness.sh report_tests.py watchtime.sh".split()
     testConfFiles+=["cmakegen.py"]
     for tf in testConfFiles:
-      self.copyfile(os.path.join('config',tf),newConfigDir)
+      self.copies.extend(self.copyfile(os.path.join('config',tf),newConfigDir))
     return
 
   def copyExamples(self, src, dst):
@@ -203,12 +194,10 @@ class Installer(script.Script):
     top=os.path.relpath(src,os.path.abspath(os.curdir))
     for root, dirs, files in os.walk(top, topdown=False):
         if not os.path.basename(root) == "examples": continue
-        shutil.copytree(root, os.path.join(dst,root), 
-                        ignore=shutil.ignore_patterns('*.dSYM'))
-
+        self.copies.extend(self.copytree(root, os.path.join(dst,root)))
     return
 
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [],recurse = 1):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= ['.DSYM','.o','.pyc'], recurse = 1):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
        The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
@@ -236,8 +225,8 @@ class Installer(script.Script):
           linkto = os.readlink(srcname)
           os.symlink(linkto, dstname)
         elif os.path.isdir(srcname) and recurse and not os.path.basename(srcname) in exclude:
-          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude))
-        elif os.path.isfile(srcname) and not os.path.basename(srcname) in exclude:
+          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude, exclude_ext = exclude_ext))
+        elif os.path.isfile(srcname) and not os.path.basename(srcname) in exclude and os.path.splitext(name)[1] not in exclude_ext :
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
@@ -295,12 +284,19 @@ class Installer(script.Script):
     # Could use the Python AST to do this
     f.write('#!'+sys.executable+'\n')
     f.write('import os\n')
-
-    f.write('copies = '+repr(self.copies).replace(self.destDir,self.installDir))
+    f.write('prefixdir = "'+self.installDir+'"\n')
+    files = [dst.replace(self.destDir,self.installDir) for src, dst in self.copies]
+    files.append(uninstallscript.replace(self.destDir,self.installDir))
+    f.write('files = '+repr(files))
     f.write('''
-for src, dst in copies:
-  if os.path.exists(dst):
-    os.remove(dst)
+for file in files:
+  if os.path.exists(file) or os.path.islink(file):
+    os.remove(file)
+    dir = os.path.dirname(file)
+    while dir not in [os.path.dirname(prefixdir),'/']:
+      try: os.rmdir(dir)
+      except: break
+      dir = os.path.dirname(dir)
 ''')
     f.close()
     os.chmod(uninstallscript,0744)
@@ -318,7 +314,7 @@ for src, dst in copies:
 
   def installConf(self):
     self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','files','testfiles','RDict.db']))
     return
 
   def installBin(self):
@@ -357,9 +353,7 @@ for src, dst in copies:
         pass
       os.symlink(linkto, dst)
       return
-    # Do not install object files
-    if not os.path.splitext(src)[1] == '.o':
-      shutil.copy2(src, dst)
+    shutil.copy2(src, dst)
     if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
