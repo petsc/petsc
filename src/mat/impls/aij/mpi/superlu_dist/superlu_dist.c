@@ -248,12 +248,48 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
+/*
+  input:
+   F:        numeric Cholesky factor
+  output:
+   nneg:     total number of negative pivots
+   nzero:    total number of zero pivots
+   npos:     (global dimension of F) - nneg - nzero
+*/
+static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
+{
+  PetscErrorCode   ierr;
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
+  PetscScalar      *diagU=NULL;
+  PetscInt         M,i,neg=0,zero=0,pos=0;
+
+  PetscFunctionBegin;
+  if (!F->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
+  if (lu->options.RowPerm != NOROWPERM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must set NOROWPERM");
+  ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M,&diagU);CHKERRQ(ierr);
+  ierr = MatSuperluDistGetDiagU(F,diagU);CHKERRQ(ierr);
+  for (i=0; i<M; i++) {
+    if (diagU[i] > 0) {
+      pos++;
+    } else if (diagU[i] < 0) {
+      neg++;
+    } else zero++;
+  }
+  ierr = PetscFree(diagU);CHKERRQ(ierr);
+  *nneg  = neg;
+  *nzero = zero;
+  *npos  = pos;
+  PetscFunctionReturn(0);
+}
+#endif
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat              *tseq,A_seq = NULL;
   Mat_SeqAIJ       *aa,*bb;
-  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->data;
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
   PetscErrorCode   ierr;
   PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
@@ -453,8 +489,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
-  (F)->assembled    = PETSC_TRUE;
-  (F)->preallocated = PETSC_TRUE;
+  F->assembled    = PETSC_TRUE;
+  F->preallocated = PETSC_TRUE;
   lu->options.Fact  = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
   PetscFunctionReturn(0);
 }
@@ -475,6 +511,12 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
   F->ops->solve           = MatSolve_SuperLU_DIST;
   F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
+  F->ops->getinertia      = NULL;
+#if !defined(PETSC_USE_COMPLEX)
+  if (A->symmetric) {
+    F->ops->getinertia = MatGetInertia_SuperLU_DIST;
+  }
+#endif
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
