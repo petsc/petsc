@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
-  PetscBool      nonzero_guess=PETSC_FALSE;
+  PetscBool      nonzero_guess=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -85,7 +85,6 @@ int main(int argc,char **args)
 
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
-    nonzero_guess=PETSC_TRUE;
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   }
@@ -94,12 +93,12 @@ int main(int argc,char **args)
     ierrp = VecLoad(x,fd);
     ierr = PetscPopErrorHandler();CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-    if (ierrp) nonzero_guess=PETSC_FALSE;
   }
-  if (!nonzero_guess) {
+  if (ierrp) {
     /* initial guess not specified or failed to load, use zeros */
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    nonzero_guess=PETSC_FALSE;
   }
 
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
