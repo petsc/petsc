@@ -494,6 +494,9 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
 .  ilocal - locations of leaves in leafdata buffers
 -  iremote - remote locations of root vertices for each leaf on the current process
 
+   Notes:
+   We are not currently requiring that the graph is set, thus returning nroots=-1 if it has not been set yet
+
    Level: intermediate
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph()
@@ -503,8 +506,6 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,con
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  /* We are not currently requiring that the graph is set, thus returning nroots=-1 if it has not been set */
-  /* PetscSFCheckGraphSet(sf,1); */
   if (nroots) *nroots = sf->nroots;
   if (nleaves) *nleaves = sf->nleaves;
   if (ilocal) *ilocal = sf->mine;
