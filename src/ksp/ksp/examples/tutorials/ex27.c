@@ -79,13 +79,17 @@ int main(int argc,char **args)
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+
+  /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
     nonzero_guess=PETSC_TRUE;
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  }
+  {
     ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
     ierrp = VecLoad(x,fd);
     ierr = PetscPopErrorHandler();CHKERRQ(ierr);
@@ -201,7 +205,7 @@ int main(int argc,char **args)
       nsize: {{1 2}separate output}
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
-      args: -f_x0 ${DATAFILESPATH}/matrices/shallow_water1    # use RHS as initial guess for now
+      args: -f_x0 ${DATAFILESPATH}/matrices/shallow_water1
 
    test:
       suffix: 3a
