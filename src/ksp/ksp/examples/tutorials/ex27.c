@@ -88,12 +88,10 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   }
-  {
-    ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
-    ierrp = VecLoad(x,fd);
-    ierr = PetscPopErrorHandler();CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  }
+  ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+  ierrp = VecLoad(x,fd);
+  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (ierrp) {
     /* initial guess not specified or failed to load, use zeros */
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
