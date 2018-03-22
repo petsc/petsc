@@ -533,5 +533,5 @@ Parallel Mesh in 2 dimensions:
   1-cells: 45 45
   2-cells: 18 18
 Labels:
-  Cell Sets: 2 strata with value/size (1 (9), 3 (9))
+  Cell Sets: 2 strata with value/size (1 (9), 2 (9))
   depth: 3 strata with value/size (0 (28), 1 (45), 2 (18))
