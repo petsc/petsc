@@ -521,6 +521,17 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCholeskyFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!A->symmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Input matrix must be symmetric\n");
+  ierr = MatLUFactorSymbolic_SuperLU_DIST(F,A,r,r,info);CHKERRQ(ierr);
+  F->ops->choleskyfactornumeric = MatLUFactorNumeric_SuperLU_DIST;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatFactorGetSolverType_aij_superlu_dist(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
@@ -619,12 +630,17 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,M,N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("superlu_dist",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-  B->ops->getinfo          = MatGetInfo_External;
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
-  B->ops->view             = MatView_SuperLU_DIST;
-  B->ops->destroy          = MatDestroy_SuperLU_DIST;
+  B->ops->getinfo = MatGetInfo_External;
+  B->ops->view    = MatView_SuperLU_DIST;
+  B->ops->destroy = MatDestroy_SuperLU_DIST;
 
-  B->factortype = MAT_FACTOR_LU;
+  if (ftype == MAT_FACTOR_LU) {
+    B->factortype = MAT_FACTOR_LU;
+    B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SuperLU_DIST;
+  } else {
+    B->factortype = MAT_FACTOR_CHOLESKY;
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SuperLU_DIST;
+  }
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
@@ -774,6 +790,8 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
   PetscFunctionBegin;
   ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
