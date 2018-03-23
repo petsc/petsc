@@ -320,14 +320,14 @@ int main(int argc,char **argv)
   /* Power subnetwork */
   UserCtx_Power    *appctx_power = &user.appctx_power;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="power/case9.m";
-  PFDATA           *pfdata;
+  PFDATA           *pfdata=NULL;
   PetscInt         genj,loadj;
   PetscInt         *edgelist_power=NULL;
   PetscScalar      Sbase;
 
   /* Water subnetwork */
   AppCtx_Water     *appctx_water = &user.appctx_water;
-  WATERDATA        *waterdata;
+  WATERDATA        *waterdata=NULL;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="water/sample1.inp";
   PetscInt         *edgelist_water=NULL;
 
