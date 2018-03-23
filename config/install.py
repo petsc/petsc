@@ -43,7 +43,7 @@ class Installer(script.Script):
   def setupHelp(self, help):
     import nargs
     script.Script.setupHelp(self, help)
-    help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, None, 'Destination Directory for install'))
+    help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, '', 'Destination Directory for install'))
     return
 
 
