@@ -515,6 +515,8 @@ class Configure(config.base.Configure):
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
       # that is we are turning off the self.useMPICompilers()
+        self.logPrintBox('***** WARNING: '+os.path.join(self.argDB['with-mpi-dir'], 'bin')+ ' dir does not exist!\n Skipping check for MPI compilers due to potentially incorrect --with-mpi-dir option.\n Suggest using --with-cc=/path/to/mpicc option instead ******')
+
         self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
