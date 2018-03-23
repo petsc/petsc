@@ -8,7 +8,7 @@ pipelines:
             - ./configure --with-clanguage=C++ --with-64-bit-indices=1 --with-scalar-type=complex --with-mpi=0 --with-x=0 --with-make-np=`nproc` --with-make-test-np=`nproc`
             - make all
             - make test
-            - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot TIMEOUT=250
+            - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot TIMEOUT=600
     master:  *default-step
     next:    *default-step
     pr*/*/*: *default-step
