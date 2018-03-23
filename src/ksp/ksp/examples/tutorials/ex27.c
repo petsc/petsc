@@ -75,6 +75,7 @@ int main(int argc,char **args)
   ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
     PetscScalar one = 1.0;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n",file);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
@@ -93,7 +94,7 @@ int main(int argc,char **args)
   ierr = PetscPopErrorHandler();CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (ierrp) {
-    /* initial guess not specified or failed to load, use zeros */
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n",file_x0);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     nonzero_guess=PETSC_FALSE;
