@@ -23,8 +23,8 @@ libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(if $(filter $(PETSC_VERSION_REL
 libpetsc_lib_version := $(libpetsc_abi_version).$(PETSC_VERSION_SUBMINOR)
 soname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_abi_version))
 libname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_lib_version))
-basename_all = $(basename $(basename $(basename $(basename $(1)))))
-sl_linker_args = $(call SL_LINKER_FUNCTION,$(call basename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
+absbasename_all = $(basename $(basename $(basename $(basename $(abspath $(1))))))# arch/lib/libpetsc.so.3.8.0 -> /path/to/arch/lib/libpetsc
+sl_linker_args = $(call SL_LINKER_FUNCTION,$(call absbasename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
 
 libpetsc_shared  := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_soname  := $(call soname_function,$(LIBDIR)/libpetsc)
