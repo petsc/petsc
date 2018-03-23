@@ -221,6 +221,7 @@ class generateExamples(Petsc):
     loopVars={}; newargs=""
     lkeys=inDict.keys()
     lsuffix='_'
+    argregex=re.compile('(?<![a-zA-Z])-(?=[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in lkeys:
       if type(inDict[key])!=types.StringType: continue
@@ -228,7 +229,7 @@ class generateExamples(Petsc):
       akey=('subargs' if key=='args' else key)  # what to assign
       if akey not in inDict: inDict[akey]=''
       varlist=[]
-      for varset in re.split('-(?=[a-zA-Z])',keystr):
+      for varset in argregex.split(keystr):
         if not varset.strip(): continue
         if '{{' in varset:
           keyvar,lvars,ftype=parseLoopArgs(varset)
