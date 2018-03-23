@@ -3,10 +3,6 @@
 
 
 TESTMODE = testexamples
-
-ALLTESTS_PRINT_PROGRESS = no
-# To print the sources use this
-#ALLTESTS_PRINT_PROGRESS = debugtest
 ALLTESTS_CHECK_FAILURES = no
 
 alltests:
