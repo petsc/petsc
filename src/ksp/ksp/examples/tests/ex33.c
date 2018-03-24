@@ -142,18 +142,18 @@ int main(int argc,char **args)
       output_file: output/ex33.out
 
     test:
-      suffix: mkl_pardiso -mat_type sbaij
-      args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso
+      suffix: mkl_pardiso
+      args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso -mat_type sbaij
       requires: mkl_pardiso
       output_file: output/ex33.out
 
-     test:
+    test:
       suffix: superlu_dist
       args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
       requires: superlu_dist !complex
       output_file: output/ex33.out
 
-     test:
+    test:
       suffix: superlu_dist_2
       args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
       requires: superlu_dist !complex
