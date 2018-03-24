@@ -3888,10 +3888,8 @@ SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES 
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
 \trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
-as \trl{Amat}); a \trl{flag} indicating information about the
-preconditioner matrix structure; and an optional user-defined Jacobian
-context, \trl{ctx}, for application-specific data.  The options for
-\trl{flag} are identical to those for the flag of \lstinline{KSPSetOperators()}, discussed in Section~\ref{sec_usingsles}.
+as \trl{Amat});  and an optional user-defined Jacobian
+context, \trl{ctx}, for application-specific data.  
 Note that the \lstinline{SNES} solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
 methods) can be used.  Chapter~\ref{chapter_matrices} discusses
