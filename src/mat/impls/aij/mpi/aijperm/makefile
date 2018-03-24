@@ -2,13 +2,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = csrperm.c
+SOURCEC  = mpiaijperm.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/seq/csrperm/
+LOCDIR   = src/mat/impls/aij/mpi/aijperm/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
