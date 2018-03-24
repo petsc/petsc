@@ -1323,7 +1323,7 @@ int main(int argc, char **argv)
 
     test:
       suffix: 2
-      args: -ts_type glee -final_time 5
+      args: -ts_type glee -final_time 5 -ts_adapt_type none
       timeoutfactor: 3
       requires: !single
 
