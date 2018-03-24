@@ -15,7 +15,7 @@ alltests:
           fi; \
           ${OMAKE} allgtest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
           if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
-            cat $${ALLTESTSLOG} | egrep '(^not ok|not remade because of errors)' | wc -l | grep '^[ ]*0$$' > /dev/null; \
+            cat $${ALLTESTSLOG} | egrep '(^not ok|not remade because of errors|^# No tests run)' | wc -l | grep '^[ ]*0$$' > /dev/null; \
           fi;
 
 allgtest-tap:
