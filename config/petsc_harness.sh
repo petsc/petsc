@@ -144,7 +144,7 @@ function petsc_testrun() {
     # The action -- assume no timeout needed
     eval "$cmd"
     # We are testing error codes so just make it pass
-    cmd_res=0
+    cmd_res=$?
   fi
 
   # Handle filters separately and assume no timeout check needed
