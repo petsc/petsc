@@ -182,6 +182,9 @@ class Configure(config.package.GNUPackage):
         self.logPrint('using user-provided make_np = %d' % make_np)
         make_np = self.argDB['with-make-np']
 
+    if self.argDB.get('with-mpi'):
+      make_test_np = make_np
+
     if 'with-make-test-np' in self.argDB and self.argDB['with-make-test-np']:
         self.logPrint('using user-provided make_test_np = %d' % make_test_np)
         make_test_np = self.argDB['with-make-test-np']
