@@ -122,24 +122,10 @@ function petsc_testrun() {
 
   if $job_control; then
     # The action:
-    eval "($cmd) &"
-    pid=$!
-    # Put a watcher process in that will kill a job that exceeds limit
-    $config_dir/watchtime.sh $pid $TIMEOUT &
-    watcher=$!
-
-    # See if the job we want finishes
-    wait $pid 2> /dev/null
+    ( ulimit -St $TIMEOUT && eval "$cmd" )
     cmd_res=$?
-    if ps -p $watcher > /dev/null; then
-      # Keep processes tidy by killing watcher
-      pkill -13 -P $watcher
-      wait $watcher 2>/dev/null  # Wait used here to capture the kill message
-    else
-      # Timeout
-      cmd_res=1
-      echo "Exceeded timeout limit of $TIMEOUT s" > $3
-    fi
+    # SIGXCPU=24, but some systems give our shell 128+24=152
+    test $cmd_res -eq 24 -o $cmd_res -eq 152 && echo "Exceeded timeout limit of $TIMEOUT s" >> $3
   else
     # The action -- assume no timeout needed
     eval "$cmd"
