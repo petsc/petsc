@@ -119,7 +119,6 @@ class Configure(config.base.Configure):
     framework.require('PETSc.options.scalarTypes', self.fblaslapack)
     framework.require('PETSc.options.scalarTypes', self.blaslapack)
     framework.require('PETSc.options.scalarTypes', self.opencl)
-    framework.require('PETSc.Regression', self)
 
     self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix
