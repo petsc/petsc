@@ -15,6 +15,7 @@ env:
   global:
     - FC=gfortran
     - BLASLAPACK=
+    - PETSC_OPTIONS='-check_pointer_intensity 0 -malloc_test'
 
   matrix:
 
