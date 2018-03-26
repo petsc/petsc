@@ -188,9 +188,25 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   }
   /* A_low x_low = b_low */
   if (!pod->Aspd) { /* A is spd -> LOW = Identity */
+    KSP       pksp = guess->ksp;
+    PetscBool tsolve,symm;
+
+    if (pod->monitor) {
+      PetscMPIInt rank;
+      Mat         L;
+
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)guess),&rank);CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,pod->nen,pod->nen,pod->low,&L);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = MatView(L,NULL);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&L);CHKERRQ(ierr);
+    }
+    ierr   = MatGetOption(guess->A,MAT_SYMMETRIC,&symm);CHKERRQ(ierr);
+    tsolve = symm ? PETSC_FALSE : pksp->transpose_solve;
     PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&bNen,&bNen,pod->low,&bNen,pod->iwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)lierr);
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
+    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(tsolve ? "T" : "N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)lierr);
   }
   /* x = X * V * S * x_low */
@@ -244,18 +260,22 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
     pod->ndots_iallreduce = 1;
 #endif
   } else {
+    PetscInt  off;
     PetscBool herm;
 
-    /* TODO: we may want to use a user-defined dot for the correlation matrix */
-    ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
-    ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork + pod->n);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = MatGetOption(guess->A,MAT_HERMITIAN,&herm);CHKERRQ(ierr);
 #else
     ierr = MatGetOption(guess->A,MAT_SYMMETRIC,&herm);CHKERRQ(ierr);
 #endif
+    off = (guess->ksp->transpose_solve && !herm) ? 2*pod->n : pod->n;
+
+    /* TODO: we may want to use a user-defined dot for the correlation matrix */
+    ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
+    ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork + off);CHKERRQ(ierr);
     if (!herm) {
-      ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + 2*pod->n);CHKERRQ(ierr);
+      off  = (off == pod->n) ? 2*pod->n : pod->n;
+      ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + off);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
 #else
