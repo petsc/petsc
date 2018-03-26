@@ -113,7 +113,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscInt         m=A->rmap->n,M=A->rmap->N,N=A->cmap->N;
   SuperLUStat_t    stat;
   double           berr[1];
-  PetscScalar      *bptr;
+  PetscScalar      *bptr=NULL;
   PetscInt         nrhs=1;
   Vec              x_seq;
   IS               iden;
@@ -292,7 +292,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
   PetscErrorCode   ierr;
   PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj=NULL;
   int              sinfo;   /* SuperLU_Dist info flag is always an int even with long long indices */
   PetscMPIInt      size;
   SuperLUStat_t    stat;
