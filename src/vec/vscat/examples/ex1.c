@@ -80,9 +80,9 @@ int main(int argc,char **argv)
   }
 
   if (rank == 10) {
-    printf("\n[%d] isx:\n",rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank);CHKERRQ(ierr);
     ierr = ISView(isx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    printf("\n[%d] isy:\n",rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] isy:\n",rank);CHKERRQ(ierr);
     ierr = ISView(isy,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
@@ -90,13 +90,13 @@ int main(int argc,char **argv)
   ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
-  if (!rank) printf("scatter type %s\n",type);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"scatter type %s\n",type);CHKERRQ(ierr);
 
   /* Test forward vecscatter */
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) printf("\nSCATTER_FORWARD y:\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nSCATTER_FORWARD y:\n");CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test reverse vecscatter */
@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  if (!rank) printf("\nSCATTER_REVERSE x:\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nSCATTER_REVERSE x:\n");CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free objects */

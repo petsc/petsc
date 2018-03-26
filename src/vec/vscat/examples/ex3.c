@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   }
 
   if (rank == 10) {
-    printf("\n[%d] isx:\n",rank);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank);
     ierr = ISView(isx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

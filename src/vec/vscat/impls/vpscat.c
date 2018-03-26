@@ -470,9 +470,9 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = MPI_Info_create(&info);CHKERRQ(ierr);
   ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_WIN_ALLOCATE_SHARED)
-  ierr = MPI_Win_allocate_shared(bs*out_to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&out_to->sharedspace,&out_to->sharedwin);CHKERRQ(ierr);
+  ierr = MPIU_Win_allocate_shared(bs*out_to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&out_to->sharedspace,&out_to->sharedwin);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
+  SETERRQ(PetscObjectComm((PetscObject)in),PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
 #endif
   ierr = MPI_Info_free(&info);CHKERRQ(ierr);
 
@@ -490,7 +490,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 #if defined(PETSC_HAVE_MPI_WIN_SHARED_QUERY)
     MPI_Aint    isize;
     PetscMPIInt disp_unit;
-    ierr = MPI_Win_shared_query(out_to->sharedwin,jj,&isize,&disp_unit,&out_from->sharedspaces[jj]);CHKERRQ(ierr);
+    ierr = MPIU_Win_shared_query(out_to->sharedwin,jj,&isize,&disp_unit,&out_from->sharedspaces[jj]);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_shared_query");
 #endif
@@ -2293,7 +2293,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     ierr = MPI_Comm_rank(mscomm,&mrank);CHKERRQ(ierr);
 
     ierr = PetscMalloc1(msize,&optr);CHKERRQ(ierr);
-    ierr = MPI_Win_allocate_shared((nx+1)*sizeof(PetscInt),sizeof(PetscInt),MPI_INFO_NULL,mscomm,&mem,&swin);CHKERRQ(ierr);
+    ierr = MPIU_Win_allocate_shared((nx+1)*sizeof(PetscInt),sizeof(PetscInt),MPI_INFO_NULL,mscomm,&mem,&swin);CHKERRQ(ierr);
 
     /* Write local nx and inidx into mem */
     mem[0] = nx;
@@ -2313,7 +2313,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
       jj = 0;
       while (jj<msize && !ctx->is_duplicate) {
         if (jj == mrank) {jj++; continue;}
-        ierr = MPI_Win_shared_query(swin,jj,&sz,&dsp_unit,&optr[jj]);CHKERRQ(ierr);
+        ierr = MPIU_Win_shared_query(swin,jj,&sz,&dsp_unit,&optr[jj]);CHKERRQ(ierr);
         for (j=1; j<=optr[jj][0]; j++) { /* optr[jj][0] = nx */
           if (PetscBTLookupSet(table,optr[jj][j])) {
             ctx->is_duplicate = PETSC_TRUE; /* only mrank=0 has this info., will be checked in VecScatterEndMPI3Node() */
@@ -2436,9 +2436,9 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
 
   /* Allocate shared memory space for shared memory partner communication */
 #if defined(PETSC_HAVE_MPI_WIN_ALLOCATE_SHARED)
-  ierr = MPI_Win_allocate_shared(to->msize*sizeof(PetscInt),sizeof(PetscInt),info,mscomm,&sharedspaceoffset,&sharedoffsetwin);CHKERRQ(ierr);
+  ierr = MPIU_Win_allocate_shared(to->msize*sizeof(PetscInt),sizeof(PetscInt),info,mscomm,&sharedspaceoffset,&sharedoffsetwin);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
+  SETERRQ(comm,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
 #endif
   for (i=0; i<to->msize; i++) sharedspaceoffset[i] = -1; /* mark with -1 for later error checking */
   if (nrecvs) {
@@ -2474,12 +2474,12 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     /* to->sharedspace is used only as a flag */
     i = 0;
     if (to->sharedcnt) i = 1;
-    ierr = MPI_Win_allocate_shared(i*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
+    ierr = MPIU_Win_allocate_shared(i*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
   } else { /* mpi3 */
-    ierr = MPI_Win_allocate_shared(bs*to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
+    ierr = MPIU_Win_allocate_shared(bs*to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&to->sharedspace,&to->sharedwin);CHKERRQ(ierr);
   }
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
+  SETERRQ(comm,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_allocate_shared");
 #endif
   if (to->sharedwin == MPI_WIN_NULL) SETERRQ(PETSC_COMM_SELF,100,"what the");
   ierr = MPI_Info_free(&info);CHKERRQ(ierr);
@@ -2595,11 +2595,11 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     MPI_Aint    isize;
     PetscMPIInt disp_unit;
     PetscInt    *ptr;
-    ierr = MPI_Win_shared_query(to->sharedwin,jj,&isize,&disp_unit,&from->sharedspaces[jj]);CHKERRQ(ierr);
-    ierr = MPI_Win_shared_query(sharedoffsetwin,jj,&isize,&disp_unit,&ptr);CHKERRQ(ierr);
+    ierr = MPIU_Win_shared_query(to->sharedwin,jj,&isize,&disp_unit,&from->sharedspaces[jj]);CHKERRQ(ierr);
+    ierr = MPIU_Win_shared_query(sharedoffsetwin,jj,&isize,&disp_unit,&ptr);CHKERRQ(ierr);
     from->sharedspacesoffset[jj] = ptr[mrank];
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_shared_query");
+    SETERRQ(comm,PETSC_ERR_SUP,"MPI version does not support MPI 3 feature MPI_Win_shared_query");
 #endif
   }
   ierr = MPI_Win_free(&sharedoffsetwin);CHKERRQ(ierr);
