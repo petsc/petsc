@@ -12,7 +12,7 @@ Labels:
   marker: 1 strata with value/size (1 (16))
 DM Object: 1 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 16 
   buffer             = 0 
   allocated          = 16 

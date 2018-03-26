@@ -12,7 +12,7 @@ Labels:
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
 DM Object: 1 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 384 
   buffer             = 0 
   allocated          = 384 
