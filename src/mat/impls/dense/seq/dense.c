@@ -2425,7 +2425,10 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         0,
                                 /*139*/ 0,
                                         0,
-                                        0
+                                        0,
+                                        0,
+                                        0,
+                                /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqDense
 };
 
 /*@C
@@ -2602,6 +2605,25 @@ PetscErrorCode  MatSeqDenseSetLDA(Mat B,PetscInt lda)
   b->lda       = lda;
   b->changelda = PETSC_FALSE;
   b->Mmax      = PetscMax(b->Mmax,lda);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(inmat,MAT_COPY_VALUES,outmat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat_MPIDense(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

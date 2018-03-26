@@ -1231,7 +1231,10 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                 /*139*/ 0,
                                         0,
-                                        0
+                                        0,
+                                        0,
+                                        0,
+                                /*144*/ MatCreateMPIMatConcatenateSeqMat_MPIDense
 };
 
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
@@ -1315,6 +1318,36 @@ static PetscErrorCode MatDenseRestoreColumn_MPIDense(Mat A,PetscScalar **vals)
 
   PetscFunctionBegin;
   ierr = MatDenseRestoreColumn(mat->A,vals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  Mat_MPIDense   *mat;
+  PetscInt       m,nloc,N;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(inmat,NULL,&nloc);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
+    PetscInt sum;
+
+    if (n == PETSC_DECIDE) {
+      ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+    }
+    /* Check sum(n) = N */
+    ierr = MPIU_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (sum != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns %D != global columns %D",sum,N);
+
+    ierr = MatCreateDense(comm,m,n,PETSC_DETERMINE,N,NULL,outmat);CHKERRQ(ierr);
+  }
+
+  /* numeric phase */
+  mat = (Mat_MPIDense*)(*outmat)->data;
+  ierr = MatCopy(inmat,mat->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

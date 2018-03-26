@@ -145,6 +145,11 @@ int main(int argc,char **args)
       args: -mat_type sbaij -nsubcomms 2 -view_mat
 
    test:
+      suffix: 3_dense
+      nsize: 3
+      args: -mat_type dense -nsubcomms 2 -view_mat
+
+   test:
       suffix: 4_baij
       nsize: 3
       args: -mat_type baij -nsubcomms 2 -view_mat -psubcomm_type interlaced
@@ -153,5 +158,10 @@ int main(int argc,char **args)
       suffix: 4_sbaij
       nsize: 3
       args: -mat_type sbaij -nsubcomms 2 -view_mat -psubcomm_type interlaced
+
+   test:
+      suffix: 4_dense
+      nsize: 3
+      args: -mat_type dense -nsubcomms 2 -view_mat -psubcomm_type interlaced
 
 TEST*/
