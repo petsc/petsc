@@ -2,7 +2,7 @@ static char help[] = "Test MatGetInertia().\n\n";
 
 /*
   Examples of command line options:
-  ./ex33 -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1
+  ./ex33 -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1 
   ./ex33 -sigma <shift> -fA <matrix_file>
 */
 
@@ -29,7 +29,6 @@ int main(int argc,char **args)
   if (loadA) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
@@ -38,7 +37,6 @@ int main(int argc,char **args)
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-      ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
       ierr = MatLoad(B,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
@@ -51,11 +49,9 @@ int main(int argc,char **args)
     N    = n*m;
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
 
-    ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
     for (II=Istart; II<Iend; II++) {
       v = -1.0; i = II/n; j = II-i*n;
@@ -75,10 +71,8 @@ int main(int argc,char **args)
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(B);CHKERRQ(ierr);
     ierr = MatSetUp(B);CHKERRQ(ierr);
-    ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
     for (II=Istart; II<Iend; II++) {
@@ -99,6 +93,9 @@ int main(int argc,char **args)
   }
 
   /* Test MatGetInertia() */
+  /* if A is symmetric, set its flag -- required by MatGetInertia() */
+  ierr = MatIsSymmetric(A,0.0,&flag);CHKERRQ(ierr);
+
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -110,6 +107,7 @@ int main(int argc,char **args)
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
@@ -145,8 +143,21 @@ int main(int argc,char **args)
 
     test:
       suffix: mkl_pardiso
-      args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso
+      args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso -mat_type sbaij
       requires: mkl_pardiso
+      output_file: output/ex33.out
+
+    test:
+      suffix: superlu_dist
+      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
+      requires: superlu_dist !complex
+      output_file: output/ex33.out
+
+    test:
+      suffix: superlu_dist_2
+      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
+      requires: superlu_dist !complex
+      nsize: 3
       output_file: output/ex33.out
 
 TEST*/
