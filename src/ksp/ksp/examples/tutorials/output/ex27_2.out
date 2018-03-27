@@ -33,5 +33,6 @@ PC Object: 2 MPI processes
   Mat Object: 2 MPI processes
     type: normal
     rows=81920, cols=81920
+KSP type: gmres
 Number of iterations =  18
 Residual norm 0.00141417

@@ -25,6 +25,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
+  KSPType        ksptype;
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
@@ -181,6 +182,8 @@ int main(int argc,char **args)
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPGetType(ksp,&ksptype);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP type: %s\n",ksptype);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
 
