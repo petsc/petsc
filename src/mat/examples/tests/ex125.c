@@ -139,8 +139,11 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_SUPERLU_DIST)
     if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
-      PetscInt    M,nneg,nzero,npos;
+      PetscInt    M;
       PetscScalar *diag;
+#if !defined(PETSC_USE_COMPLEX)
+      PetscInt nneg,nzero,npos;
+#endif
 
       ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
       ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
