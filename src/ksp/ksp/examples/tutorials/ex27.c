@@ -198,6 +198,7 @@ int main(int argc,char **args)
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
 
+   # Test handling failing VecLoad without abort
    test:
       suffix: 3
       nsize: {{1 2}separate output}
@@ -205,7 +206,6 @@ int main(int argc,char **args)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
       args: -f_x0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_x0
       args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
-
    test:
       suffix: 3a
       nsize: {{1 2}separate output}
@@ -213,7 +213,6 @@ int main(int argc,char **args)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
       args: -f_x0 NONEXISTING_FILE
       args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
-
    test:
       suffix: 3b
       nsize: {{1 2}separate output}
