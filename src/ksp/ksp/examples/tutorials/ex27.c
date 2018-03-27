@@ -241,5 +241,20 @@ int main(int argc,char **args)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
       args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
 
+   # Test least-square algorithms
+   test:
+      suffix: 4
+      nsize: {{1 2 4}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -solve_normal 1 -ksp_type cg
+   test:
+      suffix: 4a
+      nsize: {{1 2 4}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
 
 TEST*/
