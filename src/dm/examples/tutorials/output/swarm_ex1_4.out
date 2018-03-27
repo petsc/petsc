@@ -1,6 +1,6 @@
 DM Object: 1 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 40804 
   buffer             = 4 
   allocated          = 40808 
@@ -22,7 +22,7 @@ DataBucketView:
                             atomic size      = 8 
   Total mem. usage                           = 1.47e+00 (MB) (collective)
 rank[0] before(40804,40804)
-DataEx: instance=0
+DMSwarmDataEx: instance=0
   topology status:        finalized 
   message lengths status: finalized 
   packer status status:   finalized 

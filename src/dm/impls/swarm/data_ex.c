@@ -48,26 +48,26 @@ Phase C: Pack data
 Phase D: Send data
 
 + Constructor
-DataExCreate()
+DMSwarmDataExCreate()
 + Phase A
-DataExTopologyInitialize()
-DataExTopologyAddNeighbour()
-DataExTopologyAddNeighbour()
-DataExTopologyFinalize()
+DMSwarmDataExTopologyInitialize()
+DMSwarmDataExTopologyAddNeighbour()
+DMSwarmDataExTopologyAddNeighbour()
+DMSwarmDataExTopologyFinalize()
 + Phase B
-DataExZeroAllSendCount()
-DataExAddToSendCount()
-DataExAddToSendCount()
-DataExAddToSendCount()
+DMSwarmDataExZeroAllSendCount()
+DMSwarmDataExAddToSendCount()
+DMSwarmDataExAddToSendCount()
+DMSwarmDataExAddToSendCount()
 + Phase C
-DataExPackInitialize()
-DataExPackData()
-DataExPackData()
-DataExPackFinalize()
+DMSwarmDataExPackInitialize()
+DMSwarmDataExPackData()
+DMSwarmDataExPackData()
+DMSwarmDataExPackFinalize()
 +Phase D
-DataExBegin()
+DMSwarmDataExBegin()
  ... perform any calculations ...
-DataExEnd()
+DMSwarmDataExEnd()
 
 ... user calls any getters here ...
 
@@ -86,14 +86,14 @@ PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerEnd;
 PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerSendCount;
 PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 
-PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
+PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDataEx *ex)
 {
   PetscErrorCode ierr;
-  DataEx         d;
+  DMSwarmDataEx         d;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(struct _p_DataEx), &d);CHKERRQ(ierr);
-  ierr = PetscMemzero(d, sizeof(struct _p_DataEx));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataEx), &d);CHKERRQ(ierr);
+  ierr = PetscMemzero(d, sizeof(struct _p_DMSwarmDataEx));CHKERRQ(ierr);
   ierr = MPI_Comm_dup(comm,&d->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(d->comm,&d->rank);CHKERRQ(ierr);
 
@@ -134,13 +134,13 @@ PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
     Should be printing to a viewer, should not be using PETSC_COMM_WORLD
 
 */
-PetscErrorCode DataExView(DataEx d)
+PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
 {
   PetscMPIInt    p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "DataEx: instance=%D\n",d->instance);CHKERRQ(ierr);
+  ierr = PetscPrintf( PETSC_COMM_WORLD, "DMSwarmDataEx: instance=%D\n",d->instance);CHKERRQ(ierr);
   ierr = PetscPrintf( PETSC_COMM_WORLD, "  topology status:        %s \n", status_names[d->topology_status]);CHKERRQ(ierr);
   ierr = PetscPrintf( PETSC_COMM_WORLD, "  message lengths status: %s \n", status_names[d->message_lengths_status] );CHKERRQ(ierr);
   ierr = PetscPrintf( PETSC_COMM_WORLD, "  packer status status:   %s \n", status_names[d->packer_status] );CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PetscErrorCode DataExView(DataEx d)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExDestroy(DataEx d)
+PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
 {
   PetscErrorCode ierr;
 
@@ -194,7 +194,7 @@ PetscErrorCode DataExDestroy(DataEx d)
 
 /* === Phase A === */
 
-PetscErrorCode DataExTopologyInitialize(DataEx d)
+PetscErrorCode DMSwarmDataExTopologyInitialize(DMSwarmDataEx d)
 {
   PetscErrorCode ierr;
 
@@ -211,15 +211,15 @@ PetscErrorCode DataExTopologyInitialize(DataEx d)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
+PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPIInt proc_id)
 {
   PetscMPIInt    n,found;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->topology_status == DEOBJECT_FINALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DataExTopologyInitialize() first");
-  else if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
+  if (d->topology_status == DEOBJECT_FINALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DMSwarmDataExTopologyInitialize() first");
+  else if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DMSwarmDataExTopologyInitialize() first");
 
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
@@ -289,7 +289,7 @@ static void _get_tags(PetscInt counter, PetscMPIInt N, PetscMPIInt r0,PetscMPIIn
 /*
 Makes the communication map symmetric
 */
-PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
+PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
 {
   Mat               A;
   PetscInt          i,j,nc;
@@ -357,7 +357,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExTopologyFinalize(DataEx d)
+PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
   PetscMPIInt    symm_nn;
   PetscMPIInt   *symm_procs;
@@ -366,11 +366,11 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
+  if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DMSwarmDataExTopologyInitialize() first");
 
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
   /* given infomation about all my neighbours, make map symmetric */
-  ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
+  ierr = _DMSwarmDataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
   /* update my arrays */
   ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);
   d->n_neighbour_procs = symm_nn;
@@ -400,7 +400,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 }
 
 /* === Phase B === */
-PetscErrorCode _DataExConvertProcIdToLocalIndex(DataEx de,PetscMPIInt proc_id,PetscMPIInt *local)
+PetscErrorCode _DMSwarmDataExConvertProcIdToLocalIndex(DMSwarmDataEx de,PetscMPIInt proc_id,PetscMPIInt *local)
 {
   PetscMPIInt i,np;
 
@@ -416,7 +416,7 @@ PetscErrorCode _DataExConvertProcIdToLocalIndex(DataEx de,PetscMPIInt proc_id,Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExInitializeSendCount(DataEx de)
+PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
 {
   PetscMPIInt    i;
   PetscErrorCode ierr;
@@ -434,28 +434,28 @@ PetscErrorCode DataExInitializeSendCount(DataEx de)
 /*
 1) only allows counters to be set on neighbouring cpus
 */
-PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count)
+PetscErrorCode DMSwarmDataExAddToSendCount(DMSwarmDataEx de,const PetscMPIInt proc_id,const PetscInt count)
 {
   PetscMPIInt    local_val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->message_lengths_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths have been defined. To modify these call DataExInitializeSendCount() first" );
-  else if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
+  if (de->message_lengths_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths have been defined. To modify these call DMSwarmDataExInitializeSendCount() first" );
+  else if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DMSwarmDataExInitializeSendCount() first" );
   
-  ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
+  ierr = _DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
   if (local_val == -1) SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", (int)proc_id );
   
   de->messages_to_be_sent[local_val] = de->messages_to_be_sent[local_val] + count;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExFinalizeSendCount(DataEx de)
+PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
+  if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DMSwarmDataExInitializeSendCount() first" );
   
   de->message_lengths_status = DEOBJECT_FINALIZED;
   ierr = PetscLogEventEnd(DMSWARM_DataExchangerSendCount,0,0,0,0);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ PetscErrorCode DataExFinalizeSendCount(DataEx de)
  * zeros out all counters
  * zero out packed data counters
 */
-PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
+PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 {
   PetscMPIInt    i, np;
   PetscErrorCode ierr;
@@ -497,7 +497,7 @@ PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
 *) Checks send counts properly initialized
 *) allocates space for pack data
 */
-PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
+PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_size)
 {
   PetscMPIInt    i,np;
   PetscInt       total;
@@ -508,14 +508,14 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
   if (de->message_lengths_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths not finalized" );
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerPack,0,0,0,0);CHKERRQ(ierr);
   de->packer_status = DEOBJECT_INITIALIZED;
-  ierr = _DataExInitializeTmpStorage(de);CHKERRQ(ierr);
+  ierr = _DMSwarmDataExInitializeTmpStorage(de);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
   de->unit_message_size = unit_message_size;
   total = 0;
   for (i = 0; i < np; ++i) {
     if (de->messages_to_be_sent[i] == -1) {
       PetscMPIInt proc_neighour = de->neighbour_procs[i];
-      SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ORDER, "Messages_to_be_sent[neighbour_proc=%d] is un-initialised. Call DataExSetSendCount() first", (int)proc_neighour );
+      SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ORDER, "Messages_to_be_sent[neighbour_proc=%d] is un-initialised. Call DMSwarmDataExSetSendCount() first", (int)proc_neighour );
     }
     total = total + de->messages_to_be_sent[i];
   }
@@ -542,7 +542,7 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 /*
 *) Ensures data gets been packed appropriately and no overlaps occur
 */
-PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
+PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
 {
   PetscMPIInt    local;
   PetscInt       insert_location;
@@ -550,11 +550,11 @@ PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *dat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->packer_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
-  else if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
+  if (de->packer_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first" );
+  else if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first" );
   
-  if (!de->send_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DataExPackInitialize() first" );
-  ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local );CHKERRQ(ierr);
+  if (!de->send_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DMSwarmDataExPackInitialize() first" );
+  ierr = _DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local );CHKERRQ(ierr);
   if (local == -1) SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id );
   if (n+de->pack_cnt[local] > de->messages_to_be_sent[local]) SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
               (int)proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local] );
@@ -571,14 +571,14 @@ PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *dat
 /*
 *) Ensures all data has been packed
 */
-PetscErrorCode DataExPackFinalize(DataEx de)
+PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
 {
   PetscMPIInt i,np;
   PetscInt    total;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packer has not been initialized. Must call DataExPackInitialize() first." );
+  if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packer has not been initialized. Must call DMSwarmDataExPackInitialize() first." );
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
     if (de->pack_cnt[i] != de->messages_to_be_sent[i]) SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %D : Inserted %D",
@@ -613,7 +613,7 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 }
 
 /* do the actual message passing now */
-PetscErrorCode DataExBegin(DataEx de)
+PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 {
   PetscMPIInt i,np;
   void       *dest;
@@ -624,8 +624,8 @@ PetscErrorCode DataExBegin(DataEx de)
   if (de->topology_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Topology not finalized" );
   if (de->message_lengths_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths not finalized" );
   if (de->packer_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packer not finalized" );
-  if (de->communication_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has already been finalized. Must call DataExInitialize() first." );
-  if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
+  if (de->communication_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has already been finalized. Must call DMSwarmDataExInitialize() first." );
+  if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first" );
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
@@ -639,7 +639,7 @@ PetscErrorCode DataExBegin(DataEx de)
 }
 
 /* do the actual message passing now */
-PetscErrorCode DataExEnd(DataEx de)
+PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
 {
   PetscMPIInt  i,np;
   PetscInt     total;
@@ -649,8 +649,8 @@ PetscErrorCode DataExEnd(DataEx de)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->communication_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DataExInitialize() first." );
-  if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
+  if (de->communication_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DMSwarmDataExInitialize() first." );
+  if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first" );
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
   ierr = PetscMalloc1(np+1, &message_recv_offsets);CHKERRQ(ierr);
@@ -673,7 +673,7 @@ PetscErrorCode DataExEnd(DataEx de)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send)
+PetscErrorCode DMSwarmDataExGetSendData(DMSwarmDataEx de,PetscInt *length,void **send)
 {
   PetscFunctionBegin;
   if (de->packer_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ARG_WRONGSTATE, "Data has not finished being packed." );
@@ -682,7 +682,7 @@ PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
+PetscErrorCode DMSwarmDataExGetRecvData(DMSwarmDataEx de,PetscInt *length,void **recv)
 {
   PetscFunctionBegin;
   if (de->communication_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ARG_WRONGSTATE, "Data has not finished being sent." );
@@ -691,7 +691,7 @@ PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscMPIInt *neigh[])
+PetscErrorCode DMSwarmDataExTopologyGetNeighbours(DMSwarmDataEx de,PetscMPIInt *n,PetscMPIInt *neigh[])
 {
   PetscFunctionBegin;
   if (n)     {*n     = de->n_neighbour_procs;}
