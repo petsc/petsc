@@ -489,9 +489,9 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
       PetscSpace sub;
 
       ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
-      ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
-      ierr = PetscSpaceSetDegree(sub, order);CHKERRQ(ierr);
       ierr = PetscSpaceSetType(sub, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
+      ierr = PetscSpaceSetDegree(sub, order, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumVariables(sub, dim-height);CHKERRQ(ierr);
       ierr = PetscSpacePolynomialSetTensor(sub, tensor);CHKERRQ(ierr);
       ierr = PetscSpaceSetUp(sub);CHKERRQ(ierr);

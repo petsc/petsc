@@ -513,7 +513,7 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
   ierr = PetscSpaceSetNumVariables(*subspace,subDim);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(*subspace,subNc);CHKERRQ(ierr);
   ierr = PetscSpaceGetDegree(origSpace,&order,NULL);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(*subspace,order);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(*subspace,order,PETSC_DETERMINE);CHKERRQ(ierr);
   subsp = (PetscSpace_Subspace *) (*subspace)->data;
   subsp->Nb = subNb;
   switch (copymode) {

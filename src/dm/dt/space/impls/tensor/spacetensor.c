@@ -13,7 +13,7 @@ static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt 
   ierr = PetscSpaceSetType(*subspace, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumVariables(*subspace, Nvs);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(*subspace, 1);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(*subspace, degree);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(*subspace, degree, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)*subspace, prefix);CHKERRQ(ierr);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)*subspace, "subspace_");CHKERRQ(ierr);
   PetscFunctionReturn(0);

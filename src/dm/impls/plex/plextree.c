@@ -1262,7 +1262,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscFVGetNumComponents(fv,&Nc);CHKERRQ(ierr);
       ierr = PetscSpaceCreate(PetscObjectComm((PetscObject)fv),&bspace);CHKERRQ(ierr);
       ierr = PetscSpaceSetType(bspace,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
-      ierr = PetscSpaceSetDegree(bspace,0);CHKERRQ(ierr);
+      ierr = PetscSpaceSetDegree(bspace,0,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumComponents(bspace,Nc);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumVariables(bspace,spdim);CHKERRQ(ierr);
       ierr = PetscSpaceSetUp(bspace);CHKERRQ(ierr);

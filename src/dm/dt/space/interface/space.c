@@ -363,17 +363,19 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 
   Input Parameters:
 + sp - The PetscSpace
-- degree - The degree of the largest polynomial space contained in the space
+. degree - The degree of the largest polynomial space contained in the space
+- maxDegree - The degree of the largest polynomial space containing the space.  One of degree and maxDegree can be PETSC_DETERMINE.
 
   Level: intermediate
 
 .seealso: PetscSpaceGetDegree(), PetscSpaceCreate(), PetscSpace
 @*/
-PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt order)
+PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  sp->degree = order;
+  sp->degree = degree;
+  sp->maxDegree = maxDegree;
   PetscFunctionReturn(0);
 }
 

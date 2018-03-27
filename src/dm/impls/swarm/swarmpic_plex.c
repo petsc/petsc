@@ -24,7 +24,7 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
   /*ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);*/
   ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(P,1);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(P,1,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
