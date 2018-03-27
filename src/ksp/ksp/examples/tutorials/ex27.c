@@ -21,7 +21,7 @@ int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
   Mat            A,N;                /* matrix */
-  Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
+  Vec            x,b,r,Ab;          /* approx solution, RHS, residual */
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
@@ -106,7 +106,6 @@ int main(int argc,char **args)
     nonzero_guess=PETSC_FALSE;
   }
 
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -177,9 +176,10 @@ int main(int argc,char **args)
   /*
      Check error
   */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
+  ierr = MatMult(A,x,r);CHKERRQ(ierr);
+  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ int main(int argc,char **args)
   */
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&N);CHKERRQ(ierr); ierr = VecDestroy(&Ab);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   PetscPreLoadEnd();
   /* -----------------------------------------------------------
