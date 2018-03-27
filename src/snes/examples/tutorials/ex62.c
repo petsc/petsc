@@ -618,7 +618,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p3_1
     requires: triangle !single
-    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2    
+    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
   # Parallel tests 6-17
   test:
     suffix: 6
@@ -850,5 +850,11 @@ int main(int argc, char **argv)
     filter: grep -v "variant HERMITIAN"
     nsize: 5
     args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
+
+  test:
+    requires: !single
+    suffix: bddc_quad
+    nsize: 9
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
 
 TEST*/

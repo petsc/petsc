@@ -1,0 +1,9 @@
+  Residual norms for stokes_ solve.
+  0 KSP none resid norm 1.996722217186e-02 true resid norm 5.715582502599e-02 ||r(i)||/||b|| 1.235177536674e+00
+  1 KSP none resid norm 1.216569223188e-03 true resid norm 3.903047338040e-03 ||r(i)||/||b|| 8.434759526838e-02
+  2 KSP none resid norm 1.134321223053e-04 true resid norm 4.920625304034e-04 ||r(i)||/||b|| 1.063381700670e-02
+  3 KSP none resid norm 1.415512930434e-05 true resid norm 6.229186759268e-05 ||r(i)||/||b|| 1.346171025140e-03
+  4 KSP none resid norm 1.642496770203e-06 true resid norm 5.624386244152e-06 ||r(i)||/||b|| 1.215469384476e-04
+  5 KSP none resid norm 7.655737705619e-08 true resid norm 2.513081925158e-07 ||r(i)||/||b|| 5.430946610192e-06
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 5
+9.0909e-02   1.9277e-03   2.9843e-04   4.8733e-03

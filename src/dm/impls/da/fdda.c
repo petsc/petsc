@@ -800,8 +800,8 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   Mat                    lJ;
   ISLocalToGlobalMapping ltog;
   IS                     is_loc_filt, is_glob;
-  const PetscInt         *e_loc;
-  PetscInt               i,nel,nen,dnz,nv,dof,dim;
+  const PetscInt         *e_loc,*idx;
+  PetscInt               i,nel,nen,dnz,nv,dof,dim,*gidx,nb;
   PetscErrorCode         ierr;
 
   /* The l2g map of DMDA has all ghosted nodes, and e_loc is a subset of all the local nodes (including the ghosted)
@@ -810,29 +810,46 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   PetscFunctionBegin;
   dof  = da->w;
   dim  = dm->dim;
-  ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(ltog,&nv);CHKERRQ(ierr);
+
+  ierr = MatSetBlockSize(J,dof);CHKERRQ(ierr);
+
+  /* get local elements indices in local DMDA numbering */
   ierr = DMDAGetElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr); /* this will throw an error if the stencil type is not DMDA_STENCIL_BOX */
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nel*nen,e_loc,PETSC_COPY_VALUES,&is_loc_filt);CHKERRQ(ierr);
   ierr = DMDARestoreElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr);
+
+  /* obtain a consistent local ordering for MATIS */
   ierr = ISSortRemoveDups(is_loc_filt);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(ltog,is_loc_filt,&is_glob);CHKERRQ(ierr);
+  ierr = ISBlockGetLocalSize(is_loc_filt,&nb);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog,&nv);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(nb,nv/dof),&gidx);CHKERRQ(ierr);
+  ierr = ISBlockGetIndices(is_loc_filt,&idx);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(ltog,nb,idx,gidx);CHKERRQ(ierr);
+  ierr = ISBlockRestoreIndices(is_loc_filt,&idx);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nb,gidx,PETSC_USE_POINTER,&is_glob);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is_glob,&ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&is_glob);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
+
   /* We also attach a l2g map to the local matrices to have MatSetValueLocal to work */
   ierr = MatISGetLocalMat(J,&lJ);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)lJ),nv,0,1,&is_glob);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is_loc_filt,&ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&is_loc_filt);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApplyIS(ltog,IS_GTOLM_MASK,is_glob,&is_loc_filt);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)lJ),nv/dof,0,1,&is_glob);CHKERRQ(ierr);
+  ierr = ISGetIndices(is_glob,&idx);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(ltog,IS_GTOLM_MASK,nv/dof,idx,&nb,gidx);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is_glob,&idx);CHKERRQ(ierr);
   ierr = ISDestroy(&is_glob);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,dof,nb,gidx,PETSC_USE_POINTER,&is_loc_filt);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is_loc_filt,&ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&is_loc_filt);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(lJ,ltog,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
+  ierr = PetscFree(gidx);CHKERRQ(ierr);
+
   /* Preallocation (not exact) */
   switch (da->elementtype) {
   case DMDA_ELEMENT_P1:

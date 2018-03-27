@@ -775,7 +775,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(exists,2);
+  PetscValidPointer(exists,2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1872,6 +1872,8 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,dim,2);
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1582,7 +1582,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexComputeCellGeometryFEM(), DMGetCoordinateSection(), DMGetCoordinateVec()
+.seealso: DMPlexComputeCellGeometryFEM(), DMGetCoordinateSection(), DMGetCoordinates()
 @*/
 PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -1705,7 +1705,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMGetCoordinates()
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -1939,7 +1939,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMGetCoordinates()
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {

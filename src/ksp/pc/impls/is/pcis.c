@@ -247,7 +247,14 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
   /* Creating scaling vector D */
   ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
   if (pcis->use_stiffness_scaling) {
+    PetscScalar *a;
+    PetscInt    i,n;
+
     ierr = MatGetDiagonal(pcis->A_BB,pcis->D);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(pcis->D,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->D,&a);CHKERRQ(ierr);
+    for (i=0;i<n;i++) if (PetscAbsScalar(a[i])<PETSC_SMALL) a[i] = 1.0;
+    ierr = VecRestoreArray(pcis->D,&a);CHKERRQ(ierr);
   }
   ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
   ierr = VecSet(counter,0.0);CHKERRQ(ierr);

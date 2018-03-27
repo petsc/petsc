@@ -81,7 +81,10 @@ typedef struct {
   PetscBool     use_vertices;
   PetscBool     use_faces;
   PetscBool     use_edges;
+
   /* Some customization is possible */
+  PetscBool           corner_selection;
+  PetscBool           corner_selected;
   PetscBool           recompute_topography;
   PetscBool           graphanalyzed;
   PCBDDCGraph         mat_graph;
@@ -152,7 +155,7 @@ typedef struct {
   /* adaptive selection of constraints */
   PetscBool    adaptive_selection;
   PetscBool    adaptive_userdefined;
-  PetscReal    adaptive_threshold;
+  PetscReal    adaptive_threshold[2];
   PetscInt     adaptive_nmin;
   PetscInt     adaptive_nmax;
   PetscInt*    adaptive_constraints_n;
