@@ -29,6 +29,7 @@ int main(int argc,char **args)
   PetscInt       its,n,m;
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
+  PetscBool      solve_normal=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -37,6 +38,11 @@ int main(int argc,char **args)
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether to solve the original system (-solve_normal 0)
+     or the normal equation (-solve_normal 1).
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -120,7 +126,15 @@ int main(int argc,char **args)
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  if (solve_normal) {
+    ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  } else {
+    PC pc;
+    ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  }
   ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -145,7 +159,11 @@ int main(int argc,char **args)
   /*
      Solve linear system
   */
-  ierr = KSPSolve(ksp,Ab,x);CHKERRQ(ierr);
+  if (solve_normal) {
+    ierr = KSPSolve(ksp,Ab,x);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  }
 
   /*
       Conclude profiling this stage
