@@ -329,6 +329,7 @@ int main(int argc,char **args)
    test:
       suffix: pipelcg
       args: -ksp_monitor_short -ksp_type pipelcg -m 9 -n 9 -pc_type none -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmax 2
+      filter: grep -v "sqrt breakdown in iteration"
 
    test:
       suffix: sell
