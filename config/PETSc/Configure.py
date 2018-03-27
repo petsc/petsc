@@ -98,13 +98,13 @@ class Configure(config.base.Configure):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','options')):
+    for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+    for utility in sorted(os.listdir(os.path.join('config','BuildSystem','config','utilities'))):
       self.registerPythonFile(utility,'config.utilities')
 
-    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+    for package in sorted(os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages'))):
       obj = self.registerPythonFile(package,'config.packages')
       if obj:
         obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)
@@ -470,6 +470,7 @@ prepend-path PATH "%s"
 
   def dumpMachineInfo(self):
     import platform
+    import datetime
     import time
     import script
     def escape(s):
@@ -477,7 +478,11 @@ prepend-path PATH "%s"
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
-    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
+    buildhost = platform.node()
+    if os.environ.get('SOURCE_DATE_EPOCH'):
+      buildhost = "reproducible"
+    buildtime = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
+    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (buildtime, buildhost))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.installdir.petscDir)))
     fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.installdir.petscArch)))

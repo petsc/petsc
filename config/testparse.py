@@ -476,7 +476,7 @@ def parseTestDir(directory,verbosity):
   os.chdir(basedir)
 
   tDict={}
-  for test_file in glob.glob("new_ex*.*"):
+  for test_file in sorted(glob.glob("new_ex*.*")):
     tDict.update(parseTestFile(test_file,verbosity))
 
   os.chdir(curdir)

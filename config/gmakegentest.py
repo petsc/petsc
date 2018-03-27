@@ -857,6 +857,8 @@ class generateExamples(Petsc):
     # Goal of action is to fill this dictionary
     dataDict={}
     for root, dirs, files in os.walk(top, topdown=True):
+      dirs.sort()
+      files.sort()
       if not "examples" in root: continue
       if "dSYM" in root: continue
       if os.path.basename(root.rstrip("/")) == 'output': continue
