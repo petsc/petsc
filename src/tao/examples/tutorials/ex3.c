@@ -67,7 +67,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   filename[0] = '\0';
   user->use_riesz = PETSC_TRUE;
 
-  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);
+  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-f", "filename to read", "ex2.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -249,7 +249,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);
+  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
@@ -274,13 +274,13 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
      plex to play with the way I want to impose the BCs. This loses symmetry,
      but not in a disastrous way. If someone can improve it, please do! */
   ierr = MatZeroRows(user->laplace, user->num_bc_dofs, user->bc_indices, 1.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscCalloc1(user->num_bc_dofs, &user->bc_values);
+  ierr = PetscCalloc1(user->num_bc_dofs, &user->bc_values);CHKERRQ(ierr);
 
   /* also create the KSP for solving the Laplace system */
   ierr = KSPCreate(PETSC_COMM_WORLD, &user->ksp_laplace);CHKERRQ(ierr);
   ierr = KSPSetOperators(user->ksp_laplace, user->laplace, user->laplace);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user->ksp_laplace, "laplace_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(user->ksp_laplace);
+  ierr = KSPSetFromOptions(user->ksp_laplace);CHKERRQ(ierr);
 
   /* A bit of setting up the user context */
   user->dm = dm;
@@ -324,7 +324,7 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, v
   PetscFunctionBeginUser;
 
   ierr = MatMult(user->mass, u, user->tmp1);CHKERRQ(ierr);
-  ierr = VecDot(u, user->tmp1, &inner);                             /* regularisation contribution to */
+  ierr = VecDot(u, user->tmp1, &inner);CHKERRQ(ierr);               /* regularisation contribution to */
   *func = alpha * 0.5 * inner;                                      /* the functional                 */
 
   ierr = VecSet(g, 0.0);CHKERRQ(ierr);

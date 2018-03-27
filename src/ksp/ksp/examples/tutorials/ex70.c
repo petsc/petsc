@@ -611,7 +611,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
 
   if (proximity_initialization) {
     PetscInt  *nnlist;
-    PetscReal coor_q[2],*coor_qn;
+    PetscReal *coor_q,*coor_qn;
     PetscInt  npoints_e,*plist_e;
 
     ierr = DMSwarmSortGetPointsPerCell(dm,e,&npoints_e,&plist_e);CHKERRQ(ierr);
@@ -624,8 +624,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       PetscInt  qn,nearest_neighour = -1;
       PetscReal sep,min_sep = PETSC_MAX_REAL;
 
-      coor_q[0] = xp[dim*q];
-      coor_q[1] = xp[dim*q];
+      coor_q = &xp[dim*q];
       for (qn=0; qn<npoints_e; qn++) {
         coor_qn = &swarm_coor[dim*plist_e[qn]];
         sep = 0.0;
