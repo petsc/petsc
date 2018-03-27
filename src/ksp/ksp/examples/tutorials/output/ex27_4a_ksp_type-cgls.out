@@ -99,7 +99,6 @@ Failed to load initial guess, so use a vector of all zeros.
  98 KSP Residual norm 8.92756e-07 
  99 KSP Residual norm 9.66754e-07 
 100 KSP Residual norm 8.5665e-07 
-100 KSP Residual norm 1.85355e-05 
 Linear solve did not converge due to DIVERGED_ITS iterations 100
 KSP type: cgls
 Number of iterations = 100
