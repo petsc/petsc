@@ -52,7 +52,7 @@ struct _p_VERTEX_Water{
   Reservoir res; /* reservoir data */
   Tank      tank; /* tank data */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
-
+typedef struct _p_VERTEX_Water *VERTEX_Water;
 
 typedef struct {
   PetscInt id; /* id */
@@ -75,9 +75,9 @@ typedef struct {
   char     param[16]; /* curve parameter (HEAD or ENERGY or EFFICIENCY) */
   PetscInt paramid; /* Id of the curve parameter in the CURVE data */
   struct {  /* one point curve */
-    PetscInt    npt;  /* Number of given points */
     PetscScalar flow[3]; /* flow (gpm) */
     PetscScalar head[3]; /* head (ft) */
+    PetscInt    npt;  /* Number of given points */
   }headcurve;
   /* Parameters for pump headloss equation hL = h0 - rQ^n */
   PetscScalar h0;
@@ -91,13 +91,10 @@ struct _p_EDGE_Water{
   Pipe     pipe; /* pipe data */
   Pump     pump; /* pump data */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
-
 typedef struct _p_EDGE_Water *EDGE_Water;
 
-typedef struct _p_VERTEX_Water *VERTEX_Water;
-
 /* EPANET top-level data structure */
-typedef struct{
+struct _p_WATERDATA{
   PetscInt    nvertex;
   PetscInt    nedge;
   PetscInt    njunction;
@@ -107,7 +104,8 @@ typedef struct{
   PetscInt    npump;
   VERTEX_Water vertex;
   EDGE_Water   edge;
-} WATERDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+typedef struct _p_WATERDATA WATERDATA;
 
 extern PetscErrorCode WaterReadData(WATERDATA*,char*);
 extern PetscErrorCode GetListofEdges_Water(WATERDATA*,PetscInt*);

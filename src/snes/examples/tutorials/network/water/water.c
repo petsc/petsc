@@ -131,13 +131,13 @@ int main(int argc,char ** argv)
 
    build:
       depends: waterreaddata.c waterfunctions.c
-      requires: !complex
+      requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
       args: -water_snes_converged_reason -options_left no
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
-      requires: double
+      requires: double !complex define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
       suffix: 2
@@ -145,6 +145,6 @@ int main(int argc,char ** argv)
       args: -water_snes_converged_reason -options_left no
       localrunfiles: wateroptions sample1.inp
       output_file: output/water.out
-      requires: double
+      requires: double !complex define(PETSC_HAVE_ATTRIBUTEALIGNED)
 
 TEST*/

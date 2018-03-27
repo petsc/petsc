@@ -12,14 +12,16 @@
 #define NGEN_AT_BUS_MAX 15
 #define NLOAD_AT_BUS_MAX 1
 
-typedef struct{
+struct _p_UserCtx_Power{
   PetscScalar  Sbase;
   PetscBool    jac_error; /* introduce error in the jacobian */
   PetscInt     compkey_branch;
   PetscInt     compkey_bus;
   PetscInt     compkey_gen;
   PetscInt     compkey_load;
-} UserCtx_Power;
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+
+typedef struct _p_UserCtx_Power UserCtx_Power;
 
 /* 2. Bus data */
 /* 11 columns */
