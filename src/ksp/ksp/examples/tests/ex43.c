@@ -104,20 +104,14 @@ int main(int argc,char **argv)
 
    test:
       suffix: 6
-      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -pc_type none -vec_type seqcusp
+      requires: veccuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_type none -vec_type cuda
 
    test:
       suffix: 7
-      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -mat_cusp_mult_storage_format ell -pc_type none -vec_type seqcusp
-
-
-   test:
-      suffix: 8
       nsize: 2
-      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusp -pc_type none -vec_type mpicusp
+      requires: veccuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -pc_type none -vec_type cuda
 
 
 TEST*/

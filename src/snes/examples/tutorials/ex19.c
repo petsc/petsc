@@ -808,9 +808,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: !single
 
    test:
-      suffix: cusp
-      requires: cusp !single
-      args: -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
+      suffix: cuda
+      requires: cuda !single
+      args: -dm_vec_type cuda -dm_mat_type aijcusparse -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
 
    test:
       suffix: draw

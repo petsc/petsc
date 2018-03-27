@@ -201,12 +201,12 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      suffix: aijcusp
-      requires: cusp
-      args: -dm_mat_type aijcusp -dm_vec_type cusp -random_exact_sol
+      suffix: aijcusparse
+      requires: veccuda
+      args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol
 
    test:
-      suffix: aijcusparse
+      suffix: aijcusparse_2
       requires: veccuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_type cusparse
 
