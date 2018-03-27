@@ -60,9 +60,9 @@ struct _p_LOAD{
   PetscScalar 	iq; /* Reactive power component of constant current load: Mvar pu V */
   PetscScalar 	yp; /* Active power component of constant admittance load: MW pu V */
   PetscScalar 	yq; /* Reactive power component of constant admittance load: Mvar pu V */
+  PetscScalar   scale_load;
   PetscInt 	owner; /* Owner number */
   PetscInt	internal_i; /* Internal Bus Number */
-  PetscScalar   scale_load;
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_LOAD *LOAD;
@@ -92,8 +92,8 @@ struct _p_GEN{
   PetscScalar 	pb; /* Gen min active power output: MW */
   PetscInt 	o1; /* Owner number */
   PetscScalar 	f1; /* Fraction of ownership */
-  PetscInt	internal_i; /* Internal Bus Number */
   PetscScalar   scale_gen;
+  PetscInt	internal_i; /* Internal Bus Number */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_GEN *GEN;
@@ -121,9 +121,9 @@ struct _p_EDGE_Power{
   PetscScalar 	length; /* Line length */
   PetscInt 	o1; /* Owner number */
   PetscScalar 	f1; /* Fraction of ownership */
+  PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
   PetscInt	internal_i; /* Internal From Bus Number */
   PetscInt	internal_j; /* Internal To Bus Number */
-  PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_EDGE_Power *EDGE_Power;
