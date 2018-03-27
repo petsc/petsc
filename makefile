@@ -160,7 +160,7 @@ matlabbin:
 test_install: test
 check: test
 test:
-	-@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
+	-+@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
 	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
           printf "=========================================\n"; \
           printf "Now to evaluate the computer systems you plan use - do:\n"; \
@@ -171,29 +171,29 @@ testx:
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
-	@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
+	+@if [ "${HYPRE_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_hypre; \
          fi;
-	@if [ "${MUMPS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+	+@if [ "${MUMPS_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_fieldsplit_mumps; \
          fi;
-	@if [ "${SUPERLU_DIST_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+	+@if [ "${SUPERLU_DIST_LIB}" != "" ] && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_superlu_dist; \
          fi;
-	@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
+	+@if ( [ "${ML_LIB}" != "" ] ||  [ "${TRILINOS_LIB}" != "" ] ) && [ "${PETSC_WITH_BATCH}" = "" ]; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff runex19_ml; \
          fi;
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
-	@if [ "${PETSC4PY}" = "yes" ]; then \
+	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
+	+@if [ "${PETSC4PY}" = "yes" ]; then \
           cd src/ksp/ksp/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex100; \
          fi;
-	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	+@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
          fi; ${RM} .ftn.log;
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	+@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
 testx_build:
 	-@echo "Running graphics test example to verify correct X11 installation"
@@ -246,7 +246,7 @@ reconfigure:
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
-	${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install slepc-install
+	+${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install libmesh-install slepc-install
 
 newall:
 	-@cd src/sys;  @${PYTHON} ${PETSC_DIR}/config/builder.py
@@ -258,10 +258,10 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
+	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
 
 stream:
-	cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.

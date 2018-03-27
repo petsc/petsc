@@ -374,7 +374,7 @@ getautoconfargs:
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
@@ -387,7 +387,7 @@ getautoconfargs:
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
@@ -426,7 +426,7 @@ getautoconfargs:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
 .cu.PETSc .c.PETSc .cxx.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "warning: linker scope was specified more than once:" | \
           grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
@@ -478,7 +478,7 @@ getautoconfargs:
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
           grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \

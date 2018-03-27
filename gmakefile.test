@@ -5,27 +5,21 @@ CONFIGDIR := config
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
 mkfile_path := $(abspath $(MAKEFILE_LIST))
-TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))src
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include $(PETSC_DIR)/lib/petsc/conf/variables
 
-ifeq ($(TESTBASE),)  # Default
-TESTDIR := $(PETSC_DIR)/$(PETSC_ARCH)/tests
-gmakegentest_opts=
-else
-TESTDIR := $(PETSC_DIR)/$(PETSC_ARCH)/$(TESTBASE)
-gmakegentest_opts=-t $(TESTDIR)
-endif
+TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
 TESTLOGFILE = $(TESTDIR)/examples_$(PETSC_ARCH).log
-EXAMPLESDIR := .
+EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
 
 petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
-generatedtest  := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/testfiles
+generatedtest  := $(TESTDIR)/testfiles
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -84,7 +78,7 @@ endif
 
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) $(gmakegentest_opts)
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
 -include $(generatedtest)
 
@@ -273,7 +267,7 @@ print-test:
 	-@echo $(TESTTARGETS)
 
 report_tests: $(TESTTARGETS)
-	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(PETSC_DIR)/$(PETSC_ARCH)/tests/counts -t 5
+	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5
 
 # Do not how how to invoke test from makefile
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
@@ -350,6 +344,6 @@ help-test:
 	-@echo "    make -f ${makefile} print VAR=TESTTARGETS search='sys%'"
 	-@echo
 	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/src/sys/examples/tests/ex1'
+	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/examples/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
 	-@echo
