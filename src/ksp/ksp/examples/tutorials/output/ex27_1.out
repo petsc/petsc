@@ -1,3 +1,4 @@
+Failed to load initial guess, so use a vector of all zeros.
   0 KSP Residual norm 52.914 
   1 KSP Residual norm 7.38918 
   2 KSP Residual norm 4.1254 
