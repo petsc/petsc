@@ -97,9 +97,6 @@ typedef const char* VecType;
 #define VECMPI         "mpi"
 #define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
 #define VECSHARED      "shared"
-#define VECSEQCUSP     "seqcusp"
-#define VECMPICUSP     "mpicusp"
-#define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
 #define VECSEQVIENNACL "seqviennacl"
 #define VECMPIVIENNACL "mpiviennacl"
 #define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
@@ -574,17 +571,7 @@ PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm,PetscInt,PetscInt,Vecs*);
 PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar*,Vecs*);
 PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs,Vecs*);
 
-#if defined(PETSC_HAVE_CUSP)
-typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
-typedef struct _p_VecScatterCUSPIndices_StoS* VecScatterCUSPIndices_StoS;
-typedef struct _p_VecScatterCUSPIndices_PtoP* VecScatterCUSPIndices_PtoP;
-PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
-PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
-PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
 typedef struct _p_PetscViennaCLIndices* PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscViennaCLIndices*);
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices*);
@@ -717,4 +704,3 @@ PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
 
 #endif
-

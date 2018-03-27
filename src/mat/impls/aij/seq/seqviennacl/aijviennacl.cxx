@@ -315,7 +315,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateAIJ(), MatCreateAIJCUSP(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ()
+.seealso: MatCreate(), MatCreateAIJ(), MatCreateAIJCUSPARSE(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ()
 
 @*/
 PetscErrorCode  MatCreateSeqAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
@@ -476,4 +476,3 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void)
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

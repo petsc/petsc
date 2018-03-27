@@ -240,15 +240,6 @@ PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
 PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
 
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
-
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetDropTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPUseScaling(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetNonzeros(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetLinParameter(PC,PetscInt);
-
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC,PetscReal,PetscInt);

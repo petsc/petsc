@@ -199,12 +199,7 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecReduceBegin",   VEC_CLASSID,&VEC_ReduceBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecReduceEnd",     VEC_CLASSID,&VEC_ReduceEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecNormalize",     VEC_CLASSID,&VEC_Normalize);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PetscLogEventRegister("VecCUSPCopyTo",     VEC_CLASSID,&VEC_CUSPCopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCUSPCopyFrom",   VEC_CLASSID,&VEC_CUSPCopyFromGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUSPCopyToGPUSome);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUSPCopyFromGPUSome);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscLogEventRegister("VecViennaCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecViennaCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_VECCUDA)

@@ -14,9 +14,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
-#elif defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VECCUDA)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
 #elif defined(PETSC_HAVE_VIENNACL)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_VIENNACL_CPU || vec->valid_GPU_array == PETSC_VIENNACL_BOTH)) {
@@ -1381,7 +1379,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 .  w - Upon exit this contains the local vector.
 
    Level: beginner
-   
+
    Notes:
    This function is similar to VecGetArrayRead() which maps the local
    portion into a raw pointer.  VecGetLocalVectorRead() is usually
@@ -1391,7 +1389,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    array representing the vector data required by VecGetArrayRead() can
    be an expensive operation for certain vector types.  For example, for
    GPU vectors VecGetArrayRead() requires that the data between device
-   and host is synchronized.  
+   and host is synchronized.
 
    Unlike VecGetLocalVector(), this routine is not collective and
    preserves cached information.
@@ -1575,13 +1573,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   VecLocked(x,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    } else if (x->valid_GPU_array == PETSC_CUSP_UNALLOCATED) {
-      ierr = VecCUSPAllocateCheckHost(x); CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
     } else if (x->valid_GPU_array == PETSC_VIENNACL_UNALLOCATED) {
@@ -1632,11 +1624,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
     }
@@ -1785,9 +1773,7 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    x->valid_GPU_array = PETSC_CUSP_CPU;
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
     x->valid_GPU_array = PETSC_VIENNACL_CPU;
 #elif defined(PETSC_HAVE_VECCUDA)
     x->valid_GPU_array = PETSC_CUDA_CPU;

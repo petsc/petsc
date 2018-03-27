@@ -72,23 +72,16 @@
         <li><a href="http://www.mcs.anl.gov/petsc/documentation/installation.html#CUDA">Installing PETSc to use NVIDIA GPUs (CUDA)</a></li>
         <li><a href="http://www.mcs.anl.gov/petsc/documentation/installation.html#OpenCL">Installing PETSc to use GPUs independent of the vendor (OpenCL)</a></li>
         <li><a href="gpus.pdf">How the GPU solvers are implemented in PETSc</a></li>
-        <li><a href="http://www.mcs.anl.gov/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">Example that uses CUSP directly in the user function evaluation</a></li>
+        <li><a href="http://www.mcs.anl.gov/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">Example that uses CUDA directly in the user function evaluation</a></li>
         <li><a href="http://vimeo.com/18768859">Presentation on some aspects of GPU usage from PETSc</a></li>
 
         <li>
           Quick summary of usage with CUDA (provided by the <a href="http://cusplibrary.github.io/" title="CUSP library">CUSP library</a>):
           <ul>
             <li>
-              The VecType <code>VECSEQCUSP</code>, <code>VECMPICUSP</code>, or
-              <code>VECCUSP</code> may be used with <code>VecSetType()</code> or
-              -vec_type seqcusp,mpicusp, or cusp when <code>VecSetFromOptions()</code> is used.
-            </li>
-
-            <li>
-              The MatType <code>MATSEQAIJCUSP</code>, <code>MATMPIAIJCUSP</code>, or
-              <code>MATAIJCUSP</code> maybe used with MatSetType or -mat_type
-              seqaijcusp,mpiaijcusp, or aijcusp when <code>MatSetOptions()</code>
-              is used.
+              The VecType <code>VECSEQCUDA</code>, <code>VECMPICUDA</code>, or
+              <code>VECCUDA</code> may be used with <code>VecSetType()</code> or
+              -vec_type seqcuda,mpicuda, or cuda when <code>VecSetFromOptions()</code> is used.
             </li>
 
             <li>
@@ -100,7 +93,7 @@
 
             <li>
               If you are creating the vectors and matrices with a
-              DM, you can use -dm_vec_type cusp and -dm_mat_type aijcusp
+              DM, you can use -dm_vec_type cuda and -dm_mat_type aijcuda
             </li>
           </ul>
         </li>
@@ -139,8 +132,7 @@
 
             <li>
               All of the Krylov methods except <code>KSPIBCGS</code> run on the
-              GPU. We also provide <code>PCBICGSTABCUSP</code>, but it does not
-              appear more efficient than <code>PCBICGSTAB</code>.
+              GPU.
             </li>
 
             <li>

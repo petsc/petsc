@@ -82,9 +82,6 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
-#if defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSP(void);
-#endif
 #if defined(PETSC_HAVE_VECCUDA)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
@@ -263,7 +260,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetSymTrans",MAT_CLASSID,&MAT_Getsymtranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPCopyTo",MAT_CLASSID,&MAT_CUSPCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSECopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatViennaCLCopyTo",MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
@@ -320,8 +316,8 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
 #endif
-    /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use 
-     * some of the MKL-provided ones instead. */ 
+    /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use
+     * some of the MKL-provided ones instead. */
 
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
@@ -347,9 +343,6 @@ PetscErrorCode  MatInitializePackage(void)
   */
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverTypeRegister_MUMPS();CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = MatSolverTypeRegister_CUSP();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);

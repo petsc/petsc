@@ -12,8 +12,7 @@ PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, V
 PetscLogEvent VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
 PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
-PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
-PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
+PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
@@ -1669,7 +1668,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 }
 
 /*
-  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed. 
+  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed.
 
   Collective on VecStash
 

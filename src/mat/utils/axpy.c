@@ -41,11 +41,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
@@ -173,11 +169,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }

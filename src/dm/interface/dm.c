@@ -171,7 +171,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - the vector type, currently either VECSTANDARD or VECCUSP
+.  ctype - the vector type, currently either VECSTANDARD, VECCUDA, or VECVIENNACL
 
    Options Database:
 .   -dm_vec_type ctype

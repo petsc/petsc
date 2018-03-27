@@ -91,7 +91,6 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
 /*
   This is needed to turn on/off GPU synchronization
 */
-PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
@@ -685,16 +684,13 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
     ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
 #endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
-  PetscCUSPSynchronize = flg3;
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
 #elif defined(PETSC_HAVE_VECCUDA)
@@ -708,4 +704,3 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   PetscFunctionReturn(0);
 }
-
