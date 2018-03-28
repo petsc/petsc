@@ -82,7 +82,12 @@ iter =  77, Function value 1.50566, Residual: 0.000116347
 iter =  78, Function value 1.50566, Residual: 0.000104963 
 iter =  79, Function value 1.50566, Residual: 9.73462e-05 
 Tao Object: 1 MPI processes
-  type: pgd
+  type: bncg
+    CG Type: gd
+    Resets: 5
+      Broken ortho: 5
+      Not a descent dir.: 0
+    Line search fails: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30
