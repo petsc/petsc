@@ -722,6 +722,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 /* Note that this code currently doesn't actually get used when MatMatMult() is called with MAT_REUSE_MATRIX, because 
  * the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
+ * For releases of MKL prior to version 18, update 2:
  * MKL has no notion of separately callable symbolic vs. numeric phases of sparse matrix-matrix multiply, so in the 
  * MAT_REUSE_MATRIX case, the SeqAIJ routines end up being used. Even though this means that the (hopefully more 
  * optimized) MKL routines do not get used, this probably is best because the MKL routines would waste time re-computing 
