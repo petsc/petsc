@@ -35,6 +35,7 @@ struct _p_PetscSpace {
   PetscInt                maxDegree;     /* The containing approximation order of the space */
   PetscInt                Nc;            /* The number of components */
   PetscInt                Nv;            /* The number of variables in the space, e.g. x and y */
+  PetscInt                dim;           /* The dimension of the space */
   DM                      dm;            /* Shell to use for temp allocation */
 };
 

@@ -85,6 +85,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
     ierr             = (*sp->ops->destroy)(sp);CHKERRQ(ierr);
     sp->ops->destroy = NULL;
   }
+  sp->dim = PETSC_DETERMINE;
   ierr = (*r)(sp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) sp, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -297,9 +298,11 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   ierr = PetscHeaderCreate(s, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView);CHKERRQ(ierr);
 
-  s->degree = 0;
-  s->Nc     = 1;
-  s->Nv     = 0;
+  s->degree    = 0;
+  s->maxDegree = PETSC_DETERMINE;
+  s->Nc        = 1;
+  s->Nv        = 0;
+  s->dim       = PETSC_DETERMINE;
   ierr = DMShellCreate(comm, &s->dm);CHKERRQ(ierr);
   ierr = PetscSpaceSetType(s, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
 
@@ -327,8 +330,10 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(dim, 2);
-  *dim = 0;
-  if (sp->ops->getdimension) {ierr = (*sp->ops->getdimension)(sp, dim);CHKERRQ(ierr);}
+  if (sp->dim == PETSC_DETERMINE) {
+    if (sp->ops->getdimension) {ierr = (*sp->ops->getdimension)(sp, &sp->dim);CHKERRQ(ierr);}
+  }
+  *dim = sp->dim;
   PetscFunctionReturn(0);
 }
 

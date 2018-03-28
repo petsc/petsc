@@ -213,21 +213,18 @@ static PetscErrorCode PetscSpaceGetDimension_Tensor(PetscSpace sp, PetscInt *dim
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (tens->dim == PETSC_DEFAULT) {
-    ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
-    Ns = tens->numSpaces;
-    Nc = sp->Nc;
-    d  = 1;
-    for (i = 0; i < Ns; i++) {
-      PetscInt id;
+  ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
+  Ns = tens->numSpaces;
+  Nc = sp->Nc;
+  d  = 1;
+  for (i = 0; i < Ns; i++) {
+    PetscInt id;
 
-      ierr = PetscSpaceGetDimension(tens->spaces[i], &id);CHKERRQ(ierr);
-      d *= id;
-    }
-    d *= Nc;
-    tens->dim = d;
+    ierr = PetscSpaceGetDimension(tens->spaces[i], &id);CHKERRQ(ierr);
+    d *= id;
   }
-  *dim = tens->dim;
+  d *= Nc;
+  *dim = d;
   PetscFunctionReturn(0);
 }
 
@@ -525,7 +522,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace sp)
   sp->data = tens;
 
   tens->numSpaces = PETSC_DEFAULT;
-  tens->dim       = PETSC_DEFAULT;
 
   ierr = PetscSpaceInitialize_Tensor(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
