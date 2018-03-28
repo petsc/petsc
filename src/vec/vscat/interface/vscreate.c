@@ -12,7 +12,7 @@ PetscClassId VEC_SCATTER_CLASSID;
 #define VEC_SEQ_ID 0
 #define VEC_MPI_ID 1
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 extern PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 #endif
 

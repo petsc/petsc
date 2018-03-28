@@ -238,7 +238,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 /*TEST
 
    build:
-     requires:  define(PETSC_HAVE_MPI_WIN_ALLOCATE_SHARED) define(PETSC_HAVE_MPI_WIN_SHARED_QUERY)
+     requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
     test:
 

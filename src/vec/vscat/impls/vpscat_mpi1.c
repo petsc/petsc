@@ -117,7 +117,7 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI1(VecScatter ctx)
   }
 #endif
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   if (to->use_window) {
     ierr = MPI_Win_free(&from->window);CHKERRQ(ierr);
     ierr = MPI_Win_free(&to->window);CHKERRQ(ierr);
@@ -2340,7 +2340,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
   if (from->use_alltoallw) PetscInfo(ctx,"Using MPI_Alltoallw() for scatter\n");
 #endif
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   to->use_window = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_window",&to->use_window,NULL);CHKERRQ(ierr);
   from->use_window = to->use_window;
@@ -2405,7 +2405,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
     from->use_alltoallw = PETSC_FALSE;
     ctx->ops->copy      = VecScatterCopy_PtoP_AllToAll_MPI1;
 #endif
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   } else if (to->use_window) {
     PetscMPIInt temptag,winsize;
     MPI_Request *request;

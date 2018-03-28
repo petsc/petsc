@@ -3023,10 +3023,8 @@ M*/
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
 #endif
 
-#if defined(PETSC_HAVE_MPI_WIN_ALLOCATE_SHARED)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint,PetscMPIInt,MPI_Info,MPI_Comm,void*,MPI_Win*);
-#endif
-#if defined(PETSC_HAVE_MPI_WIN_SHARED_QUERY)
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,PetscMPIInt*,void*);
 #endif
 

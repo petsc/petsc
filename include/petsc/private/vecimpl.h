@@ -276,11 +276,11 @@ typedef struct {
   MPI_Datatype           *types;
 #endif
   PetscBool              use_window;    /* these uses windows for communication across all MPI processes */
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   MPI_Win                window;
   PetscInt               *winstarts;    /* displacements in the processes I am putting to */
 #endif
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)  /* these uses windows for communication only within each node */
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */

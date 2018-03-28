@@ -94,30 +94,34 @@ int main(int argc,char **argv)
       nsize: 2
       args: -vecscatter_type mpi3node
       output_file: output/ex2_1.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 2
       nsize: 2
       args: -vecscatter_type mpi3
       output_file: output/ex2_1.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 3
       nsize: 2
       args: -bs 3 -vecscatter_type mpi3node
       output_file: output/ex2_2.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 4
       nsize: 2
       args: -bs 3 -vecscatter_type mpi3
       output_file: output/ex2_2.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 5
       nsize: 3
       args: -vecscatter_type mpi3
       output_file: output/ex2_5.out
-
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
 TEST*/

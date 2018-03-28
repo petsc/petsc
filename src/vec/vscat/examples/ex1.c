@@ -1,5 +1,5 @@
 
-static char help[]= "Scatters between parallel vectors of type VENODE. \n\
+static char help[]= "Scatters between parallel vectors of type VECNODE. \n\
 uses block index sets\n\n";
 
 #include <petscvec.h>
@@ -130,17 +130,20 @@ int main(int argc,char **argv)
       nsize: 2
       args: -vecscatter_type mpi3node
       output_file: output/ex1_1.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 2
       nsize: 4
       args: -vecscatter_type mpi3node
       output_file: output/ex1_2.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
    test:
       suffix: 3
       nsize: 2
       args: -bs 2 -vecscatter_type mpi3node
       output_file: output/ex1_3.out
+      requires:  define(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
 TEST*/

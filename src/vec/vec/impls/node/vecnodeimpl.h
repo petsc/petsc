@@ -4,7 +4,7 @@
 
 #include <petsc/private/vecimpl.h>
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 typedef struct {
   VECHEADER
   MPI_Win     win;
