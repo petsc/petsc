@@ -38,7 +38,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVect
 
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
-  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+  v->valid_GPU_array = PETSC_OFFLOAD_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
 
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
-  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+  v->valid_GPU_array = PETSC_OFFLOAD_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -243,7 +243,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
   PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (v->map->n > 0) {
-    if (v->valid_GPU_array == PETSC_VIENNACL_CPU) {
+    if (v->valid_GPU_array == PETSC_OFFLOAD_CPU) {
       ierr = PetscLogEventBegin(VEC_ViennaCLCopyToGPU,v,0,0,0);CHKERRQ(ierr);
       try {
         ViennaCLVector *vec = ((Vec_ViennaCL*)v->spptr)->GPUarray;
@@ -253,7 +253,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
       ierr = PetscLogEventEnd(VEC_ViennaCLCopyToGPU,v,0,0,0);CHKERRQ(ierr);
-      v->valid_GPU_array = PETSC_VIENNACL_BOTH;
+      v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
     }
   }
   PetscFunctionReturn(0);
@@ -271,7 +271,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
   PetscFunctionBegin;
   PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_VIENNACL_GPU) {
+  if (v->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     ierr = PetscLogEventBegin(VEC_ViennaCLCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     try {
       ViennaCLVector *vec = ((Vec_ViennaCL*)v->spptr)->GPUarray;
@@ -281,7 +281,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = PetscLogEventEnd(VEC_ViennaCLCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_VIENNACL_BOTH;
+    v->valid_GPU_array = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
 }
@@ -642,7 +642,7 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin && xin->map->n > 0) {
-    if (xin->valid_GPU_array == PETSC_VIENNACL_GPU) {
+    if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
       ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayWrite(yin,&ygpu);CHKERRQ(ierr);
       try {
@@ -654,17 +654,17 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
       ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayWrite(yin,&ygpu);CHKERRQ(ierr);
 
-    } else if (xin->valid_GPU_array == PETSC_VIENNACL_CPU) {
+    } else if (xin->valid_GPU_array == PETSC_OFFLOAD_CPU) {
       /* copy in CPU if we are on the CPU*/
       ierr = VecCopy_SeqViennaCL_Private(xin,yin);CHKERRQ(ierr);
       ViennaCLWaitForGPU();
-    } else if (xin->valid_GPU_array == PETSC_VIENNACL_BOTH) {
+    } else if (xin->valid_GPU_array == PETSC_OFFLOAD_BOTH) {
       /* if xin is valid in both places, see where yin is and copy there (because it's probably where we'll want to next use it) */
-      if (yin->valid_GPU_array == PETSC_VIENNACL_CPU) {
+      if (yin->valid_GPU_array == PETSC_OFFLOAD_CPU) {
         /* copy in CPU */
         ierr = VecCopy_SeqViennaCL_Private(xin,yin);CHKERRQ(ierr);
         ViennaCLWaitForGPU();
-      } else if (yin->valid_GPU_array == PETSC_VIENNACL_GPU) {
+      } else if (yin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
         /* copy in GPU */
         ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLGetArrayWrite(yin,&ygpu);CHKERRQ(ierr);
@@ -676,7 +676,7 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
         }
         ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
         ierr = VecViennaCLRestoreArrayWrite(yin,&ygpu);CHKERRQ(ierr);
-      } else if (yin->valid_GPU_array == PETSC_VIENNACL_BOTH) {
+      } else if (yin->valid_GPU_array == PETSC_OFFLOAD_BOTH) {
         /* xin and yin are both valid in both places (or yin was unallocated before the earlier call to allocatecheck
            default to copy in GPU (this is an arbitrary choice) */
         ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
@@ -926,7 +926,7 @@ PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin,PetscRandom r)
 
   PetscFunctionBegin;
   ierr = VecSetRandom_SeqViennaCL_Private(xin,r);CHKERRQ(ierr);
-  xin->valid_GPU_array = PETSC_VIENNACL_CPU;
+  xin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -938,7 +938,7 @@ PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
   PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_SeqViennaCL_Private(vin);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_VIENNACL_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -950,7 +950,7 @@ PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_VIENNACL_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -963,7 +963,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_VIENNACL_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -1090,7 +1090,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->duplicate       = VecDuplicate_SeqViennaCL;
 
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
-  V->valid_GPU_array      = PETSC_VIENNACL_GPU;
+  V->valid_GPU_array      = PETSC_OFFLOAD_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -16,6 +16,9 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscBool              is_viennacltype = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
@@ -35,18 +38,28 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   nsends  = to->n;
   indices = to->indices;
   sstarts = to->starts;
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
+  if (is_viennacltype) {
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  } else
+#endif
 #if defined(PETSC_HAVE_VECCUDA)
-  VecCUDAAllocateCheckHost(xin);
-  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
-    if (xin->spptr && ctx->spptr) {
-      ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  {
+    VecCUDAAllocateCheckHost(xin);
+    if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+      if (xin->spptr && ctx->spptr) {
+        ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
+      } else {
+        ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+      }
     }
+    xv = *((PetscScalar**)xin->data);
   }
-  xv = *((PetscScalar**)xin->data);
 #else
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  {
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  }
 #endif
 
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}

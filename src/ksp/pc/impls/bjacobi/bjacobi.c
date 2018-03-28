@@ -797,7 +797,8 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       ierr = VecSetType(bjac->x,VECCUDA);CHKERRQ(ierr);
       ierr = VecSetType(bjac->y,VECCUDA);CHKERRQ(ierr);
     }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
     ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(bjac->x,VECVIENNACL);CHKERRQ(ierr);
@@ -1048,7 +1049,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
         ierr = VecSetType(x,VECCUDA);CHKERRQ(ierr);
         ierr = VecSetType(y,VECCUDA);CHKERRQ(ierr);
       }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
       if (is_gpumatrix) {
         ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
@@ -1247,7 +1249,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = VecSetType(mpjac->xsub,VECMPICUDA);CHKERRQ(ierr);
       ierr = VecSetType(mpjac->ysub,VECMPICUDA);CHKERRQ(ierr);
     }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
     ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(mpjac->xsub,VECMPIVIENNACL);CHKERRQ(ierr);
