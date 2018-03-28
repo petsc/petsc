@@ -175,19 +175,19 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
-    fd.write('cflags_dep="'+self.compilers.dependenciesGenerationFlag.get('C','')+'"\n')
-    fd.write('ldflag_rpath="'+self.setCompilers.CSharedLinkerFlag+'"\n')
+    fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+    fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
+    fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
 
     fd.write('\n')
