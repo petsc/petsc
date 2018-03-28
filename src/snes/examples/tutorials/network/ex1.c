@@ -439,37 +439,41 @@ int main(int argc,char **argv)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Power network: nv %D, ne %D\n",nv,ne);CHKERRQ(ierr);
   genj = 0; loadj = 0;
-  for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_power->compkey_branch,&pfdata->branch[i]);CHKERRQ(ierr);
-  }
+  if (!rank) {
+    for (i = 0; i < ne; i++) {
+      ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_power->compkey_branch,&pfdata->branch[i]);CHKERRQ(ierr);
+    }
 
-  for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_bus,&pfdata->bus[i]);CHKERRQ(ierr);
-    if (pfdata->bus[i].ngen) {
-      for (j = 0; j < pfdata->bus[i].ngen; j++) {
-        ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_gen,&pfdata->gen[genj++]);CHKERRQ(ierr);
+    for (i = 0; i < nv; i++) {
+      ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_bus,&pfdata->bus[i]);CHKERRQ(ierr);
+      if (pfdata->bus[i].ngen) {
+        for (j = 0; j < pfdata->bus[i].ngen; j++) {
+          ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_gen,&pfdata->gen[genj++]);CHKERRQ(ierr);
+        }
       }
-    }
-    if (pfdata->bus[i].nload) {
-      for (j=0; j < pfdata->bus[i].nload; j++) {
-        ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_load,&pfdata->load[loadj++]);CHKERRQ(ierr);
+      if (pfdata->bus[i].nload) {
+        for (j=0; j < pfdata->bus[i].nload; j++) {
+          ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_load,&pfdata->load[loadj++]);CHKERRQ(ierr);
+        }
       }
+      /* Add number of variables */
+      ierr = DMNetworkAddNumVariables(networkdm,vtx[i],2);CHKERRQ(ierr);
     }
-    /* Add number of variables */
-    ierr = DMNetworkAddNumVariables(networkdm,vtx[i],2);CHKERRQ(ierr);
   }
 
   /* ADD VARIABLES AND COMPONENTS FOR THE WATER SUBNETWORK */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Water network: nv %D, ne %D\n",nv,ne);CHKERRQ(ierr);
-  for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_water->compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
-  }
+  if (!rank) {
+    for (i = 0; i < ne; i++) {
+      ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_water->compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
+    }
 
-  for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_water->compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
-    /* Add number of variables */
-    ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
+    for (i = 0; i < nv; i++) {
+      ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_water->compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
+      /* Add number of variables */
+      ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
+    }
   }
 
   /* Set up DM for use */
