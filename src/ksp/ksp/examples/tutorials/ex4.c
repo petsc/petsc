@@ -198,10 +198,11 @@ int main(int argc, char **argv)
 
 
 /*TEST
+   build:
+      requires: cusp
 
    test:
       args: -pc_type none
-      requires: cusp
       TODO: Broken MatSetValuesBatch_SeqAIJCUSP()
 
 TEST*/
