@@ -170,7 +170,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 
 .seealso: PetscDrawSetTitle()
 @*/
-PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
+PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,const char *title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
