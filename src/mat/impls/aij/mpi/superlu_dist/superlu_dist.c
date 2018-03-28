@@ -278,9 +278,9 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
     } else zero++;
   }
   ierr = PetscFree(diagU);CHKERRQ(ierr);
-  *nneg  = neg;
-  *nzero = zero;
-  *npos  = pos;
+  if (nneg)  *nneg  = neg;
+  if (nzero) *nzero = zero;
+  if (npos)  *npos  = pos;
   PetscFunctionReturn(0);
 }
 #endif
