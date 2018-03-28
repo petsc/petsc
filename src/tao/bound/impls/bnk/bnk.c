@@ -139,8 +139,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
               sigma = -tao->trust / bnk->gnorm;
             }
 
-            ierr = MatMult(tao->hessian, tao->gradient, bnk->D);CHKERRQ(ierr);
-            ierr = VecDot(tao->gradient, bnk->D, &prered);CHKERRQ(ierr);
+            ierr = MatMult(tao->hessian, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = VecDot(tao->gradient, tao->stepdirection, &prered);CHKERRQ(ierr);
 
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
@@ -256,8 +256,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
   
-  PetscReal                    gdx, delta;
-  PetscReal                    norm_d = 0.0, e_min;
+  PetscReal                    gdx, delta, e_min;
 
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     kspits;
@@ -303,16 +302,16 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
   ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     ierr = KSPCGSetRadius(tao->ksp,bnk->max_radius);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp, tao->gradient, bnk->D);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;
     tao->ksp_tot_its+=kspits;
-    ierr = KSPCGGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
+    ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
     if (0.0 == tao->trust) {
       /* Radius was uninitialized; use the norm of the direction */
-      if (norm_d > 0.0) {
-        tao->trust = norm_d;
+      if (bnk->dnorm > 0.0) {
+        tao->trust = bnk->dnorm;
 
         /* Modify the radius if it is too large or small */
         tao->trust = PetscMax(tao->trust, bnk->min_radius);
@@ -327,22 +326,22 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
         tao->trust = PetscMin(tao->trust, bnk->max_radius);
 
         ierr = KSPCGSetRadius(tao->ksp,bnk->max_radius);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, bnk->D);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
         tao->ksp_its+=kspits;
         tao->ksp_tot_its+=kspits;
-        ierr = KSPCGGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
+        ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
-        if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
+        if (bnk->dnorm == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
       }
     }
   } else {
-    ierr = KSPSolve(tao->ksp, tao->gradient, bnk->D);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
     tao->ksp_tot_its+=kspits;
   }
-  ierr = VecScale(bnk->D, -1.0);CHKERRQ(ierr);
+  ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
   if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&  (BNK_PC_BFGS == bnk->pc_type) && (bfgsUpdates > 1)) {
     /* Preconditioner is numerically indefinite; reset the
@@ -376,7 +375,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
   }
 
   /* Check for success (descent direction) */
-  ierr = VecDot(bnk->D, tao->gradient, &gdx);CHKERRQ(ierr);
+  ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
   if ((gdx >= 0.0) || PetscIsInfOrNanReal(gdx)) {
     /* Newton step is not descent or direction produced Inf or NaN
        Update the perturbation for next time */
@@ -395,17 +394,17 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
     if (BNK_PC_BFGS != bnk->pc_type) {
       /* We don't have the bfgs matrix around and updated
          Must use gradient direction in this case */
-      ierr = VecCopy(tao->gradient, bnk->D);CHKERRQ(ierr);
-      ierr = VecScale(bnk->D, -1.0);CHKERRQ(ierr);
+      ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
       ++bnk->grad;
       *stepType = BNK_GRADIENT;
     } else {
       /* Attempt to use the BFGS direction */
-      ierr = MatLMVMSolve(bnk->M, tao->gradient, bnk->D);CHKERRQ(ierr);
-      ierr = VecScale(bnk->D, -1.0);CHKERRQ(ierr);
+      ierr = MatLMVMSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       /* Check for success (descent direction) */
-      ierr = VecDot(tao->gradient, bnk->D, &gdx);CHKERRQ(ierr);
+      ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
       if ((gdx >= 0) || PetscIsInfOrNanReal(gdx)) {
         /* BFGS direction is not descent or direction produced not a number
            We can assert bfgsUpdates > 1 in this case because
@@ -422,8 +421,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
         ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
         ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(bnk->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(bnk->M, tao->gradient, bnk->D);CHKERRQ(ierr);
-        ierr = VecScale(bnk->D, -1.0);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
         bfgsUpdates = 1;
         ++bnk->sgrad;
@@ -476,6 +475,179 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal fold, PetscReal fnew, PetscInt stepType, PetscBool *accept)
+{
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+  
+  PetscReal      step, prered, actred, kappa;
+  PetscReal      gdx, tau_1, tau_2, tau_min, tau_max;
+
+  PetscFunctionBegin;
+  /* Update trust region radius */
+  *accept = PETSC_FALSE;
+  switch(bnk->update_type) {
+  case BNK_UPDATE_STEP:
+    if (stepType == BNK_NEWTON) {
+      ierr = TaoLineSearchGetStepLength(tao->linesearch, &step);CHKERRQ(ierr);
+      if (step < bnk->nu1) {
+        /* Very bad step taken; reduce radius */
+        tao->trust = bnk->omega1 * PetscMin(bnk->dnorm, tao->trust);
+      } else if (step < bnk->nu2) {
+        /* Reasonably bad step taken; reduce radius */
+        tao->trust = bnk->omega2 * PetscMin(bnk->dnorm, tao->trust);
+      } else if (step < bnk->nu3) {
+        /*  Reasonable step was taken; leave radius alone */
+        if (bnk->omega3 < 1.0) {
+          tao->trust = bnk->omega3 * PetscMin(bnk->dnorm, tao->trust);
+        } else if (bnk->omega3 > 1.0) {
+          tao->trust = PetscMax(bnk->omega3 * bnk->dnorm, tao->trust);
+        }
+      } else if (step < bnk->nu4) {
+        /*  Full step taken; increase the radius */
+        tao->trust = PetscMax(bnk->omega4 * bnk->dnorm, tao->trust);
+      } else {
+        /*  More than full step taken; increase the radius */
+        tao->trust = PetscMax(bnk->omega5 * bnk->dnorm, tao->trust);
+      }
+    } else {
+      /*  Newton step was not good; reduce the radius */
+      tao->trust = bnk->omega1 * PetscMin(bnk->dnorm, tao->trust);
+    }
+    break;
+
+  case BNK_UPDATE_REDUCTION:
+    if (stepType == BNK_NEWTON) {
+      /*  Get predicted reduction */
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
+      if (prered >= 0.0) {
+        /*  The predicted reduction has the wrong sign.  This cannot */
+        /*  happen in infinite precision arithmetic.  Step should */
+        /*  be rejected! */
+        tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
+      } else {
+        if (PetscIsInfOrNanReal(fnew)) {
+          tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
+        } else {
+          /*  Compute and actual reduction */
+          actred = fold - fnew;
+          prered = -prered;
+          if ((PetscAbsScalar(actred) <= bnk->epsilon) &&
+              (PetscAbsScalar(prered) <= bnk->epsilon)) {
+            kappa = 1.0;
+          } else {
+            kappa = actred / prered;
+          }
+          /*  Accept of reject the step and update radius */
+          if (kappa < bnk->eta1) {
+            /*  Very bad step, rejected */
+            tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
+          } else {
+            /* Accept step here */
+            *accept = PETSC_TRUE;
+            /* Adjust trust radius */
+            if (kappa < bnk->eta2) {
+              /*  Marginal bad step */
+              tao->trust = bnk->alpha2 * PetscMin(tao->trust, bnk->dnorm);
+            } else if (kappa < bnk->eta3) {
+              /*  Reasonable step */
+              if (bnk->alpha3 < 1.0) {
+                tao->trust = bnk->alpha3 * PetscMin(bnk->dnorm, tao->trust);
+              } else if (bnk->alpha3 > 1.0) {
+                tao->trust = PetscMax(bnk->alpha3 * bnk->dnorm, tao->trust);
+              }
+            } else if (kappa < bnk->eta4) {
+              /*  Good step */
+              tao->trust = PetscMax(bnk->alpha4 * bnk->dnorm, tao->trust);
+            } else {
+              /*  Very good step */
+              tao->trust = PetscMax(bnk->alpha5 * bnk->dnorm, tao->trust);
+            }
+          }
+        }
+      }
+    } else {
+      /*  Newton step was not good; reduce the radius */
+      tao->trust = bnk->alpha1 * PetscMin(bnk->dnorm, tao->trust);
+    }
+    break;
+
+  default:
+    if (stepType == BNK_NEWTON) {
+      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
+      if (prered >= 0.0) {
+        /*  The predicted reduction has the wrong sign.  This cannot */
+        /*  happen in infinite precision arithmetic.  Step should */
+        /*  be rejected! */
+        tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
+      } else {
+        if (PetscIsInfOrNanReal(fnew)) {
+          tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
+        } else {
+          actred = fold - fnew;
+          prered = -prered;
+          if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
+            kappa = 1.0;
+          } else {
+            kappa = actred / prered;
+          }
+          
+          ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
+          tau_1 = bnk->theta * gdx / (bnk->theta * gdx - (1.0 - bnk->theta) * prered + actred);
+          tau_2 = bnk->theta * gdx / (bnk->theta * gdx + (1.0 + bnk->theta) * prered - actred);
+          tau_min = PetscMin(tau_1, tau_2);
+          tau_max = PetscMax(tau_1, tau_2);
+
+          if (kappa >= 1.0 - bnk->mu1) {
+            /*  Great agreement */
+            *accept = PETSC_TRUE;
+            if (tau_max < 1.0) {
+              tao->trust = PetscMax(tao->trust, bnk->gamma3 * bnk->dnorm);
+            } else if (tau_max > bnk->gamma4) {
+              tao->trust = PetscMax(tao->trust, bnk->gamma4 * bnk->dnorm);
+            } else {
+              tao->trust = PetscMax(tao->trust, tau_max * bnk->dnorm);
+            }
+          } else if (kappa >= 1.0 - bnk->mu2) {
+            /*  Good agreement */
+            *accept = PETSC_TRUE;
+            if (tau_max < bnk->gamma2) {
+              tao->trust = bnk->gamma2 * PetscMin(tao->trust, bnk->dnorm);
+            } else if (tau_max > bnk->gamma3) {
+              tao->trust = PetscMax(tao->trust, bnk->gamma3 * bnk->dnorm);
+            } else if (tau_max < 1.0) {
+              tao->trust = tau_max * PetscMin(tao->trust, bnk->dnorm);
+            } else {
+              tao->trust = PetscMax(tao->trust, tau_max * bnk->dnorm);
+            }
+          } else {
+            /*  Not good agreement */
+            if (tau_min > 1.0) {
+              tao->trust = bnk->gamma2 * PetscMin(tao->trust, bnk->dnorm);
+            } else if (tau_max < bnk->gamma1) {
+              tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
+            } else if ((tau_min < bnk->gamma1) && (tau_max >= 1.0)) {
+              tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
+            } else if ((tau_1 >= bnk->gamma1) && (tau_1 < 1.0) && ((tau_2 < bnk->gamma1) || (tau_2 >= 1.0))) {
+              tao->trust = tau_1 * PetscMin(tao->trust, bnk->dnorm);
+            } else if ((tau_2 >= bnk->gamma1) && (tau_2 < 1.0) && ((tau_1 < bnk->gamma1) || (tau_2 >= 1.0))) {
+              tao->trust = tau_2 * PetscMin(tao->trust, bnk->dnorm);
+            } else {
+              tao->trust = tau_max * PetscMin(tao->trust, bnk->dnorm);
+            }
+          }
+        }
+      }
+    } else {
+      /*  Newton step was not good; reduce the radius */
+      tao->trust = bnk->gamma1 * PetscMin(bnk->dnorm, tao->trust);
+    }
+    /*  The radius may have been increased; modify if it is too large */
+    tao->trust = PetscMin(tao->trust, bnk->max_radius);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
@@ -486,7 +658,6 @@ static PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);}
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);}
   if (!bnk->W) {ierr = VecDuplicate(tao->solution,&bnk->W);CHKERRQ(ierr);}
-  if (!bnk->D) {ierr = VecDuplicate(tao->solution,&bnk->D);CHKERRQ(ierr);}
   if (!bnk->Xold) {ierr = VecDuplicate(tao->solution,&bnk->Xold);CHKERRQ(ierr);}
   if (!bnk->Gold) {ierr = VecDuplicate(tao->solution,&bnk->Gold);CHKERRQ(ierr);}
   bnk->Diag = 0;
@@ -502,7 +673,6 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(&bnk->D);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->W);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->Gold);CHKERRQ(ierr);
@@ -575,7 +745,6 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)

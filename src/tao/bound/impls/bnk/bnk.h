@@ -9,16 +9,14 @@ Context for bounded Newton-Krylov type optimization algorithms
 
 typedef struct {
   Mat M;
-
-  Vec D;
   Vec W;
 
   Vec Xold;
   Vec Gold;
   Vec Diag;
   
-  /* Scalar values for the solution */
-  PetscReal f, gnorm;
+  /* Scalar values for the solution and step */
+  PetscReal fold, f, gnorm, dnorm;
 
   /* Parameters when updating the perturbation added to the Hessian matrix
      according to the following scheme:
@@ -222,3 +220,4 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscInt*);
+PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscBool*);
