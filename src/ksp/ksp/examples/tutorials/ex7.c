@@ -244,6 +244,19 @@ int main(int argc,char **args)
       args: -ksp_view
 
    test:
+      suffix: viennacl
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse.out
+
+   test:
+      suffix: viennacl_2
+      nsize: 2
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse_2.out
+
+   test:
       suffix: mpiaijcusparse
       requires: veccuda
       args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
