@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = blmvm gpcg bqpip tron pgd bncg
+DIRS     = blmvm gpcg bqpip tron pgd bncg bnk
 
 LOCDIR   = src/tao/bound/impls/
 
