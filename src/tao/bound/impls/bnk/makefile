@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = bnk.c bnls.c
+SOURCEC  = bnk.c bnls.c bntr.c
 SOURCEF  =
 SOURCEH  = bnk.h
 LIBBASE  = libpetsctao

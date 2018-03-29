@@ -54,6 +54,7 @@ J*/
 #define TAOBLMVM    "blmvm"
 #define TAOBNCG     "bncg"
 #define TAOBNLS     "bnls"
+#define TAOBNTR     "bntr"
 #define TAOBQPIP    "bqpip"
 #define TAOGPCG     "gpcg"
 #define TAONM       "nm"
