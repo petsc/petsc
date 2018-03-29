@@ -404,16 +404,16 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
             vec_y = _mm512_setzero_pd();
             ipos = ip[i];
             for (j=0; j<(nz>>3); j++) {
-              vec_idx  = _mm256_load_si256((__m256i const*)&aj[ipos]);
-              vec_vals = _mm512_load_pd(&aa[ipos]);
+              vec_idx  = _mm256_loadu_si256((__m256i const*)&aj[ipos]);
+              vec_vals = _mm512_loadu_pd(&aa[ipos]);
               vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
               vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
               ipos += 8;
             }
             if ((nz&0x07)>2) {
               mask     = (__mmask8)(0xff >> (8-(nz&0x07)));
-              vec_idx  = _mm256_load_si256((__m256i const*)&aj[ipos]);
-              vec_vals = _mm512_load_pd(&aa[ipos]);
+              vec_idx  = _mm256_loadu_si256((__m256i const*)&aj[ipos]);
+              vec_vals = _mm512_loadu_pd(&aa[ipos]);
               vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8);
               vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask);
             } else if ((nz&0x07)==2) {
@@ -438,14 +438,14 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
             vec_j = _mm256_set1_epi32(j);
             for (i=0; i<((isize>>3)<<3); i+=8) {
-              vec_y    = _mm512_load_pd(&yp[i]);
-              vec_ipos = _mm256_load_si256((__m256i const*)&ip[i]);
+              vec_y    = _mm512_loadu_pd(&yp[i]);
+              vec_ipos = _mm256_loadu_si256((__m256i const*)&ip[i]);
               vec_ipos = _mm256_add_epi32(vec_ipos,vec_j);
               vec_idx  = _mm256_i32gather_epi32(aj,vec_ipos,_MM_SCALE_4);
               vec_vals = _mm512_i32gather_pd(vec_ipos,aa,_MM_SCALE_8);
               vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
               vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
-              _mm512_store_pd(&yp[i],vec_y);
+              _mm512_storeu_pd(&yp[i],vec_y);
             }
             for (i=isize-(isize&0x07); i<isize; i++) {
               ipos = ip[i]+j;
