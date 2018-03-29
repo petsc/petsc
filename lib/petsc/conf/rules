@@ -680,6 +680,7 @@ manconcepts:
 manimplementations:
 	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
   for i in docs/manualpages/*/*.html; do \
+          printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .html`; \
           git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
