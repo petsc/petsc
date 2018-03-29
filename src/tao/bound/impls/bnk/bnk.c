@@ -297,19 +297,21 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
   ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
   ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
   
-  /* Extract the inactive sub-system to solve */
+  /* Prepare masked matrices for the inactive set */
   ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
-  ierr = VecGetSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->inactive_step);CHKERRQ(ierr);
-  ierr = VecGetSubVector(tao->gradient, bnk->inactive_idx, &bnk->inactive_gradient);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive);CHKERRQ(ierr);
-
+  ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
+  if (tao->hessian == tao->hessian_pre) {
+    bnk->Hpre_inactive = bnk->H_inactive;
+  } else {
+    ierr = TaoMatGetSubMat(tao->hessian_pre, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->Hpre_inactive);CHKERRQ(ierr);
+  }
+  
   /* Solve the Newton system of equations */
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     ierr = KSPCGSetRadius(tao->ksp,bnk->max_radius);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp, bnk->inactive_gradient, bnk->inactive_step);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;
     tao->ksp_tot_its+=kspits;
@@ -333,7 +335,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
         tao->trust = PetscMin(tao->trust, bnk->max_radius);
 
         ierr = KSPCGSetRadius(tao->ksp,bnk->max_radius);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, bnk->inactive_gradient, bnk->inactive_step);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
         tao->ksp_its+=kspits;
         tao->ksp_tot_its+=kspits;
@@ -343,16 +345,16 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscInt *stepType)
       }
     }
   } else {
-    ierr = KSPSolve(tao->ksp, bnk->inactive_gradient, bnk->inactive_step);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
     tao->ksp_tot_its+=kspits;
   }
-  /* Restore submatrices and subvecs */
+  /* Destroy masked matrices */
+  if (bnk->H_inactive != bnk->Hpre_inactive) { 
+    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr); 
+  }
   ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(tao->gradient, bnk->inactive_idx, &bnk->inactive_gradient);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->inactive_step);CHKERRQ(ierr);
   
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
@@ -704,8 +706,6 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
   }
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->M);CHKERRQ(ierr);
-  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
