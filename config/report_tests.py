@@ -91,7 +91,7 @@ def main():
     parser = optparse.OptionParser(usage="%prog [options]")
     parser.add_option('-d', '--directory', dest='directory',
                       help='Directory containing results of petsc test system',
-                      default=os.path.join(os.environ.get('PETSC_ARCH'),
+                      default=os.path.join(os.environ.get('PETSC_ARCH',''),
                                            'tests','counts'))
     parser.add_option('-m', '--make', dest='make',
                       help='make executable to report in summary',
