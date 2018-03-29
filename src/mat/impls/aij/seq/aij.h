@@ -469,10 +469,10 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 
 PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
 {
-  __m512d           vec_x,vec_y,vec_vals;
-  __m256i           vec_idx;
-  __mmask8          mask;
-  PetscInt          j;
+  __m512d  vec_x,vec_y,vec_vals;
+  __m256i  vec_idx;
+  __mmask8 mask;
+  PetscInt j;
 
   vec_y = _mm512_setzero_pd();
   for (j=0; j<(n>>3); j++) {
