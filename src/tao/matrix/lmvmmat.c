@@ -194,6 +194,44 @@ PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatLMVMSolveInactive(Mat A, Vec b, Vec x)
+{
+  MatLMVMCtx     *shell;
+  Vec            xsub, bsub;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  /* reset RHS and solution vectors */
+  ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
+  ierr = VecSet(shell->Xwork, 0.0);CHKERRQ(ierr);
+  ierr = VecSet(shell->Bwork, 0.0);CHKERRQ(ierr);
+  /* prep the RHS vector */
+  ierr = VecGetSubVector(shell->Bwork, shell->inactive_idx, &bsub);CHKERRQ(ierr);
+  ierr = VecCopy(b, bsub);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(shell->Bwork, shell->inactive_idx, &bsub);CHKERRQ(ierr);
+  /* solve the full system */
+  ierr = MatLMVMSolve(A, shell->Bwork, shell->Xwork);CHKERRQ(ierr);
+  /* extract just the inactive variables */
+  ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xsub);CHKERRQ(ierr);
+  ierr = VecCopy(xsub, x);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xsub);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatLMVMSetInactive(Mat A, IS inactive_idx)
+{
+  MatLMVMCtx     *shell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
+  shell->inactive_idx = inactive_idx;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 {
   PetscBool      isascii;
@@ -914,6 +952,8 @@ PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
   ierr = VecDuplicate(v,&ctx->P);CHKERRQ(ierr);
   ierr = VecDuplicate(v,&ctx->Q);CHKERRQ(ierr);
   ierr = VecDuplicate(v,&ctx->H0_norm);CHKERRQ(ierr);
+  ierr = VecDuplicate(v,&ctx->Xwork);CHKERRQ(ierr);
+  ierr = VecDuplicate(v,&ctx->Bwork);CHKERRQ(ierr);
   ctx->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

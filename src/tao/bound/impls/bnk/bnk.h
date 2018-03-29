@@ -8,12 +8,12 @@ Context for bounded Newton-Krylov type optimization algorithms
 #include <../src/tao/matrix/lmvmmat.h>
 
 typedef struct {
-  Mat M;
-  Vec W;
-
-  Vec Xold;
-  Vec Gold;
-  Vec Diag;
+  Mat H_inactive, Hpre_inactive, M;
+  Vec W, Xwork, Gwork, inactive_work;
+  Vec Xold, Gold, Diag;
+  Vec unprojected_gradient, unprojected_gradient_old;
+  Vec inactive_gradient, inactive_step;
+  IS  inactive_idx;
   
   /* Scalar values for the solution and step */
   PetscReal fold, f, gnorm, dnorm;
