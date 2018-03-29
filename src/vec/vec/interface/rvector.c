@@ -1583,7 +1583,9 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
+#if defined(PETSC_HAVE_VECCUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
       }
     } else if (x->valid_GPU_array == PETSC_OFFLOAD_UNALLOCATED) {
 #if defined(PETSC_HAVE_VIENNACL)
@@ -1593,7 +1595,9 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
+#if defined(PETSC_HAVE_VECCUDA)
         ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
+#endif
       }
     }
 #endif
@@ -1647,7 +1651,9 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
       } else
 #endif
       {
+#if defined(PETSC_HAVE_VECCUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
       }
     }
 #endif
