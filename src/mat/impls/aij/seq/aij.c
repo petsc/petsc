@@ -12,18 +12,6 @@
 
 #if defined(PETSC_HAVE_IMMINTRIN_H)
   #include <immintrin.h>
-
-  #if !defined(_MM_SCALE_8)
-  #define _MM_SCALE_8    8
-  #endif
-
-  #if defined(__AVX512F__)
-    #define AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
-    vec_idx  = _mm256_load_si256((__m256i const*)aj); \
-    vec_vals = _mm512_load_pd(aa); \
-    vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
-    vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y)
-  #endif
 #endif
 
 PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
@@ -1296,6 +1284,46 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
 
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+  #if !defined(_MM_SCALE_8)
+  #define _MM_SCALE_8    8
+  #endif
+
+PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
+{
+  __m512d           vec_x,vec_y,vec_vals;
+  __m256i           vec_idx;
+  __mmask8          mask;
+  PetscInt          j;
+
+  vec_y = _mm512_setzero_pd();
+  for (j=0; j<(n>>3); j++) {
+    vec_idx  = _mm256_load_si256((__m256i const*)aj);
+    vec_vals = _mm512_load_pd(aa);
+    vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+    vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
+    aj += 8; aa += 8;
+  }
+  /* masked load does not work on KNL, it requires avx512vl */
+  if ((n&0x07)>2) {
+    mask     = (__mmask8)(0xff >> (8-(n&0x07)));
+    vec_idx  = _mm256_load_si256((__m256i const*)aj);
+    vec_vals = _mm512_load_pd(aa);
+    vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8);
+    vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask);
+  } else if ((n&0x07)==2) {
+    *sum += aa[0]*x[aj[0]];
+    *sum += aa[1]*x[aj[1]];
+  } else if ((n&0x07)==1) {
+    *sum += aa[0]*x[aj[0]];
+  }
+  if (n>2) *sum += _mm512_reduce_add_pd(vec_y);
+/*
+  for(j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
+*/
+}
+#endif
+
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1308,12 +1336,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscInt          n,i;
   PetscScalar       sum;
   PetscBool         usecprow=a->compressedrow.use;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
-  __m512d           vec_x,vec_y,vec_vals;
-  __m256i           vec_idx;
-  __mmask8          mask;
-  PetscInt          j;
-#endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -1348,32 +1370,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aj          = a->j + ii[i];
       aa          = a->a + ii[i];
       sum         = 0.0;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
-      vec_y       = _mm512_setzero_pd();
-      for (j=0; j<(n>>3); j++) {
-        AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
-        aj += 8; aa += 8;
-      }
-/* masked load does not work on KNL, it requires avx512vl */
-      if ((n&0x07)>2) {
-        mask     = (__mmask8)(0xff >> (8-(n&0x07)));
-        vec_idx  = _mm256_load_si256((__m256i const*)aj);
-        vec_vals = _mm512_load_pd(aa);
-        vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8);
-        vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask);
-      } else if ((n&0x07)==2) {
-        sum += aa[0]*x[aj[0]];
-        sum += aa[1]*x[aj[1]];
-      } else if ((n&0x07)==1) {
-        sum += aa[0]*x[aj[0]];
-      }
-      if (n>2) sum += _mm512_reduce_add_pd(vec_y);
-/*
-      for(j=0;j<(n&0x07);j++) sum += aa[j]*x[aj[j]];
-*/
-#else
       PetscSparseDensePlusDot(sum,x,aa,aj,n);
-#endif
       y[i] = sum;
     }
 #endif

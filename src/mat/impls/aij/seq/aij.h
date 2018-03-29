@@ -452,6 +452,10 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
                                     sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);} \
     if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
+    PetscSparseDensePlusDot_AVX512_Private(&(sum),(r),(xv),(xi),(nnz))
+
 #else
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
     PetscInt __i; \
