@@ -16,6 +16,9 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscBool              is_viennacltype = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
@@ -35,28 +38,28 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   nsends  = to->n;
   indices = to->indices;
   sstarts = to->starts;
-#if defined(PETSC_HAVE_CUSP)
-  VecCUSPAllocateCheckHost(xin);
-  if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
-    if (xin->spptr && ctx->spptr) {
-      ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUSPCopyFromGPU(xin);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
+  if (is_viennacltype) {
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  } else
+#endif
+#if defined(PETSC_HAVE_VECCUDA)
+  {
+    VecCUDAAllocateCheckHost(xin);
+    if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+      if (xin->spptr && ctx->spptr) {
+        ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
+      } else {
+        ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+      }
     }
+    xv = *((PetscScalar**)xin->data);
   }
-  xv = *((PetscScalar**)xin->data);
-#elif defined(PETSC_HAVE_VECCUDA)
-  VecCUDAAllocateCheckHost(xin);
-  if (xin->valid_GPU_array == PETSC_CUDA_GPU) {
-    if (xin->spptr && ctx->spptr) {
-      ierr = VecCUDACopyFromGPUSome_Public(xin,(PetscCUDAIndices)ctx->spptr);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-    }
-  }
-  xv = *((PetscScalar**)xin->data);
 #else
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  {
+    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
+  }
 #endif
 
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
@@ -200,7 +203,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
       /* unpack the data from my shared memory buffer  --- this is the normal backward scatter */
       PETSCMAP1(UnPack)(from->sharedcnt,from->sharedspace,from->sharedspaceindices,yv,addv,bs);
     } else {
-      /* unpack the data from each of my sending partners shared memory buffers --- this is the normal forward scatter */ 
+      /* unpack the data from each of my sending partners shared memory buffers --- this is the normal forward scatter */
       for (i=0; i<from->msize; i++) {
         if (from->sharedspacesoffset && from->sharedspacesoffset[i] > -1) {
           ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][bs*from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
@@ -224,4 +227,3 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
 #undef PETSCMAP1_b
 #undef PETSCMAP1
 #undef BS
-

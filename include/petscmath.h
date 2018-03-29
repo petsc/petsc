@@ -143,10 +143,7 @@ typedef __fp16 PetscReal;
 #if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
-#if defined(PETSC_HAVE_CUSP)
-#define complexlib cusp
-#include <cusp/complex.h>
-#elif defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
+#if defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
 /* complex headers in thrust only available in CUDA 7.0 and above */
 #define complexlib thrust
 #include <thrust/complex.h>

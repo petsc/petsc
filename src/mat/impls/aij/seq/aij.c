@@ -1487,13 +1487,6 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  /*
-  ierr = VecView(xx,0);CHKERRQ(ierr);
-  ierr = VecView(zz,0);CHKERRQ(ierr);
-  ierr = MatView(A,0);CHKERRQ(ierr);
-  */
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -3884,7 +3877,7 @@ M*/
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSP, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes: Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -4596,7 +4589,7 @@ PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
   PetscFunctionReturn(0);
 }
 
-  
+
 /*@C
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential AIJ matrices
 
@@ -4762,4 +4755,3 @@ noinsert:;
   }
   PetscFunctionReturnVoid();
 }
-

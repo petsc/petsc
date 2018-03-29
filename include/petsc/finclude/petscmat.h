@@ -82,9 +82,6 @@
 #define MATAIJCRL          'aijcrl'
 #define MATSEQAIJCRL       'seqaijcrl'
 #define MATMPIAIJCRL       'mpiaijcrl'
-#define MATAIJCUSP         'aijcusp'
-#define MATSEQAIJCUSP      'seqaijcusp'
-#define MATMPIAIJCUSP      'mpiaijcusp'
 #define MATAIJCUSPARSE     'aijcusparse'
 #define MATSEQAIJCUSPARSE  'seqaijcusparse'
 #define MATMPIAIJCUSPARSE  'mpiaijcusparse'
@@ -167,13 +164,10 @@
 #define MATSOLVERCUSPARSE        'cusparse'
 
 !
-! GPU Storage Formats for CUSP and CUSPARSE
+! GPU Storage Formats for CUSPARSE
 !
 #define MatCUSPARSEStorageFormat PetscEnum
 #define MatCUSPARSEFormatOperation PetscEnum
-
-#define MatCUSPStorageFormat PetscEnum
-#define MatCUSPFormatOperation PetscEnum
 
 !
 ! sparsity reducing ordering for STRUMPACK

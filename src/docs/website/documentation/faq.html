@@ -439,8 +439,8 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
 
       The <a href="https://bitbucket.org/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
       GPUs. See <a href="http://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
-      more information. PETSc has Vec classes VECCUSP and VECVIENNACL which perform almost all
-      the vector operations on the GPU. The Mat classes AIJCUSP and AIJVIENNACL perform
+      more information. PETSc has Vec classes VECCUDA and VECVIENNACL which perform almost all
+      the vector operations on the GPU. The Mat classes AIJCUSPARSE and AIJVIENNACL perform
       matrix-vector products on the GPU but do not have matrix assembly on the
       GPU yet. Both of these classes run in parallel with MPI. All KSP methods,
       except KSPIBCGS, run all their vector operations on the GPU thus, for
@@ -450,7 +450,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
-      <h3><a name="precision">Can I run PETSc with exended precision?</a></h3>
+      <h3><a name="precision">Can I run PETSc with extended precision?</a></h3>
 
       Yes, with gcc 4.6 and later (and gfortran 4.6 and later)
       <code>./configure</code> PETSc using the options
@@ -635,7 +635,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
 </pre></li>
 
       <p>
-        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make test then works or speaking with your system adminstrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis 
+        The machine has a funky network configuration and for some reason MPICH is unable to communicate between processes with the socket connections it has established. This can happen even if you are running MPICH on just one machine. Often you will find that ping `hostname` fails with this network configuration; that is processes on the machine cannot even connect to the same machine. You can try completely disconnecting your machine from the network and see if make test then works or speaking with your system adminstrator. You can also use the ./configure options --download-mpich --download-mpich-device=ch3:nemesis
       </p>
 
       <hr>
@@ -990,7 +990,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <p>
        To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
-       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function. 
+       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function.
        See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
       </p>
 
@@ -1211,7 +1211,7 @@ PETSC_COMM_WORLD = NewComm;
      <h3><a name="customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></h3>
 
      You need to call <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
-      compute the     appropriate norm on the resulting residual. Note that depending on the 
+      compute the     appropriate norm on the resulting residual. Note that depending on the
       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
       norm as provided by the method. See also
       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
