@@ -812,8 +812,8 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   At each iteration, the BNK method solves the symmetric
   system of equations to obtain the step diretion dk:
               Hk dk = -gk
-  at which point the step can be globalized either through trust-region 
-  methods, or a line search, or a heuristic mixture of both.
+  for free variables only. The step can be globalized either through 
+  trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
 + -tao_BNK_pc_type - "none","ahess","bfgs","petsc"
@@ -862,12 +862,6 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-PetscErrorCode TaoComputeBounds_BNK(Tao tao, Vec XL, Vec XU, void *ctx)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode TaoCreate_BNK(Tao tao)
 {
   TAO_BNK        *bnk;
@@ -881,7 +875,6 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   tao->ops->view = TaoView_BNK;
   tao->ops->setfromoptions = TaoSetFromOptions_BNK;
   tao->ops->destroy = TaoDestroy_BNK;
-  tao->ops->computebounds = TaoComputeBounds_BNK;
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;

@@ -3,11 +3,11 @@
 
 /*
  Implements Newton's Method with a line search approach for solving
- unconstrained minimization problems.  A More'-Thuente line search
- is used to guarantee that the bfgs preconditioner remains positive
+ bound constrained minimization problems. A projected More'-Thuente line 
+ search is used to guarantee that the bfgs preconditioner remains positive
  definite.
 
- The method can shift the Hessian matrix.  The shifting procedure is
+ The method can shift the Hessian matrix. The shifting procedure is
  adapted from the PATH algorithm for solving complementarity
  problems.
 
