@@ -1037,7 +1037,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
                                               '-@echo "========================================="'])
     else:
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
                                               '-@echo "========================================="'])
       return
 

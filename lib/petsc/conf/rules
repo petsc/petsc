@@ -8,7 +8,7 @@ chk_petscdir:
           printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make test             ";\
+          echo "Ignore this if you are running make check             ";\
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
         fi
 
