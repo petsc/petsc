@@ -189,6 +189,15 @@ static PetscErrorCode VecRestoreArray_Node(Vec x,PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecGetArrayRead_Node(Vec x,const PetscScalar **a)
+{
+  Vec_Node       *s = (Vec_Node*)x->data;
+
+  PetscFunctionBegin;
+  *a = s->array;
+  PetscFunctionReturn(0);
+}
+
 /* This routine prevents VecRestoreArrayRead() calls VecRestoreArray_Node(), which increaments s->array[-1] */
 static PetscErrorCode VecRestoreArrayRead_Node(Vec x,const PetscScalar **a)
 {
@@ -260,7 +269,7 @@ static struct _VecOps DvOps = { VecDuplicate_Node, /* 1 */
                                 0,
                                 0,
                                 0,
-                                0,
+                                VecGetArrayRead_Node,
                                 VecRestoreArrayRead_Node,
                                 VecStrideSubSetGather_Default,
                                 VecStrideSubSetScatter_Default,
