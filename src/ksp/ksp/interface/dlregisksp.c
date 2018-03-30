@@ -46,8 +46,7 @@ PetscErrorCode  PCFinalizePackage(void)
 PetscErrorCode  PCInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -80,23 +79,20 @@ PetscErrorCode  PCInitializePackage(void)
   ierr = PetscLogEventRegister("KSPSolve_FS_Low",  KSP_CLASSID,&KSP_Solve_FS_L);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(PC_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("pc",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PC_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(PC_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("pc",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(PC_CLASSID);CHKERRQ(ierr);}
   }
   /* Register data */
   ierr = PetscObjectComposedDataRegister(&PetscMGLevelId);CHKERRQ(ierr);
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PCFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -149,8 +145,7 @@ PetscErrorCode  KSPFinalizePackage(void)
 PetscErrorCode  KSPInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg,cls;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -170,23 +165,27 @@ PetscErrorCode  KSPInitializePackage(void)
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve);CHKERRQ(ierr);
-  
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(KSP_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("ksp",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(KSP_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscInfoDeactivateClass(DMKSP_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("kspguess",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscInfoDeactivateClass(KSPGUESS_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(KSP_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("ksp",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(KSP_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscLogEventDeactivateClass(DMKSP_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("kspguess",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscLogEventDeactivateClass(KSPGUESS_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(KSPFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
