@@ -742,6 +742,85 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    /* Plot cells */
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    if (dim == 3 || !useNumbers) {
+      for (e = eStart; e < eEnd; ++e) {
+        const PetscInt *cone;
+
+        color = colors[rank%numColors];
+        for (l = 0; l < numLabels; ++l) {
+          PetscInt val;
+          ierr = DMGetLabelValue(dm, names[l], e, &val);CHKERRQ(ierr);
+          if (val >= 0) {color = lcolors[l%numLColors]; break;}
+        }
+        ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] (%D_%d) -- (%D_%d);\n", color, cone[0], rank, cone[1], rank);CHKERRQ(ierr);
+      }
+    } else {
+      for (c = cStart; c < cEnd; ++c) {
+        PetscInt *closure = NULL;
+        PetscInt  closureSize, firstPoint = -1;
+
+        ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
+        for (p = 0; p < closureSize*2; p += 2) {
+          const PetscInt point = closure[p];
+
+          if ((point < vStart) || (point >= vEnd)) continue;
+          if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%D_%d)", point, rank);CHKERRQ(ierr);
+          if (firstPoint < 0) firstPoint = point;
+        }
+        /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%d);\n", firstPoint, rank);CHKERRQ(ierr);
+        ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      double    ccoords[3] = {0.0, 0.0, 0.0};
+      PetscBool isLabeled  = PETSC_FALSE;
+      PetscInt *closure    = NULL;
+      PetscInt  closureSize, dof, d, n = 0;
+
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\path (");CHKERRQ(ierr);
+      for (p = 0; p < closureSize*2; p += 2) {
+        const PetscInt point = closure[p];
+        PetscInt       off;
+
+        if ((point < vStart) || (point >= vEnd)) continue;
+        ierr = PetscSectionGetDof(coordSection, point, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(coordSection, point, &off);CHKERRQ(ierr);
+        for (d = 0; d < dof; ++d) {
+          tcoords[d] = (double) (scale*PetscRealPart(coords[off+d]));
+          tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
+        }
+        /* Rotate coordinates since PGF makes z point out of the page instead of up */
+        if (dof == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
+        for (d = 0; d < dof; ++d) {ccoords[d] += tcoords[d];}
+        ++n;
+      }
+      for (d = 0; d < dof; ++d) {ccoords[d] /= n;}
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) {
+        if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", ccoords[d]);CHKERRQ(ierr);
+      }
+      color = colors[rank%numColors];
+      for (l = 0; l < numLabels; ++l) {
+        PetscInt val;
+        ierr = DMGetLabelValue(dm, names[l], c, &val);CHKERRQ(ierr);
+        if (val >= 0) {color = lcolors[l%numLColors]; isLabeled = PETSC_TRUE; break;}
+      }
+      if (useNumbers) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%d) [draw,shape=circle,color=%s] {%D};\n", c, rank, color, c);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%d) [fill,inner sep=%dpt,shape=circle,color=%s] {};\n", c, rank, !isLabeled ? 1 : 2, color);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     /* Plot edges */
     if (depth > 1) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     if (dim < 3 && useNumbers) {
@@ -759,7 +838,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
         for (d = 0; d < dof; ++d) {
-          tcoords[d] = (double) (scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
+          tcoords[d] = (double) (scale*0.5*PetscRealPart(coords[offA+d]+coords[offB+d]));
           tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
         }
         /* Rotate coordinates since PGF makes z point out of the page instead of up */
@@ -779,41 +858,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "(0,0);\n");CHKERRQ(ierr);
-    }
-    /* Plot cells */
-    if (dim == 3 || !useNumbers) {
-      for (e = eStart; e < eEnd; ++e) {
-        const PetscInt *cone;
-
-        color = colors[rank%numColors];
-        for (l = 0; l < numLabels; ++l) {
-          PetscInt val;
-          ierr = DMGetLabelValue(dm, names[l], e, &val);CHKERRQ(ierr);
-          if (val >= 0) {color = lcolors[l%numLColors]; break;}
-        }
-        ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] (%D_%d) -- (%D_%d);\n", color, cone[0], rank, cone[1], rank);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      for (c = cStart; c < cEnd; ++c) {
-        PetscInt *closure = NULL;
-        PetscInt  closureSize, firstPoint = -1;
-
-        ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
-        for (p = 0; p < closureSize*2; p += 2) {
-          const PetscInt point = closure[p];
-
-          if ((point < vStart) || (point >= vEnd)) continue;
-          if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%D_%d)", point, rank);CHKERRQ(ierr);
-          if (firstPoint < 0) firstPoint = point;
-        }
-        /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%d);\n", firstPoint, rank);CHKERRQ(ierr);
-        ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
