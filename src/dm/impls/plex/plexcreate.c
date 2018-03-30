@@ -2197,6 +2197,12 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
                     specified by a PetscSection object. Ownership in the global representation is determined by
                     ownership of the underlying DMPlex points. This is specified by another PetscSection object.
 
+  Options Database Keys:
++ -dm_view :mesh.tex:ascii_latex - View the mesh in LaTeX/TikZ
+. -dm_plex_view_scale <num>      - Scale the TikZ
+- -dm_plex_print_fem <num>       - View FEM assembly information, such as element vectors and matrices
+
+
   Level: intermediate
 
 .seealso: DMType, DMPlexCreate(), DMCreate(), DMSetType()

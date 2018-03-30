@@ -3448,6 +3448,9 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
   Output Parameter:
 . section - The PetscSection
 
+  Options Database Keys:
+. -dm_petscsection_view - View the Section created by the DM
+
   Level: intermediate
 
   Note: This gets a borrowed reference, so the user should not destroy this PetscSection.

@@ -1613,6 +1613,22 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  PCPATCH = "patch" - A PC object that encapsulates flexible definition of blocks for overlapping and non-overlapping
+                      small block additive and multiplicative preconditioners. Block definition is based on topology from
+                      a DM and equation numbering from a PetscSection.
+
+  Options Database Keys:
++ -pc_patch_cells_view   - Views the process local cell numbers for each patch
+. -pc_patch_points_view  - Views the process local mesh point numbers for each patch
+. -pc_patch_g2l_view     - Views the map between global dofs and patch local dofs for each patch
+. -pc_patch_patches_view - Views the global dofs associated with each patch and its boundary
+- -pc_patch_sub_mat_view - Views the matrix associated with each patch
+
+  Level: intermediate
+
+.seealso: PCType, PCCreate(), PCSetType()
+M*/
 PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
 {
   PC_PATCH      *patch;
