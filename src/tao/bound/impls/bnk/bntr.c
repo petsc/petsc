@@ -14,7 +14,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
 
-  PetscReal                    oldTrust;
+  PetscReal                    oldTrust, prered, actred, stepNorm;
   PetscBool                    stepAccepted = PETSC_TRUE;
   PetscInt                     stepType;
   
@@ -73,10 +73,31 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old);CHKERRQ(ierr);
     
-    /* Test the new step for acceptance */
+    /* Temporarily accept the step and project it into the bounds */
     ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);
+    ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+    
+    /* Check if the projection changed the step direction */
+    ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
+    ierr = VecAXPBY(tao->stepdirection, -1.0, 1.0, bnk->Xold);CHKERRQ(ierr);
+    ierr = VecNorm(tao->stepdirection, NORM_2, &stepNorm);CHKERRQ(ierr);
+    if (stepNorm != bnk->dnorm) {
+      /* Projection changed the step, so we have to adjust trust radius and recompute predicted reduction */
+      bnk->dnorm = stepNorm;
+      tao->trust = bnk->dnorm;
+      ierr = MatMult(tao->hessian, tao->stepdirection, bnk->Xwork);CHKERRQ(ierr);
+      ierr = VecAYPX(bnk->Xwork, -0.5, tao->gradient);CHKERRQ(ierr);
+      ierr = VecDot(bnk->Xwork, tao->stepdirection, &prered);
+    } else {
+      /* Step did not change, so we can just recover the pre-computed prediction */
+      ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);
+    }
+    prered = -prered;
+    
+    /* Compute the actual reduction and update the trust radius */
     ierr = TaoComputeObjective(tao, tao->solution, &bnk->f);CHKERRQ(ierr);
-    ierr = TaoBNKUpdateTrustRadius(tao, bnk->fold, bnk->f, stepType, &stepAccepted);CHKERRQ(ierr);
+    actred = bnk->fold - bnk->f;
+    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &stepAccepted);CHKERRQ(ierr);
     
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */

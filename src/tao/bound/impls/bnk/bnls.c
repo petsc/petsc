@@ -21,7 +21,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    f_full, gdx;
+  PetscReal                    f_full, gdx, prered, actred;
   PetscReal                    step = 1.0;
   PetscReal                    delta;
   PetscReal                    e_min;
@@ -29,7 +29,6 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscBool                    trustAccept;
   PetscInt                     stepType;
   PetscInt                     bfgsUpdates = 0;
-  PetscInt                     needH = 1;
   
   PetscFunctionBegin;
   /*   Project the current point onto the feasible set */
@@ -217,12 +216,14 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     
     /* update trust radius */
     ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full);CHKERRQ(ierr);
-    ierr = TaoBNKUpdateTrustRadius(tao, bnk->fold, f_full, stepType, &trustAccept);CHKERRQ(ierr);
+    ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);
+    prered = -prered;
+    actred = bnk->fold - f_full;
+    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &trustAccept);CHKERRQ(ierr);
 
     /*  Check for termination */
     ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
-    needH = 1;
     ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);

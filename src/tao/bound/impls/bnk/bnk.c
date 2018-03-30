@@ -482,12 +482,12 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal fold, PetscReal fnew, PetscInt stepType, PetscBool *accept)
+PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actred, PetscInt stepType, PetscBool *accept)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
   
-  PetscReal      step, prered, actred, kappa;
+  PetscReal      step, kappa;
   PetscReal      gdx, tau_1, tau_2, tau_min, tau_max;
 
   PetscFunctionBegin;
@@ -525,21 +525,16 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal fold, PetscReal fnew, 
 
   case BNK_UPDATE_REDUCTION:
     if (stepType == BNK_NEWTON) {
-      /* Get predicted reduction */
-      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      if (prered >= 0.0) {
+      if (prered < 0.0) {
         /* The predicted reduction has the wrong sign.  This cannot
            happen in infinite precision arithmetic.  Step should
            be rejected! */
         tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
       }
       else {
-        if (PetscIsInfOrNanReal(fnew)) {
+        if (PetscIsInfOrNanReal(actred)) {
           tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
         } else {
-          /* Compute and actual reduction */
-          actred = fold - fnew;
-          prered = -prered;
           if ((PetscAbsScalar(actred) <= bnk->epsilon) &&
               (PetscAbsScalar(prered) <= bnk->epsilon)) {
             kappa = 1.0;
@@ -583,18 +578,15 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal fold, PetscReal fnew, 
 
   default:
     if (stepType == BNK_NEWTON) {
-      ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-      if (prered >= 0.0) {
+      if (prered < 0.0) {
         /*  The predicted reduction has the wrong sign.  This cannot */
         /*  happen in infinite precision arithmetic.  Step should */
         /*  be rejected! */
         tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
       } else {
-        if (PetscIsInfOrNanReal(fnew)) {
+        if (PetscIsInfOrNanReal(actred)) {
           tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
         } else {
-          actred = fold - fnew;
-          prered = -prered;
           if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
             kappa = 1.0;
           } else {
