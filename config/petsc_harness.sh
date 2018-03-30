@@ -118,6 +118,10 @@ function petsc_testrun() {
       cmd="$1 2>&1 | cat > $2"
     fi
   fi
+  # disable job_control on cygwin
+  if [[ `uname` =~ ^CYGWIN ]] ; then
+      job_control=false
+  fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
   if $job_control; then
