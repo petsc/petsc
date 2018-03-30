@@ -2147,13 +2147,18 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) Jac, MATSHELL, &isShell);CHKERRQ(ierr);
+  if (isShell) {
+    JacActionCtx *jctx;
+
+    ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
+    ierr = VecCopy(X, jctx->u);CHKERRQ(ierr);
+  }
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatISP);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
-  if (isMatISP) {
-    ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);
-  }
+  if (isMatISP) {ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);}
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
@@ -2250,9 +2255,8 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
       }
     }
   }
-  if (hasDyn) {
-    for (c = 0; c < (cEnd - cStart)*totDim*totDim; ++c) elemMat[c] += X_tShift*elemMatD[c];
-  }
+  /*   Add contribution from X_t */
+  if (hasDyn) {for (c = 0; c < (cEnd - cStart)*totDim*totDim; ++c) elemMat[c] += X_tShift*elemMatD[c];}
   if (hasFV) {
     PetscClassId id;
     PetscFV      fv;
@@ -2281,6 +2285,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
     /* No allocated space for FV stuff, so ignore the zero entries */
     ierr = MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
   }
+  /* Insert values into matrix */
   isMatIS = PETSC_FALSE;
   if (hasPrec && hasJac) {
     ierr = PetscObjectTypeCompare((PetscObject) JacP, MATIS, &isMatIS);CHKERRQ(ierr);
@@ -2322,38 +2327,26 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
       }
     }
   }
+  /* Cleanup */
   if (hasFV) {ierr = MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE);CHKERRQ(ierr);}
-  if (sizeof(PetscFECellGeom) % sizeof(PetscScalar)) {
-    ierr = PetscFree(cgeom);CHKERRQ(ierr);
-  } else {
-    cgeom = NULL;
-  }
+  if (sizeof(PetscFECellGeom) % sizeof(PetscScalar)) {ierr = PetscFree(cgeom);CHKERRQ(ierr);}
+  else                                               {cgeom = NULL;}
   ierr = VecRestoreArray(cellgeom, &cgeomScal);CHKERRQ(ierr);
   ierr = PetscFree5(u,u_t,elemMat,elemMatP,elemMatD);CHKERRQ(ierr);
   if (dmAux) {
     ierr = PetscFree(a);CHKERRQ(ierr);
     ierr = DMDestroy(&plex);CHKERRQ(ierr);
   }
+  /* Compute boundary integrals */
   ierr = DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, user);CHKERRQ(ierr);
+  /* Assemble matrix */
   if (hasJac && hasPrec) {
     ierr = MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (mesh->printFEM) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "%s:\n", name);CHKERRQ(ierr);
-    ierr = MatChop(JacP, 1.0e-10);CHKERRQ(ierr);
-    ierr = MatView(JacP, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   ierr = PetscLogEventEnd(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) Jac, MATSHELL, &isShell);CHKERRQ(ierr);
-  if (isShell) {
-    JacActionCtx *jctx;
-
-    ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
-    ierr = VecCopy(X, jctx->u);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
