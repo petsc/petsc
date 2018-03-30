@@ -1450,6 +1450,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 static PetscErrorCode hypre_array_destroy(void *ptr)
 {
    PetscFunctionBegin;
-   hypre_TFree(ptr);
+   hypre_TFree(ptr,HYPRE_MEMORY_HOST);
    PetscFunctionReturn(0);
 }
