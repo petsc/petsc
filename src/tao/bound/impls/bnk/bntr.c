@@ -109,15 +109,15 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
       ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(bnk->Gold, tao->gradient);CHKERRQ(ierr);
       ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
-      if (oldTrust == tao->trust == bnk->min_radius) {
-        /* Can't shrink trust radius any further, so we have to terminate */
+      if (oldTrust == tao->trust) {
+        /* Can't change the radius anymore so just terminate */
         tao->reason = TAO_DIVERGED_TR_REDUCTION;
       }
     }
 
     /*  Check for termination */
-    ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
+    ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,tao->trust);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
