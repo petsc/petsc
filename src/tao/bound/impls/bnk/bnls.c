@@ -240,6 +240,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
   tao->ops->solve = TaoSolve_BNLS;
   
   bnk = (TAO_BNK *)tao->data;
-  bnk->update_type = BNK_UPDATE_STEP;
+  bnk->update_type = BNK_UPDATE_STEP; /* trust region updates based on line search step length */
   PetscFunctionReturn(0);
 }

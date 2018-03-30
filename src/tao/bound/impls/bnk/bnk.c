@@ -802,7 +802,7 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 /*MC
   TAOBNK - Shared base-type for Bounded Newton-Krylov type algorithms.
-  At each iteration, the BNK method solves the symmetric
+  At each iteration, the BNK methods solve the symmetric
   system of equations to obtain the step diretion dk:
               Hk dk = -gk
   for free variables only. The step can be globalized either through 
@@ -869,12 +869,13 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BNK;
   tao->ops->destroy = TaoDestroy_BNK;
 
-  /* Override default settings (unless already changed) */
+  /*  Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;
   if (!tao->trust0_changed) tao->trust0 = 100.0;
 
   tao->data = (void*)bnk;
-
+  
+  /*  Hessian shifting parameters */
   bnk->sval   = 0.0;
   bnk->imin   = 1.0e-4;
   bnk->imax   = 1.0e+2;

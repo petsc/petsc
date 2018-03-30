@@ -5,10 +5,6 @@
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
 
- The method can shift the Hessian matrix. The shifting procedure is
- adapted from the PATH algorithm for solving complementarity
- problems.
-
  The linear system solve should be done with a conjugate gradient
  method, although any method can be used.
 */
@@ -47,6 +43,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    
     if (stepAccepted) { 
       tao->niter++;
       tao->ksp_its=0;
@@ -82,7 +79,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     ierr = TaoBNKUpdateTrustRadius(tao, bnk->fold, bnk->f, stepType, &stepAccepted);CHKERRQ(ierr);
     
     if (stepAccepted) {
-      /* Step is good, evaluate gradient and project it */
+      /* Step is good, evaluate the gradient and the hessian */
       ierr = TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     } else {
@@ -91,7 +88,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
       ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(bnk->Gold, tao->gradient);CHKERRQ(ierr);
       ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
-      if (oldTrust == tao->trust) {
+      if (oldTrust == tao->trust == bnk->min_radius) {
         /* Can't shrink trust radius any further, so we have to terminate */
         tao->reason = TAO_DIVERGED_TR_REDUCTION;
       }
@@ -117,7 +114,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
   tao->ops->solve=TaoSolve_BNTR;
   
   bnk = (TAO_BNK *)tao->data;
-  bnk->update_type = BNK_UPDATE_REDUCTION;
-  bnk->sval = 0.0;
+  bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
+  bnk->sval = 0.0; /* disable Hessian shifting */
   PetscFunctionReturn(0);
 }
