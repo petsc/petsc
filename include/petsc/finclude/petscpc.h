@@ -73,6 +73,7 @@
 #define PCBICGSTABCUSP 'bicgstabcusp'
 #define PCAINVCUSP 'ainvcusp'
 #define PCBDDC 'bddc'
+#define PCPATCH 'patch'
 
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum
