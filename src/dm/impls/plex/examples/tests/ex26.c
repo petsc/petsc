@@ -14,7 +14,7 @@ static char help[] = "Test FEM layout with DM and ExodusII storage\n\n";
 int main(int argc, char **argv) {
   DM                dm, dmU, dmA, dmS, dmUA, dmUA2, *dmList;
   Vec               X, U, A, S, UA, UA2;
-  IS                isU, isA, isS, isUA, *isList;
+  IS                isU, isA, isS, isUA;
   PetscSection      section;
   const PetscInt    fieldU = 0;
   const PetscInt    fieldA = 2;
@@ -280,18 +280,16 @@ int main(int argc, char **argv) {
   ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2,&dmList,2,&isList);CHKERRQ(ierr);
+  ierr = PetscMalloc(2,&dmList);CHKERRQ(ierr);
   dmList[0] = dmU;
   dmList[1] = dmA;
-  isList[0] = isU;
-  isList[1] = isA;
   /* We temporarily disable dmU->useNatural to test that we can reconstruct the 
      NaturaltoGlobal SF from any of the dm in dms
   */
   dmU->useNatural = PETSC_FALSE;
-  ierr = DMCreateSuperDM(dmList,2,&isList,&dmUA2);
+  ierr = DMCreateSuperDM(dmList,2,PETSC_NULL,&dmUA2);
   dmU->useNatural = PETSC_TRUE;
-  ierr = PetscFree2(dmList,isList);CHKERRQ(ierr);
+  ierr = PetscFree(dmList);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm,   &X);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmU,  &U);CHKERRQ(ierr);
