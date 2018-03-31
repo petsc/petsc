@@ -5,15 +5,12 @@ class VecType(object):
     MPI        = S_(VECMPI)
     STANDARD   = S_(VECSTANDARD)
     SHARED     = S_(VECSHARED)
-    SEQCUSP    = S_(VECSEQCUSP)
-    MPICUSP    = S_(VECMPICUSP)
-    CUSP       = S_(VECCUSP)
     SEQVIENNACL= S_(VECSEQVIENNACL)
     MPIVIENNACL= S_(VECMPIVIENNACL)
     VIENNACL   = S_(VECVIENNACL)
-    SEQCUSP    = S_(VECSEQCUDA)
-    MPICUSP    = S_(VECMPICUDA)
-    CUSP       = S_(VECCUDA)
+    SEQCUDA    = S_(VECSEQCUDA)
+    MPICUDA    = S_(VECMPICUDA)
+    CUDA       = S_(VECCUDA)
     NEST       = S_(VECNEST)
 
 class VecOption(object):

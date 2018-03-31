@@ -7,9 +7,6 @@ cdef extern from * nogil:
     PetscVecType VECMPI
     PetscVecType VECSTANDARD
     PetscVecType VECSHARED
-    PetscVecType VECSEQCUSP
-    PetscVecType VECMPICUSP
-    PetscVecType VECCUSP
     PetscVecType VECNEST
     PetscVecType VECSEQVIENNACL
     PetscVecType VECMPIVIENNACL

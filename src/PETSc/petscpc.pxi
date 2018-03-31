@@ -37,10 +37,6 @@ cdef extern from * nogil:
     PetscPCType PCREDISTRIBUTE
     PetscPCType PCSVD
     PetscPCType PCGAMG
-    PetscPCType PCSACUSP
-    PetscPCType PCSACUSPPOLY
-    PetscPCType PCBICGSTABCUSP
-    PetscPCType PCAINVCUSP
     PetscPCType PCCHOWILUVIENNACL
     PetscPCType PCROWSCALINGVIENNACL
     PetscPCType PCBDDC

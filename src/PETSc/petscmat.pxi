@@ -12,9 +12,6 @@ cdef extern from * nogil:
     PetscMatType     MATAIJCRL
     PetscMatType       MATSEQAIJCRL
     PetscMatType       MATMPIAIJCRL
-    PetscMatType     MATAIJCUSP
-    PetscMatType       MATSEQAIJCUSP
-    PetscMatType       MATMPIAIJCUSP
     PetscMatType     MATAIJCUSPARSE
     PetscMatType       MATSEQAIJCUSPARSE
     PetscMatType       MATMPIAIJCUSPARSE
