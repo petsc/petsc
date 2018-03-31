@@ -5,7 +5,7 @@
 #include <petscoptions.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;

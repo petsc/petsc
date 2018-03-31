@@ -154,10 +154,11 @@ PetscErrorCode  VecInitializePackage(void)
 
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
+  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
   VecPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Vector Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
+
   /* Register Constructors */
   ierr = VecRegisterAll();CHKERRQ(ierr);
   /* Register Events */

@@ -15,6 +15,9 @@
 PETSC_EXTERN PetscBool VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 
+PETSC_EXTERN PetscBool VecScatterRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecScatterRegisterAll(void);
+
 /* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;
@@ -188,10 +191,10 @@ PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/re
 
 typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
                VEC_SCATTER_MPI_GENERAL,VEC_SCATTER_MPI_TOALL,
-               VEC_SCATTER_MPI_TOONE} VecScatterType;
+               VEC_SCATTER_MPI_TOONE} VecScatterFormat;
 
 #define VECSCATTER_IMPL_HEADER \
-      VecScatterType type;
+      VecScatterFormat format;
 
 typedef struct {
   VECSCATTER_IMPL_HEADER
@@ -263,11 +266,11 @@ typedef struct {
   MPI_Datatype           *types;
 #endif
   PetscBool              use_window;    /* these uses windows for communication across all MPI processes */
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   MPI_Win                window;
   PetscInt               *winstarts;    /* displacements in the processes I am putting to */
 #endif
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)  /* these uses windows for communication only within each node */
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
   PetscScalar            **sharedspaces;            /* [msize] space other processes put data to be read from this processes. */
@@ -275,11 +278,12 @@ typedef struct {
   PetscInt               *sharedspacestarts;        /* [msize+1] for each shared memory partner this maps to the part of sharedspaceindices of that partner */
   PetscInt               *sharedspaceindices;       /* [] for each shared memory partner contains indices where values are to be copied to */
   MPI_Win                sharedwin;                 /* Window that owns sharedspace */
+  PetscInt               notdone;                   /* used by VecScatterEndMPI3Node() */
 #endif
 } VecScatter_MPI_General;
 
 
-PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterType*,VecScatterType*);
+PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterFormat*,VecScatterFormat*);
 PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
 
 typedef struct _VecScatterOps *VecScatterOps;
@@ -304,10 +308,15 @@ struct _p_VecScatter {
   PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
   void           *fromdata,*todata;
   void           *spptr;
-  PetscBool      mpi3;                 /* MPI3 shared memory is used. Default is 'false' */
+  PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */
+  Vec            to_v,from_v;          /* used in VecScatterCreate() */
+  IS             to_is,from_is;        /* used in VecScatterCreate() */
 };
 
-PETSC_EXTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
+PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);

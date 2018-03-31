@@ -28,4 +28,6 @@
 #define VECVIENNACL    'viennacl'
 #define VECNEST 'nest'
 
+#define VecScatterType character*(80)
+
 #endif
