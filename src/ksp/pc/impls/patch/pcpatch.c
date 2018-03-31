@@ -514,7 +514,7 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHashI ht, PetscHashI 
   PetscHashIIter hi;
   PetscInt       point;
   PetscInt      *star = NULL, *closure = NULL;
-  PetscInt       ignoredim, iStart, iEnd, starSize, closureSize, si, ci;
+  PetscInt       ignoredim, iStart = 0, iEnd = -1, starSize, closureSize, si, ci;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -524,24 +524,25 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHashI ht, PetscHashI 
   PetscHashIClear(cht);
   PetscHashIIterBegin(ht, hi);
   while (!PetscHashIIterAtEnd(ht, hi)) {
+
     PetscHashIIterGetKey(ht, hi, point);
     PetscHashIIterNext(ht, hi);
 
     /* Loop over all the cells that this point connects to */
     ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     for (si = 0; si < starSize*2; si += 2) {
-      PetscInt ownedpoint = star[si];
+      const PetscInt ownedpoint = star[si];
       /* TODO Check for point in cht before running through closure again */
       /* now loop over all entities in the closure of that cell */
       ierr = DMPlexGetTransitiveClosure(dm, ownedpoint, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (ci = 0; ci < closureSize*2; ci += 2) {
-        PetscInt seenpoint = closure[ci];
+        const PetscInt seenpoint = closure[ci];
         if (ignoredim >= 0 && seenpoint >= iStart && seenpoint < iEnd) continue;
         PetscHashIAdd(cht, seenpoint, 0);
       }
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);
   }
+  ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);
   ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_FALSE, NULL, &star);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
