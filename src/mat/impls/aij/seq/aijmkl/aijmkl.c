@@ -145,7 +145,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   PetscInt         *aj,*ai;
   sparse_status_t  stat;
   PetscErrorCode   ierr;
-  PetscObjectState state;
 
   PetscFunctionBegin;
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
@@ -179,8 +178,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
     stat = mkl_sparse_optimize(aijmkl->csrA);
     if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
     aijmkl->sparse_optimized = PETSC_TRUE;
+    ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
   }
-  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 #endif
@@ -237,6 +236,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
   stat = mkl_sparse_optimize(aijmkl->csrA);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set hints/complete mkl_sparse_optimize");
   aijmkl->sparse_optimized = PETSC_TRUE;
+  ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
 
   *mat = A;
   PetscFunctionReturn(0);
@@ -274,6 +274,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
+  /* We mark our matrix as having a valid, optimized MKL handle.
+   * TODO: It is valid, but I am not sure if it is optimized. Need to ask MKL developers. */
+  aijmkl->sparse_optimized = PETSC_TRUE;
 
   PetscFunctionReturn(0);
 }
