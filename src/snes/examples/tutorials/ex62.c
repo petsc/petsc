@@ -9,14 +9,19 @@ element method on an unstructured mesh. The weak form equations are
   < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
   < q, \nabla\cdot u >                                                    = 0
 
-We start with homogeneous Dirichlet conditions. We will expand this as the set
-of test problems is developed.
+Viewing:
 
-Discretization:
+You can get a LaTeX view of the mesh, with point numbering using
 
-We use PetscFE to generate a tabulation of the finite element basis functions
-at quadrature points. We can currently generate an arbitrary order Lagrange
-element.
+  -dm_view :mesh.tex:ascii_latex -dm_plex_view_scale 8.0
+
+The data layout can be viewed using
+
+  -dm_petscsection_view
+
+Lots of information about the FEM assembly can be printed using
+
+  -dm_plex_print_fem 2
 
 Field Data:
 
@@ -36,13 +41,6 @@ the data so that each field is contiguous
 Likewise, DMPlexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
 
-Next Steps:
-
-- Refine and show convergence of correct order automatically (use femTest.py)
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
-- Redo slides from GUCASTutorial for this new example
-
-For tensor product meshes, see SNES ex67, ex72
 */
 
 #include <petscdmplex.h>
@@ -398,6 +396,7 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -850,5 +849,38 @@ int main(int argc, char **argv)
     filter: grep -v "variant HERMITIAN"
     nsize: 5
     args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
+  # Vanka smoother
+  test:
+    suffix: 2d_quad_q1_p0_vanka_mult
+    requires: triangle !single
+    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+  test:
+    suffix: 2d_quad_q1_p0_vanka_mult_unity
+    requires: triangle !single
+    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+  test:
+    suffix: 2d_quad_q1_p0_vanka_add
+    requires: triangle !single
+    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
+      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+  test:
+    suffix: 2d_quad_q1_p0_vanka_add_unity
+    requires: triangle !single
+    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
+      -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
 
 TEST*/

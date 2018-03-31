@@ -218,6 +218,7 @@ ex61view: ex61view.o  chkopts
 	${RM} ex61view.o
 ex62: ex62.o  chkopts
 	-${CLINKER} -o ex62 ex62.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} ex62
 	${RM} ex62.o
 ex63: ex63.o  chkopts
 	-${CLINKER} -o ex63 ex63.o ${PETSC_SNES_LIB}

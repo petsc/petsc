@@ -1,0 +1,82 @@
+  0 SNES Function norm 5.511227472885e+00 
+    0 KSP preconditioned resid norm 1.342749809474e+01 true resid norm 5.511227472885e+00 ||r(i)||/||b|| 1.000000000000e+00
+    1 KSP preconditioned resid norm 5.126013447973e+00 true resid norm 3.040011230745e+00 ||r(i)||/||b|| 5.516032944932e-01
+    2 KSP preconditioned resid norm 3.104890295211e+00 true resid norm 2.382114731940e+00 ||r(i)||/||b|| 4.322294341252e-01
+    3 KSP preconditioned resid norm 1.774967798296e+00 true resid norm 1.661025721739e+00 ||r(i)||/||b|| 3.013894327372e-01
+    4 KSP preconditioned resid norm 1.322929642496e+00 true resid norm 1.252184475349e+00 ||r(i)||/||b|| 2.272060954677e-01
+    5 KSP preconditioned resid norm 9.869214564882e-01 true resid norm 8.061349656019e-01 ||r(i)||/||b|| 1.462714013472e-01
+    6 KSP preconditioned resid norm 5.884165989979e-01 true resid norm 3.968956496463e-01 ||r(i)||/||b|| 7.201583523797e-02
+    7 KSP preconditioned resid norm 2.990279583669e-01 true resid norm 1.745846183017e-01 ||r(i)||/||b|| 3.167799172882e-02
+    8 KSP preconditioned resid norm 1.705312417766e-01 true resid norm 7.675415304003e-02 ||r(i)||/||b|| 1.392687081374e-02
+    9 KSP preconditioned resid norm 1.408320122093e-01 true resid norm 5.162523739583e-02 ||r(i)||/||b|| 9.367284810838e-03
+   10 KSP preconditioned resid norm 7.943656684684e-02 true resid norm 4.385027948745e-02 ||r(i)||/||b|| 7.956535944704e-03
+   11 KSP preconditioned resid norm 4.450384524541e-02 true resid norm 1.746166590516e-02 ||r(i)||/||b|| 3.168380545182e-03
+   12 KSP preconditioned resid norm 2.692207991263e-02 true resid norm 1.351507354580e-02 ||r(i)||/||b|| 2.452280115872e-03
+   13 KSP preconditioned resid norm 1.948561417532e-02 true resid norm 7.670027838636e-03 ||r(i)||/||b|| 1.391709537734e-03
+   14 KSP preconditioned resid norm 7.410229323750e-03 true resid norm 4.050736368815e-03 ||r(i)||/||b|| 7.349971288146e-04
+   15 KSP preconditioned resid norm 3.870862256273e-03 true resid norm 2.127379557253e-03 ||r(i)||/||b|| 3.860083017294e-04
+   16 KSP preconditioned resid norm 2.471735570165e-03 true resid norm 1.218062187566e-03 ||r(i)||/||b|| 2.210146820393e-04
+   17 KSP preconditioned resid norm 1.167332376585e-03 true resid norm 7.896130852487e-04 ||r(i)||/||b|| 1.432735428058e-04
+   18 KSP preconditioned resid norm 6.795274450345e-04 true resid norm 4.272509787191e-04 ||r(i)||/||b|| 7.752374236432e-05
+   19 KSP preconditioned resid norm 3.096980487615e-04 true resid norm 1.990118143408e-04 ||r(i)||/||b|| 3.611025226592e-05
+   20 KSP preconditioned resid norm 1.605988312225e-04 true resid norm 1.037172443448e-04 ||r(i)||/||b|| 1.881926392170e-05
+   21 KSP preconditioned resid norm 6.854729355841e-05 true resid norm 5.440700955355e-05 ||r(i)||/||b|| 9.872031198354e-06
+  1 SNES Function norm 5.440700955350e-05 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=21
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI processes
+    type: patch
+      Subspace Correction preconditioner with 36 patches
+      Schwarz type: multiplicative
+      Not weighting by partition of unity
+      Not symmetrising sweep
+      Saving patch operators (rebuilt every PCSetUp)
+      Patch construction operator: Vanka
+      KSP on patches (all same):
+KSP Object: (sub_) 1 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: (sub_) 1 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: (pc_patch_sub_) 1 MPI processes
+    type: seqdense
+    rows=22, cols=22
+    total: nonzeros=484, allocated nonzeros=484
+    total number of mallocs used during MatSetValues calls =0
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=86, cols=86
+      total: nonzeros=1112, allocated nonzeros=1112
+      total number of mallocs used during MatSetValues calls =0
+        has attached null space
+        using I-node routines: found 61 nodes, limit used is 5
+Number of SNES iterations = 1
+L_2 Error: 0.21557 [0.0130946, 0.215172]
