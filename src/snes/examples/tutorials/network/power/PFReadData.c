@@ -1,16 +1,16 @@
 #include "petscmat.h"
-#include "pf.h"
+#include "power.h"
 #include <string.h>
 #include <ctype.h>
-  
+
 PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 {
   FILE           *fp;
   PetscErrorCode ierr;
-  VERTEXDATA     Bus;
+  VERTEX_Power   Bus;
   LOAD           Load;
   GEN            Gen;
-  EDGEDATA       Branch;
+  EDGE_Power     Branch;
   PetscInt       line_counter=0;
   PetscInt       bus_start_line=-1,bus_end_line=-1; /* xx_end_line points to the next line after the record ends */
   PetscInt       gen_start_line=-1,gen_end_line=-1;

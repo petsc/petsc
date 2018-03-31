@@ -4,7 +4,7 @@
 #include <petscsnes.h>
 #include <petscdmnetwork.h>
 
-# define MAXLINE 1000
+#define MAXLINE 1000
 #define REF_BUS 3
 #define PV_BUS 2
 #define PQ_BUS 1
@@ -12,9 +12,20 @@
 #define NGEN_AT_BUS_MAX 15
 #define NLOAD_AT_BUS_MAX 1
 
+struct _p_UserCtx_Power{
+  PetscScalar  Sbase;
+  PetscBool    jac_error; /* introduce error in the jacobian */
+  PetscInt     compkey_branch;
+  PetscInt     compkey_bus;
+  PetscInt     compkey_gen;
+  PetscInt     compkey_load;
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+
+typedef struct _p_UserCtx_Power UserCtx_Power;
+
 /* 2. Bus data */
 /* 11 columns */
-struct _p_VERTEXDATA{
+struct _p_VERTEX_Power{
   PetscInt      bus_i; /* Integer bus number .. used by some formats like Matpower */
   char	 	i[20]; /* Bus Number */
   char 		name[20]; /* Bus Name */
@@ -34,7 +45,7 @@ struct _p_VERTEXDATA{
   PetscInt      lidx[NLOAD_AT_BUS_MAX];
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-typedef struct _p_VERTEXDATA *VERTEXDATA;
+typedef struct _p_VERTEX_Power *VERTEX_Power;
 
 /* 3. Load data */
 /* 12 columns */
@@ -51,9 +62,9 @@ struct _p_LOAD{
   PetscScalar 	iq; /* Reactive power component of constant current load: Mvar pu V */
   PetscScalar 	yp; /* Active power component of constant admittance load: MW pu V */
   PetscScalar 	yq; /* Reactive power component of constant admittance load: Mvar pu V */
+  PetscScalar   scale_load;
   PetscInt 	owner; /* Owner number */
   PetscInt	internal_i; /* Internal Bus Number */
-  PetscScalar   scale_load;
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_LOAD *LOAD;
@@ -83,14 +94,14 @@ struct _p_GEN{
   PetscScalar 	pb; /* Gen min active power output: MW */
   PetscInt 	o1; /* Owner number */
   PetscScalar 	f1; /* Fraction of ownership */
-  PetscInt	internal_i; /* Internal Bus Number */
   PetscScalar   scale_gen;
+  PetscInt	internal_i; /* Internal Bus Number */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 typedef struct _p_GEN *GEN;
 
 /* 17+ columns */
-struct _p_EDGEDATA{
+struct _p_EDGE_Power{
   PetscInt      fbus;
   PetscInt      tbus;
   char 		i[20]; /* Bus Number or extended bus name*/
@@ -112,23 +123,28 @@ struct _p_EDGEDATA{
   PetscScalar 	length; /* Line length */
   PetscInt 	o1; /* Owner number */
   PetscScalar 	f1; /* Fraction of ownership */
+  PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
   PetscInt	internal_i; /* Internal From Bus Number */
   PetscInt	internal_j; /* Internal To Bus Number */
-  PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-typedef struct _p_EDGEDATA *EDGEDATA;
+typedef struct _p_EDGE_Power *EDGE_Power;
 
 /* PTI format data structure */
 typedef struct{
   PetscScalar sbase; /* System base MVA */
   PetscInt    nbus,ngen,nbranch,nload; /* # of buses,gens,branches, and loads (includes elements which are
                                           out of service */
-  VERTEXDATA  bus;
-  LOAD        load;
-  GEN         gen;
-  EDGEDATA    branch;
-}PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+  VERTEX_Power bus;
+  LOAD         load;
+  GEN          gen;
+  EDGE_Power   branch;
+} PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
+extern PetscErrorCode GetListofEdges_Power(PFDATA*,PetscInt*);
+extern PetscErrorCode FormJacobian_Power(SNES,Vec, Mat,Mat,void*);
+extern PetscErrorCode FormJacobian_Power_private(DM,Vec,Mat,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
+extern PetscErrorCode FormFunction_Power(DM,Vec,Vec,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
+extern PetscErrorCode SetInitialGuess_Power(DM,Vec,PetscInt,PetscInt,const PetscInt *,const PetscInt *,void*);
 #endif
