@@ -1435,7 +1435,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       DM           dm;
       PetscDS      prob;
       PetscSection s;
-      PetscInt     cStart, cEnd, c, Nf, f, fsize, numGlobalBcs = 0, *globalBcs, *Nb, totNb = 0, **cellDofs;
+      PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, totNb = 0, **cellDofs;
 
       ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
       if (!dm) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Must set DM for PCPATCH or call PCPatchSetDiscretisationInfo()");
@@ -1453,7 +1453,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       for (f = 0; f < Nf; ++f) {
         PetscFE        fe;
         PetscDualSpace sp;
-        PetscSection   fs;
         PetscInt       cdoff = 0;
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
@@ -1462,8 +1461,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscDualSpaceGetDimension(sp, &Nb[f]);CHKERRQ(ierr);
         totNb += Nb[f];
 
-        ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
-        ierr = PetscSectionGetStorageSize(fs, &fsize);CHKERRQ(ierr);
         ierr = PetscMalloc1((cEnd-cStart)*Nb[f], &cellDofs[f]);CHKERRQ(ierr);
         for (c = cStart; c < cEnd; ++c) {
           PetscInt *closure = NULL;
