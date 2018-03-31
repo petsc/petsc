@@ -5,7 +5,7 @@ FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 EXAMPLESC        = ex1.c ex2.c ex1_nest.c
-LOCDIR		 = src/ksp/ksp/examples/tutorials/network
+LOCDIR		 = src/ksp/ksp/examples/tutorials/network/
 MANSEC           = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
