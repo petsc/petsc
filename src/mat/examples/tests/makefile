@@ -19,7 +19,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c \
                 ex121.c ex122.c ex124.c ex125.c ex127.c ex128.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
-                ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
+                ex136.c ex137.c ex138.c ex139.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
@@ -535,10 +535,6 @@ ex138: ex138.o chkopts
 ex139: ex139.o chkopts
 	-${CLINKER} -o ex139 ex139.o ${PETSC_MAT_LIB}
 	${RM} ex139.o
-
-ex140: ex140.o chkopts
-	-${CLINKER} -o ex140 ex140.o ${PETSC_MAT_LIB}
-	${RM} ex140.o
 
 ex141: ex141.o chkopts
 	-${CLINKER} -o ex141 ex141.o ${PETSC_MAT_LIB}
