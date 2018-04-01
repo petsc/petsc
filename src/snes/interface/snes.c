@@ -2359,7 +2359,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
       ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
       for (j = 0, cncols = 0; j < bncols; j++) {
-        if (PetscAbsScalar(bvals[j]) > PetscAbsScalar(threshold)) {
+        if (PetscAbsScalar(bvals[j]) > threshold) {
           ccols[cncols] = bcols[j];
           cvals[cncols] = bvals[j];
           cncols += 1;
