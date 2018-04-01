@@ -43,40 +43,41 @@ PetscErrorCode  ISFinalizePackage(void)
 PetscErrorCode  ISInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ISPackageInitialized) PetscFunctionReturn(0);
   ISPackageInitialized = PETSC_TRUE;
-  /* Register Constructors */
-  ierr = ISRegisterAll();CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Section Symmetry",&PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);
-
+  /* Register Constructors */
+  ierr = ISRegisterAll();CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(IS_CLASSID);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("is",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(IS_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("section",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSC_SECTION_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(IS_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("is",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(IS_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("section",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_SECTION_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(ISFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -147,8 +148,7 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 PetscErrorCode  VecInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -219,20 +219,18 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("vec",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("vec",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
   }
   /* Special processing */
   opt  = PETSC_FALSE;
@@ -258,7 +256,7 @@ PetscErrorCode  VecInitializePackage(void)
     ierr = PetscObjectComposedDataRegister(NormIds+i);CHKERRQ(ierr);
   }
 
-  /* Register finalization routine */
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(VecFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

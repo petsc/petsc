@@ -25,17 +25,17 @@ PetscLogEvent PETSCSF_FetchAndOpEnd;
 PetscErrorCode PetscSFInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
   PetscSFPackageInitialized = PETSC_TRUE;
-
+  /* Register Class */
   ierr = PetscClassIdRegister("Star Forest Graph", &PETSCSF_CLASSID);CHKERRQ(ierr);
+  /* Register Constructors */
   ierr = PetscSFRegisterAll();CHKERRQ(ierr);
-  /* Register all events */
+  /* Register Events */
   ierr = PetscLogEventRegister("SFSetGraph"     , PETSCSF_CLASSID, &PETSCSF_SetGraph);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFSetUp"        , PETSCSF_CLASSID, &PETSCSF_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin);CHKERRQ(ierr);
@@ -45,21 +45,18 @@ PetscErrorCode PetscSFInitializePackage(void)
   ierr = PetscLogEventRegister("SFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFFetchOpEnd"   , PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, sizeof(logList), &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "sf", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(PETSCSF_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("sf",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSCSF_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, sizeof(logList), &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "sf", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(PETSCSF_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("sf",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSCSF_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
