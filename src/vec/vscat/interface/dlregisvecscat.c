@@ -37,36 +37,29 @@ PetscErrorCode VecScatterFinalizePackage(void)
 PetscErrorCode VecScatterInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (VecScatterPackageInitialized) PetscFunctionReturn(0);
   VecScatterPackageInitialized = PETSC_TRUE;
-  /* Register Constructors */
-  ierr = VecScatterRegisterAll();CHKERRQ(ierr);
-
   /* Register Classes */
   ierr = PetscClassIdRegister("Vec Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
-
+  /* Register Constructors */
+  ierr = VecScatterRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "vec scatter", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("vecscatter",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "vec scatter", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("vecscatter",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
   }
-
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(VecScatterFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
