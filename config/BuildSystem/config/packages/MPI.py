@@ -172,6 +172,8 @@ class Configure(config.package.Package):
       if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
         raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
     self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)')
+    if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
+      self.mpiexec = self.mpiexec + ' --oversubscribe'
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
 
@@ -485,6 +487,7 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
         self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
+        self.ompi_major_version = ompi_major_version
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
     self.compilers.CPPFLAGS = oldFlags
