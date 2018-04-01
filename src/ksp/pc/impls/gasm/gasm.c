@@ -1333,9 +1333,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
 {
   MatPartitioning mpart;
   const char      *prefix;
-  void            (*f)(void);
   PetscInt        i,j,rstart,rend,bs;
-  PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
+  PetscBool       hasop, isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat             Ad     = NULL, adj;
   IS              ispart,isnumb,*is;
   PetscErrorCode  ierr;
@@ -1350,8 +1349,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
   if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  ierr = MatShellGetOperation(A,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);  
-  if (f) {
+  ierr = MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+  if (hasop) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
   }
   if (Ad) {
