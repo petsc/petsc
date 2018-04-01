@@ -12,6 +12,17 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
+#if defined(PETSC_HAVE_IMMINTRIN_H)
+#include <immintrin.h>
+
+#if !defined(_MM_SCALE_8)
+#define _MM_SCALE_8    8
+#endif
+#if !defined(_MM_SCALE_4)
+#define _MM_SCALE_4    4
+#endif
+#endif
+
 #define NDIM 512
 /* NDIM specifies how many rows at a time we should work with when
  * performing the vectorized mat-vec.  This depends on various factors
@@ -289,6 +300,11 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 #if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking))
   PetscInt          i,j;
 #endif
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+  __m512d           vec_x,vec_y,vec_vals;
+  __m256i           vec_idx,vec_ipos,vec_j;
+  __mmask8           mask;
+#endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
   Mat_SeqAIJPERM    *aijperm = (Mat_SeqAIJPERM*) A->spptr;
@@ -383,20 +399,64 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI prefervector
 #endif
+
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+            vec_y = _mm512_setzero_pd();
+            ipos = ip[i];
+            for (j=0; j<(nz>>3); j++) {
+              vec_idx  = _mm256_loadu_si256((__m256i const*)&aj[ipos]);
+              vec_vals = _mm512_loadu_pd(&aa[ipos]);
+              vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+              vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
+              ipos += 8;
+            }
+            if ((nz&0x07)>2) {
+              mask     = (__mmask8)(0xff >> (8-(nz&0x07)));
+              vec_idx  = _mm256_loadu_si256((__m256i const*)&aj[ipos]);
+              vec_vals = _mm512_loadu_pd(&aa[ipos]);
+              vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8);
+              vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask);
+            } else if ((nz&0x07)==2) {
+              yp[i] += aa[ipos]*x[aj[ipos]];
+              yp[i] += aa[ipos+1]*x[aj[ipos+1]];
+            } else if ((nz&0x07)==1) {
+              yp[i] += aa[ipos]*x[aj[ipos]];
+            }
+            yp[i] += _mm512_reduce_add_pd(vec_y);
+#else
             for (j=0; j<nz; j++) {
               ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
+#endif
           }
         } else {
           /* Otherwise, there are enough rows in the chunk to make it
            * worthwhile to vectorize across the rows, that is, to do the
            * matvec by operating with "columns" of the chunk. */
           for (j=0; j<nz; j++) {
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+            vec_j = _mm256_set1_epi32(j);
+            for (i=0; i<((isize>>3)<<3); i+=8) {
+              vec_y    = _mm512_loadu_pd(&yp[i]);
+              vec_ipos = _mm256_loadu_si256((__m256i const*)&ip[i]);
+              vec_ipos = _mm256_add_epi32(vec_ipos,vec_j);
+              vec_idx  = _mm256_i32gather_epi32(aj,vec_ipos,_MM_SCALE_4);
+              vec_vals = _mm512_i32gather_pd(vec_ipos,aa,_MM_SCALE_8);
+              vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+              vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
+              _mm512_storeu_pd(&yp[i],vec_y);
+            }
+            for (i=isize-(isize&0x07); i<isize; i++) {
+              ipos = ip[i]+j;
+              yp[i] += aa[ipos]*x[aj[ipos]];
+            }
+#else
             for (i=0; i<isize; i++) {
               ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
+#endif
           }
         }
 

@@ -36,6 +36,8 @@ if __name__ == '__main__':
     # straightfoward, to use MKL on Cray systems with non-Intel compilers.)
     # If Cray libsci is preferred, comment out the line below.
     '--with-blaslapack-lib=-mkl -L' + os.environ['MKLROOT'] + '/lib/intel64',
+    # Prefer hand-coded kernels using AVX-512 intrinsics when available.
+    '--with-avx512-kernels=1',
 
     # Flags for the Cray compilers:
 #    '--COPTFLAGS=-g -hcpu=mic-knl'

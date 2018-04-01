@@ -16,6 +16,7 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -xMIC-AVX512 -O3',
     'CXXOPTFLAGS=-g -xMIC-AVX512 -O3',
     'FOPTFLAGS=-g -xMIC-AVX512 -O3',
+    '--with-avx512-kernels=1',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--download-metis=1',
     '--download-parmetis=1',
