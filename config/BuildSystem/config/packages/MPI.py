@@ -235,7 +235,6 @@ class Configure(config.package.Package):
     if 'HAVE_MPI_WIN_CREATE' in self.defines and 'HAVE_MPI_WIN_ALLOCATE_SHARED' in self.defines and 'HAVE_MPI_WIN_SHARED_QUERY' in self.defines:
       if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
         self.addDefine('HAVE_MPI_WIN_CREATE_FEATURE',1)
-        print 'HAVE_MPI_WIN_CREATE_FEATURE: yes'
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
