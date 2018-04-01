@@ -148,6 +148,8 @@ PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
 PETSC_EXTERN PetscErrorCode DMGetVecType(DM,VecType*);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
 PETSC_EXTERN PetscErrorCode DMGetMatType(DM,MatType*);
+PETSC_EXTERN PetscErrorCode DMSetISColoringType(DM,ISColoringType);
+PETSC_EXTERN PetscErrorCode DMGetISColoringType(DM,ISColoringType*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);

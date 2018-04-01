@@ -267,11 +267,67 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 }
 
 /*@C
-       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+       DMSetISColoringType - Sets the type of coloring, global or local, that is created by the DM
+
+   Logically Collective on DM
+
+   Input Parameters:
++  dm - the DM context
+-  ctype - the matrix type
+
+   Options Database:
+.   -dm_is_coloring_type - global or local
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(),
+          DMGetISColoringType()
+@*/
+PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->coloringtype = ctype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+       DMGetISColoringType - Gets the type of coloring, global or local, that is created by the DM
 
    Logically Collective on DM
 
    Input Parameter:
+.  dm - the DM context
+
+   Output Parameter:
+.  ctype - the matrix type
+
+   Options Database:
+.   -dm_is_coloring_type - global or local
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(),
+          DMGetISColoringType()
+@*/
+PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *ctype = dm->coloringtype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+
+   Logically Collective on DM
+
+   Input Parameters:
 +  dm - the DM context
 -  ctype - the matrix type
 
@@ -332,6 +388,9 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 
   Level: intermediate
 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+                  the Mat through a PetscObjectCompose() operation
+
 .seealso: MatSetDM(), DMCreateMatrix(), DMSetMatType()
 @*/
 PetscErrorCode MatGetDM(Mat A, DM *dm)
@@ -355,6 +414,10 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 - dm - The DM
 
   Level: intermediate
+
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+                  the Mat through a PetscObjectCompose() operation
+
 
 .seealso: MatGetDM(), DMCreateMatrix(), DMSetMatType()
 @*/
@@ -751,7 +814,7 @@ PetscErrorCode  DMSetUp(DM dm)
 +   -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 .   -dm_vec_type <type>  - type of vector to create inside DM
 .   -dm_mat_type <type>  - type of matrix to create inside DM
--   -dm_coloring_type    - <global or ghosted>
+-   -dm_is_coloring_type - <global or local>
 
     Level: developer
 
@@ -785,7 +848,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   if (flg) {
     ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","DMSetISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
