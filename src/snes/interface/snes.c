@@ -562,7 +562,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
   Vec            X,Xnamed = NULL;
   DM             dmsave;
   void           *ctxsave;
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
 
   PetscFunctionBegin;
   dmsave = snes->dm;

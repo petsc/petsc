@@ -336,7 +336,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
-  ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);
+  ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;

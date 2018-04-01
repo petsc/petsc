@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib_v3.81.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib_v3.83.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
     self.includes  = ['zoltan.h']
     self.liblist   = [['libzoltan.a']]
@@ -12,11 +12,12 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.x        = framework.require('config.packages.X',self)
     self.parmetis = framework.require('config.packages.parmetis',self)
     self.ptscotch = framework.require('config.packages.PTScotch',self)
     self.mpi      = framework.require('config.packages.MPI',self)
-    self.deps     = [self.mpi, self.parmetis, self.ptscotch]
+    self.mathlib  = framework.require('config.packages.mathlib',self)
+    self.deps     = [self.mpi,self.mathlib]
+    self.odeps    = [self.parmetis, self.ptscotch]
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
@@ -26,31 +27,15 @@ class Configure(config.package.GNUPackage):
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Error: Zoltan requires C++ compiler. None specified')
 
-    if self.mpi.include:
-      # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
-      args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
-    libdirs = []
-    for l in self.mpi.lib:
-      ll = os.path.dirname(l)
-      libdirs.append(ll)
-    libdirs = ' '.join(libdirs)
-    args.append('--with-mpi-libdir="'+libdirs+'"')
-    libs = []
-    for l in self.mpi.lib:
-      ll = os.path.basename(l)
-      libs.append(ll[3:-2])
-    libs = ' '.join(libs)
-    args.append('--with-mpi-libs="'+libs+'"')
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     if hasattr(self.compilers, 'FC'):
       args.append('--enable-f90interface')
+      args.append('FCFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     if self.parmetis.found:
       args.append('--with-parmetis')
-      args.append('--with-parmetis-incdir="'+self.parmetis.include[0]+'"')
-      args.append('--with-parmetis-libdir="'+self.libraries.toString(self.parmetis.lib)+'"')
     if self.ptscotch.found:
       args.append('--with-scotch')
-      args.append('--with-scotch-incdir="'+self.ptscotch.include[0]+'"')
-      args.append('--with-scotch-libdir="'+self.libraries.toString(self.ptscotch.lib)+'"')
     return args
 
   def Install(self):
