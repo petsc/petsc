@@ -1852,7 +1852,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *ctx)
 
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
-  ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);
+  if ((*ctx)->ops->destroy) {ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = VecScatterCUDAIndicesDestroy((PetscCUDAIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
 #endif
