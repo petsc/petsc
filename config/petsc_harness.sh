@@ -85,7 +85,7 @@ done
 shift $(( $OPTIND - 1 ))
 
 # Individual tests can extend the default
-TIMEOUT=$((TIMEOUT*timeoutfactor))
+export MPIEXEC_TIMEOUT=$((TIMEOUT*timeoutfactor))
 STARTTIME=`date +%s`
 
 if test -n "$extra_args"; then
@@ -111,33 +111,19 @@ function petsc_testrun() {
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
   filter=$5
-  job_control=true
   cmd="$1 > $2 2> $3"
   if test -n "$filter"; then
     if test "${filter:0:6}"=="Error:"; then
-      job_control=false      # redirection error method causes job control probs
       filter=${filter##Error:}
       cmd="$1 2>&1 | cat > $2"
     fi
   fi
-  # disable job_control on cygwin
-  if [[ `uname` =~ ^CYGWIN ]] ; then
-      job_control=false
-  fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
-  if $job_control; then
-    # The action:
-    ( ulimit -St $TIMEOUT && eval "$cmd" )
-    cmd_res=$?
-    # SIGXCPU=24, but some systems give our shell 128+24=152
-    test $cmd_res -eq 24 -o $cmd_res -eq 152 && echo "Exceeded timeout limit of $TIMEOUT s" >> $3
-  else
-    # The action -- assume no timeout needed
-    eval "$cmd"
-    # We are testing error codes so just make it pass
-    cmd_res=$?
-  fi
+  eval "$cmd"
+  cmd_res=$?
+  # ETIMEDOUT=110 on most systems (used by Open MPI).  MPICH uses 255.
+  test $cmd_res -eq 110 -o $cmd_res -eq 255 && echo "Exceeded timeout limit of $MPIEXEC_TIMEOUT s" >> $3
 
   # Handle filters separately and assume no timeout check needed
   if test -n "$filter"; then
