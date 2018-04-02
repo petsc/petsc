@@ -434,15 +434,16 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
    Input Parameters:
 +  s - pointer to string to be added to end
 .  t - string to be added to
-.  n - length of the original allocated string
+-  n - length of the original allocated string
 
    Level: intermediate
 
-  Notes:    Not for use in Fortran
+  Notes:
+  Not for use in Fortran
 
-  Unlike the system call strncat() the length passed in is the length of the original allocated
-  space, it is not the length of the left-over space. This is similar to the BSD system call 
-  strlcat()
+  Unlike the system call strncat(), the length passed in is the length of the
+  original allocated space, not the length of the left-over space. This is
+  similar to the BSD system call strlcat().
 
   Concepts: string copy
 
