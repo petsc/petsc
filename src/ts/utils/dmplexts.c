@@ -221,8 +221,10 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
-  PetscInt       cStart, cEnd, cEndInterior;
   DM             plex;
+  PetscDS        prob;
+  PetscInt       cStart, cEnd, cEndInterior;
+  PetscBool      hasJac, hasPrec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -230,6 +232,11 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
+  if (hasJac && hasPrec) {ierr = MatZeroEntries(Jac);CHKERRQ(ierr);}
+  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = DMPlexComputeJacobian_Internal(plex, cStart, cEnd, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
