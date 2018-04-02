@@ -40,6 +40,7 @@ class PCType(object):
     GAMG               = S_(PCGAMG)
     CHOWILUVIENNACL    = S_(PCCHOWILUVIENNACL)
     ROWSCALINGVIENNACL = S_(PCROWSCALINGVIENNACL)
+    SAVIENNACL         = S_(PCSAVIENNACL)
     BDDC               = S_(PCBDDC)
     KACZMARZ           = S_(PCKACZMARZ)
     TELESCOPE          = S_(PCTELESCOPE)
