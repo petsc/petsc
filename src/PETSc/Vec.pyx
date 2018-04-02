@@ -12,6 +12,7 @@ class VecType(object):
     MPICUDA    = S_(VECMPICUDA)
     CUDA       = S_(VECCUDA)
     NEST       = S_(VECNEST)
+    NODE       = S_(VECNODE)
 
 class VecOption(object):
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES
