@@ -53,10 +53,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->ptap             = MatPtAP_SeqAIJ_SeqAIJ;
   B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJ_SeqAIJ;
   B->ops->transposematmult = MatTransposeMatMult_SeqAIJ_SeqAIJ;
-  B->ops->scale            = MatScale_SeqAIJ;
-  B->ops->diagonalscale    = MatDiagonalScale_SeqAIJ;
-  B->ops->diagonalset      = MatDiagonalSet_SeqAIJ;
-  B->ops->axpy             = MatAXPY_SeqAIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
@@ -861,7 +857,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
   csrC = c->csrA;
   descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
 
-  /* TODO: Below won't work for complex matrix. Protect this! Maybe where function pointers are assigned in MatConvert? */
+  /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
   stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FINALIZE_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to finalize mkl_sparse_sypr");
 
@@ -909,7 +905,7 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
   csrP = p->csrA;
   descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
 
-  /* TODO: Below won't work for complex matrix. Protect this! Maybe where function pointers are assigned in MatConvert? */
+  /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
   stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FULL_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete full mkl_sparse_sypr");
 
@@ -919,49 +915,6 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
   PetscFunctionReturn(0);
 }
 #endif
-
-PetscErrorCode MatScale_SeqAIJMKL(Mat inA,PetscScalar alpha)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatScale_SeqAIJ(inA,alpha);CHKERRQ(ierr);
-  ierr = MatSeqAIJMKL_create_mkl_handle(inA);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatDiagonalScale_SeqAIJMKL(Mat A,Vec ll,Vec rr)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatDiagonalScale_SeqAIJ(A,ll,rr);CHKERRQ(ierr);
-  ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatDiagonalSet_SeqAIJMKL(Mat Y,Vec D,InsertMode is)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatDiagonalSet_SeqAIJ(Y,D,is);CHKERRQ(ierr);
-  ierr = MatSeqAIJMKL_create_mkl_handle(Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatAXPY_SeqAIJMKL(Mat Y,PetscScalar a,Mat X,MatStructure str)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
-  if (str == SAME_NONZERO_PATTERN) {
-    /* MatAssemblyEnd() is not called if SAME_NONZERO_PATTERN, so we need to force update of the MKL matrix handle. */
-    ierr = MatSeqAIJMKL_create_mkl_handle(Y);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLAIJ()
@@ -1035,12 +988,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
     B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
   }
 
-  B->ops->scale              = MatScale_SeqAIJMKL;
-  B->ops->diagonalscale      = MatDiagonalScale_SeqAIJMKL;
-  B->ops->diagonalset        = MatDiagonalSet_SeqAIJMKL;
-  B->ops->axpy               = MatAXPY_SeqAIJMKL;
-
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatScale_SeqAIJMKL_C",MatScale_SeqAIJMKL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
