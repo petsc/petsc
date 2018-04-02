@@ -122,8 +122,11 @@ function petsc_testrun() {
 
   eval "$cmd"
   cmd_res=$?
-  # ETIMEDOUT=110 on most systems (used by Open MPI).  MPICH uses 255.
-  test $cmd_res -eq 110 -o $cmd_res -eq 255 && echo "Exceeded timeout limit of $MPIEXEC_TIMEOUT s" >> $3
+  # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
+  # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
+  if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || grep -q -s -F MPIEXEC_TIMEOUT "$3"; then
+    timed_out=1
+  fi
 
   # Handle filters separately and assume no timeout check needed
   if test -n "$filter"; then
@@ -146,11 +149,15 @@ function petsc_testrun() {
     else
       printf "not ok $tlabel\n" | tee -a ${testlogfile}
     fi
-    # We've had tests fail but stderr->stdout. Fix with this test.
-    if test -s $3; then
-       awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+    if [ -v timed_out ]; then
+      printf "#\tExceeded timeout limit of $MPIEXEC_TIMEOUT s\n" | tee -a ${testlogfile}
     else
-       awk '{print "#\t" $0}' < $2 | tee -a ${testlogfile}
+      # We've had tests fail but stderr->stdout. Fix with this test.
+      if test -s $3; then
+        awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+      else
+        awk '{print "#\t" $0}' < $2 | tee -a ${testlogfile}
+      fi
     fi
     let failed=$failed+1
     failures="$failures $tlabel"
