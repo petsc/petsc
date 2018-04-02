@@ -5777,17 +5777,17 @@ which can also be represented as the DAG in Figure~\ref{fig:doubletDAG}.
   \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
   \tikzstyle{sec}     = [->]
   % DAG for doublet
-  \path (-1.5, 2.0) node[vertexV](dv0) {$v_0$};
-  \path (-0.5, 2.0) node[vertexV](dv1) {$v_1$};
-  \path ( 0.5, 2.0) node[vertexV](dv2) {$v_2$};
-  \path ( 1.5, 2.0) node[vertexV](dv3) {$v_3$};
-  \draw (-2.0, 1.0) node[edgeV](e0) {$e_0$};
-  \draw (-1.0, 1.0) node[edgeV](e1) {$e_1$};
-  \draw ( 0.0, 1.0) node[edgeV](e2) {$e_2$};
-  \draw ( 1.0, 1.0) node[edgeV](e3) {$e_3$};
-  \draw ( 2.0, 1.0) node[edgeV](e4) {$e_4$};
-  \path (-1.0, 0.0) node[faceV](f0) {$f_0$};
-  \path ( 1.0, 0.0) node[faceV](f1) {$f_1$};
+  \path (-1.5, 2.0) node[vertexV](dv0) {$2,v_0$};
+  \path (-0.5, 2.0) node[vertexV](dv1) {$3,v_1$};
+  \path ( 0.5, 2.0) node[vertexV](dv2) {$4,v_2$};
+  \path ( 1.5, 2.0) node[vertexV](dv3) {$5,v_3$};
+  \draw (-2.0, 1.0) node[edgeV](e0) {$6,e_0$};
+  \draw (-1.0, 1.0) node[edgeV](e1) {$7,e_1$};
+  \draw ( 0.0, 1.0) node[edgeV](e2) {$8,e_2$};
+  \draw ( 1.0, 1.0) node[edgeV](e3) {$9,e_3$};
+  \draw ( 2.0, 1.0) node[edgeV](e4) {$10,e_4$};
+  \path (-1.0, 0.0) node[faceV](f0) {$0,f_0$};
+  \path ( 1.0, 0.0) node[faceV](f1) {$1,f_1$};
   \draw[sec] (dv0) -- (e0);
   \draw[sec] (dv1) -- (e0);
   \draw[sec] (dv1) -- (e1);
@@ -5885,7 +5885,7 @@ PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 DMPlexGetChart(dm, &pStart, &pEnd);
 DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
 DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
-DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);
+DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5895,6 +5895,19 @@ for(e = eStart; e < eEnd; ++e)
     PetscSectionSetDof(s, e, 2);
 PetscSectionSetUp(s);
 \end{lstlisting}
+DMPlexGetHeightStratum() returns all the points of the requested
+height in the DAG. Since this problem is in two dimensions the edges
+are at height 1 and the vertices at height 2 (the cells are always at
+height 0). One can also use \lstinline{DMPlexGetDepthStratum()} to use the depth
+in the DAG to select the points. \lstinline{DMPlexGetDepth(,&depth)} routines the depth of the DAG, hence
+\lstinline{DMPlexGetDepthStratum(dm,depth-1-h,)} returns the same values as \lstinline{DMPlexGetHeightStratum(dm,h,)}.
+
+For P3 elements there is one degree of freedom at each vertex, 2 along
+each edge (resulting in a total of 4 degrees of freedom alone each
+edge including the vertices, thus being able to reproduce a cubic
+function) and 1 degree of freedom within the cell (the bubble function
+which is zero along all edges).
+
 Now a PETSc local vector can be created manually using this layout,
 \begin{lstlisting}
 PetscSectionGetStorageSize(s, &n);
@@ -5919,7 +5932,7 @@ a problem partitioning/ordering.
 
 The evaluation of a residual or Jacobian, for most discretizations has the following general form:
 \begin{itemize}
-  \item Traverse the mesh, picking out pieces which in general overlap,
+  \item Traverse the mesh, picking out pieces (which in general overlap),
 
   \item Extract some values from the solution vector, associated with this piece,
 
@@ -5932,7 +5945,7 @@ routines to data extraction routines and back. In this way, the \lstinline{Petsc
 not need to know anything about the mesh inside a \lstinline{DMPlex}.
 
 The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
-in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
+in the DAG using the covering relation. In other words, the transitive closure consists of all points that cover the given point (generally a cell) plus all points that cover those points, etc. So in 2d the transitive closure for a cell consists of edges and vertices while in 3d it consists of faces, edges, and vertices. Note that this closure can be calculated orienting the arrows in either
 direction. For example, in a finite element calculation, we calculate an integral over each element, and
 then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
 as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
