@@ -24,9 +24,10 @@ communication and computation.
 
 .. [petsc-user-ref] S. Balay, S. Abhyankar, M.F. Adams, J. Brown,
    P. Brune, K. Buschelman, L. Dalcin, V. Eijkhout, W.D. Gropp,
-   D. Karpeyev, D. Kaushik, M.G. Knepley, L. Curfman McInnes, K. Rupp,
-   B.F. Smith, S. Zampini, H. Zhang, and H. Zhang,
-   *PETSc Users Manual*, ANL-95/11 - Revision 3.8, 2017.
+   D. Karpeyev, D. Kaushik, M. Knepley, D. May, L. Curfman McInnes,
+   T. Munson, K. Rupp, P. Sanan, B.F. Smith, S. Zampini,
+   H. Zhang, and H. Zhang,
+   *PETSc Users Manual*, ANL-95/11 - Revision 3.9, 2018.
    http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
 
 .. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,
