@@ -1398,7 +1398,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 }
 
 /*@
-  DMPlexSetCone - Set the points on the in-edges for this point in the DAG
+  DMPlexSetCone - Set the points on the in-edges for this point in the DAG; that is these are the points that cover the specific point
 
   Not collective
 
@@ -1412,9 +1412,11 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   Note:
   This should be called after all calls to DMPlexSetConeSize() and DMSetUp().
 
+  Developer Note: Why not call this DMPlexSetCover()
+
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp(), DMPlexSetSupport(), DMPlexSetSupportSize()
 @*/
 PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 {
@@ -1693,14 +1695,14 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 }
 
 /*@
-  DMPlexSetSupport - Set the points on the out-edges for this point in the DAG
+  DMPlexSetSupport - Set the points on the out-edges for this point in the DAG, that is the list of points that this point covers
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
 . p - The point, which must lie in the chart set with DMPlexSetChart()
-- support - An array of points which are on the in-edges for point p
+- support - An array of points which are on the out-edges for point p
 
   Output Parameter:
 
@@ -1709,7 +1711,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetSupport(), DMPlexSetChart(), DMPlexSetSupportSize(), DMSetUp()
+.seealso: DMPlexSetCone(), DMPlexSetConeSize(), DMPlexCreate(), DMPlexGetSupport(), DMPlexSetChart(), DMPlexSetSupportSize(), DMSetUp()
 @*/
 PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 {
