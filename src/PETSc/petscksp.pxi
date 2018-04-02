@@ -7,6 +7,7 @@ cdef extern from * nogil:
     PetscKSPType KSPGROPPCG
     PetscKSPType KSPPIPECG
     PetscKSPType KSPPIPECGRR
+    PetscKSPType KSPPIPELCG
     PetscKSPType   KSPCGNE
     PetscKSPType   KSPCGNASH
     PetscKSPType   KSPCGSTCG
