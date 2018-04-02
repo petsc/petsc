@@ -1,7 +1,16 @@
 # --------------------------------------------------------------------
 
+class ScatterType(object):
+   SEQ       = S_(SCATTERSEQ)
+   MPI1      = S_(SCATTERMPI1)
+   MPI3      = S_(SCATTERMPI3)
+   MPI3NODE  = S_(SCATTERMPI3NODE)
+
+# --------------------------------------------------------------------
+
 cdef class Scatter(Object):
 
+    Type = ScatterType
     Mode = ScatterMode
 
     #
@@ -34,6 +43,26 @@ cdef class Scatter(Object):
                 vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct) )
         PetscCLEAR(self.obj); self.sct = newsct
         return self
+
+    def createEmpty(self, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscScatter newsct = NULL
+        CHKERR( VecScatterCreateEmpty(ccomm, &newsct) )
+        PetscCLEAR(self.obj); self.sct = newsct
+        return self
+
+    def setType(self, scatter_type):
+        cdef PetscScatterType cval = NULL
+        vec_type = str2bytes(scatter_type, &cval)
+        CHKERR( VecScatterSetType(self.sct, cval) )
+
+    def getType(self):
+        cdef PetscScatterType cval = NULL
+        CHKERR( VecScatterGetType(self.sct, &cval) )
+        return bytes2str(cval)
+
+    def setFromOptions(self):
+        CHKERR( VecScatterSetFromOptions(self.sct) )
 
     def copy(self):
         cdef Scatter scatter = Scatter()
@@ -90,5 +119,9 @@ cdef class Scatter(Object):
                                 caddv, csctm) )
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
                               caddv, csctm) )
+
+# --------------------------------------------------------------------
+
+del ScatterType
 
 # --------------------------------------------------------------------
