@@ -60,6 +60,9 @@ class MatType(object):
     LOCALREF        = S_(MATLOCALREF)
     NEST            = S_(MATNEST)
     PREALLOCATOR    = S_(MATPREALLOCATOR)
+    SELL            = S_(MATSELL)
+    SEQSELL         = S_(MATSEQSELL)
+    MPISELL         = S_(MATMPISELL)
     DUMMY           = S_(MATDUMMY)
 
 class MatOption(object):

@@ -60,6 +60,9 @@ cdef extern from * nogil:
     PetscMatType MATLOCALREF
     PetscMatType MATNEST
     PetscMatType MATPREALLOCATOR
+    PetscMatType MATSELL
+    PetscMatType MATSEQSELL
+    PetscMatType MATMPISELL
     PetscMatType MATDUMMY
 
     ctypedef char* PetscMatOrderingType "const char*"
