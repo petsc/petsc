@@ -285,8 +285,6 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 @*/
 PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->coloringtype = ctype;
@@ -314,8 +312,6 @@ PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
 @*/
 PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *ctype = dm->coloringtype;
