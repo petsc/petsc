@@ -11,7 +11,7 @@ class TSType(object):
     PYTHON   = S_(TSPYTHON)
     THETA    = S_(TSTHETA)
     ALPHA    = S_(TSALPHA)
-    ALPHA2  = S_(TSALPHA2)
+    ALPHA2   = S_(TSALPHA2)
     GLLE     = S_(TSGLLE)
     GLEE     = S_(TSGLEE)
     SSP      = S_(TSSSP)
@@ -20,6 +20,7 @@ class TSType(object):
     EIMEX    = S_(TSEIMEX)
     MIMEX    = S_(TSMIMEX)
     BDF      = S_(TSBDF)
+    RADAU5   = S_(TSRADAU5)
     # aliases
     FE = EULER
     BE = BEULER
