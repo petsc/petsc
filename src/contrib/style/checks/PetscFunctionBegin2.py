@@ -12,6 +12,7 @@
 #
 
 
+from __future__ import print_function
 import sys
 import re
 
@@ -23,7 +24,7 @@ for arg in sys.argv[1:]:
     inputfile.close()
 
     if re.search("(\n [^\n]*; *\n *PetscFunctionBegin)", filestring):
-        print arg
+        print(arg)
 
     #for match in re.finditer("(\n [^\n]*; *\n *PetscFunctionBegin)", filestring, re.S):
     #  print arg + " " + match.group(1)

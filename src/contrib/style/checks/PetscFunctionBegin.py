@@ -10,6 +10,7 @@
 #
 
 
+from __future__ import print_function
 import sys
 import re
 
@@ -21,7 +22,7 @@ for arg in sys.argv[1:]:
     inputfile.close()
 
     if re.search("\n *PetscFunctionBegin[^\n]*\n\s*\n", filestring):
-        print arg
+        print(arg)
 
 
 

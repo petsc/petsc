@@ -1,4 +1,6 @@
 '''This module is meant to provide support for information and help systems based upon RDict.'''
+from __future__ import print_function
+from __future__ import absolute_import
 import logger
 
 class Info(logger.Logger):
@@ -164,7 +166,7 @@ class Help(Info):
         if not found:
           missing = 1
     if missing:
-      print 'Download the following packages to '+pkgdir+' \n'
+      print('Download the following packages to '+pkgdir+' \n')
     for i in self.argDB.dlist.keys():
       if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
         dlist = self.argDB.dlist[i]
@@ -179,8 +181,8 @@ class Help(Info):
                 self.argDB.insertArgs([self.clArgs[k]])
             break
         if not found:
-          print i + ' ' + str(self.argDB.dlist[i])
+          print(i + ' ' + str(self.argDB.dlist[i]))
     if missing:
-      print '\nThen run the script again\n'
+      print('\nThen run the script again\n')
       sys.exit(10)
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os, sys
 import json
 try:
@@ -25,6 +26,6 @@ j = json.loads(r.content)
 #  Example that access the functions in the stack
 j = j['directories']['SAWs_ROOT_DIRECTORY']['directories']['PETSc']['directories']['Stack']['variables']['functions']['data']
 
-print j
+print(j)
 
 

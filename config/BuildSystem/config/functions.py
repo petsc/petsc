@@ -135,7 +135,7 @@ builtin and then its argument prototype would still apply. */
   def checkSysinfo(self):
     '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
     self.check('sysinfo')
-    if self.defines.has_key(self.getDefineName('sysinfo')):
+    if self.getDefineName('sysinfo') in self.defines:
       map(self.headers.check, ['linux/kernel.h', 'sys/sysinfo.h', 'sys/systeminfo.h'])
       includes = '''
 #ifdef HAVE_LINUX_KERNEL_H

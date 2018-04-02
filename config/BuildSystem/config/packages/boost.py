@@ -34,7 +34,7 @@ class Configure(config.package.Package):
        self.logPrintBox('Installing boost headers, this should not take long')
        try:
          output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';' + 'ln -s $PWD/boost/ ' + boostIncludeDir, timeout=6000, log = self.log)
-       except RuntimeError, e:
+       except RuntimeError as e:
          raise RuntimeError('Error linking '+self.packageDir+' to '+ boostIncludeDir)
        return self.installDir
     else:
@@ -46,7 +46,7 @@ class Configure(config.package.Package):
        self.installDirProvider.printSudoPasswordMessage()
        try:
          output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./bootstrap.sh --prefix='+self.installDir+'; ./b2 -j'+str(self.make.make_np)+';'+self.installSudo+'./b2 install', timeout=6000, log = self.log)
-       except RuntimeError, e:
+       except RuntimeError as e:
          raise RuntimeError('Error building/install Boost files from '+os.path.join(self.packageDir, 'Boost')+' to '+self.packageDir)
        self.postInstall(output+err,conffile)
     return self.installDir

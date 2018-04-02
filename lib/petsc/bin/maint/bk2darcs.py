@@ -10,6 +10,7 @@
 # local-bk-repo is a valid bk repository
 # local-darcs-repo is a new location
 
+from __future__ import print_function
 import sys
 import os
 
@@ -21,10 +22,10 @@ def main():
 
   arg_len = len(sys.argv)
   if arg_len != 3:
-    print 'Error Insufficient arguments.'
-    print 'Usage:', sys.argv[0], '[-i] local-bk-repo local-darcs-repo'
-    print 'Example:'
-    print '  bk2darcs.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-darcs'
+    print('Error Insufficient arguments.')
+    print('Usage:', sys.argv[0], '[-i] local-bk-repo local-darcs-repo')
+    print('Example:')
+    print('  bk2darcs.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-darcs')
     sys.exit()
   bk_repo = sys.argv[1]
   darcs_repo= sys.argv[2]
@@ -35,34 +36,34 @@ def main():
 
   # verify if bkdir exists
   if not os.path.exists(bk_repo):
-    print 'Error! specified path does not exist: ' + bk_repo
+    print('Error! specified path does not exist: ' + bk_repo)
     sys.exit()
 
   # if createdarcsrepo - then create & initialize the repo [if dir exists]
   # otherwise - make sure the dir exists [if not error]
   if os.path.exists(darcs_repo):
     if createdarcsrepo:
-      print 'Warning! ignoring option -i as specified darcsrepo exists: ' + darcs_repo
+      print('Warning! ignoring option -i as specified darcsrepo exists: ' + darcs_repo)
   else:
     if createdarcsrepo:
-      print 'Creating darcsrepo: ' + darcs_repo
+      print('Creating darcsrepo: ' + darcs_repo)
       os.mkdir(darcs_repo)
       os.chdir(darcs_repo)
       os.system("darcs initialize")
     else:
-      print 'Error! specified path does not exist: ' + darcs_repo
-      print 'If you need to create a new darcs-repo, use option: -i'
+      print('Error! specified path does not exist: ' + darcs_repo)
+      print('If you need to create a new darcs-repo, use option: -i')
       sys.exit()
 
   # verify the specified dirs are valid repositories
   os.chdir(bk_repo)
   if os.system("bk changes -r+ > /dev/null 2>&1"):
-    print 'Error! specified path is not a bk repository: ' + bk_repo
+    print('Error! specified path is not a bk repository: ' + bk_repo)
     sys.exit()
 
   os.chdir(darcs_repo)
   if os.system("darcs changes --last=1 > /dev/null 2>&1"):
-    print 'Error! specified path is not a darcs repository: ' + darcs_repo
+    print('Error! specified path is not a darcs repository: ' + darcs_repo)
     sys.exit()
 
   # now get the latest bk cset number
@@ -82,7 +83,7 @@ def main():
     bk_cset_min = buf.splitlines()[2].strip()
 
   if bk_cset_min == bk_cset_max:
-    print 'No new changesets Quitting! Last commit:', bk_cset_min
+    print('No new changesets Quitting! Last commit:', bk_cset_min)
     sys.exit()
 
   log_file=os.path.join(bk_repo,'darcs_log.tmp')
@@ -112,10 +113,10 @@ def main():
     fd.close()
     # Don't know how to handle branch changesets
     if len(revn.split('.')) > 2:
-      print 'Ignoring changeset  : '+revn
+      print('Ignoring changeset  : '+revn)
       continue
 
-    print 'Processing changeset: '+revn
+    print('Processing changeset: '+revn)
     # get revi
     revi = int(revn.split('.')[1])
     # get username
@@ -136,7 +137,7 @@ def main():
     os.chdir(darcs_repo)
     # verify darcs again
     if os.system("darcs changes --last=1 > /dev/null 2>&1"):
-      print 'Error! specified path is not a darcs repository: ' + darcs_repo
+      print('Error! specified path is not a darcs repository: ' + darcs_repo)
       sys.exit()
 
     # Now remove the old files - and export the new modified files
@@ -146,7 +147,7 @@ def main():
 
     # optimize/checkpoint every 250 patches
     if revi%250 == 0  and revi != 0 and rev != lastrev:
-      print 'checkpointing/optimizing changeset-'+ revn
+      print('checkpointing/optimizing changeset-'+ revn)
       os.system('darcs tag -A snapshot@petsc snapshot-'+revn +'> /dev/null 2>&1')
       os.system('darcs optimize --checkpoint -t snapshot-'+revn +'> /dev/null 2>&1')
   return 0

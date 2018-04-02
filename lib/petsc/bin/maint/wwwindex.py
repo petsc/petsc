@@ -8,6 +8,7 @@
 #  Usage:
 #    wwwindex.py PETSC_DIR LOC
 #
+from __future__ import print_function
 import os
 import glob
 import posixpath
@@ -42,19 +43,19 @@ def printindex(outfilename,headfilename,levels,titles,tables):
             try:
                   fd = open(headfilename,'r')
             except:
-                  print 'Error reading file',headfilename
+                  print('Error reading file',headfilename)
                   exit()
             headbuf = fd.read()
             headbuf = replace(headbuf,'PETSC_DIR','../../../')
             fd.close()
       else:
-            print 'Header file \'' + headfilename + '\' does not exist'
+            print('Header file \'' + headfilename + '\' does not exist')
 
       # Now open the output file.
       try:
             fd = open(outfilename,'w')
       except:
-            print 'Error writing to file',outfilename
+            print('Error writing to file',outfilename)
             exit()
 
       # Add the HTML Header info here.
@@ -105,7 +106,7 @@ def printsingleindex(outfilename,alphabet_dict):
       try:
             fd = open(outfilename,'w')
       except:
-            print 'Error writing to file',outfilename
+            print('Error writing to file',outfilename)
             exit()
 
       alphabet_index = alphabet_dict.keys()
@@ -159,7 +160,7 @@ def modifylevel(filename,secname):
       try:
             fd = open(filename,'r')
       except:
-            print 'Error! Cannot open file:',filename
+            print('Error! Cannot open file:',filename)
             exit()
       buf    = fd.read()
       fd.close()
@@ -169,7 +170,7 @@ def modifylevel(filename,secname):
       if m:
             level = m.group(2)
       else:
-            print 'Error! No level info in file:', filename
+            print('Error! No level info in file:', filename)
 
       # Now takeout the level info, and move it to the end,
       # and also add the bold format.
@@ -194,7 +195,7 @@ def modifylevel(filename,secname):
             #fd = open(filename[:-1],'w')
             fd = open(filename,'w')
       except:
-            print 'Error! Cannot write to file:',filename
+            print('Error! Cannot write to file:',filename)
             exit()
       fd.write(outbuf)
       fd.close()
@@ -206,7 +207,7 @@ def createtable(dirname,levels,secname):
       htmlfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.html')]
       htmlfiles.sort()
       if htmlfiles == []:
-            print 'Error! Empty directory:',dirname
+            print('Error! Empty directory:',dirname)
             return None
 
       table = []
@@ -218,7 +219,7 @@ def createtable(dirname,levels,secname):
             if lower(level) in levels:
                   table[levels.index(lower(level))].append(filename)
             else:
-                  print 'Error! Unknown level \''+ level + '\' in', filename
+                  print('Error! Unknown level \''+ level + '\' in', filename)
       return table
 
 # This routine is called for each man dir. Each time, it
@@ -229,7 +230,7 @@ def addtolist(dirname,singlelist):
       htmlfiles = [os.path.join(dirname,f) for f in os.listdir(dirname) if f.endswith('.html')]
       htmlfiles.sort()
       if htmlfiles == []:
-            print 'Error! Empty directory:',dirname
+            print('Error! Empty directory:',dirname)
             return None
 
       for filename in htmlfiles:
@@ -251,7 +252,7 @@ def createdict(singlelist):
             index_char    = lower(name[0:1])
             # remove the .name suffix from name
             func_name,ext = posixpath.splitext(name)
-            if not newdict.has_key(index_char):
+            if index_char not in newdict:
                   newdict[index_char] = {}
             newdict[index_char][func_name] = path + '/' + name
 
@@ -276,8 +277,8 @@ def main():
       arg_len = len(argv)
 
       if arg_len < 3:
-            print 'Error! Insufficient arguments.'
-            print 'Usage:', argv[0], 'PETSC_DIR','LOC'
+            print('Error! Insufficient arguments.')
+            print('Usage:', argv[0], 'PETSC_DIR','LOC')
             exit()
 
       PETSC_DIR = argv[1]

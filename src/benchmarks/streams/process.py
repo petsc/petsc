@@ -6,6 +6,7 @@
 #    matplotlib can switch between different backends hence this needs to be run 
 #    twice to first generate a file and then display a window
 #
+from __future__ import print_function
 import os
 #
 def process(fileoutput = 1):
@@ -34,14 +35,14 @@ def process(fileoutput = 1):
   if len(hosts) < 2: return
 
   ff = open('scaling.log','a')
-  if fileoutput: print 'np  speedup'
+  if fileoutput: print('np  speedup')
   if fileoutput: ff.write('np  speedup\n')
   for sizes in hosts:
     speedups[sizes] = triads[sizes]/triads[1]
-    if fileoutput: print sizes,round(triads[sizes]/triads[1],2)
+    if fileoutput: print(sizes,round(triads[sizes]/triads[1],2))
     if fileoutput: ff.write(str(sizes)+' '+str(round(triads[sizes]/triads[1],2))+'\n')
 
-  if fileoutput: print "Estimation of possible speedup of MPI programs based on Streams benchmark."
+  if fileoutput: print("Estimation of possible speedup of MPI programs based on Streams benchmark.")
   if fileoutput: ff.write("Estimation of possible speedup of MPI programs based on Streams benchmark.\n")
 
   if fileoutput:
@@ -51,7 +52,7 @@ def process(fileoutput = 1):
     for i in range(0,len(lasthosts)):
       lasthosts[i] = re.sub(r"Process [0-9]*", "", lasthosts[i])
     ulasthosts = list(set(lasthosts))
-    print "It appears you have "+str(len(ulasthosts))+" node(s)"
+    print("It appears you have "+str(len(ulasthosts))+" node(s)")
     ff.write("It appears you have "+str(len(ulasthosts))+" node(s)\n")
 
     if len(ulasthosts) < 1:
@@ -59,23 +60,23 @@ def process(fileoutput = 1):
       for i in range(0,len(lasthosts)):
         testhosts.append(ulasthosts[i % len(ulasthosts)])
       if testhosts == lasthosts:
-        print "   distributed in a round robin order"
+        print("   distributed in a round robin order")
         ff.write("   distributed in a round robin order\n")
       else:
-        print "   NOT distributed in a round robin order"
+        print("   NOT distributed in a round robin order")
         ff.write("   NOT distributed in a round robin order\n")
 
   try:
     import matplotlib
   except:
-    print "Unable to open matplotlib to plot speedup"
+    print("Unable to open matplotlib to plot speedup")
     return
 
   try:
     if fileoutput: matplotlib.use('Agg')
     import matplotlib.pyplot as plt
   except:
-    print "Unable to open matplotlib to plot speedup"
+    print("Unable to open matplotlib to plot speedup")
     return
 
   try:
@@ -100,11 +101,11 @@ def process(fileoutput = 1):
 
     plt.show()
     if fileoutput: plt.savefig('scaling.png')
-    if fileoutput: print "See graph in the file src/benchmarks/streams/scaling.png"
+    if fileoutput: print("See graph in the file src/benchmarks/streams/scaling.png")
     if fileoutput: ff.write("See graph in the file src/benchmarks/streams/scaling.png\n")
-  except Exception, e:
-    if fileoutput: print "Unable to plot speedup to a file"
-    else: print "Unable to display speedup plot"
+  except Exception as e:
+    if fileoutput: print("Unable to plot speedup to a file")
+    else: print("Unable to display speedup plot")
     return
 
   ff.close()

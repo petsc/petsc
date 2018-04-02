@@ -7,6 +7,7 @@
 #           ./gcov.py -merge_gcov [LOC] tarballs
 #
 
+from __future__ import print_function
 import os
 import string
 import shutil
@@ -22,11 +23,11 @@ def run_gcov(gcov_dir):
     # 2. Saves the untested source code line numbers in
     #    xxx.c.lines files in gcov_dir
 
-    print "Creating directory to save .lines files\n"
+    print("Creating directory to save .lines files\n")
     if os.path.isdir(gcov_dir):
         shutil.rmtree(gcov_dir)
     os.mkdir(gcov_dir)
-    print "Running gcov\n"
+    print("Running gcov\n")
     for root,dirs,files in os.walk(os.path.join(PETSC_DIR,"src")):
         # Directories to skip
         if (root.find('tests') != -1) | (root.find('tutorials') != -1) | (root.find('benchmarks') != -1)| (root.find('examples') != -1) | (root.find('src'+os.sep+'dm'+os.sep+'mesh') != -1) | (root.find('draw'+os.sep+'impls'+os.sep+'win32') != -1) | (root.find('impls'+os.sep+'python') != -1) :
@@ -53,7 +54,7 @@ def run_gcov(gcov_dir):
                         for line in gcov_fid:
                             if line.find("#####") > 0:
                                 line_num = line.split(":")[1].strip()
-                                print >>lines_fid,"""%s"""%(line_num)
+                                print("""%s"""%(line_num), file=lines_fid)
                         gcov_fid.close()
                         lines_fid.close()
                     except IOError:
@@ -73,23 +74,23 @@ def run_gcov(gcov_dir):
                             if line.lstrip().startswith('/*'):
                                 in_comment = 1
                             if in_comment == 0:
-                                print >>lines_fid,"""%s"""%(line_num)
+                                print("""%s"""%(line_num), file=lines_fid)
                             if in_comment & (line.find('*/') != -1):
                                 in_comment = 0
                             line_num += 1
                     file_id.close()
                     lines_fid.close()
-    print """Finshed running gcov on PETSc source code"""
+    print("""Finshed running gcov on PETSc source code""")
     return
 
 def make_tarball(dirname):
 
     # Create tarball of .lines files stored in gcov_dir
-    print """Creating tarball in %s to store gcov results files""" %(PETSC_DIR)
+    print("""Creating tarball in %s to store gcov results files""" %(PETSC_DIR))
     os.chdir(dirname)
     os.system("tar -czf "+PETSC_DIR+os.sep+"gcov.tar.gz *.lines")
     shutil.rmtree(dirname)
-    print """Tarball created in %s"""%(PETSC_DIR)
+    print("""Tarball created in %s"""%(PETSC_DIR))
     return
 
 def make_htmlpage(gcov_dir,LOC,tarballs):
@@ -110,11 +111,11 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     # -------------------------- Stage 1 -------------------------------
     len_tarballs = len(tarballs)
     if len_tarballs == 0:
-        print "No gcov tar balls found in directory %s" %(cwd)
+        print("No gcov tar balls found in directory %s" %(cwd))
         sys.exit()
 
-    print "%s tarballs found\n%s" %(len_tarballs,tarballs)
-    print "Extracting gcov directories from tar balls"
+    print("%s tarballs found\n%s" %(len_tarballs,tarballs))
+    print("Extracting gcov directories from tar balls")
     #  Each tar file consists of a bunch of *.line files NOT inside a directory
     tmp_dirs = []
     for i in range(0,len_tarballs):
@@ -136,7 +137,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
     # Create temporary gcov directory to store .lines files
-    print "Merging files"
+    print("Merging files")
     nfiles = tmp_dirs[0][1]
     files_dir1 = os.listdir(tmp_dirs[0][0])
     for i in range(0,nfiles):
@@ -165,14 +166,14 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
         out_fid.close()
 
     # Remove directories created by extracting tar files
-    print "Removing temporary directories"
+    print("Removing temporary directories")
     for j in range(0,len(tmp_dirs)):
         shutil.rmtree(tmp_dirs[j][0])
 
     # ------------------------- End of Stage 1 ---------------------------------
 
     # ------------------------ Stage 2 -------------------------------------
-    print "Processing .lines files in %s" %(gcov_dir)
+    print("Processing .lines files in %s" %(gcov_dir))
     gcov_filenames = os.listdir(gcov_dir)
     nsrc_files = 0;
     nsrc_files_not_tested = 0;
@@ -181,7 +182,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     src_not_tested_lines = [];
     src_not_tested_nlines = [];
     ctr = 0;
-    print "Processing gcov files"
+    print("Processing gcov files")
     for file in gcov_filenames:
         tmp_filename = string.replace(file,'_',os.sep)
         src_file = string.split(tmp_filename,'.lines')[0]
@@ -207,7 +208,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     # ------------------------- End of Stage 2 --------------------------
 
     # ---------------------- Stage 3 -----------------------------------
-    print "Creating marked HTML files"
+    print("Creating marked HTML files")
     temp_string = '<a name'
     spaces_12 = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'
     file_len = len(src_not_tested_nlines)
@@ -288,7 +289,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
                         temp_outline = spaces_12+line
             else:
                 temp_outline = spaces_12+line
-            print >>outhtml_fid,temp_outline
+            print(temp_outline, file=outhtml_fid)
             outhtml_fid.flush()
 
         inhtml_fid.close()
@@ -308,7 +309,7 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
 
     # ------------------------------- Stage 4 ----------------------------------------------
     # Create Main HTML page containing statistics and marked HTML file links
-    print "Creating main HTML page"
+    print("Creating main HTML page")
     # Create the main html file
     # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
     # ----------------------------- index_gcov2.html has results sorted by % code tested ------------------------------
@@ -316,75 +317,73 @@ def make_htmlpage(gcov_dir,LOC,tarballs):
     outfile_name1 = LOC+os.sep+'index_gcov1.html'
     outfile_name2 = LOC+os.sep+'index_gcov2.html'
     out_fid = open(outfile_name1,'w')
-    print >>out_fid, \
-    """<html>
+    print("""<html>
     <head>
       <title>PETSc:Code Testing Statistics</title>
     </head>
-    <body style="background-color: rgb(213, 234, 255);">"""
-    print >>out_fid,"""<center>%s</center>"""%(date_time)
-    print >>out_fid,"""<h2><center>Gcov statistics </center></h2>"""
-    print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
-    print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
+    <body style="background-color: rgb(213, 234, 255);">""", file=out_fid)
+    print("""<center>%s</center>"""%(date_time), file=out_fid)
+    print("""<h2><center>Gcov statistics </center></h2>""", file=out_fid)
+    print("""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files), file=out_fid)
+    print("""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested), file=out_fid)
     if float(nsrc_files) > 0: ratio = float(nsrc_files_not_tested)/float(nsrc_files)*100.0
     else: ratio = 0.0
-    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %(ratio)
-    print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
-    print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
+    print("""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %(ratio), file=out_fid)
+    print("""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines), file=out_fid)
+    print("""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested), file=out_fid)
     if float(ntotal_lines) > 0: ratio = float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0
     else: ratio = 0.0
-    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" %ratio
-    print >>out_fid,"""<hr>
-    <a href = %s>See statistics sorted by percent code tested</a>""" % ('index_gcov2.html')
-    print >>out_fid,"""<br><br>
-    <h4><u><center>Statistics sorted by file name</center></u></h4>"""
-    print >>out_fid,"""<table border="1" align = "center">
-    <tr><th>Source Code</th><th>Lines in source code</th><th>Number of lines not tested</th><th>% Code not tested</th></tr>"""
+    print("""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" %ratio, file=out_fid)
+    print("""<hr>
+    <a href = %s>See statistics sorted by percent code tested</a>""" % ('index_gcov2.html'), file=out_fid)
+    print("""<br><br>
+    <h4><u><center>Statistics sorted by file name</center></u></h4>""", file=out_fid)
+    print("""<table border="1" align = "center">
+    <tr><th>Source Code</th><th>Lines in source code</th><th>Number of lines not tested</th><th>% Code not tested</th></tr>""", file=out_fid)
 
     output_list.sort(key=lambda x:x[0].lower())
     for file_ctr in range(0,nsrc_files_not_tested-nfiles_not_processed):
-        print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (output_list[file_ctr][1],output_list[file_ctr][0],output_list[file_ctr][3],output_list[file_ctr][2],output_list[file_ctr][4])
+        print("<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (output_list[file_ctr][1],output_list[file_ctr][0],output_list[file_ctr][3],output_list[file_ctr][2],output_list[file_ctr][4]), file=out_fid)
 
-    print >>out_fid,"""</body>
-    </html>"""
+    print("""</body>
+    </html>""", file=out_fid)
     out_fid.close()
 
     # ----------------------------- index_gcov2.html has results sorted by percentage code tested ----------------------------------
     out_fid = open(outfile_name2,'w')
-    print >>out_fid, \
-    """<html>
+    print("""<html>
     <head>
       <title>PETSc:Code Testing Statistics</title>
     </head>
-    <body style="background-color: rgb(213, 234, 255);">"""
-    print >>out_fid,"""<center>%s</center>"""%(date_time)
-    print >>out_fid,"""<h2><center>Gcov statistics</center></h2>"""
-    print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
-    print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
+    <body style="background-color: rgb(213, 234, 255);">""", file=out_fid)
+    print("""<center>%s</center>"""%(date_time), file=out_fid)
+    print("""<h2><center>Gcov statistics</center></h2>""", file=out_fid)
+    print("""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files), file=out_fid)
+    print("""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested), file=out_fid)
     if float(nsrc_files) > 0: ratio = float(nsrc_files_not_tested)/float(nsrc_files)*100.0
     else: ratio = 0.0
-    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %ratio
-    print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
-    print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
+    print("""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %ratio, file=out_fid)
+    print("""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines), file=out_fid)
+    print("""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested), file=out_fid)
     if float(ntotal_lines) > 0: ratio = float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0
     else: ratio = 0.0
-    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % ratio
-    print >>out_fid,"""<hr>
-    <a href = %s>See statistics sorted by file name</a>""" % ('index_gcov1.html')
-    print >>out_fid,"""<br><br>
-    <h4><u><center>Statistics sorted by percent code tested</center></u></h4>"""
-    print >>out_fid,"""<table border="1" align = "center">
-    <tr><th>Source Code</th><th>Lines in source code</th><th>Number of lines not tested</th><th>% Code not tested</th></tr>"""
+    print("""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % ratio, file=out_fid)
+    print("""<hr>
+    <a href = %s>See statistics sorted by file name</a>""" % ('index_gcov1.html'), file=out_fid)
+    print("""<br><br>
+    <h4><u><center>Statistics sorted by percent code tested</center></u></h4>""", file=out_fid)
+    print("""<table border="1" align = "center">
+    <tr><th>Source Code</th><th>Lines in source code</th><th>Number of lines not tested</th><th>% Code not tested</th></tr>""", file=out_fid)
     output_list.sort(key=operator.itemgetter(4),reverse=True)
     for file_ctr in range(0,nsrc_files_not_tested-nfiles_not_processed):
-        print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (output_list[file_ctr][1],output_list[file_ctr][0],output_list[file_ctr][3],output_list[file_ctr][2],output_list[file_ctr][4])
+        print("<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (output_list[file_ctr][1],output_list[file_ctr][0],output_list[file_ctr][3],output_list[file_ctr][2],output_list[file_ctr][4]), file=out_fid)
 
-    print >>out_fid,"""</body>
-    </html>"""
+    print("""</body>
+    </html>""", file=out_fid)
     out_fid.close()
 
-    print "End of gcov script"
-    print """See index_gcov1.html in %s""" % (LOC)
+    print("End of gcov script")
+    print("""See index_gcov1.html in %s""" % (LOC))
     return
 
 def main():
@@ -393,28 +392,28 @@ def main():
     gcov_dir = "/tmp/gcov-"+USER
 
     if (sys.argv[1] == "-run_gcov"):
-        print "Running gcov and creating tarball"
+        print("Running gcov and creating tarball")
         run_gcov(gcov_dir)
         make_tarball(gcov_dir)
     elif (sys.argv[1] == "-merge_gcov"):
-        print "Creating main html page"
+        print("Creating main html page")
     # check to see if LOC is given
         if os.path.isdir(sys.argv[2]):
-            print "Using %s to save the main HTML file pages" % (sys.argv[2])
+            print("Using %s to save the main HTML file pages" % (sys.argv[2]))
             LOC = sys.argv[2]
             tarballs = sys.argv[3:]
         else:
-            print "No Directory specified for saving main HTML file pages, using PETSc root directory"
+            print("No Directory specified for saving main HTML file pages, using PETSc root directory")
             LOC = PETSC_DIR
             tarballs = sys.argv[2:]
 
         make_htmlpage(gcov_dir,LOC,tarballs)
     else:
-        print "No or invalid option specified:"
-        print "Usage: To run gcov and create tarball"
-        print "         ./gcov.py -run_gcov      "
-        print "Usage: To create main html page"
-        print "         ./gcov.py -merge_gcov [LOC] tarballs"
+        print("No or invalid option specified:")
+        print("Usage: To run gcov and create tarball")
+        print("         ./gcov.py -run_gcov      ")
+        print("Usage: To create main html page")
+        print("         ./gcov.py -merge_gcov [LOC] tarballs")
 
 if __name__ == '__main__':
     main()

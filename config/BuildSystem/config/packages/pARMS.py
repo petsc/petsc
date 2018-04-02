@@ -78,7 +78,7 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+libDir, timeout=2500, log=self.log)
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+incDir, timeout=2500, log=self.log)
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make cleanall && make OBJ3="" && '+self.installSudo+'cp -f include/*.h '+incDir +' && '+self.installSudo+'cp lib/* '+libDir, timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.postInstall(output+err,'makefile.in')
     return self.installDir

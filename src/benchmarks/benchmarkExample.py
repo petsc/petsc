@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os,sys
 sys.path.append(os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.append(os.getcwd())
@@ -56,7 +57,7 @@ class PETScExample(object):
 
     Popen = subprocess.Popen
     PIPE  = subprocess.PIPE
-    if log: print 'Executing: %s\n' % (command,)
+    if log: print('Executing: %s\n' % (command,))
     pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE, bufsize=-1, shell=True, universal_newlines=True)
     (out, err) = pipe.communicate()
     ret = pipe.returncode
@@ -90,8 +91,8 @@ class PETScExample(object):
     cmd = 'mv '+os.path.join(sdir, 'ex'+str(self.num))+' '+self.petsc.example(self.library, self.num)
     out, err, ret = self.runShellCommand(cmd, log = log)
     if ret:
-      print err
-      print out
+      print(err)
+      print(out)
     return
 
   def run(self, numProcs = 1, log = True, **opts):
@@ -100,7 +101,7 @@ class PETScExample(object):
       cmd += self.petsc.mpiexec() + ' '
       numProcs = os.environ.get('NUM_RANKS', numProcs)
       cmd += ' -n ' + str(numProcs) + ' '
-      if os.environ.has_key('PE_HOSTFILE'):
+      if 'PE_HOSTFILE' in os.environ:
         cmd += ' -hostfile hostfile '
     cmd += ' '.join([self.petsc.example(self.library, self.num), self.optionsToString(**self.opts), self.optionsToString(**opts)])
     if 'batch' in opts and opts['batch']:
@@ -109,13 +110,13 @@ class PETScExample(object):
       # Submit job
       out, err, ret = self.runShellCommand('qsub -q gpu '+filename, log = log)
       if ret:
-        print err
-        print out
+        print(err)
+        print(out)
     else:
       out, err, ret = self.runShellCommand(cmd, log = log)
       if ret:
-        print err
-        print out
+        print(err)
+        print(out)
     return out
 
 def processSummary(moduleName, defaultStage, eventNames, times, events):
@@ -174,8 +175,8 @@ def plotEventTime(library, num, eventNames, sizes, times, events, filename = Non
         data.append(np.array(events[arch][bs][event])[:,0])
         data.append(color+style)
       else:
-        print 'Could not find %s in %s-%d events' % (event, arch, bs)
-  print data
+        print('Could not find %s in %s-%d events' % (event, arch, bs))
+  print(data)
   plot(*data)
   title('Performance on '+library+' Example '+str(num))
   xlabel('Number of Dof')
@@ -203,7 +204,7 @@ def plotEventFlop(library, num, eventNames, sizes, times, events, filename = Non
         data.append(1e-3*np.array(events[arch][bs][event])[:,1])
         data.append(color+style)
       else:
-        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+        print('Could not find %s in %s-%d events' % (event, arch, bs))
   semilogy(*data)
   title('Performance on '+library+' Example '+str(num))
   xlabel('Number of Dof')
@@ -231,7 +232,7 @@ def plotEventScaling(library, num, eventNames, procs, events, filename = None):
         data.append(1e-3*np.array(events[arch][bs][event])[:,1])
         data.append(color+style)
       else:
-        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+        print('Could not find %s in %s-%d events' % (event, arch, bs))
   plot(*data)
   title('Performance on '+library+' Example '+str(num))
   xlabel('Number of Processors')
@@ -276,8 +277,8 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
           data.append(np.array(events[arch][bs][event])[:,0])
           data.append(color+style)
         else:
-          print 'Could not find %s in %s-%d events' % (event, arch, bs)
-    print data
+          print('Could not find %s in %s-%d events' % (event, arch, bs))
+    print(data)
     plot(*data)
     title('Performance on '+library+' Example '+str(num))
     xlabel('Number of Dof')
@@ -298,7 +299,7 @@ def plotSummaryLine(library, num, eventNames, sizes, times, events):
           data.append(np.array(events[arch][bs][event])[:,1])
           data.append(color+style)
         else:
-          print 'Could not find %s in %s-%d events' % (event, arch, bs)
+          print('Could not find %s in %s-%d events' % (event, arch, bs))
     plot(*data)
     title('Performance on '+library+' Example '+str(num))
     xlabel('Number of Dof')
@@ -440,7 +441,7 @@ if __name__ == '__main__':
 
   if args.daemon:
     import daemon
-    print 'Starting daemon'
+    print('Starting daemon')
     daemon.createDaemon('.')
 
   for run in args.runs:
