@@ -280,7 +280,7 @@ int main(int argc, char **argv) {
   ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
-  ierr = PetscMalloc(2,&dmList);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,&dmList);CHKERRQ(ierr);
   dmList[0] = dmU;
   dmList[1] = dmA;
   /* We temporarily disable dmU->useNatural to test that we can reconstruct the 
