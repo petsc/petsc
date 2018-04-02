@@ -2152,6 +2152,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionBegin;
   if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
   ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  (*subdm)->useNatural = dm->useNatural;
   if (dm->useNatural && dm->sfMigration) {
     PetscSF        sfMigrationInv,sfNatural;
     PetscSection   section, sectionSeq;
@@ -2164,7 +2165,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
     ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
   
     ierr = DMPlexCreateGlobalToNaturalSF(*subdm, sectionSeq, (*subdm)->sfMigration, &sfNatural);CHKERRQ(ierr);  
-    ierr = DMPlexSetGlobalToNaturalSF(*subdm,sfNatural);CHKERRQ(ierr);
+    (*subdm)->sfNatural = sfNatural;
     ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
   }
@@ -2179,6 +2180,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
   PetscFunctionBegin;
   if (superdm) {ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);}
   ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
+  (*superdm)->useNatural = PETSC_FALSE;
   for (i = 0; i < len; i++){
     if (dms[i]->useNatural && dms[i]->sfMigration) {
       PetscSF        sfMigrationInv,sfNatural;
@@ -2186,13 +2188,14 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
 
       (*superdm)->sfMigration = dms[i]->sfMigration;
       ierr = PetscObjectReference((PetscObject) dms[i]->sfMigration);CHKERRQ(ierr);
+      (*superdm)->useNatural = PETSC_TRUE;
       ierr = DMGetDefaultSection((*superdm), &section);CHKERRQ(ierr);CHKERRQ(ierr);
       ierr = PetscSFCreateInverseSF((*superdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*superdm)), &sectionSeq);CHKERRQ(ierr);
       ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
     
       ierr = DMPlexCreateGlobalToNaturalSF(*superdm, sectionSeq, (*superdm)->sfMigration, &sfNatural);CHKERRQ(ierr);  
-      ierr = DMPlexSetGlobalToNaturalSF(*superdm,sfNatural);CHKERRQ(ierr);
+      (*superdm)->sfNatural = sfNatural;
       ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
       break;
