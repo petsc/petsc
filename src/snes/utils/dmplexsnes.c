@@ -1636,14 +1636,16 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
     if (useFEM) {
       /* Add elemVec to locX */
       for (cell = cS; cell < cE; ++cell) {
-        if (mesh->printFEM > 1) {ierr = DMPrintCellVector(cell, name, totDim, &elemVec[cell*totDim]);CHKERRQ(ierr);}
+        const PetscInt c = cell - cS;
+
+        if (mesh->printFEM > 1) {ierr = DMPrintCellVector(cell, name, totDim, &elemVec[c*totDim]);CHKERRQ(ierr);}
         if (ghostLabel) {
           PetscInt ghostVal;
 
           ierr = DMLabelGetValue(ghostLabel,cell,&ghostVal);CHKERRQ(ierr);
           if (ghostVal > 0) continue;
         }
-        ierr = DMPlexVecSetClosure(dm, section, locF, cell, &elemVec[cell*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
+        ierr = DMPlexVecSetClosure(dm, section, locF, cell, &elemVec[c*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
       }
     }
     if (useFVM) {
