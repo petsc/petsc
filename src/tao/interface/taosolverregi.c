@@ -17,6 +17,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao);
+PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao);
 PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao);
@@ -85,6 +86,7 @@ PetscErrorCode TaoRegisterAll(void)
   ierr = TaoRegister(TAOBNCG,TaoCreate_BNCG);CHKERRQ(ierr);
   ierr = TaoRegister(TAOBNLS,TaoCreate_BNLS);CHKERRQ(ierr);
   ierr = TaoRegister(TAOBNTR,TaoCreate_BNTR);CHKERRQ(ierr);
+  ierr = TaoRegister(TAOBNTL,TaoCreate_BNTL);CHKERRQ(ierr);
   ierr = TaoRegister(TAOBQPIP,TaoCreate_BQPIP);CHKERRQ(ierr);
   ierr = TaoRegister(TAOGPCG,TaoCreate_GPCG);CHKERRQ(ierr);
   ierr = TaoRegister(TAONM,TaoCreate_NM);CHKERRQ(ierr);

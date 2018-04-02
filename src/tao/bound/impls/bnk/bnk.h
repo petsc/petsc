@@ -220,4 +220,5 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, PetscInt*);
+PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscBool*);
