@@ -144,6 +144,9 @@
         <li>Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other PETSc default monitor names, also now print with the same format as other monitors %3D Tao ....</li>
         <li>Added VecLock{Push|Pop} calls around user callbacks; use of VecGetArray in user callbacks is now prohibited.</li>
         <li>Added default matrix-free finite-differencing implementation for Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be selected with -tao_mf_hessian at command line.</li>
+        <li>Added Projected Gradient Descent (PGD) and Bounded Nonlinear Conjugate Gradient (BNCG) algorithms for bound constrained problems.</li>
+        <li>Improved support for recycling BFGS correction vectors between subsequent TaoSolve() calls for the unconstrained LMVM algorithm. Can be enabled using -tao_lmm_recycle at command line.</li>
+        <li>Convergence tests for all algorithms are separated out of TaoMonitor() calls.</li>
       </ul>
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
