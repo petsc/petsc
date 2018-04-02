@@ -228,9 +228,11 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
   aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
   aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
   stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set mv_hint");
   stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set memory_hint");
   stat = mkl_sparse_optimize(aijmkl->csrA);
-  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set hints/complete mkl_sparse_optimize");
+  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
   aijmkl->sparse_optimized = PETSC_TRUE;
   ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
 
