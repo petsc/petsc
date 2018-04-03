@@ -42,10 +42,15 @@ def summarize_results(directory,make,ntime):
     with open(cfile, 'r') as f:
       for line in f:
         l = line.split()
-        summary[l[0]] += l[1:] if l[0] == 'failures' else int(l[1])
-        if l[0] == 'time' and int(l[1])>0:
-            timesummary[cfile]=int(l[1])
-            timelist.append(int(l[1]))
+        if l[0] == 'failures':
+           summary[l[0]] += l[1:] if l[0] == 'failures' else int(l[1])
+        elif l[0] == 'time':
+           if len(l)==1: continue
+           summary[l[0]] += float(l[1])
+           timesummary[cfile]=float(l[1])
+           timelist.append(float(l[1]))
+        else:
+           summary[l[0]] += int(l[1])
 
   failstr=' '.join(summary['failures'])
   print("\n# -------------")
@@ -61,9 +66,8 @@ def summarize_results(directory,make,ntime):
   if failstr.strip():
       fail_targets=(
           re.sub('(?<=[0-9]_\w)_.*','',
-          re.sub('_1 ',' ',
           re.sub('cmd-','',
-          re.sub('diff-','',failstr+' '))))
+          re.sub('diff-','',failstr+' ')))
           )
       # Need to make sure we have a unique list
       fail_targets=' '.join(list(set(fail_targets.split())))
@@ -83,7 +87,7 @@ def summarize_results(directory,make,ntime):
       for timelimit in timelist[0:nlim]:
         for cf in timesummary:
           if timesummary[cf] == timelimit:
-              print("# %s: %d sec" % (re.sub('.counts','',cf), timesummary[cf]))
+              print("# %s: %.2f sec" % (re.sub('.counts','',cf), timesummary[cf]))
 
   return
 
