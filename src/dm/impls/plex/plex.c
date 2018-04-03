@@ -2152,7 +2152,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionBegin;
   if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
   ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
-  (*subdm)->useNatural = dm->useNatural;
+  if (subdm) {(*subdm)->useNatural = dm->useNatural;}
   if (dm->useNatural && dm->sfMigration) {
     PetscSF        sfMigrationInv,sfNatural;
     PetscSection   section, sectionSeq;
