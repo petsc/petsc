@@ -183,7 +183,7 @@ Number of SNES iterations=4
 L_2 Error: 0.0288 [0.000564, 0.0288]
 Integral of pressure: 0.
 Solution
-Vec Object: Solution 1 MPI processes
+Vec Object: Solution, Iterate 0 1 MPI processes
   type: seq
 -0.205673
 -0.00755668
