@@ -173,7 +173,6 @@ int main(int argc, char **argv) {
   ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-dm_section_view");CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
 
-
   {
     /* TODO: Replace with ExodusII viewer */
     /* Create the exodus result file */
@@ -243,6 +242,7 @@ int main(int argc, char **argv) {
       ierr = ex_close(exoid);CHKERRQ(ierr);
     }
   }
+
   {
     DM               pdm;
     PetscSF          migrationSF;
@@ -255,11 +255,13 @@ int main(int argc, char **argv) {
     ierr = DMPlexDistribute(dm,ovlp,&migrationSF,&pdm);CHKERRQ(ierr);
     if (pdm) {
       ierr = DMPlexSetMigrationSF(pdm,migrationSF);CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm = pdm;
       ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
     }
   }
+
   {
     /* TODO Replace with ExodusII viewer */
     /* Reopen the exodus result file on all processors */
@@ -275,11 +277,13 @@ int main(int argc, char **argv) {
 #endif
     exoid = ex_open_par(ofilename, EXO_mode, &CPU_word_size, &IO_word_size, &EXO_version, PetscObjectComm((PetscObject) dm), mpi_info);
   }
+
   /* Get DM and IS for each field of dm */
   ierr = DMCreateSubDM(dm, 1, &fieldU, &isU,  &dmU);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
   ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
+
   ierr = PetscMalloc1(2,&dmList);CHKERRQ(ierr);
   dmList[0] = dmU;
   dmList[1] = dmA;
@@ -287,7 +291,7 @@ int main(int argc, char **argv) {
      NaturaltoGlobal SF from any of the dm in dms
   */
   dmU->useNatural = PETSC_FALSE;
-  ierr = DMCreateSuperDM(dmList,2,PETSC_NULL,&dmUA2);
+  ierr = DMCreateSuperDM(dmList,2,NULL,&dmUA2);CHKERRQ(ierr);
   dmU->useNatural = PETSC_TRUE;
   ierr = PetscFree(dmList);CHKERRQ(ierr);
 
@@ -304,6 +308,7 @@ int main(int argc, char **argv) {
   ierr = PetscObjectSetName((PetscObject) UA, "UAlpha");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) UA2, "UAlpha2");CHKERRQ(ierr);
   ierr = VecSet(X, -111.);CHKERRQ(ierr);
+
   /* Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
   {
     PetscSection sectionUA;
@@ -445,8 +450,8 @@ int main(int argc, char **argv) {
     if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g\n", (double) norm);
     ierr = DMRestoreGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
   }
-
   ierr = ex_close(exoid);CHKERRQ(ierr);
+
   ierr = DMRestoreGlobalVector(dmUA2, &UA2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmUA, &UA);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmS,  &S);CHKERRQ(ierr);
