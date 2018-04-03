@@ -12,11 +12,14 @@ int main(int argc,char **args)
   PetscBool      flg;
   MatColoring    ctx;
   ISColoring     coloring;
-  
+  PetscMPIInt    size;
+
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to load sparse matrix");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatLoad(C,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -25,6 +28,9 @@ int main(int argc,char **args)
   ierr = MatColoringSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = MatColoringApply(ctx,&coloring);CHKERRQ(ierr);
   ierr = MatColoringTestValid(ctx,coloring);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = ISColoringTestValid(C,coloring);CHKERRQ(ierr);
+  }
 
   /* Free data structures */
   ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
