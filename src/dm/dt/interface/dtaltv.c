@@ -512,6 +512,64 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3])
+{
+  PetscInt        i, Nk, Nkm;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (k <= 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  ierr = PetscDTBinomial(N, k,   &Nk);CHKERRQ(ierr);
+  ierr = PetscDTBinomial(N, k-1, &Nkm);CHKERRQ(ierr);
+  if (N <= 3) {
+    if (k == 1) {
+      for (i = 0; i < N; i++) {
+        indices[i][0] = 0;
+        indices[i][1] = i;
+        indices[i][2] = i;
+      }
+    } else if (k == N) {
+      PetscInt val[3] = {0, -2, 2};
+
+      for (i = 0; i < N; i++) {
+        indices[i][0] = N - 1 - i;
+        indices[i][1] = 0;
+        indices[i][2] = val[i];
+      }
+    } else {
+      indices[0][0] = 0; indices[0][1] = 0; indices[0][2] = -(1 + 1);
+      indices[1][0] = 0; indices[1][1] = 1; indices[1][2] = -(2 + 1);
+      indices[2][0] = 1; indices[2][1] = 0; indices[2][2] = 0;
+      indices[3][0] = 1; indices[3][1] = 2; indices[3][2] = -(2 + 1);
+      indices[4][0] = 2; indices[4][1] = 1; indices[4][2] = 0;
+      indices[5][0] = 2; indices[5][1] = 2; indices[5][2] = 1;
+    }
+  } else {
+    PetscInt       *subset, *work;
+
+    ierr = PetscMalloc2(k, &subset, k, &work);CHKERRQ(ierr);
+    for (i = 0; i < Nk; i++) {
+      PetscInt  j, l, m;
+
+      ierr = PetscDTEnumSubset(N, k, i, subset);CHKERRQ(ierr);
+      for (j = 0; j < k; j++) {
+        PetscInt  idx;
+        PetscBool flip = (j & 1);
+
+        for (l = 0, m = 0; l < k; l++) {
+          if (l != j) work[m++] = subset[l];
+        }
+        ierr = PetscDTSubsetIndex(N, k - 1, work, &idx);CHKERRQ(ierr);
+        indices[i * k + j][0] = idx;
+        indices[i * k + j][1] = i;
+        indices[i * k + j][2] = flip ? -(subset[j] + 1) : subset[j];
+      }
+    }
+    ierr = PetscFree2(subset, work);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
 {
   PetscInt        Nk, i;

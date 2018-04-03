@@ -390,14 +390,49 @@ int main(int argc, char **argv)
         ierr = PetscFree3(L, u, x);CHKERRQ(ierr);
       }
       if (k > 0) { /* Interior */
-        PetscInt  Nkm, l, m;
-        PetscReal *wIntv0, *wIntv0check, wvcheck, diff, diffMat, normMat;
-        PetscReal *intv0mat;
+        PetscInt    Nkm, l, m;
+        PetscReal  *wIntv0, *wIntv0check, wvcheck, diff, diffMat, normMat;
+        PetscReal  *intv0mat, *matcheck;
+        PetscInt  (*indices)[3];
 
         ierr = PetscDTBinomial(N, k-1, &Nkm);CHKERRQ(ierr);
-        ierr = PetscMalloc3(Nkm, &wIntv0, Nkm, &wIntv0check, Nk * Nkm, &intv0mat);CHKERRQ(ierr);
+        ierr = PetscMalloc5(Nkm, &wIntv0, Nkm, &wIntv0check, Nk * Nkm, &intv0mat, Nk * Nkm, &matcheck, Nk * k, &indices);CHKERRQ(ierr);
         ierr = PetscDTAltVInterior(N, k, w, v, wIntv0);CHKERRQ(ierr);
         ierr = PetscDTAltVInteriorMatrix(N, k, v, intv0mat);CHKERRQ(ierr);
+        ierr = PetscDTAltVInteriorPattern(N, k, indices);CHKERRQ(ierr);
+        if (verbose) {
+          ierr = PetscViewerASCIIPrintf(viewer, "interior product matrix pattern:\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+          for (l = 0; l < Nk * k; l++) {
+            PetscInt row = indices[l][0];
+            PetscInt col = indices[l][1];
+            PetscInt x   = indices[l][2];
+
+            ierr = PetscViewerASCIIPrintf(viewer,"intV[%D,%D] = %sV[%D]\n", row, col, x < 0 ? "-" : " ", x < 0 ? -(x + 1) : x);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        }
+        for (l = 0; l < Nkm * Nk; l++) matcheck[l] = 0.;
+        for (l = 0; l < Nk * k; l++) {
+          PetscInt row = indices[l][0];
+          PetscInt col = indices[l][1];
+          PetscInt x   = indices[l][2];
+
+          if (x < 0) {
+            matcheck[row * Nk + col] = -v[-(x+1)];
+          } else {
+            matcheck[row * Nk + col] = v[x];
+          }
+        }
+        diffMat = 0.;
+        normMat = 0.;
+        for (l = 0; l < Nkm * Nk; l++) {
+          diffMat += PetscSqr(PetscAbsReal(matcheck[l] - intv0mat[l]));
+          normMat += PetscSqr(matcheck[l]) + PetscSqr(intv0mat[l]);
+        }
+        diffMat = PetscSqrtReal(diffMat);
+        normMat = PetscSqrtReal(normMat);
+        if (diffMat > PETSC_SMALL * normMat) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: matrix pattern does not match matrix");
         diffMat = 0.;
         normMat = 0.;
         for (l = 0; l < Nkm; l++) {
@@ -411,6 +446,7 @@ int main(int argc, char **argv)
         }
         diffMat = PetscSqrtReal(diffMat);
         normMat = PetscSqrtReal(normMat);
+        if (diffMat > PETSC_SMALL * normMat) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: application does not match matrix");
         if (verbose) {
           ierr = PetscViewerASCIIPrintf(viewer, "(w int v_0):\n");CHKERRQ(ierr);
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -425,7 +461,7 @@ int main(int argc, char **argv)
         ierr = PetscDTAltVApply(N, k - 1, wIntv0, &v[N], &wvcheck);CHKERRQ(ierr);
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));CHKERRQ(ierr);
         if (diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck))) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: (w Int v0)(v_rem) (%g) != w(v) (%g)", (double) wvcheck, (double) wv);
-        ierr = PetscFree3(wIntv0,wIntv0check,intv0mat);CHKERRQ(ierr);
+        ierr = PetscFree5(wIntv0,wIntv0check,intv0mat,matcheck,indices);CHKERRQ(ierr);
       }
       if (k >= N - k) { /* Hodge star */
         PetscReal *u, *starw, *starstarw, wu, starwdotu;
