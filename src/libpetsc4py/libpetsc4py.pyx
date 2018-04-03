@@ -703,7 +703,7 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
     PetscMat *out,
     ) \
     except IERR with gil:
-    FunctionBegin(b"MatCopy_Python")
+    FunctionBegin(b"MatCreateSubMatrix_Python")
     cdef createSubMatrix = PyMat(mat).createSubMatrix
     if createSubMatrix is None: return UNSUPPORTED(b"createSubMatrix")
     cdef Mat sub = None
@@ -711,10 +711,11 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
         sub = None
     elif op == MAT_INITIAL_MATRIX:
         sub = createSubMatrix(Mat_(mat), IS_(row), IS_(col), None)
+        if sub is not None:
+            addRef(sub.mat)
     elif op == MAT_REUSE_MATRIX:
         sub = createSubMatrix(Mat_(mat), IS_(row), IS_(col), Mat_(out[0]))
     if sub is not None:
-        addRef(sub.mat)
         out[0] = sub.mat
     return FunctionEnd()
 
