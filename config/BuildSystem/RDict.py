@@ -195,7 +195,7 @@ Arg class, which wraps the usual value.'''
     else:
       self.writeLogLine('__getitem__: Setting local type for '+key)
       dict.__setitem__(self, key, nargs.Arg(key))
-      self.save()
+      #self.save()
     self.writeLogLine('__getitem__: Setting local value for '+key)
     return dict.__getitem__(self, key).getValue()
 
@@ -218,7 +218,7 @@ Arg class, which wraps the usual value.'''
             print '-----------------------------------------------------------------------'
             pass
       dict.__setitem__(self, key, value)
-      self.save()
+      #self.save()
     else:
       return self.send(key, value)
     return
@@ -232,14 +232,14 @@ Arg class, which wraps the usual value.'''
         dict.__setitem__(self, key, nargs.Arg(key))
     dict.__getitem__(self, key).setValue(value)
     self.writeLogLine('__setitem__: Set value for '+key+' to '+str(dict.__getitem__(self, key)))
-    self.save()
+    #self.save()
     return
 
   def __delitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
     if dict.has_key(self, key):
       dict.__delitem__(self, key)
-      self.save()
+      #self.save()
     elif not self.parent is None:
       self.send(key)
     return
@@ -248,7 +248,7 @@ Arg class, which wraps the usual value.'''
     '''Clears both the local and parent dictionaries'''
     if dict.__len__(self):
       dict.clear(self)
-      self.save()
+      #self.save()
     if not self.parent is None:
       self.send()
     return
