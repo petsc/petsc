@@ -829,6 +829,7 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode VecScatterLocalOptimizeCopy(VecScatter,VecScatter_Seq_General*,VecScatter_Seq_General*,PetscInt);
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 extern PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
@@ -1948,17 +1949,18 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 @*/
 PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *frommap)
 {
-  VecScatter_MPI_General *to;
-  VecScatter_Seq_General *from;
-  PetscInt               i;
+  VecScatter_MPI_General *to,*from;
+  VecScatter_Seq_General *sgfrom;
+  PetscInt               i,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(scat,VEC_SCATTER_CLASSID,1);
   if (tomap)   PetscValidIntPointer(tomap,2);
   if (frommap) PetscValidIntPointer(frommap,3);
 
-  to   = (VecScatter_MPI_General*)scat->todata;
-  from = (VecScatter_Seq_General*)scat->fromdata;
+  to     = (VecScatter_MPI_General*)scat->todata;
+  from   = (VecScatter_MPI_General*)scat->fromdata;
+  sgfrom = (VecScatter_Seq_General*)scat->fromdata;
 
   /* remap indices from where we take/read data */
   if (tomap) {
@@ -1970,14 +1972,27 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *fromma
 
       /* handle local part */
       for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
-    } else if (from->format == VEC_SCATTER_SEQ_GENERAL) {
-      for (i=0; i<from->n; i++) from->vslots[i] = tomap[from->vslots[i]];
-    } else if (from->format == VEC_SCATTER_SEQ_STRIDE) {
-      VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride*)from;
+
+      /* test if the local part is made of copies and try to optimize it.
+         Before the remapping, the context may or may not contain optimized local copies.
+         After the remapping, old optimizations (if exist) may become invalid and new
+         optimization oppertunities may appear. So we free old stuff and try to re-optimize.
+       */
+      if (to->local.made_of_copies) {
+        ierr = PetscFree2(to->local.copy_starts,to->local.copy_lengths);CHKERRQ(ierr);
+        ierr = PetscFree2(from->local.copy_starts,from->local.copy_lengths);CHKERRQ(ierr);
+      }
+
+      to->local.made_of_copies = from->local.made_of_copies = PETSC_FALSE;
+      VecScatterLocalOptimizeCopy(scat,&to->local,&from->local,to->bs);
+    } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
+      for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
+    } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
+      VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
 
       /* if the remapping is the identity and stride is identity then skip remap */
-      if (sto->step == 1 && sto->first == 0) {
-        for (i=0; i<sto->n; i++) {
+      if (ssto->step == 1 && ssto->first == 0) {
+        for (i=0; i<ssto->n; i++) {
           if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
         }
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
