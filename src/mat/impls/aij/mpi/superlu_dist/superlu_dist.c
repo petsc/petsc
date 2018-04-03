@@ -248,7 +248,6 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_USE_COMPLEX)
 /*
   input:
    F:        numeric Cholesky factor
@@ -263,6 +262,7 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
   PetscScalar      *diagU=NULL;
   PetscInt         M,i,neg=0,zero=0,pos=0;
+  PetscReal        r;
 
   PetscFunctionBegin;
   if (!F->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
@@ -271,19 +271,26 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
   ierr = PetscMalloc1(M,&diagU);CHKERRQ(ierr);
   ierr = MatSuperluDistGetDiagU(F,diagU);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
-    if (diagU[i] > 0) {
+#if defined(PETSC_USE_COMPLEX)
+    r = PetscImaginaryPart(diagU[i])/10.0;
+    if (r< -PETSC_MACHINE_EPSILON || r>PETSC_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"diagU[%d]=%g + i %g is non-real",i,PetscRealPart(diagU[i]),r*10.0);
+    r = PetscRealPart(diagU[i]);
+#else
+    r = diagU[i];
+#endif
+    if (r > 0) {
       pos++;
-    } else if (diagU[i] < 0) {
+    } else if (r < 0) {
       neg++;
     } else zero++;
   }
+
   ierr = PetscFree(diagU);CHKERRQ(ierr);
   if (nneg)  *nneg  = neg;
   if (nzero) *nzero = zero;
   if (npos)  *npos  = pos;
   PetscFunctionReturn(0);
 }
-#endif
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
@@ -512,11 +519,10 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   F->ops->solve           = MatSolve_SuperLU_DIST;
   F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
   F->ops->getinertia      = NULL;
-#if !defined(PETSC_USE_COMPLEX)
-  if (A->symmetric) {
+
+  if (A->symmetric || A->hermitian) {
     F->ops->getinertia = MatGetInertia_SuperLU_DIST;
   }
-#endif
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
