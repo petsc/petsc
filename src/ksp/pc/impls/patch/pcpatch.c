@@ -1527,9 +1527,15 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     ierr = PetscMalloc1(patch->npatch, &patch->ksp);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
     for (i = 0; i < patch->npatch; ++i) {
+      PC subpc;
+
       ierr = KSPCreate(PETSC_COMM_SELF, &patch->ksp[i]);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(patch->ksp[i], prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(patch->ksp[i], "sub_");CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) patch->ksp[i], (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = KSPGetPC(patch->ksp[i], &subpc);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) patch->ksp[i]);CHKERRQ(ierr);
     }
     if (patch->save_operators) {
       ierr = PetscMalloc1(patch->npatch, &patch->mat);CHKERRQ(ierr);
