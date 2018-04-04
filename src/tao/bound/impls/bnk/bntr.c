@@ -5,8 +5,7 @@
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
 
- The linear system solve should be done with a conjugate gradient
- method, although any method can be used.
+ The linear system solve has to be done with a conjugate gradient method.
 */
 
 static PetscErrorCode TaoSolve_BNTR(Tao tao)
@@ -124,6 +123,8 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   }
   PetscFunctionReturn(0);
 }
+
+/*------------------------------------------------------------*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
 {

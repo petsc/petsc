@@ -6,8 +6,7 @@
  bound constrained minimization problems. This version includes a 
  line search fall-back in the event of a trust region failure.
 
- The linear system solve should be done with a conjugate gradient
- method, although any method can be used.
+ The linear system solve has to be done with a conjugate gradient method.
 */
 
 static PetscErrorCode TaoSolve_BNTL(Tao tao)
@@ -191,6 +190,8 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
   }
   PetscFunctionReturn(0);
 }
+
+/*------------------------------------------------------------*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {

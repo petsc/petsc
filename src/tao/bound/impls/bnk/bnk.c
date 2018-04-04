@@ -19,6 +19,10 @@ PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------*/
+
+/* Routine for initializing the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
+
 PetscErrorCode TaoBNKInitialize(Tao tao)
 {
   PetscErrorCode               ierr;
@@ -254,6 +258,18 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------*/
+
+/* Routine for computing the Newton step.
+
+  If the safeguard is enabled, the Newton step is verified to be a 
+  descent direction, with fallbacks onto BFGS, scaled gradient, and unscaled 
+  gradient steps if/when necessary.
+  
+  The function reports back on which type of step has ultimately been stored 
+  under tao->stepdirection.
+*/
+
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepType)
 {
   PetscErrorCode               ierr;
@@ -482,6 +498,14 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------*/
+
+/* Routine for performing a bound-projected More-Thuente line search.
+
+  Includes fallbacks to BFGS, scaled gradient, and unscaled gradient steps if the 
+  Newton step does not produce a valid step length.
+*/
+
 PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -614,6 +638,16 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
   *reason = ls_reason;
   PetscFunctionReturn(0);
 }
+
+/*------------------------------------------------------------*/
+
+/* Routine for updating the trust radius. 
+
+  Function features three different update methods: 
+  1) Line-search step length based
+  2) Predicted decrease on the CG quadratic model
+  3) Interpolation
+*/
 
 PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actred, PetscInt stepType, PetscBool *accept)
 {
@@ -785,6 +819,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
 }
 
 /* ---------------------------------------------------------- */
+
 static PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -808,6 +843,7 @@ static PetscErrorCode TaoSetUp_BNK(Tao tao)
 }
 
 /*------------------------------------------------------------*/
+
 static PetscErrorCode TaoDestroy_BNK(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -830,6 +866,7 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
 }
 
 /*------------------------------------------------------------*/
+
 static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -893,6 +930,7 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
 }
 
 /*------------------------------------------------------------*/
+
 static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -926,6 +964,7 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 }
 
 /* ---------------------------------------------------------- */
+
 /*MC
   TAOBNK - Shared base-type for Bounded Newton-Krylov type algorithms.
   At each iteration, the BNK methods solve the symmetric

@@ -113,6 +113,8 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------*/
+
 PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
 {
   TAO_BNK        *bnk;
