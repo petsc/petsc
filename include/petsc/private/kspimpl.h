@@ -119,6 +119,10 @@ struct _p_KSP {
   void       *data;                      /* holder for misc stuff associated
                                    with a particular iterative solver */
 
+  PetscBool         view,   viewPre,   viewReason,   viewMat,   viewPMat,   viewRhs,   viewSol,   viewMatExp,   viewEV,   viewSV,   viewEVExp,   viewFinalRes,   viewPOpExp;
+  PetscViewer       viewer, viewerPre, viewerReason, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp;
+  PetscViewerFormat format, formatPre, formatReason, formatMat, formatPMat, formatRhs, formatSol, formatMatExp, formatEV, formatSV, formatEVExp, formatFinalRes, formatPOpExp;
+
   /* ----------------Default work-area management -------------------- */
   PetscInt       nwork;
   Vec            *work;

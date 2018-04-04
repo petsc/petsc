@@ -130,6 +130,19 @@
       and down smoothers, use -pc_mg_distinct_smoothup
       -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
       <h4>KSP:</h4>
+      <ul>
+        <li>The KSP viewing options have changed. Now
+          <ul>
+            <li>-ksp_compute_eigenvalues becomes -ksp_view_eigenvalues ascii</li>
+            <li>-ksp_plot_eigenvalues becomes -ksp_view_eigenvalues draw</li>
+            <li>-ksp_plot_eigencontours becomes -ksp_view_eigenvalues draw::draw_contour</li>
+            <li>-ksp_compute_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit ascii</li>
+            <li>-ksp_plot_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit draw</li>
+            <li>-ksp_compute_singularvalues becomes -ksp_view_singularvalues ascii</li>
+            <li>-ksp_final_residual becomes -ksp_view_final_residual</li>
+          </ul>
+        </li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
         <li>Removed SNESHasDM() because there is always a DM in SNES.</li>

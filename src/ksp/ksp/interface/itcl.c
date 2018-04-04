@@ -377,7 +377,6 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 @*/
 PetscErrorCode  KSPSetFromOptions(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       indx;
   const char     *convtests[] = {"default","skip"};
   char           type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
@@ -386,9 +385,14 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   KSPNormType    normtype;
   PCSide         pcside;
   void           *ctx;
+  MPI_Comm       comm;
+  const char    *prefix;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscObjectGetComm((PetscObject) ksp, &comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
   if (!ksp->skippcsetfromoptions) {
     if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
     ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
@@ -438,7 +442,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     nmax = 2;
     ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
     if (flag) {
-      if (nmax != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
+      if (nmax != 2) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
       ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
     }
   }
@@ -481,12 +485,12 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     MatNullSpace nsp;
     Mat          Amat;
 
-    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)ksp),PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(comm,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
     ierr = PCGetOperators(ksp->pc,&Amat,NULL);CHKERRQ(ierr);
     if (Amat) {
       ierr = MatSetNullSpace(Amat,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot set nullspace, matrix has not yet been provided");
+    } else SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set nullspace, matrix has not yet been provided");
   }
 
   ierr = PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
@@ -523,7 +527,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr        = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
     }
   }
- 
+
 
   /*
    Calls Python function
@@ -537,7 +541,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorLGResidualNormCreate(comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
@@ -547,7 +551,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscDrawLG ctx;
 
-    ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorLGTrueResidualNormCreate(comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))PetscDrawLGDestroy);CHKERRQ(ierr);
   }
   /*
@@ -557,9 +561,23 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flg) {
     PetscViewer ctx;
 
-    ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)ksp),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
+  /* TODO Do these show up in help? */
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view",                        &ksp->viewer,         &ksp->format,         &ksp->view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_pre",                    &ksp->viewerPre,      &ksp->formatPre,      &ksp->viewPre);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_converged_reason",            &ksp->viewerReason,   &ksp->formatReason,   &ksp->viewReason);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_mat",                    &ksp->viewerMat,      &ksp->formatMat,      &ksp->viewMat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_pmat",                   &ksp->viewerPMat,     &ksp->formatPMat,     &ksp->viewPMat);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_rhs",                    &ksp->viewerRhs,      &ksp->formatRhs,      &ksp->viewRhs);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_solution",               &ksp->viewerSol,      &ksp->formatSol,      &ksp->viewSol);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_mat_explicit",           &ksp->viewerMatExp,   &ksp->formatMatExp,   &ksp->viewMatExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_eigenvalues",            &ksp->viewerEV,       &ksp->formatEV,       &ksp->viewEV);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_singularvalues",         &ksp->viewerSV,       &ksp->formatSV,       &ksp->viewSV);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_eigenvalues_explicit",   &ksp->viewerEVExp,    &ksp->formatEVExp,    &ksp->viewEVExp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
   /*
