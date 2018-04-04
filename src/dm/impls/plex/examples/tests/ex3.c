@@ -431,7 +431,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
     ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
     ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-    ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+    ierr = DMSetSection(dm, section);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
   if (!user->simplex && user->constraints) {
@@ -448,7 +448,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       Vec             local;
       const PetscInt *anchors;
 
-      ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+      ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
       ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
@@ -523,7 +523,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
         ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
         ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
         ierr = DMDACreateSection(dmda, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-        ierr = DMSetDefaultSection(dmda, section);CHKERRQ(ierr);
+        ierr = DMSetSection(dmda, section);CHKERRQ(ierr);
         ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
         ierr = DMCreateMatrix(dmda,&mass);CHKERRQ(ierr);
         /* there isn't a DMDA equivalent of DMPlexSNESComputeJacobianFEM()

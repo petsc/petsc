@@ -5883,9 +5883,9 @@ element method,
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
 DMPlexGetChart(dm, &pStart, &pEnd);
-DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
-DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
-DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);
+DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   /* cells */
+DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   /* edges */
+DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd); /* equivalent to DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd); */
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5916,7 +5916,7 @@ VecSetFromOptions(localVec);
 \end{lstlisting}
 though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
-DMSetDefaultSection(dm, s);
+DMSetSection(dm, s);
 DMGetLocalVector(dm, &localVec);
 DMGetGlobalVector(dm, &globalVec);
 \end{lstlisting}

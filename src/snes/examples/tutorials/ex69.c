@@ -3493,7 +3493,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
     float       *temp;
     PetscInt     Nx = user->verts[user->perm[0]], Ny = user->verts[user->perm[1]], Nz = user->verts[user->perm[2]], vStart, vx, vy, vz;
 
-    ierr = DMGetDefaultSection(dmAux, &s);CHKERRQ(ierr);
+    ierr = DMGetSection(dmAux, &s);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dmAux, 0, &vStart, NULL);CHKERRQ(ierr);
     ierr = PetscStrncpy(filename, user->mantleBasename,sizeof(filename));CHKERRQ(ierr);
     ierr = PetscStrlcat(filename, "_therm.bin",sizeof(filename));CHKERRQ(ierr);
