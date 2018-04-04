@@ -10,11 +10,10 @@ PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewe
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBeginHot;
   ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
   ierr = PetscObjectView(obj, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return(0);
 }
 
 static PetscErrorCode PCPatchConstruct_Star(void *vpatch, DM dm, PetscInt point, PetscHashI ht)
@@ -1260,7 +1259,8 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(*mat, prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(*mat, "pc_patch_sub_");CHKERRQ(ierr);
-  if (patch->sub_mat_type) {ierr = MatSetType(*mat, patch->sub_mat_type);CHKERRQ(ierr);}
+  if (patch->sub_mat_type)       {ierr = MatSetType(*mat, patch->sub_mat_type);CHKERRQ(ierr);}
+  else if (!patch->sub_mat_type) {ierr = MatSetType(*mat, MATDENSE);CHKERRQ(ierr);}
   ierr = MatSetSizes(*mat, rsize, csize, rsize, csize);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) *mat, MATDENSE, &flg);CHKERRQ(ierr);
   if (!flg) {ierr = PetscObjectTypeCompare((PetscObject)*mat, MATSEQDENSE, &flg);CHKERRQ(ierr);}
@@ -1784,6 +1784,7 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   }
   patch->bs          = 0;
   patch->cellNodeMap = NULL;
+  patch->nsubspaces  = 0;
   ierr = ISDestroy(&patch->iterationSet);CHKERRQ(ierr);
 
   ierr = PetscViewerDestroy(&patch->viewerSection);CHKERRQ(ierr);
