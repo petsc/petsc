@@ -26,7 +26,7 @@ def inInstallDir():
   else:
     return False
 
-def summarize_results(directory,make,ntime):
+def summarize_results(directory,make,ntime,etime):
   ''' Loop over all of the results files and summarize the results'''
   startdir=os.path.realpath(os.path.curdir)
   try:
@@ -61,7 +61,10 @@ def summarize_results(directory,make,ntime):
   for t in "success failed todo skip".split():
     percent=summary[t]/float(summary['total'])*100
     print("# %s %d/%d tests (%3.1f%%)" % (t, summary[t], summary['total'], percent))
-  print("#\n# Approximate time (not incl. build time): %s sec"% summary['time'])
+  print("#")
+  if etime:
+    print("# Wall clock time for tests: %s sec"% etime)
+  print("# Approximate CPU time (not incl. build time): %s sec"% summary['time'])
 
   if failstr.strip():
       fail_targets=(
@@ -97,6 +100,9 @@ def main():
                       help='Directory containing results of petsc test system',
                       default=os.path.join(os.environ.get('PETSC_ARCH',''),
                                            'tests','counts'))
+    parser.add_option('-e', '--elapsed_time', dest='elapsed_time',
+                      help='Report elapsed time in output',
+                      default=None)
     parser.add_option('-m', '--make', dest='make',
                       help='make executable to report in summary',
                       default='make')
@@ -110,7 +116,7 @@ def main():
       parser.print_usage()
       return
 
-    summarize_results(options.directory,options.make,int(options.time))
+    summarize_results(options.directory,options.make,int(options.time),options.elapsed_time)
 
 if __name__ == "__main__":
         main()
