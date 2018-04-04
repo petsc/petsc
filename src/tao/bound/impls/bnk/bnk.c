@@ -30,7 +30,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   KSPType                      ksp_type;
   PC                           pc;
   
-  PetscReal                    fmin, ftrial, prered, actred, kappa, sigma;
+  PetscReal                    fmin, ftrial, prered, actred, kappa, sigma, dnorm;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal                    delta, step = 1.0;
   
@@ -137,6 +137,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
         for (i = 0; i < i_max; ++i) {
           ierr = VecCopy(tao->solution,bnk->W);CHKERRQ(ierr);
           ierr = VecAXPY(bnk->W,-tao->trust/bnk->gnorm,tao->gradient);CHKERRQ(ierr);
+          ierr = VecMedian(tao->XL, bnk->W, tao->XU, bnk->W);CHKERRQ(ierr);
+          ierr = VecNorm(bnk->W, NORM_2, &dnorm);CHKERRQ(ierr);
+          if (dnorm != tao->trust/bnk->gnorm) tao->trust = dnorm;
           ierr = TaoComputeObjective(tao, bnk->W, &ftrial);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = bnk->gamma1_i;
@@ -211,6 +214,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
         if (fmin < bnk->f) {
           bnk->f = fmin;
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
+          ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
 
