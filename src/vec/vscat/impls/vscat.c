@@ -1847,12 +1847,12 @@ PetscErrorCode VecScatterDestroy(VecScatter *ctx)
   PetscFunctionBegin;
   if (!*ctx) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*ctx,VEC_SCATTER_CLASSID,1);
-  if ((*ctx)->inuse) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
+  if ((*ctx)->inuse && ((PetscObject)(*ctx))->refct == 1) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
   if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
 
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
-  ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);
+  if ((*ctx)->ops->destroy) {ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = VecScatterCUDAIndicesDestroy((PetscCUDAIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
 #endif
