@@ -4107,19 +4107,25 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) snes), ((PetscObject) snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscConvEst conv;
-        PetscReal    alpha; /* Convergence rate of the solution error in the L_2 norm */
+        DM           dm;
+        PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
+        PetscInt     Nf;
 
         incall = PETSC_TRUE;
+        ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+        ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Nf, &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) snes), &conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetSolver(conv, snes);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
-        ierr = PetscConvEstGetConvRate(conv, &alpha);CHKERRQ(ierr);
+        ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);
         ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
         ierr = PetscConvEstRateView(conv, alpha, viewer);CHKERRQ(ierr);
         ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        ierr = PetscFree(alpha);CHKERRQ(ierr);
         incall = PETSC_FALSE;
       }
       /* Adaptively refine the initial grid */
