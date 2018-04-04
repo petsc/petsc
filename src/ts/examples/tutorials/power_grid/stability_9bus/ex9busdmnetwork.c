@@ -100,7 +100,7 @@ typedef struct {
   PetscReal   t0,tmax;            /* initial time and final time */
   PetscInt    faultbus;           /* Fault bus */
   PetscScalar Rfault;             /* Fault resistance (pu) */
-  PetscScalar ybusfault[180000];
+  PetscScalar *ybusfault;
   PetscBool   alg_flg;
 } Userctx;
 
@@ -1049,6 +1049,7 @@ int main(int argc,char ** argv)
   ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL);CHKERRQ(ierr);
   ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL);CHKERRQ(ierr);
 
+  ierr = PetscMalloc1(18*nc,&user.ybusfault);CHKERRQ(ierr);
   for (i = 0; i < 18*nc; i++) {
     user.ybusfault[i] = 0;
   }
@@ -1140,6 +1141,7 @@ int main(int argc,char ** argv)
   }
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
+  ierr = PetscFree(user.ybusfault);CHKERRQ(ierr);
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
