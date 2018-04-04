@@ -2140,6 +2140,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   PetscSection   fsection, fglobalSection, csection, cglobalSection;
   PetscInt      *cmap, *cellCIndices, *cellFIndices, *cindices, *findices;
   PetscInt       cTotDim, fTotDim = 0, Nf, f, field, cStart, cEnd, cEndInterior, c, dim, d, startC, endC, offsetC, offsetF, m;
+  PetscBool     *needAvg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2154,7 +2155,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = DMPlexGetHybridBounds(dmc, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMGetDS(dmc, &prob);CHKERRQ(ierr);
-  ierr = PetscCalloc2(Nf,&feRef,Nf,&fvRef);CHKERRQ(ierr);
+  ierr = PetscCalloc3(Nf,&feRef,Nf,&fvRef,Nf,&needAvg);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
@@ -2163,11 +2164,16 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
-      PetscFE fe = (PetscFE) obj;
+      PetscFE    fe = (PetscFE) obj;
+      PetscSpace sp;
+      PetscInt   order;
 
       ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(feRef[f], &fNb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetBasisSpace(fe, &sp);CHKERRQ(ierr);
+      ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+      if (!order) needAvg[f] = PETSC_TRUE;
     } else if (id == PETSCFV_CLASSID) {
       PetscFV        fv = (PetscFV) obj;
       PetscDualSpace Q;
@@ -2176,6 +2182,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
       ierr = PetscFVGetDualSpace(fvRef[f], &Q);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(Q, &fNb);CHKERRQ(ierr);
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+      needAvg[f] = PETSC_TRUE;
     }
     fTotDim += fNb*Nc;
   }
@@ -2207,45 +2214,44 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     if (NcF != NcC) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", NcF, NcC);
     for (c = 0; c < cpdim; ++c) {
       PetscQuadrature  cfunc;
-      const PetscReal *cqpoints;
-      PetscInt         NpC;
+      const PetscReal *cqpoints, *cqweights;
+      PetscInt         NqC, NqcC;
       PetscBool        found = PETSC_FALSE;
 
       ierr = PetscDualSpaceGetFunctional(QC, c, &cfunc);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(cfunc, NULL, NULL, &NpC, &cqpoints, NULL);CHKERRQ(ierr);
-      if (NpC != 1 && feRef[field]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
+      ierr = PetscQuadratureGetData(cfunc, NULL, &NqcC, &NqC, &cqpoints, &cqweights);CHKERRQ(ierr);
+      if (NqC != 1 && feRef[field]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
       for (f = 0; f < fpdim; ++f) {
         PetscQuadrature  ffunc;
-        const PetscReal *fqpoints;
-        PetscReal        sum = 0.0;
-        PetscInt         NpF, comp;
+        const PetscReal *fqpoints, *fqweights;
+        PetscReal        sum = 0.0, csum = 0.0;
+        PetscInt         NqF, NqcF, comp;
 
         ierr = PetscDualSpaceGetFunctional(QF, f, &ffunc);CHKERRQ(ierr);
-        ierr = PetscQuadratureGetData(ffunc, NULL, NULL, &NpF, &fqpoints, NULL);CHKERRQ(ierr);
-        if (NpC != NpF) continue;
+        ierr = PetscQuadratureGetData(ffunc, NULL, &NqcF, &NqF, &fqpoints, &fqweights);CHKERRQ(ierr);
+        if ((NqC != NqF) || (NqcC != NqcF)) continue;
         for (d = 0; d < dim; ++d) sum += PetscAbsReal(cqpoints[d] - fqpoints[d]);
-        if (sum > 1.0e-9) continue;
-        for (comp = 0; comp < NcC; ++comp) {
-          cmap[(offsetC+c)*NcC+comp] = (offsetF+f)*NcF+comp;
-        }
+        for (comp = 0; comp < NqcC; ++comp) csum += PetscAbsReal(cqweights[comp]*fqweights[comp]);
+        if (sum > 1.0e-9 || csum < 1.0e-9) continue;
+        cmap[offsetC+c] = offsetF+f;
         found = PETSC_TRUE;
         break;
       }
       if (!found) {
         /* TODO We really want the average here, but some asshole put VecScatter in the interface */
-        if (fvRef[field]) {
+        if (needAvg[field]) {
           PetscInt comp;
           for (comp = 0; comp < NcC; ++comp) {
-            cmap[(offsetC+c)*NcC+comp] = (offsetF+0)*NcF+comp;
+            cmap[offsetC+c*NcC+comp] = offsetF+0*NcF+comp;
           }
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate matching functional for injection");
       }
     }
-    offsetC += cpdim*NcC;
-    offsetF += fpdim*NcF;
+    offsetC += cpdim;
+    offsetF += fpdim;
   }
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);ierr = PetscFVDestroy(&fvRef[f]);CHKERRQ(ierr);}
-  ierr = PetscFree2(feRef,fvRef);CHKERRQ(ierr);
+  ierr = PetscFree3(feRef,fvRef,needAvg);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dmf, &fv);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmc, &cv);CHKERRQ(ierr);
