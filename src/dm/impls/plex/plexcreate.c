@@ -1114,10 +1114,12 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
 {
   const PetscInt dim = 3;
   PetscInt       numCells, numVertices, r;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (numRefine < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of refinements %D cannot be negative", numRefine);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -1126,79 +1128,81 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
   {
     PetscInt cone[8], c;
 
-    numCells    = 5;
-    numVertices = 16;
+    numCells    = !rank ?  5 : 0;
+    numVertices = !rank ? 16 : 0;
     if (periodicZ == DM_BOUNDARY_PERIODIC) {
       numCells   *= 3;
-      numVertices = 24;
+      numVertices = !rank ? 24 : 0;
     }
     ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(*dm, c, 8);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-    if (periodicZ == DM_BOUNDARY_PERIODIC) {
-      cone[0] = 15; cone[1] = 18; cone[2] = 17; cone[3] = 16;
-      cone[4] = 31; cone[5] = 32; cone[6] = 33; cone[7] = 34;
-      ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
-      cone[0] = 16; cone[1] = 17; cone[2] = 24; cone[3] = 23;
-      cone[4] = 32; cone[5] = 36; cone[6] = 37; cone[7] = 33; /* 22 25 26 21 */
-      ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
-      cone[0] = 18; cone[1] = 27; cone[2] = 24; cone[3] = 17;
-      cone[4] = 34; cone[5] = 33; cone[6] = 37; cone[7] = 38;
-      ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
-      cone[0] = 29; cone[1] = 27; cone[2] = 18; cone[3] = 15;
-      cone[4] = 35; cone[5] = 31; cone[6] = 34; cone[7] = 38;
-      ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
-      cone[0] = 29; cone[1] = 15; cone[2] = 16; cone[3] = 23;
-      cone[4] = 35; cone[5] = 36; cone[6] = 32; cone[7] = 31;
-      ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+    if (!rank) {
+      if (periodicZ == DM_BOUNDARY_PERIODIC) {
+        cone[0] = 15; cone[1] = 18; cone[2] = 17; cone[3] = 16;
+        cone[4] = 31; cone[5] = 32; cone[6] = 33; cone[7] = 34;
+        ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
+        cone[0] = 16; cone[1] = 17; cone[2] = 24; cone[3] = 23;
+        cone[4] = 32; cone[5] = 36; cone[6] = 37; cone[7] = 33; /* 22 25 26 21 */
+        ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
+        cone[0] = 18; cone[1] = 27; cone[2] = 24; cone[3] = 17;
+        cone[4] = 34; cone[5] = 33; cone[6] = 37; cone[7] = 38;
+        ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
+        cone[0] = 29; cone[1] = 27; cone[2] = 18; cone[3] = 15;
+        cone[4] = 35; cone[5] = 31; cone[6] = 34; cone[7] = 38;
+        ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
+        cone[0] = 29; cone[1] = 15; cone[2] = 16; cone[3] = 23;
+        cone[4] = 35; cone[5] = 36; cone[6] = 32; cone[7] = 31;
+        ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
 
-      cone[0] = 31; cone[1] = 34; cone[2] = 33; cone[3] = 32;
-      cone[4] = 19; cone[5] = 22; cone[6] = 21; cone[7] = 20;
-      ierr = DMPlexSetCone(*dm, 5, cone);CHKERRQ(ierr);
-      cone[0] = 32; cone[1] = 33; cone[2] = 37; cone[3] = 36;
-      cone[4] = 22; cone[5] = 25; cone[6] = 26; cone[7] = 21;
-      ierr = DMPlexSetCone(*dm, 6, cone);CHKERRQ(ierr);
-      cone[0] = 34; cone[1] = 38; cone[2] = 37; cone[3] = 33;
-      cone[4] = 20; cone[5] = 21; cone[6] = 26; cone[7] = 28;
-      ierr = DMPlexSetCone(*dm, 7, cone);CHKERRQ(ierr);
-      cone[0] = 35; cone[1] = 38; cone[2] = 34; cone[3] = 31;
-      cone[4] = 30; cone[5] = 19; cone[6] = 20; cone[7] = 28;
-      ierr = DMPlexSetCone(*dm, 8, cone);CHKERRQ(ierr);
-      cone[0] = 35; cone[1] = 31; cone[2] = 32; cone[3] = 36;
-      cone[4] = 30; cone[5] = 25; cone[6] = 22; cone[7] = 19;
-      ierr = DMPlexSetCone(*dm, 9, cone);CHKERRQ(ierr);
+        cone[0] = 31; cone[1] = 34; cone[2] = 33; cone[3] = 32;
+        cone[4] = 19; cone[5] = 22; cone[6] = 21; cone[7] = 20;
+        ierr = DMPlexSetCone(*dm, 5, cone);CHKERRQ(ierr);
+        cone[0] = 32; cone[1] = 33; cone[2] = 37; cone[3] = 36;
+        cone[4] = 22; cone[5] = 25; cone[6] = 26; cone[7] = 21;
+        ierr = DMPlexSetCone(*dm, 6, cone);CHKERRQ(ierr);
+        cone[0] = 34; cone[1] = 38; cone[2] = 37; cone[3] = 33;
+        cone[4] = 20; cone[5] = 21; cone[6] = 26; cone[7] = 28;
+        ierr = DMPlexSetCone(*dm, 7, cone);CHKERRQ(ierr);
+        cone[0] = 35; cone[1] = 38; cone[2] = 34; cone[3] = 31;
+        cone[4] = 30; cone[5] = 19; cone[6] = 20; cone[7] = 28;
+        ierr = DMPlexSetCone(*dm, 8, cone);CHKERRQ(ierr);
+        cone[0] = 35; cone[1] = 31; cone[2] = 32; cone[3] = 36;
+        cone[4] = 30; cone[5] = 25; cone[6] = 22; cone[7] = 19;
+        ierr = DMPlexSetCone(*dm, 9, cone);CHKERRQ(ierr);
 
-      cone[0] = 19; cone[1] = 20; cone[2] = 21; cone[3] = 22;
-      cone[4] = 15; cone[5] = 16; cone[6] = 17; cone[7] = 18;
-      ierr = DMPlexSetCone(*dm, 10, cone);CHKERRQ(ierr);
-      cone[0] = 22; cone[1] = 21; cone[2] = 26; cone[3] = 25;
-      cone[4] = 16; cone[5] = 23; cone[6] = 24; cone[7] = 17;
-      ierr = DMPlexSetCone(*dm, 11, cone);CHKERRQ(ierr);
-      cone[0] = 20; cone[1] = 28; cone[2] = 26; cone[3] = 21;
-      cone[4] = 18; cone[5] = 17; cone[6] = 24; cone[7] = 27;
-      ierr = DMPlexSetCone(*dm, 12, cone);CHKERRQ(ierr);
-      cone[0] = 30; cone[1] = 28; cone[2] = 20; cone[3] = 19;
-      cone[4] = 29; cone[5] = 15; cone[6] = 18; cone[7] = 27;
-      ierr = DMPlexSetCone(*dm, 13, cone);CHKERRQ(ierr);
-      cone[0] = 30; cone[1] = 19; cone[2] = 22; cone[3] = 25;
-      cone[4] = 29; cone[5] = 23; cone[6] = 16; cone[7] = 15;
-      ierr = DMPlexSetCone(*dm, 14, cone);CHKERRQ(ierr);
-    } else {
-      cone[0] =  5; cone[1] =  8; cone[2] =  7; cone[3] =  6;
-      cone[4] =  9; cone[5] = 12; cone[6] = 11; cone[7] = 10;
-      ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
-      cone[0] =  6; cone[1] =  7; cone[2] = 14; cone[3] = 13;
-      cone[4] = 12; cone[5] = 15; cone[6] = 16; cone[7] = 11;
-      ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
-      cone[0] =  8; cone[1] = 17; cone[2] = 14; cone[3] =  7;
-      cone[4] = 10; cone[5] = 11; cone[6] = 16; cone[7] = 18;
-      ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
-      cone[0] = 19; cone[1] = 17; cone[2] =  8; cone[3] =  5;
-      cone[4] = 20; cone[5] =  9; cone[6] = 10; cone[7] = 18;
-      ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
-      cone[0] = 19; cone[1] =  5; cone[2] =  6; cone[3] = 13;
-      cone[4] = 20; cone[5] = 15; cone[6] = 12; cone[7] =  9;
-      ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+        cone[0] = 19; cone[1] = 20; cone[2] = 21; cone[3] = 22;
+        cone[4] = 15; cone[5] = 16; cone[6] = 17; cone[7] = 18;
+        ierr = DMPlexSetCone(*dm, 10, cone);CHKERRQ(ierr);
+        cone[0] = 22; cone[1] = 21; cone[2] = 26; cone[3] = 25;
+        cone[4] = 16; cone[5] = 23; cone[6] = 24; cone[7] = 17;
+        ierr = DMPlexSetCone(*dm, 11, cone);CHKERRQ(ierr);
+        cone[0] = 20; cone[1] = 28; cone[2] = 26; cone[3] = 21;
+        cone[4] = 18; cone[5] = 17; cone[6] = 24; cone[7] = 27;
+        ierr = DMPlexSetCone(*dm, 12, cone);CHKERRQ(ierr);
+        cone[0] = 30; cone[1] = 28; cone[2] = 20; cone[3] = 19;
+        cone[4] = 29; cone[5] = 15; cone[6] = 18; cone[7] = 27;
+        ierr = DMPlexSetCone(*dm, 13, cone);CHKERRQ(ierr);
+        cone[0] = 30; cone[1] = 19; cone[2] = 22; cone[3] = 25;
+        cone[4] = 29; cone[5] = 23; cone[6] = 16; cone[7] = 15;
+        ierr = DMPlexSetCone(*dm, 14, cone);CHKERRQ(ierr);
+      } else {
+        cone[0] =  5; cone[1] =  8; cone[2] =  7; cone[3] =  6;
+        cone[4] =  9; cone[5] = 12; cone[6] = 11; cone[7] = 10;
+        ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
+        cone[0] =  6; cone[1] =  7; cone[2] = 14; cone[3] = 13;
+        cone[4] = 12; cone[5] = 15; cone[6] = 16; cone[7] = 11;
+        ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
+        cone[0] =  8; cone[1] = 17; cone[2] = 14; cone[3] =  7;
+        cone[4] = 10; cone[5] = 11; cone[6] = 16; cone[7] = 18;
+        ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
+        cone[0] = 19; cone[1] = 17; cone[2] =  8; cone[3] =  5;
+        cone[4] = 20; cone[5] =  9; cone[6] = 10; cone[7] = 18;
+        ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
+        cone[0] = 19; cone[1] =  5; cone[2] =  6; cone[3] = 13;
+        cone[4] = 20; cone[5] = 15; cone[6] = 12; cone[7] =  9;
+        ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+      }
     }
     ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
     ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
@@ -1237,31 +1241,33 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
     ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
     ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    coords[0*dim+0] = -ds2; coords[0*dim+1] = -ds2; coords[0*dim+2] = 0.0;
-    coords[1*dim+0] =  ds2; coords[1*dim+1] = -ds2; coords[1*dim+2] = 0.0;
-    coords[2*dim+0] =  ds2; coords[2*dim+1] =  ds2; coords[2*dim+2] = 0.0;
-    coords[3*dim+0] = -ds2; coords[3*dim+1] =  ds2; coords[3*dim+2] = 0.0;
-    coords[4*dim+0] = -ds2; coords[4*dim+1] = -ds2; coords[4*dim+2] = 1.0;
-    coords[5*dim+0] = -ds2; coords[5*dim+1] =  ds2; coords[5*dim+2] = 1.0;
-    coords[6*dim+0] =  ds2; coords[6*dim+1] =  ds2; coords[6*dim+2] = 1.0;
-    coords[7*dim+0] =  ds2; coords[7*dim+1] = -ds2; coords[7*dim+2] = 1.0;
-    coords[ 8*dim+0] =  dis; coords[ 8*dim+1] = -dis; coords[ 8*dim+2] = 0.0;
-    coords[ 9*dim+0] =  dis; coords[ 9*dim+1] =  dis; coords[ 9*dim+2] = 0.0;
-    coords[10*dim+0] =  dis; coords[10*dim+1] = -dis; coords[10*dim+2] = 1.0;
-    coords[11*dim+0] =  dis; coords[11*dim+1] =  dis; coords[11*dim+2] = 1.0;
-    coords[12*dim+0] = -dis; coords[12*dim+1] =  dis; coords[12*dim+2] = 0.0;
-    coords[13*dim+0] = -dis; coords[13*dim+1] =  dis; coords[13*dim+2] = 1.0;
-    coords[14*dim+0] = -dis; coords[14*dim+1] = -dis; coords[14*dim+2] = 0.0;
-    coords[15*dim+0] = -dis; coords[15*dim+1] = -dis; coords[15*dim+2] = 1.0;
-    if (periodicZ == DM_BOUNDARY_PERIODIC) {
-      /* 15 31 19 */ coords[16*dim+0] = -ds2; coords[16*dim+1] = -ds2; coords[16*dim+2] = 0.5;
-      /* 16 32 22 */ coords[17*dim+0] =  ds2; coords[17*dim+1] = -ds2; coords[17*dim+2] = 0.5;
-      /* 17 33 21 */ coords[18*dim+0] =  ds2; coords[18*dim+1] =  ds2; coords[18*dim+2] = 0.5;
-      /* 18 34 20 */ coords[19*dim+0] = -ds2; coords[19*dim+1] =  ds2; coords[19*dim+2] = 0.5;
-      /* 29 35 30 */ coords[20*dim+0] = -dis; coords[20*dim+1] = -dis; coords[20*dim+2] = 0.5;
-      /* 23 36 25 */ coords[21*dim+0] =  dis; coords[21*dim+1] = -dis; coords[21*dim+2] = 0.5;
-      /* 24 37 26 */ coords[22*dim+0] =  dis; coords[22*dim+1] =  dis; coords[22*dim+2] = 0.5;
-      /* 27 38 28 */ coords[23*dim+0] = -dis; coords[23*dim+1] =  dis; coords[23*dim+2] = 0.5;
+    if (!rank) {
+      coords[0*dim+0] = -ds2; coords[0*dim+1] = -ds2; coords[0*dim+2] = 0.0;
+      coords[1*dim+0] =  ds2; coords[1*dim+1] = -ds2; coords[1*dim+2] = 0.0;
+      coords[2*dim+0] =  ds2; coords[2*dim+1] =  ds2; coords[2*dim+2] = 0.0;
+      coords[3*dim+0] = -ds2; coords[3*dim+1] =  ds2; coords[3*dim+2] = 0.0;
+      coords[4*dim+0] = -ds2; coords[4*dim+1] = -ds2; coords[4*dim+2] = 1.0;
+      coords[5*dim+0] = -ds2; coords[5*dim+1] =  ds2; coords[5*dim+2] = 1.0;
+      coords[6*dim+0] =  ds2; coords[6*dim+1] =  ds2; coords[6*dim+2] = 1.0;
+      coords[7*dim+0] =  ds2; coords[7*dim+1] = -ds2; coords[7*dim+2] = 1.0;
+      coords[ 8*dim+0] =  dis; coords[ 8*dim+1] = -dis; coords[ 8*dim+2] = 0.0;
+      coords[ 9*dim+0] =  dis; coords[ 9*dim+1] =  dis; coords[ 9*dim+2] = 0.0;
+      coords[10*dim+0] =  dis; coords[10*dim+1] = -dis; coords[10*dim+2] = 1.0;
+      coords[11*dim+0] =  dis; coords[11*dim+1] =  dis; coords[11*dim+2] = 1.0;
+      coords[12*dim+0] = -dis; coords[12*dim+1] =  dis; coords[12*dim+2] = 0.0;
+      coords[13*dim+0] = -dis; coords[13*dim+1] =  dis; coords[13*dim+2] = 1.0;
+      coords[14*dim+0] = -dis; coords[14*dim+1] = -dis; coords[14*dim+2] = 0.0;
+      coords[15*dim+0] = -dis; coords[15*dim+1] = -dis; coords[15*dim+2] = 1.0;
+      if (periodicZ == DM_BOUNDARY_PERIODIC) {
+        /* 15 31 19 */ coords[16*dim+0] = -ds2; coords[16*dim+1] = -ds2; coords[16*dim+2] = 0.5;
+        /* 16 32 22 */ coords[17*dim+0] =  ds2; coords[17*dim+1] = -ds2; coords[17*dim+2] = 0.5;
+        /* 17 33 21 */ coords[18*dim+0] =  ds2; coords[18*dim+1] =  ds2; coords[18*dim+2] = 0.5;
+        /* 18 34 20 */ coords[19*dim+0] = -ds2; coords[19*dim+1] =  ds2; coords[19*dim+2] = 0.5;
+        /* 29 35 30 */ coords[20*dim+0] = -dis; coords[20*dim+1] = -dis; coords[20*dim+2] = 0.5;
+        /* 23 36 25 */ coords[21*dim+0] =  dis; coords[21*dim+1] = -dis; coords[21*dim+2] = 0.5;
+        /* 24 37 26 */ coords[22*dim+0] =  dis; coords[22*dim+1] =  dis; coords[22*dim+2] = 0.5;
+        /* 27 38 28 */ coords[23*dim+0] = -dis; coords[23*dim+1] =  dis; coords[23*dim+2] = 0.5;
+      }
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
@@ -1376,10 +1382,12 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
 {
   const PetscInt dim = 3;
   PetscInt       numCells, numVertices;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 3);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (n < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of wedges %D cannot be negative", n);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -1388,8 +1396,8 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
   {
     PetscInt cone[6], c;
 
-    numCells    = n;
-    numVertices = 2*(n+1);
+    numCells    = !rank ?        n : 0;
+    numVertices = !rank ?  2*(n+1) : 0;
     ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(*dm, c, 6);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
@@ -1437,8 +1445,10 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
       coords[(c+0*n)*dim+0] = PetscCosReal(2.0*c*PETSC_PI/n); coords[(c+0*n)*dim+1] = PetscSinReal(2.0*c*PETSC_PI/n); coords[(c+0*n)*dim+2] = 1.0;
       coords[(c+1*n)*dim+0] = PetscCosReal(2.0*c*PETSC_PI/n); coords[(c+1*n)*dim+1] = PetscSinReal(2.0*c*PETSC_PI/n); coords[(c+1*n)*dim+2] = 0.0;
     }
-    coords[(2*n+0)*dim+0] = 0.0; coords[(2*n+0)*dim+1] = 0.0; coords[(2*n+0)*dim+2] = 1.0;
-    coords[(2*n+1)*dim+0] = 0.0; coords[(2*n+1)*dim+1] = 0.0; coords[(2*n+1)*dim+2] = 0.0;
+    if (!rank) {
+      coords[(2*n+0)*dim+0] = 0.0; coords[(2*n+0)*dim+1] = 0.0; coords[(2*n+0)*dim+2] = 1.0;
+      coords[(2*n+1)*dim+0] = 0.0; coords[(2*n+1)*dim+1] = 0.0; coords[(2*n+1)*dim+2] = 0.0;
+    }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
