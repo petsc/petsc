@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   ierr = MatColoringApply(coloring, &iscoloring);CHKERRQ(ierr);
 
   if (size == 1) {
-    ierr = ISColoringTestValid(J,iscoloring);CHKERRQ(ierr);
+    ierr = MatISColoringTest(J,iscoloring);CHKERRQ(ierr);
   }
 
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);

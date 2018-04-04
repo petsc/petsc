@@ -368,10 +368,10 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
   /* valid */
   if (mc->valid) {
-    ierr = MatColoringTestValid(mc,*coloring);CHKERRQ(ierr);
+    ierr = MatColoringTest(mc,*coloring);CHKERRQ(ierr);
   }
   if (mc->valid_iscoloring) {
-    ierr = ISColoringTestValid(mc->mat,*coloring);CHKERRQ(ierr);
+    ierr = MatISColoringTest(mc->mat,*coloring);CHKERRQ(ierr);
   }
 
   /* view */

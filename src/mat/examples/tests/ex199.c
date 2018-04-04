@@ -27,9 +27,9 @@ int main(int argc,char **args)
   ierr = MatColoringCreate(C,&ctx);CHKERRQ(ierr);
   ierr = MatColoringSetFromOptions(ctx);CHKERRQ(ierr);
   ierr = MatColoringApply(ctx,&coloring);CHKERRQ(ierr);
-  ierr = MatColoringTestValid(ctx,coloring);CHKERRQ(ierr);
+  ierr = MatColoringTest(ctx,coloring);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = ISColoringTestValid(C,coloring);CHKERRQ(ierr);
+    ierr = MatISColoringTest(C,coloring);CHKERRQ(ierr);
   }
 
   /* Free data structures */
