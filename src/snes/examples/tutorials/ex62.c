@@ -11,6 +11,10 @@ element method on an unstructured mesh. The weak form equations are
 
 Viewing:
 
+To produce nice output, use
+
+  -dm_refine 3 -show_error -dm_view hdf5:sol1.h5 -error_vec_view hdf5:sol1.h5::append -sol_vec_view hdf5:sol1.h5::append -exact_vec_view hdf5:sol1.h5::append
+
 You can get a LaTeX view of the mesh, with point numbering using
 
   -dm_view :mesh.tex:ascii_latex -dm_plex_view_scale 8.0
@@ -49,8 +53,12 @@ puts it into the Sieve ordering.
 
 PetscInt spatialDim = 0;
 
-typedef enum {NEUMANN, DIRICHLET} BCType;
-typedef enum {RUN_FULL, RUN_TEST} RunType;
+typedef enum {NEUMANN, DIRICHLET, NUM_BC_TYPES} BCType;
+const char *bcTypes[NUM_BC_TYPES+1]  = {"neumann", "dirichlet", "unknown"};
+typedef enum {RUN_FULL, RUN_TEST, NUM_RUN_TYPES} RunType;
+const char *runTypes[NUM_RUN_TYPES+1] = {"full", "test", "unknown"};
+typedef enum {SOL_QUADRATIC, SOL_CUBIC, SOL_TRIG, NUM_SOL_TYPES} SolType;
+const char *solTypes[NUM_SOL_TYPES+1] = {"quadratic", "cubic", "trig", "unknown"};
 
 typedef struct {
   PetscInt      debug;             /* The debugging level */
@@ -65,6 +73,7 @@ typedef struct {
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   /* Problem definition */
   BCType        bcType;
+  SolType       solType;
   PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
@@ -111,13 +120,83 @@ PetscErrorCode constant_p(PetscInt dim, PetscReal time, const PetscReal x[], Pet
   return 0;
 }
 
-void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+/*
+  In 2D we use exact solution:
+
+    u = x^3 + y^3
+    v = 2 x^3 - 3 x^2 y
+    p = 3/2 x^2 + 3/2 y^2 - 1
+    f_x = 6 (x + y)
+    f_y = 12 x - 3 y
+
+  so that
+
+    -\Delta u + \nabla p + f = <-6 x - 6 y, -12 x + 6 y> + <3 x, 3 y> + <6 (x + y), 12 x - 6 y> = 0
+    \nabla \cdot u           = 3 x^2 - 3 x^2 = 0
+*/
+PetscErrorCode cubic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  u[0] =     x[0]*x[0]*x[0] +     x[1]*x[1]*x[1];
+  u[1] = 2.0*x[0]*x[0]*x[0] - 3.0*x[0]*x[0]*x[1];
+  return 0;
+}
+
+PetscErrorCode quadratic_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
+{
+  *p = 3.0*x[0]*x[0]/2.0 + 3.0*x[1]*x[1]/2.0 - 1.0;
+  return 0;
+}
+
+/*
+  In 2D we use exact solution:
+
+    u =  sin(n pi x) + y^2
+    v = -sin(n pi y)
+    p = 3/2 x^2 + 3/2 y^2 - 1
+    f_x = 4 - 3x - n^2 pi^2 sin (n pi x)
+    f_y =   - 3y + n^2 pi^2 sin(n pi y)
+
+  so that
+
+    -\Delta u + \nabla p + f = <n^2 pi^2 sin (n pi x) - 4, -n^2 pi^2 sin(n pi y)> + <3 x, 3 y> + <4 - 3x - n^2 pi^2 sin (n pi x), -3y + n^2 pi^2 sin(n pi y)> = 0
+    \nabla \cdot u           = n pi cos(n pi x) - n pi cos(n pi y) = 0
+*/
+PetscErrorCode trig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  const PetscReal n = 1.0;
+
+  u[0] =  PetscSinReal(n*PETSC_PI*x[0]) + x[1]*x[1];
+  u[1] = -PetscSinReal(n*PETSC_PI*x[1]);
+  return 0;
+}
+
+void f0_quadratic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   PetscInt c;
   for (c = 0; c < dim; ++c) f0[c] = 3.0;
+}
+
+void f0_cubic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] =  3.0*x[0] + 6.0*x[1];
+  f0[1] = 12.0*x[0] - 9.0*x[1];
+}
+
+void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal n = 1.0;
+
+  f0[0] = 4.0 - 3.0*x[0] - PetscSqr(n*PETSC_PI)*PetscSinReal(n*PETSC_PI*x[0]);
+  f0[1] =      -3.0*x[1] + PetscSqr(n*PETSC_PI)*PetscSinReal(n*PETSC_PI*x[1]);
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
@@ -227,9 +306,7 @@ PetscErrorCode linear_p_3d(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char    *runTypes[2] = {"full", "test"};
-  PetscInt       bc, run;
+  PetscInt       bc, run, sol;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -241,6 +318,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit = 0.0;
   options->testPartition   = PETSC_FALSE;
   options->bcType          = DIRICHLET;
+  options->solType         = SOL_QUADRATIC;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
   options->showError       = PETSC_FALSE;
@@ -248,10 +326,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, NUM_RUN_TYPES, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
-
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   spatialDim = options->dim;
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
@@ -259,10 +335,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex62.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex62.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex62.c", bcTypes, NUM_BC_TYPES, bcTypes[options->bcType], &bc, NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
-
+  sol  = options->solType;
+  ierr = PetscOptionsEList("-sol_type", "The solution type", "ex62.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
+  options->solType = (SolType) sol;
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
@@ -378,24 +455,52 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
+  switch (user->solType) {
+  case SOL_QUADRATIC:
+    switch (user->dim) {
+    case 2:
+      ierr = PetscDSSetResidual(prob, 0, f0_quadratic_u, f1_u);CHKERRQ(ierr);
+      user->exactFuncs[0] = quadratic_u_2d;
+      user->exactFuncs[1] = linear_p_2d;
+      break;
+    case 3:
+      ierr = PetscDSSetResidual(prob, 0, f0_quadratic_u, f1_u);CHKERRQ(ierr);
+      user->exactFuncs[0] = quadratic_u_3d;
+      user->exactFuncs[1] = linear_p_3d;
+      break;
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %d for quadratic solution", user->dim);
+    }
+    break;
+  case SOL_CUBIC:
+    switch (user->dim) {
+    case 2:
+      ierr = PetscDSSetResidual(prob, 0, f0_cubic_u, f1_u);CHKERRQ(ierr);
+      user->exactFuncs[0] = cubic_u_2d;
+      user->exactFuncs[1] = quadratic_p_2d;
+      break;
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %d for quadratic solution", user->dim);
+    }
+    break;
+  case SOL_TRIG:
+    switch (user->dim) {
+    case 2:
+      ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
+      user->exactFuncs[0] = trig_u_2d;
+      user->exactFuncs[1] = quadratic_p_2d;
+      break;
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %d for trigonometric solution", user->dim);
+    }
+    break;
+  default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
+  }
   ierr = PetscDSSetResidual(prob, 1, f0_p, f1_p);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
-  switch (user->dim) {
-  case 2:
-    user->exactFuncs[0] = quadratic_u_2d;
-    user->exactFuncs[1] = linear_p_2d;
-    break;
-  case 3:
-    user->exactFuncs[0] = quadratic_u_3d;
-    user->exactFuncs[1] = linear_p_3d;
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
-  }
+
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? DM_BC_ESSENTIAL : DM_BC_NATURAL, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 1, user->exactFuncs[1]);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -431,26 +536,19 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace *nullSpace)
+PetscErrorCode CreatePressureNullSpace(DM dm, MatNullSpace *nullSpace)
 {
   Vec              vec;
   PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, constant_p};
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dm, &vec);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
-  if (user->debug) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Pressure Null Space\n");CHKERRQ(ierr);
-    ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
+  ierr = VecViewFromOptions(vec, NULL, "-pressure_nullspace_view");CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
-  if (v) {
-    ierr = DMCreateGlobalVector(dm, v);CHKERRQ(ierr);
-    ierr = VecCopy(vec, *v);CHKERRQ(ierr);
-  }
-  ierr = DMRestoreGlobalVector(dm, &vec);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec);CHKERRQ(ierr);
   /* New style for field null spaces */
   {
     PetscObject  pressure;
@@ -468,11 +566,10 @@ int main(int argc, char **argv)
 {
   SNES           snes;                 /* nonlinear solver */
   DM             dm;                   /* problem definition */
-  Vec            u,r;                  /* solution, residual vectors */
+  Vec            u, r;                 /* solution and residual */
   Mat            A,J;                  /* Jacobian matrix */
   MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
-  PetscInt       its;                  /* iterations for convergence */
   PetscReal      error         = 0.0;  /* L_2 error in the solution */
   PetscReal      ferrors[2];
   PetscErrorCode ierr;
@@ -493,8 +590,9 @@ int main(int argc, char **argv)
 
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   A = J;
-  ierr = CreatePressureNullSpace(dm, &user, NULL, &nullSpace);CHKERRQ(ierr);
+  ierr = CreatePressureNullSpace(dm, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
+  ierr = MatSetTransposeNullSpace(A, nullSpace);CHKERRQ(ierr);
 
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
@@ -502,9 +600,12 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
+    PetscScalar      pint;
 
     ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.debug) {
@@ -512,18 +613,23 @@ int main(int argc, char **argv)
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g [%g, %g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
+    {
+      const Vec *nullvecs;
+      ierr = MatNullSpaceGetVecs(nullSpace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
+      ierr = VecDot(nullvecs[0], u, &pint);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", (double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
     if (user.showError) {
       Vec r;
+
       ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
       ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution Error\n");CHKERRQ(ierr);
-      ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) r, "Solution Error");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(r, NULL, "-error_vec_view");CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
     }
     if (user.showSolution) {
@@ -849,38 +955,96 @@ int main(int argc, char **argv)
     filter: grep -v "variant HERMITIAN"
     nsize: 5
     args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
+  # Convergence
+  test:
+    suffix: 2d_quad_q1_p0_conv
+    requires: !single
+    args: -run_type full -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 -vel_petscspace_order 1 -pres_petscspace_order 0 \
+      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
+      -show_solution 0
+  test:
+    suffix: 2d_tri_p2_p1_conv
+    requires: !single
+    args: -run_type full -sol_type cubic -bc_type dirichlet -interpolate 1 -dm_refine 0 \
+      -vel_petscspace_order 2 -pres_petscspace_order 1 \
+      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
+      -show_solution 0
+  test:
+    suffix: 2d_quad_q2_q1_conv
+    requires: !single
+    args: -run_type full -sol_type cubic -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 \
+      -vel_petscspace_order 2 -pres_petscspace_order 1 \
+      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
+      -show_solution 0
+  test:
+    suffix: 2d_quad_q2_p1_conv
+    requires: !single
+    args: -run_type full -sol_type cubic -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 \
+      -vel_petscspace_order 2 -pres_petscspace_order 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 \
+      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
+      -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
+      -show_solution 0
+  #   This shows checkerboarding
+  test:
+    suffix: 2d_quad_q1_p0_vanka_mult_conv
+    requires: !single
+    args: -run_type full -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
+      -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu \
+      -show_solution 0
   # Vanka smoother
   test:
     suffix: 2d_quad_q1_p0_vanka_mult
-    requires: triangle !single
-    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu \
+      -show_solution 0
   test:
     suffix: 2d_quad_q1_p0_vanka_mult_unity
-    requires: triangle !single
-    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu \
+      -show_solution 0
   test:
     suffix: 2d_quad_q1_p0_vanka_add
-    requires: triangle !single
-    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
-      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu \
+      -show_solution 0
   test:
     suffix: 2d_quad_q1_p0_vanka_add_unity
-    requires: triangle !single
-    filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
+    requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
-      -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka -show_solution 0
+      -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
+        -sub_ksp_type preonly -sub_pc_type lu \
+      -show_solution 0
 
 TEST*/

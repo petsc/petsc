@@ -1,36 +1,36 @@
   0 SNES Function norm 5.511227472885e+00 
     0 KSP preconditioned resid norm 2.165225144570e+01 true resid norm 5.511227472885e+00 ||r(i)||/||b|| 1.000000000000e+00
     1 KSP preconditioned resid norm 1.069898076048e+01 true resid norm 4.211163841638e+00 ||r(i)||/||b|| 7.641063378996e-01
-    2 KSP preconditioned resid norm 5.857412254451e+00 true resid norm 1.893211016947e+00 ||r(i)||/||b|| 3.435189395214e-01
+    2 KSP preconditioned resid norm 5.857412254452e+00 true resid norm 1.893211016947e+00 ||r(i)||/||b|| 3.435189395214e-01
     3 KSP preconditioned resid norm 3.423528345885e+00 true resid norm 1.608458235183e+00 ||r(i)||/||b|| 2.918511789064e-01
     4 KSP preconditioned resid norm 1.797069511126e+00 true resid norm 1.215897117773e+00 ||r(i)||/||b|| 2.206218349279e-01
-    5 KSP preconditioned resid norm 1.547006225682e+00 true resid norm 1.102234656119e+00 ||r(i)||/||b|| 1.999980333858e-01
+    5 KSP preconditioned resid norm 1.547006225683e+00 true resid norm 1.102234656119e+00 ||r(i)||/||b|| 1.999980333858e-01
     6 KSP preconditioned resid norm 1.265008404513e+00 true resid norm 8.862158739961e-01 ||r(i)||/||b|| 1.608019045405e-01
-    7 KSP preconditioned resid norm 9.044058613836e-01 true resid norm 6.599061880845e-01 ||r(i)||/||b|| 1.197385140300e-01
-    8 KSP preconditioned resid norm 7.440584084440e-01 true resid norm 4.068487877366e-01 ||r(i)||/||b|| 7.382181006650e-02
+    7 KSP preconditioned resid norm 9.044058613838e-01 true resid norm 6.599061880846e-01 ||r(i)||/||b|| 1.197385140300e-01
+    8 KSP preconditioned resid norm 7.440584084442e-01 true resid norm 4.068487877366e-01 ||r(i)||/||b|| 7.382181006649e-02
     9 KSP preconditioned resid norm 3.951939060939e-01 true resid norm 2.130509131258e-01 ||r(i)||/||b|| 3.865761559906e-02
-   10 KSP preconditioned resid norm 2.505130694828e-01 true resid norm 1.049682775885e-01 ||r(i)||/||b|| 1.904626112874e-02
-   11 KSP preconditioned resid norm 1.641597781446e-01 true resid norm 8.602653153428e-02 ||r(i)||/||b|| 1.560932332362e-02
-   12 KSP preconditioned resid norm 7.881016562032e-02 true resid norm 4.736654070325e-02 ||r(i)||/||b|| 8.594553742571e-03
-   13 KSP preconditioned resid norm 4.515491870719e-02 true resid norm 2.250836389900e-02 ||r(i)||/||b|| 4.084092701624e-03
-   14 KSP preconditioned resid norm 2.932223407924e-02 true resid norm 1.285693064231e-02 ||r(i)||/||b|| 2.332861545919e-03
-   15 KSP preconditioned resid norm 1.400215627860e-02 true resid norm 6.463421421861e-03 ||r(i)||/||b|| 1.172773479894e-03
-   16 KSP preconditioned resid norm 9.645188364541e-03 true resid norm 3.744427230206e-03 ||r(i)||/||b|| 6.794180150661e-04
-   17 KSP preconditioned resid norm 7.851347776587e-03 true resid norm 2.837422103771e-03 ||r(i)||/||b|| 5.148439467852e-04
-   18 KSP preconditioned resid norm 4.344863313174e-03 true resid norm 1.678060266349e-03 ||r(i)||/||b|| 3.044803130708e-04
-   19 KSP preconditioned resid norm 3.021734933007e-03 true resid norm 1.005369181824e-03 ||r(i)||/||b|| 1.824220079412e-04
-   20 KSP preconditioned resid norm 2.733573932746e-03 true resid norm 7.202952711084e-04 ||r(i)||/||b|| 1.306959791902e-04
-   21 KSP preconditioned resid norm 2.266216717461e-03 true resid norm 6.446410850945e-04 ||r(i)||/||b|| 1.169686949534e-04
-   22 KSP preconditioned resid norm 1.862103945529e-03 true resid norm 7.290003278493e-04 ||r(i)||/||b|| 1.322754924263e-04
-   23 KSP preconditioned resid norm 1.332631755690e-03 true resid norm 4.790806444378e-04 ||r(i)||/||b|| 8.692812024087e-05
-   24 KSP preconditioned resid norm 9.616165608928e-04 true resid norm 4.227882259776e-04 ||r(i)||/||b|| 7.671398577861e-05
-   25 KSP preconditioned resid norm 7.178449085387e-04 true resid norm 3.981259856917e-04 ||r(i)||/||b|| 7.223907698429e-05
-   26 KSP preconditioned resid norm 5.133258404962e-04 true resid norm 2.038918687164e-04 ||r(i)||/||b|| 3.699572730748e-05
-   27 KSP preconditioned resid norm 3.297501227925e-04 true resid norm 1.315796982124e-04 ||r(i)||/||b|| 2.387484437174e-05
-   28 KSP preconditioned resid norm 2.561379120471e-04 true resid norm 7.668644552886e-05 ||r(i)||/||b|| 1.391458543603e-05
-   29 KSP preconditioned resid norm 2.191878663395e-04 true resid norm 4.480597508613e-05 ||r(i)||/||b|| 8.129944791168e-06
-   30 KSP preconditioned resid norm 1.537763574645e-04 true resid norm 7.110933422926e-05 ||r(i)||/||b|| 1.290263096181e-05
-  1 SNES Function norm 7.110933422920e-05 
+   10 KSP preconditioned resid norm 2.505130694828e-01 true resid norm 1.049682775884e-01 ||r(i)||/||b|| 1.904626112873e-02
+   11 KSP preconditioned resid norm 1.641597781447e-01 true resid norm 8.602653153428e-02 ||r(i)||/||b|| 1.560932332362e-02
+   12 KSP preconditioned resid norm 7.881016562043e-02 true resid norm 4.736654070327e-02 ||r(i)||/||b|| 8.594553742576e-03
+   13 KSP preconditioned resid norm 4.515491870714e-02 true resid norm 2.250836389899e-02 ||r(i)||/||b|| 4.084092701622e-03
+   14 KSP preconditioned resid norm 2.932229953825e-02 true resid norm 1.285697340250e-02 ||r(i)||/||b|| 2.332869304660e-03
+   15 KSP preconditioned resid norm 1.400222478819e-02 true resid norm 6.463471855630e-03 ||r(i)||/||b|| 1.172782630989e-03
+   16 KSP preconditioned resid norm 9.645322207157e-03 true resid norm 3.744473156107e-03 ||r(i)||/||b|| 6.794263482191e-04
+   17 KSP preconditioned resid norm 7.851456741745e-03 true resid norm 2.837461774553e-03 ||r(i)||/||b|| 5.148511449606e-04
+   18 KSP preconditioned resid norm 4.344949896676e-03 true resid norm 1.678084749706e-03 ||r(i)||/||b|| 3.044847555218e-04
+   19 KSP preconditioned resid norm 3.021816517745e-03 true resid norm 1.005381217568e-03 ||r(i)||/||b|| 1.824241918001e-04
+   20 KSP preconditioned resid norm 2.733653930189e-03 true resid norm 7.203032342450e-04 ||r(i)||/||b|| 1.306974240836e-04
+   21 KSP preconditioned resid norm 2.266284275288e-03 true resid norm 6.446585953633e-04 ||r(i)||/||b|| 1.169718721528e-04
+   22 KSP preconditioned resid norm 1.862149255646e-03 true resid norm 7.290162125296e-04 ||r(i)||/||b|| 1.322783746663e-04
+   23 KSP preconditioned resid norm 1.332664639367e-03 true resid norm 4.790899485720e-04 ||r(i)||/||b|| 8.692980845538e-05
+   24 KSP preconditioned resid norm 9.616473221160e-04 true resid norm 4.227977045388e-04 ||r(i)||/||b|| 7.671570564251e-05
+   25 KSP preconditioned resid norm 7.178810632940e-04 true resid norm 3.981336675820e-04 ||r(i)||/||b|| 7.224047084624e-05
+   26 KSP preconditioned resid norm 5.133776395860e-04 true resid norm 2.038971692996e-04 ||r(i)||/||b|| 3.699668908655e-05
+   27 KSP preconditioned resid norm 3.297950571371e-04 true resid norm 1.315833760112e-04 ||r(i)||/||b|| 2.387551170018e-05
+   28 KSP preconditioned resid norm 2.561744239663e-04 true resid norm 7.669797243447e-05 ||r(i)||/||b|| 1.391667696748e-05
+   29 KSP preconditioned resid norm 2.192194586283e-04 true resid norm 4.482349247463e-05 ||r(i)||/||b|| 8.133123282456e-06
+   30 KSP preconditioned resid norm 1.537916725267e-04 true resid norm 7.112037200212e-05 ||r(i)||/||b|| 1.290463374122e-05
+  1 SNES Function norm 7.112037200195e-05 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -63,22 +63,31 @@ SNES Object: 1 MPI processes
       Saving patch operators (rebuilt every PCSetUp)
       Patch construction operator: Vanka
       KSP on patches (all same):
-KSP Object: (sub_) 1 MPI processes
-  type: gmres
-    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    happy breakdown tolerance 1e-30
-  maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-  left preconditioning
-  using PRECONDITIONED norm type for convergence test
-PC Object: (sub_) 1 MPI processes
-  type: none
-  linear system matrix = precond matrix:
-  Mat Object: (pc_patch_sub_) 1 MPI processes
-    type: seqdense
-    rows=22, cols=22
-    total: nonzeros=484, allocated nonzeros=484
-    total number of mallocs used during MatSetValues calls =0
+    KSP Object: (sub_) 1 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (sub_) 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 0., needed 0.
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqdense
+              rows=22, cols=22
+              package used to perform factorization: petsc
+              total: nonzeros=484, allocated nonzeros=484
+              total number of mallocs used during MatSetValues calls =0
+      linear system matrix = precond matrix:
+      Mat Object: (pc_patch_sub_) 1 MPI processes
+        type: seqdense
+        rows=22, cols=22
+        total: nonzeros=484, allocated nonzeros=484
+        total number of mallocs used during MatSetValues calls =0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -87,5 +96,5 @@ PC Object: (sub_) 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 61 nodes, limit used is 5
-Number of SNES iterations = 1
-L_2 Error: 0.0707398 [0.0130944, 0.0695173]
+L_2 Error: 0.0707397 [0.0130944, 0.0695172]
+Integral of pressure: -1.09426e-14
