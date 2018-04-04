@@ -118,8 +118,8 @@ class Configure(script.Script):
     import time
 
     self.logWrite('================================================================================\n')
-    self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
-    self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
+    self.logWrite('TEST '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')\n')
+    self.logPrint('TESTING: '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     #t = time.time()
     if not isinstance(args, list): args = [args]
@@ -611,18 +611,18 @@ class Configure(script.Script):
     self.logWrite('Executing: '+command+'\n')
     try:
       (output, error, status) = Configure.executeShellCommand(command, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite('ERROR while removing object file: '+str(e)+'\n')
     if cleanup and os.path.isfile(self.linkerObj):
       try:
         if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 

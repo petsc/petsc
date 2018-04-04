@@ -3,6 +3,7 @@ import config.base
 import config
 
 import os
+from functools import reduce
 
 # not sure how to handle this with 'self' so its outside the class
 def noCheck(command, status, output, error):
@@ -491,13 +492,13 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     if hasattr(self, 'CC'):
       yield self.CC
-    elif self.argDB.has_key('with-cc'):
+    elif 'with-cc' in self.argDB:
       if self.isWindows(self.argDB['with-cc'], self.log):
         yield 'win32fe '+self.argDB['with-cc']
       else:
         yield self.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' does not work.'+'\n'+self.mesg)
-    elif self.argDB.has_key('CC'):
+    elif 'CC' in self.argDB:
       if self.isWindows(self.argDB['CC'], self.log):
         yield 'win32fe '+self.argDB['CC']
       else:
@@ -575,7 +576,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CC'):
           self.checkCompiler('C')
           break
-      except RuntimeError, e:
+      except RuntimeError as e:
         import os
         self.mesg = str(e)
         self.logPrint('Error testing C compiler: '+str(e))
@@ -608,7 +609,7 @@ class Configure(config.base.Configure):
             raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')
           self.popLanguage()
           return
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.popLanguage()
     raise RuntimeError('Cannot find a C preprocessor')
     return
@@ -619,13 +620,13 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
       yield self.CUDAC
-    elif self.argDB.has_key('with-cudac'):
+    elif 'with-cudac' in self.argDB:
       yield self.argDB['with-cudac']
       raise RuntimeError('CUDA compiler you provided with -with-cudac='+self.argDB['with-cudac']+' does not work.'+'\n'+self.mesg)
-    elif self.argDB.has_key('CUDAC'):
+    elif 'CUDAC' in self.argDB:
       yield self.argDB['CUDAC']
       raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
-    elif self.argDB.has_key('with-cuda-dir'):
+    elif 'with-cuda-dir' in self.argDB:
       import os
       nvccPath = os.path.join(self.argDB['with-cuda-dir'], 'bin','nvcc')
       yield nvccPath
@@ -641,7 +642,7 @@ class Configure(config.base.Configure):
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    if (not self.framework.clArgDB.has_key('with-cuda') and not self.framework.clArgDB.has_key('with-cuda-dir')) or self.argDB['with-cuda'] == '0':
+    if ('with-cuda' not in self.framework.clArgDB and 'with-cuda-dir' not in self.framework.clArgDB) or self.argDB['with-cuda'] == '0':
       if 'CUDAC' in self.argDB:
         del self.argDB['CUDAC']
       return
@@ -661,7 +662,7 @@ class Configure(config.base.Configure):
               break
           self.compilerVersionCUDA = compilerVersion[i].strip(',')
           break
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing CUDA compiler: '+str(e))
         self.delMakeMacro('CUDAC')
@@ -689,7 +690,7 @@ class Configure(config.base.Configure):
             raise RuntimeError('Cannot preprocess CUDA with '+self.CUDAPP+'.')
           self.popLanguage()
           return
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.popLanguage()
     return
 
@@ -700,19 +701,19 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'CXX'):
       yield self.CXX
-    elif self.argDB.has_key('with-c++'):
+    elif 'with-c++' in self.argDB:
       raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
-    if self.argDB.has_key('with-CC'):
+    if 'with-CC' in self.argDB:
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
 
-    if self.argDB.has_key('with-cxx'):
+    if 'with-cxx' in self.argDB:
       if self.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
       if self.isWindows(self.argDB['with-cxx'], self.log):
         yield 'win32fe '+self.argDB['with-cxx']
       else:
         yield self.argDB['with-cxx']
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' does not work.'+'\n'+self.mesg)
-    elif self.argDB.has_key('CXX'):
+    elif 'CXX' in self.argDB:
       if self.isWindows(self.argDB['CXX'], self.log):
         yield 'win32fe '+self.argDB['CXX']
       else:
@@ -806,7 +807,7 @@ class Configure(config.base.Configure):
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.checkCompiler('Cxx')
             break
-        except RuntimeError, e:
+        except RuntimeError as e:
           import os
           self.mesg = str(e)
           self.logPrint('Error testing C++ compiler: '+str(e))
@@ -841,7 +842,7 @@ class Configure(config.base.Configure):
             raise RuntimeError('Cannot preprocess Cxx with '+self.CXXCPP+'.')
           self.popLanguage()
           break
-      except RuntimeError, e:
+      except RuntimeError as e:
         import os
 
         if os.path.basename(self.CXXCPP) in ['mpicxx', 'mpiCC']:
@@ -858,13 +859,13 @@ class Configure(config.base.Configure):
 
     if hasattr(self, 'FC'):
       yield self.FC
-    elif self.argDB.has_key('with-fc'):
+    elif 'with-fc' in self.argDB:
       if self.isWindows(self.argDB['with-fc'], self.log):
         yield 'win32fe '+self.argDB['with-fc']
       else:
         yield self.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' does not work.'+'\n'+self.mesg)
-    elif self.argDB.has_key('FC'):
+    elif 'FC' in self.argDB:
       if self.isWindows(self.argDB['FC'], self.log):
         yield 'win32fe '+self.argDB['FC']
       else:
@@ -958,7 +959,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'FC'):
           self.checkCompiler('FC')
           break
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.mesg = str(e)
         self.logPrint('Error testing Fortran compiler: '+str(e))
         if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
@@ -1097,7 +1098,7 @@ class Configure(config.base.Configure):
       if self.checkCompile('#include <unistd.h>','#ifndef _LFS64_LARGEFILE \n#error no largefile defines \n#endif'):
         try:
           self.addCompilerFlag('-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64',compilerOnly=1)
-        except RuntimeError, e:
+        except RuntimeError as e:
           self.logPrint('Error adding ' +language+ ' flags -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64')
       else:
         self.logPrint('Rejected ' +language+ ' flags -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64')
@@ -1217,7 +1218,7 @@ class Configure(config.base.Configure):
           try:
             (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+arflags+' '+arcUnix+' '+objName, checkCommand = checkArchive, log = self.log)
             (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' '+arcUnix, checkCommand = checkRanlib, log = self.log)
-          except RuntimeError, e:
+          except RuntimeError as e:
             self.logPrint(str(e))
             continue
           self.LIBS = '-L'+self.tmpDir+' -lconf1 ' + oldLibs
@@ -1623,12 +1624,12 @@ if (dlclose(handle)) {
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     for envVal in ignoreEnvCompilers:
       if envVal in os.environ:
-        if self.framework.clArgDB.has_key(envVal) or self.framework.clArgDB.has_key('with-'+envVal.lower()):
+        if envVal in self.framework.clArgDB or 'with-'+envVal.lower() in self.framework.clArgDB:
           self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
-        elif self.framework.argDB['with-xsdk-defaults'] and not self.framework.clArgDB.has_key('with-environment-variables'):
+        elif self.framework.argDB['with-xsdk-defaults'] and 'with-environment-variables' not in self.framework.clArgDB:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n because --with-xsdk-defaults was selected. Add --disable-environment-variables \n to NOT use the environmental variables ******')
 
         else:
@@ -1638,7 +1639,7 @@ if (dlclose(handle)) {
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
-        if self.framework.clArgDB.has_key(envVal):
+        if envVal in self.framework.clArgDB:
           self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
@@ -1650,14 +1651,14 @@ if (dlclose(handle)) {
 
 
   def checkEnvCompilers(self):
-    if self.framework.clArgDB.has_key('with-environment-variables') or self.framework.clArgDB.has_key('with-xsdk-defaults'):
+    if 'with-environment-variables' in self.framework.clArgDB or 'with-xsdk-defaults' in self.framework.clArgDB:
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:
           self.argDB[ev] = os.environ[ev]
 
     # abort if FCFLAGS and FFLAGS both set, but to different values
-    if self.argDB.has_key('FFLAGS') and self.argDB.has_key('FCFLAGS'):
+    if 'FFLAGS' in self.argDB and 'FCFLAGS' in self.argDB:
       if self.argDB['FCFLAGS'] != self.argDB['FFLAGS']:
         raise RuntimeError('FCFLAGS and FFLAGS are both set, but with different values (FCFLAGS=%s, FFLAGS=%s)'%(self.argDB['FCFLAGS'],self.argDB['FFLAGS']))
     return

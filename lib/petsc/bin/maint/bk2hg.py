@@ -10,6 +10,7 @@
 # local-bk-repo is a valid bk repository
 # local-hg-repo is a new location
 
+from __future__ import print_function
 import sys
 import os
 import time
@@ -34,10 +35,10 @@ def main():
 
   arg_len = len(sys.argv)
   if arg_len != 3:
-    print 'Error Insufficient arguments.'
-    print 'Usage:', sys.argv[0], '[-i] local-bk-repo local-hg-repo'
-    print 'Example:'
-    print '  bk2hg.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-hg'
+    print('Error Insufficient arguments.')
+    print('Usage:', sys.argv[0], '[-i] local-bk-repo local-hg-repo')
+    print('Example:')
+    print('  bk2hg.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-hg')
     sys.exit()
   bk_repo = sys.argv[1]
   hg_repo= sys.argv[2]
@@ -56,39 +57,39 @@ def main():
 
   # verify if bkdir exists
   if not os.path.exists(bk_repo):
-    print 'Error! specified path does not exist: ' + bk_repo
+    print('Error! specified path does not exist: ' + bk_repo)
     sys.exit()
 
   # if createhgrepo - then create & initialize the repo [if dir exists]
   # otherwise - make sure the dir exists [if not error]
   if os.path.exists(hg_repo):
     if createhgrepo:
-      print 'Warning! ignoring option -i as specified hgrepo exists: ' + hg_repo
+      print('Warning! ignoring option -i as specified hgrepo exists: ' + hg_repo)
       sys.stdout.flush()
   else:
     if createhgrepo:
-      print 'Creating hgrepo: ' + hg_repo
+      print('Creating hgrepo: ' + hg_repo)
       sys.stdout.flush()
       os.mkdir(hg_repo)
       os.chdir(hg_repo)
       if os.system("hg init"):
-        print 'Error during hg init!'
+        print('Error during hg init!')
         sys.exit()
       hg_rev['1.0'] = hg_get_tip_key(hg_repo)
     else:
-      print 'Error! specified path does not exist: ' + hg_repo
-      print 'If you need to create a new hgrepo, use option: -i'
+      print('Error! specified path does not exist: ' + hg_repo)
+      print('If you need to create a new hgrepo, use option: -i')
       sys.exit()
 
   # verify the specified dirs are valid repositories
   os.chdir(bk_repo)
   if os.system("bk changes -r+ > /dev/null 2>&1"):
-    print 'Error! specified path is not a bk repository: ' + bk_repo
+    print('Error! specified path is not a bk repository: ' + bk_repo)
     sys.exit()
 
   os.chdir(hg_repo)
   if os.system("hg tip > /dev/null 2>&1"):
-    print 'Error! specified path is not a hg repository: ' + hg_repo
+    print('Error! specified path is not a hg repository: ' + hg_repo)
     sys.exit()
 
   # now get the latest bk cset number
@@ -103,7 +104,7 @@ def main():
   buf=fd.read()
   fd.close()
   if buf == '':
-    print 'ErrorNo new changesets Quitting! Last commit:', bk_cset_min
+    print('ErrorNo new changesets Quitting! Last commit:', bk_cset_min)
     sys.exit()
   elif buf.splitlines()[0].find(' -1:') >=0:
     # a new repository has -1 changeset number.
@@ -115,11 +116,11 @@ def main():
         bk_cset_min = line.strip()
         break
     if bk_cset_min == '':
-      print 'Error! bk changeset tag not found at the tip of hg repo!'
+      print('Error! bk changeset tag not found at the tip of hg repo!')
       sys.exit()
 
   if bk_cset_min == bk_cset_max:
-    print 'No new changesets Quitting! Last commit:', bk_cset_min
+    print('No new changesets Quitting! Last commit:', bk_cset_min)
     sys.exit()
 
   log_file=os.path.join(bk_repo,'hg_log.tmp')
@@ -135,9 +136,9 @@ def main():
   revs=buf.splitlines()
 
   if revs == []:
-    print 'No new revisions found in bk. Perhaps some internal error!'
-    print 'bk_cset_min:',bk_cset_min
-    print 'bk_cset_max:',bk_cset_max
+    print('No new revisions found in bk. Perhaps some internal error!')
+    print('bk_cset_min:',bk_cset_min)
+    print('bk_cset_max:',bk_cset_max)
     sys.exit()
 
   #now process each revision [ignore the first]
@@ -152,7 +153,7 @@ def main():
     revn = fd.read().splitlines()[0]
     fd.close()
 
-    print 'Processing changeset: '+revn
+    print('Processing changeset: '+revn)
     sys.stdout.flush()
     # get username
     fd=os.popen('bk changes -and:USER:@:HOST: -r'+revq)
@@ -191,11 +192,11 @@ def main():
         mrev = None
         pstr = tmpstr
       prev,crev = pstr.split('..')
-      print mrev,prev,crev,revn
+      print(mrev,prev,crev,revn)
       sys.stdout.flush()
       # crev should be same as revn
       if crev != revn:
-        print 'Error! crev and revn do not match!', crev, revn
+        print('Error! crev and revn do not match!', crev, revn)
         sys.exit()
 
     # Now start the converion process
@@ -211,17 +212,17 @@ def main():
     # merge if necessary
     if mrev != None:
       if os.system('hg clone -r'+str(hg_prev_val) +' '+ hg_repo +' '+ hg_repo_child + '> /dev/null 2>&1'):
-        print 'Error during hg clone!'
+        print('Error during hg clone!')
         sys.exit()
 
       if os.system('hg clone -r'+str(hg_mrev_val) +' '+ hg_repo +' '+ hg_repo_child_merge + '> /dev/null 2>&1'):
-        print 'Error during hg clone!'
+        print('Error during hg clone!')
         sys.exit()
 
       # now merge these 2 branches
       os.chdir(hg_repo_child)
       if os.system('hg pull -f '+hg_repo_child_merge):
-        print 'Error during hg pull!'
+        print('Error during hg pull!')
         sys.exit()
 
       # look for the tip - and tag the non-tip version [among prev and mrev]
@@ -231,44 +232,44 @@ def main():
       elif tip_key == hg_rev[mrev]:
         tagrev = prev
       else:
-        print 'Error tip does not match either prev or mrev!'
+        print('Error tip does not match either prev or mrev!')
         sys.exit()
 
       if os.system('hg tag -l -r'+str(hg_rev[tagrev]) +' '+ str(tagrev)):
-        print 'Error during hg tag prev'
+        print('Error during hg tag prev')
         sys.exit()
 
       # now attempt to merge
       os.system('ls -a | grep -v .hg | xargs rm -rf >/dev/null 2>&1')
       if os.system('hg co -C -f'):
-        print 'Error during checkout'
+        print('Error during checkout')
         sys.exit()
       if os.system('hg merge -f -b'+str(tagrev) + '< '+ tmp_file):
-        print '******* Error during merge! Ignoring*********'
+        print('******* Error during merge! Ignoring*********')
         sys.stdout.flush()
       # remove the temp clone
       shutil.rmtree(hg_repo_child_merge)
     else:
       # clone the prev version[parent to the current change]
       if os.system('hg clone -r'+str(hg_prev_val) +' '+ hg_repo +' '+ hg_repo_child + '> /dev/null 2>&1'):
-        print 'Error during hg clone!'
+        print('Error during hg clone!')
         sys.exit()
 
     # Now remove the old files - and export the new modified files
     os.chdir(hg_repo_child)
     os.system('ls -a | grep -v .hg | xargs rm -rf >/dev/null 2>&1')
     if os.system('bk export -r'+revq+' ' + bk_repo + ' ' + hg_repo_child):
-      print 'Error during bk export!'
+      print('Error during bk export!')
       sys.exit()
     # somehow add in --date as well
     if os.system('hg commit --addremove --user ' + auth_email + ' --date ' + timestr + ' --logfile '+log_file + ' --exclude '+log_file):
-      print 'Exiting due to the previous error!'
+      print('Exiting due to the previous error!')
       sys.exit()
     os.unlink(log_file)
     # now extract the changeset id - and store
     hg_rev[revn] = hg_get_tip_key(hg_repo_child)
     if os.system('hg push -f ' +hg_repo):
-      print '********** Push returned error code! Ignoring! *************'
+      print('********** Push returned error code! Ignoring! *************')
       sys.stdout.flush()
     # remove the temp clone
     shutil.rmtree(hg_repo_child)
@@ -279,4 +280,4 @@ def main():
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__':
   main()
-  print '******** Done Conversion ***************'
+  print('******** Done Conversion ***************')

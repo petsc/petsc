@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class ArgumentProcessor(object):
   '''This class provides interaction with an RDict object, which by default is shared'''
   defaultDB = None

@@ -1,4 +1,6 @@
 from __future__ import generators
+from __future__ import print_function
+from functools import reduce
 
 class DirectedGraph(object):
   '''This class is for directed graphs with vertices of arbitrary type'''
@@ -90,10 +92,10 @@ class DirectedGraph(object):
     for i in range(indent): sys.stdout.write('  ')
 
   def display(self):
-    print 'I am a DirectedGraph with '+str(len(self.vertices))+' vertices'
+    print('I am a DirectedGraph with '+str(len(self.vertices))+' vertices')
     for vertex in DirectedGraph.breadthFirstSearch(self):
       self.printIndent(vertex.__level)
-      print '('+str(self.vertices.index(vertex))+') '+str(vertex)+' in: '+str(map(self.vertices.index, self.inEdges[vertex]))+' out: '+str(map(self.vertices.index, self.outEdges[vertex]))
+      print('('+str(self.vertices.index(vertex))+') '+str(vertex)+' in: '+str(map(self.vertices.index, self.inEdges[vertex]))+' out: '+str(map(self.vertices.index, self.outEdges[vertex])))
     return
 
   def appendGraph(self, graph):

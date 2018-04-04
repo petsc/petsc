@@ -112,7 +112,7 @@ class Configure(config.package.Package):
         self.logPrint('Chombo installed using config=%s\n'%config_value)
         output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make lib', timeout=2500, log = self.log)
         output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+self.installSudo+'&& cp -f lib/lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f lib/include/*.H '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on Chombo: '+str(e))
 
 

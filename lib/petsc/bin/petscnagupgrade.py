@@ -3,6 +3,7 @@
 #
 #    Nags the user to update to the latest version
 #
+from __future__ import print_function
 import os
 import os.path, time,sys
 import re

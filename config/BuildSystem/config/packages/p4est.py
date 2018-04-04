@@ -60,6 +60,6 @@ class Configure(config.package.GNUPackage):
       self.logPrintBox('Trying to bootstrap p4est using autotools; this make take several minutes')
       try:
         self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
-      except RuntimeError,e:
+      except RuntimeError as e:
         raise RuntimeError('Could not bootstrap p4est using autotools: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
     return config.package.GNUPackage.Install(self)

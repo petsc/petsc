@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
       try:
         if os.path.exists(self.save_reconfigure_file): os.unlink(self.save_reconfigure_file)
         os.rename(self.reconfigure_file,self.save_reconfigure_file)
-      except Exception, e:
+      except Exception as e:
         self.save_reconfigure_file = None
         self.logPrint('error in saveReconfigure(): '+ str(e))
     return
@@ -94,7 +94,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-clean'] and self.save_reconfigure_file:
       try:
         os.rename(self.save_reconfigure_file,self.reconfigure_file)
-      except Exception, e:
+      except Exception as e:
         self.logPrint('error in restoreReconfigure(): '+ str(e))
     return
 

@@ -15,6 +15,7 @@
 #       Project -> Edit Project Setting  -> Configuration (make sure it is Release or Debug depending on if you used --with-debugging=0)
 #       Build -> Build and Debug
 #
+from __future__ import print_function
 import os, sys
 
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
@@ -107,7 +108,7 @@ class PETScMaker(script.Script):
 
  def buildDir(self, dirname):
    ''' This is run in a PETSc source directory'''
-   if self.verbose: print 'Entering '+dirname
+   if self.verbose: print('Entering '+dirname)
    os.chdir(dirname)
    l = len(os.environ['PETSC_DIR'])
    basedir = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'xcode-links')
@@ -128,7 +129,7 @@ class PETScMaker(script.Script):
      if ext == '.h':
        hnames.append(f)
    if cnames:
-     if self.verbose: print 'Linking C files',cnames
+     if self.verbose: print('Linking C files',cnames)
      for i in cnames:
        j = i[l+1:]
        if not os.path.islink(os.path.join(basedir,i)) and not i.startswith('.') and i.find(".BACKUP") == -1 and i.find(".LOCAL") == -1 and i.find(".BASE") == -1:
@@ -172,7 +173,7 @@ class PETScMaker(script.Script):
    reg   = re.compile(' [ ]*')
    fname = os.path.join(dirname, 'makefile')
    if not os.path.isfile(fname):
-     if os.path.isfile(os.path.join(dirname, 'Makefile')): print 'ERROR: Change Makefile to makefile in',dirname
+     if os.path.isfile(os.path.join(dirname, 'Makefile')): print('ERROR: Change Makefile to makefile in',dirname)
      return False
    fd = open(fname)
    text = fd.readline()
@@ -185,25 +186,25 @@ class PETScMaker(script.Script):
 
        if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'" or rvalue == "'"+'PETSC_USING_F2003'+"'":
          if not hasattr(self.compilers, 'FC'):
-           if self.verbose: print 'Rejecting',dirname,'because fortran is not being used'
+           if self.verbose: print('Rejecting',dirname,'because fortran is not being used')
            return 0
        elif rvalue == "'"+'PETSC_USE_LOG'+"'":
          if not self.libraryOptions.useLog:
-           if self.verbose: print 'Rejecting',dirname,'because logging is turned off'
+           if self.verbose: print('Rejecting',dirname,'because logging is turned off')
            return 0
        elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
          if not self.libraryOptions.useFortranKernels:
-           if self.verbose: print 'Rejecting',dirname,'because fortran kernels are turned off'
+           if self.verbose: print('Rejecting',dirname,'because fortran kernels are turned off')
            return 0
        elif rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
-         if self.verbose: print 'Rejecting',dirname,'because scalar type '+self.scalarType.scalartype+' is not '+rvalue
+         if self.verbose: print('Rejecting',dirname,'because scalar type '+self.scalarType.scalartype+' is not '+rvalue)
          return 0
        elif rtype == 'language':
          if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
-           if self.verbose: print 'Rejecting',dirname,'because language is '+self.languages.clanguage+' is not C++'
+           if self.verbose: print('Rejecting',dirname,'because language is '+self.languages.clanguage+' is not C++')
            return 0
        elif rtype == 'precision' and not rvalue == self.scalarType.precision:
-         if self.verbose: print 'Rejecting',dirname,'because precision '+self.scalarType.precision+' is not '+rvalue
+         if self.verbose: print('Rejecting',dirname,'because precision '+self.scalarType.precision+' is not '+rvalue)
          return 0
        elif rtype == 'package':
          found = 0
@@ -225,7 +226,7 @@ class PETScMaker(script.Script):
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
            if not found:
-             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' does not exist'
+             if self.verbose: print('Rejecting',dirname,'because package '+rvalue+' does not exist')
              return 0
        elif rtype == 'define':
          found = 0
@@ -234,7 +235,7 @@ class PETScMaker(script.Script):
            pname = "'"+pname+"'"
            if pname == rvalue: found = 1
          if not found:
-           if self.verbose: print 'Rejecting',dirname,'because define '+rvalue+' does not exist'
+           if self.verbose: print('Rejecting',dirname,'because define '+rvalue+' does not exist')
            return 0
        elif rtype == 'function':
          found = 0
@@ -245,7 +246,7 @@ class PETScMaker(script.Script):
 #           print rvalue
            if pname == rvalue: found = 1
          if not found:
-           if self.verbose: print 'Rejecting',dirname,'because function '+rvalue+' does not exist'
+           if self.verbose: print('Rejecting',dirname,'because function '+rvalue+' does not exist')
            return 0
          
      text = fd.readline()
@@ -258,11 +259,11 @@ class PETScMaker(script.Script):
    if rootDir is None:
      rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
-     print 'Nothing to be done'
+     print('Nothing to be done')
    if rootDir == os.environ['PETSC_DIR']:
      basedir = os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links')
      if os.path.isdir(basedir):
-       if self.verbose: print 'Removing '+basedir
+       if self.verbose: print('Removing '+basedir)
        shutil.rmtree(basedir)
    os.mkdir(basedir)       
    for root, dirs, files in os.walk(rootDir):
@@ -272,15 +273,15 @@ class PETScMaker(script.Script):
 
    if not self.skipXCode:
 
-     print 'In Xcode mouse click on Other Sources then xcode-links and the delete key, then'
-     print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
-     print 'in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now'
-     print 'exit Xcode'
+     print('In Xcode mouse click on Other Sources then xcode-links and the delete key, then')
+     print('control mouse click on "Other Sources" and select "Add files to PETSc ...", then')
+     print('in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now')
+     print('exit Xcode')
 
      try:
        import subprocess
        subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';open -W PETSc.xcodeproj', shell=True)
-     except RuntimeError, e:
+     except RuntimeError as e:
        raise RuntimeError('Error opening xcode project '+str(e))
 
 
@@ -293,7 +294,7 @@ class PETScMaker(script.Script):
      debugdir = 'Release-'+destination
    try:
      output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';xcodebuild -arch x86_64 -configuration '+debug+sdk, timeout=3000, log = self.log)
-   except RuntimeError, e:
+   except RuntimeError as e:
      raise RuntimeError('Error making iPhone/iPad version of PETSc libraries: '+str(e))
 
    liblocation = os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc','build','Debug-iphonesimulator','PETSc.framework','PETSc')
@@ -301,7 +302,7 @@ class PETScMaker(script.Script):
      raise RuntimeError('Error library '+liblocation+' not created')
    try:
      output,err,ret  = self.executeShellCommand('cp -f '+liblocation+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib','PETSc_framework'), timeout=30, log = self.log)
-   except RuntimeError, e:
+   except RuntimeError as e:
      raise RuntimeError('Error copying iPhone/iPad version of PETSc libraries: '+str(e))
 
    return

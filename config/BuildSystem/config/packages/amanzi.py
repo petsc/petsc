@@ -107,7 +107,7 @@ class Configure(config.package.CMakePackage):
     try:
       output1,err1,ret1  = config.package.Package.executeShellCommand('make -f simplemake listlibs', timeout=25, log = self.log)
       os.unlink('simplemake')
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Unable to generate list of Trilinos Libraries')
     # generateLibList() wants this ridiculus format
     l = output1.split(' ')

@@ -637,7 +637,7 @@ prepend-path PATH "%s"
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
     else:
       self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
@@ -651,9 +651,9 @@ prepend-path PATH "%s"
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
-      except (ImportError, KeyError), e:
+      except (ImportError, KeyError) as e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       self.argDB.readonly = oldRead
       if self.cmakeboot_success:
@@ -1023,8 +1023,8 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     try:
-      os.chmod(scriptName, 0775)
-    except OSError, e:
+      os.chmod(scriptName, 0o775)
+    except OSError as e:
       self.framework.logPrint('Unable to make reconfigure script executable:\n'+str(e))
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return

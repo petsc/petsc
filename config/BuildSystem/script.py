@@ -1,6 +1,8 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 if not hasattr(sys, 'version_info'):
-  print '*** Python version 1 is not supported. Please get the latest version from www.python.org ***'
+  print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
   sys.exit(4)
 
 import cPickle
@@ -196,7 +198,7 @@ class Script(logger.Logger):
         while 1:
           try:
             ready = select.select(lst, [], [])
-          except Exception, e:
+          except Exception as e:
             if log: log.write('** Error calling select() : '+str(e)+'\n')
             continue
           if len(ready[0]):
@@ -298,7 +300,7 @@ class Script(logger.Logger):
       framework.framework = framework
       framework.argDB = argDB
       self.logPrint('Loaded configure to cache: size '+str(len(cache)))
-    except cPickle.UnpicklingError, e:
+    except cPickle.UnpicklingError as e:
       framework = None
       self.logPrint('Invalid cached configure: '+str(e))
     return framework
@@ -410,13 +412,13 @@ class LanguageProcessor(args.ArgumentProcessor):
         if moduleName is None:
           moduleName = self.modulePath+'.'+language
         module     = __import__(moduleName)
-      except ImportError, e:
+      except ImportError as e:
         if not moduleName is None:
           self.logPrint('Failure to find language module: '+str(e))
         try:
           moduleName = self.modulePath+'.'+language
           module     = __import__(moduleName)
-        except ImportError, e:
+        except ImportError as e:
           self.logPrint('Failure to find language module: '+str(e))
           moduleName = 'config.compile.'+language
           module     = __import__(moduleName)

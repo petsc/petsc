@@ -40,6 +40,7 @@ self.mpi so that we may interogate it later. HYPRE can initially test whether
 MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
+from __future__ import print_function
 import user
 import script
 import config.base
@@ -49,6 +50,7 @@ import tempfile
 import os
 import re
 import platform
+from functools import reduce
 # workarround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
@@ -521,9 +523,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def substituteName(self, match, prefix = None):
     '''Return the substitution value for a given name, or return "@name_UNKNOWN@"'''
     name = match.group('name')
-    if self.subst.has_key(name):
+    if name in self.subst:
       return self.subst[name]
-    elif self.argSubst.has_key(name):
+    elif name in self.argSubst:
       return self.argDB[self.argSubst[name]]
     else:
       for child in self.childGraph.vertices:
@@ -541,9 +543,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             continue
         else:
           childName = name
-        if child.subst.has_key(childName):
+        if childName in child.subst:
           return child.subst[childName]
-        elif child.argSubst.has_key(childName):
+        elif childName in child.argSubst:
           return self.argDB[child.argSubst[childName]]
     return '@'+name+'_UNKNOWN@'
 
@@ -555,7 +557,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         os.makedirs(os.path.dirname(outName))
     if self.file_create_pause: time.sleep(1)
     outFile = file(outName, 'w')
-    for line in inFile.xreadlines():
+    for line in inFile:
       outFile.write(self.substRE.sub(self.substituteName, line))
     outFile.close()
     inFile.close()
@@ -570,22 +572,22 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def dumpSubstitutions(self):
     for pair in self.subst.items():
-      print pair[0]+'  --->  '+pair[1]
+      print(pair[0]+'  --->  '+pair[1])
     for pair in self.argSubst.items():
-      print pair[0]+'  --->  '+self.argDB[pair[1]]
+      print(pair[0]+'  --->  '+self.argDB[pair[1]])
     for child in self.childGraph.vertices:
       if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       for pair in child.subst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+str(pair[1])
+          print(substPrefix+'_'+pair[0]+'  --->  '+str(pair[1]))
         else:
-          print pair[0]+'  --->  '+str(pair[1])
+          print(pair[0]+'  --->  '+str(pair[1]))
       for pair in child.argSubst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+str(self.argDB[pair[1]])
+          print(substPrefix+'_'+pair[0]+'  --->  '+str(self.argDB[pair[1]]))
         else:
-          print pair[0]+'  --->  '+str(self.argDB[pair[1]])
+          print(pair[0]+'  --->  '+str(self.argDB[pair[1]]))
     return
 
 
@@ -676,7 +678,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = {}
     for pair in child.defines.items():
       if not pair[1]: continue
-      if help.has_key(pair[0]):
+      if pair[0] in help:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
       else:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
@@ -921,16 +923,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logClear()
-      print '=================================================================================\r'
-      print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
-      print '\r'
-      print ' 1) cd '+os.getcwd()+'\r'
-      print '\r'
-      print ' 2) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
-      print '    cross-compiling for; this will generate the file '+reconfname+'              \r'
-      print '\r'
-      print ' 3) Run ./'+reconfname+' (to complete the configure process).                    \r'
-      print '=================================================================================\r'
+      print('=================================================================================\r')
+      print('    Since your compute nodes require use of a batch system or mpiexec you must:  \r')
+      print('\r')
+      print(' 1) cd '+os.getcwd()+'\r')
+      print('\r')
+      print(' 2) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r')
+      print('    cross-compiling for; this will generate the file '+reconfname+'              \r')
+      print('\r')
+      print(' 3) Run ./'+reconfname+' (to complete the configure process).                    \r')
+      print('=================================================================================\r')
       sys.exit(0)
     return
 
@@ -961,7 +963,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           else:
             child.no_configure()
           ret = 0
-        except (RuntimeError, config.base.ConfigureSetupError), e:
+        except (RuntimeError, config.base.ConfigureSetupError) as e:
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -969,7 +971,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -977,7 +979,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except ImportError, e :
+        except ImportError as e :
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -985,7 +987,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except OSError, e :
+        except OSError as e :
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -993,14 +995,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except SystemExit, e:
+        except SystemExit as e:
           if e.code is None or e.code == 0:
             return
           msg ='*******************************************************************************\n'\
               +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
-        except Exception, e:
+        except Exception as e:
           msg ='*******************************************************************************\n'\
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'

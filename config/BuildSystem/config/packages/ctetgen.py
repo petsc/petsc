@@ -22,15 +22,15 @@ class Configure(config.package.GNUPackage):
 
   def configureLibrary(self):
     ''' Since ctergen cannot be built until after PETSc configure is complete we need to just assume the downloaded library will work'''
-    if self.framework.clArgDB.has_key('with-ctetgen'):
+    if 'with-ctetgen' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen; only --download-ctetgen')
-    if self.framework.clArgDB.has_key('with-ctetgen-dir'):
+    if 'with-ctetgen-dir' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen-dir; only --download-ctetgen')
-    if self.framework.clArgDB.has_key('with-ctetgen-include'):
+    if 'with-ctetgen-include' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen-include; only --download-ctetgen')
-    if self.framework.clArgDB.has_key('with-ctetgen-lib'):
+    if 'with-ctetgen-lib' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen-lib; only --download-ctetgen')
-    if self.framework.clArgDB.has_key('with-ctetgen-shared'):
+    if 'with-ctetgen-shared' in self.framework.clArgDB:
       raise RuntimeError('Ctetgen does not support --with-ctetgen-shared')
 
     self.checkDownload()
@@ -52,7 +52,7 @@ class Configure(config.package.GNUPackage):
       self.installDirProvider.printSudoPasswordMessage(1)
       output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.log)
       self.log.write(output+err)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))
 
 

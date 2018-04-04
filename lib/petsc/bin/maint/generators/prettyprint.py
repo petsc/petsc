@@ -11,6 +11,7 @@
 #  Calling sequence:
 #      prettyprint.py
 ##
+from __future__ import print_function
 import os
 import re
 from exceptions import *
@@ -31,35 +32,35 @@ def main(args):
   aliases = pickle.load(file)
   classes = pickle.load(file)
 
-  print "----- Aliases --------"
+  print("----- Aliases --------")
   for i in aliases:
-    print i+" = "+aliases[i]
-  print " "
-  print "----- Enums --------"
+    print(i+" = "+aliases[i])
+  print(" ")
+  print("----- Enums --------")
   for i in enums:
-    print i
+    print(i)
     for j in enums[i]:
-      print "  "+j
-  print " "
-  print "----- string enums --------"
+      print("  "+j)
+  print(" ")
+  print("----- string enums --------")
   for i in senums:
-    print i+" = "+"char*"
+    print(i+" = "+"char*")
     for j in senums[i]:
-      print "  "+j+" = "+senums[i][j]
-  print " "
-  print "----- structs --------"
+      print("  "+j+" = "+senums[i][j])
+  print(" ")
+  print("----- structs --------")
   for i in structs:
-    print i
+    print(i)
     for j in structs[i]:
-      print "  "+j
-  print " "
-  print "----- Classes --------"
+      print("  "+j)
+  print(" ")
+  print("----- Classes --------")
   for i in classes:
-    print i
+    print(i)
     for j in classes[i]:
-      print "  "+j+"()"
+      print("  "+j+"()")
       for k in classes[i][j]:
-        print "    "+k
+        print("    "+k)
 
 
 

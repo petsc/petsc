@@ -2,6 +2,7 @@
 #
 #    See startnightly for the context of how this script is used
 #
+from __future__ import print_function
 import os
 import sys
 import time
@@ -12,11 +13,11 @@ import dateutil.parser
 ## Early checks:
 
 if len(sys.argv) < 4:
-  print "Usage: $> runhtml.py BRANCH LOGDIR OUTFILE";
-  print " BRANCH  ... Branch log files to be processed";
-  print " LOGDIR  ... Directory where to find the log files";
-  print " OUTFILE ... The output file where the HTML code will be written to";
-  print "Aborting..."
+  print("Usage: $> runhtml.py BRANCH LOGDIR OUTFILE");
+  print(" BRANCH  ... Branch log files to be processed");
+  print(" LOGDIR  ... Directory where to find the log files");
+  print(" OUTFILE ... The output file where the HTML code will be written to");
+  print("Aborting...")
   sys.exit(1)
 
 
@@ -218,7 +219,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       logfile_configure = "configure_" + sys.argv[1] + "_arch-" + match.group(1) + ".log"
       logfile_configure_full = os.path.join(root, logfile_configure)
 
-      print "Processing " + match.group(1)
+      print("Processing " + match.group(1))
 
       ### Start table row
       if match.group(1).find('linux-analyzer') >= 0:
@@ -294,7 +295,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
       #
       if not os.path.isfile(logfile_make_full) or not os.path.isfile(logfile_examples_full):
-        print "  -- incomplete logs!"
+        print("  -- incomplete logs!")
 
         # Make/Build section
         outfile.write("<td></td>")

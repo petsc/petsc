@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os, re, shutil, sys
 
-if os.environ.has_key('PETSC_DIR'):
+if 'PETSC_DIR' in os.environ:
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
   fd = file(os.path.join('lib','petsc','conf','petscvariables'))
@@ -10,7 +11,7 @@ else:
   PETSC_DIR = a.split('=')[1][0:-1]
   fd.close()
 
-if os.environ.has_key('PETSC_ARCH'):
+if 'PETSC_ARCH' in os.environ:
   PETSC_ARCH = os.environ['PETSC_ARCH']
 else:
   fd = file(os.path.join('lib','petsc','conf','petscvariables'))
@@ -18,7 +19,7 @@ else:
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()
 
-print '*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***'
+print('*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***')
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
@@ -90,34 +91,34 @@ class Installer(script.Script):
 
   def checkPrefix(self):
     if not self.installDir:
-      print '********************************************************************'
-      print 'PETSc is built without prefix option. So "make install" is not appropriate.'
-      print 'If you need a prefix install of PETSc - rerun configure with --prefix option.'
-      print '********************************************************************'
+      print('********************************************************************')
+      print('PETSc is built without prefix option. So "make install" is not appropriate.')
+      print('If you need a prefix install of PETSc - rerun configure with --prefix option.')
+      print('********************************************************************')
       sys.exit(1)
     return
 
   def checkDestdir(self):
     if os.path.exists(self.destDir):
       if os.path.samefile(self.destDir, self.rootDir):
-        print '********************************************************************'
-        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Incorrect prefix usage. Specified destDir same as current PETSC_DIR')
+        print('********************************************************************')
         sys.exit(1)
       if os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
-        print '********************************************************************'
-        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR/PETSC_ARCH'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Incorrect prefix usage. Specified destDir same as current PETSC_DIR/PETSC_ARCH')
+        print('********************************************************************')
         sys.exit(1)
       if not os.path.isdir(os.path.realpath(self.destDir)):
-        print '********************************************************************'
-        print 'Specified destDir', self.destDir, 'is not a directory. Cannot proceed!'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Specified destDir', self.destDir, 'is not a directory. Cannot proceed!')
+        print('********************************************************************')
         sys.exit(1)
       if not os.access(self.destDir, os.W_OK):
-        print '********************************************************************'
-        print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"')
+        print('********************************************************************')
         sys.exit(1)
     return
 
@@ -128,7 +129,7 @@ class Installer(script.Script):
     if not os.path.exists(dst):
       os.makedirs(dst)
     elif not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
     srcname = src
     dstname = os.path.join(dst, os.path.basename(src))
     try:
@@ -138,12 +139,12 @@ class Installer(script.Script):
       else:
         copyFunc(srcname, dstname)
         copies.append((srcname, dstname))
-    except (IOError, os.error), why:
+    except (IOError, os.error) as why:
       errors.append((srcname, dstname, str(why)))
-    except shutil.Error, err:
+    except shutil.Error as err:
       errors.extend((srcname,dstname,str(err.args[0])))
     if errors:
-      raise shutil.Error, errors
+      raise shutil.Error(errors)
     return copies
 
   def fixExamplesMakefile(self, src):
@@ -174,7 +175,7 @@ class Installer(script.Script):
     """Recursively copy the examples directories
     """
     if not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
 
     self.copies.extend(self.copyfile('gmakefile.test',dst))
     newConfigDir=os.path.join(dst,'config')  # Am not renaming at present
@@ -213,7 +214,7 @@ class Installer(script.Script):
     if not os.path.exists(dst):
       os.makedirs(dst)
     elif not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
     errors = []
     for name in names:
       srcname = os.path.join(src, name)
@@ -228,22 +229,22 @@ class Installer(script.Script):
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
-      except (IOError, os.error), why:
+      except (IOError, os.error) as why:
         errors.append((srcname, dstname, str(why)))
       # catch the Error from the recursive copytree so that we can
       # continue with other files
-      except shutil.Error, err:
+      except shutil.Error as err:
         errors.extend((srcname,dstname,str(err.args[0])))
     try:
       shutil.copystat(src, dst)
-    except OSError, e:
+    except OSError as e:
       if WindowsError is not None and isinstance(e, WindowsError):
         # Copying file access times may fail on Windows
         pass
       else:
         errors.extend((src, dst, str(e)))
     if errors:
-      raise shutil.Error, errors
+      raise shutil.Error(errors)
     return copies
 
 
@@ -297,7 +298,7 @@ for file in files:
       dir = os.path.dirname(dir)
 ''')
     f.close()
-    os.chmod(uninstallscript,0744)
+    os.chmod(uninstallscript,0o744)
     return
 
   def installIncludes(self):
@@ -370,22 +371,22 @@ for file in files:
 
 
   def outputInstallDone(self):
-    print '''\
+    print('''\
 ====================================
 Install complete.
 Now to check if the libraries are working do (in current directory):
 make PETSC_DIR=%s PETSC_ARCH="" test
 ====================================\
-''' % (self.installDir)
+''' % (self.installDir))
     return
 
   def outputDestDirDone(self):
-    print '''\
+    print('''\
 ====================================
 Copy to DESTDIR %s is now complete.
 Before use - please copy/install over to specified prefix: %s
 ====================================\
-''' % (self.destDir,self.installDir)
+''' % (self.destDir,self.installDir))
     return
 
   def runsetup(self):
@@ -397,16 +398,16 @@ Before use - please copy/install over to specified prefix: %s
 
   def runcopy(self):
     if self.destDir == self.installDir:
-      print '*** Installing PETSc at prefix location:',self.destDir, ' ***'
+      print('*** Installing PETSc at prefix location:',self.destDir, ' ***')
     else:
-      print '*** Copying PETSc to DESTDIR location:',self.destDir, ' ***'
+      print('*** Copying PETSc to DESTDIR location:',self.destDir, ' ***')
     if not os.path.exists(self.destDir):
       try:
         os.makedirs(self.destDir)
       except:
-        print '********************************************************************'
-        print 'Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"')
+        print('********************************************************************')
         sys.exit(1)
     self.installIncludes()
     self.installConf()

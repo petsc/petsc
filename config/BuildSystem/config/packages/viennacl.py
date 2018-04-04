@@ -33,13 +33,13 @@ class Configure(config.package.Package):
       self.installDirProvider.printSudoPasswordMessage()
       try:
         output,err,ret  = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error copying ViennaCL include files from '+os.path.join(self.packageDir, 'ViennaCL')+' to '+packageDir)
     else:
       try:
         if os.path.isdir(destdir): shutil.rmtree(destdir)
         shutil.copytree(srcdir,destdir)
-      except RuntimeError,e:
+      except RuntimeError as e:
         raise RuntimeError('Error installing ViennaCL include files: '+str(e))
 
     #check for CUDA:

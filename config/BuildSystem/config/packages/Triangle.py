@@ -111,7 +111,7 @@ triangle_shared:
       try:
         self.logPrintBox('Compiling Triangle; this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       self.logPrintBox('Installing Triangle; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage()
