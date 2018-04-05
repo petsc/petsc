@@ -3,7 +3,7 @@ static char help[] = "Tests the different MatColoring implementatons and ISColor
                       Modifed from the code contributed by Ali Berk Kahraman. \n\n";
 #include <petscmat.h>
 
-PetscErrorCode FormJacobian(Mat A,void *ctx)
+PetscErrorCode FormJacobian(Mat A)
 {
   PetscErrorCode ierr;
   PetscInt       M,ownbegin,ownend,i,j;
@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   Mat            J;
-  Vec            solution,residual;
   PetscMPIInt    size;
   PetscInt       M=8;
   ISColoring     iscoloring;
@@ -43,12 +42,7 @@ int main(int argc, char *argv[])
   ierr= MatSetFromOptions(J);CHKERRQ(ierr);
   ierr= MatSetUp(J);CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&solution);CHKERRQ(ierr);
-  ierr = VecSetSizes(solution,PETSC_DECIDE,M);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(solution,&residual);CHKERRQ(ierr);
-
-  ierr = FormJacobian(J,NULL);CHKERRQ(ierr);
+  ierr = FormJacobian(J);CHKERRQ(ierr);
   ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
@@ -57,7 +51,6 @@ int main(int argc, char *argv[])
    */
   ierr = MatColoringCreate(J, &coloring);CHKERRQ(ierr);
   ierr = MatColoringSetType(coloring,MATCOLORINGGREEDY);CHKERRQ(ierr);
-  ierr = MatColoringSetDistance(coloring,2);CHKERRQ(ierr);
   ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
   ierr = MatColoringApply(coloring, &iscoloring);CHKERRQ(ierr);
 
@@ -68,8 +61,28 @@ int main(int argc, char *argv[])
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = VecDestroy(&solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&residual);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      suffix: sl
+      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -mat_coloring_type sl
+      output_file: output/ex24_1.out
+
+   test:
+      suffix: lf
+      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -mat_coloring_type lf
+      output_file: output/ex24_1.out
+
+   test:
+      suffix: id
+      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -mat_coloring_type id
+      output_file: output/ex24_1.out
+
+TEST*/
