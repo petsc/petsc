@@ -106,7 +106,7 @@
       </ul>
       <h4>Configure/Build:</h4>
       <ul>
-        <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relavent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
+        <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
       </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -116,7 +116,7 @@
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
-        <li>Added MatShellTestMultTranspose() and MatShellTestMult() for checking if user provided MATSHELL matches the Jacobian of a given function computed with diffencing.</li>
+        <li>Added MatShellTestMultTranspose() and MatShellTestMult() for checking if user provided MATSHELL matches the Jacobian of a given function computed with differencing.</li>
         <li>MatSolverPackage is replaced with MatSolverType.</li>
         <li>mat_solver_package is replaced with mat_solver_type.</li>
         <li>MatShellSetOperation() can now only be used for MATSHELL matrices, use MatSetOperation() to set an operation for any matrix type.</li>
@@ -128,7 +128,7 @@
       <ul>
       <li> Added -pc_mg_distinct_smoothup and
       PCMGSetDistinctSmoothUp() so that one can control the down and
-        up smoothers options seperately from the options database</li>
+        up smoothers options separately from the options database</li>
       <li> Removed -pc_mg_smoothup and -pc_mg_smoothdown and
       PCMGSetNumberSmoothUp() and PCMGSetNumberSmoothDown().  Instead,
       configure the solvers on the levels with -mg_levels_ksp_max_it
