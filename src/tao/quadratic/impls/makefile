@@ -1,8 +1,8 @@
 ALL: lib
 
-DIRS     = blmvm tron pgd bncg bnk
+DIRS     = bqpip gpcg
 
-LOCDIR   = src/tao/bound/impls/
+LOCDIR   = src/tao/quadratic/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
