@@ -106,7 +106,8 @@
       </ul>
       <h4>Configure/Build:</h4>
       <ul>
-        <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
+        <li>Option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
+        <li>Added --with-avx512-kernels to specify that hand-coded kernels using AVX-512 intrinsics should be used when available. Currently defaults to off.</li>
       </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -121,8 +122,9 @@
         <li>mat_solver_package is replaced with mat_solver_type.</li>
         <li>MatShellSetOperation() can now only be used for MATSHELL matrices, use MatSetOperation() to set an operation for any matrix type.</li>
         <li>Added MatMumpsGetInverse().</li>
-        <li>MatMult() for the MATAIJ type has been optimized using AVX-512 intrinsics.</li>
+        <li>MatMult() for the MATAIJ type has been optimized using AVX-512 intrinsics; must be enabled at configure time.</li>
         <li>Added a new Mat type MATSELL, featuring a fast MatMult() kernel on AVX-512 architecture such as KNL and Skylake.</li>
+        <li>Added support for additional MKL sparse BLAS operations in MATAIJMKL: MatMatMult(), MatTransposeMatMult(), MatPtAP() (symmetric A only). MKL version 18, update 2 or later is required for MatPtAP()/MatPtAPNumeric() and MatMatMultNumeric().
       </ul>
       <h4>PC:</h4>
       <ul>
