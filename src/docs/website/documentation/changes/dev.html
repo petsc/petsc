@@ -112,7 +112,15 @@
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
+      <ul>
+        <li>Added VECNODE type. Vector uses on-node shared memory to store its entries.</li>
+      </ul>
       <h4>VecScatter:</h4>
+      <ul>
+        <li>VecScatter becomes a PETSc object. Existing vecscatters have types VECSCATTERSEQ, VECSCATTERMPI1.</li>
+        <li>Added VECSCATTERMPI3. It stores vector ghost values to the on-node shared memory. </li>
+        <li>Added VECSCATTERMPI3NODE. It works on vectors of type VECNODE.</li>
+      </ul>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
@@ -123,6 +131,7 @@
         <li>Added MatMumpsGetInverse().</li>
         <li>MatMult() for the MATAIJ type has been optimized using AVX-512 intrinsics.</li>
         <li>Added a new Mat type MATSELL, featuring a fast MatMult() kernel on AVX-512 architecture such as KNL and Skylake.</li>
+        <li>Added MatGetInertia() for SuperLU_DIST interface.</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -134,7 +143,8 @@
       configure the solvers on the levels with -mg_levels_ksp_max_it
       n.  If separate numbers of smoothing steps are required for up
       and down smoothers, use -pc_mg_distinct_smoothup
-      -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
+        -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
+      <li>Added PCCHOLESKY to SuperLU_DIST interface.</li>
       </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
@@ -167,6 +177,7 @@
       <h4> DMNetwork:</h4>
       <ul>
 	<li> DMNetworkGetComponentDataArray and DMNetworkGetComponentTypeOffset are no longer available. Use DMNetworkGetComponent instead.
+        <li>Added support for sub-dmnetworks.</li>
       </ul>
       <h4>SYS:</h4>
       <ul>
