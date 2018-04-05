@@ -1,13 +1,15 @@
-  0 SNES Function norm 5.511227472885e+00 
-  Linear solve converged due to CONVERGED_RTOL iterations 30
-  1 SNES Function norm 7.112037200225e-05 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  0 SNES Function norm 9.088488010682e+00 
+  Linear solve converged due to CONVERGED_RTOL iterations 17
+  1 SNES Function norm 3.336863683968e-01 
+  Linear solve converged due to CONVERGED_RTOL iterations 858
+  2 SNES Function norm 4.930550417746e-04 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=30
-  total number of function evaluations=2
+  total number of linear solver iterations=875
+  total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -26,7 +28,7 @@ SNES Object: 1 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: patch
-      Subspace Correction preconditioner with 36 patches
+      Subspace Correction preconditioner with 24 patches
       Schwarz type: additive
       Not weighting by partition of unity
       Not symmetrising sweep
@@ -48,23 +50,23 @@ SNES Object: 1 MPI processes
           Factored matrix follows:
             Mat Object: 1 MPI processes
               type: seqdense
-              rows=22, cols=22
+              rows=59, cols=59
               package used to perform factorization: petsc
-              total: nonzeros=484, allocated nonzeros=484
+              total: nonzeros=3481, allocated nonzeros=3481
               total number of mallocs used during MatSetValues calls =0
       linear system matrix = precond matrix:
       Mat Object: (pc_patch_sub_) 1 MPI processes
         type: seqdense
-        rows=22, cols=22
-        total: nonzeros=484, allocated nonzeros=484
+        rows=59, cols=59
+        total: nonzeros=3481, allocated nonzeros=3481
         total number of mallocs used during MatSetValues calls =0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
-      rows=86, cols=86
-      total: nonzeros=1112, allocated nonzeros=1112
+      rows=66, cols=66
+      total: nonzeros=1576, allocated nonzeros=1576
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-        using I-node routines: found 61 nodes, limit used is 5
-L_2 Error: 0.0707397 [0.0130944, 0.0695172]
-Integral of pressure: -1.28786e-14
+        using I-node routines: found 37 nodes, limit used is 5
+L_2 Error: 0.000414997 [2.86853e-06, 0.000414987]
+Integral of pressure: 1.49214e-13

@@ -1,31 +1,6 @@
   0 SNES Function norm 5.511227472885e+00 
-    0 KSP preconditioned resid norm 2.008720518220e+01 true resid norm 5.511227472885e+00 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP preconditioned resid norm 7.584004586534e+00 true resid norm 4.627422529567e+00 ||r(i)||/||b|| 8.396355534830e-01
-    2 KSP preconditioned resid norm 4.994300901558e+00 true resid norm 3.544613625602e+00 ||r(i)||/||b|| 6.431622797356e-01
-    3 KSP preconditioned resid norm 2.052114784239e+00 true resid norm 2.631747636679e+00 ||r(i)||/||b|| 4.775247709565e-01
-    4 KSP preconditioned resid norm 1.401806642689e+00 true resid norm 2.220992950778e+00 ||r(i)||/||b|| 4.029942443322e-01
-    5 KSP preconditioned resid norm 1.105183966264e+00 true resid norm 1.979042187123e+00 ||r(i)||/||b|| 3.590928149600e-01
-    6 KSP preconditioned resid norm 9.157825691830e-01 true resid norm 1.729401015286e+00 ||r(i)||/||b|| 3.137959780820e-01
-    7 KSP preconditioned resid norm 6.756582563564e-01 true resid norm 1.086325302603e+00 ||r(i)||/||b|| 1.971113164804e-01
-    8 KSP preconditioned resid norm 4.213966573303e-01 true resid norm 3.971442182152e-01 ||r(i)||/||b|| 7.206093745343e-02
-    9 KSP preconditioned resid norm 2.647820622975e-01 true resid norm 2.236551954882e-01 ||r(i)||/||b|| 4.058173911140e-02
-   10 KSP preconditioned resid norm 1.628649431668e-01 true resid norm 1.583603730728e-01 ||r(i)||/||b|| 2.873413842050e-02
-   11 KSP preconditioned resid norm 1.091320889154e-01 true resid norm 1.010818288372e-01 ||r(i)||/||b|| 1.834107362371e-02
-   12 KSP preconditioned resid norm 6.969738311917e-02 true resid norm 4.703711615512e-02 ||r(i)||/||b|| 8.534780389039e-03
-   13 KSP preconditioned resid norm 4.708686438587e-02 true resid norm 2.358819058785e-02 ||r(i)||/||b|| 4.280024859053e-03
-   14 KSP preconditioned resid norm 3.174981952256e-02 true resid norm 1.249647770157e-02 ||r(i)||/||b|| 2.267458159376e-03
-   15 KSP preconditioned resid norm 2.251227769808e-02 true resid norm 9.839959139284e-03 ||r(i)||/||b|| 1.785438758914e-03
-   16 KSP preconditioned resid norm 1.276299991555e-02 true resid norm 7.807673860015e-03 ||r(i)||/||b|| 1.416685102988e-03
-   17 KSP preconditioned resid norm 8.624341313755e-03 true resid norm 4.255587750776e-03 ||r(i)||/||b|| 7.721669576720e-04
-   18 KSP preconditioned resid norm 6.960964534827e-03 true resid norm 3.260912955143e-03 ||r(i)||/||b|| 5.916854223830e-04
-   19 KSP preconditioned resid norm 4.913924494629e-03 true resid norm 2.424317333721e-03 ||r(i)||/||b|| 4.398870026049e-04
-   20 KSP preconditioned resid norm 2.542588340149e-03 true resid norm 1.720996521601e-03 ||r(i)||/||b|| 3.122710013455e-04
-   21 KSP preconditioned resid norm 1.490559308324e-03 true resid norm 9.437072249834e-04 ||r(i)||/||b|| 1.712335826504e-04
-   22 KSP preconditioned resid norm 8.515236421337e-04 true resid norm 5.092039495719e-04 ||r(i)||/||b|| 9.239392713821e-05
-   23 KSP preconditioned resid norm 4.738226061620e-04 true resid norm 3.317753753638e-04 ||r(i)||/||b|| 6.019990591861e-05
-   24 KSP preconditioned resid norm 2.953999467406e-04 true resid norm 2.112752788027e-04 ||r(i)||/||b|| 3.833543068982e-05
-   25 KSP preconditioned resid norm 1.578001024562e-04 true resid norm 1.084811049217e-04 ||r(i)||/||b|| 1.968365585624e-05
-  1 SNES Function norm 1.084811049216e-04 
+  Linear solve converged due to CONVERGED_RTOL iterations 25
+  1 SNES Function norm 1.084811049232e-04 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -92,4 +67,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 61 nodes, limit used is 5
 L_2 Error: 0.0695363 [0.0130938, 0.0682924]
-Integral of pressure: 0.
+Integral of pressure: 1.33712e-14
