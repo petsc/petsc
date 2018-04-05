@@ -553,12 +553,14 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
         /* We don't have the bfgs matrix around and being updated
            Must use gradient direction in this case */
         ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
         ++bnk->grad;
         stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
         ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
         /* Check for success (descent direction) */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
         if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
@@ -575,7 +577,8 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
           ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
+          ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
+          ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           ++bnk->sgrad;
@@ -608,7 +611,8 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
       ++bnk->sgrad;
@@ -626,14 +630,14 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
       ++bnk->grad;
       stepType = BNK_GRADIENT;
       break;
     }
-    ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);

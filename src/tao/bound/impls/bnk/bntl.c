@@ -123,7 +123,8 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
           stepType = BNK_GRADIENT;
         } else {
           /* We have the BFGS matrix, so attempt to use the BFGS direction */
-          ierr = MatLMVMSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
           /* Check for success (descent direction) */
@@ -142,10 +143,11 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
             }
             ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
             ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
-            ierr = MatLMVMUpdate(bnk->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-            ierr = MatLMVMSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+            ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
             ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-
+            
             ++bnk->sgrad;
             stepType = BNK_SCALED_GRADIENT;
           } else {
