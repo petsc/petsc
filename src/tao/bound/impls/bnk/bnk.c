@@ -29,6 +29,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPType                      ksp_type;
   PC                           pc;
+  Vec                          activeSubStep;
+  IS                           active_idx;
   
   PetscReal                    fmin, ftrial, prered, actred, kappa, sigma, dnorm;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -148,8 +150,21 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
               fmin = ftrial;
               sigma = -tao->trust / bnk->gnorm;
             }
+            
+            ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
+            ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
 
-            ierr = MatMult(tao->hessian, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
+            ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
+            ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
+            ierr = MatMult(bnk->H_inactive, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
+            
+            ierr = ISComplementVec(bnk->inactive_idx, tao->stepdirection, &active_idx);CHKERRQ(ierr);
+            ierr = VecGetSubVector(tao->stepdirection, active_idx, &activeSubStep);CHKERRQ(ierr);
+            ierr = VecSet(activeSubStep, 0.0);CHKERRQ(ierr);
+            ierr = VecRestoreSubVector(tao->stepdirection, active_idx, &activeSubStep);CHKERRQ(ierr);
+            
             ierr = VecDot(tao->gradient, tao->stepdirection, &prered);CHKERRQ(ierr);
 
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
