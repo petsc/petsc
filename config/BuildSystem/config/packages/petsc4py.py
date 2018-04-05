@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '0e9d8ac'  #master+
+    self.gitcommit              = '9137bf7'  #master+
     self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
