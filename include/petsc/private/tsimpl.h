@@ -49,10 +49,12 @@ struct _TSOps {
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
   PetscErrorCode (*adjointstep)(TS);
   PetscErrorCode (*adjointsetup)(TS);
+  PetscErrorCode (*adjointreset)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardsetup)(TS);
   PetscErrorCode (*forwardstep)(TS);
   PetscErrorCode (*forwardintegral)(TS);
+  PetscErrorCode (*forwardgetstages)(TS,PetscInt*,Mat**);
   PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
   PetscErrorCode (*getauxsolution)(TS,Vec*);
   PetscErrorCode (*gettimeerror)(TS,PetscInt,Vec*);

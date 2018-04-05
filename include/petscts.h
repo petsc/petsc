@@ -360,6 +360,7 @@ PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
 PETSC_EXTERN PetscErrorCode TSForwardStep(TS);
 PETSC_EXTERN PetscErrorCode TSForwardSetInitialSensitivities(TS,Mat);
+PETSC_EXTERN PetscErrorCode TSForwardGetStages(TS,PetscInt*,Mat**);
 
 PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);

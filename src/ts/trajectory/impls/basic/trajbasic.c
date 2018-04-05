@@ -9,6 +9,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
 {
   TSTrajectory_Basic *tjbasic = (TSTrajectory_Basic*)tj->data;
   char               filename[PETSC_MAX_PATH_LEN];
+  PetscInt           ns,i;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -20,14 +21,26 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   if (stepnum && !tj->solution_only) {
     Vec       *Y;
     PetscReal tprev;
-    PetscInt  ns,i;
 
     ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-    for (i=0;i<ns;i++) {
+    for (i=0; i<ns; i++) {
       ierr = VecView(Y[i],tjbasic->viewer);CHKERRQ(ierr);
     }
     ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(tjbasic->viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  /* Tangent linear sensitivities needed by second-order adjoint */
+  if (ts->forward_solve) {
+    Mat A,*S;
+
+    ierr = TSForwardGetSensitivities(ts,NULL,&A);CHKERRQ(ierr);
+    ierr = MatView(A,tjbasic->viewer);CHKERRQ(ierr);
+    if (stepnum) {
+      ierr = TSForwardGetStages(ts,&ns,&S);CHKERRQ(ierr);
+      for (i=0; i<ns; i++) {
+        ierr = MatView(S[i],tjbasic->viewer);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -48,6 +61,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   Vec            Sol;
+  PetscInt       ns,i;
 
   PetscFunctionBegin;
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
@@ -58,16 +72,28 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscViewerBinaryRead(viewer,t,1,NULL,PETSC_REAL);CHKERRQ(ierr);
   if (stepnum && !tj->solution_only) {
     Vec       *Y;
-    PetscInt  Nr,i;
     PetscReal timepre;
 
-    ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-    for (i=0; i<Nr; i++) {
+    ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
+    for (i=0; i<ns; i++) {
       ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL);CHKERRQ(ierr);
     if (tj->adjoint_solve_mode) {
       ierr = TSSetTimeStep(ts,-(*t)+timepre);CHKERRQ(ierr);
+    }
+  }
+  /* Tangent linear sensitivities needed by second-order adjoint */
+  if (ts->forward_solve) {
+    Mat A,*S;
+
+    ierr = TSForwardGetSensitivities(ts,NULL,&A);CHKERRQ(ierr);
+    ierr = MatLoad(A,viewer);CHKERRQ(ierr);
+    if (stepnum) {
+      ierr = TSForwardGetStages(ts,&ns,&S);CHKERRQ(ierr);
+      for (i=0; i<ns; i++) {
+        ierr = MatLoad(S[i],viewer);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

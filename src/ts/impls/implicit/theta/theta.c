@@ -338,8 +338,8 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
   }
 
   /* Update sensitivities, and evaluate integrals if there is any */
-  if(th->endpoint) { /* two-stage case */
-    if (th->Theta != 1.) { /* general case */
+  if(th->endpoint) { /* two-stage Theta methods */
+    if (th->Theta!=1.) { /* general case */
       shift = 1./((th->Theta-1.)*th->time_step);
       ierr  = TSComputeIJacobian(ts,th->ptime,th->X0,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
       if (ts->vec_costintegral) { /* R_U at t_n */
@@ -694,6 +694,16 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
       ierr = MatAXPY(ts->mat_sensip,1./th->Theta,MatDeltaFwdSensip,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSForwardGetStages_Theta(TS ts,PetscInt *ns,Mat **stagesensip)
+{
+  TS_Theta *th = (TS_Theta*)ts->data;
+
+  PetscFunctionBegin;
+  if (ns) *ns = 1;
+  if (stagesensip) *stagesensip = th->endpoint ? &(th->MatFwdSensip0) : &(th->MatDeltaFwdSensip);
   PetscFunctionReturn(0);
 }
 
@@ -1052,8 +1062,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->adjointintegral = TSAdjointCostIntegral_Theta;
   ts->ops->forwardintegral = TSForwardCostIntegral_Theta;
   ts->default_adapt_type   = TSADAPTNONE;
-  ts->ops->forwardsetup    = TSForwardSetUp_Theta;
-  ts->ops->forwardstep     = TSForwardStep_Theta;
+
+  ts->ops->forwardsetup     = TSForwardSetUp_Theta;
+  ts->ops->forwardstep      = TSForwardStep_Theta;
+  ts->ops->forwardgetstages = TSForwardGetStages_Theta;
 
   ts->usessnes = PETSC_TRUE;
 

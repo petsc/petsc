@@ -1458,12 +1458,14 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->vec_dir) { /* indicates second-order adjoint caculation */
-    if (!ts->mat_sensip ) { /* create a single-column dense matrix */
+    Mat A;
+    ierr = TSForwardGetSensitivities(ts,NULL,&A);CHKERRQ(ierr);
+    if (!A) { /* create a single-column dense matrix */
       ierr = VecGetLocalSize(ts->vec_dir,&lsize);CHKERRQ(ierr);
-      ierr = MatCreateDense(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,PETSC_DECIDE,1,NULL,&ts->mat_sensip);CHKERRQ(ierr);
+      ierr = MatCreateDense(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,PETSC_DECIDE,1,NULL,&A);CHKERRQ(ierr);
     }
     ierr = VecDuplicate(ts->vec_dir,&sp);CHKERRQ(ierr);
-    ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
+    ierr = MatDenseGetColumn(A,0,&xarr);CHKERRQ(ierr);
     ierr = VecPlaceArray(sp,xarr);CHKERRQ(ierr);
     if (didp) {
       ierr = MatMult(didp,ts->vec_dir,sp);CHKERRQ(ierr);
@@ -1471,13 +1473,42 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
       ierr = VecCopy(ts->vec_dir,sp);CHKERRQ(ierr);
     }
     ierr = VecResetArray(sp);CHKERRQ(ierr);
-    ierr = MatDenseRestoreColumn(ts->mat_sensip,&xarr);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumn(A,&xarr);CHKERRQ(ierr);
     ierr = VecDestroy(&sp);CHKERRQ(ierr);
+    ierr = TSForwardSetSensitivities(ts,1,A);CHKERRQ(ierr);
   } else {
     PetscValidHeaderSpecific(didp,MAT_CLASSID,2);
     if (!ts->mat_sensip) {
       ierr = TSForwardSetSensitivities(ts,PETSC_DEFAULT,didp);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSForwardGetStages - Get the number of stages and the tangent linear sensitivities at the intermediate stages
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameters:
++  ns - nu
+-  S - tangent linear sensitivities at the intermediate stages
+
+   Level: advanced
+
+.keywords: TS, second-order adjoint, forward sensitivity
+@*/
+PetscErrorCode TSForwardGetStages(TS ts,PetscInt *ns,Mat **S)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+
+  if (!ts->ops->getstages) *S=NULL;
+  else {
+    ierr = (*ts->ops->forwardgetstages)(ts,ns,S);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
