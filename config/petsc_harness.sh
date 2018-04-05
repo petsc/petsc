@@ -127,8 +127,8 @@ function petsc_testrun() {
   # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
   # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
-        grep -q -s -F 'APPLICATION TIMED OUT' "$2" || \
-        grep -q -s -F MPIEXEC_TIMEOUT "$3"; then
+        grep -q -s -F 'APPLICATION TIMED OUT' "$2" "$3" || \
+        grep -q -s -F MPIEXEC_TIMEOUT "$2" "$3"; then
     timed_out=1
     # If timed out, then ensure non-zero error code
     if [ $cmd_res -eq 0 ]; then
