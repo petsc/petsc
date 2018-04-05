@@ -121,6 +121,8 @@
         <li>mat_solver_package is replaced with mat_solver_type.</li>
         <li>MatShellSetOperation() can now only be used for MATSHELL matrices, use MatSetOperation() to set an operation for any matrix type.</li>
         <li>Added MatMumpsGetInverse().</li>
+        <li>MatMult() for the MATAIJ type has been optimized using AVX-512 intrinsics.</li>
+        <li>Added a new Mat type MATSELL, featuring a fast MatMult() kernel on AVX-512 architecture such as KNL and Skylake.</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -144,7 +146,8 @@
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <ul>
-      <li>Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest() checking if user provide MATSHELL Jacobian with TSSetRHSJacobian() matches the Jacobian of the function provided to TSSetRHSFunction() computed with finite differencing. Command line options -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view  and -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view </li>
+      <li>Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest() checking if user provide MATSHELL Jacobian with TSSetRHSJacobian() matches the Jacobian of the function provided to TSSetRHSFunction() computed with finite differencing. Command line options -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view  and -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view.</li>
+      <li>Added -ts_trajectory_dirname and -ts_trajectory_filetemplate to allow users to specify the folder name and file name template for disk checkpoints.</li>
       </ul>
       <h4>TAO:</h4>
       <ul>
