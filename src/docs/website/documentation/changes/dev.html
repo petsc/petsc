@@ -99,8 +99,11 @@
       </div>
 
       <h4>General:</h4>
+      <ul>
       <li>The scripts in $PETSC_DIR/bin are now in $PETSC_DIR/lib/petsc/bin</li>
       <li>PetscStrncat() renamed to PetscStrlcat() now takes the length of the original allocated space in the string instead of the part left after strings have been copied or concatenated in</li>
+      <li>CUDA and ViennaCL as GPU backends can now also be used with the release version (no need to use the master branch).</li>
+      </ul>
       <h4>Configure/Build:</h4>
       <ul>
         <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relavent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
@@ -120,6 +123,7 @@
         <li>Added MatMumpsGetInverse().</li>
       </ul>
       <h4>PC:</h4>
+      <ul>
       <li> Added -pc_mg_distinct_smoothup and
       PCMGSetDistinctSmoothUp() so that one can control the down and
         up smoothers options seperately from the options database</li>
@@ -129,6 +133,7 @@
       n.  If separate numbers of smoothing steps are required for up
       and down smoothers, use -pc_mg_distinct_smoothup
       -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
+      </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
       <ul>
@@ -138,7 +143,9 @@
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
       <li>Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest() checking if user provide MATSHELL Jacobian with TSSetRHSJacobian() matches the Jacobian of the function provided to TSSetRHSFunction() computed with finite differencing. Command line options -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view  and -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view </li>
+      </ul>
       <h4>TAO:</h4>
       <ul>
         <li>Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other PETSc default monitor names, also now print with the same format as other monitors %3D Tao ....</li>
