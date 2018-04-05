@@ -194,7 +194,7 @@ class Configure(config.package.GNUPackage):
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j ' + str(self.make_np)
+    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(cores)
     return
 
   def configure(self):
