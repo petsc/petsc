@@ -128,7 +128,9 @@ function petsc_testrun() {
   # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
         fgrep -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
-        fgrep -q -s MPIEXEC_TIMEOUT "$2" "$3"; then
+        fgrep -q -s MPIEXEC_TIMEOUT "$2" "$3" || \
+        fgrep -q -s 'APPLICATION TERMINATED WITH THE EXIT STRING: job ending due to timeout' "$2" "$3" || \
+        grep -q -s "Timeout after [0-9]* seconds. Terminating job" "$2" "$3"; then
     timed_out=1
     # If timed out, then ensure non-zero error code
     if [ $cmd_res -eq 0 ]; then
