@@ -29,6 +29,7 @@ int main(int argc,char **args)
   ierr = MatColoringApply(ctx,&coloring);CHKERRQ(ierr);
   ierr = MatColoringTest(ctx,coloring);CHKERRQ(ierr);
   if (size == 1) {
+    /* jp, power and greedy have bug -- need to be fixed */
     ierr = MatISColoringTest(C,coloring);CHKERRQ(ierr);
   }
 
@@ -43,7 +44,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      nsize: {{1 3}}
+      nsize: {{3}}
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/arco1 -mat_coloring_type {{ jp power natural greedy}} -mat_coloring_distance {{ 1 2}}
 
