@@ -29,8 +29,6 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPType                      ksp_type;
   PC                           pc;
-  Vec                          activeSubStep;
-  IS                           active_idx;
   
   PetscReal                    fmin, ftrial, prered, actred, kappa, sigma, dnorm;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -132,40 +130,37 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
         sigma = 0.0;
 
         if (needH) {
-          ierr  = TaoComputeHessian(tao, tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
+          /* Compute the Hessian at the new step, and extract the inactive subsystem */
+          ierr = TaoComputeHessian(tao, tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
+          ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
+          ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
+          ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
           needH = 0;
         }
 
         for (i = 0; i < i_max; ++i) {
-          ierr = VecCopy(tao->solution,bnk->W);CHKERRQ(ierr);
-          ierr = VecAXPY(bnk->W,-tao->trust/bnk->gnorm,tao->gradient);CHKERRQ(ierr);
-          ierr = VecMedian(tao->XL, bnk->W, tao->XU, bnk->W);CHKERRQ(ierr);
+          /* Take a steepest descent step and snap it to bounds */
+          ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
+          ierr = VecAXPY(tao->solution, -tao->trust/bnk->gnorm, tao->gradient);CHKERRQ(ierr);
+          ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+          /* Adjust the trust radius if the bound snapping changed the step */
+          ierr = VecCopy(tao->solution, bnk->W);CHKERRQ(ierr);
+          ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = VecNorm(bnk->W, NORM_2, &dnorm);CHKERRQ(ierr);
           if (dnorm != tao->trust/bnk->gnorm) tao->trust = dnorm;
-          ierr = TaoComputeObjective(tao, bnk->W, &ftrial);CHKERRQ(ierr);
+          /* Compute the objective at the trial */
+          ierr = TaoComputeObjective(tao, tao->solution, &ftrial);CHKERRQ(ierr);
+          ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = bnk->gamma1_i;
           } else {
             if (ftrial < fmin) {
               fmin = ftrial;
               sigma = -tao->trust / bnk->gnorm;
-            }
+            }    
             
-            ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
-            ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
-
-            ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
-            ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
-            ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
-            ierr = MatMult(bnk->H_inactive, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-            
-            ierr = ISComplementVec(bnk->inactive_idx, tao->stepdirection, &active_idx);CHKERRQ(ierr);
-            ierr = VecGetSubVector(tao->stepdirection, active_idx, &activeSubStep);CHKERRQ(ierr);
-            ierr = VecSet(activeSubStep, 0.0);CHKERRQ(ierr);
-            ierr = VecRestoreSubVector(tao->stepdirection, active_idx, &activeSubStep);CHKERRQ(ierr);
-            
-            ierr = VecDot(tao->gradient, tao->stepdirection, &prered);CHKERRQ(ierr);
+            ierr = MatMult(bnk->H_inactive, tao->gradient, bnk->W);CHKERRQ(ierr);
+            ierr = VecDot(tao->gradient, bnk->W, &prered);CHKERRQ(ierr);
 
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
@@ -236,6 +231,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
           ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
+          ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
 
           ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
           ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,step);CHKERRQ(ierr);
