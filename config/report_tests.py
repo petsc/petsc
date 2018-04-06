@@ -43,7 +43,7 @@ def summarize_results(directory,make,ntime,etime):
       for line in f:
         l = line.split()
         if l[0] == 'failures':
-           summary[l[0]] += l[1:] if l[0] == 'failures' else int(l[1])
+           summary[l[0]] += l[1:]
         elif l[0] == 'time':
            if len(l)==1: continue
            summary[l[0]] += float(l[1])
