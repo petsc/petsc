@@ -181,7 +181,7 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
   tmpV[v] = value;
   tmpS[v] = 0;
   PetscHashICreate(tmpH[v]);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,NULL,PETSC_OWN_POINTER,&tmpP[v]);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&tmpP[v]);CHKERRQ(ierr);
   tmpB[v] = PETSC_TRUE;
   ++label->numStrata;
   ierr = PetscFree(label->stratumValues);CHKERRQ(ierr);
