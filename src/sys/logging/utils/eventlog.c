@@ -142,6 +142,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->time          = 0.0;
   eventInfo->time2         = 0.0;
   eventInfo->timeTmp       = 0.0;
+  eventInfo->dof           = -1.0;
   eventInfo->numMessages   = 0.0;
   eventInfo->messageLength = 0.0;
   eventInfo->numReductions = 0.0;
@@ -829,5 +830,76 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   err  = fflush(petsc_tracefile);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscLogEventSetDof - Set the number of degrees of freedom associated with this event
+
+  Not Collective
+
+  Input Parameters:
++ event - The event id to log
+. dof   - The number of dofs
+
+  Database Options:
+. -log_view - Activates log summary
+
+  Note: This is to enable logging of convergence
+
+  Level: developer
+
+.keywords: log, visible, event
+.seealso: PetscLogEventSetError(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+@*/
+PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscLogDouble dof)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog = NULL;
+  int               stage;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
+  ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
+  eventLog->eventInfo[event].dof = dof;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscLogEventSetDof - Set the nth error associated with this event
+
+  Not Collective
+
+  Input Parameters:
++ event - The event id to log
+. n     - The error index, in [0, 8)
+. error - The error
+
+  Database Options:
+. -log_view - Activates log summary
+
+  Note: This is to enable logging of convergence, and enable users to interpret the errors as they wish. For example,
+  as different norms, or as errors for different fields
+
+  Level: developer
+
+.keywords: log, visible, event
+.seealso: PetscLogEventSetDof(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
+@*/
+PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDouble error)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog = NULL;
+  int               stage;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if ((n < 0) || (n > 7)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %D is not in [0, 8)", n);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
+  ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
+  eventLog->eventInfo[event].errors[n] = error;
   PetscFunctionReturn(0);
 }

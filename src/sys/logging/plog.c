@@ -1201,9 +1201,21 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
     ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
                                                 eventInfo[event].count, eventInfo[event].time,eventInfo[event].numMessages, eventInfo[event].messageLength,
                                                 eventInfo[event].numReductions,eventInfo[event].flops);CHKERRQ(ierr);
+      if (eventInfo[event].dof     >= 0.) {
+        PetscInt e;
+
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", \"dof\" : %.0g", eventInfo[event].dof);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", \"error\" : [");CHKERRQ(ierr);
+        for (e = 0; e < 8; ++e) {
+          if (e > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", eventInfo[event].errors[e]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "]");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"}\n");CHKERRQ(ierr);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

@@ -298,6 +298,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
   PetscInt      *dof, dim, Nr = ce->Nr, r;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -310,7 +311,15 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   dm[0]  = ce->idm;
   *alpha = 0.0;
   /* Loop over meshes */
+  ierr = PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   for (r = 0; r <= Nr; ++r) {
+    PetscLogStage stage;
+    char          stageName[PETSC_MAX_PATH_LEN];
+    PetscInt      f;
+
+    ierr = PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     if (r > 0) {
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
@@ -333,11 +342,14 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
     /* Create initial guess */
     ierr = DMProjectFunction(dm[r], t, ce->initGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = SNESSolve(ce->snes, NULL, u);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(event, ce, 0, 0, 0);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
+    ierr = PetscLogEventSetDof(event, dof[r]);CHKERRQ(ierr);
+    for (f = 0; f < ce->Nf; ++f) {ierr = PetscLogEventSetError(event, f , ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);}
     /* Monitor */
     if (ce->monitor) {
       PetscReal *errors = &ce->errors[r*ce->Nf];
-      PetscInt f;
 
       ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
       for (f = 0; f < ce->Nf; ++f) {
@@ -349,6 +361,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
     }
     /* Cleanup */
     ierr = VecDestroy(&u);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   for (r = 1; r <= Nr; ++r) {
     ierr = DMDestroy(&dm[r]);CHKERRQ(ierr);
