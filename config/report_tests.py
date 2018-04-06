@@ -43,12 +43,15 @@ def summarize_results(directory,make,ntime,etime):
       for line in f:
         l = line.split()
         if l[0] == 'failures':
-           summary[l[0]] += l[1:]
+           if len(l)>1:
+             summary[l[0]] += l[1:]
         elif l[0] == 'time':
            if len(l)==1: continue
            summary[l[0]] += float(l[1])
            timesummary[cfile]=float(l[1])
            timelist.append(float(l[1]))
+        elif l[0] not in summary:
+           continue
         else:
            summary[l[0]] += int(l[1])
 
@@ -72,8 +75,15 @@ def summarize_results(directory,make,ntime,etime):
           re.sub('cmd-','',
           re.sub('diff-','',failstr+' ')))
           )
-      # Need to make sure we have a unique list
-      fail_targets=' '.join(list(set(fail_targets.split())))
+      # Strip off characters from subtests
+      fail_list=[]
+      for failure in fail_targets.split():
+        if failure.count('-')>1:
+            fail_list.append('-'.join(name.split('-')[:-1]))
+        else:
+            fail_list.append(failure)
+      fail_list=list(set(fail_list))
+      fail_targets=' '.join(fail_list)
 
       #Make the message nice
       makefile="gmakefile.test" if inInstallDir() else "gmakefile"
@@ -82,7 +92,7 @@ def summarize_results(directory,make,ntime,etime):
       print("#     "+make+" -f "+makefile+" test search='" + fail_targets.strip()+"'")
 
   if ntime>0:
-      print("# Timing summary: ")
+      print("#\n# Timing summary: ")
       timelist=list(set(timelist))
       timelist.sort(reverse=True)
       nlim=(ntime if ntime<len(timelist) else len(timelist))
@@ -90,7 +100,7 @@ def summarize_results(directory,make,ntime,etime):
       for timelimit in timelist[0:nlim]:
         for cf in timesummary:
           if timesummary[cf] == timelimit:
-              print("# %s: %.2f sec" % (re.sub('.counts','',cf), timesummary[cf]))
+              print("#   %s: %.2f sec" % (re.sub('.counts','',cf), timesummary[cf]))
 
   return
 

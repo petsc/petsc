@@ -121,9 +121,8 @@ function petsc_testrun() {
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
   #eval "time $cmd"
-  eval "{ time -p $cmd ; } 2> timing.out"
+  eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
-  timing=`grep real timing.out  | cut -f2 -d' '`
   # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
   # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
@@ -197,6 +196,7 @@ function petsc_testend() {
   fi
   ENDTIME=`date +%s`
   #printf "time $(($ENDTIME - $STARTTIME))\n" >> $logfile
+  timing=`grep real timing.out | awk '{sum += sprintf("%.2f",$2)} END {printf "%.2f\n",sum}'`
   printf "time $timing\n" >> $logfile
   if $cleanup; then
     echo "Cleaning up"
