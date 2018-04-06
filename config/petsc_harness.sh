@@ -159,7 +159,7 @@ function petsc_testrun() {
     else
       printf "not ok $tlabel\n" | tee -a ${testlogfile}
     fi
-    if [ -v timed_out ]; then
+    if [ -n "$timed_out" ]; then
       printf "#\tExceeded timeout limit of $MPIEXEC_TIMEOUT s\n" | tee -a ${testlogfile}
     else
       # We've had tests fail but stderr->stdout. Fix with this test.
