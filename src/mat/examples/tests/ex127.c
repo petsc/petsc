@@ -108,7 +108,7 @@ int main(int argc,char **args)
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_SUPERLU)
+#if defined(PETSC_HAVE_SUPERLU_DIST)
   /* Test Cholesky factorization */
   ierr = PetscOptionsHasName(NULL,NULL, "-test_choleskyfactor", &flg);CHKERRQ(ierr);
   if (flg) {
