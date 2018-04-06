@@ -741,23 +741,26 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
           }
           else {
             /* Accept the step */
-            if (kappa < bnk->eta2) {
-              /* Marginal bad step */
-              tao->trust = bnk->alpha2 * PetscMin(tao->trust, bnk->dnorm);
-            }
-            else if (kappa < bnk->eta3) {
-              /* Reasonable step */
-              tao->trust = bnk->alpha3 * tao->trust;
-            }
-            else if (kappa < bnk->eta4) {
-              /* Good step */
-              tao->trust = PetscMax(bnk->alpha4 * bnk->dnorm, tao->trust);
-            }
-            else {
-              /* Very good step */
-              tao->trust = PetscMax(bnk->alpha5 * bnk->dnorm, tao->trust);
-            }
             *accept = PETSC_TRUE;
+            /* Update the trust region radius only if the computed step is at the trust radius boundary */
+            if (tao->trust == bnk->dnorm) {
+              if (kappa < bnk->eta2) {
+                /* Marginal bad step */
+                tao->trust = bnk->alpha2 * tao->trust;
+              }
+              else if (kappa < bnk->eta3) {
+                /* Reasonable step */
+                tao->trust = bnk->alpha3 * tao->trust;
+              }
+              else if (kappa < bnk->eta4) {
+                /* Good step */
+                tao->trust = bnk->alpha4 * tao->trust;
+              }
+              else {
+                /* Very good step */
+                tao->trust = bnk->alpha5 * tao->trust;
+              }
+            }
           }
         }
       }
@@ -834,9 +837,9 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
       /*  Newton step was not good; reduce the radius */
       tao->trust = bnk->gamma1 * PetscMin(bnk->dnorm, tao->trust);
     }
-    /*  The radius may have been increased; modify if it is too large */
-    tao->trust = PetscMin(tao->trust, bnk->max_radius);
   }
+  /* Make sure the radius does not violate min and max settings */
+  tao->trust = PetscMin(tao->trust, bnk->max_radius);
   tao->trust = PetscMax(tao->trust, bnk->min_radius);
   PetscFunctionReturn(0);
 }
