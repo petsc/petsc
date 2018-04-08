@@ -1,6 +1,6 @@
   0 SNES Function norm 5.511227472885e+00 
   Linear solve converged due to CONVERGED_RTOL iterations 25
-  1 SNES Function norm 1.084811049232e-04 
+  1 SNES Function norm 1.084811049252e-04 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -67,4 +67,3 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 61 nodes, limit used is 5
 L_2 Error: 0.0695363 [0.0130938, 0.0682924]
-Integral of pressure: 1.33712e-14

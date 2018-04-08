@@ -1,15 +1,12 @@
   0 SNES Function norm 9.088488010682e+00 
-  Linear solve converged due to CONVERGED_RTOL iterations 13
-  1 SNES Function norm 1.601900613870e+00 
-  Linear solve converged due to CONVERGED_RTOL iterations 388
-  2 SNES Function norm 8.073128851201e-05 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  Linear solve did not converge due to DIVERGED_ITS iterations 10000
+Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=401
-  total number of function evaluations=3
+  total number of linear solver iterations=0
+  total number of function evaluations=1
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -28,7 +25,7 @@ SNES Object: 1 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: patch
-      Subspace Correction preconditioner with 24 patches
+      Subspace Correction preconditioner with 16 patches
       Schwarz type: multiplicative
       Not weighting by partition of unity
       Not symmetrising sweep
@@ -50,15 +47,15 @@ SNES Object: 1 MPI processes
           Factored matrix follows:
             Mat Object: 1 MPI processes
               type: seqdense
-              rows=59, cols=59
+              rows=50, cols=50
               package used to perform factorization: petsc
-              total: nonzeros=3481, allocated nonzeros=3481
+              total: nonzeros=2500, allocated nonzeros=2500
               total number of mallocs used during MatSetValues calls =0
       linear system matrix = precond matrix:
       Mat Object: (pc_patch_sub_) 1 MPI processes
         type: seqdense
-        rows=59, cols=59
-        total: nonzeros=3481, allocated nonzeros=3481
+        rows=50, cols=50
+        total: nonzeros=2500, allocated nonzeros=2500
         total number of mallocs used during MatSetValues calls =0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
@@ -68,5 +65,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 37 nodes, limit used is 5
-L_2 Error: 5.66468e-05 [2.37817e-07, 5.66463e-05]
-Integral of pressure: 2.68083e-11
+L_2 Error: 0.810377 [0.700032, 0.408248]

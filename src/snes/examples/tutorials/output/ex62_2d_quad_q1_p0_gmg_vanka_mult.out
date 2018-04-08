@@ -1,9 +1,9 @@
   0 SNES Function norm 1.222863172776e+01 
     0 KSP preconditioned resid norm 2.846098707302e+01 true resid norm 1.222863172776e+01 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP preconditioned resid norm 1.206138891036e+00 true resid norm 3.922060269227e-02 ||r(i)||/||b|| 3.207276461129e-03
-    2 KSP preconditioned resid norm 6.540272707645e-03 true resid norm 8.119697294278e-04 ||r(i)||/||b|| 6.639906634724e-05
-    3 KSP preconditioned resid norm 1.298333085612e-04 true resid norm 7.403631480167e-04 ||r(i)||/||b|| 6.054341683508e-05
-  1 SNES Function norm 7.403631480164e-04 
+    1 KSP preconditioned resid norm 1.206138891023e+00 true resid norm 3.922060269345e-02 ||r(i)||/||b|| 3.207276461226e-03
+    2 KSP preconditioned resid norm 6.540272708501e-03 true resid norm 8.119697294691e-04 ||r(i)||/||b|| 6.639906635063e-05
+    3 KSP preconditioned resid norm 1.298333085969e-04 true resid norm 7.403631480020e-04 ||r(i)||/||b|| 6.054341683388e-05
+  1 SNES Function norm 7.403631480018e-04 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -173,4 +173,3 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 1105 nodes, limit used is 5
 L_2 Error: 0.705892 [0.000812661, 0.705891]
-Integral of pressure: 0.

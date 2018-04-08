@@ -46,6 +46,7 @@ Likewise, DMPlexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
 
 TODO:
+ - Update FETI test output
  - Reorder mesh
  - Check the q1-p0 Vanka domains are correct (I think its correct)
    - Check scaling of iterates, right now it is bad
@@ -72,7 +73,7 @@ typedef struct {
   PetscInt      debug;             /* The debugging level */
   RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution, showError;
+  PetscBool     showInitial, showError;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
@@ -336,7 +337,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->bcType          = DIRICHLET;
   options->solType         = SOL_QUADRATIC;
   options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
   options->showError       = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
@@ -357,7 +357,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-sol_type", "The solution type", "ex62.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolType) sol;
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -660,6 +659,7 @@ int main(int argc, char **argv)
   ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
@@ -682,11 +682,6 @@ int main(int argc, char **argv)
       ierr = PetscObjectSetName((PetscObject) r, "Solution Error");CHKERRQ(ierr);
       ierr = VecViewFromOptions(r, NULL, "-error_vec_view");CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
-    }
-    if (user.showSolution) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
-      ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);
-      ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   } else {
     PetscReal res = 0.0;
@@ -711,6 +706,7 @@ int main(int argc, char **argv)
       Vec          b;
       PetscBool    isNull;
 
+      ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
       ierr = SNESGetJacobian(snes, &J, &M, NULL, NULL);CHKERRQ(ierr);
       ierr = SNESComputeJacobian(snes, u, J, M);CHKERRQ(ierr);
       ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
@@ -775,7 +771,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p3_1
     requires: triangle !single
-    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2    
+    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
   # Parallel tests 6-17
   test:
     suffix: 6
@@ -929,84 +925,84 @@ int main(int argc, char **argv)
   test:
     suffix: quad_q2q1_full
     requires: !single
-    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: quad_q2p1_full
     requires: !single
-    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   # Stokes preconditioners 30-36
   #   Jacobi
   test:
     suffix: 30
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g"
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}
   test:
     suffix: 31
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-4 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-4 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
   test:
     suffix: 32
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Diagonal Schur complement \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix}
   test:
     suffix: 33
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Upper triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
   test:
     suffix: 34
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Lower triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
   test:
     suffix: 35
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  Full Schur complement \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix} \begin{pmatrix} I & A^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: 36
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  SIMPLE \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T diag(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & diag(A)^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: pc_simple
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   #  SIMPLEC \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T rowsum(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & rowsum(A)^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: pc_simplec
     requires: triangle
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_max_it 5 -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_type rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_type rowsum -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_max_it 5 -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_type rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_type rowsum -snes_converged_reason -ksp_converged_reason -snes_view
   # FETI-DP solvers
   test:
     suffix: fetidp_2d_tri
     requires: triangle mumps
     filter: grep -v "variant HERMITIAN"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
   test:
     suffix: fetidp_3d_tet
     requires: ctetgen suitesparse
     filter: grep -v "variant HERMITIAN" | sed -e "s/linear solver iterations=10[0-9]/linear solver iterations=100/g" | sed -e "s/linear solver iterations=9[0-9]/linear solver iterations=100/g"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 1000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_type umfpack -fetidp_fieldsplit_lag_ksp_type preonly -test_partition
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 1000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_type umfpack -fetidp_fieldsplit_lag_ksp_type preonly -test_partition
 
   test:
     suffix: fetidp_2d_quad
     requires: mumps
     filter: grep -v "variant HERMITIAN"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -simplex 0 -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -simplex 0 -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
   test:
     suffix: fetidp_3d_hex
     requires: suitesparse
     filter: grep -v "variant HERMITIAN"
     nsize: 5
-    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
+    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
   # Convergence
   test:
     suffix: 2d_quad_q1_p0_conv
@@ -1016,8 +1012,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
-        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
-      -show_solution 0
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_tri_p2_p1_conv
     requires: !single
@@ -1027,8 +1022,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
-        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
-      -show_solution 0
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_quad_q2_q1_conv
     requires: !single
@@ -1038,8 +1032,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
-        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
-      -show_solution 0
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_quad_q2_p1_conv
     requires: !single
@@ -1049,8 +1042,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
-        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
-      -show_solution 0
+        -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   #   This shows checkerboarding
   test:
     suffix: 2d_quad_q1_p0_vanka_mult_conv
@@ -1059,8 +1051,7 @@ int main(int argc, char **argv)
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
       -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   # Vanka solver
   test:
     suffix: 2d_quad_q1_p0_vanka_mult
@@ -1069,8 +1060,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q1_p0_vanka_mult_unity
     requires: !single
@@ -1078,8 +1068,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q1_p0_vanka_add
     requires: !single
@@ -1087,8 +1076,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q1_p0_vanka_add_unity
     requires: !single
@@ -1096,8 +1084,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q2_q1_vanka_mult
     requires: !single
@@ -1105,8 +1092,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged_no -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged_no -ksp_converged_reason \
       -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka -pc_patch_vanka_dim 0 \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q2_q1_vanka_mult_unity
     requires: !single
@@ -1114,8 +1100,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q2_q1_vanka_add
     requires: !single
@@ -1123,8 +1108,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q2_q1_vanka_add_unity
     requires: !single
@@ -1132,8 +1116,7 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu \
-      -show_solution 0
+        -sub_ksp_type preonly -sub_pc_type lu
   # Vanka smoother
   test:
     suffix: 2d_quad_q1_p0_gmg_vanka_mult
@@ -1144,7 +1127,6 @@ int main(int argc, char **argv)
       -pc_type mg -pc_mg_levels 3 \
         -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 30 -mg_levels_ksp_monitor_true_residual_no \
         -mg_levels_pc_type patch -mg_levels_pc_patch_multiplicative -mg_levels_pc_patch_partition_of_unity 0 -mg_levels_pc_patch_construct_codim 0 -mg_levels_pc_patch_construct_type vanka \
-          -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu \
-      -show_solution 0
+          -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu
 
 TEST*/
