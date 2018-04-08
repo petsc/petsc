@@ -45,6 +45,14 @@ the data so that each field is contiguous
 Likewise, DMPlexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
 
+TODO:
+ - Reorder mesh
+ - Check the q1-p0 Vanka domains are correct (I think its correct)
+   - Check scaling of iterates, right now it is bad
+ - Check the q2-q1 domains since convergence is bad
+   - Ask Patrick about domains
+ - Plot residual by fields after each smoother iterate
+ - Get Diskin checks going
 */
 
 #include <petscdmplex.h>
@@ -304,6 +312,14 @@ PetscErrorCode linear_p_3d(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
+void pressure(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar p[])
+{
+  p[0] = u[uOff[1]];
+}
+
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       bc, run, sol;
@@ -536,7 +552,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreatePressureNullSpace(DM dm, MatNullSpace *nullSpace)
+static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt dummy, MatNullSpace *nullspace)
 {
   Vec              vec;
   PetscErrorCode (*funcs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, constant_p};
@@ -547,17 +563,65 @@ PetscErrorCode CreatePressureNullSpace(DM dm, MatNullSpace *nullSpace)
   ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   ierr = VecViewFromOptions(vec, NULL, "-pressure_nullspace_view");CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullspace);CHKERRQ(ierr);
   ierr = VecDestroy(&vec);CHKERRQ(ierr);
   /* New style for field null spaces */
   {
     PetscObject  pressure;
-    MatNullSpace nullSpacePres;
+    MatNullSpace nullspacePres;
 
     ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullSpacePres);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullSpacePres);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullSpacePres);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullspacePres);CHKERRQ(ierr);
+    ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullspacePres);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspacePres);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Add a vector in the nullspace to make the continuum integral 0.
+
+   If int(u) = a and int(n) = b, then int(u - a/b n) = a - a/b b = 0
+*/
+static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec u, AppCtx *user)
+{
+  PetscDS        prob;
+  const Vec     *nullvecs;
+  PetscScalar    pintd, intc[2], intn[2];
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetObjective(prob, 1, pressure);CHKERRQ(ierr);
+  ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
+  ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
+  if (PetscAbsScalar(pintd) > 1.0e-10) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));
+  ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
+  ierr = VecAXPY(u, -intc[1]/intn[1], nullvecs[0]);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
+  if (PetscAbsScalar(intc[1]) > 1.0e-10) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g\n", (double) PetscRealPart(intc[1]));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, user);CHKERRQ(ierr);
+  if (*reason > 0) {
+    DM           dm;
+    Mat          J;
+    Vec          u;
+    MatNullSpace nullspace;
+
+    ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+    ierr = CorrectDiscretePressure(dm, nullspace, u, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -567,8 +631,6 @@ int main(int argc, char **argv)
   SNES           snes;                 /* nonlinear solver */
   DM             dm;                   /* problem definition */
   Vec            u, r;                 /* solution and residual */
-  Mat            A,J;                  /* Jacobian matrix */
-  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscReal      error         = 0.0;  /* L_2 error in the solution */
   PetscReal      ferrors[2];
@@ -588,14 +650,10 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  A = J;
-  ierr = CreatePressureNullSpace(dm, &nullSpace);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-  ierr = MatSetTransposeNullSpace(A, nullSpace);CHKERRQ(ierr);
+  ierr = DMSetNullSpaceConstructor(dm, 2, CreatePressureNullSpace);CHKERRQ(ierr);
+  ierr = SNESSetConvergenceTest(snes, SNESConvergenceCorrectPressure, &user, NULL);CHKERRQ(ierr);
 
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -605,7 +663,6 @@ int main(int argc, char **argv)
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
-    PetscScalar      pint;
 
     ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.debug) {
@@ -616,12 +673,6 @@ int main(int argc, char **argv)
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, NULL, u, ferrors);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g [%g, %g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
-    {
-      const Vec *nullvecs;
-      ierr = MatNullSpaceGetVecs(nullSpace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
-      ierr = VecDot(nullvecs[0], u, &pint);CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", (double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
     if (user.showError) {
       Vec r;
 
@@ -655,15 +706,19 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
     /* Check Jacobian */
     {
+      Mat          J, M;
+      MatNullSpace nullspace;
       Vec          b;
       PetscBool    isNull;
 
-      ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
+      ierr = SNESGetJacobian(snes, &J, &M, NULL, NULL);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, J, M);CHKERRQ(ierr);
+      ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
-      ierr = MatMult(A, u, r);CHKERRQ(ierr);
+      ierr = MatMult(J, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
@@ -675,9 +730,6 @@ int main(int argc, char **argv)
   }
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
-  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-  if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -1050,9 +1102,9 @@ int main(int argc, char **argv)
     suffix: 2d_quad_q2_q1_vanka_mult
     requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
-      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
-      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 1 -pc_patch_construct_type vanka \
+      -snes_rtol 1.0e-4 -snes_error_if_not_converged_no -snes_view -snes_monitor -snes_converged_reason \
+      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged_no -ksp_converged_reason \
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka -pc_patch_vanka_dim 0 \
         -sub_ksp_type preonly -sub_pc_type lu \
       -show_solution 0
   test:
@@ -1061,7 +1113,7 @@ int main(int argc, char **argv)
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 1 -pc_patch_construct_type vanka \
+      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
         -sub_ksp_type preonly -sub_pc_type lu \
       -show_solution 0
   test:
@@ -1070,7 +1122,7 @@ int main(int argc, char **argv)
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 1 -pc_patch_construct_type vanka \
+      -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
         -sub_ksp_type preonly -sub_pc_type lu \
       -show_solution 0
   test:
@@ -1079,7 +1131,7 @@ int main(int argc, char **argv)
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 1 -pc_patch_construct_type vanka \
+      -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
         -sub_ksp_type preonly -sub_pc_type lu \
       -show_solution 0
   # Vanka smoother
