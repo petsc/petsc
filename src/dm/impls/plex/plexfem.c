@@ -1149,7 +1149,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
 static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cStart, PetscInt cEnd, PetscScalar *cintegral, void *user)
 {
   DM                 dmAux = NULL;
-  PetscDS            prob,    probAux;
+  PetscDS            prob,    probAux = NULL;
   PetscSection       section, sectionAux;
   Vec                locX,    locA;
   PetscInt           dim, numCells = cEnd - cStart, cell, c, f;
