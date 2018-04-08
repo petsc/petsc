@@ -501,6 +501,7 @@ int main(int argc, char **argv)
 
   ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u);CHKERRQ(ierr);}
+  ierr = PetscObjectSetName((PetscObject) u, "Solution");CHKERRQ(ierr);
   if (user.runType == RUN_FULL) {
     PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
 
