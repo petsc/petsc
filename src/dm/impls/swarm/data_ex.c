@@ -76,7 +76,7 @@ DMSwarmDataExEnd()
 #include <petscvec.h>
 #include <petscmat.h>
 
-#include "data_ex.h"
+#include "../src/dm/impls/swarm/data_ex.h"
 
 const char *status_names[] = {"initialized", "finalized", "unknown"};
 

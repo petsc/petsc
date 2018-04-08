@@ -2,7 +2,7 @@
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,PetscInt np[],PetscInt *_npoints,PetscReal **_xi)
 {
