@@ -1,7 +1,7 @@
 #include <petscdm.h>
 #include <petscdmplex.h>
 #include <petscdmswarm.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*xi);
