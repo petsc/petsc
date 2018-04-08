@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR		 = src/mat/examples/tests/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
-                ex19.c ex20.c ex21.c ex22.c ex23.c  ex25.c ex26.c   ex29.c \
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c   ex29.c \
                 ex30.c ex31.c    ex35.c ex37.c ex38.c \
                 ex40.c ex41.c ex42.c ex43.c ex44.c ex46.c ex47.c ex48.c \
                 ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex56.c \
@@ -19,7 +19,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c \
                 ex121.c ex122.c ex124.c ex125.c ex127.c ex128.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
-                ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
+                ex136.c ex137.c ex138.c ex139.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
@@ -125,6 +125,10 @@ ex22: ex22.o chkopts
 ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o ${PETSC_MAT_LIB}
 	${RM} ex23.o
+
+ex24: ex24.o chkopts
+	-${CLINKER} -o ex24 ex24.o ${PETSC_MAT_LIB}
+	${RM} ex24.o
 
 ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_MAT_LIB}
@@ -536,10 +540,6 @@ ex139: ex139.o chkopts
 	-${CLINKER} -o ex139 ex139.o ${PETSC_MAT_LIB}
 	${RM} ex139.o
 
-ex140: ex140.o chkopts
-	-${CLINKER} -o ex140 ex140.o ${PETSC_MAT_LIB}
-	${RM} ex140.o
-
 ex141: ex141.o chkopts
 	-${CLINKER} -o ex141 ex141.o ${PETSC_MAT_LIB}
 	${RM} ex141.o
@@ -800,6 +800,10 @@ ex213: ex213.o chkopts
 ex214: ex214.o chkopts
 	-${CLINKER} -o ex214 ex214.o ${PETSC_MAT_LIB}
 	${RM} ex214.o
+
+ex215: ex215.o chkopts
+	-${CLINKER} -o ex215 ex215.o ${PETSC_MAT_LIB}
+	${RM} ex215.o
 
 ex218: ex218.o chkopts
 	-${CLINKER} -o ex218 ex218.o ${PETSC_MAT_LIB}

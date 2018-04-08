@@ -135,7 +135,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
     /* Multiprocessor master */
     PetscMPIInt tag;
     PetscInt    finishedtasks,next_task,checkedin;
-    PetscReal   f_i;
+    PetscReal   f_i=0.0;
     MPI_Status  status;
 
     next_task=0;

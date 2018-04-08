@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import glob, sys, os, optparse, shutil, subprocess
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -35,7 +36,7 @@ def main():
 
     directory=options.directory
     if not os.path.isdir(directory):
-      print directory+' is not a directory'
+      print(directory+' is not a directory')
       return
 
     mvfiles(directory)

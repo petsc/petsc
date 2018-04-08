@@ -1436,10 +1436,10 @@ Process 1:
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 22 22
-  1-cells: 82 83
-  2-cells: 105 107
-  3-cells: 44 45
+  0-cells: 22 25
+  1-cells: 84 89
+  2-cells: 108 108
+  3-cells: 45 44
 Labels:
-  Cell Sets: 3 strata with value/size (1 (24), 2 (3), 20 (17))
-  depth: 4 strata with value/size (0 (22), 1 (82), 2 (105), 3 (44))
+  Cell Sets: 2 strata with value/size (1 (24), 2 (21))
+  depth: 4 strata with value/size (0 (22), 1 (84), 2 (108), 3 (45))

@@ -121,7 +121,6 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
   For vector spaces, the block size of Vfield[i] represents the vector dimension. It misses the Fortran bindings.
-  PETSc will take ownership of the work vectors.
   The names of the Vfield vectors will be displayed in the window title.
 
   Level: intermediate
@@ -603,10 +602,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERGLVIS);CHKERRQ(ierr);
 
   socket       = (PetscViewerGLVis)((*viewer)->data);
-  ierr         = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr         = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
   socket->type = type;
-  socket->port = port;
+  if (type == PETSC_VIEWER_GLVIS_DUMP || name) {
+    ierr = PetscFree(socket->name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
+  }
+  socket->port = (!port || port == PETSC_DETERMINE || port == PETSC_DECIDE) ? 19916 : port;
 
   ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -35,8 +35,7 @@ PetscErrorCode  AOFinalizePackage(void)
 PetscErrorCode  AOInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -50,22 +49,18 @@ PetscErrorCode  AOInitializePackage(void)
   ierr = PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(AO_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("ao",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(AO_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(AO_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("ao",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(AO_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(AOFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -458,7 +458,7 @@ class Package(config.base.Configure):
         for l in self.generateLibList(d): # d = '' i.e search compiler libraries
             yield('Compiler specific search '+self.PACKAGE, d, l, includedir)
 
-    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
+    if not self.lookforbydefault or ('with-'+self.package in self.framework.clArgDB and self.argDB['with-'+self.package]):
       mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
       if self.download: mesg +='\nYou might also consider using --download-'+self.package+' instead'
       if self.alternativedownload: mesg +='\nYou might also consider using --download-'+self.alternativedownload+' instead'
@@ -639,7 +639,7 @@ class Package(config.base.Configure):
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):
           self.logPrint('Git not found - skipping giturls: '+str(git_urls)+'\n')
-        elif isClone or self.framework.clArgDB.has_key('with-git'):
+        elif isClone or 'with-git' in self.framework.clArgDB:
           download_urls = git_urls+download_urls
         else:
           download_urls = download_urls+git_urls
@@ -663,7 +663,7 @@ class Package(config.base.Configure):
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
     self.logWrite(retriever.restoreLog())
@@ -790,9 +790,9 @@ class Package(config.base.Configure):
           return
       else:
         self.logWrite(self.libraries.restoreLog())
-    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
+    if not self.lookforbydefault or ('with-'+self.package in self.framework.clArgDB and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
-    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+    if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
       self.argDB['with-'+self.package] = 0
 
   def checkSharedLibrary(self):
@@ -809,7 +809,7 @@ class Package(config.base.Configure):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
 
     # if user did not request option, then turn it off it conflicts with configuration
-    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+    if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
       if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
          (self.fc and not hasattr(self.compilers, 'FC')) or \
          (self.noMPIUni and self.mpi.usingMPIUni) or \
@@ -836,7 +836,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
-    if not self.download and self.argDB.has_key('download-'+self.downloadname.lower()) and self.argDB['download-'+self.downloadname.lower()]:
+    if not self.download and 'download-'+self.downloadname.lower() in self.argDB and self.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
@@ -920,9 +920,9 @@ class Package(config.base.Configure):
       useShared = self.sharedLibraries.useShared
     else:
       useShared = True
-    if self.framework.clArgDB.has_key('download-'+self.package+'-shared') and self.argDB['download-'+self.package+'-shared']:
+    if 'download-'+self.package+'-shared' in self.framework.clArgDB and self.argDB['download-'+self.package+'-shared']:
       raise RuntimeError(self.package+' cannot use download-'+self.package+'-shared=1. This flag can only be used to disable '+self.package+' shared libraries')
-    if not useShared or (self.framework.clArgDB.has_key('download-'+self.package+'-shared') and not self.argDB['download-'+self.package+'-shared']):
+    if not useShared or ('download-'+self.package+'-shared' in self.framework.clArgDB and not self.argDB['download-'+self.package+'-shared']):
       return False
     else:
       return True
@@ -932,14 +932,14 @@ class Package(config.base.Configure):
       self.logPrintBox('Compiling PETSc; this may take several minutes')
       output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
       self.log.write(output+err)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running make all on PETSc: '+str(e))
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
         self.log.write(output+err)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
       try:
@@ -949,7 +949,7 @@ class Package(config.base.Configure):
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
           raise RuntimeError('Error running make test on PETSc: '+output)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make test on PETSc: '+str(e))
     self.installedpetsc = 1
 
@@ -1302,7 +1302,7 @@ class GNUPackage(Package):
       try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.libtoolize+' && '+self.programs.autoreconf + ' --force --install', timeout=200, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
 
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
@@ -1321,7 +1321,7 @@ class GNUPackage(Package):
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
@@ -1333,7 +1333,7 @@ class GNUPackage(Package):
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
       output4,err4,ret4  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=1000, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
@@ -1370,17 +1370,23 @@ class CMakePackage(Package):
         raise RuntimeError('Requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
       cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')
+    args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_DEBUG:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
+      args.append('-DCMAKE_Fortran_FLAGS_RELEASE:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if self.setCompilers.LDFLAGS:
@@ -1418,13 +1424,13 @@ class CMakePackage(Package):
       try:
         self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
         output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' '+self.makerulename+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
       self.postInstall(output1+err1+output2+err2,conffile)
     return self.installDir

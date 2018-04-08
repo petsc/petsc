@@ -278,10 +278,15 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   sdim = dim;
   if (csec) {
+    PetscInt sStart,sEnd;
+
     ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(csec,&sStart,&sEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(csec,vStart,&off);CHKERRQ(ierr);
     off  = off/sdim;
-    ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
+    if (p >= sStart && p < sEnd) {
+      ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
+    }
   }
   if (!dof) {
     ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);

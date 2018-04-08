@@ -13,7 +13,6 @@ struct _n_PetscViewerVTKObjectLink {
 typedef struct {
   char                     *filename;
   PetscFileMode            btype;
-  PetscBool                written;
   PetscObject              dm;
   PetscViewerVTKObjectLink link;
   PetscErrorCode (*write)(PetscObject,PetscViewer);

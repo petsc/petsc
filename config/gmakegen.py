@@ -70,7 +70,11 @@ class Petsc(object):
         self.petsc_dir = petsc_dir
         self.petsc_arch = petsc_arch
         self.read_conf()
-        logging.basicConfig(filename=self.arch_path('lib','petsc','conf', 'gmake.log'), level=logging.DEBUG)
+        try:
+            logging.basicConfig(filename=self.arch_path('lib','petsc','conf', 'gmake.log'), level=logging.DEBUG)
+        except IOError:
+            # Disable logging if path is not writeable (e.g., prefix install)
+            logging.basicConfig(filename='/dev/null', level=logging.DEBUG)
         self.log = logging.getLogger('gmakegen')
         self.mistakes = Mistakes(debuglogger(self.log), verbose=verbose)
         self.gendeps = []
@@ -116,6 +120,8 @@ class Petsc(object):
         for lang in LANGS:
             pkgsrcs[lang] = []
         for root, dirs, files in os.walk(os.path.join(self.petsc_dir, 'src', pkg)):
+            dirs.sort()
+            files.sort()
             makefile = os.path.join(root,'makefile')
             if not os.path.exists(makefile):
                 dirs[:] = []

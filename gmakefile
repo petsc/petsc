@@ -5,7 +5,7 @@ include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
-LIBDIR := $(abspath $(PETSC_ARCH)/lib)
+LIBDIR := $(PETSC_ARCH)/lib
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -23,8 +23,8 @@ libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(if $(filter $(PETSC_VERSION_REL
 libpetsc_lib_version := $(libpetsc_abi_version).$(PETSC_VERSION_SUBMINOR)
 soname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_abi_version))
 libname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_lib_version))
-basename_all = $(basename $(basename $(basename $(basename $(1)))))
-sl_linker_args = $(call SL_LINKER_FUNCTION,$(call basename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
+absbasename_all = $(basename $(basename $(basename $(basename $(abspath $(1))))))# arch/lib/libpetsc.so.3.8.0 -> /path/to/arch/lib/libpetsc
+sl_linker_args = $(call SL_LINKER_FUNCTION,$(call absbasename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
 
 libpetsc_shared  := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_soname  := $(call soname_function,$(LIBDIR)/libpetsc)
@@ -65,7 +65,7 @@ $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
 langs := F cu cxx c
-concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
+concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):src/%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 define SHARED_RECIPE_DLL
@@ -79,9 +79,11 @@ define SHARED_RECIPE_DEFAULT
   $(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 endef
 
+SHARED_RECIPE = $(if $(findstring -LD,$(SL_LINKER_FUNCTION)),$(SHARED_RECIPE_DLL),$(SHARED_RECIPE_DEFAULT))
+
 # with-single-library=1 (default)
 $(libpetsc_libname) : $(srcs.o) | $$(@D)/.DIR
-	$(if $(findstring -LD,$(SL_LINKER_FUNCTION)),$(SHARED_RECIPE_DLL),$(SHARED_RECIPE_DEFAULT))
+	$(SHARED_RECIPE)
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
@@ -131,7 +133,7 @@ else
   libdep_order = $$(libdep)
 endif
 $(libpetscpkgs_libname) : $(libdep_true) | $(libdep_order) $$(@D)/.DIR
-	$(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+	$(SHARED_RECIPE)
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
@@ -144,18 +146,18 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
-$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
+$(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
+$(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
 FCMOD = cd
-$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
+$(OBJDIR)/%.o : src/%.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
@@ -163,7 +165,7 @@ else
 endif
 	-@$(GFORTRAN_DEP_CLEANUP)
 
-$(OBJDIR)/%.o : %.F90 | $$(@D)/.DIR
+$(OBJDIR)/%.o : src/%.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
@@ -175,17 +177,17 @@ endif
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpi.mod
 endif
-$(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
-$(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
-$(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
-$(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
-$(OBJDIR)/src/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/src/ts/f90-mod/petsctsmod.o
+$(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o)
+$(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
+$(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
+$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
+$(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
+$(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
 # F2003 interface
-$(OBJDIR)/src/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/sys/objects/f2003-foptionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)

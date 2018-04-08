@@ -171,7 +171,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawGetCoordinates(PetscDraw,PetscReal*,PetscRe
 
 PETSC_EXTERN PetscErrorCode PetscDrawSetTitle(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawAppendTitle(PetscDraw,const char[]);
-PETSC_EXTERN PetscErrorCode PetscDrawGetTitle(PetscDraw,char **);
+PETSC_EXTERN PetscErrorCode PetscDrawGetTitle(PetscDraw,const char *[]);
 
 PETSC_EXTERN PetscErrorCode PetscDrawSetPause(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawGetPause(PetscDraw,PetscReal*);

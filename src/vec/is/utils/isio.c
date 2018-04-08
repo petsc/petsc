@@ -114,7 +114,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isgeneral,skipheader;
+  PetscBool      isgeneral,skipHeader,useMPIIO;
   int            fd;
   PetscInt       tr[2],N,ln,*idx;
   MPI_Request    request;
@@ -124,21 +124,18 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-  /* force binary viewer to load .info file if it has not yet done so */
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&isgeneral);CHKERRQ(ierr);
   if (!isgeneral) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"IS must be of type ISGENERAL to load into it");
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipheader);CHKERRQ(ierr);
-  if (skipheader) SETERRQ(comm,PETSC_ERR_USER, "Currently no support for binary files without headers");
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  if (skipHeader) SETERRQ(comm,PETSC_ERR_USER, "Currently no support for binary files without headers");
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
   if (tr[0] != IS_FILE_CLASSID) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Not an IS next in file");
 
   /* Has IS already had its layout defined */
+  /* ierr = ISGetLayout(is,&map);CHKERRQ(ierr); */
   ierr = PetscLayoutGetSize(is->map,&N);CHKERRQ(ierr);
   if (N > -1 && N != tr[1]) SETERRQ2(comm,PETSC_ERR_ARG_SIZ,"Size of IS in file %D does not match size of IS provided",tr[1],N);
   if (N == -1) {
@@ -148,6 +145,33 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   }
   ierr = PetscLayoutGetLocalSize(is->map,&ln);CHKERRQ(ierr);
   ierr = PetscMalloc1(ln,&idx);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  if (useMPIIO) {
+    MPI_File    mfdes;
+    MPI_Offset  off;
+    PetscMPIInt lsize;
+    PetscInt    rstart;
+
+    ierr = PetscMPIIntCast(ln,&lsize);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = PetscLayoutGetRange(is->map,&rstart,NULL);CHKERRQ(ierr);
+    off += rstart*(MPI_Offset)sizeof(PetscInt);
+    ierr = MPI_File_set_view(mfdes,off,MPIU_INT,MPIU_INT,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
+    ierr = MPIU_File_read_all(mfdes,idx,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,N*(MPI_Offset)sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(is,ln,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+
   if (!rank) {
     ierr = PetscBinaryRead(fd,idx,ln,PETSC_INT);CHKERRQ(ierr);
 

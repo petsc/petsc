@@ -7,9 +7,12 @@
 
 #define MAX_DATA_AT_POINT 36
 
+#define MAX_COMPONENTS 16
+
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
+  PetscInt subnetid; /* Id for subnetwork */
   PetscInt ndata;
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
@@ -43,12 +46,23 @@ typedef struct {
 } DMNetworkEdgeInfo;
 
 typedef struct {
+  PetscInt  id;             /* Subnetwork id */
+  PetscInt  Nvtx, nvtx;     /* Number of global/local vertices */
+  PetscInt  Nedge,nedge;    /* Number of global/local edges */
+  PetscInt eStart, eEnd;    /* Range of edge numbers (start, end+1) */
+  PetscInt vStart, vEnd;    /* Range of vertex numbers (start, end+1) */
+  PetscInt *edgelist;       /* User provided list of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
+  PetscInt  *vertices;      /* Vertices for this subnetwork. These are mapped to the vertex numbers for the whole network */
+  PetscInt *edges;          /* Edges for this subnetwork. These are mapped to the edge numbers for the whole network */
+} DMSubnetwork;
+
+typedef struct {
   PetscInt                          refct;       /* reference count */
   PetscInt                          NEdges;      /* Number of global edges */
   PetscInt                          NVertices;   /* Number of global vertices */
   PetscInt                          nEdges;      /* Number of local edges */
   PetscInt                          nVertices;   /* Number of local vertices */
-  int                               *edges;      /* Edge list */
+  PetscInt                          *edges;      /* Edge list */
   PetscInt                          pStart,pEnd; /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd; /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd; /* Start and end indices for edges */
@@ -61,11 +75,15 @@ typedef struct {
   DMNetworkEdgeInfo                 edge;
 
   PetscInt                          ncomponent; /* Number of components */
-  DMNetworkComponent                component[10]; /* List of components */
+  DMNetworkComponent                component[MAX_COMPONENTS]; /* List of components */
   DMNetworkComponentHeader          header;
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+
+  PetscInt                          nsubnet;  /* Total number of subnetworks, including coupling subnetworks */
+  PetscInt                          ncsubnet; /* Number of coupling subnetworks */
+  DMSubnetwork                      *subnet;  /* Subnetworks */
 
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
   Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */

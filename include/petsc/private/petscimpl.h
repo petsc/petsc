@@ -788,43 +788,17 @@ typedef struct {
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
 
-#if defined(PETSC_HAVE_CUSP)
 /*E
-    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
+    PetscOffloadFlag - indicates which memory (CPU, GPU, or none contains valid vector
 
-   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
-   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
-   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+   PETSC_OFFLOAD_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
+   PETSC_OFFLOAD_CPU - CPU has valid vector/matrix entries
+   PETSC_OFFLOAD_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
 
    Level: developer
 E*/
-typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
-#elif defined(PETSC_HAVE_VIENNACL)
-/*E
-    PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
-
-   PETSC_VIENNACL_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_VIENNACL_GPU - GPU has valid vector/matrix entries
-   PETSC_VIENNACL_CPU - CPU has valid vector/matrix entries
-   PETSC_VIENNACL_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-
-   Level: developer
-E*/
-typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
-#elif defined(PETSC_HAVE_VECCUDA)
-/*E
-    PetscCUDAFlag - indicates which memory (CPU, GPU, or none contains valid vector
-
-   PETSC_CUDA_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_CUDA_GPU - GPU has valid vector/matrix entries
-   PETSC_CUDA_CPU - CPU has valid vector/matrix entries
-   PETSC_CUDA_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-
-   Level: developer
-E*/
-typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
-#endif
+typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETSC_OFFLOAD_BOTH} PetscOffloadFlag;
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 

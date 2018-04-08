@@ -58,6 +58,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,Pets
 PETSC_EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],size_t,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer,PetscDrawType);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer,PetscDrawType*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawSetTitle(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetTitle(PetscViewer,const char*[]);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer,PetscInt);

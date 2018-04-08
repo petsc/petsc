@@ -3,7 +3,7 @@
 
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
 
-PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring coloring)
+PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring mc,ISColoring coloring)
 {
   PetscErrorCode ierr;
   Mat            m=mc->mat;
@@ -103,5 +103,52 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
   ierr = PetscFree(stateleafrow);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&etor);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&etoc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A,ISColoring iscoloring)
+{
+  PetscErrorCode ierr;
+  PetscInt       nn,c,i,j,M,N,nc,nnz,col,row;
+  const PetscInt *cia,*cja,*cols;
+  IS             *isis;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  PetscBool      done;
+  PetscBT        table;
+
+  PetscFunctionBegin;
+  ierr = ISColoringGetIS(iscoloring,&nn,&isis);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support sequential matrix");
+
+  ierr = MatGetColumnIJ(A,0,PETSC_FALSE,PETSC_FALSE,&N,&cia,&cja,&done);CHKERRQ(ierr);
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+
+  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+  ierr = PetscBTCreate(M,&table);CHKERRQ(ierr);
+  for (c=0; c<nn; c++) { /* for each color */
+    ierr = ISGetSize(isis[c],&nc);CHKERRQ(ierr);
+    if (nc <= 1) continue;
+
+    ierr = PetscBTMemzero(M,table);CHKERRQ(ierr);
+    ierr = ISGetIndices(isis[c],&cols);CHKERRQ(ierr);
+    for (j=0; j<nc; j++) { /* for each column */
+      col = cols[j];
+      nnz = cia[col+1] - cia[col];
+      for (i=0; i<nnz; i++) {
+        row = cja[cia[col]+i];
+        if (PetscBTLookupSet(table,row)) {
+          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"color %D, col %D: row %D already in this color",c,col,row);
+        }
+      }
+    }
+    ierr = ISRestoreIndices(isis[c],&cols);CHKERRQ(ierr);
+  }
+  ierr = PetscBTDestroy(&table);CHKERRQ(ierr);
+
+  ierr = MatRestoreColumnIJ(A,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

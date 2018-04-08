@@ -10,6 +10,7 @@
 #
 # by configure before running this script.
 
+from __future__ import print_function
 import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.path.abspath('config')))
@@ -165,7 +166,7 @@ class PETScMaker(script.Script):
        log.write('Contents of %s:\n' % cachetxt)
        log.write(f.read())
        f.close()
-     except IOError, e:
+     except IOError as e:
        log.write('Could not read file %s: %r\n' % (cachetxt, e))
      return False
    else:

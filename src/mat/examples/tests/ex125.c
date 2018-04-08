@@ -36,6 +36,9 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
 
+  /* if A is symmetric, set its flag -- required by MatGetInertia() */
+  ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
+
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
@@ -45,11 +48,11 @@ int main(int argc,char **args)
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   /* #define DEBUGEX */
-#if defined(DEBUGEX)   
+#if defined(DEBUGEX)
   {
     PetscInt    row,j,M,cols[nrhs];
     PetscScalar vals[nrhs];
@@ -101,9 +104,9 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
-      PetscInt    icntl;   
-      PetscReal   cntl; 
-     
+      PetscInt    icntl;
+      PetscReal   cntl;
+
       icntl = 2;        /* sequential matrix ordering */
       ierr = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
 
@@ -134,20 +137,31 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-    { /* Test MatSuperluDistGetDiagU() 
+    if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
-    PetscInt    M;
-    PetscScalar *diag;
+      PetscInt    M;
+      PetscScalar *diag;
+#if !defined(PETSC_USE_COMPLEX)
+      PetscInt nneg,nzero,npos;
+#endif
 
-    ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
-    ierr = MatSuperluDistGetDiagU(F,diag);CHKERRQ(ierr);
-    ierr = PetscFree(diag);CHKERRQ(ierr);
+      ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
+      ierr = MatSuperluDistGetDiagU(F,diag);CHKERRQ(ierr);
+      ierr = PetscFree(diag);CHKERRQ(ierr);
+
+#if !defined(PETSC_USE_COMPLEX)
+      /* Test MatGetInertia() */
+      ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+      }
+#endif
     }
 #endif
 
     /* Test MatMatSolve() */
-    if (testMatMatSolve) { 
+    if (testMatMatSolve) {
       if (!nfact) {
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       } else {
@@ -264,13 +278,13 @@ int main(int argc,char **args)
    test:
       suffix: superlu_dist
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NATURAL
 
    test:
       suffix: superlu_dist_2
       nsize: 3
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NATURAL
       output_file: output/ex125_superlu_dist.out
 
    test:
@@ -278,6 +292,6 @@ int main(int argc,char **args)
       nsize: 3
       requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
-      output_file: output/ex125_superlu_dist.out
+      output_file: output/ex125_superlu_dist_complex.out
 
 TEST*/

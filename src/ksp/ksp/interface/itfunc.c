@@ -901,6 +901,21 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ksp->vec_sol         = x;
   ksp->transpose_solve = PETSC_TRUE;
 
+  if (ksp->guess) {
+    PetscObjectState ostate,state;
+
+    ierr = KSPGuessSetUp(ksp->guess);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&ostate);CHKERRQ(ierr);
+    ierr = KSPGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&state);CHKERRQ(ierr);
+    if (state != ostate) {
+      ksp->guess_zero = PETSC_FALSE;
+    } else {
+      PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");
+      ksp->guess_zero = PETSC_TRUE;
+    }
+  }
+
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
@@ -922,6 +937,9 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->viewReason) {ierr = KSPReasonView_Internal(ksp, ksp->viewerReason, ksp->formatReason);CHKERRQ(ierr);}
+  if (ksp->guess) {
+    ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+  }
 
   if (ksp->viewMat)      {ierr = ObjectView((PetscObject) mat,          ksp->viewerMat,  ksp->formatMat);CHKERRQ(ierr);}
   if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,         ksp->viewerPMat, ksp->formatPMat);CHKERRQ(ierr);}

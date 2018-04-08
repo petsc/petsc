@@ -611,7 +611,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
 
   if (proximity_initialization) {
     PetscInt  *nnlist;
-    PetscReal coor_q[2],*coor_qn;
+    PetscReal *coor_q,*coor_qn;
     PetscInt  npoints_e,*plist_e;
 
     ierr = DMSwarmSortGetPointsPerCell(dm,e,&npoints_e,&plist_e);CHKERRQ(ierr);
@@ -624,8 +624,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       PetscInt  qn,nearest_neighour = -1;
       PetscReal sep,min_sep = PETSC_MAX_REAL;
 
-      coor_q[0] = xp[dim*q];
-      coor_q[1] = xp[dim*q];
+      coor_q = &xp[dim*q];
       for (qn=0; qn<npoints_e; qn++) {
         coor_qn = &swarm_coor[dim*plist_e[qn]];
         sep = 0.0;
@@ -890,6 +889,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   Vec                    eta_v,rho_v;
   Vec                    f,X;
   KSP                    ksp;
+  PC                     pc;
   char                   filename[PETSC_MAX_PATH_LEN];
   DM                     dms_quadrature,dms_mpoint;
   PetscInt               nel,npe,npoints;
@@ -904,6 +904,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscReal              time,delta_eta = 1.0;
   PetscBool              randomize_coords = PETSC_FALSE;
   PetscReal              randomize_fac = 0.25;
+  PetscBool              no_view = PETSC_FALSE;
+  PetscBool              isbddc;
 
   PetscFunctionBeginUser;
   /*
@@ -1101,7 +1103,10 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = DMSwarmMigrate(dms_mpoint,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf");CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL);CHKERRQ(ierr);
+  if (!no_view) {
+    ierr = DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf");CHKERRQ(ierr);
+  }
 
   /* project the swarm properties */
   ierr = DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_FALSE);CHKERRQ(ierr);
@@ -1112,7 +1117,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature);CHKERRQ(ierr);
 
   /* view projected coefficients eta and rho */
-  {
+  if (!no_view) {
     PetscViewer viewer;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
@@ -1142,6 +1147,11 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+  if (isbddc) {
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  }
 
   /* Define u-v-p indices for fieldsplit */
   {
@@ -1205,7 +1215,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = DMDAApplyBoundaryConditions(dm_stokes,B,NULL);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... solve\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A, isbddc ? A : B);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,f,X);CHKERRQ(ierr);
 
     ierr = VecStrideMax(X,0,NULL,&vx[1]);CHKERRQ(ierr);
@@ -1569,14 +1579,32 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
 
    test:
      suffix: 1
+     args: -no_view
      requires: !complex double
      filter: grep -v atomic
      filter_output: grep -v atomic
    test:
      suffix: 1_matis
      requires: !complex double
-     args: -dm_mat_type is
+     args: -no_view -dm_mat_type is
      filter: grep -v atomic
      filter_output: grep -v atomic
-
+   testset:
+     nsize: 4
+     requires: !complex double
+     args: -no_view -dm_mat_type is -stokes_ksp_type fetidp -mx 80 -my 80 -stokes_ksp_converged_reason -stokes_ksp_rtol 1.0e-8 -ppcell 2 -nt 4 -randomize_coords -stokes_ksp_error_if_not_converged
+     filter: grep -v atomic
+     filter_output: grep -v atomic
+     test:
+       suffix: fetidp
+       args: -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+     test:
+       suffix: fetidp_lumped
+       args: -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd -stokes_fetidp_pc_lumped -stokes_fetidp_bddc_pc_bddc_dirichlet_pc_type none -stokes_fetidp_bddc_pc_bddc_switch_static
+     test:
+       suffix: fetidp_saddlepoint
+       args: -stokes_ksp_fetidp_saddlepoint -stokes_fetidp_ksp_type cg -stokes_ksp_norm_type natural -stokes_fetidp_pc_fieldsplit_schur_fact_type diag -stokes_fetidp_fieldsplit_p_pc_type bjacobi -stokes_fetidp_fieldsplit_lag_ksp_type preonly -stokes_fetidp_fieldsplit_p_ksp_type preonly -stokes_ksp_fetidp_pressure_field 2 -stokes_fetidp_pc_fieldsplit_schur_scale -1
+     test:
+       suffix: fetidp_saddlepoint_lumped
+       args: -stokes_ksp_fetidp_saddlepoint -stokes_fetidp_ksp_type cg -stokes_ksp_norm_type natural -stokes_fetidp_pc_fieldsplit_schur_fact_type diag -stokes_fetidp_fieldsplit_p_pc_type bjacobi -stokes_fetidp_fieldsplit_lag_ksp_type preonly -stokes_fetidp_fieldsplit_p_ksp_type preonly -stokes_ksp_fetidp_pressure_field 2 -stokes_fetidp_pc_fieldsplit_schur_scale -1 -stokes_fetidp_bddc_pc_bddc_dirichlet_pc_type none -stokes_fetidp_bddc_pc_bddc_switch_static -stokes_fetidp_pc_lumped
 TEST*/

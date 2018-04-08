@@ -1,6 +1,6 @@
 DM Object: 3 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 5 
   buffer             = 4 
   allocated          = 9 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os
 from benchmarkExample import PETScExample
 
@@ -37,7 +38,7 @@ def plotSummary(library, num, sizes, nonzeros, times, events):
   showEventTime      = True
   showTimePerRow     = False
   showTimePerNonzero = True
-  print events
+  print(events)
   if showEventTime:
     data  = []
     names = []
@@ -135,7 +136,7 @@ if __name__ == '__main__':
       jobnumBase   = int(args.saved[-7:])
       for i, n in enumerate(range(150, 1350, 100)):
         filename = filenameBase+str(jobnumBase+i)
-        print 'Processing',filename
+        print('Processing',filename)
         headerSeen = False
         with file(filename) as f, file(args.module+'.py', 'w') as o:
           for line in f.readlines():

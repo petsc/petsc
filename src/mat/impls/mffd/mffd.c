@@ -42,8 +42,7 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
 PetscErrorCode  MatMFFDInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,24 +53,20 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   /* Register Constructors */
   ierr = MatMFFDRegisterAll();CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
-
+  ierr = PetscLogEventRegister("MatMult MF",MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("matmffd",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("matmffd",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatMFFDFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

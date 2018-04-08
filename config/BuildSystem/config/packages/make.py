@@ -53,12 +53,12 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1, conffile)
     return self.installDir
@@ -113,7 +113,7 @@ class Configure(config.package.GNUPackage):
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)): haveGNUMake = 1
         if (major > 3): haveGNUMake4 = 1
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
     return haveGNUMake, haveGNUMake4
 
@@ -172,7 +172,7 @@ class Configure(config.package.GNUPackage):
       make_np = self.compute_make_np(cores)
       make_test_np = self.compute_make_test_np(cores)
       self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
-    except (ImportError), e:
+    except (ImportError) as e:
       cores = 2
       make_np = 2
       make_test_np = 1
@@ -181,6 +181,9 @@ class Configure(config.package.GNUPackage):
     if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
         self.logPrint('using user-provided make_np = %d' % make_np)
         make_np = self.argDB['with-make-np']
+
+    if not self.argDB.get('with-mpi'):
+      make_test_np = make_np
 
     if 'with-make-test-np' in self.argDB and self.argDB['with-make-test-np']:
         self.logPrint('using user-provided make_test_np = %d' % make_test_np)
@@ -191,7 +194,7 @@ class Configure(config.package.GNUPackage):
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j ' + str(self.make_np)
+    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(cores)
     return
 
   def configure(self):

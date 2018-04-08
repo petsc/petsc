@@ -282,8 +282,8 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
       if (type[cs] == TET) {
         temp = connect[0+off]; connect[0+off] = connect[1+off]; connect[1+off] = temp;
         if (degree == 2) {
-          temp = connect[5+off]; connect[5] = connect[6+off]; connect[6] = temp;
-          temp = connect[7+off]; connect[7] = connect[8+off]; connect[8] = temp;
+          temp = connect[5+off]; connect[5+off] = connect[6+off]; connect[6+off] = temp;
+          temp = connect[7+off]; connect[7+off] = connect[8+off]; connect[8+off] = temp;
         }
       }
       /* Hexahedra are inverted */
@@ -294,12 +294,12 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
           temp = connect[9+off];  connect[9+off]  = connect[10+off]; connect[10+off] = temp;
           temp = connect[16+off]; connect[16+off] = connect[17+off]; connect[17+off] = temp;
           temp = connect[18+off]; connect[18+off] = connect[19+off]; connect[19+off] = temp;
-          
+
           temp = connect[12+off]; connect[12+off] = connect[16+off]; connect[16+off] = temp;
           temp = connect[13+off]; connect[13+off] = connect[17+off]; connect[17+off] = temp;
           temp = connect[14+off]; connect[14+off] = connect[18+off]; connect[18+off] = temp;
           temp = connect[15+off]; connect[15+off] = connect[19+off]; connect[19+off] = temp;
-          
+
           temp = connect[23+off]; connect[23+off] = connect[26+off]; connect[26+off] = temp;
           temp = connect[24+off]; connect[24+off] = connect[25+off]; connect[25+off] = temp;
           temp = connect[25+off]; connect[25+off] = connect[26+off]; connect[26+off] = temp;

@@ -58,7 +58,7 @@ class Configure(config.base.Configure):
       try:
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf, log = self.log)
         self.logPrint('autoreconf test successful!')
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.autoreconf = None
         self.logPrint('autoreconf test error: '+str(e))
       shutil.rmtree(testdir)

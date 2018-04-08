@@ -1800,7 +1800,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
       ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
       Nc   = 1;
-    }
+    } else SETERRQ1(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONG,"Unknown discretization type for field %d",field);
     ierr = PetscDualSpaceGetDimension(Q, &fpdim);CHKERRQ(ierr);
     /* For each fine grid cell */
     for (cell = cStart; cell < cEnd; ++cell) {

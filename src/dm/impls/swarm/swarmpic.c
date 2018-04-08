@@ -450,8 +450,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt np
 
 
 /* Field projection API */
-extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
-extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
+extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[]);
+extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[]);
 
 /*@C
    DMSwarmProjectFields - Project a set of swarm fields onto the cell DM
@@ -489,13 +489,13 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const char *fieldnames[],Vec **fields,PetscBool reuse)
 {
-  DM_Swarm        *swarm = (DM_Swarm*)dm->data;
-  DataField       *gfield;
-  DM              celldm;
-  PetscBool       isDA,isPLEX;
-  Vec             *vecs;
-  PetscInt        f,nvecs;
-  PetscInt        project_type = 0;
+  DM_Swarm         *swarm = (DM_Swarm*)dm->data;
+  DMSwarmDataField *gfield;
+  DM               celldm;
+  PetscBool        isDA,isPLEX;
+  Vec              *vecs;
+  PetscInt         f,nvecs;
+  PetscInt         project_type = 0;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -504,7 +504,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const ch
   ierr = PetscMalloc1(nfields,&gfield);CHKERRQ(ierr);
   nvecs = 0;
   for (f=0; f<nfields; f++) {
-    ierr = DataBucketGetDataFieldByName(swarm->db,fieldnames[f],&gfield[f]);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,fieldnames[f],&gfield[f]);CHKERRQ(ierr);
     if (gfield[f]->petsc_type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields using a data type = PETSC_REAL");
     if (gfield[f]->bs != 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields with block size = 1");
     nvecs += gfield[f]->bs;

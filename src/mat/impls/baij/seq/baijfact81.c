@@ -130,7 +130,7 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A,Vec bb,Vec xx)
   const MatScalar   *aa=a->a,*v;
   PetscScalar       *x,*s,*t,*ls;
   const PetscScalar *b;
-  __m256d a0,a1,a2,a3,a4,a5,a6,w0,w1,w2,w3,s0,s1,s2,v0,v1,v2,v3;
+  __m256d a0,a1,a2,a3,a4,a5,w0,w1,w2,w3,s0,s1,s2,v0,v1,v2,v3;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);

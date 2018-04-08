@@ -180,6 +180,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseClosure(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency(DM, PetscInt, PetscInt *, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMPlexSetMigrationSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, DMLabel, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
@@ -348,6 +350,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransferVecTree(DM,Vec,DM,Vec,PetscSF,PetscSF,
 
 /* natural order */
 PETSC_EXTERN PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM, PetscSection, PetscSF, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexSetGlobalToNaturalSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMPlexGetGlobalToNaturalSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalEnd(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalBegin(DM, Vec, Vec);

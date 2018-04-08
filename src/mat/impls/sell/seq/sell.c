@@ -19,14 +19,14 @@
   */
     #define AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
     /* if the mask bit is set, copy from acolidx, otherwise from vec_idx */ \
-    vec_idx  = _mm256_load_si256((__m256i const*)acolidx); \
-    vec_vals = _mm512_load_pd(aval); \
+    vec_idx  = _mm256_loadu_si256((__m256i const*)acolidx); \
+    vec_vals = _mm512_loadu_pd(aval); \
     vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
     vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y)
   #elif defined(__AVX2__)
     #define AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
-    vec_vals = _mm256_load_pd(aval); \
-    vec_idx  = _mm_load_si128((__m128i const*)acolidx); /* SSE2 */ \
+    vec_vals = _mm256_loadu_pd(aval); \
+    vec_idx  = _mm_loadu_si128((__m128i const*)acolidx); /* SSE2 */ \
     vec_x    = _mm256_i32gather_pd(x,vec_idx,_MM_SCALE_8); \
     vec_y    = _mm256_fmadd_pd(vec_x,vec_vals,vec_y)
   #endif
@@ -383,9 +383,9 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     vec_y = _mm512_add_pd(vec_y,vec_y4);
     if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
       mask = (__mmask8)(0xff >> (8-(A->rmap->n & 0x07)));
-      _mm512_mask_store_pd(&y[8*i],mask,vec_y);
+      _mm512_mask_storeu_pd(&y[8*i],mask,vec_y);
     } else {
-      _mm512_store_pd(&y[8*i],vec_y);
+      _mm512_storeu_pd(&y[8*i],vec_y);
     }
   }
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
@@ -419,8 +419,8 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
       aval += 4; acolidx += 4;
     }
 
-    _mm256_store_pd(y+i*8,vec_y);
-    _mm256_store_pd(y+i*8+4,vec_y2);
+    _mm256_storeu_pd(y+i*8,vec_y);
+    _mm256_storeu_pd(y+i*8+4,vec_y2);
   }
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   for (i=0; i<totalslices; i++) { /* loop over full slices */
@@ -538,9 +538,9 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
 
     if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
       mask   = (__mmask8)(0xff >> (8-(A->rmap->n & 0x07)));
-      vec_y  = _mm512_mask_load_pd(vec_y,mask,&y[8*i]);
+      vec_y  = _mm512_mask_loadu_pd(vec_y,mask,&y[8*i]);
     } else {
-      vec_y  = _mm512_load_pd(&y[8*i]);
+      vec_y  = _mm512_loadu_pd(&y[8*i]);
     }
     vec_y2 = _mm512_setzero_pd();
     vec_y3 = _mm512_setzero_pd();
@@ -586,9 +586,9 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
     vec_y = _mm512_add_pd(vec_y,vec_y3);
     vec_y = _mm512_add_pd(vec_y,vec_y4);
     if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
-      _mm512_mask_store_pd(&z[8*i],mask,vec_y);
+      _mm512_mask_storeu_pd(&z[8*i],mask,vec_y);
     } else {
-      _mm512_store_pd(&z[8*i],vec_y);
+      _mm512_storeu_pd(&z[8*i],vec_y);
     }
   }
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)

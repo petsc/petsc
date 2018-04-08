@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import glob
 import sys
 import os
@@ -7,7 +8,7 @@ import re
 import inspect
 
 thisfile = os.path.abspath(inspect.getfile(inspect.currentframe()))
-pdir = os.path.dirname(os.path.dirname(os.path.dirname(thisfile)))
+pdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(thisfile)))))
 sys.path.insert(0, os.path.join(pdir, 'config'))
 
 import testparse

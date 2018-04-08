@@ -31,13 +31,13 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     ''' Since alquimia cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
-    if self.framework.clArgDB.has_key('with-alquimia'):
+    if 'with-alquimia' in self.framework.clArgDB:
       raise RuntimeError('Alquimia does not support --with-alquimia; only --download-alquimia')
-    if self.framework.clArgDB.has_key('with-alquimia-dir'):
+    if 'with-alquimia-dir' in self.framework.clArgDB:
       raise RuntimeError('Alquimia does not support --with-alquimia-dir; only --download-alquimia')
-    if self.framework.clArgDB.has_key('with-alquimia-include'):
+    if 'with-alquimia-include' in self.framework.clArgDB:
       raise RuntimeError('Alquimia does not support --with-alquimia-include; only --download-alquimia')
-    if self.framework.clArgDB.has_key('with-alquimia-lib'):
+    if 'with-alquimia-lib' in self.framework.clArgDB:
       raise RuntimeError('Alquimia does not support --with-alquimia-lib; only --download-alquimia')
 
     self.checkDownload()
@@ -92,7 +92,7 @@ class Configure(config.package.CMakePackage):
         self.log.write(output)
         if output.find('Failure') > -1:
           raise RuntimeError('Error running make test on Alquimia: '+output)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make test on Alquimia: '+str(e))
 
 

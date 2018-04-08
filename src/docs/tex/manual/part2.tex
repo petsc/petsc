@@ -3888,10 +3888,8 @@ SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES 
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
 \trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
-as \trl{Amat}); a \trl{flag} indicating information about the
-preconditioner matrix structure; and an optional user-defined Jacobian
-context, \trl{ctx}, for application-specific data.  The options for
-\trl{flag} are identical to those for the flag of \lstinline{KSPSetOperators()}, discussed in Section~\ref{sec_usingsles}.
+as \trl{Amat});  and an optional user-defined Jacobian
+context, \trl{ctx}, for application-specific data.  
 Note that the \lstinline{SNES} solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
 methods) can be used.  Chapter~\ref{chapter_matrices} discusses
@@ -6069,30 +6067,26 @@ DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscIn
 \end{lstlisting}
 
 \subsection{Retrieving components}
-The components set at nodes/edges are stored in a container that can be accessed by
+The components set at nodes/edges be accessed by
 \begin{lstlisting}
-DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
-\end{lstlisting}
-  Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
-\begin{lstlisting}
-DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+DMNetworkGetComponent(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
 \end{lstlisting}
 \lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
 
 \begin{lstlisting}
-DMNetworkComponentGenericDataType *arr; 
-PetscInt Start, End, numcomps,offset,key,v,compnum; 
+PetscInt Start, End, numcomps,key,v,compnum; 
+void *component;
 
-DMNetworkGetComponentDataArray(dm,  &arr); 
 DMNetworkGetVertexRange(dm, &Start, &End); 
 for(v=Start; v  < End; v++) { 
   DMNetworkGetNumComponents(dm,v, &numcomps); 
   for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponentKeyOffset(dm,v,compnum, &key, &offset); 
-    compdata = (UserCompDataType)(arr+offset); 
+    DMNetworkGetComponent(dm,v,compnum, &key, &component); 
+    compdata = (UserCompDataType)(component); 
   }
 }
 \end{lstlisting}
+The above example does not explicitly make use the component key. It is used when different component types are set at different nodes. In this case, the {compkey} is the used to differentiate the component type.
 
 % --------------------------------------------------------------------
 %                            PART 3
@@ -7442,7 +7436,7 @@ scheduler---but we offer some general observations on understanding placement op
   Some implementations, such as Intel MPI, provide means to specify whether domains should be ``compact''---composed 
   of cores sharing resources such as caches---or ``scatter''-ed, with little resource sharing (possibly even spanning 
   sockets).
-\item Separate from the specification of domains, MPI implementations often support different orderings in which MPI 
+\item Separate from the specification of domains, MPI implementations often support different {\it orderings} in which MPI
   ranks should be bound to these domains. Intel MPI, for instance, supports 
   ``compact'' ordering to place consecutive ranks close in terms of shared resources, ``scatter'' 
   to place them far apart, and ``bunch'' to map proportionally to sockets while placing ranks as close together as 

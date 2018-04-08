@@ -1,0 +1,22 @@
+[0] y:
+Vec Object: 1 MPI processes
+  type: seq
+0.
+5.
+7.
+0.
+9.
+Vec Object: 2 MPI processes
+  type: node
+Process [0]
+0.
+1.
+0.
+0.
+0.
+Process [1]
+0.
+6.
+0.
+8.
+0.

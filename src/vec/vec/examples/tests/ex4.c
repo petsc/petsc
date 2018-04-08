@@ -69,19 +69,4 @@ int main(int argc,char **argv)
       filter: grep -v type
       requires: veccuda
 
-   test:
-      suffix: cusp
-      args: -vec_type cusp
-      output_file: output/ex4_1.out
-      filter: grep -v type
-      requires: cusp
-
-   test:
-      suffix: cusp2
-      nsize: 2
-      args: -vec_type cusp
-      filter: grep -v type
-      output_file: output/ex4_1.out
-      requires: cusp
-
 TEST*/

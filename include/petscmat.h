@@ -36,9 +36,6 @@ typedef const char* MatType;
 #define MATAIJCRL          "aijcrl"
 #define MATSEQAIJCRL       "seqaijcrl"
 #define MATMPIAIJCRL       "mpiaijcrl"
-#define MATAIJCUSP         "aijcusp"
-#define MATSEQAIJCUSP      "seqaijcusp"
-#define MATMPIAIJCUSP      "mpiaijcusp"
 #define MATAIJCUSPARSE     "aijcusparse"
 #define MATSEQAIJCUSPARSE  "seqaijcusparse"
 #define MATMPIAIJCUSPARSE  "mpiaijcusparse"
@@ -429,16 +426,16 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-$   MAT_DO_NOT_COPY_VALUES    - Create a matrix using the same nonzero pattern as the original matrix, 
+$   MAT_DO_NOT_COPY_VALUES    - Create a matrix using the same nonzero pattern as the original matrix,
 $                               with zeros for the numerical values.
-$   MAT_COPY_VALUES           - Create a matrix with the same nonzero pattern as the original matrix 
+$   MAT_COPY_VALUES           - Create a matrix with the same nonzero pattern as the original matrix
 $                               and with the same numerical values.
 $   MAT_SHARE_NONZERO_PATTERN - Create a matrix that shares the nonzero structure with the previous matrix
-$                               and does not copy it, using zeros for the numerical values. The parent and 
-$                               child matrices will share their index (i and j) arrays, and you cannot 
+$                               and does not copy it, using zeros for the numerical values. The parent and
+$                               child matrices will share their index (i and j) arrays, and you cannot
 $                               insert new nonzero entries into either matrix.
 
-Notes: Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in 
+Notes: Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in
 this case the behavior is as if MAT_DO_NOT_COPY_VALUES has been specified.
 
 .seealso: MatDuplicate()
@@ -1224,8 +1221,6 @@ typedef const  char*           MatColoringType;
     Level: intermediate
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
-
-.seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
 E*/
 typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF,MAT_COLORING_WEIGHT_SL} MatColoringWeightType;
 
@@ -1245,7 +1240,8 @@ PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringVal
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
-PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
+PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring,ISColoring);
+PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
@@ -1548,8 +1544,10 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MPICONCATENATESEQ=144,
                MATOP_DESTROYSUBMATRICES=145
              } MatOperation;
-PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
+PETSC_EXTERN PetscErrorCode MatGetOperation(Mat,MatOperation,void(**)(void));
+PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
+
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat,MatOperation,void(**)(void));
 PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
@@ -1779,53 +1777,6 @@ typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MU
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
-#endif
-
-#if defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-
-/*E
-    MatCUSPStorageFormat - indicates the storage format for CUSP (GPU)
-    matrices.
-
-    Not Collective
-
-+   MAT_CUSP_CSR - Compressed Sparse Row
-.   MAT_CUSP_DIA - Diagonal
--   MAT_CUSP_ELL - Ellpack
-
-    Level: intermediate
-
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
-
-.seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
-E*/
-typedef enum {MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL} MatCUSPStorageFormat;
-
-/* these will be strings associated with enumerated type defined above */
-PETSC_EXTERN const char *const MatCUSPStorageFormats[];
-
-/*E
-    MatCUSPFormatOperation - indicates the operation of CUSP (GPU)
-    matrices whose operation should use a particular storage format.
-
-    Not Collective
-
-+   MAT_CUSP_MULT_DIAG - sets the storage format for the diagonal matrix in the parallel MatMult
-.   MAT_CUSP_MULT_OFFDIAG - sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSP_MULT - sets the storage format for the entire matrix in the serial (single GPU) MatMult
--   MAT_CUSP_ALL - sets the storage format for all CUSP (GPU) matrices
-
-    Level: intermediate
-
-   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
-
-.seealso: MatCUSPSetFormat(), MatCUSPStorageFormat
-E*/
-typedef enum {MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_OFFDIAG, MAT_CUSP_MULT, MAT_CUSP_ALL} MatCUSPFormatOperation;
-
-PETSC_EXTERN PetscErrorCode MatCUSPSetFormat(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)

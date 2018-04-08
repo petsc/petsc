@@ -239,12 +239,12 @@ PetscErrorCode testPTAPRectangular(void)
 
    test:
       suffix: btheap
-      args: -B_matmatmult_via btheap> ex93_1.tmp 2>&1
+      args: -B_matmatmult_via btheap
       output_file: output/ex93_1.out
 
    test:
       suffix: heap
-      args: -B_matmatmult_via heap> ex93_1.tmp 2>&1
+      args: -B_matmatmult_via heap
       output_file: output/ex93_1.out
 
    test:

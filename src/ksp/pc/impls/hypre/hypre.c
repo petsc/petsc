@@ -1577,6 +1577,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 
   ierr = PetscStrcmp("pilut",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_ParCSRPilutCreate,(jac->comm_hypre,&jac->hsolver));
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Pilut;
     pc->ops->view           = PCView_HYPRE_Pilut;
@@ -1588,6 +1589,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   ierr = PetscStrcmp("parasails",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_ParaSailsCreate,(jac->comm_hypre,&jac->hsolver));
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_ParaSails;
     pc->ops->view           = PCView_HYPRE_ParaSails;
@@ -1937,8 +1939,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
   jac->comm_hypre         = MPI_COMM_NULL;
-  /* duplicate communicator for hypre */
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_HYPRE);CHKERRQ(ierr);

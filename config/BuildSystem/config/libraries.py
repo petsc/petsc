@@ -346,7 +346,7 @@ extern "C" {
       configObj = self
     else:
       if hasattr(checkLink, 'im_self'):
-        configObj = checkLink.im_self
+        configObj = checkLink.__self__
       else:
         configObj = self
 

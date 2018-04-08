@@ -119,7 +119,7 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt in ['O']:
         flags.append('-g')
-        if os.environ.has_key('USER'):
+        if 'USER' in os.environ:
           if config.setCompilers.Configure.isClang(compiler, self.log):
             flags.append('-O3')
           else:
@@ -291,7 +291,7 @@ class CompilerOptions(config.base.Configure):
           else:
             version = output.split('\n')[0]
 
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite('Could not determine compiler version: '+str(e))
     self.logWrite('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
     return version

@@ -23,17 +23,20 @@ int main(int argc,char **args)
   Mat            A,N;                /* matrix */
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[PETSC_MAX_PATH_LEN];     /* input file name */
+  char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
+  char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
+  PetscBool      nonzero_guess=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
      Determine files from which we read the linear system
-     (matrix and right-hand-side vector).
+     (matrix, right-hand-side and initial guess vector).
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -72,17 +75,33 @@ int main(int argc,char **args)
   ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (ierrp) {   /* if file contains no RHS, then use a vector of all ones */
     PetscScalar one = 1.0;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load RHS, so use a vector of all ones.\n");CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecSet(b,one);CHKERRQ(ierr);
   }
+
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+
+  /* load file_x0 if it is specified, otherwise try to reuse file */
+  if (file_x0[0]) {
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file_x0,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  }
+  ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,NULL);CHKERRQ(ierr);
+  ierrp = VecLoad(x,fd);
+  ierr = PetscPopErrorHandler();CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  if (ierrp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Failed to load initial guess, so use a vector of all zeros.\n");CHKERRQ(ierr);
+    ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    nonzero_guess=PETSC_FALSE;
+  }
 
-
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                     Setup solve for system
@@ -102,6 +121,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /*
@@ -177,5 +197,28 @@ int main(int argc,char **args)
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
+
+   # Test handling failing VecLoad without abort
+   test:
+      suffix: 3
+      nsize: {{1 2}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+      args: -f_x0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_x0
+      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+   test:
+      suffix: 3a
+      nsize: {{1 2}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+      args: -f_x0 NONEXISTING_FILE
+      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+   test:
+      suffix: 3b
+      nsize: {{1 2}separate output}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
+      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+
 
 TEST*/

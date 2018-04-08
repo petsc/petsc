@@ -806,7 +806,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 }
 
 /*@C
-   MatMPIAdjToSeq- Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential preconditioners)
+   MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential preconditioners)
 
    Logically Collective on MPI_Comm
 

@@ -326,6 +326,55 @@ PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v,PetscDrawType *drawtype)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  *drawtype = vdraw->drawtype;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v,const char title[])
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) PetscFunctionReturn(0);
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  ierr = PetscFree(vdraw->title);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(title,&vdraw->title);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  *title = vdraw->title;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscViewerDrawOpen - Opens a window for use as a PetscViewer. If you want to
    do graphics in this window, you must call PetscViewerDrawGetDraw() and

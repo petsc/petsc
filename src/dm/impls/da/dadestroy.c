@@ -98,6 +98,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofillcols);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
+  ierr = ISDestroy(&dd->ecorners);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
 

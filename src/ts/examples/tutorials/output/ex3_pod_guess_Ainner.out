@@ -107,7 +107,7 @@ Timestep  52: step size = 0.0005, time = 0.026, 2-norm error = 0.00836856, max n
     Linear solve converged due to CONVERGED_RTOL iterations 0
 Timestep  53: step size = 0.0005, time = 0.0265, 2-norm error = 0.00836355, max norm error = 0.0117207
     Linear solve converged due to CONVERGED_RTOL iterations 0
-Timestep  54: step size = 0.0005, time = 0.027, 2-norm error = 0.0083556, max norm error = 0.0117238
+Timestep  54: step size = 0.0005, time = 0.027, 2-norm error = 0.0083556, max norm error = 0.0117239
     Linear solve converged due to CONVERGED_RTOL iterations 0
 Timestep  55: step size = 0.0005, time = 0.0275, 2-norm error = 0.00834481, max norm error = 0.011721
     Linear solve converged due to CONVERGED_RTOL iterations 0
@@ -236,13 +236,7 @@ TS Object: 1 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI processes
       type: none
-      linear system matrix followed by preconditioner matrix:
-      Mat Object: 1 MPI processes
-        type: seqaij
-        rows=60, cols=60
-        total: nonzeros=176, allocated nonzeros=176
-        total number of mallocs used during MatSetValues calls =0
-          not using I-node routines
+      linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
         rows=60, cols=60

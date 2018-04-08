@@ -15,13 +15,12 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscBool      flg1,flg2,set,flg3;
+  PetscBool      hasop,flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    void (*f)(void);
-    ierr = MatShellGetOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
+    ierr = MatHasOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
@@ -30,13 +29,13 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
         *type = PCICC;
       } else if (flg2) {
         *type = PCILU;
-      } else if (f) { /* likely is a parallel matrix run on one processor */
+      } else if (hasop) { /* likely is a parallel matrix run on one processor */
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
       }
     } else {
-       if (f) {
+       if (hasop) {
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
@@ -775,7 +774,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(exists,2);
+  PetscValidPointer(exists,2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1872,6 +1871,8 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,dim,2);
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

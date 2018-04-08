@@ -394,12 +394,8 @@ struct _p_Mat {
   PetscBool              subsetoffprocentries;
   PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
   PetscBool              structure_only;
-#if defined(PETSC_HAVE_CUSP)
-  PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
-#elif defined(PETSC_HAVE_VIENNACL)
-  PetscViennaCLFlag      valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
-#elif defined(PETSC_HAVE_VECCUDA)
-  PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   char                   *solvertype;
@@ -567,6 +563,7 @@ struct _p_MatColoring {
   MatColoringWeightType weight_type;      /* type of weight computation to be performed */
   PetscReal             *user_weights;    /* custom weights and permutation */
   PetscInt              *user_lperm;
+  PetscBool             valid_iscoloring; /* check to see if matcoloring is produced a valid iscoloring */
 };
 
 struct  _p_MatTransposeColoring{
@@ -1607,7 +1604,7 @@ PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsym
 
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
-PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;

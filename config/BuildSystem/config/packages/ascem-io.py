@@ -41,7 +41,7 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling and installing ascem-io; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.make.make+' '+MAKEARGS+' && '+self.installSudo+' '+self.make.make+' '+INSTALLARGS+' install', timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on ascem-io: '+str(e))
       self.postInstall(output+err,'compiledata')
     return self.installDir

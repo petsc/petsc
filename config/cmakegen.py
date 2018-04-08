@@ -14,6 +14,7 @@
 # This script supports one option:
 #   --verbose : Show mismatches between makefiles and the filesystem
 
+from __future__ import print_function
 import os
 from collections import deque
 
@@ -154,6 +155,8 @@ def pkgsources(pkg, mistakes):
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
+    dirs.sort()
+    files.sort()
     conditions = allconditions[os.path.dirname(root)].copy()
     makefile = os.path.join(root,'makefile')
     if not os.path.exists(makefile):

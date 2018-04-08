@@ -803,15 +803,21 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
     ISLocalToGlobalMapping rl2g;
     IS                     is;
     PetscInt               *lidxs,*lgidxs,*newgidxs;
-    PetscInt               ll,newloc;
+    PetscInt               ll,newloc,irbs,icbs,arbs,acbs,rbs,cbs;
     MPI_Comm               comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+    ierr = MatGetBlockSizes(mat,&arbs,&acbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(irow,&irbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(icol,&icbs);CHKERRQ(ierr);
+    rbs  = arbs == irbs ? irbs : 1;
+    cbs  = acbs == icbs ? icbs : 1;
     ierr = ISGetLocalSize(irow,&m);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol,&n);CHKERRQ(ierr);
     ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
     ierr = MatSetType(*newmat,MATIS);CHKERRQ(ierr);
     ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(*newmat,rbs,cbs);CHKERRQ(ierr);
     /* communicate irow to their owners in the layout */
     ierr = ISGetIndices(irow,&idxs);CHKERRQ(ierr);
     ierr = PetscLayoutMapLocal_Private(mat->rmap,m,idxs,&ll,&lidxs,&lgidxs);CHKERRQ(ierr);
@@ -833,6 +839,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
       }
     ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingSetBlockSize(rl2g,rbs);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
     /* local is to extract local submatrix */
     newmatis = (Mat_IS*)(*newmat)->data;
@@ -871,6 +878,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
         }
       ierr = ISCreateGeneral(comm,newloc,newgidxs,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingSetBlockSize(cl2g,cbs);CHKERRQ(ierr);
       ierr = ISDestroy(&is);CHKERRQ(ierr);
       /* local is to extract local submatrix */
       ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_cis);CHKERRQ(ierr);
@@ -1278,12 +1286,12 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),M);CHKERRQ(ierr);
     ierr = MatSetSizes(*M,lrows,lcols,rows,cols);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(*M,bs);CHKERRQ(ierr);
     if (!isseqsbaij) {
       ierr = MatSetType(*M,MATAIJ);CHKERRQ(ierr);
     } else {
       ierr = MatSetType(*M,MATSBAIJ);CHKERRQ(ierr);
     }
+    ierr = MatSetBlockSize(*M,bs);CHKERRQ(ierr);
     ierr = MatISSetMPIXAIJPreallocation_Private(mat,*M,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscInt mbs,mrows,mcols,mlrows,mlcols;
@@ -1606,14 +1614,31 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   /* Setup Layout and set local to global maps */
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
-
-  /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(rmapping,&nr);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&rbs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(cmapping,&nc);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockSize(cmapping,&cbs);CHKERRQ(ierr);
+  /* check if the two mappings are actually the same for square matrices (DOLFIN passes 2 different objects) */
+  if (rmapping != cmapping && A->rmap->N == A->cmap->N) {
+    PetscBool same,gsame;
+
+    same = PETSC_FALSE;
+    if (nr == nc && cbs == rbs) {
+      const PetscInt *idxs1,*idxs2;
+
+      ierr = ISLocalToGlobalMappingGetBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+      ierr = PetscMemcmp(idxs1,idxs2,(nr/rbs)*sizeof(PetscInt),&same);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+    }
+    ierr = MPIU_Allreduce(&same,&gsame,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    if (gsame) cmapping = rmapping;
+  }
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
+
+  /* Create the local matrix A */
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
   ierr = MatSetType(is->A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetSizes(is->A,nr,nc,nr,nc);CHKERRQ(ierr);
@@ -1716,7 +1741,7 @@ static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt 
   if (!is->A->rmap->mapping && zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
   if (!is->A->cmap->mapping && zn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
 #endif
-  ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  ierr = MatSetValuesBlocked(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

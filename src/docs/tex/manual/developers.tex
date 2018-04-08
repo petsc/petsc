@@ -9,20 +9,20 @@
 
 \usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
-\rhead{PETSc 3.8 \today}
+\rhead{PETSc 3.9 \today}
 
 \begin{document}
 
 \pagestyle{empty}
 \hspace{-.65in}\includegraphics{ArgonneLogo}
-\hfill  {\large {\bf ANL-18/XX Rev 3.8}}
+\hfill  {\large {\bf ANL-18/XX Rev 3.9}}
 
 \vspace*{2in}
 \noindent {\huge{\bf PETSc Developers Guide}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.8}}
+\noindent {\Large{\it Revision 3.9}}
 
 \vspace*{1in}
 \noindent \\
@@ -38,14 +38,14 @@
 \centerline{\includegraphics{ArgonneReportTemplatePage2}}
 \newpage
 
-\hfill {\large {\bf ANL-18/XX Rev 3.8}}
+\hfill {\large {\bf ANL-18/XX Rev 3.9}}
 
 \vspace*{2in}
 \noindent {\LARGE{\bf PETSc Developers Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.8}}
+\noindent {\Large{\it Revision 3.9}}
 
 \vspace*{0.5in}
 \noindent Prepared by \\
@@ -2133,7 +2133,7 @@ The above indicates that three tests have failed and should be investigated. One
 \end{bashlisting}
 \item Examine the output
 \begin{outputlisting}
-arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/runex4_4.sh  -v
+arch-darwin-master-double-debug/tests/sys/classes/viewer/examples/tests/runex4_4.sh  -v
 ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
 not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
 #	2a3,14
@@ -2153,7 +2153,7 @@ not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc
 This suggests that the output does not match the reference output.
 \item Take a look in the directory where the test was run from.
 \begin{outputlisting}
-cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
+cd arch-darwin-master-double-debug/tests/sys/classes/viewer/examples/tests/
 \end{outputlisting}
 \item Examine the scripts and output files there. In this example, these are \trl{runex4_4.sh} and \trl{runex4_4/}, which contains \trl{sys_classes_viewer_tests-ex4_4.sh} along with various output files.
 \item By examining these files, one can determine that

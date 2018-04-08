@@ -928,12 +928,12 @@ static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm,
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
   ierr = VecView(r, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-#else
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You need to configure with --download-hdf5");
-#endif
   /* Cleanup */
   ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You need to configure with --download-hdf5");
+#endif
 }
 
 int main(int argc, char **argv)
@@ -1483,6 +1483,11 @@ int main(int argc, char **argv)
     requires: hdf5 triangle !single
     nsize: 4
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+
+  test:
+    suffix: quad_bddc
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -simplex 0 -petscspace_poly_tensor -pc_bddc_corner_selection -cells 3,3 -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
+    nsize: 9
 
   # Full solve simplex: ASM
   test:

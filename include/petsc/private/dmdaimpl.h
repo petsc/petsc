@@ -48,6 +48,7 @@ typedef struct {
   DMDAElementType       elementtype;
   PetscInt              ne;                  /* number of elements */
   PetscInt              *e;                  /* the elements */
+  IS                    ecorners;            /* corners of the subdomain */
 
   PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
   PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */

@@ -27,14 +27,14 @@ class Configure(config.base.Configure):
     try:
       try:
         import distutils.sysconfig
-      except ImportError, e:
+      except ImportError as e:
         self.logPrint('Error importing distutils.sysconfig: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_python_inc()
         distutils.sysconfig.get_python_inc(1)
-      except distutils.sysconfig.DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError as e:
         self.logPrint('Error finding Python include directories: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
@@ -42,7 +42,7 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LDFLAGS')
         distutils.sysconfig.get_config_var('LIBS')
         distutils.sysconfig.get_config_var('SYSLIBS')
-      except distutils.sysconfig.DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError as e:
         self.logPrint('Error finding Python libraries: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
@@ -51,17 +51,17 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LIBPL')
         distutils.sysconfig.get_config_var('LDLIBRARY')
         distutils.sysconfig.get_config_var('SO')
-      except distutils.sysconfig.DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError as e:
         self.logPrint('Error finding Python shared library: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('BINDIR')
         distutils.sysconfig.get_config_var('PYTHON')
-      except distutils.sysconfig.DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError as e:
         self.logPrint('Error finding Python executable: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-    except Exception, e:
+    except Exception as e:
       self.logPrint('I do not know what went wrong: '+str(e))
       raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
     return
@@ -128,7 +128,7 @@ class Configure(config.base.Configure):
     # Verify that the Python library is a shared library
     try:
       self.isShared = self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Python shared library check failed, probably due to inability to link Python libraries or a bad interaction with the shared linker.\nSuggest running with --with-python=0 if you do not need Python. Otherwise send configure.log to petsc-maint@mcs.anl.gov')
     return
 

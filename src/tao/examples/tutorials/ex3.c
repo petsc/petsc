@@ -30,6 +30,8 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   and visualise in paraview with ../../../../petsc_gen_xdmf.py solution.h5.
 
   Toggle the Riesz map (-use_riesz 0) to see the difference setting the Riesz maps makes.
+
+  TODO: broken for parallel runs
 F*/
 
 #include <petsc.h>
@@ -57,34 +59,34 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   DM             distributedMesh = NULL;
   PetscErrorCode ierr;
   const PetscInt dim = 2;
-  const PetscInt vertices_per_cell = 3;
   char filename[2048];
   PetscBool flg;
-  PetscViewer viewer;
-  Vec coordinates;
-  Vec topology;
-  PetscInt numCells;
-  PetscInt numVertices;
-  PetscScalar* coords;
-  PetscScalar* topo_f;
-  PetscInt*    cells;
-  PetscInt     j;
-  DMLabel      label;
-
 
   PetscFunctionBeginUser;
-
   ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");CHKERRQ(ierr);
   filename[0] = '\0';
   user->use_riesz = PETSC_TRUE;
 
-  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);
+  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-f", "filename to read", "ex2.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   if (!flg) {
     ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
+#if defined(PETSC_HAVE_HDF5)
+    const PetscInt vertices_per_cell = 3;
+    PetscViewer    viewer;
+    Vec            coordinates;
+    Vec            topology;
+    PetscInt       numCells;
+    PetscInt       numVertices;
+    PetscScalar*   coords;
+    PetscScalar*   topo_f;
+    PetscInt*      cells;
+    PetscInt       j;
+    DMLabel        label;
+
     /* Read in FEniCS HDF5 output */
     ierr = PetscViewerHDF5Open(comm, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
 
@@ -142,6 +144,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscFree(cells);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&topology);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-hdf5");
+#endif
   }
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
@@ -176,7 +181,7 @@ void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 /* data we seek to match */
 PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
 {
-  *y = 1.0/(2*M_PI*M_PI) * sin(M_PI*x[0]) * sin(M_PI*x[1]);
+  *y = 1.0/(2*PETSC_PI*PETSC_PI) * PetscSinReal(PETSC_PI*x[0]) * PetscSinReal(PETSC_PI*x[1]);
   /* the associated control is sin(pi*x[0])*sin(pi*x[1]) */
   return 0;
 }
@@ -244,7 +249,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
+  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
@@ -269,13 +274,13 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
      plex to play with the way I want to impose the BCs. This loses symmetry,
      but not in a disastrous way. If someone can improve it, please do! */
   ierr = MatZeroRows(user->laplace, user->num_bc_dofs, user->bc_indices, 1.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscCalloc1(user->num_bc_dofs, &user->bc_values);
+  ierr = PetscCalloc1(user->num_bc_dofs, &user->bc_values);CHKERRQ(ierr);
 
   /* also create the KSP for solving the Laplace system */
   ierr = KSPCreate(PETSC_COMM_WORLD, &user->ksp_laplace);CHKERRQ(ierr);
   ierr = KSPSetOperators(user->ksp_laplace, user->laplace, user->laplace);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user->ksp_laplace, "laplace_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(user->ksp_laplace);
+  ierr = KSPSetFromOptions(user->ksp_laplace);CHKERRQ(ierr);
 
   /* A bit of setting up the user context */
   user->dm = dm;
@@ -319,7 +324,7 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, v
   PetscFunctionBeginUser;
 
   ierr = MatMult(user->mass, u, user->tmp1);CHKERRQ(ierr);
-  ierr = VecDot(u, user->tmp1, &inner);                             /* regularisation contribution to */
+  ierr = VecDot(u, user->tmp1, &inner);CHKERRQ(ierr);               /* regularisation contribution to */
   *func = alpha * 0.5 * inner;                                      /* the functional                 */
 
   ierr = VecSet(g, 0.0);CHKERRQ(ierr);
@@ -383,8 +388,8 @@ int main(int argc, char **argv)
 
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  ierr = PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) u, NULL, "-sol_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -399,11 +404,17 @@ int main(int argc, char **argv)
 /*TEST
 
     build:
-      requires: hdf5 !complex !single
+      requires: !complex !single
 
     test:
+      requires: hdf5 double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
       args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
-      requires: double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
+      filter: sed -e "s/-nan/nan/g"
+
+    test:
+      suffix: guess_pod
+      requires: double triangle
+      args: -laplace_ksp_type cg -laplace_pc_type gamg -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_converged_reason -laplace_ksp_converged_reason -tao_monitor -petscspace_order 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_h0_ksp_guess_type pod
       filter: sed -e "s/-nan/nan/g"
 
 TEST*/

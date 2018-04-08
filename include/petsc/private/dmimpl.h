@@ -194,6 +194,7 @@ struct _p_DM {
   /* Topology */
   PetscInt                dim;                  /* The topological dimension */
   /* Flexible communication */
+  PetscSF                 sfMigration;          /* SF for point distribution created during distribution */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
   PetscSF                 sfNatural;            /* SF mapping to the "natural" ordering */

@@ -97,9 +97,6 @@ typedef const char* VecType;
 #define VECMPI         "mpi"
 #define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
 #define VECSHARED      "shared"
-#define VECSEQCUSP     "seqcusp"
-#define VECMPICUSP     "mpicusp"
-#define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
 #define VECSEQVIENNACL "seqviennacl"
 #define VECMPIVIENNACL "mpiviennacl"
 #define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
@@ -107,7 +104,30 @@ typedef const char* VecType;
 #define VECMPICUDA     "mpicuda"
 #define VECCUDA        "cuda"       /* seqcuda on one process and mpicuda on several */
 #define VECNEST        "nest"
+#define VECNODE        "node"       /* use on-node shared memory */
 
+/*J
+    VecScatterType - String with the name of a PETSc vector scatter type
+
+   Level: beginner
+
+.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
+J*/
+typedef const char* VecScatterType;
+#define VECSCATTERSEQ       "seq"
+#define VECSCATTERMPI1      "mpi1"
+#define VECSCATTERMPI3      "mpi3"     /* use MPI3 on-node shared memory */
+#define VECSCATTERMPI3NODE  "mpi3node" /* use MPI3 on-node shared memory for vector type VECNODE */
+
+/* Dynamic creation and loading functions */
+PETSC_EXTERN PetscFunctionList VecScatterList;
+PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
+PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType *);
+PETSC_EXTERN PetscErrorCode VecScatterSetFromOptions(VecScatter);
+PETSC_EXTERN PetscErrorCode VecScatterRegister(const char[],PetscErrorCode (*)(VecScatter));
+PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecScatterFinalizePackage(void);
 
 /* Logging support */
 #define    REAL_FILE_CLASSID 1211213
@@ -125,6 +145,8 @@ PETSC_EXTERN PetscErrorCode VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateNode(MPI_Comm,PetscInt,PetscInt,Vec*);
+
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
 PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
 
@@ -574,17 +596,7 @@ PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm,PetscInt,PetscInt,Vecs*);
 PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar*,Vecs*);
 PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs,Vecs*);
 
-#if defined(PETSC_HAVE_CUSP)
-typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
-typedef struct _p_VecScatterCUSPIndices_StoS* VecScatterCUSPIndices_StoS;
-typedef struct _p_VecScatterCUSPIndices_PtoP* VecScatterCUSPIndices_PtoP;
-PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
-PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
-PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
-PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
 typedef struct _p_PetscViennaCLIndices* PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscViennaCLIndices*);
 PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices*);
@@ -592,7 +604,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyToGPUSome_Public(Vec,PetscViennaCLInd
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLIndices);
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
-#elif defined(PETSC_HAVE_VECCUDA)
+#endif
+#if defined(PETSC_HAVE_VECCUDA)
 typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
 typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
 typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;
@@ -717,4 +730,3 @@ PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
 
 #endif
-

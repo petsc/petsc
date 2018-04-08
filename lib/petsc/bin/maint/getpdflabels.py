@@ -8,6 +8,7 @@
 #  Calling sequence
 #      | getpdflabels.py
 #
+from __future__ import print_function
 import urllib
 import os
 import ftplib
@@ -61,7 +62,7 @@ def main():
       fl = reglabel.search(lines[i])
       if fl:
 #	  print fl.group(2),label,title
-	  print 'man:+'+fl.group(2)+'++'+title+'++++man+../../manual.pdf#'+label
+	  print('man:+'+fl.group(2)+'++'+title+'++++man+../../manual.pdf#'+label)
 
 
 #

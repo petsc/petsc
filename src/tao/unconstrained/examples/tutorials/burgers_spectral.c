@@ -448,6 +448,8 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
    Creates the element stiffness matrix for the given gll
    */
   ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  /* workarround for clang analyzer warning: Division by zero */
+  if (appctx->param.N <= 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
 
   /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {

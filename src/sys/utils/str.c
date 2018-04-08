@@ -434,15 +434,16 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
    Input Parameters:
 +  s - pointer to string to be added to end
 .  t - string to be added to
-.  n - length of the original allocated string
+-  n - length of the original allocated string
 
    Level: intermediate
 
-  Notes:    Not for use in Fortran
+  Notes:
+  Not for use in Fortran
 
-  Unlike the system call strncat() the length passed in is the length of the original allocated
-  space, it is not the length of the left-over space. This is similar to the BSD system call 
-  strlcat()
+  Unlike the system call strncat(), the length passed in is the length of the
+  original allocated space, not the length of the left-over space. This is
+  similar to the BSD system call strlcat().
 
   Concepts: string copy
 
@@ -1005,6 +1006,43 @@ PetscErrorCode  PetscTokenDestroy(PetscToken *a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscStrInList - search string in character-delimited list
+
+   Not Collective
+
+   Input Parameters:
++  str - the string to look for
+.  list - the list to search in
+-  sep - the separator character
+
+   Output Parameter:
+.  found - whether str is in list
+
+   Level: intermediate
+
+   Notes: Not for use in Fortran
+
+.seealso: PetscTokenCreate(), PetscTokenFind(), PetscStrcmp()
+@*/
+PetscErrorCode PetscStrInList(const char str[],const char list[],char sep,PetscBool *found)
+{
+  PetscToken     token;
+  char           *item;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *found = PETSC_FALSE;
+  ierr = PetscTokenCreate(list,sep,&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&item);CHKERRQ(ierr);
+  while (item) {
+    ierr = PetscStrcmp(str,item,found);CHKERRQ(ierr);
+    if (*found) break;
+    ierr = PetscTokenFind(token,&item);CHKERRQ(ierr);
+  }
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@C
    PetscGetPetscDir - Gets the directory PETSc is installed in
@@ -1179,7 +1217,7 @@ PetscErrorCode PetscEListFind(PetscInt n,const char *const *list,const char *str
 }
 
 /*@C
-   PetscEListFind - searches enum list of strings for given string, using case insensitive matching
+   PetscEnumFind - searches enum list of strings for given string, using case insensitive matching
 
    Not Collective
 

@@ -155,6 +155,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     PetscInt                  dim,M,N,P,m,n,p,dof,s,i;
 
     ierr = PetscNew(&dactx);CHKERRQ(ierr);
+    dactx->ll = PETSC_TRUE; /* default to match elements layout obtained by DMDAGetElements */
     ierr = PetscOptionsBegin(PetscObjectComm(oda),oda->prefix,"GLVis PetscViewer DMDA Options","PetscViewer");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-viewer_glvis_dm_da_ll","Left-looking subdomain view",NULL,dactx->ll,&dactx->ll,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);

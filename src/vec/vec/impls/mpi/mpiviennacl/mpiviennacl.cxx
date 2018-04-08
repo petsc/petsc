@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
      get values?
   */
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
-  vv->valid_GPU_array      = PETSC_VIENNACL_GPU;
+  vv->valid_GPU_array      = PETSC_OFFLOAD_GPU;
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

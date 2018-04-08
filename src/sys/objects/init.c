@@ -91,7 +91,6 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
 /*
   This is needed to turn on/off GPU synchronization
 */
-PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
@@ -518,7 +517,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
-      sprintf(name,"%s.%d",mname,rank);
+      PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
@@ -685,19 +684,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
     ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
 #endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
-  PetscCUSPSynchronize = flg3;
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
-#elif defined(PETSC_HAVE_VECCUDA)
+#endif
+#if defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscCUDASynchronize = flg3;
 #endif
@@ -708,4 +705,3 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   PetscFunctionReturn(0);
 }
-

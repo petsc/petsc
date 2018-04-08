@@ -171,7 +171,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - the vector type, currently either VECSTANDARD or VECCUSP
+.  ctype - the vector type, currently either VECSTANDARD, VECCUDA, or VECVIENNACL
 
    Options Database:
 .   -dm_vec_type ctype
@@ -267,11 +267,63 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 }
 
 /*@C
-       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+       DMSetISColoringType - Sets the type of coloring, global or local, that is created by the DM
+
+   Logically Collective on DM
+
+   Input Parameters:
++  dm - the DM context
+-  ctype - the matrix type
+
+   Options Database:
+.   -dm_is_coloring_type - global or local
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(),
+          DMGetISColoringType()
+@*/
+PetscErrorCode  DMSetISColoringType(DM dm,ISColoringType ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->coloringtype = ctype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+       DMGetISColoringType - Gets the type of coloring, global or local, that is created by the DM
 
    Logically Collective on DM
 
    Input Parameter:
+.  dm - the DM context
+
+   Output Parameter:
+.  ctype - the matrix type
+
+   Options Database:
+.   -dm_is_coloring_type - global or local
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(),
+          DMGetISColoringType()
+@*/
+PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *ctype = dm->coloringtype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+       DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
+
+   Logically Collective on DM
+
+   Input Parameters:
 +  dm - the DM context
 -  ctype - the matrix type
 
@@ -332,6 +384,9 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 
   Level: intermediate
 
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+                  the Mat through a PetscObjectCompose() operation
+
 .seealso: MatSetDM(), DMCreateMatrix(), DMSetMatType()
 @*/
 PetscErrorCode MatGetDM(Mat A, DM *dm)
@@ -355,6 +410,10 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
 - dm - The DM
 
   Level: intermediate
+
+  Developer Note: Since the Mat class doesn't know about the DM class the DM object is associated with 
+                  the Mat through a PetscObjectCompose() operation
+
 
 .seealso: MatGetDM(), DMCreateMatrix(), DMSetMatType()
 @*/
@@ -682,8 +741,12 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
-
+  if ((*dm)->useNatural) {
+    if ((*dm)->sfNatural) {
+      ierr = PetscSFDestroy(&(*dm)->sfNatural);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectDereference((PetscObject) (*dm)->sfMigration);CHKERRQ(ierr);
+  }
   if ((*dm)->coarseMesh && (*dm)->coarseMesh->fineMesh == *dm) {
     ierr = DMSetFineDM((*dm)->coarseMesh,NULL);CHKERRQ(ierr);
   }
@@ -747,7 +810,7 @@ PetscErrorCode  DMSetUp(DM dm)
 +   -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 .   -dm_vec_type <type>  - type of vector to create inside DM
 .   -dm_mat_type <type>  - type of matrix to create inside DM
--   -dm_coloring_type    - <global or ghosted>
+-   -dm_is_coloring_type - <global or local>
 
     Level: developer
 
@@ -781,7 +844,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   if (flg) {
     ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","DMSetISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
@@ -4767,42 +4830,32 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 {
   DM             cdm;
   PetscSection   coordSection;
-  PetscInt       cStart, cEnd, c, sStart, sEnd, dof;
-  PetscBool      alreadyLocalized, alreadyLocalizedGlobal;
+  PetscInt       cStart, cEnd, sStart, sEnd, c, dof;
+  PetscBool      isPlex, alreadyLocalized;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->periodic) {
-    *areLocalized = PETSC_FALSE;
-    PetscFunctionReturn(0);
-  }
+  PetscValidPointer(areLocalized, 2);
+
+  *areLocalized = PETSC_FALSE;
+  if (!dm->periodic) PetscFunctionReturn(0); /* This is a hideous optimization hack! */
+
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  {
-    PetscBool isplex;
-
-    ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isplex);CHKERRQ(ierr);
-    if (isplex) {
-      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
-  }
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
-  alreadyLocalized = alreadyLocalizedGlobal = PETSC_FALSE;
+  ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  if (!isPlex) SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
+
+  ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &sStart, &sEnd);CHKERRQ(ierr);
+  alreadyLocalized = PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
-    if (c < sStart || c >= sEnd) {
-      alreadyLocalized = PETSC_FALSE;
-      break;
-    }
+    if (c < sStart || c >= sEnd) continue;
     ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-    if (dof) {
-      alreadyLocalized = PETSC_TRUE;
-      break;
-    }
+    if (dof) { alreadyLocalized = PETSC_TRUE; break; }
   }
-  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  *areLocalized = alreadyLocalizedGlobal;
+  ierr = MPIU_Allreduce(&alreadyLocalized,areLocalized,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5197,7 +5250,7 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(dm, useNatural, 2);
+  PetscValidLogicalCollectiveBool(dm, useNatural, 2);
   dm->useNatural = useNatural;
   PetscFunctionReturn(0);
 }

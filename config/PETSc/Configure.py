@@ -98,13 +98,13 @@ class Configure(config.base.Configure):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','options')):
+    for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+    for utility in sorted(os.listdir(os.path.join('config','BuildSystem','config','utilities'))):
       self.registerPythonFile(utility,'config.utilities')
 
-    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+    for package in sorted(os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages'))):
       obj = self.registerPythonFile(package,'config.packages')
       if obj:
         obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)
@@ -175,19 +175,19 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
-    fd.write('cflags_dep="'+self.compilers.dependenciesGenerationFlag.get('C','')+'"\n')
-    fd.write('ldflag_rpath="'+self.setCompilers.CSharedLinkerFlag+'"\n')
+    fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+    fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
+    fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
 
     fd.write('\n')
@@ -413,7 +413,6 @@ prepend-path PATH "%s"
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
 
-    self.addMakeMacro('DESTDIR',self.installdir.dir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
@@ -471,6 +470,7 @@ prepend-path PATH "%s"
 
   def dumpMachineInfo(self):
     import platform
+    import datetime
     import time
     import script
     def escape(s):
@@ -478,7 +478,11 @@ prepend-path PATH "%s"
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
-    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
+    buildhost = platform.node()
+    if os.environ.get('SOURCE_DATE_EPOCH'):
+      buildhost = "reproducible"
+    buildtime = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
+    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (buildtime, buildhost))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.installdir.petscDir)))
     fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.installdir.petscArch)))
@@ -633,7 +637,7 @@ prepend-path PATH "%s"
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
     else:
       self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
@@ -647,9 +651,9 @@ prepend-path PATH "%s"
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
-      except (ImportError, KeyError), e:
+      except (ImportError, KeyError) as e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       self.argDB.readonly = oldRead
       if self.cmakeboot_success:
@@ -1019,8 +1023,8 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     try:
-      os.chmod(scriptName, 0775)
-    except OSError, e:
+      os.chmod(scriptName, 0o775)
+    except OSError as e:
       self.framework.logPrint('Unable to make reconfigure script executable:\n'+str(e))
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
@@ -1033,7 +1037,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
                                               '-@echo "========================================="'])
     else:
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
                                               '-@echo "========================================="'])
       return
 

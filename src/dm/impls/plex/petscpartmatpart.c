@@ -110,7 +110,8 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
 
   /* copy arrays to avoid memory errors because MatMPIAdjSetPreallocation copies just pointers */
   numEdges = start[numVertices];
-  ierr = PetscMalloc2(numVertices+1, &i, numEdges, &j);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numVertices+1, &i);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numEdges, &j);CHKERRQ(ierr);
   ierr = PetscMemcpy(i, start, (numVertices+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(j, adjacency, numEdges*sizeof(PetscInt));CHKERRQ(ierr);
 

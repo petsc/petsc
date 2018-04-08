@@ -5,6 +5,7 @@
 # update-docs.py LOC clean
 #
 
+from __future__ import print_function
 import os
 import glob
 import posixpath
@@ -14,13 +15,13 @@ import shutil
 import os.path
 
 def modifyfile(filename):
-    print 'processing file : ' + filename
+    print('processing file : ' + filename)
 
     import re
     try:
         fd = open(filename,'r')
     except:
-        print 'Error! Cannot open file:',filename
+        print('Error! Cannot open file:',filename)
         exit()
     buf    = fd.read()
     fd.close()
@@ -57,7 +58,7 @@ def modifyfile(filename):
     try:
         fd = open( outfilename,'w')
     except:
-        print 'Error writing to file',outfilename
+        print('Error writing to file',outfilename)
         exit()
 
     fd.write(outbuf)
@@ -68,7 +69,7 @@ def modifyfile(filename):
 # if not, create it.
 def chkdir(dirname):
     if not os.path.isdir(dirname):
-        print 'Creating dir', dirname
+        print('Creating dir', dirname)
         os.mkdir(dirname)
 
 def rmfile(filename):
@@ -79,8 +80,8 @@ def main():
     arg_len = len(argv)
 
     if arg_len < 3:
-        print 'Error Insufficient arguments.'
-        print 'Usage:', argv[0], 'PETSC_DIR LOC'
+        print('Error Insufficient arguments.')
+        print('Usage:', argv[0], 'PETSC_DIR LOC')
     PETSC_DIR = argv[1]
     LOC = argv[2]
 
@@ -128,6 +129,7 @@ def main():
         'changes/36.html',
         'changes/37.html',
         'changes/38.html',
+        'changes/39.html',
         'changes/dev.html',
         'changes/index.html',
         'installation.html']

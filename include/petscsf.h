@@ -63,6 +63,7 @@ PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFSetType(PetscSF,PetscSFType);
+PETSC_EXTERN PetscErrorCode PetscSFGetType(PetscSF,PetscSFType*);
 PETSC_EXTERN PetscErrorCode PetscSFView(PetscSF,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscSFViewFromOptions(PetscSF A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode PetscSFSetUp(PetscSF);

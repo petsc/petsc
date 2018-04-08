@@ -41,8 +41,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
 PetscErrorCode  PetscDrawInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,21 +57,32 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   /* Register Constructors */
   ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    ierr = PetscStrInList("draw",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {
+      ierr = PetscInfoDeactivateClass(PETSC_DRAW_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
+    ierr = PetscStrInList("draw",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAW_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
     }
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscDrawFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -170,7 +180,7 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 
 .seealso: PetscDrawSetTitle()
 @*/
-PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
+PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,const char *title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
