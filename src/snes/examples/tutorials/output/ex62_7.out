@@ -68,7 +68,7 @@ Process [2]
 -0.125
 0.
 Initial Residual
-Vec Object: 3 MPI processes
+Vec Object: Residual, Iterate 0 3 MPI processes
   type: mpi
 Process [0]
 -0.0208333

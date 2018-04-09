@@ -481,4 +481,4 @@ PC Object: (fetidp_bddc_) 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 4.73815e-09 [3.58588e-10, 4.72456e-09]
+L_2 Error: 4.73817e-09 [3.58643e-10, 4.72457e-09]
