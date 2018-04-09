@@ -4,7 +4,7 @@
 /*
  Implements Newton's Method with a line search approach for solving
  bound constrained minimization problems. A projected More'-Thuente line 
- search is used to guarantee that the bfgs preconditioner remains positive
+ search is used to guarantee that the BFGS preconditioner remains positive
  definite.
 
  The method can shift the Hessian matrix. The shifting procedure is

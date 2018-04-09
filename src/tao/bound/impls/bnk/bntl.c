@@ -15,7 +15,6 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   TaoLineSearchConvergedReason ls_reason;
 
-  Vec                          active_step;
   PetscReal                    oldTrust, prered, actred, stepNorm, gdx, delta, steplen;
   PetscBool                    stepAccepted = PETSC_TRUE;
   PetscInt                     stepType, bfgsUpdates, updateType;
@@ -160,11 +159,9 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
           }
         }
       }
-      /* Make sure that the step is zero for actively bounded variables */
+      /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
+      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-      ierr = VecGetSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr);
-      ierr = VecSet(active_step, 0.0);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr); 
       
       /* Trigger the line search */
       ierr = TaoBNKPerformLineSearch(tao, stepType, &steplen, &ls_reason);CHKERRQ(ierr);
@@ -180,6 +177,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
         /* Line search succeeded so we should update the trust radius based on the LS step length */
         updateType = bnk->update_type;
         bnk->update_type = BNK_UPDATE_STEP;
+        tao->trust = oldTrust;
         ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &stepAccepted);CHKERRQ(ierr);
         bnk->update_type = updateType;
       }
