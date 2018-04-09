@@ -147,7 +147,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
           ierr = VecCopy(tao->solution, bnk->W);CHKERRQ(ierr);
           ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = VecNorm(bnk->W, NORM_2, &dnorm);CHKERRQ(ierr);
-          if (dnorm != tao->trust/bnk->gnorm) tao->trust = dnorm;
+          if (dnorm != tao->trust) tao->trust = dnorm;
           /* Compute the objective at the trial */
           ierr = TaoComputeObjective(tao, tao->solution, &ftrial);CHKERRQ(ierr);
           ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
@@ -291,8 +291,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
   
+  Vec                          active_step;
   PetscReal                    gdx, delta, e_min;
-
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     kspits;
   
@@ -305,9 +305,11 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
     }
   }
   
-  /* Determine the inactive set */
+  /* Determine the inactive and active sets */
   ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(&bnk->active_idx);CHKERRQ(ierr);
   ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
+  ierr = ISComplementVec(bnk->inactive_idx, tao->solution, &bnk->active_idx);CHKERRQ(ierr);
   
   /* Prepare masked matrices for the inactive set */
   ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
@@ -365,12 +367,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
   
-  /* Destroy masked matrices */
-  if (bnk->H_inactive != bnk->Hpre_inactive) { 
-    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr); 
-  }
-  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  
   /* Make sure the BFGS preconditioner is healthy */
   if (bnk->pc_type == BNK_PC_BFGS) {
     ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
@@ -426,25 +422,23 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
         /* We don't have the bfgs matrix around and updated
            Must use gradient direction in this case */
         ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
         ++bnk->grad;
         *stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
         ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-        /* Check for success (descent direction) */
+        /* Check for success (descent direction) 
+           NOTE: Negative gdx here means not a descent direction because 
+           the fall-back step is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
-        if ((gdx >= 0) || PetscIsInfOrNanReal(gdx)) {
+        if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
           /* BFGS direction is not descent or direction produced not a number
              We can assert bfgsUpdates > 1 in this case because
              the first solve produces the scaled gradient direction,
              which is guaranteed to be descent */
 
           /* Use steepest descent direction (scaled) */
-
           if (bnk->f != 0.0) {
             delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
           } else {
@@ -454,8 +448,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
           ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
-          ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           ++bnk->sgrad;
@@ -471,6 +463,11 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
           }
         }
       }
+      /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
+      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+      ierr = VecGetSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr);
+      ierr = VecSet(active_step, 0.0);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr);
     } else {
       /* Computed Newton step is descent */
       switch (ksp_reason) {
@@ -527,6 +524,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
   PetscErrorCode ierr;
   TaoLineSearchConvergedReason ls_reason;
   
+  Vec            active_step;
   PetscReal      e_min, gdx, delta;
   PetscInt       bfgsUpdates;
   
@@ -545,7 +543,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
 
     switch(stepType) {
     case BNK_NEWTON:
-      /* Failed to obtain acceptable iterate with Newton 1step
+      /* Failed to obtain acceptable iterate with Newton step
          Update the perturbation for next time */
       --bnk->newt;
       if (bnk->pert <= 0.0) {
@@ -564,21 +562,18 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
         /* We don't have the bfgs matrix around and being updated
            Must use gradient direction in this case */
         ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
         ++bnk->grad;
         stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
         ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
-        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-        /* Check for success (descent direction) */
+        /* Check for success (descent direction) 
+           NOTE: Negative gdx means not a descent direction because the step here is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
         if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
           /* BFGS direction is not descent or direction produced not a number
              We can assert bfgsUpdates > 1 in this case
              Use steepest descent direction (scaled) */
-
           if (bnk->f != 0.0) {
             delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
           } else {
@@ -588,8 +583,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
           ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-          ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
-          ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           ++bnk->sgrad;
@@ -612,7 +605,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       /* Can only enter if pc_type == BNK_PC_BFGS
          Failed to obtain acceptable iterate with BFGS step
          Attempt to use the scaled gradient direction */
-
       if (bnk->f != 0.0) {
         delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
       } else {
@@ -622,8 +614,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
       ++bnk->sgrad;
@@ -635,21 +625,24 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
          The scaled gradient step did not produce a new iterate;
          attemp to use the gradient direction.
          Need to make sure we are not using a different diagonal scaling */
-
       ierr = MatLMVMSetScale(bnk->M,0);CHKERRQ(ierr);
       ierr = MatLMVMSetDelta(bnk->M,1.0);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecBoundGradientProjection(tao->stepdirection, tao->solution, tao->XL, tao->XU, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
       ++bnk->grad;
       stepType = BNK_GRADIENT;
       break;
     }
-
+    /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
+    ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+    ierr = VecGetSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr);
+    ierr = VecSet(active_step, 0.0);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(tao->stepdirection, bnk->active_idx, &active_step);CHKERRQ(ierr);
+    
+    /* Perform one last line search with the fall-back step */
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
@@ -739,7 +732,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
             /* Accept the step */
             *accept = PETSC_TRUE;
             /* Update the trust region radius only if the computed step is at the trust radius boundary */
-            if (tao->trust == bnk->dnorm) {
+            if (bnk->dnorm == tao->trust) {
               if (kappa < bnk->eta2) {
                 /* Marginal bad step */
                 tao->trust = bnk->alpha2 * tao->trust;
@@ -896,55 +889,55 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton line search method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_BNK_pc_type", "pc type", "", BNK_PC, BNK_PC_TYPES, BNK_PC[bnk->pc_type], &bnk->pc_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_BNK_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[bnk->bfgs_scale_type], &bnk->bfgs_scale_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_BNK_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_BNK_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_sval", "perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_imin", "minimum initial perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_imax", "maximum initial perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_imfac", "initial merit factor", "", bnk->imfac, &bnk->imfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_pmin", "minimum perturbation", "", bnk->pmin, &bnk->pmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_pmax", "maximum perturbation", "", bnk->pmax, &bnk->pmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_pgfac", "growth factor", "", bnk->pgfac, &bnk->pgfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_psfac", "shrink factor", "", bnk->psfac, &bnk->psfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_pmgfac", "merit growth factor", "", bnk->pmgfac, &bnk->pmgfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_pmsfac", "merit shrink factor", "", bnk->pmsfac, &bnk->pmsfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_eta1", "poor steplength; reduce radius", "", bnk->eta1, &bnk->eta1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_eta2", "reasonable steplength; leave radius alone", "", bnk->eta2, &bnk->eta2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_eta3", "good steplength; increase radius", "", bnk->eta3, &bnk->eta3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_eta4", "excellent steplength; greatly increase radius", "", bnk->eta4, &bnk->eta4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_alpha1", "", "", bnk->alpha1, &bnk->alpha1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_alpha2", "", "", bnk->alpha2, &bnk->alpha2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_alpha3", "", "", bnk->alpha3, &bnk->alpha3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_alpha4", "", "", bnk->alpha4, &bnk->alpha4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_alpha5", "", "", bnk->alpha5, &bnk->alpha5,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_nu1", "poor steplength; reduce radius", "", bnk->nu1, &bnk->nu1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_nu2", "reasonable steplength; leave radius alone", "", bnk->nu2, &bnk->nu2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_nu3", "good steplength; increase radius", "", bnk->nu3, &bnk->nu3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_nu4", "excellent steplength; greatly increase radius", "", bnk->nu4, &bnk->nu4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_omega1", "", "", bnk->omega1, &bnk->omega1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_omega2", "", "", bnk->omega2, &bnk->omega2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_omega3", "", "", bnk->omega3, &bnk->omega3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_omega4", "", "", bnk->omega4, &bnk->omega4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_omega5", "", "", bnk->omega5, &bnk->omega5,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_mu1_i", "", "", bnk->mu1_i, &bnk->mu1_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_mu2_i", "", "", bnk->mu2_i, &bnk->mu2_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma1_i", "", "", bnk->gamma1_i, &bnk->gamma1_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma2_i", "", "", bnk->gamma2_i, &bnk->gamma2_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma3_i", "", "", bnk->gamma3_i, &bnk->gamma3_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma4_i", "", "", bnk->gamma4_i, &bnk->gamma4_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_theta_i", "", "", bnk->theta_i, &bnk->theta_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_mu1", "", "", bnk->mu1, &bnk->mu1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_mu2", "", "", bnk->mu2, &bnk->mu2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma1", "", "", bnk->gamma1, &bnk->gamma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma2", "", "", bnk->gamma2, &bnk->gamma2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma3", "", "", bnk->gamma3, &bnk->gamma3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_gamma4", "", "", bnk->gamma4, &bnk->gamma4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_theta", "", "", bnk->theta, &bnk->theta,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_min_radius", "lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_max_radius", "upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_BNK_epsilon", "tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_pc_type", "pc type", "", BNK_PC, BNK_PC_TYPES, BNK_PC[bnk->pc_type], &bnk->pc_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[bnk->bfgs_scale_type], &bnk->bfgs_scale_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_sval", "perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imin", "minimum initial perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imax", "maximum initial perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imfac", "initial merit factor", "", bnk->imfac, &bnk->imfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmin", "minimum perturbation", "", bnk->pmin, &bnk->pmin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmax", "maximum perturbation", "", bnk->pmax, &bnk->pmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pgfac", "growth factor", "", bnk->pgfac, &bnk->pgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_psfac", "shrink factor", "", bnk->psfac, &bnk->psfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmgfac", "merit growth factor", "", bnk->pmgfac, &bnk->pmgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmsfac", "merit shrink factor", "", bnk->pmsfac, &bnk->pmsfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta1", "poor steplength; reduce radius", "", bnk->eta1, &bnk->eta1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta2", "reasonable steplength; leave radius alone", "", bnk->eta2, &bnk->eta2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta3", "good steplength; increase radius", "", bnk->eta3, &bnk->eta3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta4", "excellent steplength; greatly increase radius", "", bnk->eta4, &bnk->eta4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha1", "", "", bnk->alpha1, &bnk->alpha1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha2", "", "", bnk->alpha2, &bnk->alpha2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha3", "", "", bnk->alpha3, &bnk->alpha3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha4", "", "", bnk->alpha4, &bnk->alpha4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha5", "", "", bnk->alpha5, &bnk->alpha5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu1", "poor steplength; reduce radius", "", bnk->nu1, &bnk->nu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu2", "reasonable steplength; leave radius alone", "", bnk->nu2, &bnk->nu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu3", "good steplength; increase radius", "", bnk->nu3, &bnk->nu3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu4", "excellent steplength; greatly increase radius", "", bnk->nu4, &bnk->nu4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega1", "", "", bnk->omega1, &bnk->omega1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega2", "", "", bnk->omega2, &bnk->omega2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega3", "", "", bnk->omega3, &bnk->omega3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega4", "", "", bnk->omega4, &bnk->omega4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega5", "", "", bnk->omega5, &bnk->omega5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu1_i", "", "", bnk->mu1_i, &bnk->mu1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu2_i", "", "", bnk->mu2_i, &bnk->mu2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma1_i", "", "", bnk->gamma1_i, &bnk->gamma1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma2_i", "", "", bnk->gamma2_i, &bnk->gamma2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma3_i", "", "", bnk->gamma3_i, &bnk->gamma3_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma4_i", "", "", bnk->gamma4_i, &bnk->gamma4_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_theta_i", "", "", bnk->theta_i, &bnk->theta_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu1", "", "", bnk->mu1, &bnk->mu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu2", "", "", bnk->mu2, &bnk->mu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma1", "", "", bnk->gamma1, &bnk->gamma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma2", "", "", bnk->gamma2, &bnk->gamma2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma3", "", "", bnk->gamma3, &bnk->gamma3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma4", "", "", bnk->gamma4, &bnk->gamma4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_theta", "", "", bnk->theta, &bnk->theta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_min_radius", "lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_max_radius", "upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_epsilon", "tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -996,48 +989,48 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
-+ -tao_BNK_pc_type - "none","ahess","bfgs","petsc"
-. -tao_BNK_bfgs_scale_type - "ahess","phess","bfgs"
-. -tao_BNK_init_type - "constant","direction","interpolation"
-. -tao_BNK_update_type - "step","direction","interpolation"
-. -tao_BNK_sval - perturbation starting value
-. -tao_BNK_imin - minimum initial perturbation
-. -tao_BNK_imax - maximum initial perturbation
-. -tao_BNK_pmin - minimum perturbation
-. -tao_BNK_pmax - maximum perturbation
-. -tao_BNK_pgfac - growth factor
-. -tao_BNK_psfac - shrink factor
-. -tao_BNK_imfac - initial merit factor
-. -tao_BNK_pmgfac - merit growth factor
-. -tao_BNK_pmsfac - merit shrink factor
-. -tao_BNK_eta1 - poor steplength; reduce radius
-. -tao_BNK_eta2 - reasonable steplength; leave radius
-. -tao_BNK_eta3 - good steplength; increase readius
-. -tao_BNK_eta4 - excellent steplength; greatly increase radius
-. -tao_BNK_alpha1 - alpha1 reduction
-. -tao_BNK_alpha2 - alpha2 reduction
-. -tao_BNK_alpha3 - alpha3 reduction
-. -tao_BNK_alpha4 - alpha4 reduction
-. -tao_BNK_alpha - alpha5 reduction
-. -tao_BNK_mu1 - mu1 interpolation update
-. -tao_BNK_mu2 - mu2 interpolation update
-. -tao_BNK_gamma1 - gamma1 interpolation update
-. -tao_BNK_gamma2 - gamma2 interpolation update
-. -tao_BNK_gamma3 - gamma3 interpolation update
-. -tao_BNK_gamma4 - gamma4 interpolation update
-. -tao_BNK_theta - theta interpolation update
-. -tao_BNK_omega1 - omega1 step update
-. -tao_BNK_omega2 - omega2 step update
-. -tao_BNK_omega3 - omega3 step update
-. -tao_BNK_omega4 - omega4 step update
-. -tao_BNK_omega5 - omega5 step update
-. -tao_BNK_mu1_i -  mu1 interpolation init factor
-. -tao_BNK_mu2_i -  mu2 interpolation init factor
-. -tao_BNK_gamma1_i -  gamma1 interpolation init factor
-. -tao_BNK_gamma2_i -  gamma2 interpolation init factor
-. -tao_BNK_gamma3_i -  gamma3 interpolation init factor
-. -tao_BNK_gamma4_i -  gamma4 interpolation init factor
-- -tao_BNK_theta_i -  theta interpolation init factor
++ -tao_bnk_pc_type - "none","ahess","bfgs","petsc"
+. -tao_bnk_bfgs_scale_type - "ahess","phess","bfgs"
+. -tao_bnk_init_type - "constant","direction","interpolation"
+. -tao_bnk_update_type - "step","direction","interpolation"
+. -tao_bnk_sval - perturbation starting value
+. -tao_bnk_imin - minimum initial perturbation
+. -tao_bnk_imax - maximum initial perturbation
+. -tao_bnk_pmin - minimum perturbation
+. -tao_bnk_pmax - maximum perturbation
+. -tao_bnk_pgfac - growth factor
+. -tao_bnk_psfac - shrink factor
+. -tao_bnk_imfac - initial merit factor
+. -tao_bnk_pmgfac - merit growth factor
+. -tao_bnk_pmsfac - merit shrink factor
+. -tao_bnk_eta1 - poor steplength; reduce radius
+. -tao_bnk_eta2 - reasonable steplength; leave radius
+. -tao_bnk_eta3 - good steplength; increase readius
+. -tao_bnk_eta4 - excellent steplength; greatly increase radius
+. -tao_bnk_alpha1 - alpha1 reduction
+. -tao_bnk_alpha2 - alpha2 reduction
+. -tao_bnk_alpha3 - alpha3 reduction
+. -tao_bnk_alpha4 - alpha4 reduction
+. -tao_bnk_alpha - alpha5 reduction
+. -tao_bnk_mu1 - mu1 interpolation update
+. -tao_bnk_mu2 - mu2 interpolation update
+. -tao_bnk_gamma1 - gamma1 interpolation update
+. -tao_bnk_gamma2 - gamma2 interpolation update
+. -tao_bnk_gamma3 - gamma3 interpolation update
+. -tao_bnk_gamma4 - gamma4 interpolation update
+. -tao_bnk_theta - theta interpolation update
+. -tao_bnk_omega1 - omega1 step update
+. -tao_bnk_omega2 - omega2 step update
+. -tao_bnk_omega3 - omega3 step update
+. -tao_bnk_omega4 - omega4 step update
+. -tao_bnk_omega5 - omega5 step update
+. -tao_bnk_mu1_i -  mu1 interpolation init factor
+. -tao_bnk_mu2_i -  mu2 interpolation init factor
+. -tao_bnk_gamma1_i -  gamma1 interpolation init factor
+. -tao_bnk_gamma2_i -  gamma2 interpolation init factor
+. -tao_bnk_gamma3_i -  gamma3 interpolation init factor
+. -tao_bnk_gamma4_i -  gamma4 interpolation init factor
+- -tao_bnk_theta_i -  theta interpolation init factor
 
   Level: beginner
 M*/

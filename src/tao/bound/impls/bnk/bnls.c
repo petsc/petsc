@@ -73,7 +73,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
     }
     
-    /* Use the common BNK kernel to compute the safeguarded Newton step */
+    /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
     ierr = TaoBNKComputeStep(tao, PETSC_TRUE, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */

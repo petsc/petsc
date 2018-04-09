@@ -224,6 +224,7 @@ PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
 PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultGMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(Tao, void*);

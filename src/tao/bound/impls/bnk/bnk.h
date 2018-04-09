@@ -13,7 +13,7 @@ typedef struct {
   Vec Xold, Gold, Diag;
   Vec unprojected_gradient, unprojected_gradient_old;
   Vec inactive_gradient, inactive_step;
-  IS  inactive_idx;
+  IS  inactive_idx, active_idx;
   
   /* Scalar values for the solution and step */
   PetscReal fold, f, gnorm, dnorm;
