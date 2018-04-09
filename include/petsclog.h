@@ -228,6 +228,8 @@ PETSC_EXTERN PetscErrorCode PetscLogNestedBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
 PETSC_EXTERN PetscErrorCode PetscLogActions(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogObjects(PetscBool);
+PETSC_EXTERN PetscErrorCode PetscLogSetThreshold(PetscLogDouble,PetscLogDouble*);
+
 /* General functions */
 PETSC_EXTERN PetscErrorCode PetscLogDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
