@@ -80,7 +80,7 @@ def summarize_results(directory,make,ntime,etime):
       fail_list=[]
       for failure in fail_targets.split():
         if failure.count('-')>1:
-            fail_list.append('-'.join(name.split('-')[:-1]))
+            fail_list.append('-'.join(failure.split('-')[:-1]))
         else:
             fail_list.append(failure)
       fail_list=list(set(fail_list))
