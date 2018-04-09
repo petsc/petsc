@@ -3039,9 +3039,6 @@ PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
 @*/
 PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 {
-  PetscInt       f;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   s->useFieldOff = flg;
