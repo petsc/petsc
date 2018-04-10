@@ -5,7 +5,7 @@
  *************************************************************************************
  *    content: Support for nested PetscTimers                                        *
  *************************************************************************************/
-#include <petsclog.h>
+#include <petsclog.h>                  /*I "petsclog.h" I*/
 #include <petsc/private/logimpl.h>
 #include <petsctime.h>
 #include <petscviewer.h>
