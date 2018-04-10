@@ -257,4 +257,13 @@ int main(int argc,char **args)
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
       args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
 
+   # Test for correct cgls convergence reason
+   test:
+      suffix: 5
+      nsize: 1
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
+      args: -solve_normal 0 -ksp_type cgls
+
 TEST*/
