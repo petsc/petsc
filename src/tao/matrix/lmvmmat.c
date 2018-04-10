@@ -209,11 +209,13 @@ PetscErrorCode MatLMVMSolveInactive(Mat A, Vec b, Vec x)
   ierr = VecCopy(b, shell->Bwork);CHKERRQ(ierr);
   ierr = MatLMVMSolve(A, shell->Bwork, shell->Xwork);CHKERRQ(ierr);
   ierr = VecSet(x, 0.0);CHKERRQ(ierr);
-  ierr = VecGetSubVector(x, shell->inactive_idx, &xsub);CHKERRQ(ierr);
-  ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xworksub);CHKERRQ(ierr);
-  ierr = VecCopy(xworksub, xsub);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xworksub);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(x, shell->inactive_idx, &xsub);CHKERRQ(ierr);
+  if (shell->inactive_idx) {
+    ierr = VecGetSubVector(x, shell->inactive_idx, &xsub);CHKERRQ(ierr);
+    ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xworksub);CHKERRQ(ierr);
+    ierr = VecCopy(xworksub, xsub);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xworksub);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(x, shell->inactive_idx, &xsub);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

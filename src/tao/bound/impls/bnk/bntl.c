@@ -160,8 +160,8 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
         }
       }
       /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
-      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+      ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
       
       /* Trigger the line search */
       ierr = TaoBNKPerformLineSearch(tao, stepType, &steplen, &ls_reason);CHKERRQ(ierr);

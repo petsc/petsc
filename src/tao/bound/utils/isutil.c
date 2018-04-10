@@ -153,3 +153,177 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   }
   PetscFunctionReturn(0);
 }
+
+/*@C
+  TaoEstimateActiveBounds - Generates index sets for variables at the lower and upper 
+  bounds, as well as fixed variables where lower and upper bounds equal each other.
+
+  Input Parameters:
++ X - solution vector
+. XL - lower bound vector
+. XU - upper bound vector
+. G - unprojected gradient
+- S - step direction with which the active bounds will be estimated
+
+  Output Parameters:
+. bound_tol - tolerance for for the bound estimation
+. active_lower - index set for active variables at the lower bound
+. active_upper - index set for active variables at the upper bound
+. active_fixed - index set for fixed variables
+. active - index set for all active variables
+. inactive - complementary index set for inactive variables
+@*/
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, PetscReal *bound_tol, 
+                                       IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
+{
+  PetscErrorCode               ierr;
+  
+  Vec                          W;
+  PetscReal                    wnorm;
+  PetscInt                     i, n_isl=0, n_isu=0, n_isf=0;
+  PetscInt                     n, low, high;
+  PetscInt                     *isl=NULL, *isu=NULL, *isf=NULL;
+  const PetscScalar            *xl, *xu, *x, *g;
+
+  PetscFunctionBegin;  
+  /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
+  ierr = VecDuplicate(S, &W);CHKERRQ(ierr);
+  ierr = VecCopy(S, W);CHKERRQ(ierr);
+  ierr = VecAXPBY(W, 1.0, 0.001, X);CHKERRQ(ierr);
+  ierr = VecMedian(XL, W, XU, W);CHKERRQ(ierr);
+  ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
+  ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);
+  *bound_tol = PetscMin(*bound_tol, wnorm);
+  
+  ierr = VecGetOwnershipRange(X, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
+  if (n>0){
+    ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(G, &g);CHKERRQ(ierr);
+    
+    /* Loop over variables and categorize the indexes */
+    ierr = PetscMalloc1(n, &isl);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &isu);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &isf);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (xl[i] == xu[i]) {
+        /* Fixed variables here */
+        isf[n_isf]=low+i; ++n_isf;
+      } else if ((x[i] <= xl[i] + *bound_tol) && (g[i] > 0.0)) {
+        /* Lower bounded variables here */
+        isl[n_isl]=low+i; ++n_isl;
+      } else if ((x[i] >= xu[i] - *bound_tol) && (g[i] < 0.0)) {
+        /* Upper bounded variables here */
+        isu[n_isu]=low+i; ++n_isu;
+      }
+    }
+    
+    ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(XL, &xl);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(G, &g);CHKERRQ(ierr);
+  }
+  
+  /* Create index set for lower bounded variables */
+  ierr = ISDestroy(active_lower);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
+  /* Create index set for upper bounded variables */
+  ierr = ISDestroy(active_upper);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isu, isu, PETSC_OWN_POINTER, active_upper);CHKERRQ(ierr);
+  /* Create index set for fixed variables */
+  ierr = ISDestroy(active_fixed);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isf, isf, PETSC_OWN_POINTER, active_fixed);CHKERRQ(ierr);
+  
+  /* Create the combined active set */
+  ierr = ISDestroy(active);CHKERRQ(ierr);
+  if (*active_lower && *active_upper && *active_fixed) {
+    /* All three types of active variables exist */
+    const IS islist[3] = {*active_lower, *active_upper, *active_fixed};
+    ierr = ISConcatenate(PetscObjectComm((PetscObject)X), 3, islist, active);CHKERRQ(ierr);
+    ierr = ISSort(*active);CHKERRQ(ierr);
+  } else if (*active_lower && *active_upper) {
+    /* Only lower and upper bounded active variables exist */
+    ierr = ISSum(*active_lower, *active_upper, active);CHKERRQ(ierr);
+  } else if (*active_lower && *active_fixed) {
+    /* Only lower bounded and fixed active variables exist */
+    ierr = ISSum(*active_lower, *active_fixed, active);CHKERRQ(ierr);
+  } else if (*active_upper && *active_fixed) {
+    /* Only upper bounded and fixed active variables exist */
+    ierr = ISSum(*active_upper, *active_fixed, active);CHKERRQ(ierr);
+  } else if (*active_lower) {
+    /* Only lower bounded active variables exist */
+    *active = *active_lower;
+  } else if (*active_upper) {
+    /* Only upper bounded active variables exist */
+    *active = *active_upper;
+  } else if (*active_fixed) {
+    /* Only fixed active variables exist */
+    *active = *active_fixed;
+  }
+  /* Create the inactive set */
+  ierr = ISDestroy(inactive);CHKERRQ(ierr);
+  if (*active) { ierr = ISComplementVec(*active, X, inactive);CHKERRQ(ierr); }
+  
+  /* Clean up and exit */
+  ierr = VecDestroy(&W);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TaoBoundStep - Ensures the correct zero or adjusted step direction 
+  values for active variables.
+
+  Input Parameters:
++ X - solution vector
+. XL - lower bound vector
+. XU - upper bound vector
+. active_lower - index set for lower bounded active variables
+. active_upper - index set for lower bounded active variables
+- active_fixed - index set for fixed active variables
+
+  Output Parameters:
+. S - step direction to be modified
+@*/
+PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, Vec S) 
+{
+  PetscErrorCode               ierr;
+  
+  Vec                          step_lower, step_upper, step_fixed;
+  Vec                          x_lower, x_upper;
+  Vec                          bound_lower, bound_upper;
+  
+  PetscFunctionBegin;
+  /* Adjust step for variables at the estimated lower bound */
+  if (active_lower) {
+    ierr = VecGetSubVector(S, active_lower, &step_lower);CHKERRQ(ierr);
+    ierr = VecGetSubVector(X, active_lower, &x_lower);CHKERRQ(ierr);
+    ierr = VecGetSubVector(XL, active_lower, &bound_lower);CHKERRQ(ierr);
+    ierr = VecCopy(bound_lower, step_lower);CHKERRQ(ierr);
+    ierr = VecAXPY(step_lower, -1.0, x_lower);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(S, active_lower, &step_lower);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(X, active_lower, &x_lower);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(XL, active_lower, &bound_lower);CHKERRQ(ierr);
+  }
+  
+  /* Adjust step for the variables at the estimated upper bound */
+  if (active_upper) {
+    ierr = VecGetSubVector(S, active_upper, &step_upper);CHKERRQ(ierr);
+    ierr = VecGetSubVector(X, active_upper, &x_upper);CHKERRQ(ierr);
+    ierr = VecGetSubVector(XU, active_upper, &bound_upper);CHKERRQ(ierr);
+    ierr = VecCopy(bound_upper, step_upper);CHKERRQ(ierr);
+    ierr = VecAXPY(step_upper, -1.0, x_upper);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(S, active_upper, &step_upper);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(X, active_upper, &x_upper);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(XU, active_upper, &bound_upper);CHKERRQ(ierr);
+  }
+  
+  /* Zero out step for fixed variables */
+  if (active_fixed) {
+    ierr = VecGetSubVector(S, active_fixed, &step_fixed);CHKERRQ(ierr);
+    ierr = VecSet(step_fixed, 0.0);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(S, active_fixed, &step_fixed);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

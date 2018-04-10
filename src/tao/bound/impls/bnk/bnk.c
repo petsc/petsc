@@ -271,6 +271,73 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
 
 /*------------------------------------------------------------*/
 
+/* Routine for estimating the active set */
+
+PetscErrorCode TaoBNKEstimateActiveSet(Tao tao) 
+{
+  PetscErrorCode               ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  
+  PetscFunctionBegin;
+  switch (bnk->as_type) {
+  case BNK_AS_NONE:
+    ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
+    ierr = VecWhichInactive(tao->XL, tao->solution, bnk->unprojected_gradient, tao->XU, PETSC_TRUE, &bnk->inactive_idx);CHKERRQ(ierr);
+    ierr = ISDestroy(&bnk->active_idx);CHKERRQ(ierr);
+    ierr = ISComplementVec(bnk->inactive_idx, tao->solution, &bnk->active_idx);CHKERRQ(ierr);
+    break;
+
+  case BNK_AS_BERTSEKAS:
+    /* Compute the trial step vector with which we will estimate the active set at the next iteration */
+    if (BNK_PC_BFGS == bnk->pc_type) {
+      /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
+      ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
+    } else {
+      /* BFGS preconditioner doesn't exist so let's invert the diagonal of the Hessian instead onto the gradient*/
+      ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
+      ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
+    }
+    ierr = VecScale(bnk->W, -1.0);CHKERRQ(ierr);
+    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, &bnk->bound_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
+
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/* Routine for bounding the step direction */
+
+PetscErrorCode TaoBNKBoundStep(Tao tao, Vec step) 
+{
+  PetscErrorCode               ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  
+  PetscFunctionBegin;
+  switch (bnk->as_type) {
+  case BNK_AS_NONE:
+    if (bnk->active_idx) { 
+      ierr = VecGetSubVector(step, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
+      ierr = VecSet(bnk->active_work, 0.0);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(step, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
+    }
+    break;
+
+  case BNK_AS_BERTSEKAS:
+    ierr = TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, step);CHKERRQ(ierr);
+    break;
+    
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 /* Routine for computing the Newton step.
 
   If the safeguard is enabled, the Newton step is verified to be a 
@@ -300,24 +367,25 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
     }
   }
   
-  /* Determine the inactive and active sets */
-  ierr = ISDestroy(&bnk->inactive_old);CHKERRQ(ierr);
-  ierr = ISDuplicate(bnk->inactive_idx, &bnk->inactive_old);CHKERRQ(ierr);
-  ierr = ISCopy(bnk->inactive_idx, bnk->inactive_old);CHKERRQ(ierr);
-  ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
-  ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
-  
+  /* Determine the active and inactive sets */
+  ierr = TaoBNKEstimateActiveSet(tao);CHKERRQ(ierr);
+
   /* Prepare masked matrices for the inactive set */
-  ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
-  ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
-  ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
-  if (tao->hessian == tao->hessian_pre) {
-    bnk->Hpre_inactive = bnk->H_inactive;
+  if (BNK_PC_BFGS == bnk->pc_type) { ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr); }
+  if (bnk->inactive_idx) {
+    ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
+    if (tao->hessian == tao->hessian_pre) {
+      bnk->Hpre_inactive = bnk->H_inactive;
+    } else {
+      ierr = TaoMatGetSubMat(tao->hessian_pre, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->Hpre_inactive);CHKERRQ(ierr);
+    }
   } else {
-    ierr = TaoMatGetSubMat(tao->hessian_pre, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->Hpre_inactive);CHKERRQ(ierr);
+    bnk->H_inactive = tao->hessian;
+    bnk->Hpre_inactive = tao->hessian_pre;
   }
   
   /* Solve the Newton system of equations */
+  ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
@@ -361,8 +429,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
     tao->ksp_tot_its+=kspits;
   }
   /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
-  ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+  ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
   
   /* Record convergence reasons */
   ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
@@ -464,8 +532,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool safeguard, PetscInt *stepTyp
         }
       }
       /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
-      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+      ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
     } else {
       /* Computed Newton step is descent */
       switch (ksp_reason) {
@@ -635,8 +703,8 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       break;
     }
     /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
-    ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->stepdirection);CHKERRQ(ierr);
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+    ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
     
     /* Perform one last line search with the fall-back step */
     *steplen = 1.0;
@@ -890,6 +958,7 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsEList("-tao_bnk_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[bnk->bfgs_scale_type], &bnk->bfgs_scale_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_sval", "perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_imin", "minimum initial perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_imax", "maximum initial perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
@@ -935,6 +1004,7 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_bnk_min_radius", "lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_max_radius", "upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_epsilon", "tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_bound_tol", "initial tolerance used when estimating actively bounded variables", "", bnk->bound_tol, &bnk->bound_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -990,6 +1060,7 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 . -tao_bnk_bfgs_scale_type - "ahess","phess","bfgs"
 . -tao_bnk_init_type - "constant","direction","interpolation"
 . -tao_bnk_update_type - "step","direction","interpolation"
+. -tao_bnk_as_type - "none","bertsekas"
 . -tao_bnk_sval - perturbation starting value
 . -tao_bnk_imin - minimum initial perturbation
 . -tao_bnk_imax - maximum initial perturbation
@@ -1027,7 +1098,8 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
 . -tao_bnk_gamma2_i -  gamma2 interpolation init factor
 . -tao_bnk_gamma3_i -  gamma3 interpolation init factor
 . -tao_bnk_gamma4_i -  gamma4 interpolation init factor
-- -tao_bnk_theta_i -  theta interpolation init factor
+. -tao_bnk_theta_i -  theta interpolation init factor
+- -tao_bnk_bound_tol -  initial tolerance used in estimating bounded active variables
 
   Level: beginner
 M*/
@@ -1115,11 +1187,13 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->min_radius = 1.0e-10;
   bnk->max_radius = 1.0e10;
   bnk->epsilon = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-
+  bnk->bound_tol = 1.0e-3;
+  
   bnk->pc_type         = BNK_PC_BFGS;
   bnk->bfgs_scale_type = BFGS_SCALE_PHESS;
   bnk->init_type       = BNK_INIT_INTERPOLATION;
   bnk->update_type     = BNK_UPDATE_INTERPOLATION;
+  bnk->as_type         = BNK_AS_BERTSEKAS;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
