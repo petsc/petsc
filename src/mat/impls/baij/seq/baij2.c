@@ -4,7 +4,7 @@
 #include <petscbt.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_IMMINTRIN_H)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 #include <immintrin.h>
 #endif
 
@@ -663,7 +663,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -1681,7 +1681,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;

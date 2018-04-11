@@ -5,7 +5,8 @@
 #include <../src/mat/impls/sell/seq/sell.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
-#if defined(PETSC_HAVE_IMMINTRIN_H)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && (defined(__AVX512F__) || defined(__AVX2__) || defined(__AVX__)) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+
   #include <immintrin.h>
 
   #if !defined(_MM_SCALE_8)
