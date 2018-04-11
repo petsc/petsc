@@ -30,7 +30,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   KSPType                      ksp_type;
   PC                           pc;
   
-  PetscReal                    fmin, ftrial, prered, actred, kappa, sigma;
+  PetscReal                    f_min, ftrial, prered, actred, kappa, sigma;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal                    delta, step = 1.0;
   
@@ -126,7 +126,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
       max_radius = 0.0;
 
       for (j = 0; j < j_max; ++j) {
-        fmin = bnk->f;
+        f_min = bnk->f;
         sigma = 0.0;
 
         if (needH) {
@@ -152,10 +152,10 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = bnk->gamma1_i;
           } else {
-            if (ftrial < fmin) {
-              fmin = ftrial;
+            if (ftrial < f_min) {
+              f_min = ftrial;
               sigma = -tao->trust / bnk->gnorm;
-            }    
+            }
             /* Compute the predicted and actual reduction */
             ierr = MatMult(bnk->H_inactive, tao->gradient, bnk->W);CHKERRQ(ierr);
             ierr = VecDot(tao->gradient, bnk->W, &prered);CHKERRQ(ierr);
@@ -218,8 +218,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
           tao->trust = tau * tao->trust;
         }
 
-        if (fmin < bnk->f) {
-          bnk->f = fmin;
+        if (f_min < bnk->f) {
+          bnk->f = f_min;
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
           ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -277,7 +277,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  
+
   PetscFunctionBegin;
   switch (bnk->as_type) {
   case BNK_AS_NONE:
@@ -299,7 +299,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao)
       ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
     }
     ierr = VecScale(bnk->W, -1.0);CHKERRQ(ierr);
-    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, &bnk->bound_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
+    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->as_step, &bnk->as_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
 
   default:
     break;
@@ -780,8 +780,8 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
         if (PetscIsInfOrNanReal(actred)) {
           tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
         } else {
-          if ((PetscAbsScalar(actred) <= bnk->epsilon) &&
-              (PetscAbsScalar(prered) <= bnk->epsilon)) {
+          if ((PetscAbsScalar(actred) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon) &&
+              (PetscAbsScalar(prered) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon)) {
             kappa = 1.0;
           }
           else {
@@ -1004,7 +1004,8 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_bnk_min_radius", "lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_max_radius", "upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bnk_epsilon", "tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_bound_tol", "initial tolerance used when estimating actively bounded variables", "", bnk->bound_tol, &bnk->bound_tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_as_tol", "initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_as_step", "step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -1187,7 +1188,8 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->min_radius = 1.0e-10;
   bnk->max_radius = 1.0e10;
   bnk->epsilon = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-  bnk->bound_tol = 1.0e-3;
+  bnk->as_tol = 1.0e-3;
+  bnk->as_step = 1.0e-3;
   
   bnk->pc_type         = BNK_PC_BFGS;
   bnk->bfgs_scale_type = BFGS_SCALE_PHESS;

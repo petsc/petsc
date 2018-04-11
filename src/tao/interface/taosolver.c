@@ -1556,7 +1556,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
   } else {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %g,",(double)gnorm);CHKERRQ(ierr);
   }
-  ierr=PetscViewerASCIIPrintf(viewer,"  Step: %g,  Trust: %g\n",(double)stp,(double)tr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Step: %g,  Trust: %g\n",(double)stp,(double)tr);CHKERRQ(ierr);
   ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -163,7 +163,8 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 . XL - lower bound vector
 . XU - upper bound vector
 . G - unprojected gradient
-- S - step direction with which the active bounds will be estimated
+. S - step direction with which the active bounds will be estimated
+- steplen - the step length at which the active bounds will be estimated (needs to be conservative)
 
   Output Parameters:
 . bound_tol - tolerance for for the bound estimation
@@ -172,8 +173,12 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 . active_fixed - index set for fixed variables
 . active - index set for all active variables
 . inactive - complementary index set for inactive variables
+
+  Notes:
+  This estimation is based on Bertsekas' method, with a built in diagonal scaling value of 1.0e-3.
+  
 @*/
-PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, PetscReal *bound_tol, 
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, PetscReal steplen, PetscReal *bound_tol, 
                                        IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
 {
   PetscErrorCode               ierr;
@@ -189,7 +194,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Pets
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
   ierr = VecDuplicate(S, &W);CHKERRQ(ierr);
   ierr = VecCopy(S, W);CHKERRQ(ierr);
-  ierr = VecAXPBY(W, 1.0, 0.001, X);CHKERRQ(ierr);
+  ierr = VecAXPBY(W, 1.0, steplen, X);CHKERRQ(ierr);
   ierr = VecMedian(XL, W, XU, W);CHKERRQ(ierr);
   ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
   ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);

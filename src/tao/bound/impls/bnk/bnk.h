@@ -19,7 +19,8 @@ typedef struct {
   
   /* Parameters for active set estimation */
   PetscInt  as_type;
-  PetscReal bound_tol;
+  PetscReal as_tol;
+  PetscReal as_step;
 
   /* Parameters when updating the perturbation added to the Hessian matrix
      according to the following scheme:
