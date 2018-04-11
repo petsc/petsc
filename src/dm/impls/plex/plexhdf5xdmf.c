@@ -56,11 +56,14 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 #endif
 
   {
-    const PetscReal *coordinates_arr;
+    const PetscScalar *coordinates_arr;
+    PetscReal *coordinates_arr_real;
     const PetscInt *cells_arr;
     int *cells_arr_int;
     PetscSF sfVert=NULL;
+#if defined(PETSC_USE_64BIT_INDICES) || defined(PETSC_USE_COMPLEX)
     PetscInt i;
+#endif
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISGetIndices(cells, &cells_arr);CHKERRQ(ierr);
@@ -76,14 +79,33 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     cells_arr_int = (int*)cells_arr;
 #endif
 
+#if defined(PETSC_USE_COMPLEX)
+    /* convert to real numbers if PetscScalar is complex */
+    /*TODO More systematic would be to change all the function arguments to PetscScalar */
+    ierr = PetscMalloc1(numVertices*spatialDim, &coordinates_arr_real);CHKERRQ(ierr);
+    for (i = 0; i < numVertices*spatialDim; ++i) {
+      coordinates_arr_real[i] = PetscRealPart(coordinates_arr[i]);
+#if defined(PETSC_USE_DEBUG)
+      if (PetscImaginaryPart(coordinates_arr[i])) {
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vector of coordinates contains complex numbers but only real vectors are currently supported.");
+      }
+#endif  /* defined(PETSC_USE_DEBUG) */
+    }
+#else
+    coordinates_arr_real = (PetscReal*)coordinates_arr;
+#endif
+
     ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
     ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr_int, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
-    ierr = DMPlexBuildCoordinates_Parallel_Internal( dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr);CHKERRQ(ierr);
+    ierr = DMPlexBuildCoordinates_Parallel_Internal( dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
 #if defined(PETSC_USE_64BIT_INDICES)
     ierr = PetscFree(cells_arr_int);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscFree(coordinates_arr_real);CHKERRQ(ierr);
 #endif
   }
   ierr = ISDestroy(&cells);CHKERRQ(ierr);
