@@ -22,17 +22,14 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    f_full, prered, actred;
   PetscReal                    steplen = 1.0;
-  
-  PetscBool                    trustAccept;
+  PetscBool                    shift = PETSC_TRUE;
   PetscInt                     stepType;
-  PetscInt                     bfgsUpdates = 0;
   
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao);CHKERRQ(ierr);
+  ierr = TaoBNKInitialize(tao, BNK_INIT_CONSTANT);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -40,32 +37,12 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     ++tao->niter;
     tao->ksp_its=0;
     
-    /* Compute the Hessian */
-    ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
-    /* Shift the Hessian matrix */
-    if (bnk->pert > 0) {
-      ierr = MatShift(tao->hessian, bnk->pert);CHKERRQ(ierr);
-      if (tao->hessian != tao->hessian_pre) {
-        ierr = MatShift(tao->hessian_pre, bnk->pert);CHKERRQ(ierr);
-      }
-    }
-    /* Update the BFGS preconditioner */
-    if (BNK_PC_BFGS == bnk->pc_type) {
-      if (BFGS_SCALE_PHESS == bnk->bfgs_scale_type) {
-        /* Obtain diagonal for the bfgs preconditioner  */
-        ierr = MatGetDiagonal(tao->hessian, bnk->Diag);CHKERRQ(ierr);
-        ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
-        ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
-      }
-      /* Update the limited memory preconditioner and get existing # of updates */
-      ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
-    }
+    /* Compute the hessian and update the BFGS preconditioner at the new iterate*/
+    ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
     tao->trust = bnk->max_radius;
-    ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
+    ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
@@ -87,23 +64,8 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       tao->reason = TAO_DIVERGED_LS_FAILURE;
       break;
     } else {
-      /* count the accepted step types */
-      switch (stepType) {
-      case BNK_NEWTON:
-        ++bnk->newt;
-        break;
-      case BNK_BFGS:
-        ++bnk->bfgs;
-        break;
-      case BNK_SCALED_GRADIENT:
-        ++bnk->sgrad;
-        break;
-      case BNK_GRADIENT:
-        ++bnk->grad;
-        break;
-      default:
-        break;
-      }
+      /* count the accepted step type */
+      ierr = TaoBNKAddStepCounts(tao, stepType);CHKERRQ(ierr);
     }
 
     /*  Check for termination */

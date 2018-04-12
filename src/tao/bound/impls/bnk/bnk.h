@@ -10,7 +10,7 @@ Context for bounded Newton-Krylov type optimization algorithms
 typedef struct {
   Mat H_inactive, Hpre_inactive, M;
   Vec W, Xwork, Gwork, inactive_work, active_work;
-  Vec Xold, Gold, Diag;
+  Vec Xold, Gold, Diag, Diag_min, Diag_max;
   Vec unprojected_gradient, unprojected_gradient_old;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
@@ -18,7 +18,6 @@ typedef struct {
   PetscReal fold, f, gnorm, dnorm;
   
   /* Parameters for active set estimation */
-  PetscInt  as_type;
   PetscReal as_tol;
   PetscReal as_step;
 
@@ -162,12 +161,14 @@ typedef struct {
   PetscReal min_radius;         /*  lower bound on initial radius value */
   PetscReal max_radius;         /*  upper bound on trust region radius */
   PetscReal epsilon;            /*  tolerance used when computing ared/pred */
+  PetscReal dmin, dmax;         /*  upper and lower bounds for the Hessian diagonal vector */
 
   PetscInt newt;                /*  Newton directions attempted */
   PetscInt bfgs;                /*  BFGS directions attempted */
   PetscInt sgrad;               /*  Scaled gradient directions attempted */
   PetscInt grad;                /*  Gradient directions attempted */
 
+  PetscInt as_type;             /*   Active set estimation method */
   PetscInt pc_type;             /*  Preconditioner for the code */
   PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /*  Trust-region initialization method */
@@ -229,10 +230,12 @@ static const char *BNK_AS[64] = {"none", "bertsekas"};
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
-PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao);
+PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao);
+PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
-PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, KSPConvergedReason*);
+PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);
+PETSC_INTERN PetscErrorCode TaoBNKAddStepCounts(Tao, PetscInt);

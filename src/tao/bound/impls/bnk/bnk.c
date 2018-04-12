@@ -23,7 +23,7 @@ PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 
 /* Routine for initializing the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
 
-PetscErrorCode TaoBNKInitialize(Tao tao)
+PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
@@ -99,9 +99,11 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
 
   /* create vectors for the limited memory preconditioner */
   if ((BNK_PC_BFGS == bnk->pc_type) && (BFGS_SCALE_BFGS != bnk->bfgs_scale_type)) {
-    if (!bnk->Diag) {
-      ierr = VecDuplicate(tao->solution,&bnk->Diag);CHKERRQ(ierr);
-    }
+    if (!bnk->Diag) {ierr = VecDuplicate(tao->solution,&bnk->Diag);CHKERRQ(ierr);}
+    if (!bnk->Diag_min) {ierr = VecDuplicate(tao->solution,&bnk->Diag_min);CHKERRQ(ierr);}
+    if (!bnk->Diag_max) {ierr = VecDuplicate(tao->solution,&bnk->Diag_max);CHKERRQ(ierr);}
+    ierr = VecSet(bnk->Diag_min, bnk->dmin);CHKERRQ(ierr);
+    ierr = VecSet(bnk->Diag_max, bnk->dmax);CHKERRQ(ierr);
   }
 
   /* Modify the preconditioner to use the bfgs approximation */
@@ -134,7 +136,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
-    switch(bnk->init_type) {
+    switch(initType) {
     case BNK_INIT_CONSTANT:
       /* Use the initial radius specified */
       break;
@@ -155,7 +157,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
             ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
             ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
           } else {
-            bnk->H_inactive = tao->hessian;
+            ierr = MatDestroy(&bnk->H_inactive);
+            ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);
           }
           needH = 0;
         }
@@ -293,6 +296,33 @@ PetscErrorCode TaoBNKInitialize(Tao tao)
 
 /*------------------------------------------------------------*/
 
+/* Routine for computing the Hessian and preparing the preconditioner at the new iterate */
+
+PetscErrorCode TaoBNKComputeHessian(Tao tao)
+{
+  PetscErrorCode               ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+
+  PetscFunctionBegin;
+  /* Compute the Hessian */
+  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
+  /* Add a correction to the BFGS preconditioner */
+  if (BNK_PC_BFGS == bnk->pc_type) {
+    ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+    /* Update the BFGS diagonal scaling */
+    if (BFGS_SCALE_AHESS == bnk->bfgs_scale_type) {
+      ierr = MatGetDiagonal(tao->hessian, bnk->Diag);CHKERRQ(ierr);
+      ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
+      ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
+      ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
+      ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 /* Routine for estimating the active set */
 
 PetscErrorCode TaoBNKEstimateActiveSet(Tao tao) 
@@ -372,7 +402,7 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, Vec step)
   under tao->stepdirection.
 */
 
-PetscErrorCode TaoBNKComputeStep(Tao tao, KSPConvergedReason *ksp_reason)
+PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
@@ -395,8 +425,32 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, KSPConvergedReason *ksp_reason)
       ierr = TaoMatGetSubMat(tao->hessian_pre, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
   } else {
-    bnk->H_inactive = tao->hessian;
-    bnk->Hpre_inactive = tao->hessian_pre;
+    ierr = MatDestroy(&bnk->H_inactive);
+    ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);
+    if (tao->hessian == tao->hessian_pre) {
+      bnk->Hpre_inactive = bnk->H_inactive;
+    } else {
+      ierr = MatDestroy(&bnk->Hpre_inactive);
+      ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);
+    }
+  }
+  
+  /* Shift the reduced Hessian matrix */
+  if ((shift) && (bnk->pert > 0)) {
+    ierr = MatShift(bnk->H_inactive, bnk->pert);CHKERRQ(ierr);
+    if (bnk->H_inactive != bnk->Hpre_inactive) {
+      ierr = MatShift(bnk->Hpre_inactive, bnk->pert);CHKERRQ(ierr);
+    }
+  }
+  
+  /* Update the diagonal scaling for the BFGS preconditioner, this time with the Hessian perturbation */
+  if ((BNK_PC_BFGS == bnk->pc_type) && (BFGS_SCALE_PHESS == bnk->bfgs_scale_type)) {
+    /* Obtain diagonal for the bfgs preconditioner  */
+    ierr = MatGetDiagonal(bnk->H_inactive, bnk->Diag);CHKERRQ(ierr);
+    ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
+    ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
+    ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
+    ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
   }
   
   /* Solve the Newton system of equations */
@@ -488,6 +542,14 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, KSPConvergedReason *ksp_reason)
   }
   PetscFunctionReturn(0);
 }
+
+/*------------------------------------------------------------*/
+
+/* Routine for ensuring that the Newton step is a descent direction.
+
+   The step direction falls back onto BFGS, scaled gradient and gradient steps 
+   in the event that the Newton step fails the test.
+*/
 
 PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, PetscInt *stepType)
 {
@@ -911,6 +973,32 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
 
 /* ---------------------------------------------------------- */
 
+PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
+{
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  
+  PetscFunctionBegin;
+  switch (stepType) {
+  case BNK_NEWTON:
+    ++bnk->newt;
+    break;
+  case BNK_BFGS:
+    ++bnk->bfgs;
+    break;
+  case BNK_SCALED_GRADIENT:
+    ++bnk->sgrad;
+    break;
+  case BNK_GRADIENT:
+    ++bnk->grad;
+    break;
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------- */
+
 static PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -927,6 +1015,15 @@ static PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (!bnk->unprojected_gradient) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient);CHKERRQ(ierr);}
   if (!bnk->unprojected_gradient_old) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient_old);CHKERRQ(ierr);}
   bnk->Diag = 0;
+  bnk->Diag_min = 0;
+  bnk->Diag_max = 0;
+  bnk->inactive_work = 0;
+  bnk->active_work = 0;
+  bnk->inactive_idx = 0;
+  bnk->active_idx = 0;
+  bnk->active_lower = 0;
+  bnk->active_upper = 0;
+  bnk->active_fixed = 0;
   bnk->M = 0;
   bnk->H_inactive = 0;
   bnk->Hpre_inactive = 0;
@@ -951,7 +1048,11 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
     ierr = VecDestroy(&bnk->unprojected_gradient_old);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);
+  ierr = VecDestroy(&bnk->Diag_max);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->M);CHKERRQ(ierr);
+  if (bnk->Hpre_inactive != bnk->H_inactive) {ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);}
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1201,6 +1302,8 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->epsilon = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   bnk->as_tol = 1.0e-3;
   bnk->as_step = 1.0e-3;
+  bnk->dmin = 1.0e-6;
+  bnk->dmax = 1.0e6;
   
   bnk->pc_type         = BNK_PC_BFGS;
   bnk->bfgs_scale_type = BFGS_SCALE_PHESS;

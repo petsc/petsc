@@ -15,13 +15,13 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   KSPConvergedReason           ksp_reason;
 
   PetscReal                    oldTrust, prered, actred, stepNorm, steplen;
-  PetscBool                    stepAccepted = PETSC_TRUE;
+  PetscBool                    stepAccepted = PETSC_TRUE, shift = PETSC_FALSE;
   PetscInt                     stepType = BNK_NEWTON;
   
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao);CHKERRQ(ierr);
+  ierr = TaoBNKInitialize(tao, bnk->init_type);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -30,24 +30,12 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     if (stepAccepted) { 
       tao->niter++;
       tao->ksp_its=0;
-      /* Compute the Hessian */
-      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
-      /* Update the BFGS preconditioner */
-      if (BNK_PC_BFGS == bnk->pc_type) {
-        if (BFGS_SCALE_PHESS == bnk->bfgs_scale_type) {
-          /* Obtain diagonal for the bfgs preconditioner  */
-          ierr = MatGetDiagonal(tao->hessian, bnk->Diag);CHKERRQ(ierr);
-          ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
-          ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
-          ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
-        }
-        /* Update the limited memory preconditioner and get existing # of updates */
-        ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      }
+      /* Compute the hessian and update the BFGS preconditioner at the new iterate*/
+      ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
+    ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;
