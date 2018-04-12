@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: hdf5 exodusii parmetis
+    requires: hdf5 exodusii parmetis !define(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
   # Load HDF5 file in XDMF format in parallel, write, read dm1, write, read dm2, and compare dm1 and dm2
   test:
     suffix: 4
-    requires: hdf5
+    requires: hdf5 !complex
     nsize: {{1 2 3 4 8}}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
     args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
