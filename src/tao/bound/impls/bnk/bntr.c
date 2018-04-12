@@ -12,10 +12,11 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  KSPConvergedReason           ksp_reason;
 
   PetscReal                    oldTrust, prered, actred, stepNorm, steplen;
   PetscBool                    stepAccepted = PETSC_TRUE;
-  PetscInt                     stepType;
+  PetscInt                     stepType = BNK_NEWTON;
   
   PetscFunctionBegin;
   /*   Project the current point onto the feasible set */
@@ -63,7 +64,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, PETSC_FALSE, &stepType);CHKERRQ(ierr);
+    ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;
@@ -102,6 +103,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */
       steplen = 1.0;
+      ++bnk->newt;
       ierr = TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     } else {

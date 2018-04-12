@@ -13,11 +13,12 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    oldTrust, prered, actred, stepNorm, gdx, delta, steplen;
+  PetscReal                    oldTrust, prered, actred, stepNorm, steplen;
   PetscBool                    stepAccepted = PETSC_TRUE;
-  PetscInt                     stepType, bfgsUpdates, updateType;
+  PetscInt                     stepType, updateType;
   
   PetscFunctionBegin;
   /*   Project the current point onto the feasible set */
@@ -62,7 +63,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, PETSC_FALSE, &stepType);CHKERRQ(ierr);
+    ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;
@@ -101,6 +102,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */
       steplen = 1.0;
+      ++bnk->newt;
       ierr = TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     } else {
@@ -108,62 +110,8 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
       bnk->f = bnk->fold;
       ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
       
-      /* Now check to make sure the Newton step is a descent direction... */
-      ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
-      if ((gdx >= 0.0) || PetscIsInfOrNanReal(gdx)) {
-        /* Newton step is not descent or direction produced Inf or NaN */
-        --bnk->newt;
-        if (BNK_PC_BFGS != bnk->pc_type) {
-          /* We don't have the BFGS matrix around and updated
-             Must use gradient direction in this case */
-          ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          ++bnk->grad;
-          stepType = BNK_GRADIENT;
-        } else {
-          /* We have the BFGS matrix, so attempt to use the BFGS direction */
-          ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-
-          /* Check for success (descent direction) 
-             NOTE: Negative gdx here means not a descent direction because 
-             the fall-back step is missing a negative sign. */
-          ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
-          if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
-            /* BFGS direction is not descent or direction produced not a number
-               We can assert bfgsUpdates > 1 in this case because
-               the first solve produces the scaled gradient direction,
-               which is guaranteed to be descent */
-
-            /* Use steepest descent direction (scaled) */
-            if (bnk->f != 0.0) {
-              delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-            } else {
-              delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-            }
-            ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
-            ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
-            ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-            ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
-            
-            ++bnk->sgrad;
-            stepType = BNK_SCALED_GRADIENT;
-          } else {
-            ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
-            if (1 == bfgsUpdates) {
-              /* The first BFGS direction is always the scaled gradient */
-              ++bnk->sgrad;
-              stepType = BNK_SCALED_GRADIENT;
-            } else {
-              ++bnk->bfgs;
-              stepType = BNK_BFGS;
-            }
-          }
-        }
-      }
-      /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
-      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-      ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
-      
       /* Trigger the line search */
+      ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
       ierr = TaoBNKPerformLineSearch(tao, stepType, &steplen, &ls_reason);CHKERRQ(ierr);
       if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) {
         /* Line search failed, revert solution and terminate */
@@ -180,6 +128,23 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
         tao->trust = oldTrust;
         ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &stepAccepted);CHKERRQ(ierr);
         bnk->update_type = updateType;
+        /* count the accepted step types */
+        switch (stepType) {
+        case BNK_NEWTON:
+          ++bnk->newt;
+          break;
+        case BNK_BFGS:
+          ++bnk->bfgs;
+          break;
+        case BNK_SCALED_GRADIENT:
+          ++bnk->sgrad;
+          break;
+        case BNK_GRADIENT:
+          ++bnk->grad;
+          break;
+        default:
+          break;
+        }
       }
     }
 

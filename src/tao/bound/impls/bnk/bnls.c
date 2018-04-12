@@ -19,6 +19,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
   PetscReal                    f_full, prered, actred;
@@ -58,7 +59,13 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     
     /* Compute the Hessian */
     ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
-    
+    /* Shift the Hessian matrix */
+    if (bnk->pert > 0) {
+      ierr = MatShift(tao->hessian, bnk->pert);CHKERRQ(ierr);
+      if (tao->hessian != tao->hessian_pre) {
+        ierr = MatShift(tao->hessian_pre, bnk->pert);CHKERRQ(ierr);
+      }
+    }
     /* Update the BFGS preconditioner */
     if (BNK_PC_BFGS == bnk->pc_type) {
       if (BFGS_SCALE_PHESS == bnk->bfgs_scale_type) {
@@ -74,7 +81,8 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, PETSC_TRUE, &stepType);CHKERRQ(ierr);
+    ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
+    ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     bnk->fold = bnk->f;
@@ -94,6 +102,24 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       steplen = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
       break;
+    } else {
+      /* count the accepted step types */
+      switch (stepType) {
+      case BNK_NEWTON:
+        ++bnk->newt;
+        break;
+      case BNK_BFGS:
+        ++bnk->bfgs;
+        break;
+      case BNK_SCALED_GRADIENT:
+        ++bnk->sgrad;
+        break;
+      case BNK_GRADIENT:
+        ++bnk->grad;
+        break;
+      default:
+        break;
+      }
     }
     
     /* update trust radius */
