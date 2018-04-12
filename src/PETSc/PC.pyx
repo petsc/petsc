@@ -399,7 +399,7 @@ cdef class PC(Object):
         PetscINCREF(mat.obj)
         return mat
 
-   # --- FieldSplit ---
+    # --- FieldSplit ---
 
     def setFieldSplitType(self, ctype):
         cdef PetscPCCompositeType cval = ctype
@@ -575,6 +575,14 @@ cdef class PC(Object):
     def setMGR(self, level, Vec r):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetR(self.pc, clevel, r.vec) )
+
+    # --- BDDC ---
+
+    def setBDDCDivergenceMat(self, Mat div, trans=False, IS l2l=None):
+        cdef PetscBool ptrans=trans
+        cdef PetscIS pl2l = NULL
+        if l2l is not None: pl2l = l2l.iset
+        CHKERR( PCBDDCSetDivergenceMat(self.pc, div.mat, ptrans, pl2l) )
 
 # --------------------------------------------------------------------
 
