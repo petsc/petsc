@@ -218,6 +218,7 @@ cdef extern from * nogil:
     int PCMGGetLevels(PetscPC,PetscInt*)
     int PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
     int PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
+    int PCBDDCSetDivergenceMat(PetscPC,PetscMat,PetscBool,PetscIS)
 
 # --------------------------------------------------------------------
 
