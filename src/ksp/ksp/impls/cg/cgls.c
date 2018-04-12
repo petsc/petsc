@@ -117,6 +117,8 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 
    Supports non-square (rectangular) matrices.
 
+   Notes: This does not use the preconditioner, so one should probably use KSPLSQR instead.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
