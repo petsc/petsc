@@ -18,7 +18,6 @@ cdef extern from * nogil:
     struct PetscSFNode:
         PetscInt rank
         PetscInt index
-    ctypedef PetscSFNode PetscSFNode "PetscSFNode"
     ctypedef PetscSFNode const_PetscSFNode "const PetscSFNode"
     int PetscSFGetGraph(PetscSF,PetscInt*,PetscInt*,const_PetscInt**,const_PetscSFNode**)
     int PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const_PetscInt*,PetscCopyMode,PetscSFNode*,PetscCopyMode)

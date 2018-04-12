@@ -2,9 +2,6 @@
 
 cdef extern from * nogil:
 
-    struct _p_PetscSection
-    ctypedef _p_PetscSection* PetscSection
-
     int PetscSectionCreate(MPI_Comm,PetscSection*)
     int PetscSectionClone(PetscSection,PetscSection*)
     int PetscSectionSetUp(PetscSection)
