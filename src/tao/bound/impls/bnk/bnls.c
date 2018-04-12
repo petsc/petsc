@@ -30,27 +30,10 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   PetscInt                     bfgsUpdates = 0;
   
   PetscFunctionBegin;
-  /*   Project the current point onto the feasible set */
-  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
-
-  /* Project the initial point onto the feasible region */
-  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
-
-  /* Check convergence criteria */
-  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
-  ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
-  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-
+  /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,steplen);CHKERRQ(ierr);
-  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-  
-  /* Initialize the preconditioner and trust radius */
   ierr = TaoBNKInitialize(tao);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -81,6 +64,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
+    tao->trust = bnk->max_radius;
     ierr = TaoBNKComputeStep(tao, &ksp_reason);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
@@ -121,13 +105,6 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
         break;
       }
     }
-    
-    /* update trust radius */
-    ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full);CHKERRQ(ierr);
-    ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);
-    prered = -prered;
-    actred = bnk->fold - f_full;
-    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &trustAccept);CHKERRQ(ierr);
 
     /*  Check for termination */
     ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
@@ -151,6 +128,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
   tao->ops->solve = TaoSolve_BNLS;
   
   bnk = (TAO_BNK *)tao->data;
+  bnk->init_type = BNK_INIT_CONSTANT;
   bnk->update_type = BNK_UPDATE_STEP; /* trust region updates based on line search step length */
   PetscFunctionReturn(0);
 }

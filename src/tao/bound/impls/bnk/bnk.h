@@ -19,7 +19,6 @@ typedef struct {
   
   /* Parameters for active set estimation */
   PetscInt  as_type;
-  PetscInt  num_active;
   PetscReal as_tol;
   PetscReal as_step;
 
@@ -236,4 +235,4 @@ PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, KSPConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt, PetscReal*, TaoLineSearchConvergedReason*);
-PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscBool*);
+PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);

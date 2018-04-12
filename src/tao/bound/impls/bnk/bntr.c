@@ -19,27 +19,10 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   PetscInt                     stepType = BNK_NEWTON;
   
   PetscFunctionBegin;
-  /*   Project the current point onto the feasible set */
-  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
-
-  /* Project the initial point onto the feasible region */
-  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
-
-  /* Check convergence criteria */
-  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
-  ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
-  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-
+  /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,tao->trust);CHKERRQ(ierr);
-  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-  
-  /* Initialize the preconditioner and trust radius */
   ierr = TaoBNKInitialize(tao);CHKERRQ(ierr);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -86,7 +69,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
          However, we deliberately do not change the step norm and the trust radius 
          in order for the safeguard to more closely mimic a piece-wise linesearch 
          along the bounds. */
-      ierr = MatMult(tao->hessian, tao->stepdirection, bnk->Xwork);CHKERRQ(ierr);
+      ierr = MatMult(bnk->H_inactive, tao->stepdirection, bnk->Xwork);CHKERRQ(ierr);
       ierr = VecAYPX(bnk->Xwork, -0.5, tao->gradient);CHKERRQ(ierr);
       ierr = VecDot(bnk->Xwork, tao->stepdirection, &prered);
     } else {
@@ -98,7 +81,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     /* Compute the actual reduction and update the trust radius */
     ierr = TaoComputeObjective(tao, tao->solution, &bnk->f);CHKERRQ(ierr);
     actred = bnk->fold - bnk->f;
-    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, stepType, &stepAccepted);CHKERRQ(ierr);
+    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted);CHKERRQ(ierr);
     
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */
