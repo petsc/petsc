@@ -1320,7 +1320,7 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
 PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
-  DM               plex = NULL;
+  DM               plex = NULL, plexA = NULL;
   DMLabel          depth;
   PetscDS          prob, probAux = NULL;
   PetscSection     section, sectionAux = NULL;
@@ -1332,6 +1332,7 @@ PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLab
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -1342,12 +1343,12 @@ PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLab
     DM dmAux;
 
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = DMConvert(dmAux, DMPLEX, &plexA);CHKERRQ(ierr);
+    ierr = DMGetDS(plexA, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = DMConvert(dmAux, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(plex, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(plexA, &sectionAux);CHKERRQ(ierr);
   }
- for (v = 0; v < numValues; ++v) {
+  for (v = 0; v < numValues; ++v) {
     IS               pointIS;
     const PetscInt  *points;
     PetscInt         numPoints, p, dep, numFaces, face;
@@ -1369,32 +1370,34 @@ PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLab
 
       ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
       if (dep != dim-1) continue;
-      ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometryFEM(dm, support[0], NULL, NULL, dummyJ, fgeom[face].invJ[0], &dummyDetJ);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, fgeom[face].v0, fgeom[face].J, NULL, &fgeom[face].detJ);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometryFVM(dm, point, NULL, NULL, fgeom[face].n);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(plex, point, &support);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(plex, support[0], NULL, NULL, dummyJ, fgeom[face].invJ[0], &dummyDetJ);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(plex, point, NULL, fgeom[face].v0, fgeom[face].J, NULL, &fgeom[face].detJ);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFVM(plex, point, NULL, NULL, fgeom[face].n);CHKERRQ(ierr);
       if (fgeom[face].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %D", (double) fgeom[face].detJ, point);
-      ierr = DMPlexGetConeSize(dm, support[0], &coneSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, support[0], &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(plex, support[0], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(plex, support[0], &cone);CHKERRQ(ierr);
       for (faceLoc = 0; faceLoc < coneSize; ++faceLoc) if (cone[faceLoc] == point) break;
       if (faceLoc == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %D in cone of support[0] %D", point, support[0]);
       fgeom[face].face[0] = faceLoc;
-      ierr = DMPlexVecGetClosure(dm, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plex, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDim; ++i) u[face*totDim+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(dm, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(plex, section, locX, support[0], NULL, &x);CHKERRQ(ierr);
       if (locX_t) {
-        ierr = DMPlexVecGetClosure(dm, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
+        ierr = DMPlexVecGetClosure(plex, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
         for (i = 0; i < totDim; ++i) u_t[face*totDim+i] = x[i];
-        ierr = DMPlexVecRestoreClosure(dm, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
+        ierr = DMPlexVecRestoreClosure(plex, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
       }
       if (locA) {
-        ierr = DMPlexVecGetClosure(plex, sectionAux, locA, support[0], NULL, &x);CHKERRQ(ierr);
+        PetscInt subp;
+        ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);
+        ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
         for (i = 0; i < totDimAux; ++i) a[face*totDimAux+i] = x[i];
-        ierr = DMPlexVecRestoreClosure(plex, sectionAux, locA, support[0], NULL, &x);CHKERRQ(ierr);
+        ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
+        CHKMEMQ;
       }
       ++face;
     }
-    if (plex) {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
     ierr = PetscMemzero(elemVec, numFaces*totDim * sizeof(PetscScalar));CHKERRQ(ierr);
     {
       PetscFE         fe;
@@ -1426,14 +1429,16 @@ PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLab
       ierr = DMLabelGetValue(depth, point, &dep);CHKERRQ(ierr);
       if (dep != dim-1) continue;
       if (mesh->printFEM > 1) {ierr = DMPrintCellVector(point, "BdResidual", totDim, &elemVec[face*totDim]);CHKERRQ(ierr);}
-      ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
-      ierr = DMPlexVecSetClosure(dm, NULL, locF, support[0], &elemVec[face*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(plex, point, &support);CHKERRQ(ierr);
+      ierr = DMPlexVecSetClosure(plex, NULL, locF, support[0], &elemVec[face*totDim], ADD_ALL_VALUES);CHKERRQ(ierr);
       ++face;
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     ierr = PetscFree5(u, u_t, fgeom, elemVec, a);CHKERRQ(ierr);
   }
+  if (plex)  {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
+  if (plexA) {ierr = DMDestroy(&plexA);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

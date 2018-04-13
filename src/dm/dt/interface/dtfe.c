@@ -1875,7 +1875,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
   Input Parameters:
 + sp      - The PetscDualSpace
-. dim     - The spatial dimension
+. dim     - The spatial/topological dimension
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
   Output Parameter:
@@ -2945,7 +2945,7 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   ierr = PetscCalloc1(s->dim, &sp->functional);CHKERRQ(ierr);
   ierr = PetscFree(s->numDof);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &spatialDim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &spatialDim);CHKERRQ(ierr);
   ierr = PetscCalloc1(spatialDim+1, &s->numDof);CHKERRQ(ierr);
   s->numDof[spatialDim] = dim;
   PetscFunctionReturn(0);
@@ -3387,7 +3387,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 }
 
 /*@
-  PetscFEGetSpatialDimension - Returns the spatial dimension of the element
+  PetscFEGetSpatialDimension - Returns the spatial/topological dimension of the element
 
   Not collective
 
@@ -3395,7 +3395,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 . fem - The PetscFE object
 
   Output Parameter:
-. dim - The spatial dimension
+. dim - The spatial/topological dimension
 
   Level: intermediate
 
@@ -3790,6 +3790,7 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
+/* This tabulates the cell basis functions on each face bounding the cell */
 PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
 {
   PetscErrorCode   ierr;
@@ -4283,7 +4284,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
   PetscReal         *x;
   PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscBool          auxOnBd;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -4304,6 +4306,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
   ierr = PetscDSGetFaceTabulation(prob, &B, &D);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
+    ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
@@ -4312,7 +4315,9 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
-    ierr = PetscDSGetFaceTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
+    auxOnBd = dimAux < dim ? PETSC_TRUE : PETSC_FALSE;
+    if (auxOnBd) {ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);}
+    else         {ierr = PetscDSGetFaceTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);}
   }
   NbI = Nb[field];
   NcI = Nc[field];
@@ -4325,7 +4330,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
     const PetscReal *invJ = fgeom[e].invJ[0];
     const PetscReal  detJ = fgeom[e].detJ;
     const PetscReal *n    = fgeom[e].n;
-    const PetscInt   face = fgeom[e].face[0];
+    const PetscInt   face = fgeom[e].face[0]; /* Local face number in cell */
     PetscInt         qNc, Nq, q;
 
     ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
@@ -4342,7 +4347,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
        if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
        CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
        EvaluateFieldJets(dim, Nf, Nb, Nc, face*Nq+q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
-       if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+       if (probAux) EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, auxOnBd ? q : face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
        if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, numConstants, constants, &f0[q*NcI]);
        if (f1_func) {
          ierr = PetscMemzero(refSpaceDer, NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
