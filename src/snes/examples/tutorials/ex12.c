@@ -729,16 +729,18 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE        fe;
   PetscDS        prob, probAux = NULL, probCh = NULL;
   PetscBool      simplex = user->simplex;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
   if (user->variableCoefficient == COEFF_FIELD) {
     PetscQuadrature q;
 
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
@@ -746,14 +748,14 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   } else if (user->fieldBC) {
     PetscQuadrature q;
 
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   }
   if (user->check) {
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probCh);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
   }

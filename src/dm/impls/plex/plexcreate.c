@@ -1861,6 +1861,7 @@ extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
 extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
+extern PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field);
 PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
@@ -2153,6 +2154,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->getlocaltoglobalmapping         = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
+  dm->ops->createcoordinatefield           = DMCreateCoordinateField_Plex;
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Plex;
   dm->ops->createinterpolation             = DMCreateInterpolation_Plex;

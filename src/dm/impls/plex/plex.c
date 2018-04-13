@@ -5,6 +5,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 #include <petscdraw.h>
+#include <petscdmfield.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
@@ -3498,6 +3499,22 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
+{
+  Vec            coordsLocal;
+  DM             coordsDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *field = NULL;
+  ierr = DMGetCoordinatesLocal(dm,&coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm,&coordsDM);CHKERRQ(ierr);
+  if (coordsLocal && coordsDM) {
+    ierr = DMFieldCreateDS(coordsDM, 0, coordsLocal, field);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexGetConeSection - Return a section which describes the layout of cone data
 
@@ -6044,6 +6061,27 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel dimLabel, PetscInt d, PetscInt dMax)
+{
+  IS             is, his;
+  PetscInt       first, stride;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetStratumIS(depthLabel, d, &is);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) is, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {
+    ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);
+  }
+  if (!isStride || stride != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
+  ierr = ISCreateStride(PETSC_COMM_SELF, (dMax - first), first, 1, &his);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(dimLabel, d, his);CHKERRQ(ierr);
+  ierr = ISDestroy(&his);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
 
@@ -6062,6 +6100,8 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       dim;
+  DMLabel        depthLabel;
+  DMLabel        dimLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6071,6 +6111,16 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
   if (fMax >= 0) mesh->hybridPointMax[dim-1] = fMax;
   if (eMax >= 0) mesh->hybridPointMax[1]     = eMax;
   if (vMax >= 0) mesh->hybridPointMax[0]     = vMax;
+  ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+  if (!dimLabel) {
+    ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim, cMax);CHKERRQ(ierr);}
+  if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
+  if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 1, eMax);CHKERRQ(ierr);}
+  if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 0, vMax);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -6300,7 +6350,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
   ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(rdm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
   ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);

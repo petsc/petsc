@@ -105,21 +105,25 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
   Vec            locF;
-  PetscInt       cStart, cEnd, cEndInterior;
+  IS             cellIS;
   DM             plex;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
   ierr = DMGetLocalVector(plex, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, NULL, time, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeResidual_Internal(plex, cellIS, time, locX, NULL, time, locF, user);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(plex, &locF);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -187,16 +191,20 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
-  PetscInt       cStart, cEnd, cEndInterior;
   DM             plex;
+  IS             cellIS;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeResidual_Internal(plex, cStart, cEnd, time, locX, locX_t, time, locF, user);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
+  ierr = DMPlexComputeResidual_Internal(plex, cellIS, time, locX, locX_t, time, locF, user);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -221,16 +229,20 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
-  PetscInt       cStart, cEnd, cEndInterior;
+  IS             cellIS;
   DM             plex;
+  PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMPlexComputeJacobian_Internal(plex, cStart, cEnd, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(plex,&depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
+  if (!cellIS) {
+    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
+  }
+  ierr = DMPlexComputeJacobian_Internal(plex, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

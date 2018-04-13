@@ -4,12 +4,37 @@
 */
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscdmfield.h>
 
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = DMDAGetReducedDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
+{
+  PetscReal      gmin[3], gmax[3];
+  PetscScalar    corners[24];
+  PetscInt       dim;
+  PetscInt       i, j;
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  /* TODO: this is wrong if coordinates are not rectilinear */
+  ierr = DMDAGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
+  for (i = 0; i < (1 << dim); i++) {
+    for (j = 0; j < dim; j++) {
+      corners[i*dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
+    }
+  }
+  ierr = DMClone(dm,&cdm);CHKERRQ(ierr);
+  ierr = DMFieldCreateDA(cdm,dim,corners,field);CHKERRQ(ierr);
+  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

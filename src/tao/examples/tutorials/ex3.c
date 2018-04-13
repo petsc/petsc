@@ -214,7 +214,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscFunctionBeginUser;
 
   /* make the data we seek to match */
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, 4, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, PETSC_TRUE, NULL, 4, &fe);CHKERRQ(ierr);
 
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
