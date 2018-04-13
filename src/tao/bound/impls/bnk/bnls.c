@@ -2,17 +2,82 @@
 #include <petscksp.h>
 
 /*
- Implements Newton's Method with a line search approach for solving
- bound constrained minimization problems. A projected More'-Thuente line 
- search is used to guarantee that the BFGS preconditioner remains positive
- definite.
-
- The method can shift the Hessian matrix. The shifting procedure is
- adapted from the PATH algorithm for solving complementarity
- problems.
-
- The linear system solve should be done with a conjugate gradient
- method, although any method can be used.
+ Implements Newton's Method with a line search approach for 
+ solving bound constrained minimization problems.
+ 
+ ------------------------------------------------------------
+ 
+ x_0 = VecMedian(x_0)
+ f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
+ pg_0 = VecBoundGradientProjection(g_0)
+ check convergence at pg_0
+ trust = max_radius
+ niter = 0
+ 
+ while niter < max_it
+    niter += 1
+    H_k = TaoComputeHessian(x_k)
+    if pc_type == BNK_PC_BFGS
+      add correction to BFGS approx
+      if scale_type == BNK_SCALE_AHESS
+         D = VecMedian(1e-6, abs(diag(H_k)), 1e6)
+         scale BFGS with VecReciprocal(D)
+      end
+    end
+    
+    if pc_type = BNK_PC_BFGS
+      B_k = BFGS
+    else
+      B_k = VecMedian(1e-6, abs(diag(H_k)), 1e6)
+      B_k = VecReciprocal(B_k)
+    end
+    w = x_k - VecMedian(x_k - 0.001*B_k*g_k)
+    eps = min(eps, norm2(w))
+    determine the active and inactive index sets such that
+      L = {i : (x_k)_i <= l_i + eps && (g_k)_i > 0}
+      U = {i : (x_k)_i >= u_i - eps && (g_k)_i < 0}
+      F = {i : l_i = (x_k)_i = u_i}
+      A = {L + U + F}
+      I = {i : i not in A}
+    
+    generate the reduced system Hr_k dr_k = -gr_k for variables in I
+    if p > 0
+      Hr_k += p*I
+    end
+    if pc_type == BNK_PC_BFGS && scale_type == BNK_SCALE_PHESS
+      D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
+      scale BFGS with VecReciprocal(D)
+    end
+    trust = max_radius
+    solve Hr_k dr_k = -gr_k
+    set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
+    
+    if dot(d_k, pg_k)) >= 0 || norm(d_k) == NaN || norm(d_k) == Inf
+      dr_k = -BFGS*gr_k for variables in I
+      if dot(d_k, pg_k)) >= 0 || norm(d_k) == NaN || norm(d_k) == Inf
+        reset the BFGS preconditioner
+        calculate scale delta and apply it to BFGS
+        dr_k = -BFGS*gr_k for variables in I
+        if dot(d_k, pg_k)) >= 0 || norm(d_k) == NaN || norm(d_k) == Inf
+          dr_k = -gr_k for variables in I
+        end
+      end
+    end
+    
+    x_{k+1}, f_{k+1}, g_{k+1}, ls_failed = TaoBNKPerformLineSearch()
+    if ls_failed
+      f_{k+1} = f_k
+      x_{k+1} = x_k
+      g_{k+1} = g_k
+      pg_{k+1} = pg_k
+      terminate
+    else
+      pg_{k+1} = VecBoundGradientProjection(g_{k+1})
+      count the accepted step type (Newton, BFGS, scaled grad or grad)
+    end 
+    
+    check convergence at pg_{k+1}
+ end
 */
 
 static PetscErrorCode TaoSolve_BNLS(Tao tao)
@@ -30,6 +95,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoBNKInitialize(tao, BNK_INIT_CONSTANT);CHKERRQ(ierr);
+  tao->trust = bnk->max_radius;
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -41,7 +107,6 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
-    tao->trust = bnk->max_radius;
     ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
@@ -62,18 +127,19 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
       steplen = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
-      break;
     } else {
+      /* compute the projected gradient */
+      ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
       /* count the accepted step type */
       ierr = TaoBNKAddStepCounts(tao, stepType);CHKERRQ(ierr);
     }
 
     /*  Check for termination */
-    ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
-    ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,steplen);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF, 1, "User provided compute function generated Not-a-Number");
+    ierr = TaoLogConvergenceHistory(tao, bnk->f, bnk->gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, bnk->f, bnk->gnorm, 0.0, steplen);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -456,15 +456,15 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Solve the Newton system of equations */
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
-  ierr = VecCopy(bnk->unprojected_gradient, bnk->Gwork);CHKERRQ(ierr);
+  ierr = VecCopy(bnk->unprojected_gradient, bnk->G_inactive);CHKERRQ(ierr);
   if (bnk->active_idx) {
-    ierr = VecGetSubVector(bnk->Gwork, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
+    ierr = VecGetSubVector(bnk->G_inactive, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
     ierr = VecSet(bnk->active_work, 0.0);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(bnk->Gwork, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(bnk->G_inactive, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
   }
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp, bnk->Gwork, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;
     tao->ksp_tot_its+=kspits;
@@ -488,7 +488,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         tao->trust = PetscMin(tao->trust, bnk->max_radius);
 
         ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, bnk->Gwork, tao->stepdirection);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
         tao->ksp_its+=kspits;
         tao->ksp_tot_its+=kspits;
@@ -498,7 +498,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
       }
     }
   } else {
-    ierr = KSPSolve(tao->ksp, bnk->Gwork, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
     tao->ksp_tot_its+=kspits;
@@ -674,16 +674,13 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
   
   PetscFunctionBegin;
   /* Perform the linesearch */
-  *steplen = 1.0;
   ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
-  ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
   ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
   while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && stepType != BNK_GRADIENT) {
     /* Linesearch failed, revert solution */
     bnk->f = bnk->fold;
     ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
-    ierr = VecCopy(bnk->Gold, tao->gradient);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
 
     switch(stepType) {
@@ -779,9 +776,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
     ierr = TaoBNKBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
     
     /* Perform one last line search with the fall-back step */
-    *steplen = 1.0;
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
-    ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
   }
   *reason = ls_reason;
@@ -1014,6 +1009,7 @@ static PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (!bnk->Gwork) {ierr = VecDuplicate(tao->solution,&bnk->Gwork);CHKERRQ(ierr);}
   if (!bnk->unprojected_gradient) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient);CHKERRQ(ierr);}
   if (!bnk->unprojected_gradient_old) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient_old);CHKERRQ(ierr);}
+  if (!bnk->G_inactive) {ierr = VecDuplicate(tao->solution,&bnk->G_inactive);CHKERRQ(ierr);}
   bnk->Diag = 0;
   bnk->Diag_min = 0;
   bnk->Diag_max = 0;
@@ -1046,6 +1042,7 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
     ierr = VecDestroy(&bnk->Gwork);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->unprojected_gradient_old);CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->G_inactive);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
   ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);

@@ -4,8 +4,77 @@
 /*
  Implements Newton's Method with a trust region approach for solving
  bound constrained minimization problems.
+ 
+ ------------------------------------------------------------
+ 
+ initialize trust radius (default: BNK_INIT_INTERPOLATION)
+ x_0 = VecMedian(x_0)
+ f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
+ pg_0 = VecBoundGradientProjection(g_0)
+ check convergence at pg_0
+ niter = 0
+ step_accepted = true
+ 
+ while niter <= max_it
+    if step_accepted
+      niter += 1
+      H_k = TaoComputeHessian(x_k)
+      if pc_type == BNK_PC_BFGS
+        add correction to BFGS approx
+        if scale_type == BNK_SCALE_AHESS
+          D = VecMedian(1e-6, abs(diag(H_k)), 1e6)
+          scale BFGS with VecReciprocal(D)
+        end
+      end
+    end
 
- The linear system solve has to be done with a conjugate gradient method.
+    if pc_type = BNK_PC_BFGS
+      B_k = BFGS
+    else
+      B_k = VecMedian(1e-6, abs(diag(H_k)), 1e6)
+      B_k = VecReciprocal(B_k)
+    end
+    w = x_k - VecMedian(x_k - 0.001*B_k*g_k)
+    eps = min(eps, norm2(w))
+    determine the active and inactive index sets such that
+      L = {i : (x_k)_i <= l_i + eps && (g_k)_i > 0}
+      U = {i : (x_k)_i >= u_i - eps && (g_k)_i < 0}
+      F = {i : l_i = (x_k)_i = u_i}
+      A = {L + U + F}
+      I = {i : i not in A}
+      
+    generate the reduced system Hr_k dr_k = -gr_k for variables in I
+    if pc_type == BNK_PC_BFGS && scale_type == BNK_SCALE_PHESS
+      D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
+      scale BFGS with VecReciprocal(D)
+    end
+    solve Hr_k dr_k = -gr_k
+    set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
+    
+    x_{k+1} = VecMedian(x_k + d_k)
+    s = x_{k+1} - x_k
+    prered = dot(s, 0.5*gr_k - Hr_k*s)
+    f_{k+1} = TaoComputeObjective(x_{k+1})
+    actred = f_k - f_{k+1}
+
+    oldTrust = trust
+    step_accepted, trust = TaoBNKUpdateTrustRadius(default: BNK_UPDATE_REDUCTION)
+    if step_accepted
+      g_{k+1} = TaoComputeGradient(x_{k+1})
+      pg_{k+1} = VecBoundGradientProjection(g_{k+1})
+      count the accepted Newton step
+    else
+      f_{k+1} = f_k
+      x_{k+1} = x_k
+      g_{k+1} = g_k
+      pg_{k+1} = pg_k
+      if trust == oldTrust
+        terminate because we cannot shrink the radius any further
+      end
+    end 
+
+    check convergence at pg_{k+1}
+ end
 */
 
 static PetscErrorCode TaoSolve_BNTR(Tao tao)
@@ -58,7 +127,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
          in order for the safeguard to more closely mimic a piece-wise linesearch 
          along the bounds. */
       ierr = MatMult(bnk->H_inactive, tao->stepdirection, bnk->Xwork);CHKERRQ(ierr);
-      ierr = VecAYPX(bnk->Xwork, -0.5, tao->gradient);CHKERRQ(ierr);
+      ierr = VecAYPX(bnk->Xwork, -0.5, bnk->G_inactive);CHKERRQ(ierr);
       ierr = VecDot(bnk->Xwork, tao->stepdirection, &prered);
     } else {
       /* Step did not change, so we can just recover the pre-computed prediction */

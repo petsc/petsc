@@ -10,7 +10,7 @@ Context for bounded Newton-Krylov type optimization algorithms
 typedef struct {
   Mat H_inactive, Hpre_inactive, M;
   Vec W, Xwork, Gwork, inactive_work, active_work;
-  Vec Xold, Gold, Diag, Diag_min, Diag_max;
+  Vec Xold, Gold, Diag, Diag_min, Diag_max, G_inactive;
   Vec unprojected_gradient, unprojected_gradient_old;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
