@@ -31,4 +31,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 4.7e-07 [1.25e-08, 4.7e-07]
+L_2 Error: 4.71077e-07 [1.25157e-08, 4.70911e-07]
