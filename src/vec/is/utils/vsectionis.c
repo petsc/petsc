@@ -2710,10 +2710,12 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
-  PetscCheckSameComm(section,1,sym,2);
-  ierr = PetscObjectReference((PetscObject)sym);CHKERRQ(ierr);
   ierr = PetscSectionSymDestroy(&(section->sym));CHKERRQ(ierr);
+  if (sym) {
+    PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
+    PetscCheckSameComm(section,1,sym,2);
+    ierr = PetscObjectReference((PetscObject) sym);CHKERRQ(ierr);
+  }
   section->sym = sym;
   PetscFunctionReturn(0);
 }
