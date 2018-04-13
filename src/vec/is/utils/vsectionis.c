@@ -82,9 +82,10 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 @*/
 PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 {
-  IS             perm;
-  PetscInt       numFields, f, pStart, pEnd, p;
-  PetscErrorCode ierr;
+  PetscSectionSym sym;
+  IS              perm;
+  PetscInt        numFields, f, pStart, pEnd, p;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
@@ -141,6 +142,8 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
       }
     }
   }
+  ierr = PetscSectionGetSym(section, &sym);CHKERRQ(ierr);
+  ierr = PetscSectionSetSym(newSection, sym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
