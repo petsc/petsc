@@ -27,7 +27,6 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  KSPType                      ksp_type;
   PC                           pc;
   
   PetscReal                    f_min, ftrial, prered, actred, kappa, sigma;
@@ -70,13 +69,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
      Command automatically ignored for other methods
      Will be reset during the first iteration
   */
-  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&bnk->is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&bnk->is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&bnk->is_gltr);CHKERRQ(ierr);
-
   ierr = KSPCGSetRadius(tao->ksp,bnk->max_radius);CHKERRQ(ierr);
-
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     if (tao->trust0 < 0.0) SETERRQ(PETSC_COMM_SELF,1,"Initial radius negative");
     tao->trust = tao->trust0;
@@ -278,11 +271,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
      This step is done after computing the initial trust-region radius
      since the function value may have decreased */
   if (BNK_PC_BFGS == bnk->pc_type) {
-    if (bnk->f != 0.0) {
-      delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-    } else {
-      delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-    }
+    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
     ierr = MatLMVMSetDelta(bnk->M,delta);CHKERRQ(ierr);
   }
 
@@ -345,8 +334,10 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao)
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
-      /* BFGS preconditioner doesn't exist so let's invert the diagonal of the Hessian instead onto the gradient*/
+      /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
       ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
+      ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);
+      ierr = VecMedian(bnk->Diag_min, bnk->Xwork, bnk->Diag_max, bnk->Xwork);CHKERRQ(ierr);
       ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
       ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
     }
@@ -530,11 +521,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
     if ((KSP_DIVERGED_INDEFINITE_PC == *ksp_reason) && (bfgsUpdates > 1)) {
       /* Preconditioner is numerically indefinite; reset the approximation. */
-      if (bnk->f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-      } else {
-        delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-      }
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
       ierr = MatLMVMSetDelta(bnk->M,delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -596,11 +583,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
            which is guaranteed to be descent */
 
         /* Use steepest descent direction (scaled) */
-        if (bnk->f != 0.0) {
-          delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-        } else {
-          delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-        }
+        delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
         ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
         ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -677,7 +660,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
   ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
   ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
-  while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && stepType != BNK_GRADIENT) {
+  while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && (stepType != BNK_GRADIENT || stepType !=BNK_SCALED_GRADIENT)) {
     /* Linesearch failed, revert solution */
     bnk->f = bnk->fold;
     ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
@@ -714,11 +697,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
           /* BFGS direction is not descent or direction produced not a number
              We can assert bfgsUpdates > 1 in this case
              Use steepest descent direction (scaled) */
-          if (bnk->f != 0.0) {
-            delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-          } else {
-            delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-          }
+          delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
           ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
           ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -742,11 +721,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       /* Can only enter if pc_type == BNK_PC_BFGS
          Failed to obtain acceptable iterate with BFGS step
          Attempt to use the scaled gradient direction */
-      if (bnk->f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(bnk->f) / (bnk->gnorm*bnk->gnorm);
-      } else {
-        delta = 2.0 / (bnk->gnorm*bnk->gnorm);
-      }
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
       ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -994,10 +969,11 @@ PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
 
 /* ---------------------------------------------------------- */
 
-static PetscErrorCode TaoSetUp_BNK(Tao tao)
+PetscErrorCode TaoSetUp_BNK(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
+  KSPType        ksp_type;
 
   PetscFunctionBegin;
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);}
@@ -1023,6 +999,10 @@ static PetscErrorCode TaoSetUp_BNK(Tao tao)
   bnk->M = 0;
   bnk->H_inactive = 0;
   bnk->Hpre_inactive = 0;
+  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&bnk->is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&bnk->is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&bnk->is_gltr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

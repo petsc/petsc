@@ -100,7 +100,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    oldTrust, prered, actred, stepNorm, steplen;
+  PetscReal                    resnorm, oldTrust, prered, actred, stepNorm, steplen;
   PetscBool                    stepAccepted = PETSC_TRUE, shift = PETSC_FALSE;
   PetscInt                     stepType;
   
@@ -180,6 +180,8 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
       } else {
         /* compute the projected gradient */
         ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+        ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+        if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
         /* Line search succeeded so we should update the trust radius based on the LS step length */
         tao->trust = oldTrust;
         ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);
@@ -189,18 +191,31 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
     }
 
     /*  Check for termination */
-    ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
-    ierr = TaoLogConvergenceHistory(tao,bnk->f,bnk->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,bnk->f,bnk->gnorm,0.0,steplen);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->Gwork);CHKERRQ(ierr);
+    ierr = VecNorm(bnk->Gwork, NORM_2, &resnorm);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
+PETSC_INTERN PetscErrorCode TaoSetUp_BNTL(Tao tao)
+{
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
+  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PETSC_COMM_SELF,1,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
@@ -208,6 +223,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve=TaoSolve_BNTL;
+  tao->ops->setup=TaoSetUp_BNTL;
   
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */

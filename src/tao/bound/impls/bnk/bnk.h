@@ -228,6 +228,7 @@ static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
 static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
+PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt);

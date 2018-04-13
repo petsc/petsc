@@ -87,15 +87,14 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    steplen = 1.0;
-  PetscBool                    shift = PETSC_TRUE;
+  PetscReal                    resnorm, steplen = 1.0;
+  PetscBool                    stepAccepted, shift = PETSC_TRUE;
   PetscInt                     stepType;
   
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao, BNK_INIT_CONSTANT);CHKERRQ(ierr);
-  tao->trust = bnk->max_radius;
+  ierr = TaoBNKInitialize(tao, bnk->init_type);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -130,15 +129,19 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     } else {
       /* compute the projected gradient */
       ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+      ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF, 1, "User provided compute function generated Not-a-Number");
+      /* update the trust radius based on the step length */
+      ierr = TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);
       /* count the accepted step type */
       ierr = TaoBNKAddStepCounts(tao, stepType);CHKERRQ(ierr);
     }
 
     /*  Check for termination */
-    ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF, 1, "User provided compute function generated Not-a-Number");
-    ierr = TaoLogConvergenceHistory(tao, bnk->f, bnk->gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, tao->niter, bnk->f, bnk->gnorm, 0.0, steplen);CHKERRQ(ierr);
+    ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->Gwork);CHKERRQ(ierr);
+    ierr = VecNorm(bnk->Gwork, NORM_2, &resnorm);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -146,7 +149,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
 
 /*------------------------------------------------------------*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
+PETSC_INTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
