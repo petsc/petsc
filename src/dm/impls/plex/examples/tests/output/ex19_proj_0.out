@@ -18,6 +18,6 @@ Labels:
   _boundary_: 1 strata with value/size (1 (20))
   depth: 3 strata with value/size (0 (48), 1 (121), 2 (74))
 Original L2 Error: 7.66827e-17
-Interpolated L2 Error: 7.66827e-17
-Lumped (rhs) L2 Error: 0.0815788
-Projected L2 Error: 2.48407e-16
+Interpolated L2 Error: 9.93477e-17
+Lumped (rhs) L2 Error: 0.0605827
+Projected L2 Error: 2.74247e-16

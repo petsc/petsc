@@ -1,9 +1,8 @@
 DM Object: Hybrid Mesh 1 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 6 support: 6
+Supports:
+[0] Max support size: 6
 [0]: 16 ----> 129
 [0]: 16 ----> 136
 [0]: 16 ----> 148
@@ -564,7 +563,8 @@ cap --> base:
 [0]: 224 ----> 125
 [0]: 224 ----> 124
 [0]: 224 ----> 128
-base <-- cap:
+Cones:
+[0] Max cone size: 6
 [0]: 0 <---- 61 (0)
 [0]: 0 <---- 113 (0)
 [0]: 0 <---- 69 (0)

@@ -164,9 +164,9 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObj
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Block Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
-  }
+  if (flg) {ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-pc_bjacobi_local_blocks","Local number of blocks","PCBJacobiSetLocalBlocks",jac->n_local,&blocks,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PCBJacobiSetLocalBlocks(pc,blocks,NULL);CHKERRQ(ierr);}
   if (jac->ksp) {
     /* The sub-KSP has already been set up (e.g., PCSetUp_BJacobi_Singleblock), but KSPSetFromOptions was not called
      * unless we had already been called. */
@@ -452,6 +452,9 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 +  pc - the preconditioner context
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing size of each block
+
+   Options Database Key:
+.  -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
 
    Note:
    Currently only a limited number of blocking configurations are supported.

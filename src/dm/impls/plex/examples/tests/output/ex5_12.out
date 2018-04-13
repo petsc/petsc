@@ -42,9 +42,8 @@ Label 'subpoint_map':
 DM Object: Hybrid Mesh 1 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 6 support: 7
+Supports:
+[0] Max support size: 7
 [0]: 6 ----> 57
 [0]: 6 ----> 60
 [0]: 6 ----> 66
@@ -287,7 +286,8 @@ cap --> base:
 [0]: 100 ----> 56
 [0]: 101 ----> 55
 [0]: 101 ----> 56
-base <-- cap:
+Cones:
+[0] Max cone size: 6
 [0]: 0 <---- 28 (0)
 [0]: 0 <---- 29 (0)
 [0]: 0 <---- 30 (0)

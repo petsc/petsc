@@ -23,9 +23,8 @@ Label 'subpoint_map':
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 3
+Supports:
+[0] Max support size: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 10
 [0]: 1 ----> 11
@@ -54,7 +53,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-[1] Max sizes cone: 5 support: 4
+[1] Max support size: 4
 [1]: 2 ----> 17
 [1]: 2 ----> 19
 [1]: 2 ----> 26
@@ -115,7 +114,8 @@ cap --> base:
 [1]: 27 ----> 15
 [1]: 28 ----> 15
 [1]: 28 ----> 16
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -144,6 +144,7 @@ base <-- cap:
 [0]: 13 <---- 4 (0)
 [0]: 14 <---- 4 (0)
 [0]: 14 <---- 2 (0)
+[1] Max cone size: 5
 [1]: 0 <---- 10 (0)
 [1]: 0 <---- 13 (-3)
 [1]: 0 <---- 12 (2)
@@ -267,9 +268,8 @@ PetscSF Object: 2 MPI processes
 DM Object: Hybrid Mesh 2 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 3
+Supports:
+[0] Max support size: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 10
 [0]: 1 ----> 11
@@ -298,7 +298,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-[1] Max sizes cone: 5 support: 4
+[1] Max support size: 4
 [1]: 2 ----> 17
 [1]: 2 ----> 19
 [1]: 2 ----> 26
@@ -359,7 +359,8 @@ cap --> base:
 [1]: 27 ----> 15
 [1]: 28 ----> 15
 [1]: 28 ----> 16
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -388,6 +389,7 @@ base <-- cap:
 [0]: 13 <---- 4 (0)
 [0]: 14 <---- 4 (0)
 [0]: 14 <---- 2 (0)
+[1] Max cone size: 5
 [1]: 0 <---- 10 (0)
 [1]: 0 <---- 13 (-3)
 [1]: 0 <---- 12 (2)
