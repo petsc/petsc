@@ -237,7 +237,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   if (both_identity) {
     switch (bs) {
     case  9:
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
       C->ops->solve = MatSolve_SeqBAIJ_9_NaturalOrdering;
 #else
       C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
