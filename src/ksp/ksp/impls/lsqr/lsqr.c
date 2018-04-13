@@ -134,6 +134,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (nopreconditioner) {
     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
+    /* this is an application of the preconditioner for the normal equations; not the operator, see the manual page */
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
     ierr = VecDotRealPart(V,Z,&alpha);CHKERRQ(ierr);
     if (alpha <= 0.0) {
