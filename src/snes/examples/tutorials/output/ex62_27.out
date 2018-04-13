@@ -33,7 +33,7 @@ SNES Object: 2 MPI processes
 Number of SNES iterations = 1
 L_2 Error: 9.59211e-11 [1.11203e-11, 9.52743e-11]
 Solution
-Vec Object: Solution, Iterate 0 2 MPI processes
+Vec Object: Solution 2 MPI processes
   type: mpi
 Process [0]
 0.

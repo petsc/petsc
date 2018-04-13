@@ -41,7 +41,7 @@ Vec Object: 1 MPI processes
 -2.22045e-16
 0.5
 Initial guess
-Vec Object: 1 MPI processes
+Vec Object: Solution 1 MPI processes
   type: seq
 -1.
 -0.5
@@ -205,7 +205,7 @@ Vec Object: 1 MPI processes
 -0.25
 0.0416667
 Au - b = Au + F(0)
-Vec Object: Solution, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 -0.0104167
 -0.0208333
