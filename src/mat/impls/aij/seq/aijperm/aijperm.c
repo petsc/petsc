@@ -12,7 +12,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#if defined(PETSC_HAVE_IMMINTRIN_H)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 #include <immintrin.h>
 
 #if !defined(_MM_SCALE_8)

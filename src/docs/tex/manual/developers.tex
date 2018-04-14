@@ -1,4 +1,4 @@
-%
+
 % LATEX version of the PETSc developers manual.
 %
 
@@ -9,20 +9,20 @@
 
 \usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
-\rhead{PETSc 3.8 \today}
+\rhead{PETSc 3.9 \today}
 
 \begin{document}
 
 \pagestyle{empty}
 \hspace{-.65in}\includegraphics{ArgonneLogo}
-\hfill  {\large {\bf ANL-18/XX Rev 3.8}}
+\hfill  {\large {\bf ANL-18/XX Rev 3.9}}
 
 \vspace*{2in}
 \noindent {\huge{\bf PETSc Developers Guide}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.8}}
+\noindent {\Large{\it Revision 3.9}}
 
 \vspace*{1in}
 \noindent \\
@@ -38,14 +38,14 @@
 \centerline{\includegraphics{ArgonneReportTemplatePage2}}
 \newpage
 
-\hfill {\large {\bf ANL-18/XX Rev 3.8}}
+\hfill {\large {\bf ANL-18/XX Rev 3.9}}
 
 \vspace*{2in}
 \noindent {\LARGE{\bf PETSc Developers Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.8}}
+\noindent {\Large{\it Revision 3.9}}
 
 \vspace*{0.5in}
 \noindent Prepared by \\
@@ -90,15 +90,15 @@ and documentation (available
 via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}) including the PETSc users manual \cite{petsc-user-ref}.
 
 Before contributing code to PETSc, please read Chapter \ref{chapter:styleguide}, which contains the source code style guide.
-\href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}
-contains information on how to submit patches and pull requests to PETSc.
+Information on how to submit patches and pull requests to PETSc can be found at
+\href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}.
 
 \vspace{1cm}
 
 Please direct all comments and questions regarding PETSc design and
 development to \trl{petsc-dev@mcs.anl.gov}.  Note that all {\em
-bug reports and questions regarding the use of PETSc} should continue
-to be directed to \trl{petsc-maint@mcs.anl.gov}.
+bug reports and questions regarding the use of PETSc} should
+be directed to \trl{petsc-maint@mcs.anl.gov}.
 
 %
 % NOTES:
@@ -135,9 +135,9 @@ to such inquiries please follow the guidelines given below.
 
 \chapter{Style Guide}\label{chapter:styleguide}
 
-The PETSc team uses certain conventions to make the source code consistent and hence easier to maintain. Groups
-developing code compatible with PETSc are, of course, free to organize their
-own source code anyway they like.
+The PETSc team uses certain conventions to make the source code consistent and hence easier to maintain. We will interchangeably use the
+terminology {\em subclass}, {\em implementation}, or {\em type} to refer to a concrete realization of an abstract base class. For example,
+\lstinline{KSPGMRES} is a type for the base class {\em KSP}.
 
 \section{Names}\label{sec:stylenames}
 Consistency of names for variables, functions, etc. is extremely
@@ -149,7 +149,7 @@ We use several conventions:
       \lstinline{MatGetOrdering()}.
 \item All enum elements and macro variables are named with all capital letters. When
       they consist of several complete words, there is an underscore between each word.
-      For example, \lstinline{MAT_FINAL_ASSEMBLY} or \lstinline{PETSC_USE_COMPLEX}.
+      For example, \lstinline{MAT_FINAL_ASSEMBLY}.
 \item Functions that are private to PETSc (not callable by the
       application code) either
       \begin{itemize}
@@ -162,11 +162,11 @@ We use several conventions:
       In addition, functions that are not intended for use outside
       of a particular file are declared \lstinline{static}.
       Also see item \ref{styleitem:petscextern} in Section \ref{sec:stylepetsc}.
-\item Function names in structures are the same as the base application
+\item Function names in structures (for example, \lstinline{_matops} are the same as the base application
       function name without the object prefix, and are in small letters.
       For example, \lstinline{MatMultTranspose()} has a structure name of
       \lstinline{multtranspose}.
-\item Names of Implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example \lstinline{KSPSolve_GMRES()}.
+\item Names of implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example \lstinline{KSPSolve_GMRES()}.
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
@@ -410,9 +410,9 @@ All entries below should be separated by blank lines.
   \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
   \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
   \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
-  \item (Optional) a \trl{Notes: } section, with a newline after \trl{Notes:}. In-depth discussion, technical caveats, special cases, and so on should be listed here.
+  \item (Optional) a \trl{Notes: } In-depth discussion, technical caveats, special cases, and so on should be listed here.
     If it is ambiguous whether returned pointers need to be freed by the user or not, this information should be mentioned here.
-  \item (If applicable) a \trl{Fortran Notes: } section, with a newline after \trl{Fortran Notes:}, detailing any relevant differences in calling or using the item from Fortran.
+  \item (If applicable) a \trl{Fortran Notes: } Detailing any relevant differences in calling or using the item from Fortran.
   \item \trl{Level: } followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}
   \item (Optional) a list of \trl{Concepts: }
   \item (Optional) a list of \trl{Keywords: }
@@ -426,15 +426,15 @@ PETSc provides a variety of basic services for writing scalable, component
 based libraries; these are referred to as the PETSc kernel, \cite{bgms98}. The source
 code for the kernel is in \trl{src/sys}. It contains systematic support for
 \begin{tightitemize}
-  \item PETSc types
-  \item error handling
-  \item memory management
-  \item profiling
-  \item object management
-  \item Fortran interfaces, see \cite{BalayBrownKnepleyMcInnesSmith2015}
-  \item mechanism for generating appropriate citations for algorithms and software used in PETSc, see \cite{knepley2013accurately}
-  \item file IO
-  \item an options database
+  \item PETSc types,
+  \item error handling,
+  \item memory management,
+  \item profiling,
+  \item object management,
+  \item Fortran interfaces, see \cite{BalayBrownKnepleyMcInnesSmith2015},
+  \item mechanism for generating appropriate citations for algorithms and software used in PETSc, see \cite{knepley2013accurately},
+  \item file IO,
+  \item an options database, and
   \item objects and code for viewing, drawing, and displaying data and solver objects.
 \end{tightitemize}
 Each of these is discussed in a section below.
@@ -444,12 +444,12 @@ Each of these is discussed in a section below.
 For maximum flexibility, the basic data types \trl{int}, \trl{double}, etc. are
  not used in PETSc source code. Rather it has:
 \begin{tightitemize}
-  \item \lstinline{PetscScalar}
-  \item \lstinline{PetscInt}
-  \item \lstinline{PetscMPIInt}
-  \item \lstinline{PetscBLASInt}
-  \item \lstinline{PetscBool}
-  \item \lstinline{PetscBT} - bit storage of logical true and false
+  \item \lstinline{PetscScalar},
+  \item \lstinline{PetscInt},
+  \item \lstinline{PetscMPIInt},
+  \item \lstinline{PetscBLASInt},
+  \item \lstinline{PetscBool}, and
+  \item \lstinline{PetscBT} - bit storage of logical true and false.
 \end{tightitemize}
 \lstinline{PetscInt} can be set using \trl{./configure} to be either \trl{int} (32 bit, the default) or \trl{long long}
 (64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays.
@@ -488,16 +488,17 @@ The macro \lstinline{SETERRQ()} is given by
   return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,error code,error type,"Error message");
 \end{lstlisting}
 It calls the error handler with the current function name and location: line number,
-file and directory, plus an error code and an error message.
+and file, plus an error code and an error message.
 Normally \trl{comm} is \lstinline{PETSC_COMM_SELF}; it can only be another communicator if
 one is absolutely sure the same error will be generated on all processes in the communicator.
-This is to prevent the same error message from being printed by many processes.
-The \lstinline{error type} is \lstinline{PETSC_ERROR_INITIAL} on detection of the initial error and \lstinline{PETSC_ERROR_REPEAT} for any additional calls.
+This feature is to prevent the same error message from being printed by many processes.
+The \lstinline{error type} is \lstinline{PETSC_ERROR_INITIAL} on detection of the initial error and \lstinline{PETSC_ERROR_REPEAT} for additional calls as
+the error calls go up the function call stack.
 This is so that the detailed error information is only printed once instead of for all levels of returned errors.
 
 The macro \lstinline{CHKERRQ()} is defined by
 \begin{lstlisting}
-if (ierr) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNC__,__FILE__,ierr, PETSC_ERROR_REPEAT," ");
+if (ierr) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME_,__FILE__,ierr, PETSC_ERROR_REPEAT," ");
 \end{lstlisting}
 
 In addition to \lstinline{SETERRQ()}, there are macros \lstinline{SETERRQ1()}, \lstinline{SETERRQ2()}, \lstinline{SETERRQ3()}
@@ -512,25 +513,25 @@ of arguments.
 The error handling function \lstinline{PetscError()} calls the ``current'' error handler
 with the code
 \begin{lstlisting}
-PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,const char *dir,error code,error type,const char *mess)
+PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,error code,error type,const char *mess)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!eh) ierr = PetscTraceBackErrorHandler(line,func,file,dir,error code,error type,mess,0);
-  else     ierr = (*eh->handler)(line,func,file,dir,error code,error type,mess,eh->ctx);
+  if (!eh) ierr = PetscTraceBackErrorHandler(line,func,file,error code,error type,mess,0);
+  else     ierr = (*eh->handler)(line,func,file,error code,error type,mess,eh->ctx);
   PetscFunctionReturn(ierr);
 }
 \end{lstlisting}
 The variable \lstinline{eh} is the current error handler context and is defined in
  \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/error/err.c.html}{\trl{src/sys/error/err.c}} as
 \begin{lstlisting}
-typedef struct _EH* EH;
-struct _EH {
+typedef struct _PetscEH* PetscEH;
+struct _PetscEH {
   PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char*,
                          PetscErrorCode,PetscErrorType,const char*,void*);
   void           *ctx;
-  EH             previous;
+  PetscEH        previous;
 };
 \end{lstlisting}
 
@@ -541,26 +542,26 @@ via \lstinline{PetscPopErrorHandler()}.
 
 PETSc provides several default error handlers:
 \begin{tightitemize}
-  \item \lstinline{PetscTraceBackErrorHandler()},
+  \item \lstinline{PetscTraceBackErrorHandler()}, the default,
   \item \lstinline{PetscAbortErrorHandler()}, called with \trl{-on_error_abort},
-  \item \lstinline{PetscReturnErrorHandler()},
+  \item \lstinline{PetscReturnErrorHandler()}, returns up the stack without printing error messages,
   \item \lstinline{PetscEmacsClientErrorHandler()},
-  \item \lstinline{PetscMPIAbortErrorHandler()}, and
+  \item \lstinline{PetscMPIAbortErrorHandler()}, call \lstinline{MPI_Abort()} after printing the error message, and
   \item \lstinline{PetscAttachDebuggerErrorHandler()}, called with \trl{-on_error_attach_debugger}.
 \end{tightitemize}
 
 \subsection{Error Codes}
 
-The PETSc error handler takes a generic error code.
+The PETSc error handler takes an error code.
 The generic error codes are defined in
 \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{\trl{include/petscerror.h}}.
-The same generic error code is used many times in the libraries.
-For example, the generic error code \lstinline{PETSC_ERR_MEM} is used whenever requested memory allocation is not available.
+The same error code is used many times in the libraries.
+For example, the error code \lstinline{PETSC_ERR_MEM} is used whenever a requested memory allocation is not available.
 
 \subsection{Detailed Error Messages}
 In a modern parallel component-oriented application code, it does not always make sense
-to simply print error messages to the screen (and more than likely there is no
-``screen'', for example with Microsoft Windows or Apple iPad applications).
+to simply print error messages to the terminal (and more than likely there is no
+``terminal'', for example with Microsoft Windows or Apple iPad applications).
 PETSc provides the replaceable function pointer
 \begin{lstlisting}
 (*PetscErrorPrintf)("Format",...);
@@ -584,7 +585,7 @@ PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *file
 which allow the use of any number of profiling and error checking wrappers for \lstinline{malloc(), calloc()} and \lstinline{free()}.
 Both \lstinline{PetscMallocA()} and \lstinline{PetscFreeA()} call the function pointer values  \lstinline{(*PetscTrMalloc)} and \lstinline{(*PetscTrFree)}.
 \lstinline{PetscMallocSet()} is used to set these function pointers.
-The functions are guaranteed to support requests for zero bytes of memory correctly. Freeing memory locations also sets the pointer value to zero preventing later code from accidently using memory that has been freed. All PETSc memory allocation calls are memory lined on at least double precision boundaries, the macro generated by configure \lstinline{{PETSC_MEMALIGN} indicates in bytes what alignment all allocations have. This can be controlled at configure time with the option \lstinline{-with-memalign=<4,8,16,32,64>}.
+The functions are guaranteed to support requests for zero bytes of memory correctly. Freeing memory locations also sets the pointer value to zero preventing later code from accidently using memory that has been freed. All PETSc memory allocation calls are memory lined on at least double precision boundaries, the macro generated by configure \lstinline{PETSC_MEMALIGN} indicates in bytes what alignment all allocations have. This can be controlled at configure time with the option \lstinline{-with-memalign=<4,8,16,32,64>}.
 
 
 \lstinline{PetscMallocA()} supports a request for up to 7 distinct memory locations of possibly different types. This serves two purposes, it reduces the number of system  \lstinline{malloc()} calls, thus potentially increasing performance and it clarifies in the code related memory allocations that should be freed together.
@@ -690,7 +691,7 @@ does {\em not} ``know'' how the data is stored internally.
 \section{Introduction}
 
 PETSc is designed around several classes including, for example, \lstinline{Vec} (vectors) and
-\lstinline{Mat} (matrices, both dense and sparse)). Each class is
+\lstinline{Mat} (matrices, both dense and sparse). Each class is
 implemented using a C \lstinline{struct} that contains the data and function pointers
 for operations on the data (much like virtual functions in C++ classes).
 Each class consists of three parts:
@@ -701,7 +702,7 @@ Each class consists of three parts:
 \end{tightenumerate}
 For example, all matrix (\lstinline{Mat}) classes share a function table of operations that
 may be performed on the matrix; all PETSc matrix implementations share some additional
-data fields, including matrix size, while a particular matrix implementation in PETSc
+data fields, including matrix parallel layout, while a particular matrix implementation in PETSc
 (say compressed sparse row) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail
 in the following sections. New class implementations {\em must}
@@ -717,7 +718,7 @@ data structures used for a particular implementation of an object that has the
 Each class has
 \begin{tightitemize}
 \item Its own, application public, include file \trl{include/petsc<class>.h}
-\item Its own directory, \trl{src/<class>} or \trl{src/<package>/<class>} (see Chapter \ref{ch:packages}).
+\item Its own directory, \trl{src/<class>} or \trl{src/<package>/<class>}.
 \item A data structure defined in  the file
       \trl{include/petsc/private/<class>impl.h}.
       This data structure is shared by all the different PETSc implementations of the
@@ -739,7 +740,7 @@ the name of a particular implementation is
 \item One or more actual implementations of the class (for example,
       sparse uniprocessor and parallel matrices implemented with the AIJ storage format).
       These are each in a subdirectory of
-      \trl{src/<class>/impls}. Except in rare circumstances data
+      \trl{src/<class>/impls}. Except in rare circumstances, data
       structures defined here should not be referenced from outside this
       directory.
 \end{tightitemize}
@@ -845,7 +846,7 @@ to distinguish between classes. When a new class is created one needs to call
 \begin{lstlisting}
 PetscClassIdRegister(const char *classname,PetscClassId *classid);
 \end{lstlisting}
-See Chapter \ref{ch:packages} for details on where and when these functions are called. For example,
+For example,
 \begin{lstlisting}
 PetscClassIdRegister("index set",&IS_CLASSID);
 \end{lstlisting}
@@ -1024,7 +1025,7 @@ the associated functionality. These objects are internally named as
 vs \lstinline{_p_Vec}.
 
 % -----------------------------------------------------------------------------------
-\chapter{PETSc Packages}
+\section{PETSc Packages}
 
 The PETSc source code is divided into the following
 library level packages: \trl{sys}, \trl{Vec}, \trl{Mat}, \trl{DM}, \trl{KSP}, \trl{SNES}, \trl{TS}, \trl{TAO}. Each

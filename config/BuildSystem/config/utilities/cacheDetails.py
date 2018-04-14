@@ -4,7 +4,7 @@ import sys
 import string
 
 class CacheAttribute(object):
-  def __init__(self, name, keyword, help, default=None, min=0, max=min(sys.maxint,2**31-1)):
+  def __init__(self, name, keyword, help, default=None, min=0, max=min(sys.maxsize,2**31-1)):
     self.name = name
     self.help = help
     self.keyword = keyword

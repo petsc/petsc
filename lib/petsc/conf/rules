@@ -68,17 +68,17 @@ chkopts: chk_upgrade
 # uses the cmake infrastructure to build/rebuild the libraries
 ccmake:
 	@echo "=========================================="
-	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
+	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) -l$(NPMAX) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
 cmake:
-	+@MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
+	+@MAKEFLAGS="-j$(MAKE_NP) -l$(NPMAX) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
 
 gnumake:
-	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
+	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(NPMAX) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -680,8 +680,9 @@ manconcepts:
 manimplementations:
 	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
   for i in docs/manualpages/*/*.html; do \
+          printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \

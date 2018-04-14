@@ -54,7 +54,8 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
--   -mat_coloring_valid - debugging option that prints all coloring incompatibilities
+.   -mat_coloring_test - debugging option that prints all coloring incompatibilities
+-   -mat_is_coloring_test - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
 
    Level: beginner
 
@@ -217,7 +218,8 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   if (mc->ops->setfromoptions) {
     ierr = (*mc->ops->setfromoptions)(PetscOptionsObject,mc);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_coloring_test","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_is_coloring_test","Check that a valid iscoloring has been produced","",mc->valid_iscoloring,&mc->valid_iscoloring,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -364,10 +366,15 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   ierr = PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
+
   /* valid */
   if (mc->valid) {
-    ierr = MatColoringTestValid(mc,*coloring);CHKERRQ(ierr);
+    ierr = MatColoringTest(mc,*coloring);CHKERRQ(ierr);
   }
+  if (mc->valid_iscoloring) {
+    ierr = MatISColoringTest(mc->mat,*coloring);CHKERRQ(ierr);
+  }
+
   /* view */
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {

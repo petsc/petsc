@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #run this script like a normal PETSc configure script within PETSc Folder.
+from __future__ import print_function
 import os
 import sys
 
@@ -49,5 +50,5 @@ configure_options = [
 if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
-  print configure_options
-  print configure.petsc_configure(configure_options)
+  print(configure_options)
+  print(configure.petsc_configure(configure_options))

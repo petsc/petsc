@@ -8,6 +8,7 @@
 #  Usage:
 #    helpindex.py
 #
+from __future__ import print_function
 import os
 import glob
 import posixpath
@@ -75,15 +76,15 @@ def updatedata(PETSC_DIR,dict,line):
             else:
                   prim_key = prim_sub_keys[0]
                   sub_key  = prim_sub_keys[1]
-                  print "Error! more than 2 levels if keys specified "  + filename
-                  print line
+                  print("Error! more than 2 levels if keys specified "  + filename)
+                  print(line)
             prim_key = strip(prim_key)
             sub_key  = strip(sub_key)
             if prim_key == '':
                   continue
-            if not dict.has_key(prim_key):
+            if prim_key not in dict:
                   dict[prim_key] = {}  #use dict to store sub_key
-            if not dict[prim_key].has_key(sub_key):
+            if sub_key not in dict[prim_key]:
                   dict[prim_key][sub_key] = {}
             dict[prim_key][sub_key][link_title] = filename
 
@@ -238,8 +239,8 @@ def main():
       arg_len = len(argv)
 
       if arg_len < 3:
-            print 'Error! Insufficient arguments.'
-            print 'Usage:', argv[0], 'PETSC_DIR','LOC'
+            print('Error! Insufficient arguments.')
+            print('Usage:', argv[0], 'PETSC_DIR','LOC')
             exit()
 
       PETSC_DIR = argv[1]

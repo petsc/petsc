@@ -42,7 +42,7 @@ class Configure(config.package.Package):
     self.installDirProvider.printSudoPasswordMessage()
     try:
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.installSudo+' ' +self.make.make+' install', timeout=600, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error building/install zlib files from '+os.path.join(self.packageDir, 'zlib')+' to '+self.packageDir)
     self.postInstall(output+err,conffile)
     return self.installDir

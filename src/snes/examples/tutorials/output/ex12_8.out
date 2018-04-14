@@ -1,9 +1,8 @@
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 8
+Supports:
+[0] Max support size: 8
 [0]: 16 ----> 29
 [0]: 16 ----> 31
 [0]: 16 ----> 51
@@ -108,7 +107,8 @@ cap --> base:
 [0]: 55 ----> 14
 [0]: 55 ----> 15
 [0]: 56 ----> 15
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 29 (0)
 [0]: 0 <---- 30 (0)
 [0]: 0 <---- 31 (0)
@@ -334,7 +334,7 @@ Vec Object: potential 1 MPI processes
 0.53125
 1.15625
 1.5625
-L_2 Error: < 1.0e-11
+L_2 Error: 1.25122e-16
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -380,7 +380,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.
 0.
@@ -513,7 +513,7 @@ Vec Object: 1 MPI processes
 0.166667
 -0.583333
 Au - b = Au + F(0)
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.
 0.

@@ -11,6 +11,9 @@
 +   ksp - the iterative context
 -   scale - the relaxation factor
 
+    Options Database Keys:
+. -ksp_richardson_self <scale> - Set the scale factor
+
     Level: intermediate
 
 .keywords: KSP, Richardson, set, scale
@@ -35,6 +38,9 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
     Input Parameters:
 +   ksp - the iterative context
 -   scale - PETSC_TRUE or the default of PETSC_FALSE
+
+    Options Database Keys:
+. -ksp_richardson_self_scale - Use self-scaling
 
     Level: intermediate
 

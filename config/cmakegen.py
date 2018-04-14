@@ -14,6 +14,7 @@
 # This script supports one option:
 #   --verbose : Show mismatches between makefiles and the filesystem
 
+from __future__ import print_function
 import os
 from collections import deque
 

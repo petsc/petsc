@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import os,shutil, string, re
 from distutils.sysconfig import parse_makefile
 import sys
@@ -207,7 +208,7 @@ class generateExamples(Petsc):
     argregex=re.compile('(?<![a-zA-Z])-(?=[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in lkeys:
-      if type(inDict[key])!=types.StringType: continue
+      if type(inDict[key])!=bytes: continue
       keystr = str(inDict[key])
       akey=('subargs' if key=='args' else key)  # what to assign
       if akey not in inDict: inDict[akey]=''
@@ -394,7 +395,7 @@ class generateExamples(Petsc):
     subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
     if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
       if not subst['TODO']:
-        print "Warning: "+subst['output_file']+" not found."
+        print("Warning: "+subst['output_file']+" not found.")
     # Worry about alt files here -- see
     #   src/snes/examples/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
@@ -459,7 +460,7 @@ class generateExamples(Petsc):
     """
     Str=origStr
     for subkey in subst:
-      if type(subst[subkey])!=types.StringType: continue
+      if type(subst[subkey])!=bytes: continue
       patt="@"+subkey.upper()+"@"
       Str=re.sub(patt,subst[subkey],Str)
     return Str
@@ -593,7 +594,7 @@ class generateExamples(Petsc):
       fh.write(loopFoot+"\n")
 
     fh.write(footer+"\n")
-    os.chmod(os.path.join(runscript_dir,testname+".sh"),0755)
+    os.chmod(os.path.join(runscript_dir,testname+".sh"),0o755)
     #if '10_9' in testname: sys.exit()
     return
 
@@ -612,7 +613,7 @@ class generateExamples(Petsc):
     isBuilt=self._isBuilt(exfile,srcDict)
     for test in srcDict:
       if test in self.buildkeys: continue
-      if debug: print self.nameSpace(exfile,root), test
+      if debug: print(self.nameSpace(exfile,root), test)
       srcDict[test]['execname']=execname   # Convenience in generating scripts
       isRun=self._isRun(srcDict[test])
       self.genRunScript(test,root,isRun,srcDict)
@@ -663,7 +664,7 @@ class generateExamples(Petsc):
       testDict['SKIP'] = []
     # MPI requirements
     if testDict.get('nsize',1)>1 and 'MPI_IS_MPIUNI' in self.conf:
-      if debug: print indent+"Cannot run parallel tests"
+      if debug: print(indent+"Cannot run parallel tests")
       testDict['SKIP'].append("Parallel test with serial build")
  
     # The requirements for the test are the sum of all the run subtests
@@ -682,7 +683,7 @@ class generateExamples(Petsc):
       for requirement in testDict['requires'].split():
         requirement=requirement.strip()
         if not requirement: continue
-        if debug: print indent+"Requirement: ", requirement
+        if debug: print(indent+"Requirement: ", requirement)
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
@@ -743,7 +744,7 @@ class generateExamples(Petsc):
             continue
           continue  # Success
         elif not isNull:
-          if debug: print "requirement not found: ", requirement
+          if debug: print("requirement not found: ", requirement)
           testDict['SKIP'].append(petscconfvar+" requirement not met")
           continue
 

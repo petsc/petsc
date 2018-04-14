@@ -8,43 +8,11 @@
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
 struct _MatShellOps {
-  /*   0 */
-  PetscErrorCode (*mult)(Mat,Vec,Vec);
-  /*   5 */
-  PetscErrorCode (*multtranspose)(Mat,Vec,Vec);
-  /*  10 */
-  /*  15 */
-  PetscErrorCode (*getdiagonal)(Mat,Vec);
-  /*  20 */
-  /*  24 */
-  /*  29 */
-  /*  34 */
-  /*  39 */
-  PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
-  PetscErrorCode (*copy)(Mat,Mat,MatStructure);
-  /*  44 */
-  PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
-  /*  49 */
-  /*  54 */
-  /*  59 */
-  PetscErrorCode (*destroy)(Mat);
-  /*  64 */
-  /*  69 */
-  /*  74 */
-  /*  79 */
-  /*  84 */
-  /*  89 */
-  /*  94 */
-  /*  99 */
-  /* 104 */
-  /* 109 */
-  /* 114 */
-  /* 119 */
-  /* 124 */
-  /* 129 */
-  /* 134 */
-  /* 139 */
-  /* 144 */
+  /*  3 */ PetscErrorCode (*mult)(Mat,Vec,Vec);
+  /*  5 */ PetscErrorCode (*multtranspose)(Mat,Vec,Vec);
+  /* 17 */ PetscErrorCode (*getdiagonal)(Mat,Vec);
+  /* 43 */ PetscErrorCode (*copy)(Mat,Mat,MatStructure);
+  /* 60 */ PetscErrorCode (*destroy)(Mat);
 };
 
 typedef struct {
@@ -285,6 +253,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
+  if (!shell->ops->mult) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMult() for this MATSHELL");
   ierr = (*shell->ops->mult)(A,xx,y);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
   if (instate == outstate) {
@@ -837,18 +806,20 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  Mat_Shell      *shell;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Can only use with MATSHELL matrices");
+  shell = (Mat_Shell*)A->data;
   shell->managescalingshifts = PETSC_FALSE;
-  A->ops->diagonalscale = 0;
-  A->ops->scale         = 0;
-  A->ops->shift         = 0;
-  A->ops->diagonalset   = 0;
+  A->ops->diagonalset   = NULL;
+  A->ops->diagonalscale = NULL;
+  A->ops->scale         = NULL;
+  A->ops->shift         = NULL;
+  A->ops->axpy          = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1034,19 +1005,30 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatSetOperation(), MatShellSetManageScalingShifts()
 @*/
-PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
+PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
-  Mat_Shell      *shell = (Mat_Shell*)mat->data;
+  Mat_Shell      *shell;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Can only use with MATSHELL matrices");
+  shell = (Mat_Shell*)mat->data;
+
   switch (op) {
   case MATOP_DESTROY:
     shell->ops->destroy = (PetscErrorCode (*)(Mat))f;
+    break;
+  case MATOP_VIEW:
+    if (!mat->ops->viewnative) {
+      mat->ops->viewnative = mat->ops->view;
+    }
+    mat->ops->view = (PetscErrorCode (*)(Mat,PetscViewer))f;
+    break;
+  case MATOP_COPY:
+    shell->ops->copy = (PetscErrorCode (*)(Mat,Mat,MatStructure))f;
     break;
   case MATOP_DIAGONAL_SET:
   case MATOP_DIAGONAL_SCALE:
@@ -1057,26 +1039,31 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     (((void(**)(void))mat->ops)[op]) = f;
     break;
   case MATOP_GET_DIAGONAL:
-    if (shell->managescalingshifts) shell->ops->getdiagonal = (PetscErrorCode (*)(Mat,Vec))f;
-    else mat->ops->getdiagonal = (PetscErrorCode (*)(Mat,Vec))f;
-    break;
-  case MATOP_VIEW:
-    if (!mat->ops->viewnative) {
-      mat->ops->viewnative = mat->ops->view;
+    if (shell->managescalingshifts) {
+      shell->ops->getdiagonal = (PetscErrorCode (*)(Mat,Vec))f;
+      mat->ops->getdiagonal   = MatGetDiagonal_Shell;
+    } else {
+      shell->ops->getdiagonal = NULL;
+      mat->ops->getdiagonal   = (PetscErrorCode (*)(Mat,Vec))f;
     }
-    mat->ops->view = (PetscErrorCode (*)(Mat,PetscViewer))f;
     break;
   case MATOP_MULT:
-    if (shell->managescalingshifts){
+    if (shell->managescalingshifts) {
       shell->ops->mult = (PetscErrorCode (*)(Mat,Vec,Vec))f;
       mat->ops->mult   = MatMult_Shell;
-    } else mat->ops->mult = (PetscErrorCode (*)(Mat,Vec,Vec))f;
+    } else {
+      shell->ops->mult = NULL;
+      mat->ops->mult   = (PetscErrorCode (*)(Mat,Vec,Vec))f;
+    }
     break;
   case MATOP_MULT_TRANSPOSE:
     if (shell->managescalingshifts) {
       shell->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec))f;
       mat->ops->multtranspose   = MatMultTranspose_Shell;
-    } else mat->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec))f;
+    } else {
+      shell->ops->multtranspose = NULL;
+      mat->ops->multtranspose   = (PetscErrorCode (*)(Mat,Vec,Vec))f;
+    }
     break;
   default:
     (((void(**)(void))mat->ops)[op]) = f;
@@ -1119,83 +1106,55 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/
-PetscErrorCode  MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
+PetscErrorCode MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
+  Mat_Shell      *shell;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Can only use with MATSHELL matrices");
+  shell = (Mat_Shell*)mat->data;
+
   switch (op) {
   case MATOP_DESTROY:
-    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
-    if (flg) {
-      Mat_Shell *shell = (Mat_Shell*)mat->data;
-      *f = (void (*)(void))shell->ops->destroy;
-    } else {
-      *f = (void (*)(void))mat->ops->destroy;
-    }
-    break;
-  case MATOP_DIAGONAL_SET:
-    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
-    if (flg) {
-      Mat_Shell *shell = (Mat_Shell*)mat->data;
-      *f = (void (*)(void))shell->ops->diagonalset;
-    } else {
-      *f = (void (*)(void))mat->ops->diagonalset;
-    }
+    *f = (void (*)(void))shell->ops->destroy;
     break;
   case MATOP_VIEW:
     *f = (void (*)(void))mat->ops->view;
     break;
+  case MATOP_COPY:
+    *f = (void (*)(void))shell->ops->copy;
+    break;
+  case MATOP_DIAGONAL_SET:
+  case MATOP_DIAGONAL_SCALE:
+  case MATOP_SHIFT:
+  case MATOP_SCALE:
+  case MATOP_AXPY:
+    *f = (((void (**)(void))mat->ops)[op]);
+    break;
+  case MATOP_GET_DIAGONAL:
+    if (shell->ops->getdiagonal)
+      *f = (void (*)(void))shell->ops->getdiagonal;
+    else
+      *f = (((void (**)(void))mat->ops)[op]);
+    break;
+  case MATOP_MULT:
+    if (shell->ops->mult)
+      *f = (void (*)(void))shell->ops->mult;
+    else
+      *f = (((void (**)(void))mat->ops)[op]);
+    break;
+  case MATOP_MULT_TRANSPOSE:
+    if (shell->ops->multtranspose)
+      *f = (void (*)(void))shell->ops->multtranspose;
+    else
+      *f = (((void (**)(void))mat->ops)[op]);
+    break;
   default:
     *f = (((void (**)(void))mat->ops)[op]);
   }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-    MatSetOperation - Allows user to set a matrix operation for any matrix type
-
-   Logically Collective on Mat
-
-    Input Parameters:
-+   mat - the shell matrix
-.   op - the name of the operation
--   f - the function that provides the operation.
-
-   Level: developer
-
-    Usage:
-$      extern PetscErrorCode usermult(Mat,Vec,Vec);
-$      ierr = MatCreateXXX(comm,...&A);
-$      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
-
-    Notes:
-    See the file include/petscmat.h for a complete list of matrix
-    operations, which all have the form MATOP_<OPERATION>, where
-    <OPERATION> is the name (in all capital letters) of the
-    user interface routine (e.g., MatMult() -> MATOP_MULT).
-
-    All user-provided functions (except for MATOP_DESTROY) should have the same calling
-    sequence as the usual matrix interface routines, since they
-    are intended to be accessed via the usual matrix interface
-    routines, e.g.,
-$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
-
-    In particular each function MUST return an error code of 0 on success and
-    nonzero on failure.
-
-    This routine is distinct from MatShellSetOperation() in that it can be called on any matrix type.
-
-.keywords: matrix, shell, set, operation
-
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext(), MatShellSetOperation()
-@*/
-PetscErrorCode  MatSetOperation(Mat mat,MatOperation op,void (*f)(void))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  (((void(**)(void))mat->ops)[op]) = f;
   PetscFunctionReturn(0);
 }

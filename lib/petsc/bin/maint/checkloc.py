@@ -4,6 +4,7 @@
 # check if LOC is set correctly in ALL makefiles. Script
 # assumes - the dir the command invoked in is PETSC_DIR
 #
+from __future__ import print_function
 import os
 #
 
@@ -18,7 +19,7 @@ def processLOCDIR(arg,dirname,names):
     try:
       fd=open(mfile,'r')
     except:
-      print 'Error! canot open ' + mfile
+      print('Error! canot open ' + mfile)
       return
     buf = fd.read()
     locdir=''
@@ -27,18 +28,18 @@ def processLOCDIR(arg,dirname,names):
         locdir = line
         break
     if locdir == '':
-      print 'Missing LOCDIR in: ' + mfile
+      print('Missing LOCDIR in: ' + mfile)
       return
     loc=locdir.split('=')[1].lstrip()
     if loc != loc.rstrip():
-      print 'Extra space at the end of LOCDIR in: ' + mfile
+      print('Extra space at the end of LOCDIR in: ' + mfile)
     if loc == '' :
-      print 'Missing value for LOCDIR in: ' + mfile
+      print('Missing value for LOCDIR in: ' + mfile)
       return
     if loc[-1] != '/':
-      print 'Missing / at the end: ' + mfile
+      print('Missing / at the end: ' + mfile)
     if (os.path.join(petscdir,loc,'makefile') != mfile):
-      print 'Wrong Entry: '+ loc + ' in ' + mfile
+      print('Wrong Entry: '+ loc + ' in ' + mfile)
   return
 
 def main():

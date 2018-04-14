@@ -1,13 +1,13 @@
 DM Object: triangle 1 MPI processes
   type: plex
 triangle in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -20,13 +20,13 @@ Process 0:
 DM Object: triangle 1 MPI processes
   type: plex
 triangle in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -39,13 +39,13 @@ Process 0:
 DM Object: triangle 1 MPI processes
   type: plex
 triangle in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -58,14 +58,14 @@ Process 0:
 DM Object: quadrilateral 1 MPI processes
   type: plex
 quadrilateral in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
 [0]: 4 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -80,14 +80,14 @@ Process 0:
 DM Object: quadrilateral 1 MPI processes
   type: plex
 quadrilateral in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
 [0]: 4 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -102,14 +102,14 @@ Process 0:
 DM Object: tetrahedron 1 MPI processes
   type: plex
 tetrahedron in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
 [0]: 4 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
@@ -124,9 +124,8 @@ Process 0:
 DM Object: hexahedron 1 MPI processes
   type: plex
 hexahedron in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 8 support: 1
+Supports:
+[0] Max support size: 1
 [0]: 1 ----> 0
 [0]: 2 ----> 0
 [0]: 3 ----> 0
@@ -135,7 +134,8 @@ cap --> base:
 [0]: 6 ----> 0
 [0]: 7 ----> 0
 [0]: 8 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 8
 [0]: 0 <---- 1 (0)
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)

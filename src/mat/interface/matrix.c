@@ -10573,3 +10573,139 @@ PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse
   }
   PetscFunctionReturn(0);
 }
+
+/*@C
+    MatSetOperation - Allows user to set a matrix operation for any matrix type
+
+   Logically Collective on Mat
+
+    Input Parameters:
++   mat - the matrix
+.   op - the name of the operation
+-   f - the function that provides the operation
+
+   Level: developer
+
+    Usage:
+$      extern PetscErrorCode usermult(Mat,Vec,Vec);
+$      ierr = MatCreateXXX(comm,...&A);
+$      ierr = MatSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
+
+    Notes:
+    See the file include/petscmat.h for a complete list of matrix
+    operations, which all have the form MATOP_<OPERATION>, where
+    <OPERATION> is the name (in all capital letters) of the
+    user interface routine (e.g., MatMult() -> MATOP_MULT).
+
+    All user-provided functions (except for MATOP_DESTROY) should have the same calling
+    sequence as the usual matrix interface routines, since they
+    are intended to be accessed via the usual matrix interface
+    routines, e.g.,
+$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
+
+    In particular each function MUST return an error code of 0 on success and
+    nonzero on failure.
+
+    This routine is distinct from MatShellSetOperation() in that it can be called on any matrix type.
+
+.keywords: matrix, set, operation
+
+.seealso: MatGetOperation(), MatCreateShell(), MatShellSetContext(), MatShellSetOperation()
+@*/
+PetscErrorCode MatSetOperation(Mat mat,MatOperation op,void (*f)(void))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  (((void(**)(void))mat->ops)[op]) = f;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    MatGetOperation - Gets a matrix operation for any matrix type.
+
+    Not Collective
+
+    Input Parameters:
++   mat - the matrix
+-   op - the name of the operation
+
+    Output Parameter:
+.   f - the function that provides the operation
+
+    Level: developer
+
+    Usage:
+$      PetscErrorCode (*usermult)(Mat,Vec,Vec);
+$      ierr = MatGetOperation(A,MATOP_MULT,(void(**)(void))&usermult);
+
+    Notes:
+    See the file include/petscmat.h for a complete list of matrix
+    operations, which all have the form MATOP_<OPERATION>, where
+    <OPERATION> is the name (in all capital letters) of the
+    user interface routine (e.g., MatMult() -> MATOP_MULT).
+
+    This routine is distinct from MatShellGetOperation() in that it can be called on any matrix type.
+
+.keywords: matrix, get, operation
+
+.seealso: MatSetOperation(), MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
+@*/
+PetscErrorCode MatGetOperation(Mat mat,MatOperation op,void(**f)(void))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *f = (((void (**)(void))mat->ops)[op]);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatHasOperation - Determines whether the given matrix supports the particular
+    operation.
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  op - the operation, for example, MATOP_GET_DIAGONAL
+
+   Output Parameter:
+.  has - either PETSC_TRUE or PETSC_FALSE
+
+   Level: advanced
+
+   Notes:
+   See the file include/petscmat.h for a complete list of matrix
+   operations, which all have the form MATOP_<OPERATION>, where
+   <OPERATION> is the name (in all capital letters) of the
+   user-level routine.  E.g., MatNorm() -> MATOP_NORM.
+
+.keywords: matrix, has, operation
+
+.seealso: MatCreateShell()
+@*/
+PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscBool *has)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(has,3);
+  if (mat->ops->hasoperation) {
+    ierr = (*mat->ops->hasoperation)(mat,op,has);CHKERRQ(ierr);
+  } else {
+    if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
+    else {
+      *has = PETSC_FALSE;
+      if (op == MATOP_CREATE_SUBMATRIX) {
+        PetscMPIInt size;
+
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = MatHasOperation(mat,MATOP_CREATE_SUBMATRICES,has);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}

@@ -10,6 +10,7 @@
 ##   OUTFILE ... The output file where the HTML code will be written to";
 
 
+from __future__ import print_function
 import os
 import sys
 import time
@@ -97,18 +98,18 @@ def printtable(outfile, branches, anchor):
 ## Early checks:
 
 if len(sys.argv) < 3:
-  print "Usage: $> branches.py TYPE OUTPUT";
-  print " TYPE    ... Either 'all' or 'active'";
-  print " OUTFILE ... The output file where the HTML code will be written to";
-  print "Aborting..."
+  print("Usage: $> branches.py TYPE OUTPUT");
+  print(" TYPE    ... Either 'all' or 'active'");
+  print(" OUTFILE ... The output file where the HTML code will be written to");
+  print("Aborting...")
   sys.exit(1)
 
 if (sys.argv[1] != "all" and sys.argv[1] != "active"):
-  print "Unknown type: " + sys.argv[1];
-  print "Usage: $> branches.py TYPE OUTPUT";
-  print " TYPE    ... Either 'all' or 'active'";
-  print " OUTFILE ... The output file where the HTML code will be written to";
-  print "Aborting..."
+  print("Unknown type: " + sys.argv[1]);
+  print("Usage: $> branches.py TYPE OUTPUT");
+  print(" TYPE    ... Either 'all' or 'active'");
+  print(" OUTFILE ... The output file where the HTML code will be written to");
+  print("Aborting...")
   sys.exit(1)
 
 
@@ -211,7 +212,7 @@ allbranches, err = process.communicate()
 
 # Print branches for each of the branchnames defined above:
 for branchprefix in branchnames:
-  print "Working on " + branchprefix
+  print("Working on " + branchprefix)
   branchprefix2 = "origin/" + branchprefix
 
   userbranches = []
@@ -222,7 +223,7 @@ for branchprefix in branchnames:
   printtable(outfile, userbranches, branchprefix)
 
 # Print all other branches by testing against the 'standard' branchnames:
-print "Working on remaining branches"
+print("Working on remaining branches")
 otherbranches = []
 for line in allbranches.splitlines():
 

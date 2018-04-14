@@ -2,13 +2,14 @@
 #include <petsc/private/dmlabelimpl.h>      /*I      "petscdmlabel.h"     I*/
 #include <petsc/private/petscdsimpl.h>      /*I      "petscds.h"     I*/
 #include <petscdmplex.h>
+#include <petscdmfield.h>
 #include <petscsf.h>
 #include <petscds.h>
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
 
-const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
+const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_",0};
 
 static PetscErrorCode DMHasCreateInjection_Default(DM dm, PetscBool *flg)
 {
@@ -755,6 +756,7 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = DMSetCoarseDM((*dm)->fineMesh,NULL);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&(*dm)->fineMesh);CHKERRQ(ierr);
+  ierr = DMFieldDestroy(&(*dm)->coordinateField);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
@@ -4417,6 +4419,35 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(field,2);
+  if (!dm->coordinateField) {
+    if (dm->ops->createcoordinatefield) {
+      ierr = (*dm->ops->createcoordinatefield)(dm,&dm->coordinateField);CHKERRQ(ierr);
+    }
+  }
+  *field = dm->coordinateField;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (field) PetscValidHeaderSpecific(field,DMFIELD_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)field);
+  ierr = DMFieldDestroy(&dm->coordinateField);CHKERRQ(ierr);
+  dm->coordinateField = field;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMGetCoordinateDM - Gets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
@@ -5024,9 +5055,9 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
 $    const PetscSFNode *cells;
 $    PetscInt           nFound;
-$    const PetscSFNode *found;
+$    const PetscInt    *found;
 $
-$    PetscSFGetGraph(cells,NULL,&nFound,&found,&cells);
+$    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 
   Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
   the index of the cell in its rank's local numbering.
@@ -5522,7 +5553,7 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
 }
 
 /*@C
-  DMGetStratumIS - Set the points in a label stratum
+  DMSetStratumIS - Set the points in a label stratum
 
   Not Collective
 

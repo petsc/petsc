@@ -678,6 +678,11 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
     ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
     osm->dm_subdomains = PETSC_FALSE;
   }
+  ierr = PetscOptionsInt("-pc_asm_local_blocks","Number of local subdomains","PCASMSetLocalSubdomains",osm->n_local_true,&blocks,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCASMSetLocalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
+    osm->dm_subdomains = PETSC_FALSE;
+  }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr);
@@ -891,6 +896,11 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
          (or NULL for PETSc to determine subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
          (or NULL to not provide these)
+
+    Options Database Key:
+    To set the total number of subdomain blocks rather than specify the
+    index sets, use the option
+.    -pc_asm_local_blocks <blks> - Sets local blocks
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
@@ -1357,9 +1367,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 {
   MatPartitioning mpart;
   const char      *prefix;
-  void            (*f)(void);
   PetscInt        i,j,rstart,rend,bs;
-  PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
+  PetscBool       hasop, isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat             Ad     = NULL, adj;
   IS              ispart,isnumb,*is;
   PetscErrorCode  ierr;
@@ -1376,8 +1385,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  ierr = MatShellGetOperation(A,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
-  if (f) {
+  ierr = MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+  if (hasop) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
   }
   if (Ad) {

@@ -1,9 +1,8 @@
 DM Object: 2 MPI processes
   type: plex
 DM_0x84000004_0 in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 2
+Supports:
+[0] Max support size: 2
 [0]: 2 ----> 0
 [0]: 3 ----> 0
 [0]: 4 ----> 0
@@ -12,8 +11,9 @@ cap --> base:
 [0]: 5 ----> 1
 [0]: 6 ----> 1
 [0]: 7 ----> 1
-[1] Max sizes cone: 0 support: 0
-base <-- cap:
+[1] Max support size: 0
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 4 (0)
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 2 (0)
@@ -22,6 +22,7 @@ base <-- cap:
 [0]: 1 <---- 4 (0)
 [0]: 1 <---- 6 (0)
 [0]: 1 <---- 7 (0)
+[1] Max cone size: 0
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:

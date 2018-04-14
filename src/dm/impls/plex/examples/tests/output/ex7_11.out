@@ -1,9 +1,8 @@
 DM Object: Interpolated Mesh 1 MPI processes
   type: plex
 Interpolated Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 6 support: 6
+Supports:
+[0] Max support size: 6
 [0]: 56 ----> 407
 [0]: 56 ----> 410
 [0]: 56 ----> 416
@@ -1834,7 +1833,8 @@ cap --> base:
 [0]: 700 ----> 406
 [0]: 701 ----> 404
 [0]: 701 ----> 405
-base <-- cap:
+Cones:
+[0] Max cone size: 6
 [0]: 0 <---- 181 (0)
 [0]: 0 <---- 182 (0)
 [0]: 0 <---- 183 (0)

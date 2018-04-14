@@ -131,7 +131,7 @@ class Configure(config.package.Package):
     self.executeTest(self.configureMPIEXEC)
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
-    except RuntimeError, e:
+    except RuntimeError as e:
       if self.argDB['with-shared-libraries']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared-libraries=0 or rebuild MPI with shared library support')
       self.logPrint('MPI libraries cannot be used with shared libraries')
@@ -172,6 +172,8 @@ class Configure(config.package.Package):
       if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
         raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
     self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)')
+    if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
+      self.mpiexec = self.mpiexec + ' --oversubscribe'
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
 
@@ -485,6 +487,7 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
         self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
+        self.ompi_major_version = ompi_major_version
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
     self.compilers.CPPFLAGS = oldFlags
@@ -503,7 +506,7 @@ class Configure(config.package.Package):
     argIter = iter(output.split())
     try:
       while 1:
-        arg = argIter.next()
+        arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         m = re.match(r'^-I.*$', arg)
         if m:

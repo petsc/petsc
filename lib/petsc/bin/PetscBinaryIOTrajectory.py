@@ -5,6 +5,7 @@
 #
 #  Make sure $PETSC_DIR/bin is in your PYTHONPATH
 #
+from __future__ import print_function
 import os
 import PetscBinaryIO
 import numpy as np
@@ -41,7 +42,7 @@ def ReadTrajectory(directory):
   return (t,v,names)
 
 def PlotTrajectories(t,v,names,subnames):
-  print names
+  print(names)
   sub = []
   for s in subnames:
     sub.append(names.index(s))

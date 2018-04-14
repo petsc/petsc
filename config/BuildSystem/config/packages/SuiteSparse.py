@@ -111,7 +111,7 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on SuiteSparse: '+str(e))
       self.postInstall(output+err, mkfile)
     return self.installDir

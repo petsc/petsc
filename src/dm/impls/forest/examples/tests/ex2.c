@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
   } else {
     PetscFE fe;
-    ierr = PetscFECreateDefault(base,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm,dim,1,PETSC_FALSE,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
     ierr = DMSetField(base,0,(PetscObject)fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }

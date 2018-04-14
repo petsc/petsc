@@ -86,7 +86,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling PTScotch; this may take several minutes')
         output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptesmumps esmumps', timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
       #Scotch has a file identical to one in ParMETIS, remove it so ParMETIS will not use it by mistake

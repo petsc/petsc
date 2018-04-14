@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #!/bin/env python
 
+from __future__ import print_function
 import sys
 from sys import *
 import lex
@@ -167,7 +168,7 @@ t_SCONST = r'\"([^\\\n]|(\\.))*?\"'
 t_CCONST = r'(L)?\'([^\\\n]|(\\.))*?\''
 
 def t_error(t):
-    print "Illegal character %s" % repr(t.value[0])
+    print("Illegal character %s" % repr(t.value[0]))
     t.skip(1)
 #     return t
 
@@ -220,7 +221,7 @@ if __name__ == "__main__":
     for i in range(0,n):
 	fl = reg.search(lines[i])
 	if not fl:
-           print 'Bad line in '+htmlmapfile,lines[i]
+           print('Bad line in '+htmlmapfile,lines[i])
         else:
             tofind = fl.group(1)
 #   replace all _ in tofind with \_
@@ -251,7 +252,7 @@ if __name__ == "__main__":
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
 	if token.type == 'NEWLINE':
-	    print text
+	    print(text)
 	    text = ''
 	else:
 	    value = token.value
@@ -284,7 +285,7 @@ if __name__ == "__main__":
                     raise Exception('Nested \\lstinline (mod) detected')
             if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and makelisting_bracket==0 and tikzpicture_bracket==0:
 		value = token.value
-		if mappedstring.has_key(value):
+		if value in mappedstring:
                     mvalue = mappedstring[value].replace('_','\\_')
                     if lstlisting_bracket > 0 :
                         # NOTE: The latex listings escapechar ($) is hard-coded here 
