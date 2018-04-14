@@ -353,7 +353,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
     ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
     if (is) {
       PetscReal faceCoord;
@@ -390,6 +390,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
@@ -416,7 +419,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscInt         tetPoints_n2[6]      = {1, 2, 3, 0, 4, 5};
       const PetscInt  *sizes = NULL;
       const PetscInt  *points = NULL;
-      PetscPartitioner part;
       PetscInt         cEnd;
       PetscMPIInt      rank, size;
 
@@ -440,9 +442,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = tetSizes_n2; points = tetPoints_n2;
         } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
       }
-      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -520,26 +523,28 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2], feAux[2];
   PetscQuadrature q, fq;
   PetscDS         prob, probAux;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "deformation");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFEGetFaceQuadrature(fe[0], &fq);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(fe[1], fq);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(feAux[0], fq);CHKERRQ(ierr);
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(feAux[1], fq);CHKERRQ(ierr);
@@ -670,20 +675,50 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
   build:
     requires: !complex
 
   test:
     suffix: 0
-    requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 3 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    requires: ctetgen !single
+    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+
   test:
     suffix: 1
     requires: ctetgen superlu_dist
     nsize: 2
     args: -run_type full -dim 3 -dm_refine 0 -interpolate 1 -test_partition -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    timeoutfactor: 2
+
   test:
     suffix: 2
-    requires: ctetgen
+    requires: ctetgen !single
     args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+
+  test:
+    requires: ctetgen !single
+    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    output_file: output/ex77_0.out
+
+  test:
+    requires: ctetgen superlu_dist
+    suffix: 4
+    nsize: 2
+    args: -run_type full -dim 3 -dm_refine 0 -interpolate 1 -test_partition -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    output_file: output/ex77_1.out
+
+  test:
+    requires: ctetgen !single
+    suffix: 3
+    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    output_file: output/ex77_2.out
+
+  test:
+    requires: ctetgen !single
+    suffix: 2_par
+    nsize: 4
+    args: -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+    output_file: output/ex77_2.out
+
 TEST*/

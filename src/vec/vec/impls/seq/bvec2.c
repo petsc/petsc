@@ -114,7 +114,10 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   ierr = VecGetArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
   ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
 
-  for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
+  for (i=0; i<n; i++) {
+    if (yy[i] != 0.0) ww[i] = xx[i] / yy[i];
+    else ww[i] = 0.0;
+  }
 
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
@@ -439,7 +442,8 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
       ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
       for (i=0;i<n;i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,glvis_info->fmt,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
       ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
     }
@@ -730,24 +734,22 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
-    for (i=0; i<ni; i++) {
+    for (i=0; i<ni; i++, y+=bs) {
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (start >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) xx[start+j] = y[j];
-      y += bs;
     }
   } else {
-    for (i=0; i<ni; i++) {
+    for (i=0; i<ni; i++, y+=bs) {
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (start >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) xx[start+j] += y[j];
-      y += bs;
     }
   }
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);

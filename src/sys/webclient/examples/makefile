@@ -10,7 +10,7 @@ SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  =
 DIRS	  = tutorials
-LOCDIR	  = src/sys/webclient/examples
+LOCDIR	  = src/sys/webclient/examples/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

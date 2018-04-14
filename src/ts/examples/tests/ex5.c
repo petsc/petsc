@@ -736,3 +736,26 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_max_steps 130 -monitor_interval 60
+      output_file: output/ex5.out
+      TODO: crashes in test harness, runs fine outside, try valgrind?
+      requires: !complex !single
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -ts_max_steps 130 -monitor_interval 60
+      output_file: output/ex5.out
+      TODO: crashes in test harness, runs fine outside, try valgrind?
+      requires: !complex !single
+
+TEST*/

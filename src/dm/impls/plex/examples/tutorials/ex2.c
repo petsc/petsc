@@ -56,7 +56,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Mark boundary and set BC */
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
     ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &user->bcFuncs);CHKERRQ(ierr);
     user->bcFuncs[0] = zero;

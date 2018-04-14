@@ -1,0 +1,26 @@
+#! /bin/csh
+# 
+## Compiles and tests PETSc using configure in our nightly builds.
+
+source /home/bsmith/petsc/bmake/$1/buildconfigtest
+
+if (${MACH} != `hostname`) then
+  rsh ${MACH} $TMP/maint/buildconfigtest $1
+else 
+  cd $TMP
+
+# /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
+  echo Buildconfigtest on $MACH $ARCH `date +'%a, %d %b %Y %H:%M:%S %z'`              > buildconfig.log
+  echo bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX   >>& buildconfig.log
+  echo '===========================================================================' >>& buildconfig.log
+  bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX        >>& buildconfig.log
+  echo '===========================================================================' >>& buildconfig.log
+  cat config.log                                                                     >>& buildconfig.log
+  /bin/rm -f config.log /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log
+#  mv buildconfig.log /home/bsmith/petsc/maint/nightlylogs
+#  chmod g+rw /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log
+
+#  /bin/rm -f lib/lib*/${ARCH}/*" >& /dev/null
+
+endif
+

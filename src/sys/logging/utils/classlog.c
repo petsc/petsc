@@ -249,7 +249,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
 
   Input Parameters:
 + classLog - The PetscClassRegLog
-- cookie   - The cookie
+- classid  - The cookie
 
   Output Parameter:
 . oclass   - The class id

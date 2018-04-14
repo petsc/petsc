@@ -244,3 +244,40 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: hypre
+
+   test:
+      suffix: 1
+      requires: hypre
+      args: -N 11 -M 11
+
+   test:
+      suffix: 2
+      nsize: 3
+      requires: hypre
+      args: -N 13 -M 13 -matmatmult_via hypre
+
+   test:
+      suffix: 3
+      nsize: 4
+      requires: hypre
+      args: -M 13 -N 7 -matmatmult_via hypre
+
+   test:
+      suffix: 4
+      nsize: 2
+      requires: hypre
+      args: -M 12 -N 19
+
+   test:
+      suffix: 5
+      nsize: 3
+      requires: hypre
+      args: -M 13 -N 13 -matptap_via hypre -matptap_hypre_outtype hypre
+
+TEST*/

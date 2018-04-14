@@ -155,7 +155,7 @@ PetscErrorCode PreStep(TS ts)
   ierr = TSGetStepNumber(ts,&n);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&a);
+  ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
   ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",
                      PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0]));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetStepNumber(ts,&n);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&a);
+  ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
   ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",
                      PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0]));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ PetscErrorCode Monitor(TS ts,PetscInt n,PetscReal t,Vec x,void *ctx)
   const PetscScalar *a;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(x,&a);
+  ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
   ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",
                      PETSC_FUNCTION_NAME,n,(double)t,(double)PetscRealPart(a[0]));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
@@ -208,10 +208,63 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   ierr = TSGetStepNumber(ts,&i);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&a);
+  ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
   ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%-10s-> step %D time %g value %g\n",
                      PETSC_FUNCTION_NAME,i,(double)t,(double)PetscRealPart(a[0]));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+    test:
+      suffix: euler
+      args: -ts_type euler
+      output_file: output/ex1.out
+
+    test:
+      suffix: ssp
+      args:   -ts_type ssp
+      output_file: output/ex1.out
+
+    test:
+      suffix: rk
+      args: -ts_type rk
+      output_file: output/ex1.out
+
+    test:
+      suffix: beuler
+      args: -ts_type beuler
+      output_file: output/ex1.out
+
+    test:
+      suffix: cn
+      args: -ts_type cn
+      output_file: output/ex1.out
+
+    test:
+      suffix: theta
+      args: -ts_type theta
+      output_file: output/ex1.out
+
+    test:
+      suffix: bdf
+      args: -ts_type bdf
+      output_file: output/ex1.out
+
+    test:
+      suffix: alpha
+      args: -ts_type alpha
+      output_file: output/ex1.out
+
+    test:
+      suffix: rosw
+      args: -ts_type rosw
+      output_file: output/ex1.out
+
+    test:
+      suffix: arkimex
+      args: -ts_type arkimex
+      output_file: output/ex1.out
+
+TEST*/

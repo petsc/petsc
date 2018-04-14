@@ -264,7 +264,7 @@ PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced

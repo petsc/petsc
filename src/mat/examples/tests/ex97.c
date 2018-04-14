@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRICES,NULL);CHKERRQ(ierr);
+  ierr = MatSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatSetOperation(B,MATOP_CREATE_SUBMATRICES,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&ms,NULL);CHKERRQ(ierr);
 
   idxrow[0] = ms+1;
@@ -167,3 +167,11 @@ int main(int argc, char *argv[])
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+
+TEST*/

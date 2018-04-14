@@ -13,6 +13,8 @@ Accepts an option -diagfunc [1,2,3] to select from different eigenvalue distribu
    Processors: n
 T*/
 
+
+
 /*
   Solve (in parallel) a diagonal linear system.
 
@@ -25,11 +27,11 @@ T*/
   replaces the input with scaled noise.
 
   To test with an inner Krylov method instead of noise, use PCKSP,  e.g.
-  $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0 -ksp_type fcg -pc_type ksp -ksp_ksp_rtol 1e-1 -ksp_ksp_type cg -ksp_pc_type none
+  mpiexec -n 2 ./ex60 -eta 0 -ksp_type fcg -pc_type ksp -ksp_ksp_rtol 1e-1 -ksp_ksp_type cg -ksp_pc_type none
   (note that eta is ignored here, and we specify the analogous quantity, the tolerance of the inner KSP solve,with -ksp_ksp_rtol)
 
   To test by adding noise to a PC of your choosing (say ilu), run e.g.
-  $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0.1 -ksp_type fcg -sub_0_pc_type ilu
+  mpiexec -n 2 ./ex60 -eta 0.1 -ksp_type fcg -sub_0_pc_type ilu
 
   Contributed by Patrick Sanan
 */
@@ -213,3 +215,55 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ksp_monitor_short -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 2 -ksp_type fgmres -eta 0.1
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefcg -ksp_pipefcg_mmax 1 -eta 0.1
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type pipefcg -ksp_pipefcg_mmax 10000 -eta 0.1
+
+   test:
+      suffix: 6
+      nsize: 4
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-1 -ksp_ksp_max_it 5 -ksp_ksp_converged_reason
+
+   test:
+      suffix: 7
+      nsize: 4
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type pipefcg -ksp_pipefcg_mmax 10000 -eta 0 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-1 -ksp_ksp_max_it 5 -ksp_ksp_converged_reason
+
+   test:
+      suffix: 8
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-2 -ksp_ksp_converged_reason
+
+   test:
+      suffix: 9
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-2 -ksp_ksp_converged_reason
+
+TEST*/

@@ -3,6 +3,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define vecsetrandom_             VECSETRANDOM
 #define vecsetvalueslocal0_       VECSETVALUESLOCAL0
 #define vecsetvalueslocal11_      VECSETVALUESLOCAL11
 #define vecsetvalueslocal1_       VECSETVALUESLOCAL1
@@ -31,6 +32,7 @@
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
 #define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define vecsetrandom_             vecsetrandom
 #define vecsetvalueslocal0_       vecsetvalueslocal0
 #define vecsetvalueslocal1_       vecsetvalueslocal1
 #define vecsetvalueslocal11_      vecsetvalueslocal11
@@ -60,6 +62,12 @@
 #define vecgetownershipranges_    vecgetownershipranges
 #define vecsetoptionsprefix_      vecsetoptionsprefix
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL vecsetrandom_(Vec *v, PetscRandom *r, int *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(r);
+  *ierr = VecSetRandom(*v,*r);
+}
 
 PETSC_EXTERN void PETSC_STDCALL vecsetvalueslocal_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
 {

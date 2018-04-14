@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=ps3
-set USR=sbalay
-set LOC=/home/sbalay/${RNAME}
-set CONF=arch-mswin

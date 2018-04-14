@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-64-bit-indices=1',
   '--download-openblas',
   '--download-openblas-64-bit-blas-indices=1',
   ]

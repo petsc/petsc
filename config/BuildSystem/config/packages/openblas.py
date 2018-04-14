@@ -22,6 +22,13 @@ class Configure(config.package.Package):
     help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
 
+  def configureLibrary(self):
+    import os
+    config.package.Package.configureLibrary(self)
+    if self.found:
+      self.libDir = os.path.join(self.directory,'lib')
+    return
+
   def Install(self):
     import os
 
@@ -31,7 +38,6 @@ class Configure(config.package.Package):
     cmdline = 'CC='+self.compilers.CC+' FC='+self.compilers.FC
     if self.argDB['download-openblas-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
-      self.argDB['known-64-bit-blas-indices'] = 1
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
 
@@ -46,13 +52,13 @@ class Configure(config.package.Package):
     try:
       self.logPrintBox('Compiling OpenBLAS; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make '+cmdline, timeout=2500, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
       self.logPrintBox('Installing OpenBLAS')
       self.installDirProvider.printSudoPasswordMessage()
       output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libopenblas.* '+ libdir, timeout=30, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir

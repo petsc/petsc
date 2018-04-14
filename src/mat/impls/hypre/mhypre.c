@@ -652,7 +652,8 @@ static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat P,PetscReal fill,Mat *C)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr                   = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
   ierr                   = MatSetType(*C,MATAIJ);CHKERRQ(ierr);
@@ -1422,6 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->rmap->bs   = 1;
   B->assembled  = PETSC_FALSE;
 
+  ierr = PetscMemzero(B->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->mult            = MatMult_HYPRE;
   B->ops->multtranspose   = MatMultTranspose_HYPRE;
   B->ops->setup           = MatSetUp_HYPRE;
@@ -1448,6 +1450,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 static PetscErrorCode hypre_array_destroy(void *ptr)
 {
    PetscFunctionBegin;
-   hypre_TFree(ptr);
+   hypre_TFree(ptr,HYPRE_MEMORY_HOST);
    PetscFunctionReturn(0);
 }

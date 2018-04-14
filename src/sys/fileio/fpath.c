@@ -75,9 +75,9 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
     fullpath[flen-1] = 0;
     ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
     if (path[0] == '.' && path[1] == '/') {
-      ierr = PetscStrncat(fullpath,path+2,flen - ln - 1);CHKERRQ(ierr);
+      ierr = PetscStrlcat(fullpath,path+2,flen);CHKERRQ(ierr);
     } else {
-      ierr = PetscStrncat(fullpath,path,flen - ln - 1);CHKERRQ(ierr);
+      ierr = PetscStrlcat(fullpath,path,flen);CHKERRQ(ierr);
     }
     fullpath[flen-1] = 0;
   }

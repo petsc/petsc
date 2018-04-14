@@ -111,6 +111,69 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
       }
     }
     break;
+  case REFINER_HEX_3D:
+    /*
+     Bottom (viewed from top)    Top
+     1---------2---------2       7---------2---------6
+     |         |         |       |         |         |
+     |    B    2    C    |       |    H    2    G    |
+     |         |         |       |         |         |
+     3----3----0----1----1       3----3----0----1----1
+     |         |         |       |         |         |
+     |    A    0    D    |       |    E    0    F    |
+     |         |         |       |         |         |
+     0---------0---------3       4---------0---------5
+     */
+    break;
+    dim = 3;
+    if (numSubcells) *numSubcells = 8;
+    if (v0) {
+      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      /* A */
+      v[0+0] = -1.0; v[0+1] = -1.0; v[0+2] = -1.0;
+      j[0+0] =  0.5; j[0+1] =  0.0; j[0+2] =  0.0;
+      j[0+3] =  0.0; j[0+4] =  0.5; j[0+5] =  0.0;
+      j[0+6] =  0.0; j[0+7] =  0.0; j[0+8] =  0.5;
+      /* B */
+      v[3+0] = -1.0; v[3+1] =  0.0; v[3+2] = -1.0;
+      j[9+0] =  0.5; j[9+1] =  0.0; j[9+2] =  0.0;
+      j[9+3] =  0.0; j[9+4] =  0.5; j[9+5] =  0.0;
+      j[9+6] =  0.0; j[9+7] =  0.0; j[9+8] =  0.5;
+      /* C */
+      v[6+0] =  0.0; v[6+1] =  0.0; v[6+2] = -1.0;
+      j[18+0] = 0.5; j[18+1] = 0.0; j[18+2] = 0.0;
+      j[18+3] = 0.0; j[18+4] = 0.5; j[18+5] = 0.0;
+      j[18+6] = 0.0; j[18+7] = 0.0; j[18+8] = 0.5;
+      /* D */
+      v[9+0] =  0.0; v[9+1] = -1.0; v[9+2] = -1.0;
+      j[27+0] = 0.5; j[27+1] = 0.0; j[27+2] = 0.0;
+      j[27+3] = 0.0; j[27+4] = 0.5; j[27+5] = 0.0;
+      j[27+6] = 0.0; j[27+7] = 0.0; j[27+8] = 0.5;
+      /* E */
+      v[12+0] = -1.0; v[12+1] = -1.0; v[12+2] =  0.0;
+      j[36+0] =  0.5; j[36+1] =  0.0; j[36+2] =  0.0;
+      j[36+3] =  0.0; j[36+4] =  0.5; j[36+5] =  0.0;
+      j[36+6] =  0.0; j[36+7] =  0.0; j[36+8] =  0.5;
+      /* F */
+      v[15+0] =  0.0; v[15+1] = -1.0; v[15+2] =  0.0;
+      j[45+0] =  0.5; j[45+1] =  0.0; j[45+2] =  0.0;
+      j[45+3] =  0.0; j[45+4] =  0.5; j[45+5] =  0.0;
+      j[45+6] =  0.0; j[45+7] =  0.0; j[45+8] =  0.5;
+      /* G */
+      v[18+0] =  0.0; v[18+1] =  0.0; v[18+2] =  0.0;
+      j[54+0] =  0.5; j[54+1] =  0.0; j[54+2] =  0.0;
+      j[54+3] =  0.0; j[54+4] =  0.5; j[54+5] =  0.0;
+      j[54+6] =  0.0; j[54+7] =  0.0; j[54+8] =  0.5;
+      /* H */
+      v[21+0] = -1.0; v[21+1] =  0.0; v[21+2] =  0.0;
+      j[63+0] =  0.5; j[63+1] =  0.0; j[63+2] =  0.0;
+      j[63+3] =  0.0; j[63+4] =  0.5; j[63+5] =  0.0;
+      j[63+6] =  0.0; j[63+7] =  0.0; j[63+8] =  0.5;
+      for (s = 0; s < 8; ++s) {
+        DMPlex_Det3D_Internal(&detJ, &j[s*dim*dim]);
+        DMPlex_Invert3D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
+      }
+    }
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
   }
@@ -309,13 +372,25 @@ PETSC_STATIC_INLINE PetscInt GetQuadSubfaceInverse_Static(PetscInt o, PetscInt s
   return (o < 0 ? 4-(o+s) : 4+s-o)%4;
 }
 
-static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt cStart, PetscInt cEnd)
 {
-  PetscInt       depth, cStart, cStartNew, cEnd, cMax, c, vStart, vStartNew, vEnd, vMax, v, fStart, fStartNew, fEnd, fMax, f, eStart, eStartNew, eEnd, eMax, e, r;
+  IS             cIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!refiner) PetscFunctionReturn(0);
+  ierr = ISCreateStride(PETSC_COMM_SELF, cEnd - cStart, cStart, 1, &cIS);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(label, value, cIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&cIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+{
+  PetscInt       depth, cStart, cStartNew, cEnd, cEndNew, cMax, c, vStart, vStartNew, vEnd, vEndNew, vMax, v, fStart, fStartNew, fEnd, fEndNew, fMax, f, eStart, eStartNew, eEnd, eEndNew, eMax, e, r;
+  DMLabel        depthLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
@@ -323,6 +398,18 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
+  ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
+  ierr = DMCreateLabel(rdm,"depth");CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(rdm,&depthLabel);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumBounds(depthLabel, 0, vStartNew, vEndNew);CHKERRQ(ierr);
+  if (depth > 2) ierr = DMLabelSetStratumBounds(depthLabel, 1, eStartNew, eEndNew);CHKERRQ(ierr);
+  if (depth > 1) ierr = DMLabelSetStratumBounds(depthLabel, depth - 1, fStartNew, fEndNew);CHKERRQ(ierr);
+  if (depth > 0) ierr = DMLabelSetStratumBounds(depthLabel, depth, cStartNew, cEndNew);CHKERRQ(ierr);
+  {
+    DM_Plex *plex = (DM_Plex *) rdm->data;
+    ierr = DMLabelGetState(depthLabel, &plex->depthState);CHKERRQ(ierr);
+  }
+  if (!refiner) PetscFunctionReturn(0);
   switch (refiner) {
   case REFINER_SIMPLEX_1D:
     /* All cells have 2 vertices */
@@ -6434,18 +6521,28 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, NULL);CHKERRQ(ierr);
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, NULL, NULL, &vStartNew);CHKERRQ(ierr);
   ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, NULL, NULL, &vEndNew);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm, &isperiodic, &maxCell, &L, &bd);CHKERRQ(ierr);
-  ierr = DMSetPeriodicity(rdm, isperiodic,  maxCell,  L,  bd);CHKERRQ(ierr);
   /* Determine if we need to localize coordinates when generating them */
   if (isperiodic && !maxCell) {
     ierr = DMGetCoordinatesLocalized(dm, &localize);CHKERRQ(ierr);
     if (!localize) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot refine if coordinates have not been localized");
   }
+  if (isperiodic) {
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex coords refinement options","DM");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_plex_refine_localize","Automatically localize from parent cells",NULL,localize,&localize,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (localize) {
+      ierr = DMLocalizeCoordinates(dm);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMSetPeriodicity(rdm, isperiodic,  maxCell,  L,  bd);CHKERRQ(ierr);
+
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
+
   if (localize) {
     PetscInt p, r, newp, *pi;
 
@@ -6477,6 +6574,14 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (p = cStart; p < cEnd; ++p) {
         for (r = 0; r < 4; ++r) {
           newp     = (p - cStart)*4 + r;
+          pi[newp] = p;
+        }
+      }
+      break;
+    case REFINER_SIMPLEX_TO_HEX_2D:
+      for (p = cStart; p < cEnd; ++p) {
+        for (r = 0; r < 3; ++r) {
+          newp     = (p - cStart)*3 + r;
           pi[newp] = p;
         }
       }
@@ -6527,6 +6632,14 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (p = cMax; p < cEnd; ++p) {
         for (r = 0; r < 4; ++r) {
           newp     = (cMax - cStart)*8 + (p - cMax)*4 + r;
+          pi[newp] = p;
+        }
+      }
+      break;
+    case REFINER_SIMPLEX_TO_HEX_3D:
+      for (p = cStart; p < cEnd; ++p) {
+        for (r = 0; r < 4; ++r) {
+          newp     = (p - cStart)*4 + r;
           pi[newp] = p;
         }
       }
@@ -8217,19 +8330,17 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   /* Step 1: Set chart */
   for (d = 0; d <= depth; ++d) pEnd += depthSize[d];
   ierr = DMPlexSetChart(rdm, pStart, pEnd);CHKERRQ(ierr);
-  /* Step 2: Set cone/support sizes */
+  /* Step 2: Set cone/support sizes (automatically stratifies) */
   ierr = CellRefinerSetConeSizes(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 3: Setup refined DM */
   ierr = DMSetUp(rdm);CHKERRQ(ierr);
-  /* Step 4: Set cones and supports */
+  /* Step 4: Set cones and supports (automatically symmetrizes) */
   ierr = CellRefinerSetCones(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 5: Stratify */
-  ierr = DMPlexStratify(rdm);CHKERRQ(ierr);
-  /* Step 6: Create pointSF */
+  /* Step 5: Create pointSF */
   ierr = CellRefinerCreateSF(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 7: Create labels */
+  /* Step 6: Create labels */
   ierr = CellRefinerCreateLabels(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 8: Set coordinates */
+  /* Step 7: Set coordinates */
   ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
 
@@ -8489,15 +8600,16 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
-  PetscBool      isUniform, localized;
+  PetscBool      isUniform;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   if (isUniform) {
     CellRefiner cellRefiner;
+    PetscBool   localized;
 
+    ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);

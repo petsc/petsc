@@ -6,11 +6,13 @@
 !    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
-!/*T
+!!/*T
 !  Concepts: SNES^parallel Bratu example
 !  Concepts: DMDA^using distributed arrays;
 !  Processors: n
 !T*/
+
+
 !
 !  --------------------------------------------------------------------------
 !
@@ -200,10 +202,7 @@
       ione = 1
       nfour = 4
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRA(ierr)
-      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
-         if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda provided with -par is out of range '); endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
@@ -696,3 +695,35 @@
 
 
 
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 4
+!      args: -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      requires: !single
+!
+!   test:
+!      suffix: 2
+!      nsize: 4
+!      args: -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      requires: !single
+!
+!   test:
+!      suffix: 3
+!      nsize: 3
+!      args: -snes_fd -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      requires: !single
+!
+!   test:
+!      suffix: 4
+!      nsize: 3
+!      args: -snes_mf_operator -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      requires: !single
+!
+!   test:
+!      suffix: 5
+!      requires: !single
+!
+!TEST*/

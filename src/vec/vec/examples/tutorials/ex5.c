@@ -71,3 +71,15 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+     test:
+       nsize: 1
+       requires: mpiio
+
+     test:
+       suffix: 2
+       nsize: 2
+       requires: mpiio
+
+TEST*/

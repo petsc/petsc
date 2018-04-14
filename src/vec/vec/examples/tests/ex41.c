@@ -129,9 +129,16 @@ PetscErrorCode test_vec_ops(void)
 int main(int argc, char **args)
 {
   PetscErrorCode ierr;
-  
+
   ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
   ierr = test_vec_ops();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

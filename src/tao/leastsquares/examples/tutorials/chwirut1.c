@@ -39,6 +39,8 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Processors: 1
 T*/
 
+
+
 #define NOBSERVATIONS 214
 #define NPARAMETERS 3
 
@@ -402,3 +404,16 @@ PetscErrorCode InitializeData(AppCtx *user)
   y[i] =    28.9500;  t[i++] =   1.7500;
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+      requires: !single
+      TODO: too many inconsistent results across machines
+
+TEST*/

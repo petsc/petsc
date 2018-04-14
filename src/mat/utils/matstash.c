@@ -6,10 +6,12 @@
 static PetscErrorCode MatStashScatterBegin_Ref(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 static PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
+#if !defined(PETSC_HAVE_MPIUNI)
 static PetscErrorCode MatStashScatterBegin_BTS(Mat,MatStash*,PetscInt*);
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash*);
 static PetscErrorCode MatStashScatterDestroy_BTS(MatStash*);
+#endif
 
 /*
   MatStashCreate_Private - Creates a stash,currently used for all the parallel
@@ -79,18 +81,22 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->blocktype   = MPI_DATATYPE_NULL;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_bts",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+#if !defined(PETSC_HAVE_MPIUNI)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
     stash->ScatterGetMesg = MatStashScatterGetMesg_BTS;
     stash->ScatterEnd     = MatStashScatterEnd_BTS;
     stash->ScatterDestroy = MatStashScatterDestroy_BTS;
   } else {
+#endif
     stash->ScatterBegin   = MatStashScatterBegin_Ref;
     stash->ScatterGetMesg = MatStashScatterGetMesg_Ref;
     stash->ScatterEnd     = MatStashScatterEnd_Ref;
     stash->ScatterDestroy = NULL;
+#if !defined(PETSC_HAVE_MPIUNI)
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -691,6 +697,7 @@ static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nv
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_HAVE_MPIUNI)
 typedef struct {
   PetscInt row;
   PetscInt col;
@@ -1034,3 +1041,4 @@ static PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
   ierr = PetscFree2(stash->some_indices,stash->some_statuses);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif

@@ -38,13 +38,13 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     ''' Since xSDKTrilinos cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
-    if self.framework.clArgDB.has_key('with-xsdktrilinos'):
+    if 'with-xsdktrilinos' in self.framework.clArgDB:
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos; only --download-xsdktrilinos')
-    if self.framework.clArgDB.has_key('with-xsdktrilinos-dir'):
+    if 'with-xsdktrilinos-dir' in self.framework.clArgDB:
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-dir; only --download-xsdktrilinos')
-    if self.framework.clArgDB.has_key('with-xsdktrilinos-include'):
+    if 'with-xsdktrilinos-include' in self.framework.clArgDB:
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-include; only --download-xsdktrilinos')
-    if self.framework.clArgDB.has_key('with-xsdktrilinos-lib'):
+    if 'with-xsdktrilinos-lib' in self.framework.clArgDB:
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos-lib; only --download-xsdktrilinos')
 
     self.checkDownload()
@@ -107,7 +107,7 @@ class Configure(config.package.CMakePackage):
         self.log.write(output)
         if output.find('Failure') > -1:
           raise RuntimeError('Error running ctest on xSDKTrilinos: '+output)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running ctest on xSDKTrilinos: '+str(e))
     else:
       self.logClear()

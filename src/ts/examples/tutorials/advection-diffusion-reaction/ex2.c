@@ -9,6 +9,9 @@ static char help[] = "Reaction Equation from Chemistry\n";
                  u_2_t =
                  u_3_t =
                  u_4_t =
+
+  -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 2.e4
+
 */
 
 
@@ -21,6 +24,7 @@ static char help[] = "Reaction Equation from Chemistry\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petscts.h>
 
 typedef struct {
@@ -178,3 +182,13 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+     args: -ts_view -ts_max_time 2.e4
+     timeoutfactor: 15
+     requires: !single
+
+TEST*/

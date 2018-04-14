@@ -18,6 +18,8 @@
    Processors: n
 T*/
 
+
+
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints per time step */
@@ -1326,3 +1328,15 @@ PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_cmonitor -tao_type lcl -ns 1 -tao_gatol 1.e-4 -ksp_max_it 30
+      requires: !single
+
+TEST*/

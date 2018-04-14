@@ -232,3 +232,28 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      output_file: output/ex46_1_p1.out
+
+   test:
+      suffix: 2
+      nsize: 6
+      output_file: output/ex46_1_p6.out
+
+   test:
+      suffix: 3
+      nsize: 12
+      output_file: output/ex46_1_p12.out
+
+   test:
+      suffix: mpiio
+      nsize: 6
+      args: -usempiio
+      output_file: output/ex46_2_p6.out
+      requires: mpiio
+
+TEST*/

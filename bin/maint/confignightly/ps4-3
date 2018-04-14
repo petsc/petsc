@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=ps4
-set USR=petsc
-set LOC=/home/petsc/${RNAME}-3
-set CONF=arch-mswin-uni

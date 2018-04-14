@@ -8,20 +8,19 @@
 /* Logging support */
 PetscClassId  PC_CLASSID;
 PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
+PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 PetscInt      PetscMGLevelId;
 
 PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscBool      flg1,flg2,set,flg3;
+  PetscBool      hasop,flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    void (*f)(void);
-    ierr = MatShellGetOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
+    ierr = MatHasOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
@@ -30,13 +29,13 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
         *type = PCICC;
       } else if (flg2) {
         *type = PCILU;
-      } else if (f) { /* likely is a parallel matrix run on one processor */
+      } else if (hasop) { /* likely is a parallel matrix run on one processor */
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
       }
     } else {
-       if (f) {
+       if (hasop) {
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
@@ -274,7 +273,7 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 
 /*@
    PCSetUseAmat - Sets a flag to indicate that when the preconditioner needs to apply (part of) the
-   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(), 
+   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
    TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
 
    Logically Collective on PC
@@ -315,7 +314,7 @@ PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
 
    Notes:
     Normally PETSc continues if a linear solver fails due to a failed setup of a preconditioner, you can call KSPGetConvergedReason() after a KSPSolve()
-    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is 
+    to determine if it has converged or failed. Or use -ksp_error_if_not_converged to cause the program to terminate as soon as lack of convergence is
     detected.
 
     This is propagated into KSPs used by this PC, which then propagate it into PCs used by those KSPs
@@ -447,8 +446,8 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = MatGetLocalSize(pc->pmat,&m,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
-  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
-  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);
   VecLocked(y,3);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -775,7 +774,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(exists,2);
+  PetscValidPointer(exists,2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -841,7 +840,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 .  pc - the preconditioner context
 
    Output Parameter:
-.  reason - the reason it failed, currently only -1 
+.  reason - the reason it failed, currently only -1
 
    Level: advanced
 
@@ -1632,7 +1631,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 #endif
 
   if (iascii) {
+    PetscInt    tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)pc)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -1660,6 +1662,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
         if (pc->pmat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
+      ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
@@ -1835,6 +1838,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1860,13 +1864,15 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
    should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
    ... , N-1.z ].
 
-.seealso: MatSetNearNullSpace
+.seealso: MatSetNearNullSpace()
 @*/
 PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,dim,2);
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

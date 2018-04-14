@@ -1,0 +1,4 @@
+DM Object: 1 MPI processes
+  type: p4est
+L_2 Error: 2.16795
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

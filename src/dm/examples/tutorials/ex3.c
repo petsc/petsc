@@ -153,3 +153,22 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      args: -mat_view
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -mat_view -dim 2
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -mat_view -dim 3
+
+TEST*/

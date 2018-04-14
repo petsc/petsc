@@ -9,7 +9,7 @@ solution with an even smaller, 2x2, matrix:
 and a right-hand side vector with all ones (1,1)
 The correct solution is the vector (-1,1), in both solves.
 
-mpiexec -n 2 ./ex2 -ksp_type preonly -pc_type lu  -pc_factor_mat_solver_package mumps  -mat_mumps_icntl_7 6 -mat_mumps_cntl_1 0.99
+mpiexec -n 2 ./ex2 -ksp_type preonly -pc_type lu  -pc_factor_mat_solver_type mumps  -mat_mumps_icntl_7 6 -mat_mumps_cntl_1 0.99
 
 With this combination of options, I get off-diagonal pivots during the
 factorization, which is the cause of the problem (different isol_loc

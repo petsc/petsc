@@ -2,6 +2,10 @@
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -74,3 +78,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+
+TEST*/

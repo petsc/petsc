@@ -1254,13 +1254,8 @@ keys are \trl{-mat_no_inode} (do not use inodes) and \trl{
 Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
-By default, the internal data representation for the AIJ formats employs
-zero-based indexing.  For compatibility with standard Fortran storage,
-thus enabling use of external Fortran software packages such as
-SPARSKIT, \sindex{SPARSKIT} the option \trl{-mat_aij_oneindex},
-\findex{-mat_aij_oneindex} enables one-based indexing, where the stored
-row and column indices begin at one, not zero.  All user calls to
-PETSc routines, regardless of this option, use zero-based indexing.
+The internal data representation for the AIJ formats employs
+zero-based indexing. 
 
 \subsubsection{Preallocation of Memory for Sequential AIJ Sparse Matrices}
 
@@ -3131,6 +3126,7 @@ PC subpc;
 PCCompositeGetPC(pc,0,&subpc);
 PCFactorSetFill(subpc,1);
 \end{lstlisting}
+One can also change the operator that is used to construct a particular PC in the composite PC call PCSetOperators() on the obtained PC.
 
 These various options can also be set via the options database. For example,
 \trl{-pc_type} \trl{composite} \findex{composite} \trl{-pc_composite_pcs} \trl{jacobi,ilu}
@@ -3212,14 +3208,14 @@ The commands above can also be set from the options database. The option
 names are \trl{-pc_mg_type [multiplicative, additive, full, kaskade]},
 and \trl{-pc_mg_cycle_type} \trl{<ctype>}. \findex{-pc_mg_type} \findex{-pc_mg_cycle_type}
 
-The user can control the amount of pre- and postsmoothing
-\sindex{smoothing} \sindex{relaxation} by using
-either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
-\trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
-the routines
+The user can control the amount of smoothing
+\sindex{smoothing} \sindex{relaxation} by configuring the solvers on
+the levels.  By default, the up and down smoothers are identical.  If
+separate configuration of up and down smooths is required, it can be
+requested with the option \findex{-pc_mg_distinct_smoothup}
+\trl{-pc_mg_distinct_smoothup} or the routine
 \begin{lstlisting}
-PCMGSetNumberSmoothUp(PC pc,PetscInt m);
-PCMGSetNumberSmoothDown(PC pc,PetscInt n);
+PCMGSetDistinctSmoothUp(PC pc);
 \end{lstlisting}
 
 The multigrid routines, which determine
@@ -3592,8 +3588,10 @@ The problem with the last approach is that $\hat S$ is used in unassembled, matr
 such matrices. Instead, you can \emph{assemble}  an approximation to $\hat S$ by inverting $A_{00}$, but only approximately, so as to ensure the sparsity of $\hat Sp$ as much as possible.
 Specifically, using \trl{-pc_fieldsplit_schur_precondition selfp} will assemble $\hat Sp = A_{11} - A_{10} \text{inv}(A_{00}) A_{01}$.
 
-By default $\text{inv}(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will lump $A_{00}$ first.  Option \trl{-mat_schur_complement_ainv_type}
-applies to any matrix of \lstinline{MatSchurComplement} type and here it is used with the prefix \trl{-fieldsplit_1} of the linear system in the second split.
+By default $\text{inv}(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will
+lump $A_{00}$ first. Using \trl{-fieldsplit_1_mat_schur_complement_ainv_type blockdiag} will use the inverse of the block diagonal of $A_{00}$.
+Option \trl{-mat_schur_complement_ainv_type} applies to any matrix of \lstinline{MatSchurComplement} type and here it is used with the prefix
+\trl{-fieldsplit_1} of the linear system in the second split.
 
 Finally, you can use the \lstinline{PCLSC} preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[
@@ -3652,15 +3650,15 @@ To use these solvers, one may:
 \trl{--download-mumps} \trl{--download-scalapack} (MUMPS requires ScaLAPACK).
 \item Build the PETSc libraries.
 \item Use the runtime option: \trl{-ksp_type preonly} \trl{-pc_type <pctype>}
-\trl{-pc_factor_mat_solver_package <packagename>}.
-For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package superlu_dist}.
+\trl{-pc_factor_mat_solver_type <packagename>}.
+For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_type superlu_dist}.
 \end{enumerate}
 
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{llll}
-{\bf MatType}  & {\bf PCType} & {\bf MatSolverPackage} & {\bf Package} \\
-               &              &                        & (\trl{-pc_factor_mat_solver_package)}\\
+{\bf MatType}  & {\bf PCType} & {\bf MatSolverType} & {\bf Package} \\
+               &              &                        & (\trl{-pc_factor_mat_solver_type)}\\
 \hline
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERESSL|            & \trl{essl}          \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERLUSOL|           & \trl{lusol}         \\
@@ -3708,12 +3706,12 @@ As an alternative to using runtime flags to employ these external
 packages,
 procedural calls are provided for some packages. For example, the following procedural calls
 are equivalent to runtime options
-\trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package mumps} \trl{-mat_mumps_icntl_7 2}:
+\trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_type mumps} \trl{-mat_mumps_icntl_7 2}:
 \begin{lstlisting}
 KSPSetType(ksp,KSPPREONLY);
 KSPGetPC(ksp,&pc);
 PCSetType(pc,PCLU);
-PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);
 PCFactorGetMatrix(pc,&F);
 icntl=7; ival = 2;
 MatMumpsSetIcntl(F,icntl,ival);
@@ -3890,10 +3888,8 @@ SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES 
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
 \trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
-as \trl{Amat}); a \trl{flag} indicating information about the
-preconditioner matrix structure; and an optional user-defined Jacobian
-context, \trl{ctx}, for application-specific data.  The options for
-\trl{flag} are identical to those for the flag of \lstinline{KSPSetOperators()}, discussed in Section~\ref{sec_usingsles}.
+as \trl{Amat});  and an optional user-defined Jacobian
+context, \trl{ctx}, for application-specific data.  
 Note that the \lstinline{SNES} solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
 methods) can be used.  Chapter~\ref{chapter_matrices} discusses
@@ -4320,6 +4316,15 @@ the problem probably lies with the hand-coded
 matrix. \sindex{Jacobian, debugging}
 See the note in Section \ref{sec_snesjacobian} about assembling your Jabobian
 in the ``preconditioner'' slot \lstinline{B}.
+
+The correctness of user provided MATSHELL Jacobians in general can be checked with
+MatShellTestMultTranspose and MatShellTestMult.
+
+The correctness of user provided MATSHELL Jacobians via TSSetRHSJacobian can be checked with
+TSRHSJacobianTestTranspose and TSRHSJacobianTest that check the correction of the matrix-transpose vector product and the matrix-product. From
+the command line these can be checked with \trl{-ts_rhs_jacobian_test_mult_transpose} \trl{-mat_shell_test_mult_transpose_view}  and \trl{-ts_rhs_jacobian_test_mult} \trl{-mat_shell_test_mult_view}.
+
+
 
 \section{Inexact Newton-like Methods}
 
@@ -5461,7 +5466,7 @@ TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 
 If $F()$ is a function of $p$ one needs to also provide the Jacobian $-F_p$ with
 \begin{lstlisting}
-TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{lstlisting}
 The arguments for the function \lstinline{fp()}
 are the timestep context, current time, $y$, and the (optional) user-provided context.
@@ -5518,7 +5523,7 @@ with respect to the parameter $p_m$. $numcost$ is $1$ since it is a scalar funct
 For ODE solution, PETSc requires user-provided functions to evaluate the system $F(t,y,\dot{y},p)$ (set by \lstinline{TSSetIFunction()} )
 and its corresponding Jacobian $F_y + \sigma F_{\dot y}$ (set by \lstinline{TSSetIJacobian()}).
 Note that the solution state $y$ is $[ \phi \;  \omega ]^T$ here.
-For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSAdjointSetRHSJacobian()},
+For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using \lstinline{TSASetRHSJacobianP()},
 and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using \lstinline{TSSetCostIntegrand()}.
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$.
@@ -5711,29 +5716,29 @@ This chapter needs to be written. For now, see the manual pages (and linked exam
 \chapter{DMPlex: Unstructured Grids in PETSc}
 \label{ch_unstructured}
 
-This chapter introduces the \lstinline{DMPlex} subclass of \lstinline{DM}, which allows the user to handle unstructured grids using the generic
+This chapter introduces the \lstinline{DMPLEX} subclass of \lstinline{DM}, which allows the user to handle unstructured grids using the generic
 \lstinline{DM} interface for hierarchy and multi-physics. \lstinline{DMPlex} was created to remedy a huge problem in all current PDE
 simulation codes, namely that the discretization was so closely tied to the data layout and solver that switching
 discretizations in the same code was not possible. Not only does this preclude the kind of comparison that is necessary
-for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
+for scientific investigation, but it makes library (as opposed to monolithic application) development impossible.
 
 \medskip \medskip
 
 \section{Representing Unstructured Grids} \sindex{DMPlex}
 
 The main advantage of \lstinline{DMPlex} in representing topology is that it treats all the different pieces of a mesh,
-e.g. cells, faces, edges, vertices in exactly the same way. This allows the interface to be very small and simple, while
+e.g. cells, faces, edges, and vertices, in exactly the same way. This allows the interface to be very small and simple, while
 remaining flexible and general. This also allows ``dimension independent programming'', which means that the same
 algorithm can be used unchanged for meshes of different shapes and dimensions.
 
 All pieces of the mesh are treated as \textit{points}, which are identified by \lstinline{PetscInt}s. A mesh is built by relating
 points to other points, in particular specifying a ``covering'' relation among the points. For example, an edge is
-defined by being covered by two vertices, and a triangle can be defined by begin covered by three edges (or even by
+defined by being covered by two vertices, and a triangle can be defined by being covered by three edges (or even by
 three vertices). In fact, this structure has been known for a long time. It is a Hasse Diagram~\cite{HasseDiagram},
 which is a Directed Acyclic Graph (DAG) representing a cell complex using the covering relation. The graph edges
-represent the relation, which also encodes a poset.
+represent the relation, which also encodes a partially ordered set (poset).
 
-For example, we can encode the doublet mesh below
+For example, we can encode the doublet mesh in Figure \ref{fig:doubletMesh},
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=2.0]
@@ -5760,7 +5765,7 @@ For example, we can encode the doublet mesh below
 \caption{A 2D doublet mesh, two triangles sharing an edge.}
 \label{fig:doubletMesh}
 \end{figure}
-which can also be represented as the DAG
+which can also be represented as the DAG in Figure~\ref{fig:doubletDAG}.
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=2.0]
@@ -5801,14 +5806,18 @@ which can also be represented as the DAG
   \draw[sec] (e4)  -- (f1);
 \end{tikzpicture}
 \caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
-\label{fig:doubletSieve}
+\label{fig:doubletDAG}
 \end{figure}
-To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to number first cells,
-then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
-points present in a mesh,
+To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention in 3 dimensions is to number first cells,
+then vertices, then faces, and then edges. In 2 dimensions the convention is to number faces, vertices, and then edges. The user is free to violate these conventions. In terms of the labels in Figure~\ref{fig:doubletMesh}, these numberings are
+\begin{equation*}
+  f_0 \mapsto \mathtt{0}, f_1 \mapsto \mathtt{1}, \quad v_0 \mapsto \mathtt{2}, v_1 \mapsto \mathtt{3}, v_2 \mapsto \mathtt{4}, v_3 \mapsto \mathtt{5}, \quad e_0 \mapsto \mathtt{6}, e_1 \mapsto \mathtt{7}, e_2 \mapsto \mathtt{8}, e_3 \mapsto \mathtt{9}, e_4 \mapsto \mathtt{10}
+\end{equation*}
+First, we declare the set of points present in a mesh,
 \begin{lstlisting}
 DMPlexSetChart(dm, 0, 11);
 \end{lstlisting}
+Note that a \emph{chart} here corresponds to a semi-closed interval (e.g $[0,11) = \{0,1,\ldots,10\}$) specifying the range of indices we'd like to use to define points on the current rank.
 We then define the covering relation, which we call the \textit{cone}, which are also the in-edges in the DAG. In order
 to preallocate correctly, we first setup sizes,
 \begin{lstlisting}
@@ -5837,7 +5846,7 @@ calculated automatically by calling
 \begin{lstlisting}
 DMPlexSymmetrize(dm);
 \end{lstlisting}
-In order to support efficient queries, we also want to construct fast search structures, indices, for the different
+In order to support efficient queries, we also want to construct fast search structures and indices for the different
 types of points, which is done using
 \begin{lstlisting}
 DMPlexStratify(dm);
@@ -5845,7 +5854,7 @@ DMPlexStratify(dm);
 
 \section{Data on Unstructured Grids} \sindex{PetscSection}
 
-The strongest links between solvers and discretizations are,
+The strongest links between solvers and discretizations are
 \begin{itemize}
   \item the layout of data over the mesh,
   \item problem partitioning, and
@@ -5856,7 +5865,7 @@ algebra engine in PETSc without any reference to the mesh (topology) or discreti
 
 \subsection{Data Layout}
 
-Data is associated to a mesh using the \lstinline{PetscSection} object. A \lstinline{PetscSection} can be thought of as a generalization of
+Data is associated with a mesh using the \lstinline{PetscSection} object. A \lstinline{PetscSection} can be thought of as a generalization of
 \lstinline{PetscLayout}, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
 algebra. With \lstinline{PetscLayout}, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
 between processes. Using \lstinline{PetscSection}, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
@@ -5868,15 +5877,15 @@ The sequence for setting up any \lstinline{PetscSection} is the following:
   \item Specify the number of dofs per point, and
   \item Set up the \lstinline{PetscSection}.
 \end{enumerate}
-For example, using the mesh from Fig.~\ref{fig:doubletMesh}, we can layout data for a continuous Galerkin $P_3$ finite
+For example, using the mesh from Figure~\ref{fig:doubletMesh}, we can lay out data for a continuous Galerkin $P_3$ finite
 element method,
 \begin{lstlisting}
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
-DMPlexGetChart(dm,  &pStart,  &pEnd);
-DMPlexGetHeightStratum(dm, 0,  &cStart,  &cEnd);
-DMPlexGetHeightStratum(dm, 1,  &eStart,  &eEnd);
-DMPlexGetDepthStratum(dm, 0,  &vStart, &vEnd);
+DMPlexGetChart(dm, &pStart, &pEnd);
+DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
+DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
+DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5892,7 +5901,7 @@ PetscSectionGetStorageSize(s, &n);
 VecSetSizes(localVec, n, PETSC_DETERMINE);
 VecSetFromOptions(localVec);
 \end{lstlisting}
-however it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
+though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
 DMSetDefaultSection(dm, s);
 DMGetLocalVector(dm, &localVec);
@@ -5901,14 +5910,14 @@ DMGetGlobalVector(dm, &globalVec);
 
 \subsection{Partitioning and Ordering}
 
-In exactly the same way as \lstinline{MatPartitioning} and \lstinline{MatOrdering}, we encode the results of a partition or order in an
-IS. However, the graph we are dealing with now is not the adjacency graph of the problem Jacobian, but the mesh
-itself. Once the mesh is partitioned and reordered, we used the data layout from a \lstinline{PetscSection} to automatically derive
+In exactly the same way as in \lstinline{MatPartitioning} or with \lstinline{MatGetOrdering()}, the results of a partition or order are encoded in an
+\lstinline{IS}. However, the graph is not the adjacency graph of the problem Jacobian, but the mesh
+itself. Once the mesh is partitioned and reordered, the data layout from a \lstinline{PetscSection} can be used to automatically derive
 a problem partitioning/ordering.
 
 \section{Evaluating Residuals} \sindex{Residual Evaluation}
 
-The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
+The evaluation of a residual or Jacobian, for most discretizations has the following general form:
 \begin{itemize}
   \item Traverse the mesh, picking out pieces which in general overlap,
 
@@ -5918,13 +5927,13 @@ The evaluation of a residual, or Jacobian, for most discretizations has the foll
 
   \item Insert these values into the residual vector
 \end{itemize}
-\lstinline{DMPlex} separates these different concerns by passing sets of points, which are just integers, from mesh traversal
+\lstinline{DMPlex} separates these different concerns by passing sets of points, which are just \lstinline{PetscInt}s, from mesh traversal
 routines to data extraction routines and back. In this way, the \lstinline{PetscSection} which structures the data inside a \lstinline{Vec} does
 not need to know anything about the mesh inside a \lstinline{DMPlex}.
 
 The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
 in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
-direction. For example, in a finite element calculation, we calculate an integral over the closure of each element, and
+direction. For example, in a finite element calculation, we calculate an integral over each element, and
 then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
 as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
 retrieve the data using \lstinline{PetscSection} methods,
@@ -5946,8 +5955,8 @@ for (p = 0; p <= numPoints*2; p += 2) {
 DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &numPoints, &points);
 VecRestoreArray(u, &a);
 \end{lstlisting}
-This operation is so common, that we have built a convenience method around it which returns the values in a contiguous
-array, correctly taking into account the orientations of various mesh points,
+This operation is so common that we have built a convenience method around it which returns the values in a contiguous
+array, correctly taking into account the orientations of various mesh points:
 \begin{lstlisting}
 const PetscScalar *values;
 PetscInt           csize;
@@ -5957,10 +5966,10 @@ DMPlexVecGetClosure(dm, section, u, cell, &csize, &values);
 DMPlexVecRestoreClosure(dm, section, u, cell, &csize, &values);
 DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
 \end{lstlisting}
-A simple example of this kind of calculation is in \lstinline{DMPlexComputeL2Diff()}. Note that there is no restriction on the
+A simple example of this kind of calculation is in \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex}{\trl{DMPlexComputeL2Diff_Plex()}}. Note that there is no restriction on the
 type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
 of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
-methods where we want the data from neighboring cells for each face
+methods where we want the data from neighboring cells for each face:
 \begin{lstlisting}
 PetscScalar *a;
 PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;
@@ -6058,30 +6067,26 @@ DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscIn
 \end{lstlisting}
 
 \subsection{Retrieving components}
-The components set at nodes/edges are stored in a container that can be accessed by
+The components set at nodes/edges be accessed by
 \begin{lstlisting}
-DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
-\end{lstlisting}
-  Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
-\begin{lstlisting}
-DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+DMNetworkGetComponent(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, void** component);
 \end{lstlisting}
 \lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
 
 \begin{lstlisting}
-DMNetworkComponentGenericDataType *arr; 
-PetscInt Start, End, numcomps,offset,key,v,compnum; 
+PetscInt Start, End, numcomps,key,v,compnum; 
+void *component;
 
-DMNetworkGetComponentDataArray(dm,  &arr); 
 DMNetworkGetVertexRange(dm, &Start, &End); 
 for(v=Start; v  < End; v++) { 
   DMNetworkGetNumComponents(dm,v, &numcomps); 
   for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponentKeyOffset(dm,v,compnum, &key, &offset); 
-    compdata = (UserCompDataType)(arr+offset); 
+    DMNetworkGetComponent(dm,v,compnum, &key, &component); 
+    compdata = (UserCompDataType)(component); 
   }
 }
 \end{lstlisting}
+The above example does not explicitly make use the component key. It is used when different component types are set at different nodes. In this case, the {compkey} is the used to differentiate the component type.
 
 % --------------------------------------------------------------------
 %                            PART 3
@@ -6924,7 +6929,7 @@ event for profiling purposes:
 PetscLogEventRegister(const char string[],PetscClassId classid,PetscLogEvent *e);
 \end{lstlisting}
 Here \lstinline{string} is a user-defined event name, and \lstinline{color} is an
-optional user-defined event color (for use with {\em Jumpshot} logging; see Section \ref{sec_mpelog});\findex{-log_mpe}
+optional user-defined event color (for use with {\em Jumpshot} logging; see Section \ref{sec_mpelogs});\findex{-log_mpe}
 one should see the manual page for details.  The argument returned in \lstinline{e} should then
 be passed to the \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}
 routines.
@@ -7431,7 +7436,7 @@ scheduler---but we offer some general observations on understanding placement op
   Some implementations, such as Intel MPI, provide means to specify whether domains should be ``compact''---composed 
   of cores sharing resources such as caches---or ``scatter''-ed, with little resource sharing (possibly even spanning 
   sockets).
-\item Separate from the specification of domains, MPI implementations often support different orderings in which MPI 
+\item Separate from the specification of domains, MPI implementations often support different {\it orderings} in which MPI
   ranks should be bound to these domains. Intel MPI, for instance, supports 
   ``compact'' ordering to place consecutive ranks close in terms of shared resources, ``scatter'' 
   to place them far apart, and ``bunch'' to map proportionally to sockets while placing ranks as close together as 
@@ -8014,6 +8019,25 @@ or to output to a MATLAB-compatible ASCII file, one may use
 See the \lstinline{PetscOptionsGetViewer()} man page for full details,
 as well as the \lstinline{XXXViewFromOptions()} man pages (for instance, \lstinline{PetscDrawSetFromOptions()})
 for many other convenient command-line options.
+
+\subsection{Using Viewers to Check Load Imbalance}
+
+The PetscViewer format \lstinline{PETSC_VIEWER_LOAD_BALANCE} will cause certain objects to display simple measures of their imbalance. For example
+\begin{lstlisting}
+-n 4 ./ex32 -ksp_view_mat ::load_balance
+\end{lstlisting}
+will display
+\begin{lstlisting}
+  Nonzeros: Min 162  avg 168  max 174
+\end{lstlisting}
+indicating that one process has 162 nonzero entries in the matrix, the average number of nonzeros per process is 168 and the maximum number of nonzeros is 174.
+Similar for vectors one can see the load balancing with, for example, 
+\begin{lstlisting}
+-n 4 ./ex32 -ksp_view_rhs ::load_balance
+\end{lstlisting}
+The measurements of load balancing can also be done within the program with calls to the appropriate object viewer with the viewer format \lstinline{PETSC_VIEWER_LOAD_BALANCE}.
+
+
 
 \section{Using SAWs with PETSc} \label{sec_saws}
 \sindex{saws}
@@ -9019,7 +9043,7 @@ stages
 can also be performed separately, by using the out-of-place mode, first
 one obtains that matrix object that will hold the factor
 \begin{lstlisting}
-MatGetFactor(Mat matrix,const MatSolverPackage package,MatFactorType ftype,Mat *factor);
+MatGetFactor(Mat matrix,MatSolverType package,MatFactorType ftype,Mat *factor);
 \end{lstlisting}
 and then performs the factorization
 \begin{lstlisting}

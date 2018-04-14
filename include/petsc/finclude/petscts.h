@@ -35,6 +35,7 @@
 #define TSARKIMEX         'arkimex'
 #define TSROSW            'rosw'
 #define TSEIMEX           'eimex'
+#define TSRADAU5          'radau5'
 
 #define TSTRAJECTORYBASIC 'basic'
 

@@ -27,7 +27,7 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-PetscErrorCode  VecSetType(Vec vec, VecType method)
+PetscErrorCode VecSetType(Vec vec, VecType method)
 {
   PetscErrorCode (*r)(Vec);
   PetscBool      match;
@@ -69,7 +69,7 @@ PetscErrorCode  VecSetType(Vec vec, VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-PetscErrorCode  VecGetType(Vec vec, VecType *type)
+PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
   PetscErrorCode ierr;
 
@@ -117,7 +117,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
 .seealso: VecRegisterAll(), VecRegisterDestroy()
 @*/
-PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
+PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 {
   PetscErrorCode ierr;
 
@@ -125,5 +125,3 @@ PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
   ierr = PetscFunctionListAdd(&VecList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

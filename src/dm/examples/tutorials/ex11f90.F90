@@ -17,19 +17,20 @@
       PetscErrorCode ierr
       PetscInt m,n,p,dof,s,i,j,k,xs,xl
       PetscInt ys,yl
-      PetscInt zs,zl
+      PetscInt zs,zl,sw
 
       m = 5
       n = 6
       p = 4;
       s = 1
       dof = 1
+      sw = 1
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
       call DMSetUp(ada,ierr);CHKERRA(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
@@ -86,7 +87,7 @@
 !  Same tests but now with DOF > 1, so dimensions of array are one higher
 !
       dof = 2
-      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
       call DMSetUp(ada,ierr);CHKERRA(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
@@ -148,3 +149,14 @@
       CALL PetscFinalize(ierr)
       stop
       END PROGRAM
+
+!
+!/*TEST
+!
+!   build:
+!     requires: !complex
+!
+!   test:
+!     filter: Error: grep -v "Vec Object" | grep -v "Warning: ieee_inexact is signaling" | grep -v "FORTRAN STOP"
+!
+!TEST*/

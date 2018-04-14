@@ -253,7 +253,7 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t t
   }
   if (*flg) {ierr = PetscInfo2(0,"ls on %s gives \n%s\n",dirname,found);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

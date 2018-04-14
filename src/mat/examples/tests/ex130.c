@@ -1,6 +1,6 @@
 
 static char help[] = "Tests external direct solvers. Simplified from ex125.c\n\
-Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_package 1 -mat_superlu_equil \n\n";
+Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_type 1 -mat_superlu_equil \n\n";
 
 #include <petscmat.h>
 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
   case 1:
 #if defined(PETSC_HAVE_SUPERLU)

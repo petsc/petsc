@@ -5,7 +5,13 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
   This code demonestrates the TSAdjoint interface to a system of time-dependent partial differential equations.
   It computes the sensitivity of a component in the final solution, which locates in the center of the 2D domain, w.r.t. the initial conditions.
   The user does not need to provide any additional functions. The required functions in the original simultion are resued in the adjoint run.
+
+  Runtime options:
+    -forardonly   - run the forward simulation without adjoint
+    -implicitform - provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used
+    -aijpc        - set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL)
  */
+
 #include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -17,6 +23,7 @@ typedef struct {
 
 typedef struct {
   PetscReal D1,D2,gamma,kappa;
+  PetscBool aijpc;
 } AppCtx;
 
 /*
@@ -59,11 +66,14 @@ int main(int argc,char **argv)
   DM             da;
   AppCtx         appctx;
   Vec            lambda[1];
+  PetscScalar    *x_ptr;
   PetscBool      forwardonly=PETSC_FALSE,implicitform=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL);CHKERRQ(ierr);
+  appctx.aijpc = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL);CHKERRQ(ierr);
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -97,7 +107,19 @@ int main(int argc,char **argv)
     ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
   } else {
     ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx);CHKERRQ(ierr);
+    if (appctx.aijpc) {
+      Mat                    A,B;
+
+      ierr = DMSetMatType(da,MATSELL);CHKERRQ(ierr);
+      ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
+      ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */
+      ierr = TSSetIJacobian(ts,A,B,IJacobian,&appctx);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+    } else {
+      ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx);CHKERRQ(ierr);
+    }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,22 +147,20 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   if (!forwardonly) {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Start the Adjoint model
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+       Start the Adjoint model
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = VecDuplicate(x,&lambda[0]);CHKERRQ(ierr);
     /*   Reset initial conditions for the adjoint integration */
+    ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
     ierr = InitializeLambda(da,lambda[0],0.5,0.5);CHKERRQ(ierr);
-
     ierr = TSSetCostGradients(ts,1,lambda,NULL);CHKERRQ(ierr);
-
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   }
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -348,7 +368,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       rowstencil.i = i; rowstencil.c = 0;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
-
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       stencil[0].c = 1; entries[0] = appctx->D2*sy;
       stencil[1].c = 1; entries[1] = appctx->D2*sy;
       stencil[2].c = 1; entries[2] = appctx->D2*sx;
@@ -358,6 +380,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       rowstencil.c = 1;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }
@@ -371,6 +396,12 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (appctx->aijpc) {
+    ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +562,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       rowstencil.i = i; rowstencil.c = 0;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
-
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       stencil[0].c = 1; entries[0] = -appctx->D2*sy;
       stencil[1].c = 1; entries[1] = -appctx->D2*sy;
       stencil[2].c = 1; entries[2] = -appctx->D2*sx;
@@ -541,6 +574,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       rowstencil.c = 1;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }
@@ -554,5 +590,73 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (appctx->aijpc) {
+    ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 16 -da_grid_y 16
+      output_file: output/ex5adj_1.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi
+
+   test:
+      suffix: knl
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -malloc_hbw -ts_trajectory_use_dram 1
+      output_file: output/ex5adj_3.out
+      requires: knl
+
+   test:
+      suffix: sell
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type none
+      output_file: output/ex5adj_sell_1.out
+
+   test:
+      suffix: sell2
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
+      output_file: output/ex5adj_sell_2.out
+
+   test:
+      suffix: sell3
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      output_file: output/ex5adj_sell_3.out
+
+   test:
+      suffix: sell4
+      nsize: 4
+      args: -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      output_file: output/ex5adj_sell_4.out
+
+   test:
+      suffix: sell5
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -aijpc
+      output_file: output/ex5adj_sell_5.out
+
+   test:
+      suffix: sell6
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -dm_mat_type sell -pc_type jacobi
+      output_file: output/ex5adj_sell_6.out
+
+TEST*/

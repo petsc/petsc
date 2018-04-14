@@ -128,14 +128,16 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
 {
   DM             da;
   DMDALocalInfo  info;
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3] = {0, 0, 0}, d;
-  PetscReal      h[3];
+  PetscInt       N = 3, n = 0, spaceDim, i, j, k, *ind, d;
+  PetscReal      *h;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
+  ierr = PetscCalloc1(spaceDim,&ind);CHKERRQ(ierr);
+  ierr = PetscCalloc1(spaceDim,&h);CHKERRQ(ierr);
+  h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   ierr = DMDACreate(PetscObjectComm((PetscObject) dm), &da);CHKERRQ(ierr);
   ierr = DMSetDimension(da, ctx->dim);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, N, N, N);CHKERRQ(ierr);
@@ -165,20 +167,24 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
   }
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
+  ierr = PetscFree(ind);CHKERRQ(ierr);
+  ierr = PetscFree(h);CHKERRQ(ierr);
   *pointsAllProcs = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
 {
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3] = {0, 0, 0}, d;
-  PetscReal      h[3];
+  PetscInt       N = 3, n = 0, spaceDim, i, j, k, *ind, d;
+  PetscReal      *h;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
+  ierr = PetscCalloc1(spaceDim,&ind);CHKERRQ(ierr);
+  ierr = PetscCalloc1(spaceDim,&h);CHKERRQ(ierr);
+  h[0] = 1.0/(N-1); h[1] = 1.0/(N-1); h[2] = 1.0/(N-1);
   *Np  = N * (ctx->dim > 1 ? N : 1) * (ctx->dim > 2 ? N : 1);
   ierr = PetscCalloc1(*Np * spaceDim, pcoords);CHKERRQ(ierr);
   for (k = 0; k < N; ++k) {
@@ -200,6 +206,8 @@ static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
   *pointsAllProcs = PETSC_TRUE;
+  ierr = PetscFree(ind);CHKERRQ(ierr);
+  ierr = PetscFree(h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +264,7 @@ int main(int argc, char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
   ierr = VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Setup Discretization */
-  ierr = PetscFECreateDefault(dm, ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);

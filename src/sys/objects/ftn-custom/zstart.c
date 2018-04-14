@@ -13,12 +13,6 @@
 
 #include <petsc/private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_CUDA)
-#include <cublas_v2.h>
-
-extern cublasHandle_t cublasv2handle;
-#endif
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
 #define petscinitializenoarguments_   PETSCINITIALIZENOARGUMENTS
@@ -257,6 +251,8 @@ extern PetscSpinlock PetscCommSpinLock;
 extern PetscErrorCode  PetscInitializeSAWs(const char[]);
 #endif
 
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm,PetscMPIInt,void *,void *);
+
 /*
     petscinitialize - Version called from Fortran.
 
@@ -269,10 +265,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   int            j,i;
 #if defined (PETSC_USE_NARGS)
   short          flg;
-#endif
-#if defined(PETSC_HAVE_CUDA)
-  PetscBool      flg2;
-  cublasStatus_t cberr;
 #endif
   int            flag;
   PetscMPIInt    size;
@@ -433,11 +425,13 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
+  *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
+  *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);
+  *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
+  *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelShared,&Petsc_Shared_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
 
   /*
@@ -456,6 +450,9 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   }
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
+  /* call a second time to check options database */
+  *ierr = PetscErrorPrintfInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()\n");return;}
   *ierr = PetscCitationsInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
 #if defined(PETSC_HAVE_SAWS)
@@ -491,15 +488,6 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   *ierr = PetscFPTCreate(10000);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
-#endif
-
-#if defined(PETSC_HAVE_CUDA)
-  flg2  = PETSC_TRUE;
-  *ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg2,NULL);
-  if (flg2) {
-    cberr = cublasCreate(&cublasv2handle);
-    if (((int)cberr) != (int)CUBLAS_STATUS_SUCCESS) {(*PetscErrorPrintf)("PetscInitialize:CUBLAS error %d\n",cberr);return;}
-  }
 #endif
 }
 

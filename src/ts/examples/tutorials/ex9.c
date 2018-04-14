@@ -1412,13 +1412,13 @@ int main(int argc,char *argv[])
 
   /* Choose the limiter from the list of registered limiters */
   ierr = PetscFunctionListFind(limiters,lname,&ctx.limit);CHKERRQ(ierr);
-  if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);CHKERRQ(ierr);
+  if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);CHKERRQ(ierr);
+    if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }
@@ -1517,3 +1517,27 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    build:
+      requires: !complex c99
+
+    test:
+      args: -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc
+      requires: !complex !single
+
+    test:
+      suffix: 2
+      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
+      filter:  sed "s/at 48/at 0/g"
+      requires: !complex !single
+
+    test:
+      suffix: 3
+      args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
+      nsize: 3
+      filter:  sed "s/at 48/at 0/g"
+      requires: !complex !single
+
+TEST*/

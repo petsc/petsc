@@ -262,7 +262,7 @@ int main(int argc,char **args)
     IS              is;
     ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
     if (run_type==0) {
       ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
       ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
@@ -316,9 +316,9 @@ int main(int argc,char **args)
     }
     ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
+    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
     ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;
@@ -392,7 +392,7 @@ int main(int argc,char **args)
       PetscDS        prob;
       DM             cdm = dm;
 
-      ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
+      ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
       /* FEM prob */
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -522,6 +522,7 @@ int main(int argc,char **args)
     nsize: 4
     requires: !single
     args: -cells 2,2,1 -max_conv_its 3 -petscspace_order 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -matptap_via scalable -ex56_dm_view -run_type 1
+    timeoutfactor: 2
 
   test:
     suffix: hypre
@@ -534,9 +535,10 @@ int main(int argc,char **args)
     requires: ml !single
     nsize: 4
     args: -cells 2,2,1 -max_conv_its 3 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_order 2 -ksp_type cg -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type simple -use_mat_nearnullspace
+
+  test:
+    nsize: 4
+    requires: parmetis !single
+    args: -cells 2,2,1 -max_conv_its 3 -petscspace_order 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -pc_gamg_mat_partitioning_type parmetis -mat_block_size 3 -run_type 1 -pc_gamg_repartition true
+
 TEST*/
-
-/*NONE
-
-
-NONE*/

@@ -10,13 +10,19 @@ program  ex1f90
   PetscBool           :: interpolate = PETSC_FALSE
   PetscBool           :: flg
   PetscErrorCode      :: ierr
+  PetscInt            :: izero
+  izero = 0
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+    if (ierr .ne. 0) then
+    print*,'Unable to initialize PETSc'
+    stop
+  endif
   call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRA(ierr)
   call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRA(ierr)
 
   call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRA(ierr);
-  call DMPlexDistribute(dm,0,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
+  call DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
   if (dmDist%v /= -1) then
     call DMDestroy(dm,ierr);CHKERRA(ierr)
     dm%v = dmDist%v

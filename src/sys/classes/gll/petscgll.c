@@ -71,6 +71,7 @@ PetscErrorCode PetscGLLCreate(PetscInt n,PetscGLLCreateType type,PetscGLL *gll)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (n < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
   ierr = PetscMalloc2(n,&gll->nodes,n,&gll->weights);CHKERRQ(ierr);
 
   if (type == PETSCGLL_VIA_LINEARALGEBRA) {
@@ -267,7 +268,7 @@ PetscErrorCode PetscGLLElementLaplacianCreate(PetscGLL *gll,PetscReal ***AA)
   PetscErrorCode  ierr;
   const PetscReal  *nodes = gll->nodes;
   const PetscInt   n = gll->n, p = gll->n-1;
-  PetscReal        z0,z1,z2 = 0,x,Lpj,Lpr;
+  PetscReal        z0,z1,z2 = -1,x,Lpj,Lpr;
   PetscInt         i,j,nn,r;
 
   PetscFunctionBegin;
@@ -516,5 +517,38 @@ PetscErrorCode PetscGLLElementAdvectionDestroy(PetscGLL *gll,PetscReal ***AA)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscGLLElementMassCreate(PetscGLL *gll,PetscReal ***AA)
+{
+  PetscReal        **A;
+  PetscErrorCode  ierr;
+  const PetscReal  *weights = gll->weights;
+  const PetscInt   n = gll->n;
+  PetscInt         i,j;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(n,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*n,&A[0]);CHKERRQ(ierr);
+  for (i=1; i<n; i++) A[i] = A[i-1]+n;
+  if (n==1) {A[0][0] = 0.;}
+  for  (i=0; i<n; i++) {
+    for  (j=0; j<n; j++) {
+      A[i][j] = 0.;
+      if (j==i)     A[i][j] = weights[i];
+    }
+  }
+  *AA  = A;
+  PetscFunctionReturn(0);
+}
+
+  PetscErrorCode PetscGLLElementMassDestroy(PetscGLL *gll,PetscReal ***AA)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*AA)[0]);CHKERRQ(ierr);
+  ierr = PetscFree(*AA);CHKERRQ(ierr);
+  *AA  = NULL;
+  PetscFunctionReturn(0);
+}
 
 

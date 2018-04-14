@@ -277,3 +277,17 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscFunctionReturn(0);
 }
 
+
+
+/*TEST
+
+   test:
+      args: -dm_mat_type aij -dof 1
+      output_file: output/ex129.out
+
+   test:
+      suffix: 2
+      args: -dm_mat_type aij -dof 1 -inplacelu
+      output_file: output/ex129.out
+
+TEST*/

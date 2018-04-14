@@ -5,7 +5,10 @@ static char help[] = "Surface processes in geophysics.\n\n";
    Concepts: DMDA^using distributed arrays;
    Concepts: IS coloirng types;
    Processors: n
+   requires: !single
 T*/
+
+
 
 
 #include <petscsnes.h>
@@ -239,3 +242,34 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -snes_view -snes_monitor_short -da_refine 1 -pc_type mg -ksp_type fgmres -pc_mg_type full -mg_levels_ksp_chebyshev_esteig 0.5,1.1
+
+   test:
+      suffix: ew_1
+      args: -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 1
+      requires: !single
+
+   test:
+      suffix: ew_2
+      args: -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 2
+
+   test:
+      suffix: ew_3
+      args: -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 3
+      requires: !single
+
+   test:
+      suffix: fm_rise_2
+      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic -snes_ngmres_restart_it 1 -snes_ngmres_restart_fm_rise
+      requires: !single
+
+   test:
+      suffix: fm_rise_4
+      args: -K 3 -m 1 -D 0.2 -snes_monitor_short -snes_type ngmres -snes_npc_side right -npc_snes_type newtonls -npc_snes_linesearch_type basic -snes_ngmres_restart_it 2 -snes_ngmres_restart_fm_rise -snes_rtol 1.e-2 -snes_max_it 5
+
+TEST*/

@@ -154,7 +154,7 @@ struct _MatOps {
   PetscErrorCode (*placeholder_100)(Mat);
   PetscErrorCode (*placeholder_101)(Mat);
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
-  PetscErrorCode (*placeholder_103)(void);
+  PetscErrorCode (*viewnative)(Mat,PetscViewer);
   /*104*/
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);
@@ -394,15 +394,11 @@ struct _p_Mat {
   PetscBool              subsetoffprocentries;
   PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
   PetscBool              structure_only;
-#if defined(PETSC_HAVE_CUSP)
-  PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
-#elif defined(PETSC_HAVE_VIENNACL)
-  PetscViennaCLFlag      valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
-#elif defined(PETSC_HAVE_VECCUDA)
-  PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  PetscOffloadFlag       valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
-  MatSolverPackage       solvertype;
+  char                   *solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
   Mat                    schur;             /* Schur complement matrix */
@@ -567,6 +563,7 @@ struct _p_MatColoring {
   MatColoringWeightType weight_type;      /* type of weight computation to be performed */
   PetscReal             *user_weights;    /* custom weights and permutation */
   PetscInt              *user_lperm;
+  PetscBool             valid_iscoloring; /* check to see if matcoloring is produced a valid iscoloring */
 };
 
 struct  _p_MatTransposeColoring{
@@ -706,11 +703,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   sctx->newshift = PETSC_FALSE;
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
-      ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
       fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
       fact->factorerror_zeropivot_row   = row;
-    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
+    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
 }
@@ -753,7 +750,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add an index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - interger array
+    indices   - integer array
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -790,7 +787,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a permuted index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - interger array
+    indices   - integer array
     perm      - permutation of indices
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
@@ -828,7 +825,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED ascending index set into a sorted linked list - same as PetscLLAdd() bus skip 'if (_k && _entry < _lnkdata) _lnkdata  = idx_start;'
   Input Parameters:
     nidx      - number of input indices
-    indices   - sorted interger array
+    indices   - sorted integer array
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -911,7 +908,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Same as PetscLLAddSorted() with an additional operation:
        count the number of input indices that are no larger than 'diag'
   Input Parameters:
-    indices   - sorted interger array
+    indices   - sorted integer array
     idx_start - starting index of the list, index of pivot row
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -997,7 +994,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Initialize a sorted linked list used for ILU and ICC
   Input Parameters:
     nidx      - number of input idx
-    idx       - interger array used for storing column indices
+    idx       - integer array used for storing column indices
     idx_start - starting index of the list
     perm      - indices of an IS
     lnk       - linked list(an integer array) that is created
@@ -1037,7 +1034,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list for ILU
   Input Parameters:
     nidx      - number of input indices
-    idx       - sorted interger array used for storing column indices
+    idx       - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl    - level of idx
     idx_start - starting index of the list
@@ -1085,7 +1082,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a index set into a sorted linked list
   Input Parameters:
     nidx      - number of input idx
-    idx   - interger array used for storing column indices
+    idx   - integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl - level of idx
     idx_start - starting index of the list
@@ -1130,7 +1127,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    idx   - sorted interger array used for storing column indices
+    idx   - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl - level of idx
     idx_start - starting index of the list
@@ -1174,7 +1171,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list for ICC
   Input Parameters:
     nidx      - number of input indices
-    idx       - sorted interger array used for storing column indices
+    idx       - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl    - level of idx
     idx_start - starting index of the list
@@ -1307,7 +1304,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
   Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
   Input Parameters:
     nidx      - number of input indices
-    indices   - sorted interger array
+    indices   - sorted integer array
     lnk       - condensed linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
@@ -1607,7 +1604,7 @@ PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsym
 
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
-PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;

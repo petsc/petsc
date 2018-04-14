@@ -7,10 +7,12 @@
 !    -mx <xg>, where <xg> = number of grid points in the x-direction
 !    -my <yg>, where <yg> = number of grid points in the y-direction
 !
-!/*T
+!!/*T
 !  Concepts: SNES^sequential Bratu example
 !  Processors: 1
 !T*/
+
+
 !
 !  --------------------------------------------------------------------------
 !
@@ -71,7 +73,7 @@
 
 !  Store parameters in common block
 
-      common /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common /params/ lambda,mx,my,fd_coloring
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -90,12 +92,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-      if (size .ne. 1) then
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,1,'This is a uniprocessor example only'); endif
 
 !  Initialize problem parameters
       i5 = 5
@@ -107,10 +104,7 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-         if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_SELF,1,'Lambda out of range '); endif
       N       = mx*my
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +129,7 @@
 !     context that provides application-specific data for the
 !     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_VEC,ierr)
+      call SNESSetFunction(snes,r,FormFunction,fdcoloring,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -178,7 +172,7 @@
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
-        call MatFDColoringSetFunction(fdcoloring,FormFunction,0,ierr)
+        call MatFDColoringSetFunction(fdcoloring,FormFunction,fdcoloring,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
         call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
@@ -332,9 +326,8 @@
 !  Common blocks:
       PetscReal   lambda
       PetscInt     mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common      /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common      /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar x(mx,my)
@@ -387,22 +380,21 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormFunction(snes,X,F,dummy,ierr)
+      subroutine FormFunction(snes,X,F,fdcoloring,ierr)
       use petscsnes
       implicit none
 
 !  Input/output variables:
       SNES              snes
       Vec               X,F
-      PetscFortranAddr  dummy
       PetscErrorCode          ierr
+      MatFDColoring fdcoloring
 
 !  Common blocks:
       PetscReal         lambda
       PetscInt          mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common            /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common            /params/ lambda,mx,my,fd_coloring
 
 !  Declarations for use with local arrays:
       PetscScalar       lx_v(0:1),lf_v(0:1)
@@ -466,9 +458,8 @@
 !  Common blocks:
       PetscReal      lambda
       PetscInt        mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common         /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common         /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar    x(mx,my),f(mx,my)
@@ -544,9 +535,8 @@
 !  Common blocks:
       PetscReal     lambda
       PetscInt       mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common        /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common        /params/ lambda,mx,my,fd_coloring
 
 !  Declarations for use with local array:
       PetscScalar   lx_v(0:1)
@@ -596,9 +586,8 @@
 !  Common blocks:
       PetscReal    lambda
       PetscInt      mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common       /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common       /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar  x(mx,my)
@@ -653,3 +642,24 @@
 
       return
       end
+
+!
+!/*TEST
+!
+!   build:
+!      requires: !single
+!
+!   test:
+!      args: -snes_monitor_short -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 2
+!      args: -snes_monitor_short -nox -snes_fd -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 3
+!      args: -snes_monitor_short -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always
+!      filter: sort -b
+!      filter_output: sort -b
+!
+!TEST*/

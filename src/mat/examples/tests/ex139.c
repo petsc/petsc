@@ -121,3 +121,12 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      nsize: 2
+      filter: grep -v "type: mpi"
+      args: -blocked {{0 1}} -mat_type {{aij baij}}
+
+TEST*/

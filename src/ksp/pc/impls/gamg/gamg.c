@@ -437,7 +437,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* just do Galerkin grids */
       Mat          B,dA,dB;
 
-     if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
+      if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
         ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
@@ -1237,7 +1237,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .   -pc_gamg_process_eq_limit <limit, default=50> - GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
 .   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
--   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
+.   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
 -   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for default Aggregation:
@@ -1245,18 +1245,17 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 -  -pc_gamg_square_graph <n,default=1> - number of levels to square the graph before aggregating it
 
-   Multigrid options(inherited):
-+  -pc_mg_cycles <v>: v or w (PCMGSetCycleType())
-.  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
-.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
-.  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
+   Multigrid options:
++  -pc_mg_cycles <v> - v or w, see PCMGSetCycleType()
+.  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
+.  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
 
 
   Notes: In order to obtain good performance for PCGAMG for vector valued problems you must
-$       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
-$       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
-$       See the Users Manual Chapter 4 for more details
+       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
+       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
+       See the Users Manual Chapter 4 for more details
 
   Level: intermediate
 

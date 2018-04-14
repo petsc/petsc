@@ -14,9 +14,9 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   ierr = DMGetDimension(dm,&dimR);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&dimC);CHKERRQ(ierr);
 
-  ierr = DMGetWorkArray(dm,dimR * numPoints,PETSC_REAL,&preimage);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimC * numPoints,PETSC_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimR * numPoints,PETSC_REAL,&inverted);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
 
   for (i = 0; i < dimR * numPoints; i++) {
     ierr = PetscRandomGetValueReal(randCtx, &preimage[i]);CHKERRQ(ierr);
@@ -103,9 +103,9 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
     }
   }
 
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,PETSC_REAL,&inverted);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimC * numPoints,PETSC_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,PETSC_REAL,&preimage);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
             PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {identityEmbedding};
             void           *ctxs[1] = {NULL};
 
-            ierr = PetscFECreateDefault(dm,dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+            ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
             ierr = PetscFEGetBasisSpace(fe,&sp);CHKERRQ(ierr);
             ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
             ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
             if (isFE) {
               PetscFE fe;
 
-              ierr = PetscFECreateDefault(dm,dim,dimC,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+              ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dimC,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
               ierr = DMSetField(coordDM,0,(PetscObject)fe);CHKERRQ(ierr);
               ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
             }

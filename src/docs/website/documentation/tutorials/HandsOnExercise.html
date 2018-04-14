@@ -121,7 +121,7 @@
   <div id="SuperLU">
   <li> Run with a 120x120 mesh on 16 processors using superlu_dist and view the solver options used
     <pre>
-     mpiexec -n 16 ./ex50  -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_package superlu_dist -ksp_monitor -ksp_view     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex50_tut_2.out.html">[Expected output]</a>
+     mpiexec -n 16 ./ex50  -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_monitor -ksp_view     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/output/ex50_tut_2.out.html">[Expected output]</a>
     </pre>
   </div>
   </li>

@@ -190,6 +190,7 @@ typedef int MPI_Comm;
 #define MPI_COMM_NULL  0
 #define MPI_COMM_SELF  1
 #define MPI_COMM_WORLD 2
+#define MPI_COMM_TYPE_SHARED 1
 
 typedef int MPI_Info;
 #define MPI_INFO_NULL 0
@@ -224,6 +225,7 @@ typedef int MPI_Datatype;
 #define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
 #define MPI_LONG_LONG          (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
 #define MPI_LONG_LONG_INT      MPI_LONG_LONG
+#define MPI_INTEGER8           MPI_LONG_LONG
 
 #define MPI_UNSIGNED_SHORT     (5 << 20 | 1 << 8 | (int)sizeof(unsigned short))
 #define MPI_UNSIGNED           (5 << 20 | 1 << 8 | (int)sizeof(unsigned))
@@ -235,6 +237,11 @@ typedef int MPI_Datatype;
 #define MPI_LONG_INT           (12 << 20 | 1 << 8 | (int)(sizeof(long) + sizeof(int)))
 #define MPI_SHORT_INT          (13 << 20 | 1 << 8 | (int)(sizeof(short) + sizeof(int)))
 #define MPI_2INT               (14 << 20 | 1 << 8 | (int)(2*sizeof(int)))
+
+/* Fortran datatypes; Jed Brown says they should be defined here */
+#define MPI_INTEGER MPI_INT
+#define MPI_DOUBLE_PRECISION MPI_DOUBLE
+#define MPI_COMPLEX16 MPI_C_DOUBLE_COMPLEX
 
 #define MPI_ORDER_C            0
 #define MPI_ORDER_FORTRAN      1
@@ -321,6 +328,8 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Wtime         Petsc_MPI_Wtime
 #define MPI_Type_get_envelope Petsc_MPI_Type_get_envelope
 #define MPI_Type_get_contents Petsc_MPI_Type_get_contents
+#define MPI_Add_error_class   Petsc_MPI_Add_error_class
+#define MPI_Add_error_code    Petsc_MPI_Add_error_code
 
 /* identical C bindings */
 #define MPI_Comm_copy_attr_function   MPI_Copy_function
@@ -331,6 +340,7 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Comm_free_keyval          Petsc_MPI_Keyval_free
 #define MPI_Comm_get_attr             Petsc_MPI_Attr_get
 #define MPI_Comm_set_attr             Petsc_MPI_Attr_put
+#define MPI_Comm_delete_attr          Petsc_MPI_Attr_delete
 
 MPIUni_PETSC_EXTERN int    MPIUni_Abort(MPI_Comm,int);
 MPIUni_PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
@@ -352,6 +362,8 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
 
 MPIUni_PETSC_EXTERN int MPI_Type_get_envelope(MPI_Datatype,int*,int*,int*,int*);
 MPIUni_PETSC_EXTERN int MPI_Type_get_contents(MPI_Datatype,int,int,int,int*,MPI_Aint*,MPI_Datatype*);
+MPIUni_PETSC_EXTERN int MPI_Add_error_class(int*);
+MPIUni_PETSC_EXTERN int MPI_Add_error_code(int,int*);
 
 /*
     Routines we have replace with macros that do nothing
@@ -511,7 +523,7 @@ typedef int MPI_Fint;
       MPI_SUCCESS)
 #define MPI_Comm_group(comm,group) \
      (MPIUNI_ARG(comm),\
-      MPIUNI_ARG(group),\
+      *group = 1,\
       MPI_SUCCESS)
 #define MPI_Group_incl(group,n,ranks,newgroup) \
      (MPIUNI_ARG(group),\
@@ -878,6 +890,11 @@ typedef int MPI_Fint;
 #define MPI_Comm_split(comm,color,key,newcomm) \
      (MPIUNI_ARG(color),\
       MPIUNI_ARG(key),\
+      MPI_Comm_dup(comm,newcomm))
+#define MPI_Comm_split_type(comm,color,key,info,newcomm) \
+     (MPIUNI_ARG(color),\
+      MPIUNI_ARG(key),\
+      MPIUNI_ARG(info),\
       MPI_Comm_dup(comm,newcomm))
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1, MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1 ,MPI_SUCCESS)

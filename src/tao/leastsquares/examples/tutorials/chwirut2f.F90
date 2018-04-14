@@ -7,7 +7,7 @@
 !
 !  The C version of this code is chwirut1.c
 !
-!/*T
+!!/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
@@ -18,6 +18,8 @@
 !  Routines: TaoDestroy();
 !  Processors: n
 !T*/
+
+
 !
 ! ----------------------------------------------------------------------
 !
@@ -516,6 +518,16 @@
       return
       end
 
-
-
-
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!
+!   test:
+!      nsize: 3
+!      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+!      requires: !single
+!      TODO: produces too many inconsistent results across machines/OS/compilers
+!
+!
+!TEST*/

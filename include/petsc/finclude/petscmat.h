@@ -16,7 +16,7 @@
 #define MatCoarsen PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
-#define MatSolverPackage character*(80)
+#define MatSolverType character*(80)
 #define MatOption PetscEnum
 #define MatCreateSubMatrixOption PetscEnum
 #define MPChacoGlobalType PetscEnum
@@ -82,9 +82,6 @@
 #define MATAIJCRL          'aijcrl'
 #define MATSEQAIJCRL       'seqaijcrl'
 #define MATMPIAIJCRL       'mpiaijcrl'
-#define MATAIJCUSP         'aijcusp'
-#define MATSEQAIJCUSP      'seqaijcusp'
-#define MATMPIAIJCUSP      'mpiaijcusp'
 #define MATAIJCUSPARSE     'aijcusparse'
 #define MATSEQAIJCUSPARSE  'seqaijcusparse'
 #define MATMPIAIJCUSPARSE  'mpiaijcusparse'
@@ -133,6 +130,9 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
+#define MATSELL            'sell'
+#define MATSEQSELL         'seqsell'
+#define MATMPISELL         'mpisell'
 #define MATDUMMY           'dummy'
 
 !
@@ -142,7 +142,7 @@
 #define MATMFFD_WP 'wp'
 
 !
-! MatSolverPackages
+! MatSolverTypes
 !
 #define MATSOLVERSUPERLU         'superlu'
 #define MATSOLVERSUPERLU_DIST    'superlu_dist'
@@ -164,12 +164,14 @@
 #define MATSOLVERCUSPARSE        'cusparse'
 
 !
-! GPU Storage Formats for CUSP and CUSPARSE
+! GPU Storage Formats for CUSPARSE
 !
 #define MatCUSPARSEStorageFormat PetscEnum
 #define MatCUSPARSEFormatOperation PetscEnum
 
-#define MatCUSPStorageFormat PetscEnum
-#define MatCUSPFormatOperation PetscEnum
+!
+! sparsity reducing ordering for STRUMPACK
+!
+#define MatSTRUMPACKReordering PetscEnum
 
 #endif

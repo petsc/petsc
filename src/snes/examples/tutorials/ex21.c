@@ -1,6 +1,10 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, treats state and adjoint variables separately.\n\n";
 
+/*T
+   requires: !single
+T*/
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
@@ -69,6 +73,8 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da2);CHKERRQ(ierr);
   ierr = DMSetUp(user.da2);CHKERRQ(ierr);  
+  ierr = DMDASetFieldName(user.da1,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(user.da2,0,"lambda");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
@@ -186,5 +192,11 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+   test:
+      nsize: 4
+      args: -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason
+      requires: !single
 
+TEST*/

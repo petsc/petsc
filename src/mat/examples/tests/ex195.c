@@ -7,7 +7,6 @@
 
 static char help[] = " Demonstrate the use of MatConvert_Nest_AIJ\n";
 
-
 #include <petscmat.h>
 
 
@@ -56,6 +55,8 @@ int main(int argc,char **args)
   ierr = MatSetUp(nest);CHKERRQ(ierr);
   ierr = MatConvert(nest,MATAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
   ierr = MatView(aij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&nest);CHKERRQ(ierr);
+  ierr = MatDestroy(&aij);CHKERRQ(ierr);
   ierr = MatDestroy(&A1);CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&A3);CHKERRQ(ierr);
@@ -63,3 +64,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+TEST*/

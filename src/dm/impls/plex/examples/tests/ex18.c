@@ -6,62 +6,93 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 
 Triangle
 --------
-Test 0:
+Test 0 (2 ranks):
 Two triangles sharing a face
 
-        4
+        2
       / | \
      /  |  \
     /   |   \
-   2  0 | 1  5
+   0  0 | 1  3
     \   |   /
      \  |  /
       \ | /
-        3
+        1
 
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
 
 Test 1 (3 ranks):
 Four triangles partitioned across 3 ranks
 
-   4 _______ 7
+   0 _______ 3
    | \     / |
    |  \ 1 /  |
    |   \ /   |
-   | 0  6  2 |
+   | 0  2  2 |
    |   / \   |
    |  / 3 \  |
    | /     \ |
-   5 ------- 8
+   1 ------- 4
 
-Partition: {0: [0,  4, 5], 1: [1,  6, 7], 2: [2, 3,  8]}
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+    rank 2: 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+    rank 2: 2 3
 
 Tetrahedron
 -----------
 Test 0:
 Two tets sharing a face
 
- cell   5 _______    cell
- 0    / | \      \       1
+ cell   3 _______    cell
+ 0    / | \      \   1
      /  |  \      \
     /   |   \      \
-   2----|----4-----6
+   0----|----4-----2
     \   |   /      /
-     \  |  /     /
+     \  |  /      /
       \ | /      /
-        3-------
+        1-------
+   y
+   | x
+   |/
+   *----z
+
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
 
 Quadrilateral
 -------------
-Test 0:
+Test 0 (2 ranks):
 Two quads sharing a face
 
-   5-------4-------7
+   3-------2-------5
    |       |       |
    |   0   |   1   |
    |       |       |
-   2-------3-------6
+   0-------1-------4
 
-Test 1:
+  vertex distribution:
+    rank 0: 0 1 2
+    rank 1: 3 4 5
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+
+TODO Test 1:
 A quad and a triangle sharing a face
 
    5-------4
@@ -72,23 +103,30 @@ A quad and a triangle sharing a face
 
 Hexahedron
 ----------
-Test 0:
+Test 0 (2 ranks):
 Two hexes sharing a face
 
-cell   9-------------8-------------13 cell
+cell   7-------------6-------------11 cell
 0     /|            /|            /|     1
-     / |   15      / |   21      / |
+     / |   F1      / |   F7      / |
     /  |          /  |          /  |
-   6-------------7-------------12  |
-   |   |     18  |   |     24  |   |
+   4-------------5-------------10  |
+   |   |     F4  |   |     F10 |   |
    |   |         |   |         |   |
-   |19 |         |17 |         |23 |
-   |   |  16     |   |   22    |   |
-   |   5---------|---4---------|---11
+   |F5 |         |F3 |         |F9 |
+   |   |  F2     |   |   F8    |   |
+   |   3---------|---2---------|---9
    |  /          |  /          |  /
-   | /   14      | /    20     | /
+   | /   F0      | /    F6     | /
    |/            |/            |/
-   2-------------3-------------10
+   0-------------1-------------8
+
+  vertex distribution:
+    rank 0: 0 1 2 3 4 5
+    rank 1: 6 7 8 9 10 11
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
 
 */
 
@@ -137,11 +175,10 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  switch (size) {
-  case 2:
+  switch (testNum) {
+  case 0:
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
-    case 0:
-      switch (testNum) {
       case 0:
       {
         const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
@@ -153,12 +190,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-      }
-      break;
-    case 1:
-      switch (testNum) {
-      case 0:
+      case 1:
       {
         const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
         const int      cells[3]  = {1, 3, 2};
@@ -169,17 +201,13 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-      }
-      break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  case 3:
+  case 1:
+    if (size != 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
     switch (rank) {
-    case 0:
-      switch (testNum) {
-      case 1:
+      case 0:
       {
         const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
         const int      cells[3]  = {0, 1, 2};
@@ -190,11 +218,6 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-    }
-    break;
-    case 1:
-      switch (testNum) {
       case 1:
       {
         const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
@@ -206,12 +229,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-    }
-    break;
-    case 2:
-      switch (testNum) {
-      case 1:
+      case 2:
       {
         const PetscInt numCells  = 2, numVertices = 1, numCorners = 3;
         const int      cells[6]  = {2, 4, 3, 2, 1, 4};
@@ -222,13 +240,10 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-      }
-      break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", size);
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -242,11 +257,10 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  switch (size) {
-  case 2:
+  switch (testNum) {
+  case 0:
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
-    case 0:
-      switch (testNum) {
       case 0:
       {
         const PetscInt numCells  = 1, numVertices = 2, numCorners = 4;
@@ -258,113 +272,107 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
         for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+      case 1:
+      {
+        const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
+        const int      cells[4]  = {1, 2, 4, 3};
+        PetscReal      coords[9] = {1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
+        PetscInt       markerPoints[8] = {1, 1, 2, 1, 3, 1, 4, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-    case 1:
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+    break;
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode CreateQuad_2D(MPI_Comm comm, AppCtx *user, DM *dm)
+{
+  PetscInt       testNum = user->testNum, p;
+  PetscMPIInt    rank, size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  switch (testNum) {
+  case 0:
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    switch (rank) {
+      case 0:
+      {
+        const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
+        const int      cells[4]  = {0, 1, 2, 3};
+        PetscReal      coords[6] = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0};
+        PetscInt       markerPoints[4*2] = {1, 1, 2, 1, 3, 1, 4, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      case 1:
+      {
+        const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
+        const int      cells[4]  = {1, 4, 5, 2};
+        PetscReal      coords[6] = {-0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
+        PetscInt       markerPoints[4*2] = {1, 1, 2, 1, 3, 1, 4, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+    break;
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode CreateHex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
+{
+  PetscInt       testNum = user->testNum, p;
+  PetscMPIInt    rank, size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  switch (testNum) {
+  case 0:
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    switch (rank) {
+    case 0:
     {
-      const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
-      const int      cells[4]  = {1, 2, 4, 3};
-      PetscReal      coords[9] = {1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
-      PetscInt       markerPoints[8] = {1, 1, 2, 1, 3, 1, 4, 1};
+      const PetscInt numCells  = 1, numVertices = 6, numCorners = 8;
+      const int      cells[8]  = {0, 3, 2, 1, 4, 5, 6, 7};
+      PetscReal      coords[6*3] = {-0.5,0.0,0.0, 0.0,0.0,0.0, 0.0,1.0,0.0, -0.5,1.0,0.0, -0.5,0.0,1.0, 0.0,0.0,1.0};
+      PetscInt       markerPoints[8*2] = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1};
 
       ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
       for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
     }
     break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
-    }
-    break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", size);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
-{
-  PetscInt       depth = 1, p;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (!rank) {
-    switch (testNum) {
-    case 0:
-    {
-      PetscInt    numPoints[2]        = {6, 2};
-      PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {2, 3, 4, 5,  3, 6, 7, 4};
-      PetscInt    coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
-      PetscScalar vertexCoords[12]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
-      PetscInt    markerPoints[12]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1};
-
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 6; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-    }
-    break;
     case 1:
     {
-      PetscInt    numPoints[2]        = {5, 2};
-      PetscInt    coneSize[7]         = {4, 3, 0, 0, 0, 0, 0};
-      PetscInt    cones[7]            = {2, 3, 4, 5,  3, 6, 4};
-      PetscInt    coneOrientations[7] = {0, 0, 0, 0,  0, 0, 0};
-      PetscScalar vertexCoords[10]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0};
-      PetscInt    markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+      const PetscInt numCells  = 1, numVertices = 6, numCorners = 8;
+      const int      cells[8]  = {1, 2, 9, 8, 5, 10, 11, 6};
+      PetscReal      coords[6*3] = {0.0,1.0,1.0, -0.5,1.0,1.0, 0.5,0.0,0.0, 0.5,1.0,0.0, 0.5,0.0,1.0,  0.5,1.0,1.0};
+      PetscInt       markerPoints[8*2] = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 5; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
+      ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+      for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
     }
     break;
-    default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
-  } else {
-    PetscInt numPoints[2] = {0, 0};
-
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
-{
-  PetscInt       depth = 1, testNum  = 0, p;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (!rank) {
-    switch (testNum) {
-    case 0:
-    {
-      PetscInt    numPoints[2]         = {12, 2};
-      PetscInt    coneSize[14]         = {8, 8, 0,0,0,0,0,0,0,0,0,0,0,0};
-      PetscInt    cones[16]            = {2,5,4,3,6,7,8,9,  3,4,11,10,7,12,13,8};
-      PetscInt    coneOrientations[16] = {0,0,0,0,0,0,0,0,  0,0, 0, 0,0, 0, 0,0};
-      PetscScalar vertexCoords[36]     = {-0.5,0.0,0.0, 0.0,0.0,0.0, 0.0,1.0,0.0, -0.5,1.0,0.0,
-                                          -0.5,0.0,1.0, 0.0,0.0,1.0, 0.0,1.0,1.0, -0.5,1.0,1.0,
-                                           0.5,0.0,0.0, 0.5,1.0,0.0, 0.5,0.0,1.0,  0.5,1.0,1.0};
-      PetscInt    markerPoints[16]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1};
-
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 8; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-    }
-    break;
-    default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-    }
-  } else {
-    PetscInt numPoints[2] = {0, 0};
-
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  break;
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -422,14 +430,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       if (cellSimplex) {
         ierr = CreateSimplex_2D(comm, user, dm);CHKERRQ(ierr);
       } else {
-        ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+        ierr = CreateQuad_2D(comm, user, dm);CHKERRQ(ierr);
       }
       break;
     case 3:
       if (cellSimplex) {
         ierr = CreateSimplex_3D(comm, user, dm);CHKERRQ(ierr);
       } else {
-        ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
+        ierr = CreateHex_3D(comm, user, dm);CHKERRQ(ierr);
       }
       break;
     default:
@@ -493,5 +501,13 @@ int main(int argc, char **argv)
     suffix: 4
     nsize: 2
     args: -dim 3 -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: quad_0
+    nsize: 2
+    args: -cell_simplex 0 -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: quad_1
+    nsize: 2
+    args: -cell_simplex 0 -dim 3 -interpolate -dm_view ascii::ascii_info_detail
 
 TEST*/

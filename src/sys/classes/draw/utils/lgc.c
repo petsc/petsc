@@ -489,7 +489,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        cl   = lg->colors ? lg->colors[i] : (PETSC_DRAW_BLACK + i);
+        cl   = lg->colors ? lg->colors[i] : ((PETSC_DRAW_BLACK + i) % PETSC_DRAW_MAXCOLOR);
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_markers) {ierr = PetscDrawMarker(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);}
       }

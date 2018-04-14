@@ -1,11 +1,13 @@
 ex125: nrhs 2
  SUPERLU_DIST LU:
  0-the LU numfactorization 
+ MatInertia: nneg: 0, nzero: 0, npos: 36
    0-the MatMatSolve 
    1-the MatMatSolve 
    0-the MatSolve 
    1-the MatSolve 
  1-the LU numfactorization 
+ MatInertia: nneg: 0, nzero: 0, npos: 36
    0-the MatMatSolve 
    1-the MatMatSolve 
    0-the MatSolve 

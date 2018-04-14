@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=es
+set USR=petsc
+set PETSC_DIR=/scratch/petsc/${RNAME}-4
+set PETSC_ARCH=arch-viennacl

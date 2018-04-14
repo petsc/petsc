@@ -118,14 +118,17 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Basic
 #define GTOLNAME _Basic
+#define GTOLBS mapping->bs
 #define GTOL(g, local) do {                  \
     local = map->globals[g/bs - start];      \
     local = bs*local + (g % bs);             \
   } while (0)
+
 #include <../src/vec/is/utils/isltog.h>
 
 #define GTOLTYPE _Basic
 #define GTOLNAME Block_Basic
+#define GTOLBS 1
 #define GTOL(g, local) do {                  \
     local = map->globals[g - start];         \
   } while (0)
@@ -133,6 +136,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Hash
 #define GTOLNAME _Hash
+#define GTOLBS mapping->bs
 #define GTOL(g, local) do {                  \
     PetscHashIMap(map->globalht,g/bs,local); \
     local = bs*local + (g % bs);             \
@@ -141,6 +145,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Hash
 #define GTOLNAME Block_Hash
+#define GTOLBS 1
 #define GTOL(g, local) do {                  \
     PetscHashIMap(map->globalht,g,local);    \
   } while (0)
@@ -442,7 +447,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 
     Notes: There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
@@ -736,7 +741,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
@@ -772,6 +777,8 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
+.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+           IS_GTOLM_DROP - drops the indices with no local value from the output list
 -   is - index set in global numbering
 
     Output Parameters:
@@ -784,7 +791,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 .seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type, IS is,IS *newis)
+PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,IS is,IS *newis)
 {
   PetscErrorCode ierr;
   PetscInt       n,nout,*idxout;
@@ -833,7 +840,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 

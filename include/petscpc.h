@@ -117,9 +117,9 @@ PETSC_EXTERN PetscErrorCode PCFactorSetZeroPivot(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetShiftType(PC,MatFactorShiftType);
 PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal);
 
-PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverPackage(PC,const MatSolverPackage);
-PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverPackage(PC,const MatSolverPackage*);
-PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverPackage(PC);
+PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC,MatSolverType);
+PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC,MatSolverType*);
+PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetFill(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetColumnPivot(PC,PetscReal);
@@ -240,15 +240,6 @@ PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
 PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
 
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
-
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetDropTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPUseScaling(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetNonzeros(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetLinParameter(PC,PetscInt);
-
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC,PetscReal,PetscInt);
@@ -310,8 +301,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
 PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetDistinctSmoothUp(PC);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
@@ -326,6 +316,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetR(PC,PetscInt,Vec);
 
 PETSC_EXTERN PetscErrorCode PCMGSetRestriction(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetRestriction(PC,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode PCMGSetInjection(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGGetInjection(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInterpolation(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);

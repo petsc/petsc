@@ -4,6 +4,8 @@
    Processors: n
 T*/
 
+
+
 /*
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
@@ -176,8 +178,7 @@ int main(int argc, char **argv)
       ierr = PCMGSetType(pc, PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
       ierr = PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH);CHKERRQ(ierr);
       ierr = PCMGSetCycleType(pc, PC_MG_CYCLE_V);CHKERRQ(ierr);
-      ierr = PCMGSetNumberSmoothUp(pc, 2);CHKERRQ(ierr);
-      ierr = PCMGSetNumberSmoothDown(pc, 2);CHKERRQ(ierr);
+      ierr = PCMGSetNumberSmooth(pc, 2);CHKERRQ(ierr);
 
       for (k = 1; k <= user.nlevels; k++) {
         ierr = DMCreateInterpolation(dmhierarchy[k - 1], dmhierarchy[k], &R, NULL);CHKERRQ(ierr);
@@ -636,3 +637,27 @@ PetscErrorCode InitializeOptions(UserContext* user)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: moab
+
+   test:
+      args: -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: hdf5
+      args: -levels 3 -nu .01 -n 2 -mg -ksp_converged_reason
+
+   test:
+      suffix: 3
+      nsize: 2
+      requires: hdf5
+      args: -problem 3 -file data/ex35_mesh.h5m -mg -levels 1 -ksp_converged_reason
+      localrunfiles: data
+
+TEST*/

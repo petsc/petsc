@@ -228,17 +228,19 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscQuadrature q;
   PetscInt        f;
   PetscDS         prob;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "potential_", -1, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "potential_", -1, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "potential");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "conductivity_", -1, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "conductivity_", -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "conductivity");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "multiplier_", -1, &fe[2]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, "multiplier_", -1, &fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "multiplier");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[2], q);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
@@ -309,11 +311,14 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  # 2D 0-1
+  build:
+    requires: !complex
+
   test:
     suffix: 0
     requires: triangle
     args: -run_type test -dmsnes_check -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2
+
   test:
     suffix: 1
     requires: triangle

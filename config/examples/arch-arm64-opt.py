@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #run this script like a normal PETSc configure script within PETSc Folder.
+from __future__ import print_function
 import os
 import sys
 
@@ -20,6 +21,9 @@ configure_options = [
   '--known-sizeof-double=8',
   '--known-sizeof-size_t=8',
   '--known-bits-per-byte=8',
+  '--known-snrm2-returns-double=0',
+  '--known-sdot-returns-double=0',
+  '--known-64-bit-blas-indices=0',
 
 # iOS doesn't support fortran or mpi
   '--with-fc=0',
@@ -46,5 +50,5 @@ configure_options = [
 if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
-  print configure_options
-  print configure.petsc_configure(configure_options)
+  print(configure_options)
+  print(configure.petsc_configure(configure_options))

@@ -1,0 +1,34 @@
+DM Object: 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 40804 
+  buffer             = 4 
+  allocated          = 40808 
+  nfields registered = 5 
+    [  0]     DMSwarm_pid : Mem. usage       = 3.26e-01 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 1.63e-01 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2]       viscosity : Mem. usage       = 3.26e-01 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  3]           coorx : Mem. usage       = 3.26e-01 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  4]           coory : Mem. usage       = 3.26e-01 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+  Total mem. usage                           = 1.47e+00 (MB) (collective)
+rank[0] before(40804,40804)
+DMSwarmDataEx: instance=0
+  topology status:        finalized 
+  message lengths status: finalized 
+  packer status status:   finalized 
+  communication status:   finalized 
+  Topology:
+    [0] neighbours: 0 
+  Message lengths:
+    [0] atomic size: 36 
+rank[0] after(40804,40804)

@@ -16,12 +16,12 @@
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
+PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n_same = 0;
+  PetscInt          i,n_same=0;
   PetscInt          n,low,high;
-  PetscInt          *same = NULL;
+  PetscInt          *same=NULL;
   const PetscScalar *v1,*v2;
 
   PetscFunctionBegin;
@@ -30,7 +30,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   PetscCheckSameComm(Vec1,1,Vec2,2);
   VecCheckSameSize(Vec1,1,Vec2,2);
 
-  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec1,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
     if (Vec1 == Vec2){
@@ -41,10 +41,10 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc1( n,&same );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&same);CHKERRQ(ierr);
 
-    for (i=0; i<n; i++){
-      if (v1[i] == v2[i]) {same[n_same]=low+i; n_same++;}
+    for (i=0; i<n; ++i){
+      if (v1[i] == v2[i]) {same[n_same]=low+i; ++n_same;}
     }
 
     if (Vec1 == Vec2){
@@ -77,12 +77,12 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
+PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S)
 {
   PetscErrorCode    ierr;
-  PetscInt          i;
-  PetscInt          n,low,high,n_lt=0;
-  PetscInt          *lt = NULL;
+  PetscInt          i,n_lt=0;
+  PetscInt          n,low,high;
+  PetscInt          *lt=NULL;
   const PetscScalar *v1,*v2;
 
   PetscFunctionBegin;
@@ -90,9 +90,9 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
   VecCheckSameSize(Vec1,1,Vec2,2);
-  
-  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
+
+  ierr = VecGetOwnershipRange(Vec1,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
     if (Vec1 == Vec2){
       ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
@@ -101,10 +101,11 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
       ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc1(n,&lt );CHKERRQ(ierr);
 
-    for (i=0; i<n; i++){
-      if (PetscRealPart(v1[i]) < PetscRealPart(v2[i])) {lt[n_lt]=low+i; n_lt++;}
+    ierr = PetscMalloc1(n,&lt);CHKERRQ(ierr);
+
+    for (i=0; i<n; ++i){
+      if (PetscRealPart(v1[i]) < PetscRealPart(v2[i])) {lt[n_lt]=low+i; ++n_lt;}
     }
 
     if (Vec1 == Vec2){
@@ -137,10 +138,11 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
+PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S)
 {
   PetscErrorCode    ierr;
-  PetscInt          n,low,high,n_gt=0,i;
+  PetscInt          i,n_gt=0;
+  PetscInt          n,low,high;
   PetscInt          *gt=NULL;
   const PetscScalar *v1,*v2;
 
@@ -150,7 +152,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   PetscCheckSameComm(Vec1,1,Vec2,2);
   VecCheckSameSize(Vec1,1,Vec2,2);
 
-  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec1,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
     if (Vec1 == Vec2){
@@ -161,10 +163,10 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc1(n, &gt );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&gt);CHKERRQ(ierr);
 
-    for (i=0; i<n; i++){
-      if (PetscRealPart(v1[i]) > PetscRealPart(v2[i])) {gt[n_gt]=low+i; n_gt++;}
+    for (i=0; i<n; ++i){
+      if (PetscRealPart(v1[i]) > PetscRealPart(v2[i])) {gt[n_gt]=low+i; ++n_gt;}
     }
 
     if (Vec1 == Vec2){
@@ -203,17 +205,21 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 {
 
   PetscErrorCode    ierr;
-  PetscInt          n,low,high,n_vm=0;
-  PetscInt          *vm = NULL,i;
+  PetscInt          i,n_vm=0;
+  PetscInt          n,low,high;
+  PetscInt          *vm=NULL;
   const PetscScalar *v1,*v2,*vmiddle;
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(VecLow,VEC_CLASSID,1);
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(VecHigh,VEC_CLASSID,3);
   PetscCheckSameComm(V,2,VecLow,1);
   PetscCheckSameComm(V,2,VecHigh,3);
   VecCheckSameSize(V,2,VecLow,1);
   VecCheckSameSize(V,2,VecHigh,3);
 
-  ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecLow,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
   if (n>0){
     ierr = VecGetArrayRead(VecLow,&v1);CHKERRQ(ierr);
@@ -224,15 +230,18 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
     }
     if (V != VecLow && V != VecHigh){
       ierr = VecGetArrayRead(V,&vmiddle);CHKERRQ(ierr);
-    } else if ( V==VecLow ){
+    } else if (V==VecLow){
       vmiddle=v1;
     } else {
-      vmiddle =v2;
+      vmiddle=v2;
     }
-    ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
-    for (i=0; i<n; i++){
-      if (PetscRealPart(v1[i]) < PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) < PetscRealPart(v2[i])) {vm[n_vm]=low+i; n_vm++;}
+
+    ierr = PetscMalloc1(n,&vm);CHKERRQ(ierr);
+
+    for (i=0; i<n; ++i){
+      if (PetscRealPart(v1[i]) < PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) < PetscRealPart(v2[i])) {vm[n_vm]=low+i; ++n_vm;}
     }
+
     ierr = VecRestoreArrayRead(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
       ierr = VecRestoreArrayRead(VecHigh,&v2);CHKERRQ(ierr);
@@ -265,47 +274,50 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 
 PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 {
-  PetscErrorCode ierr;
-  PetscInt       n,low,high,n_vm=0,i;
-  PetscInt       *vm = NULL;
-  PetscScalar    *v1,*v2,*vmiddle;
+  PetscErrorCode    ierr;
+  PetscInt          i,n_vm=0;
+  PetscInt          n,low,high;
+  PetscInt          *vm=NULL;
+  const PetscScalar *v1,*v2,*vmiddle;
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(VecLow,VEC_CLASSID,1);
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(VecHigh,VEC_CLASSID,3);
   PetscCheckSameComm(V,2,VecLow,1);
   PetscCheckSameComm(V,2,VecHigh,3);
   VecCheckSameSize(V,2,VecLow,1);
   VecCheckSameSize(V,2,VecHigh,3);
 
-  ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecLow,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
-
   if (n>0){
-    ierr = VecGetArray(VecLow,&v1);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecGetArray(VecHigh,&v2);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(VecHigh,&v2);CHKERRQ(ierr);
     } else {
       v2=v1;
     }
-    if ( V != VecLow && V != VecHigh){
-      ierr = VecGetArray(V,&vmiddle);CHKERRQ(ierr);
-    } else if ( V==VecLow ){
+    if (V != VecLow && V != VecHigh){
+      ierr = VecGetArrayRead(V,&vmiddle);CHKERRQ(ierr);
+    } else if (V==VecLow){
       vmiddle=v1;
     } else {
       vmiddle =v2;
     }
 
-    ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&vm);CHKERRQ(ierr);
 
-    for (i=0; i<n; i++){
-      if (PetscRealPart(v1[i]) <= PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) <= PetscRealPart(v2[i])) {vm[n_vm]=low+i; n_vm++;}
+    for (i=0; i<n; ++i){
+      if (PetscRealPart(v1[i]) <= PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) <= PetscRealPart(v2[i])) {vm[n_vm]=low+i; ++n_vm;}
     }
 
-    ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecRestoreArray(VecHigh,&v2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(VecHigh,&v2);CHKERRQ(ierr);
     }
-    if ( V != VecLow && V != VecHigh){
-      ierr = VecRestoreArray(V,&vmiddle);CHKERRQ(ierr);
+    if (V != VecLow && V != VecHigh){
+      ierr = VecRestoreArrayRead(V,&vmiddle);CHKERRQ(ierr);
     }
   }
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)V),n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
@@ -313,30 +325,139 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 }
 
 /*@
-  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector. 
+   VecWhichInactive - Creates an index set containing the indices
+  where one of the following holds:
+    a) VecLow(i)  < V(i) < VecHigh(i)
+    b) VecLow(i)  = V(i) and D(i) <= 0 (< 0 when Strong is true)
+    c) VecHigh(i) = V(i) and D(i) >= 0 (> 0 when Strong is true)
+
+  Collective on S
+
+  Input Parameters:
++ VecLow - lower bound
+. V - Vector to compare
+. D - Direction to compare
+. VecHigh - higher bound
+- Strong - indicator for applying strongly inactive test
+
+  OutputParameter:
+. S - The index set containing the indices i where the bound is inactive
+
+  Level: advanced
+@*/
+
+PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool Strong, IS * S)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n_vm=0;
+  PetscInt          n,low,high;
+  PetscInt          *vm=NULL;
+  const PetscScalar *v1,*v2,*v,*d;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(VecLow,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(D,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(VecHigh,VEC_CLASSID,4);
+  PetscCheckSameComm(V,2,VecLow,1);
+  PetscCheckSameComm(V,2,D,3);
+  PetscCheckSameComm(V,2,VecHigh,4);
+  VecCheckSameSize(V,2,VecLow,1);
+  VecCheckSameSize(V,2,D,3);
+  VecCheckSameSize(V,2,VecHigh,4);
+
+  ierr = VecGetOwnershipRange(VecLow,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
+  if (n>0){
+    ierr = VecGetArrayRead(VecLow,&v1);CHKERRQ(ierr);
+    if (VecLow != VecHigh){
+      ierr = VecGetArrayRead(VecHigh,&v2);CHKERRQ(ierr);
+    } else {
+      v2=v1;
+    }
+    if (V != VecLow && V != VecHigh){
+      ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
+    } else if (V==VecLow){
+      v = v1;
+    } else {
+      v = v2;
+    }
+    if (D != VecLow && D != VecHigh && D != V){
+      ierr = VecGetArrayRead(D,&d);CHKERRQ(ierr);
+    } else if (D==VecLow){
+      d = v1;
+    } else if (D==VecHigh){
+      d = v2;
+    } else {
+      d = v;
+    }
+
+    ierr = PetscMalloc1(n,&vm);CHKERRQ(ierr);
+
+    if (Strong){
+      for (i=0; i<n; ++i) {
+        if (PetscRealPart(v1[i]) < PetscRealPart(v[i]) && PetscRealPart(v[i]) < PetscRealPart(v2[i])){
+          vm[n_vm]=low+i; ++n_vm;
+        } else if (PetscRealPart(v1[i]) == PetscRealPart(v[i]) && PetscRealPart(d[i]) < 0){
+          vm[n_vm]=low+i; ++n_vm;
+        } else if (PetscRealPart(v2[i]) == PetscRealPart(v[i]) && PetscRealPart(d[i]) > 0){
+          vm[n_vm]=low+i; ++n_vm;
+        }
+      }
+    } else {
+      for (i=0; i<n; ++i) {
+        if (PetscRealPart(v1[i]) < PetscRealPart(v[i]) && PetscRealPart(v[i]) < PetscRealPart(v2[i])){
+          vm[n_vm]=low+i; ++n_vm;
+        } else if (PetscRealPart(v1[i]) == PetscRealPart(v[i]) && PetscRealPart(d[i]) <= 0){
+          vm[n_vm]=low+i; ++n_vm;
+        } else if (PetscRealPart(v2[i]) == PetscRealPart(v[i]) && PetscRealPart(d[i]) >= 0){
+          vm[n_vm]=low+i; ++n_vm;
+        }
+      }
+    }
+
+    ierr = VecRestoreArrayRead(VecLow,&v1);CHKERRQ(ierr);
+    if (VecLow != VecHigh){
+      ierr = VecRestoreArrayRead(VecHigh,&v2);CHKERRQ(ierr);
+    }
+    if (V != VecLow && V != VecHigh){
+      ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
+    }
+    if (D != VecLow && D != VecHigh && D != V){
+      ierr = VecRestoreArrayRead(D,&d);CHKERRQ(ierr);
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)V),n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
                   vfull[is[i]] += alpha*vreduced[i]
 
   Input Parameters:
-+ vfull - the full-space vector
-. vreduced - the reduced-space vector
-- is - the index set for the reduced space
++ vfull    - the full-space vector
+. is       - the index set for the reduced space
+. alpha    - the scalar coefficient
+- vreduced - the reduced-space vector
 
   Output Parameters:
-. vfull - the sum of the full-space vector and reduced-space vector
+. vfull    - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
 
 .seealso:  VecAXPY()
 @*/
-PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
+PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
   PetscInt       nfull,nreduced;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,4);
   ierr = VecGetSize(vfull,&nfull);CHKERRQ(ierr);
   ierr = VecGetSize(vreduced,&nreduced);CHKERRQ(ierr);
 
@@ -357,11 +478,11 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
     ierr = VecGetOwnershipRange(vfull,&rstart,NULL);CHKERRQ(ierr);
     y -= rstart;
     if (alpha == 1.0) {
-      for (i=0; i<n; i++) {
+      for (i=0; i<n; ++i) {
         y[id[i]] += x[i];
       }
     } else {
-      for (i=0; i<n; i++) {
+      for (i=0; i<n; ++i) {
         y[id[i]] += alpha*x[i];
       }
     }
@@ -369,6 +490,76 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
     ierr = ISRestoreIndices(is,&id);CHKERRQ(ierr);
     ierr = VecRestoreArray(vfull,&y);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(vreduced,&x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  VecISCopy - Copies between a reduced vector and the appropriate elements of a full-space vector.
+              vfull[is[i]] = vreduced[i]
+
+  Input Parameters:
++ vfull    - the full-space vector
+. is       - the index set for the reduced space
+. mode     - the direction of copying, SCATTER_FORWARD or SCATTER_REVERSE
+- vreduced - the reduced-space vector
+
+  Output Parameters:
+. vfull    - the sum of the full-space vector and reduced-space vector
+
+  Level: advanced
+
+.seealso:  VecAXPY()
+@*/
+PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
+{
+  PetscInt       nfull, nreduced;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,3);
+  ierr = VecGetSize(vfull, &nfull);CHKERRQ(ierr);
+  ierr = VecGetSize(vreduced, &nreduced);CHKERRQ(ierr);
+
+  if (nfull == nreduced) { /* Also takes care of masked vectors */
+    ierr = VecCopy(vreduced, vfull);CHKERRQ(ierr);
+  } else {
+    const PetscInt *id;
+    PetscInt        i, n, m, rstart;
+
+    ierr = ISGetIndices(is, &id);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vfull, &rstart, NULL);CHKERRQ(ierr);
+    if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %D not equal to Vec local length %D", n, m);
+    if (mode == SCATTER_FORWARD) {
+      PetscScalar       *y;
+      const PetscScalar *x;
+
+      ierr = VecGetArray(vfull, &y);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(vreduced, &x);CHKERRQ(ierr);
+      y   -= rstart;
+      for (i = 0; i < n; ++i) {
+        y[id[i]] = x[i];
+      }
+      y   += rstart;
+      ierr = VecRestoreArrayRead(vreduced, &x);CHKERRQ(ierr);
+      ierr = VecRestoreArray(vfull, &y);CHKERRQ(ierr);
+    } else if (mode == SCATTER_REVERSE) {
+      PetscScalar       *x;
+      const PetscScalar *y;
+
+      ierr = VecGetArrayRead(vfull, &y);CHKERRQ(ierr);
+      ierr = VecGetArray(vreduced, &x);CHKERRQ(ierr);
+      for (i = 0; i < n; ++i) {
+        x[i] = y[id[i]-rstart];
+      }
+      ierr = VecRestoreArray(vreduced, &x);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(vfull, &y);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) vfull), PETSC_ERR_ARG_WRONG, "Only forward or reverse modes are legal");
+    ierr = ISRestoreIndices(is, &id);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -425,14 +616,14 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   PetscValidType(V,3);
   PetscCheckSameComm(V,3,S,1);
 
-  ierr = VecGetOwnershipRange(V, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(V,&low,&high);CHKERRQ(ierr);
   ierr = ISGetLocalSize(S,&nloc);CHKERRQ(ierr);
-  ierr = ISGetIndices(S, &s);CHKERRQ(ierr);
+  ierr = ISGetIndices(S,&s);CHKERRQ(ierr);
   ierr = VecGetArray(V,&v);CHKERRQ(ierr);
-  for (i=0; i<nloc; i++){
+  for (i=0; i<nloc; ++i){
     v[s[i]-low] = c;
   }
-  ierr = ISRestoreIndices(S, &s);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(S,&s);CHKERRQ(ierr);
   ierr = VecRestoreArray(V,&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -441,12 +632,12 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 /*@C
   VecBoundGradientProjection - Projects  vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
-  If X[i]<=XL[i], then GP[i] = min(G[i],0);
-  If X[i]>=XU[i], then GP[i] = max(G[i],0);
+  If X[i] <= XL[i], then GP[i] = min(G[i],0);
+  If X[i] >= XU[i], then GP[i] = max(G[i],0);
 
   Input Parameters:
 + G - current gradient vector
-. X - current solution vector
+. X - current solution vector with XL[i] <= X[i] <= XU[i]
 . XL - lower bounds
 - XU - upper bounds
 
@@ -456,7 +647,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   Notes: GP may be the same vector as G
 
   Level: advanced
-C@*/
+@*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
 
@@ -484,10 +675,10 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   for (i=0; i<n; ++i){
     gpval = gptr[i]; xval = xptr[i];
 
-    if (gpval>0 && xval<=xlptr[i]){
-      gpval = 0;
-    } else if (gpval<0 && xval>=xuptr[i]){
-      gpval = 0;
+    if (gpval>0.0 && xval<=xlptr[i]){
+      gpval = 0.0;
+    } else if (gpval<0.0 && xval>=xuptr[i]){
+      gpval = 0.0;
     }
     gpptr[i] = gpval;
   }
@@ -495,7 +686,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   ierr = VecRestoreArrayRead(X,&xptr);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(XL,&xlptr);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(XU,&xuptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(G,&gptr);CHKERRQ(ierr);
   ierr = VecRestoreArrayPair(G,GP,&gptr,&gpptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -514,6 +704,8 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 
      Output Parameter:
 .     stepmax -   minimum value so that X[i] + stepmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + stepmax*DX[i]
+
+  Level: intermediate
 
 @*/
 PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax)
@@ -589,7 +781,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   ierr = VecGetArrayRead(XU,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++){
+  for (i=0; i<n; ++i){
     if (PetscRealPart(dx[i])>0 && PetscRealPart(xu[i]) < PETSC_INFINITY) {
       t=PetscRealPart((xu[i]-x[i])/dx[i]);
       localmin=PetscMin(t,localmin);
@@ -615,16 +807,16 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 
   if (boundmin){
     ierr = MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
-    ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %g \n",(double)*boundmin);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %20.19e\n",(double)*boundmin);CHKERRQ(ierr);
   }
   if (wolfemin){
     ierr = MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
-    ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %g \n",(double)*wolfemin);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %20.19e\n",(double)*wolfemin);CHKERRQ(ierr);
   }
   if (boundmax) {
     ierr = MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
     if (*boundmax < 0) *boundmax=PETSC_INFINITY;
-    ierr = PetscInfo1(X,"Step Bound Info: Max: %g \n",(double)*boundmax);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Max: %20.19e\n",(double)*boundmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -648,9 +840,9 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 {
   PetscErrorCode    ierr;
-  PetscInt          i, nn;
+  PetscInt          i,nn;
   PetscReal         stepmax=PETSC_INFINITY;
-  const PetscScalar *xx, *dx;
+  const PetscScalar *xx,*dx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -659,7 +851,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
-  for (i=0;i<nn;i++){
+  for (i=0;i<nn;++i){
     if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
     else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
@@ -691,10 +883,10 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   PetscScalar    *v1;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
 
-  ierr = VecGetArray(v, &v1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&v1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
 
   if (1.0 == p) {
   } else if (-1.0 == p) {
@@ -736,7 +928,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   } else {
     for (i = 0; i < n; ++i) {
       if (PetscRealPart(v1[i]) >= 0) {
-        v1[i] = PetscPowScalar(v1[i], p);
+        v1[i] = PetscPowScalar(v1[i],p);
       } else {
         v1[i] = PETSC_INFINITY;
       }
@@ -759,15 +951,14 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   Output Parameter:
 . VMedian - The median vector (this can be any one of the input vectors)
 
-  Developers Note: Should VMedian be allow to be one of the input vectors?
-
   Level: advanced
 @*/
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n,low1,high1;
-  PetscScalar    *v1,*v2,*v3,*vmed;
+  PetscErrorCode    ierr;
+  PetscInt          i,n,low1,high1;
+  const PetscScalar *v1,*v2,*v3;
+  PetscScalar       *vmed;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
@@ -784,41 +975,55 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
     PetscFunctionReturn(0);
   }
 
+  /* Assert that Vec1 != Vec2 and Vec2 != Vec3 */
   PetscValidType(Vec1,1);
   PetscValidType(Vec2,2);
+  PetscValidType(Vec3,3);
   PetscValidType(VMedian,4);
   PetscCheckSameType(Vec1,1,Vec2,2);
+  PetscCheckSameType(Vec1,1,Vec3,3);
   PetscCheckSameType(Vec1,1,VMedian,4);
   PetscCheckSameComm(Vec1,1,Vec2,2);
+  PetscCheckSameComm(Vec1,1,Vec3,3);
   PetscCheckSameComm(Vec1,1,VMedian,4);
   VecCheckSameSize(Vec1,1,Vec2,2);
+  VecCheckSameSize(Vec1,1,Vec3,3);
   VecCheckSameSize(Vec1,1,VMedian,4);
 
-  ierr = VecGetOwnershipRange(Vec1, &low1, &high1);CHKERRQ(ierr);
-  ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
-  ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
-  ierr = VecGetArray(Vec3,&v3);CHKERRQ(ierr);
-
-  if ( VMedian != Vec1 && VMedian != Vec2 && VMedian != Vec3){
-    ierr = VecGetArray(VMedian,&vmed);CHKERRQ(ierr);
-  } else if ( VMedian==Vec1 ){
-    vmed=v1;
-  } else if ( VMedian==Vec2 ){
-    vmed=v2;
-  } else {
-    vmed=v3;
-  }
-
+  ierr = VecGetOwnershipRange(Vec1,&low1,&high1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++){
-    vmed[i]=PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]),PetscRealPart(v2[i])),PetscMin(PetscRealPart(v1[i]),PetscRealPart(v3[i]))),PetscMin(PetscRealPart(v2[i]),PetscRealPart(v3[i])));
-  }
-  ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Vec3,&v3);CHKERRQ(ierr);
+  if (n>0){
+    ierr = VecGetArray(VMedian,&vmed);CHKERRQ(ierr);
+    if (Vec1 != VMedian){
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
+    } else {
+      v1=vmed;
+    }
+    if (Vec2 != VMedian){
+      ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
+    } else {
+      v2=vmed;
+    }
+    if (Vec3 != VMedian){
+      ierr = VecGetArrayRead(Vec3,&v3);CHKERRQ(ierr);
+    } else {
+      v3=vmed;
+    }
 
-  if (VMedian!=Vec1 && VMedian != Vec2 && VMedian != Vec3){
+    for (i=0;i<n;++i){
+      vmed[i]=PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]),PetscRealPart(v2[i])),PetscMin(PetscRealPart(v1[i]),PetscRealPart(v3[i]))),PetscMin(PetscRealPart(v2[i]),PetscRealPart(v3[i])));
+    }
+
     ierr = VecRestoreArray(VMedian,&vmed);CHKERRQ(ierr);
+    if (VMedian != Vec1){
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
+    }
+    if (VMedian != Vec2){
+      ierr = VecRestoreArrayRead(Vec2,&v2);CHKERRQ(ierr);
+    }
+    if (VMedian != Vec3){
+      ierr = VecRestoreArrayRead(Vec3,&v3);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

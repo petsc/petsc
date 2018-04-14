@@ -13,6 +13,10 @@ static char help[] = "Test file for the PCFactorSetShiftType()\n";
  *    the method will now successfully converge.
  */
 
+/*T
+   requires: x
+T*/
+
 #include <petscksp.h>
 
 int main(int argc,char **argv)
@@ -128,3 +132,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

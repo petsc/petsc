@@ -352,7 +352,7 @@ void g1_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, void *ctx)
 {
   PetscReal wind[3] = {0.0, 1.0, 0.0};
-  PetscReal wn = DMPlex_DotRealD_Internal(dim, wind, n);
+  PetscReal wn = DMPlex_DotRealD_Internal(PetscMin(dim,3), wind, n);
 
   flux[0] = (wn > 0 ? uL[dim] : uR[dim]) * wn;
 }
@@ -625,7 +625,7 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
 static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  PetscScalar    yexact[1];
+  PetscScalar    yexact[3]={0,0,0};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -805,14 +805,16 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2];
   PetscFV         fv;
   PetscDS         prob = NULL;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "porosity");CHKERRQ(ierr);
 

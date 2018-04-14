@@ -123,5 +123,21 @@ int main(int argc,char **argv)
   return ierr; 
 }
 
+/*TEST
+
+     test:
+       nsize: 2
+
+     test:
+       suffix: 2
+       nsize: 2
+       args: -allocate
+
+     test:
+       suffix: 3
+       nsize: 2
+       args: -vecmpisetghost
+
+TEST*/
 
 

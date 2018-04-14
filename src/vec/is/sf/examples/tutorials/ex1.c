@@ -1,7 +1,8 @@
 static const char help[] = "Test star forest communication (PetscSF)\n\n";
 
 /*T
-    Description: A star forest is a simple tree with one root and zero or more leaves.
+    Description: A star is a simple tree with one root and zero or more leaves.
+    A star forest is a union of disjoint stars.
     Many common communication patterns can be expressed as updates of rootdata using leafdata and vice-versa.
     This example creates a star forest, communicates values using the graph (see options for types of communication), views the graph, then destroys it.
 T*/
@@ -285,12 +286,104 @@ int main(int argc,char **argv)
 }
 
 /*TEST
-  test:
-    suffix: 8
-    nsize: 3
-    args: -test_bcast -test_sf_distribute -sf_type window
-  test:
-    suffix: 8_basic
-    nsize: 3
-    args: -test_bcast -test_sf_distribute -sf_type basic
+
+   test:
+      nsize: 4
+      args: -test_bcast -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -test_reduce -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 2_basic
+      nsize: 4
+      args: -test_reduce -sf_type basic
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -test_degree -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 3_basic
+      nsize: 4
+      args: -test_degree -sf_type basic
+
+   test:
+      suffix: 4
+      nsize: 4
+      args: -test_gather -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 4_basic
+      nsize: 4
+      args: -test_gather -sf_type basic
+
+   test:
+      suffix: 4_stride
+      nsize: 4
+      args: -test_gather -sf_type basic -stride 2
+
+   test:
+      suffix: 5
+      nsize: 4
+      args: -test_scatter -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 5_basic
+      nsize: 4
+      args: -test_scatter -sf_type basic
+
+   test:
+      suffix: 5_stride
+      nsize: 4
+      args: -test_scatter -sf_type basic -stride 2
+
+   test:
+      suffix: 6
+      nsize: 4
+      args: -test_embed -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 6_basic
+      nsize: 4
+      args: -test_embed -sf_type basic
+
+   test:
+      suffix: 7
+      nsize: 4
+      args: -test_invert -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+
+   test:
+      suffix: 7_basic
+      nsize: 4
+      args: -test_invert -sf_type basic
+
+   test:
+      suffix: basic
+      nsize: 4
+      args: -test_bcast -sf_type basic
+      output_file: output/ex1_1_basic.out
+
+   test:
+      suffix: 8
+      nsize: 3
+      args: -test_bcast -test_sf_distribute -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+
+   test:
+      suffix: 8_basic
+      nsize: 3
+      args: -test_bcast -test_sf_distribute -sf_type basic
+
 TEST*/

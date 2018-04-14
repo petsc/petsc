@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'v2.12.0'
+    self.gitcommit = 'v2.14.0'
     self.download  = ['git://https://github.com/LLNL/hypre','https://github.com/LLNL/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
@@ -83,4 +83,19 @@ class Configure(config.package.GNUPackage):
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       self.log.write('Found dgels() in Lapack library as needed by hypre\n')
+    return
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if self.defaultIndexSize == 64:
+      code = '#if !defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT not defined!\n#endif'
+      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint.\n'
+    else:
+      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif'
+      msg= 'Hypre with --enable-bigint appears to be specified for a default 32-bit-indices build of PETSc.\n'
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
+    self.compilers.CPPFLAGS = oldFlags
     return

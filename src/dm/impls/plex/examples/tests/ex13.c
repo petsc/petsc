@@ -38,7 +38,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim         = user->dim;
   PetscBool      cellSimplex = user->cellSimplex;
   const char    *filename    = user->filename;
-  const PetscInt cells[3]    = {2, 2, 2};
   size_t         len;
   PetscErrorCode ierr;
 

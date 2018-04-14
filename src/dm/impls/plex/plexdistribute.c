@@ -72,11 +72,21 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCon
 @*/
 PetscErrorCode DMPlexSetAdjacencyUseCone(DM dm, PetscBool useCone)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  PetscDS        prob;
+  PetscBool      useClosure;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->useCone = useCone;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, &useClosure);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, NULL, &useClosure);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -100,12 +110,18 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCon
 @*/
 PetscErrorCode DMPlexGetAdjacencyUseCone(DM dm, PetscBool *useCone)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  PetscDS        prob;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(useCone, 2);
-  *useCone = mesh->useCone;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, useCone, NULL);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, useCone, NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -127,11 +143,21 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCon
 @*/
 PetscErrorCode DMPlexSetAdjacencyUseClosure(DM dm, PetscBool useClosure)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  PetscDS        prob;
+  PetscBool      useCone;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->useClosure = useClosure;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, &useCone, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, &useCone, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -155,12 +181,18 @@ $     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCon
 @*/
 PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  PetscDS        prob;
+  PetscInt       Nf;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(useClosure, 2);
-  *useClosure = mesh->useClosure;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, NULL, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -396,14 +428,17 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 @*/
 PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[])
 {
-  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscBool      useCone, useClosure, useAnchors;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adjSize,3);
   PetscValidPointer(adj,4);
-  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useAnchors, adjSize, adj);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacency_Internal(dm, p, useCone, useClosure, useAnchors, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1013,7 +1048,6 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 
 static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
-  DM_Plex               *mesh  = (DM_Plex*) dm->data;
   DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
   MPI_Comm               comm;
   PetscSF                coneSF;
@@ -1088,7 +1122,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
-  /* Create supports and stratify sieve */
+  /* Create supports and stratify DMPlex */
   {
     PetscInt pStart, pEnd;
 
@@ -1097,8 +1131,16 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   }
   ierr = DMPlexSymmetrize(dmParallel);CHKERRQ(ierr);
   ierr = DMPlexStratify(dmParallel);CHKERRQ(ierr);
-  pmesh->useCone    = mesh->useCone;
-  pmesh->useClosure = mesh->useClosure;
+  {
+    PetscBool useCone, useClosure, useAnchors;
+
+    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseCone(dmParallel, useCone);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dmParallel, useClosure);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1174,17 +1216,15 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
   for (l = numLabels-1; l >= 0; --l) {
     DMLabel     label = NULL, labelNew = NULL;
-    PetscBool   isdepth;
+    PetscBool   isDepth, lisOutput = PETSC_TRUE, isOutput;
 
-    if (hasLabels) {
-      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
-      /* Skip "depth" because it is recreated */
-      ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
-    }
-    ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-    if (isdepth && !sendDepth) continue;
+    if (hasLabels) {ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);}
+    /* Skip "depth" because it is recreated */
+    if (hasLabels) {ierr = PetscStrcmp(label->name, "depth", &isDepth);CHKERRQ(ierr);}
+    ierr = MPI_Bcast(&isDepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+    if (isDepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
-    if (isdepth) {
+    if (isDepth) {
       /* Put in any missing strata which can occur if users are managing the depth label themselves */
       PetscInt gdepth;
 
@@ -1194,10 +1234,14 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
         PetscBool has;
 
         ierr = DMLabelHasStratum(labelNew, d, &has);CHKERRQ(ierr);
-        if (!has) ierr = DMLabelAddStratum(labelNew, d);CHKERRQ(ierr);
+        if (!has) {ierr = DMLabelAddStratum(labelNew, d);CHKERRQ(ierr);}
       }
     }
     ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
+    /* Put the output flag in the new label */
+    if (hasLabels) {ierr = DMGetLabelOutput(dm, label->name, &lisOutput);CHKERRQ(ierr);}
+    ierr = MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+    ierr = DMSetLabelOutput(dmParallel, labelNew->name, isOutput);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1331,8 +1375,6 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
 
 PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
 {
-  DM_Plex               *mesh  = (DM_Plex*) dm->data;
-  DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
   PetscMPIInt            rank, size;
   MPI_Comm               comm;
   PetscErrorCode         ierr;
@@ -1396,8 +1438,16 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
     ierr = PetscSFSetGraph((dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions((dmParallel)->sf);CHKERRQ(ierr);
   }
-  pmesh->useCone    = mesh->useCone;
-  pmesh->useClosure = mesh->useClosure;
+  {
+    PetscBool useCone, useClosure, useAnchors;
+
+    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacencyUseAnchors(dm, &useAnchors);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseCone(dmParallel, useCone);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dmParallel, useClosure);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseAnchors(dmParallel, useAnchors);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1600,6 +1650,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
+  if (sf) *sf = NULL;
   *dmParallel = NULL;
   if (size == 1) {
     ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
@@ -1707,6 +1758,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
+    ierr = DMSetUseNatural(*dmParallel, PETSC_TRUE);CHKERRQ(ierr);
   }
   /* Cleanup */
   if (sf) {*sf = sfMigration;}

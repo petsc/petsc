@@ -77,7 +77,14 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
 
    Level: advanced
 
-.seealso: MatNullSpaceCreate()
+   Notes:  If you are solving an elasticity problems you should likely use this, in conjunction with ee MatSetNearNullspace(), to provide information that 
+           the PCGAMG preconditioner can use to construct a much more efficient preconditioner.
+
+           If you are solving an elasticity problem with pure Neumann boundary conditions you can use this in conjunction with MatSetNullspace() to
+           provide this information to the linear solver so it can handle the null space appropriately in the linear solution.
+
+
+.seealso: MatNullSpaceCreate(), MatSetNearNullspace(), MatSetNullspace()
 @*/
 PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
@@ -258,7 +265,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     for (i=0; i<n; i++) {
       PetscReal norm;
       ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
-      if (PetscAbsReal(norm - 1.0) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
+      if (PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {
@@ -346,7 +353,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
    Collective on MatNullSpace
 
    Input Parameters:
-+  sp - the null space context
++  sp - the null space context (if this is NULL then no null space is removed)
 -  vec - the vector from which the null space is to be removed
 
    Level: advanced
@@ -362,6 +369,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
 

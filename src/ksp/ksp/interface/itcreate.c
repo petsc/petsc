@@ -124,6 +124,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
+    PetscInt    tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -151,6 +154,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
     MPI_Comm    comm;
@@ -177,8 +181,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscStrncpy(str,"KSP: ",sizeof(str));CHKERRQ(ierr);
+      ierr   = PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str));CHKERRQ(ierr);
       ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
@@ -341,7 +345,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 +  ksp - Krylov method
 .  normtype - supported norm type
 .  pcside - preconditioner side that can be used with this norm
--  preference - integer preference for this combination, larger values have higher priority
+-  priority - positive integer preference for this combination; larger values have higher priority
 
    Level: developer
 
@@ -349,10 +353,6 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    This function should be called from the implementation files KSPCreate_XXX() to declare
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
-
-   KSP_NORM_NONE is supported by default with all KSP methods and any PC side at priority 1.  If a KSP explicitly does
-   not support KSP_NORM_NONE, it should set this by setting priority=0.  Since defaulting to KSP_NORM_NONE is usually
-   undesirable, more desirable norms should usually have priority 2 or higher.
 
 .seealso: KSPSetNormType(), KSPSetPCSide()
 @*/

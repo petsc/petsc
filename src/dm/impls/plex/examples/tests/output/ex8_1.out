@@ -1,9 +1,8 @@
 DM Object: triangle 1 MPI processes
   type: plex
-Mesh 'triangle':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 2
+triangle in 2 dimensions:
+Supports:
+[0] Max support size: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -13,7 +12,8 @@ cap --> base:
 [0]: 4 ----> 0
 [0]: 5 ----> 0
 [0]: 6 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 4 (0)
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
@@ -31,10 +31,9 @@ Process 0:
   (   3) dim  2 offset   4 -1. 1.
 DM Object: triangle 1 MPI processes
   type: plex
-Mesh 'triangle':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 2
+triangle in 2 dimensions:
+Supports:
+[0] Max support size: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -44,7 +43,8 @@ cap --> base:
 [0]: 4 ----> 0
 [0]: 5 ----> 0
 [0]: 6 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 4 (0)
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
@@ -62,10 +62,9 @@ Process 0:
   (   3) dim  3 offset   6 -1. 1. 0.
 DM Object: triangle 1 MPI processes
   type: plex
-Mesh 'triangle':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 2
+triangle in 2 dimensions:
+Supports:
+[0] Max support size: 2
 [0]: 1 ----> 4
 [0]: 1 ----> 6
 [0]: 2 ----> 4
@@ -75,7 +74,8 @@ cap --> base:
 [0]: 4 ----> 0
 [0]: 5 ----> 0
 [0]: 6 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 4 (0)
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
@@ -93,10 +93,9 @@ Process 0:
   (   3) dim  3 offset   6 0. -1. 1.
 DM Object: quadrilateral 1 MPI processes
   type: plex
-Mesh 'quadrilateral':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 2
+quadrilateral in 2 dimensions:
+Supports:
+[0] Max support size: 2
 [0]: 1 ----> 5
 [0]: 1 ----> 8
 [0]: 2 ----> 5
@@ -109,7 +108,8 @@ cap --> base:
 [0]: 6 ----> 0
 [0]: 7 ----> 0
 [0]: 8 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -131,10 +131,9 @@ Process 0:
   (   4) dim  2 offset   6 -1. 1.
 DM Object: quadrilateral 1 MPI processes
   type: plex
-Mesh 'quadrilateral':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 2
+quadrilateral in 2 dimensions:
+Supports:
+[0] Max support size: 2
 [0]: 1 ----> 5
 [0]: 1 ----> 8
 [0]: 2 ----> 5
@@ -147,7 +146,8 @@ cap --> base:
 [0]: 6 ----> 0
 [0]: 7 ----> 0
 [0]: 8 ----> 0
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -169,10 +169,9 @@ Process 0:
   (   4) dim  3 offset   9 -1. 1. 0.
 DM Object: tetrahedron 1 MPI processes
   type: plex
-Mesh 'tetrahedron':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 3
+tetrahedron in 3 dimensions:
+Supports:
+[0] Max support size: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 11
 [0]: 1 ----> 12
@@ -201,7 +200,8 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -239,10 +239,9 @@ Process 0:
   (   4) dim  3 offset   9 -1. -1. 1.
 DM Object: hexahedron 1 MPI processes
   type: plex
-Mesh 'hexahedron':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 6 support: 3
+hexahedron in 3 dimensions:
+Supports:
+[0] Max support size: 3
 [0]: 1 ----> 15
 [0]: 1 ----> 18
 [0]: 1 ----> 24
@@ -297,7 +296,8 @@ cap --> base:
 [0]: 25 ----> 14
 [0]: 26 ----> 12
 [0]: 26 ----> 13
-base <-- cap:
+Cones:
+[0] Max cone size: 6
 [0]: 0 <---- 9 (0)
 [0]: 0 <---- 10 (0)
 [0]: 0 <---- 11 (0)

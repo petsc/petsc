@@ -307,7 +307,7 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
           break;
         case TELESCOPE_DMDA:
           ierr = PetscViewerASCIIPrintf(subviewer,"  DMDA detected\n");CHKERRQ(ierr);
-          ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
+          ierr = DMView_DA_Short(subdm,subviewer);CHKERRQ(ierr);
           break;
         case TELESCOPE_DMPLEX:
           ierr = PetscViewerASCIIPrintf(subviewer,"  DMPLEX detected\n");CHKERRQ(ierr);

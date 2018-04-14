@@ -346,7 +346,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
 
   Concepts: string copy
 
-.seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat()
+.seealso: PetscStrncpy(), PetscStrcat(), PetscStrlcat()
 
 @*/
 
@@ -382,7 +382,7 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
 
   Concepts: string copy
 
-.seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
+.seealso: PetscStrcpy(), PetscStrcat(), PetscStrlcat()
 
 @*/
 PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
@@ -415,7 +415,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 
   Concepts: string copy
 
-.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
+.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrlcat()
 
 @*/
 PetscErrorCode  PetscStrcat(char s[],const char t[])
@@ -427,28 +427,37 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
 }
 
 /*@C
-   PetscStrncat - Concatenates a string onto a given string, up to a given length
+   PetscStrlcat - Concatenates a string onto a given string, up to a given length
 
    Not Collective
 
    Input Parameters:
 +  s - pointer to string to be added to end
 .  t - string to be added to
-.  n - maximum length to copy
+-  n - length of the original allocated string
 
    Level: intermediate
 
-  Notes:    Not for use in Fortran
+  Notes:
+  Not for use in Fortran
+
+  Unlike the system call strncat(), the length passed in is the length of the
+  original allocated space, not the length of the left-over space. This is
+  similar to the BSD system call strlcat().
 
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
 
 @*/
-PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
+PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
 {
+  size_t         len;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  strncat(s,t,n);
+  ierr = PetscStrlen(t,&len);CHKERRQ(ierr);
+  strncat(s,t,n - len);
   PetscFunctionReturn(0);
 }
 
@@ -997,6 +1006,43 @@ PetscErrorCode  PetscTokenDestroy(PetscToken *a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscStrInList - search string in character-delimited list
+
+   Not Collective
+
+   Input Parameters:
++  str - the string to look for
+.  list - the list to search in
+-  sep - the separator character
+
+   Output Parameter:
+.  found - whether str is in list
+
+   Level: intermediate
+
+   Notes: Not for use in Fortran
+
+.seealso: PetscTokenCreate(), PetscTokenFind(), PetscStrcmp()
+@*/
+PetscErrorCode PetscStrInList(const char str[],const char list[],char sep,PetscBool *found)
+{
+  PetscToken     token;
+  char           *item;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *found = PETSC_FALSE;
+  ierr = PetscTokenCreate(list,sep,&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&item);CHKERRQ(ierr);
+  while (item) {
+    ierr = PetscStrcmp(str,item,found);CHKERRQ(ierr);
+    if (*found) break;
+    ierr = PetscTokenFind(token,&item);CHKERRQ(ierr);
+  }
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@C
    PetscGetPetscDir - Gets the directory PETSc is installed in
@@ -1049,7 +1095,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
-  const char     *r[] = {0,0,0,0,0,0,0,0,0};
+  char           *r[] = {0,0,0,0,0,0,0,0,0};
   PetscBool      flag;
 
   PetscFunctionBegin;
@@ -1060,25 +1106,25 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   ierr = PetscMalloc1(len,&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  ierr = PetscStrallocpy(PETSC_ARCH,(char**)&r[0]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PETSC_DIR,(char**)&r[1]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PETSC_LIB_DIR,(char**)&r[2]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_ARCH,&r[0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_DIR,&r[1]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_LIB_DIR,&r[2]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[3]);CHKERRQ(ierr);
   ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[6]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[7]);CHKERRQ(ierr);
-  ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
-  ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetUserName((char*)r[6],256);CHKERRQ(ierr);
-  ierr = PetscGetHostName((char*)r[7],256);CHKERRQ(ierr);
+  ierr = PetscGetDisplay(r[3],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory(r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory(r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetUserName(r[6],256);CHKERRQ(ierr);
+  ierr = PetscGetHostName(r[7],256);CHKERRQ(ierr);
 
   /* replace that are in environment */
   ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = PetscFree(r[2]);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(env,(char**)&r[2]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(env,&r[2]);CHKERRQ(ierr);
   }
 
   /* replace the requested strings */
@@ -1171,7 +1217,7 @@ PetscErrorCode PetscEListFind(PetscInt n,const char *const *list,const char *str
 }
 
 /*@C
-   PetscEListFind - searches enum list of strings for given string, using case insensitive matching
+   PetscEnumFind - searches enum list of strings for given string, using case insensitive matching
 
    Not Collective
 

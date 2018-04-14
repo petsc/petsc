@@ -1,0 +1,6 @@
+#! /bin/csh
+
+set MACH=grind
+set USR=petsc
+set PETSC_DIR=/sandbox/petsc/${RNAME}-2
+set PETSC_ARCH=arch-linux-pgi

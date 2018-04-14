@@ -1,0 +1,6 @@
+#! /bin/csh
+
+set MACH=thrash
+set USR=petsc
+set PETSC_DIR=/sandbox/petsc/${RNAME}-3
+set PETSC_ARCH=arch-linux-pkgs-64idx

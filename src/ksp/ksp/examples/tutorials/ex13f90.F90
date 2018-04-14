@@ -56,7 +56,7 @@
       PetscErrorCode ierr
       PetscInt m,n,t,tmax,i,j
       PetscBool  flg
-      PetscMPIInt size,rank
+      PetscMPIInt size
       PetscReal  enorm
       PetscScalar cnorm
       PetscScalar,ALLOCATABLE :: userx(:,:)
@@ -81,13 +81,7 @@
         stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then
-         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_WORLD,1,' ')
-      endif
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only'); endif
 
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
@@ -123,10 +117,8 @@
          do 10 i=1,m
             rho(i,j)      = x
             solution(i,j) = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
-            userb(i,j)    = -2.*PETSC_PI*cos(2.*PETSC_PI*x)*              &
-     &                sin(2.*PETSC_PI*y) +                                &
-     &                8*PETSC_PI*PETSC_PI*x*                              &
-     &                sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
+            userb(i,j)    = -2.*PETSC_PI*cos(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y) +                                &
+     &                      8*PETSC_PI*PETSC_PI*x*sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
            x = x + hx
  10      continue
          y = y + hy
@@ -147,8 +139,7 @@
          cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-              cnorm = cnorm +                                              &
-     &    PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
+              cnorm = cnorm + PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)
@@ -373,3 +364,12 @@
 
       return
       end
+
+!
+!/*TEST
+!
+!   test:
+!      args: -m 19 -n 20 -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex13f90_1.out
+!
+!TEST*/

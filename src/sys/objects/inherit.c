@@ -488,7 +488,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 }
 
 
-/*@
+/*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
    referenced by another PetscObject. This increases the reference
    count for that object by one.
@@ -512,7 +512,7 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectGetReference - Gets the current reference count for
    any PETSc object.
 
@@ -538,7 +538,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectDereference - Indicates to any PetscObject that it is being
    referenced by one less PetscObject. This decreases the reference
    count for that object by one.
@@ -677,6 +677,7 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
+  if (obj == ptr) SETERRQ(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -806,6 +807,28 @@ struct _p_PetscContainer {
 };
 
 /*@C
+   PetscContainerUserDestroyDefault - Default destroy routine for user-provided data that simply calls PetscFree().
+
+   Logically Collective on PetscContainer
+
+   Input Parameter:
+.  ctx - pointer to user-provided data
+
+   Level: advanced
+
+.seealso: PetscContainerDestroy(), PetscContainterSetUserDestroy()
+@*/
+PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(ctx,1);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscContainerGetPointer - Gets the pointer value contained in the container.
 
    Not Collective
@@ -888,9 +911,12 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 +  obj - an object that was created with PetscContainerCreate()
 -  des - name of the user destroy function
 
+   Notes:
+   Use PetscContainerUserDestroyDefault() if the memory was obtained by calling PetscMalloc or one of its variants for single memory allocation.
+
    Level: advanced
 
-.seealso: PetscContainerDestroy()
+.seealso: PetscContainerDestroy(), PetscContainerUserDestroyDefault(), PetscMalloc(), PetscMalloc1(), PetscCalloc(), PetscCalloc1()
 @*/
 PetscErrorCode  PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {

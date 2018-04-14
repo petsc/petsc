@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #endif
 
-#if defined(PETSC_USE_64BIT_INDICES)
-/* ugly SuperLU_Dist variable telling it to use long long int */
-#define _LONGINT
-#endif
-
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
 #include <superlu_zdefs.h>
@@ -104,7 +99,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   }
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluDistGetDiagU_C",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -118,7 +113,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscInt         m=A->rmap->n,M=A->rmap->N,N=A->cmap->N;
   SuperLUStat_t    stat;
   double           berr[1];
-  PetscScalar      *bptr;
+  PetscScalar      *bptr=NULL;
   PetscInt         nrhs=1;
   Vec              x_seq;
   IS               iden;
@@ -253,15 +248,58 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscFunctionReturn(0);
 }
 
+/*
+  input:
+   F:        numeric Cholesky factor
+  output:
+   nneg:     total number of negative pivots
+   nzero:    total number of zero pivots
+   npos:     (global dimension of F) - nneg - nzero
+*/
+static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
+{
+  PetscErrorCode   ierr;
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
+  PetscScalar      *diagU=NULL;
+  PetscInt         M,i,neg=0,zero=0,pos=0;
+  PetscReal        r;
+
+  PetscFunctionBegin;
+  if (!F->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
+  if (lu->options.RowPerm != NOROWPERM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must set NOROWPERM");
+  ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M,&diagU);CHKERRQ(ierr);
+  ierr = MatSuperluDistGetDiagU(F,diagU);CHKERRQ(ierr);
+  for (i=0; i<M; i++) {
+#if defined(PETSC_USE_COMPLEX)
+    r = PetscImaginaryPart(diagU[i])/10.0;
+    if (r< -PETSC_MACHINE_EPSILON || r>PETSC_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"diagU[%d]=%g + i %g is non-real",i,PetscRealPart(diagU[i]),r*10.0);
+    r = PetscRealPart(diagU[i]);
+#else
+    r = diagU[i];
+#endif
+    if (r > 0) {
+      pos++;
+    } else if (r < 0) {
+      neg++;
+    } else zero++;
+  }
+
+  ierr = PetscFree(diagU);CHKERRQ(ierr);
+  if (nneg)  *nneg  = neg;
+  if (nzero) *nzero = zero;
+  if (npos)  *npos  = pos;
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat              *tseq,A_seq = NULL;
   Mat_SeqAIJ       *aa,*bb;
-  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->data;
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
   PetscErrorCode   ierr;
   PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj=NULL;
   int              sinfo;   /* SuperLU_Dist info flag is always an int even with long long indices */
   PetscMPIInt      size;
   SuperLUStat_t    stat;
@@ -458,8 +496,8 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
-  (F)->assembled    = PETSC_TRUE;
-  (F)->preallocated = PETSC_TRUE;
+  F->assembled    = PETSC_TRUE;
+  F->preallocated = PETSC_TRUE;
   lu->options.Fact  = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
   PetscFunctionReturn(0);
 }
@@ -480,18 +518,34 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
   F->ops->solve           = MatSolve_SuperLU_DIST;
   F->ops->matsolve        = MatMatSolve_SuperLU_DIST;
+  F->ops->getinertia      = NULL;
+
+  if (A->symmetric || A->hermitian) {
+    F->ops->getinertia = MatGetInertia_SuperLU_DIST;
+  }
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatCholeskyFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!A->symmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Input matrix must be symmetric\n");
+  ierr = MatLUFactorSymbolic_SuperLU_DIST(F,A,r,r,info);CHKERRQ(ierr);
+  F->ops->choleskyfactornumeric = MatLUFactorNumeric_SuperLU_DIST;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatFactorGetSolverType_aij_superlu_dist(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU_DIST;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST       *lu=(Mat_SuperLU_DIST*)A->data;
   superlu_dist_options_t options;
@@ -556,7 +610,7 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_SuperLU_DIST(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_SuperLU_DIST(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -582,12 +636,17 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,M,N);CHKERRQ(ierr);
   ierr = PetscStrallocpy("superlu_dist",&((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-  B->ops->getinfo          = MatGetInfo_External;
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
-  B->ops->view             = MatView_SuperLU_DIST;
-  B->ops->destroy          = MatDestroy_SuperLU_DIST;
+  B->ops->getinfo = MatGetInfo_External;
+  B->ops->view    = MatView_SuperLU_DIST;
+  B->ops->destroy = MatDestroy_SuperLU_DIST;
 
-  B->factortype = MAT_FACTOR_LU;
+  if (ftype == MAT_FACTOR_LU) {
+    B->factortype = MAT_FACTOR_LU;
+    B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SuperLU_DIST;
+  } else {
+    B->factortype = MAT_FACTOR_CHOLESKY;
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SuperLU_DIST;
+  }
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
@@ -614,12 +673,12 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
-  lu->npcol = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
-  if (!lu->npcol) lu->npcol = 1;
-  while (lu->npcol > 0) {
-    lu->nprow = (int_t) (size/lu->npcol);
+  lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
+  if (!lu->nprow) lu->nprow = 1;
+  while (lu->nprow > 0) {
+    lu->npcol = (int_t) (size/lu->nprow);
     if (size == lu->nprow * lu->npcol) break;
-    lu->npcol--;
+    lu->nprow--;
   }
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
@@ -724,19 +783,21 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_superlu_dist);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSuperluDistGetDiagU_C",MatSuperluDistGetDiagU_SuperLU_DIST);CHKERRQ(ierr);
 
   *F = B;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_CHOLESKY,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,7 +806,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 
   Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
 
-  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type superlu_dist to use this direct solver
 
    Works with AIJ matrices
 
@@ -765,6 +826,6 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 
 .seealso: PCLU
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/

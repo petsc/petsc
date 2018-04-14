@@ -821,7 +821,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   Vec             iu, fu, scaling;
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
-  PetscReal       error, errorDer, tol = 1.0e-10;
+  PetscReal       error, errorDer, tol = PETSC_SMALL;
   PetscBool       isPlex, isDA;
   PetscErrorCode  ierr;
 
@@ -973,7 +973,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
@@ -1132,13 +1132,13 @@ int main(int argc, char **argv)
     args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
 
   # 2D Q_2 on a quadrilaterial
   test:
@@ -1158,19 +1158,19 @@ int main(int argc, char **argv)
   # 2D P_3 on a triangle
   test:
     suffix: p3_2d_0
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -convergence
   test:
     suffix: p3_2d_1
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 1
   test:
     suffix: p3_2d_2
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 2
   test:
     suffix: p3_2d_3
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 3
   test:
     suffix: p3_2d_4
@@ -1284,7 +1284,7 @@ int main(int argc, char **argv)
     args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_2_hi
-    requires: triangle
+    requires: triangle !single
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 4 -qorder 4
   test:
@@ -1329,13 +1329,13 @@ TEST*/
     args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6

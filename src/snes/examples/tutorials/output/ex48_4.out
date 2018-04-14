@@ -23,32 +23,32 @@ Level 0 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 4 x 4 x 2 (
 Level 2 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 16 x 16 x 2 (512), size (m) 5000. x 5000. x 1000.
 Level 1 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 8 x 8 x 2 (128), size (m) 10000. x 10000. x 1000.
 Level 0 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 4 x 4 x 2 (32), size (m) 20000. x 20000. x 1000.
-    Linear solve converged due to CONVERGED_RTOL iterations 6
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    Linear solve converged due to CONVERGED_RTOL iterations 7
-    Linear solve converged due to CONVERGED_RTOL iterations 6
-    Linear solve converged due to CONVERGED_RTOL iterations 3
-    Linear solve converged due to CONVERGED_RTOL iterations 3
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    Linear solve converged due to CONVERGED_RTOL iterations 6
     Linear solve converged due to CONVERGED_RTOL iterations 5
+    Linear solve converged due to CONVERGED_RTOL iterations 6
+    Linear solve converged due to CONVERGED_RTOL iterations 7
+    Linear solve converged due to CONVERGED_RTOL iterations 6
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    Linear solve converged due to CONVERGED_RTOL iterations 6
+    Linear solve converged due to CONVERGED_RTOL iterations 7
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 10
 Level 3 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 16 x 16 x 4 (1024), size (m) 5000. x 5000. x 333.333
 Level 2 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 16 x 16 x 2 (512), size (m) 5000. x 5000. x 1000.
 Level 1 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 8 x 8 x 2 (128), size (m) 10000. x 10000. x 1000.
 Level 0 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements 4 x 4 x 2 (32), size (m) 20000. x 20000. x 1000.
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  Linear solve converged due to CONVERGED_RTOL iterations 3
+  Linear solve converged due to CONVERGED_RTOL iterations 2
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  Linear solve converged due to CONVERGED_RTOL iterations 6
-  Linear solve converged due to CONVERGED_RTOL iterations 6
+  Linear solve converged due to CONVERGED_RTOL iterations 7
+  Linear solve converged due to CONVERGED_RTOL iterations 7
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 SNES Object: 6 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-12
-  total number of linear solver iterations=21
+  total number of linear solver iterations=22
   total number of function evaluations=6
   norm schedule ALWAYS
   total number of grid sequence refinements=3
@@ -268,7 +268,7 @@ SNES Object: 6 MPI processes
       total: nonzeros=48128, allocated nonzeros=48128
       total number of mallocs used during MatSetValues calls =0
 Solution statistics after solve: Full
-CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 21
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 22
 |X|_2 564267.   -187.04 <= u <=  23814.8   -979.938 <= v <=  5720.23   3.24766 <= c <=  23904.5 
 Surface statistics: u in [-6.945709e+01, 2.381387e+04] mean 1.520632e+04
 Global eta range   2.50736e+09 to 9.2273e+12 converged range 2.50736e+09 to 3.8249e+10

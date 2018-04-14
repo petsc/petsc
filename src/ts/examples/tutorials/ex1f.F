@@ -184,7 +184,7 @@
       call TSGetConvergedReason(ts,reason,ierr)
 
       write(6,100) its,ftime,reason
- 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2    &
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe9.2    &
      &     ,' reason ',i3)
 
 !
@@ -373,6 +373,11 @@
       return
       end
 
-
+!/*TEST
+!
+!    test:
+!      args: -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  -snes_stol 1e-5
+!
+!TEST*/
 
 

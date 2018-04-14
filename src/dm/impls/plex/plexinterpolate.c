@@ -26,7 +26,7 @@ PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, Pets
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void *) faces);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, (void *) faces);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -42,7 +42,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);}
+  if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), MPIU_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
   case 1:
     switch (coneSize) {
@@ -488,44 +488,61 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
 
   Input Parameters:
 + dm - The DMPlex object with only cells and vertices
-- dmInt - If NULL a new DM is created, otherwise the interpolated DM is put into the given DM
+- dmInt - The interpolated DM
 
   Output Parameter:
 . dmInt - The complete DMPlex object
 
   Level: intermediate
 
+  Notes: It does not copy over the coordinates.
+
 .keywords: mesh
-.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList()
+.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
   DM             idm, odm = dm;
   PetscSF        sfPoint;
   PetscInt       depth, dim, d;
+  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmInt, 2);
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim <= 1) {
+  if ((depth == dim) || (dim <= 1)) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
-  }
-  for (d = 1; d < dim; ++d) {
-    /* Create interpolated mesh */
-    if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
-    else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
-    ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
-    if (depth > 0) {
-      ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
-      ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
-      ierr = DMPlexInterpolatePointSF(idm, sfPoint, depth);CHKERRQ(ierr);
+  } else {
+    for (d = 1; d < dim; ++d) {
+      /* Create interpolated mesh */
+      ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
+      ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
+      ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
+      if (depth > 0) {
+        ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
+        ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
+        ierr = DMPlexInterpolatePointSF(idm, sfPoint, depth);CHKERRQ(ierr);
+      }
+      if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
+      odm  = idm;
     }
-    if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
-    odm  = idm;
+    ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
+    ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
+  }
+  {
+    PetscBool            isper;
+    const PetscReal      *maxCell, *L;
+    const DMBoundaryType *bd;
+
+    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(idm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
@@ -553,19 +570,29 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
   Vec            coordinatesA, coordinatesB;
+  VecType        vtype;
   PetscSection   coordSectionA, coordSectionB;
   PetscScalar   *coordsA, *coordsB;
-  PetscInt       spaceDim, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
+  PetscInt       spaceDim, Nf, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
+  PetscInt       cStartA, cEndA, cStartB, cEndB, cS, cE;
+  PetscBool      lc = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
   if (dmA == dmB) PetscFunctionReturn(0);
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
+  ierr = DMPlexGetHeightStratum(dmA, 0, &cStartA, &cEndA);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmB, 0, &cStartB, &cEndB);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
   if (coordSectionA == coordSectionB) PetscFunctionReturn(0);
+  ierr = PetscSectionGetNumFields(coordSectionA, &Nf);CHKERRQ(ierr);
+  if (!Nf) PetscFunctionReturn(0);
+  if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
   if (!coordSectionB) {
     PetscInt dim;
 
@@ -577,10 +604,31 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(coordSectionB, vStartB, vEndB);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSectionA, &cS, &cE);CHKERRQ(ierr);
+  if (cStartA <= cS && cS < cEndA) { /* localized coordinates */
+    if ((cEndA-cStartA) != (cEndB-cStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cellls in first DM %d != %d in the second DM", cEndA-cStartA, cEndB-cStartB);
+    cS = cS - cStartA + cStartB;
+    cE = vEndB;
+    lc = PETSC_TRUE;
+  } else {
+    cS = vStartB;
+    cE = vEndB;
+  }
+  ierr = PetscSectionSetChart(coordSectionB, cS, cE);CHKERRQ(ierr);
   for (v = vStartB; v < vEndB; ++v) {
     ierr = PetscSectionSetDof(coordSectionB, v, spaceDim);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(coordSectionB, v, 0, spaceDim);CHKERRQ(ierr);
+  }
+  if (lc) { /* localized coordinates */
+    PetscInt c;
+
+    for (c = cS-cStartB; c < cEndB-cStartB; c++) {
+      PetscInt dof;
+
+      ierr = PetscSectionGetDof(coordSectionA, c + cStartA, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(coordSectionB, c + cStartB, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSectionB, c + cStartB, 0, dof);CHKERRQ(ierr);
+    }
   }
   ierr = PetscSectionSetUp(coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSectionB, &coordSizeB);CHKERRQ(ierr);
@@ -588,12 +636,31 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = VecCreate(PETSC_COMM_SELF, &coordinatesB);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesB, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesB, coordSizeB, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetType(coordinatesB,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinatesA, &d);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinatesB, d);CHKERRQ(ierr);
+  ierr = VecGetType(coordinatesA, &vtype);CHKERRQ(ierr);
+  ierr = VecSetType(coordinatesB, vtype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesA, &coordsA);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesB, &coordsB);CHKERRQ(ierr);
   for (v = 0; v < vEndB-vStartB; ++v) {
+    PetscInt offA, offB;
+
+    ierr = PetscSectionGetOffset(coordSectionA, v + vStartA, &offA);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(coordSectionB, v + vStartB, &offB);CHKERRQ(ierr);
     for (d = 0; d < spaceDim; ++d) {
-      coordsB[v*spaceDim+d] = coordsA[v*spaceDim+d];
+      coordsB[offB+d] = coordsA[offA+d];
+    }
+  }
+  if (lc) { /* localized coordinates */
+    PetscInt c;
+
+    for (c = cS-cStartB; c < cEndB-cStartB; c++) {
+      PetscInt dof, offA, offB;
+
+      ierr = PetscSectionGetOffset(coordSectionA, c + cStartA, &offA);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSectionB, c + cStartB, &offB);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSectionA, c + cStartA, &dof);CHKERRQ(ierr);
+      ierr = PetscMemcpy(coordsB + offB,coordsA + offA,dof*sizeof(*coordsB));CHKERRQ(ierr);
     }
   }
   ierr = VecRestoreArray(coordinatesA, &coordsA);CHKERRQ(ierr);
@@ -616,8 +683,10 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 
   Level: intermediate
 
+  Notes: It does not copy over the coordinates.
+
 .keywords: mesh
-.seealso: DMPlexInterpolate(), DMPlexCreateFromCellList()
+.seealso: DMPlexInterpolate(), DMPlexCreateFromCellList(), DMPlexCopyCoordinates()
 @*/
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
@@ -626,6 +695,8 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmUnint, 2);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
@@ -702,6 +773,15 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
       ierr = PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
   }
+  {
+    PetscBool            isper;
+    const PetscReal      *maxCell, *L;
+    const DMBoundaryType *bd;
+
+    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(udm,isper,maxCell,L,bd);CHKERRQ(ierr);
+  }
+
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }

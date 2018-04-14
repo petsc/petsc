@@ -54,6 +54,12 @@ struct _PCBDDCGraph {
      these are not intended to be exposed */
   PetscInt               n_local_subs;
   PetscInt               *local_subs;
+  /* coordinates (for corner detection) */
+  PetscBool              active_coords;
+  PetscBool              cloc;
+  PetscInt               cdim,cnloc;
+  PetscReal*             coords;
+
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
@@ -100,6 +106,7 @@ struct _PCBDDCSubSchurs {
   IS  is_I;
   IS  is_B;
   /* whether Schur complements are explicitly computed with or not */
+  char      mat_solver_type[64];
   PetscBool schur_explicit;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
@@ -119,6 +126,7 @@ struct _PCBDDCSubSchurs {
   IS*      is_subs;
   PetscBT  is_edge;
   /* mat flags */
+  PetscBool is_symmetric;
   PetscBool is_hermitian;
   PetscBool is_posdef;
   /* data structure to reuse MatFactor with Schur solver */

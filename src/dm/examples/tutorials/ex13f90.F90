@@ -23,6 +23,7 @@ program main
 
 
   use ex13f90aux
+
 #include <petsc/finclude/petscdmda.h>
   use petscdmda
 
@@ -169,8 +170,11 @@ end program main
 !/*TEST
 !
 !   build:
-!      requires: !complex
-!      depends:  ex13f90aux.F90
+!     requires: !complex
+!     depends:  ex13f90aux.F90
+!
+!   test:
+!     nsize: 4
 !
 !TEST*/
 

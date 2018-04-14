@@ -58,7 +58,7 @@ class Configure(config.package.CMakePackage):
     if self.chaco.found:
       raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
     if self.exodusii.found:
-      raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains Exodusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
 
   def configureLibrary(self):
     self.checkTrilinosDuplicates()
@@ -290,7 +290,7 @@ class Configure(config.package.CMakePackage):
     try:
       output1,err1,ret1  = config.package.Package.executeShellCommand('make -f simplemake listlibs', timeout=25, log = self.log)
       os.unlink('simplemake')
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Unable to generate list of Trilinos Libraries')
     # generateLibList() wants this ridiculus format
     l = output1.split(' ')

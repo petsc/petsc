@@ -40,8 +40,8 @@
 #endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
-#define PetscFortranAddr integer8
 #define PetscOffset integer8
+#define PetscFortranAddr integer8
 #else
 #define PetscOffset integer4
 #define PetscFortranAddr integer4
@@ -195,17 +195,17 @@
 !     Macros for error checking
 !
 #if defined(PETSC_USE_ERRORCHECKING)
-#define SETERRQ(c,ierr,s) call PetscError(c,ierr,0,s); return
-#define SETERRA(c,ierr,s) call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
-#define CHKERRQ(ierr) if (ierr .ne. 0) then ; call PetscErrorF(ierr); return; endif
-#define CHKERRA(ierr) if (ierr .ne. 0) then ; call PetscErrorF(ierr); call MPIU_Abort(MPI_COMM_WORLD,ierr); endif
+#define SETERRQ(c,ierr,s)  call PetscError(c,ierr,0,s); return
+#define SETERRA(c,ierr,s)  call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
+#define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
+#define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(MPI_COMM_SELF,ierr);endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 #else
-#define SETERRQ(c,ierr,s)
-#define SETERRA(c,ierr,s)
-#define CHKERRQ(ierr)
-#define CHKERRA(c,ierr)
-#define CHKMEMQ
+#define SETERRQ(c,ierr,s) continue
+#define SETERRA(c,ierr,s) continue
+#define CHKERRQ(ierr) continue
+#define CHKERRA(ierr) continue
+#define CHKMEMQ continue
 #endif
 
 #define PetscMatlabEngine PetscFortranAddr
@@ -220,7 +220,7 @@
 #endif
 #endif
 
-#define PetscRandom PetscFortranAddr
+#define PetscRandom type(tPetscRandom)
 #define PetscRandomType character*(80)
 #define PetscBinarySeekType PetscEnum
 

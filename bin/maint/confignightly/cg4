@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=cg
-set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-4
-set CONF=arch-linux-xsdk-latest

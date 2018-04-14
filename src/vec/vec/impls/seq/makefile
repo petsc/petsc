@@ -9,9 +9,8 @@ SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/impls/seq/
-DIRS     = ftn-kernels seqcusp seqviennacl seqviennaclcuda seqcuda
+DIRS     = ftn-kernels seqviennacl seqviennaclcuda seqcuda
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-

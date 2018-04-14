@@ -29,7 +29,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim         = user->dim;
   PetscBool      cellSimplex = user->cellSimplex;
-  PetscInt       cells[3]    = {2, 2, 2};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

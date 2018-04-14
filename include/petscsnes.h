@@ -102,6 +102,9 @@ PETSC_EXTERN PetscErrorCode SNESSetFromOptions(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetUseMatrixFree(SNES,PetscBool,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetUseMatrixFree(SNES,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatCreateSNESMF(SNES,Mat*);
+PETSC_EXTERN PetscErrorCode MatSNESMFGetSNES(Mat,SNES*);
+PETSC_EXTERN PetscErrorCode MatSNESMFSetReuseBase(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSNESMFGetReuseBase(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);
@@ -129,6 +132,7 @@ PETSC_EXTERN PetscErrorCode SNESSetDivergenceTolerance(SNES,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetDivergenceTolerance(SNES,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESSetTrustRegionTolerance(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESGetForceIteration(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES,PetscInt);
@@ -647,10 +651,10 @@ PETSC_EXTERN PetscErrorCode SNESTestLocalMin(SNES);
 
 /* Should this routine be private? */
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES,Vec,Mat,Mat);
+PETSC_EXTERN PetscErrorCode SNESTestJacobian(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
-PETSC_EXTERN PetscErrorCode SNESHasDM(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetNPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetNPC(SNES,SNES*);
 PETSC_EXTERN PetscErrorCode SNESHasNPC(SNES,PetscBool*);
@@ -689,7 +693,6 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM,DMDASNESJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM,DMDASNESObjective,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*),PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*),void*);
 
-PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFEM(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);

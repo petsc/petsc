@@ -3,10 +3,11 @@ static char help[] = "Test MatGetMultiProcBlock() and MatCreateRedundantMatrix()
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*
   Example:
-  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -subcomm_view -subcomm_type <1 or 2>
+  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -psubcomm_view -subcomm_type <1 or 2>
 */
 
 #include <petscksp.h>
+#include <petscsys.h>
 
 int main(int argc,char **args)
 {
@@ -76,9 +77,38 @@ int main(int argc,char **args)
 
   /* Test MatCreateRedundantMatrix() */
   if (size > 1) {
-    ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-    ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+
+    PetscMPIInt subrank=-1,color=-1;
+    MPI_Comm    dcomm;
+
+    if (rank == 0) {
+      color = 0; subrank = 0;
+    } else if (rank == 1) {
+      color = 0; subrank = 1;
+    } else {
+      color = 1; subrank = 0;
+    }
+
+    ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&dcomm,NULL);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(dcomm,color,subrank,&subcomm);CHKERRQ(ierr);
+
+    ierr = MatCreate(subcomm,&subA);CHKERRQ(ierr);
+    ierr = MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(subA);CHKERRQ(ierr);
+    ierr = MatSetUp(subA);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(subA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(subA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatZeroEntries(subA);CHKERRQ(ierr);
+
+    /* Test MatMult() */
+    ierr = MatCreateVecs(subA,&subx,&subb);CHKERRQ(ierr);
+    ierr = VecSet(subx,1.0);CHKERRQ(ierr);
+    ierr = MatMult(subA,subx,subb);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&subx);CHKERRQ(ierr);
+    ierr = VecDestroy(&subb);CHKERRQ(ierr);
     ierr = MatDestroy(&subA);CHKERRQ(ierr);
+    ierr = PetscCommDestroy(&dcomm);CHKERRQ(ierr);
   }
 
   /* Create subA */
@@ -140,6 +170,9 @@ int main(int argc,char **args)
   ierr = VecDestroy(&subu);CHKERRQ(ierr);
   ierr = KSPDestroy(&subksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
 
@@ -147,3 +180,46 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 1
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 2
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      output_file: output/ex37.out
+
+    test:
+      suffix: mumps
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -pc_factor_mat_solver_type mumps -pc_type lu 
+      requires: datafilespath  mumps !complex double !define(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      output_file: output/ex37.out
+
+    test:
+      suffix: 3
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 0
+      requires: datafilespath  !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 4
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 1
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 5
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+TEST*/

@@ -1,7 +1,7 @@
 iter = 0, Function value: 0.00319113,  Residual: 0.000161857   Constraint: 1.04711e-05 
-iter = 0, Function value: 0.00319113,  Residual: 0.000161846   Constraint: 1.62807e-12 
+iter = 0, Function value: 0.00319113,  Residual: 0.000161846   Constraint: 1.59941e-12 
 iter = 1, Function value: 0.00319111,  Residual: 0.000130721   Constraint: 9.6063e-07 
-iter = 1, Function value: 0.00319111,  Residual: 0.000130723   Constraint: 1.95327e-12 
+iter = 1, Function value: 0.00319111,  Residual: 0.000130723   Constraint: 2.15577e-12 
 iter = 2, Function value: 0.00319104,  Residual: 9.51053e-05   Constraint: 1.17579e-05 
 KSP Iterations = 1345
 KSP iterations within initialization: 370

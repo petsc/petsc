@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=wii
+set USR=balay
+set PETSC_DIR=/home/balay/${RNAME}
+set PETSC_ARCH=arch-freebsd-cxx-cmplx-pkgs-dbg

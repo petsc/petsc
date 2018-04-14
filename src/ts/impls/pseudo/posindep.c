@@ -651,6 +651,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_Pseudo;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Pseudo;
   ts->default_adapt_type  = TSADAPTNONE;
+  ts->usessnes            = PETSC_TRUE;
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);

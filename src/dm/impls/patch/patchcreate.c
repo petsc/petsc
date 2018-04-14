@@ -21,7 +21,7 @@ extern PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g);
 extern PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l);
 extern PetscErrorCode DMDestroy_Patch(DM dm);
-extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
+extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 
 PetscErrorCode DMInitialize_Patch(DM dm)
 {

@@ -5,33 +5,27 @@ static char help[] = "Tests DMSwarm\n\n";
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 
-/* 
+/*
  Checks for variable blocksize
 */
 PetscErrorCode ex2_1(void)
 {
-  DM dms;
+  DM             dms;
   PetscErrorCode ierr;
-  Vec x;
-  PetscMPIInt rank,commsize;
-  PetscInt p,bs,nlocal;
-  
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
+  Vec            x;
+  PetscMPIInt    rank;
+  PetscInt       p,bs,nlocal;
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
-
   ierr = DMSwarmInitializeFieldRegister(dms);CHKERRQ(ierr);
-  
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"viscosity",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(dms,"strain",3,PETSC_REAL);CHKERRQ(ierr);
-  
   ierr = DMSwarmFinalizeFieldRegister(dms);CHKERRQ(ierr);
-  
   ierr = DMSwarmSetLocalSizes(dms,5+rank,4);CHKERRQ(ierr);
   ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
   ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
 
   {
@@ -66,9 +60,7 @@ PetscErrorCode ex2_1(void)
   ierr = DMCreateGlobalVector(dms,&x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  
   ierr = DMDestroy(&dms);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -76,9 +68,19 @@ PetscErrorCode ex2_1(void)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = ex2_1();CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
+
+/*TEST
+
+   test:
+      requires: !complex double
+      nsize: 3
+      filter: grep -v atomic
+      filter_output: grep -v atomic
+
+TEST*/

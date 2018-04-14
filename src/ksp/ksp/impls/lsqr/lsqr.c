@@ -105,7 +105,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (SE) {
     ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
     ierr = VecGetSize(X,&size2);CHKERRQ(ierr);
-    if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
+    if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %D) does not match solution vector (size %D)",size1,size2);
     ierr = VecSet(SE,0.0);CHKERRQ(ierr);
   }
 
@@ -134,6 +134,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (nopreconditioner) {
     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
+    /* this is an application of the preconditioner for the normal equations; not the operator, see the manual page */
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
     ierr = VecDotRealPart(V,Z,&alpha);CHKERRQ(ierr);
     if (alpha <= 0.0) {

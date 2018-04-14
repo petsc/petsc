@@ -8,6 +8,8 @@ This example employs a user-defined monitoring routine.\n\n";
    Processors: 1
 T*/
 
+
+
 /*
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -292,7 +294,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1;
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
-    ierr = MatSetValues(jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -300,11 +302,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   */
   i = 0;   A[0] = 1.0;
 
-  ierr = MatSetValues(jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
 
   i = n-1; A[0] = 1.0;
 
-  ierr = MatSetValues(jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
 
   /*
      Restore vector
@@ -314,8 +316,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (jac != B) {
     ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -349,3 +351,20 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontr -snes_view
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -nox -snes_monitor_cancel -snes_monitor_short -malloc no -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/

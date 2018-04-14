@@ -1,0 +1,162 @@
+DM Object: 3 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 5 
+  buffer             = 4 
+  allocated          = 9 
+  nfields registered = 4 
+    [  0]     DMSwarm_pid : Mem. usage       = 7.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 3.60e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2]       viscosity : Mem. usage       = 7.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  3]          strain : Mem. usage       = 2.16e-04 (MB) [rank0]
+                            blocksize        = 3 
+                            atomic size      = 24 [full block, bs=3]
+                            atomic size/item = 8 
+  Total mem. usage                           = 1.32e-03 (MB) (collective)
+Vec Object: DMSwarmSharedField_viscosity 3 MPI processes
+  type: mpi
+Process [0]
+11.1
+11.2
+11.3
+11.4
+11.5
+Process [1]
+111.1
+111.2
+111.3
+111.4
+111.5
+111.6
+Process [2]
+211.1
+211.2
+211.3
+211.4
+211.5
+211.6
+211.7
+Vec Object: DMSwarmSharedField_strain 3 MPI processes
+  type: mpi
+Process [0]
+0.02
+0.02
+0.02
+0.021
+0.022
+0.023
+0.022
+0.024
+0.026
+0.023
+0.026
+0.029
+0.024
+0.028
+0.032
+Process [1]
+1.02
+1.02
+1.02
+1.021
+1.022
+1.023
+1.022
+1.024
+1.026
+1.023
+1.026
+1.029
+1.024
+1.028
+1.032
+1.025
+1.03
+1.035
+Process [2]
+2.02
+2.02
+2.02
+2.021
+2.022
+2.023
+2.022
+2.024
+2.026
+2.023
+2.026
+2.029
+2.024
+2.028
+2.032
+2.025
+2.03
+2.035
+2.026
+2.032
+2.038
+Vec Object: DMSwarmField_strain 3 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Process [1]
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Process [2]
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.

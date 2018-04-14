@@ -48,7 +48,7 @@ class Configure(config.package.GNUPackage):
     self.checkDownload()
 
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+    if ('with-sowing' in self.framework.clArgDB and not self.argDB['with-sowing']):
       if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings'] and self.petscclone.isClone:
         raise RuntimeError('Cannot use --with-sowing=0 if using Fortran (bindings) and git repository for PETSc')
       self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
@@ -58,11 +58,11 @@ class Configure(config.package.GNUPackage):
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
-      if self.framework.clArgDB.has_key('with-sowing-dir') and self.argDB['with-sowing-dir']:
+      if 'with-sowing-dir' in self.framework.clArgDB and self.argDB['with-sowing-dir']:
         installDir = os.path.join(self.argDB['with-sowing-dir'],'bin')
 
         self.getExecutable('bfort',    path=installDir, getFullPath = 1)
@@ -108,13 +108,13 @@ class Configure(config.package.GNUPackage):
         self.logWrite('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import os,sys
-          sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))
+          sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
           if self.compilers.fortranIsF90:
             generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
-        except RuntimeError, e:
+        except RuntimeError as e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return

@@ -6,8 +6,846 @@
 #include <exodusII.h>
 #endif
 
+#if defined(PETSC_HAVE_EXODUSII)
+/*
+  EXOGetVarIndex - Locate a result in an exodus file based on its name
+
+  Not collective
+
+  Input Parameters:
++ exoid    - the exodus id of a file (obtained from ex_open or ex_create for instance)
+. obj_type - the type of entity for instance EX_NODAL, EX_ELEM_BLOCK
+- name     - the name of the result
+
+  Output Parameters:
+. varIndex - the location in the exodus file of the result
+
+  Notes:
+  The exodus variable index is obtained by comparing name and the
+  names of zonal variables declared in the exodus file. For instance if name is "V"
+  the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
+  amongst all variables of type obj_type.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: EXOGetVarIndex(),DMView_Exodus(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadNodal_PlexEXO(),VecLoadZonal_PlexEXO()
+*/
+static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
+{
+  int            num_vars, i, j;
+  char           ext_name[MAX_STR_LENGTH+1], var_name[MAX_STR_LENGTH+1];
+  const int      num_suffix = 5;
+  char          *suffix[5];
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  suffix[0] = (char *) "";
+  suffix[1] = (char *) "_X";
+  suffix[2] = (char *) "_XX";
+  suffix[3] = (char *) "_1";
+  suffix[4] = (char *) "_11";
+
+  *varIndex = 0;
+  PetscStackCallStandard(ex_get_variable_param,(exoid, obj_type, &num_vars));
+  for (i = 0; i < num_vars; ++i) {
+    PetscStackCallStandard(ex_get_variable_name,(exoid, obj_type, i+1, var_name));
+    for (j = 0; j < num_suffix; ++j){
+      ierr = PetscStrncpy(ext_name, name, MAX_STR_LENGTH);CHKERRQ(ierr);
+      ierr = PetscStrlcat(ext_name, suffix[j], MAX_STR_LENGTH);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(ext_name, var_name, &flg);
+      if (flg) {
+        *varIndex = i+1;
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to locate variable %s in ExodusII file.", name);
+ PetscFunctionReturn(-1);
+}
+
+/*
+  DMPlexView_ExodusII_Internal - Write a DM to disk in exodus format
+
+  Collective on dm
+
+  Input Parameters:
++ dm  - The dm to be written
+. exoid - the exodus id of a file (obtained from ex_open or ex_create for instance)
+- degree - the degree of the interpolation space
+
+  Notes:
+  Not all DM can be written to disk this way. For instance, exodus assume that element blocks (mapped to "Cell sets" labels)
+  consists of sequentially numbered cells. If this is not the case, the exodus file will be corrupted.
+
+  If the dm has been distributed and exoid points to different files on each MPI rank, only the "local" part of the DM
+  (including "ghost" cells and vertices) will be written. If all exoid points to the same file, the resulting file will
+  probably be corrupted.
+
+  DMPlex only represents geometry while most post-processing software expect that a mesh also provides information
+  on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
+  It should be extended to use PetscFE objects.
+
+  This function will only handle TRI, TET, QUAD and HEX cells.
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: EXOGetVarIndex_Private(), VecViewPlex_ExodusII_Nodal_Internal(), VecLoadNodal_PlexEXO(), VecViewZonal_PlexEXO(), VecLoadZonal_PlexEXO()
+*/
+PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
+{
+  enum ElemType {TRI, QUAD, TET, HEX};
+  MPI_Comm        comm;
+  /* Connectivity Variables */
+  PetscInt        cellsNotInConnectivity;
+  /* Cell Sets */
+  DMLabel         csLabel;
+  IS              csIS;
+  const PetscInt *csIdx;
+  PetscInt        num_cs, cs;
+  enum ElemType  *type;
+  PetscBool       hasLabel;
+  /* Coordinate Variables */
+  DM              cdm;
+  PetscSection    section;
+  Vec             coord;
+  PetscInt      **nodes;
+  PetscInt        depth, d, dim, skipCells = 0;
+  PetscInt        pStart, pEnd, p, cStart, cEnd, numCells, vStart, vEnd, numVertices, eStart, eEnd, numEdges, fStart, fEnd, numFaces, numNodes;
+  PetscInt        num_vs, num_fs;
+  PetscMPIInt     rank, size;
+  const char     *dmName;
+  PetscInt        nodesTriP1[4]  = {3,0,0,0};
+  PetscInt        nodesTriP2[4]  = {3,3,0,0};
+  PetscInt        nodesQuadP1[4] = {4,0,0,0};
+  PetscInt        nodesQuadP2[4] = {4,4,0,1};
+  PetscInt        nodesTetP1[4]  = {4,0,0,0};
+  PetscInt        nodesTetP2[4]  = {4,6,0,0};
+  PetscInt        nodesHexP1[4]  = {8,0,0,0};
+  PetscInt        nodesHexP2[4]  = {8,12,6,1};
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  /* --- Get DM info --- */
+  ierr = PetscObjectGetName((PetscObject) dm, &dmName);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  numCells    = cEnd - cStart;
+  numEdges    = eEnd - eStart;
+  numVertices = vEnd - vStart;
+  if (depth == 3) {numFaces = fEnd - fStart;}
+  else            {numFaces = 0;}
+  ierr = DMGetLabelSize(dm, "Cell Sets", &num_cs);CHKERRQ(ierr);
+  ierr = DMGetLabelSize(dm, "Vertex Sets", &num_vs);CHKERRQ(ierr);
+  ierr = DMGetLabelSize(dm, "Face Sets", &num_fs);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coord);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  if (num_cs > 0) {
+    ierr = DMGetLabel(dm, "Cell Sets", &csLabel);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(csLabel, &csIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(csIS, &csIdx);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc1(num_cs, &nodes);CHKERRQ(ierr);
+  /* Set element type for each block and compute total number of nodes */
+  ierr = PetscMalloc1(num_cs, &type);CHKERRQ(ierr);
+  numNodes = numVertices;
+  if (degree == 2) {numNodes += numEdges;}
+  cellsNotInConnectivity = numCells;
+  for (cs = 0; cs < num_cs; ++cs) {
+    IS              stratumIS;
+    const PetscInt *cells;
+    PetscScalar    *xyz = NULL;
+    PetscInt        csSize, closureSize;
+
+    ierr = DMLabelGetStratumIS(csLabel, csIdx[cs], &stratumIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISGetSize(stratumIS, &csSize);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz);CHKERRQ(ierr);
+    switch (dim) {
+      case 2:
+        if      (closureSize == 3*dim) {type[cs] = TRI;}
+        else if (closureSize == 4*dim) {type[cs] = QUAD;}
+        else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %D in dimension %D has no ExodusII type", closureSize/dim, dim);
+        break;
+      case 3:
+        if      (closureSize == 4*dim) {type[cs] = TET;}
+        else if (closureSize == 8*dim) {type[cs] = HEX;}
+        else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %D in dimension %D has no ExodusII type", closureSize/dim, dim);
+        break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not handled by ExodusII viewer", dim);
+    }
+    if ((degree == 2) && (type[cs] == QUAD)) {numNodes += csSize;}
+    if ((degree == 2) && (type[cs] == HEX))  {numNodes += csSize; numNodes += numFaces;}
+    ierr = DMPlexVecRestoreClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz);CHKERRQ(ierr);
+    /* Set nodes and Element type */
+    if (type[cs] == TRI) {
+      if      (degree == 1) nodes[cs] = nodesTriP1;
+      else if (degree == 2) nodes[cs] = nodesTriP2;
+    } else if (type[cs] == QUAD) {
+      if      (degree == 1) nodes[cs] = nodesQuadP1;
+      else if (degree == 2) nodes[cs] = nodesQuadP2;
+    } else if (type[cs] == TET) {
+      if      (degree == 1) nodes[cs] = nodesTetP1;
+      else if (degree == 2) nodes[cs] = nodesTetP2;
+    } else if (type[cs] == HEX) {
+      if      (degree == 1) nodes[cs] = nodesHexP1;
+      else if (degree == 2) nodes[cs] = nodesHexP2;
+    }
+    /* Compute the number of cells not in the connectivity table */
+    cellsNotInConnectivity -= nodes[cs][3]*csSize;
+
+    ierr = ISRestoreIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+  }
+  if (num_cs > 0) {PetscStackCallStandard(ex_put_init,(exoid, dmName, dim, numNodes, numCells, num_cs, num_vs, num_fs));}
+  /* --- Connectivity --- */
+  for (cs = 0; cs < num_cs; ++cs) {
+    IS              stratumIS;
+    const PetscInt *cells;
+    PetscInt       *connect, off = 0;
+    PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0;
+    PetscInt        csSize, c, connectSize, closureSize;
+    char           *elem_type = NULL;
+    char            elem_type_tri3[]  = "TRI3",  elem_type_quad4[] = "QUAD4";
+    char            elem_type_tri6[]  = "TRI6",  elem_type_quad9[] = "QUAD9";
+    char            elem_type_tet4[]  = "TET4",  elem_type_hex8[]  = "HEX8";
+    char            elem_type_tet10[] = "TET10", elem_type_hex27[] = "HEX27";
+
+    ierr = DMLabelGetStratumIS(csLabel, csIdx[cs], &stratumIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISGetSize(stratumIS, &csSize);CHKERRQ(ierr);
+    /* Set Element type */
+    if (type[cs] == TRI) {
+      if      (degree == 1) elem_type = elem_type_tri3;
+      else if (degree == 2) elem_type = elem_type_tri6;
+    } else if (type[cs] == QUAD) {
+      if      (degree == 1) elem_type = elem_type_quad4;
+      else if (degree == 2) elem_type = elem_type_quad9;
+    } else if (type[cs] == TET) {
+      if      (degree == 1) elem_type = elem_type_tet4;
+      else if (degree == 2) elem_type = elem_type_tet10;
+    } else if (type[cs] == HEX) {
+      if      (degree == 1) elem_type = elem_type_hex8;
+      else if (degree == 2) elem_type = elem_type_hex27;
+    }
+    connectSize = nodes[cs][0] + nodes[cs][1] + nodes[cs][2] + nodes[cs][3];
+    ierr = PetscMalloc1(PetscMax(27,connectSize)*csSize, &connect);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_put_block,(exoid, EX_ELEM_BLOCK, csIdx[cs], elem_type, csSize, connectSize, 0, 0, 1));
+    /* Find number of vertices, edges, and faces in the closure */
+    verticesInClosure = nodes[cs][0];
+    if (depth > 1) {
+      if (dim == 2) {
+        ierr = DMPlexGetConeSize(dm, cells[0], &edgesInClosure);CHKERRQ(ierr);
+      } else if (dim == 3) {
+        PetscInt *closure = NULL;
+
+        ierr = DMPlexGetConeSize(dm, cells[0], &facesInClosure);CHKERRQ(ierr);
+        ierr = DMPlexGetTransitiveClosure(dm, cells[0], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        edgesInClosure = closureSize - facesInClosure - 1 - verticesInClosure;
+        ierr = DMPlexRestoreTransitiveClosure(dm, cells[0], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+    }
+    /* Get connectivity for each cell */
+    for (c = 0; c < csSize; ++c) {
+      PetscInt *closure = NULL;
+      PetscInt  temp, i;
+
+      ierr = DMPlexGetTransitiveClosure(dm, cells[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (i = 0; i < connectSize; ++i) {
+        if (i < nodes[cs][0]) {/* Vertices */
+          connect[i+off] = closure[(i+edgesInClosure+facesInClosure+1)*2] + 1;
+          connect[i+off] -= cellsNotInConnectivity;
+        } else if (i < nodes[cs][0]+nodes[cs][1]) { /* Edges */
+          connect[i+off] = closure[(i-verticesInClosure+facesInClosure+1)*2] + 1;
+          if (nodes[cs][2] == 0) connect[i+off] -= numFaces;
+          connect[i+off] -= cellsNotInConnectivity;
+        } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]){ /* Cells */
+          connect[i+off] = closure[0] + 1;
+          connect[i+off] -= skipCells;
+        } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]+nodes[cs][2]){ /* Faces */
+          connect[i+off] = closure[(i-edgesInClosure-verticesInClosure)*2] + 1;
+          connect[i+off] -= cellsNotInConnectivity;
+        } else {
+          connect[i+off] = -1;
+        }
+      }
+      /* Tetrahedra are inverted */
+      if (type[cs] == TET) {
+        temp = connect[0+off]; connect[0+off] = connect[1+off]; connect[1+off] = temp;
+        if (degree == 2) {
+          temp = connect[5+off]; connect[5+off] = connect[6+off]; connect[6+off] = temp;
+          temp = connect[7+off]; connect[7+off] = connect[8+off]; connect[8+off] = temp;
+        }
+      }
+      /* Hexahedra are inverted */
+      if (type[cs] == HEX) {
+        temp = connect[1+off]; connect[1+off] = connect[3+off]; connect[3+off] = temp;
+        if (degree == 2) {
+          temp = connect[8+off];  connect[8+off]  = connect[11+off]; connect[11+off] = temp;
+          temp = connect[9+off];  connect[9+off]  = connect[10+off]; connect[10+off] = temp;
+          temp = connect[16+off]; connect[16+off] = connect[17+off]; connect[17+off] = temp;
+          temp = connect[18+off]; connect[18+off] = connect[19+off]; connect[19+off] = temp;
+
+          temp = connect[12+off]; connect[12+off] = connect[16+off]; connect[16+off] = temp;
+          temp = connect[13+off]; connect[13+off] = connect[17+off]; connect[17+off] = temp;
+          temp = connect[14+off]; connect[14+off] = connect[18+off]; connect[18+off] = temp;
+          temp = connect[15+off]; connect[15+off] = connect[19+off]; connect[19+off] = temp;
+
+          temp = connect[23+off]; connect[23+off] = connect[26+off]; connect[26+off] = temp;
+          temp = connect[24+off]; connect[24+off] = connect[25+off]; connect[25+off] = temp;
+          temp = connect[25+off]; connect[25+off] = connect[26+off]; connect[26+off] = temp;
+        }
+      }
+      off += connectSize;
+      ierr = DMPlexRestoreTransitiveClosure(dm, cells[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    PetscStackCallStandard(ex_put_conn,(exoid, EX_ELEM_BLOCK, csIdx[cs], connect, 0, 0));
+    skipCells += (nodes[cs][3] == 0)*csSize;
+    ierr = PetscFree(connect);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(type);CHKERRQ(ierr);
+  /* --- Coordinates --- */
+  ierr = PetscSectionCreate(comm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  for (d = 0; d < depth; ++d) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionSetDof(section, p, nodes[0][d] > 0);CHKERRQ(ierr);
+    }
+  }
+  for (cs = 0; cs < num_cs; ++cs) {
+    IS              stratumIS;
+    const PetscInt *cells;
+    PetscInt        csSize, c;
+
+    ierr = DMLabelGetStratumIS(csLabel, csIdx[cs], &stratumIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISGetSize(stratumIS, &csSize);CHKERRQ(ierr);
+    for (c = 0; c < csSize; ++c) {
+      ierr = PetscSectionSetDof(section, cells[c], nodes[cs][3] > 0);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(stratumIS, &cells);CHKERRQ(ierr);
+    ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+  }
+  if (num_cs > 0) {
+    ierr = ISRestoreIndices(csIS, &csIdx);CHKERRQ(ierr);
+    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(nodes);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  if (numNodes > 0) {
+    const char  *coordNames[3] = {"x", "y", "z"};
+    PetscScalar *coords, *closure;
+    PetscReal   *cval;
+    PetscInt     hasDof, n = 0;
+
+    /* There can't be more than 24 values in the closure of a point for the coord section */
+    ierr = PetscCalloc3(numNodes*3, &coords, dim, &cval, 24, &closure);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coord);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionGetDof(section, p, &hasDof);
+      if (hasDof) {
+        PetscInt closureSize = 24, j;
+
+        ierr = DMPlexVecGetClosure(cdm, NULL, coord, p, &closureSize, &closure);CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) {
+          cval[d] = 0.0;
+          for (j = 0; j < closureSize/dim; j++) cval[d] += closure[j*dim+d];
+          coords[d*numNodes+n] = cval[d] * dim / closureSize;
+        }
+        ++n;
+      }
+    }
+    PetscStackCallStandard(ex_put_coord,(exoid, &coords[0*numNodes], &coords[1*numNodes], &coords[2*numNodes]));
+    ierr = PetscFree3(coords, cval, closure);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_put_coord_names,(exoid, (char **) coordNames));
+  }
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  /* --- Node Sets/Vertex Sets --- */
+  DMHasLabel(dm, "Vertex Sets", &hasLabel);
+  if (hasLabel) {
+    PetscInt        i, vs, vsSize;
+    const PetscInt *vsIdx, *vertices;
+    PetscInt       *nodeList;
+    IS              vsIS, stratumIS;
+    DMLabel         vsLabel;
+    ierr = DMGetLabel(dm, "Vertex Sets", &vsLabel);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(vsLabel, &vsIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(vsIS, &vsIdx);CHKERRQ(ierr);
+    for (vs=0; vs<num_vs; ++vs) {
+      ierr = DMLabelGetStratumIS(vsLabel, vsIdx[vs], &stratumIS);CHKERRQ(ierr);
+      ierr = ISGetIndices(stratumIS, &vertices);CHKERRQ(ierr);
+      ierr = ISGetSize(stratumIS, &vsSize);CHKERRQ(ierr);
+      ierr = PetscMalloc1(vsSize, &nodeList);
+      for (i=0; i<vsSize; ++i) {
+        nodeList[i] = vertices[i] - skipCells + 1;
+      }
+      PetscStackCallStandard(ex_put_set_param,(exoid, EX_NODE_SET, vsIdx[vs], vsSize, 0));
+      PetscStackCallStandard(ex_put_set,(exoid, EX_NODE_SET, vsIdx[vs], nodeList, NULL));
+      ierr = ISRestoreIndices(stratumIS, &vertices);CHKERRQ(ierr);
+      ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+      ierr = PetscFree(nodeList);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(vsIS, &vsIdx);CHKERRQ(ierr);
+    ierr = ISDestroy(&vsIS);CHKERRQ(ierr);
+  }
+  /* --- Side Sets/Face Sets --- */
+  ierr = DMHasLabel(dm, "Face Sets", &hasLabel);CHKERRQ(ierr);
+  if (hasLabel) {
+    PetscInt        i, j, fs, fsSize;
+    const PetscInt *fsIdx, *faces;
+    IS              fsIS, stratumIS;
+    DMLabel         fsLabel;
+    PetscInt        numPoints, *points;
+    PetscInt        elem_list_size = 0;
+    PetscInt       *elem_list, *elem_ind, *side_list;
+    
+    ierr = DMGetLabel(dm, "Face Sets", &fsLabel);CHKERRQ(ierr);
+    /* Compute size of Node List and Element List */
+    ierr = DMLabelGetValueIS(fsLabel, &fsIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(fsIS, &fsIdx);CHKERRQ(ierr);
+    for (fs=0; fs<num_fs; ++fs) {
+      ierr = DMLabelGetStratumIS(fsLabel, fsIdx[fs], &stratumIS);CHKERRQ(ierr);;
+      ierr = ISGetSize(stratumIS, &fsSize);CHKERRQ(ierr);
+      elem_list_size += fsSize;
+      ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc3(num_fs, &elem_ind,
+                        elem_list_size, &elem_list,
+                        elem_list_size, &side_list);CHKERRQ(ierr);
+    elem_ind[0] = 0;
+    for (fs=0; fs<num_fs; ++fs) {
+      ierr = DMLabelGetStratumIS(fsLabel, fsIdx[fs], &stratumIS);CHKERRQ(ierr);
+      ierr = ISGetIndices(stratumIS, &faces);CHKERRQ(ierr);
+      ierr = ISGetSize(stratumIS, &fsSize);CHKERRQ(ierr);
+      /* Set Parameters */
+      PetscStackCallStandard(ex_put_set_param,(exoid, EX_SIDE_SET, fsIdx[fs], fsSize, 0));
+      /* Indices */
+      if (fs<num_fs-1) {
+        elem_ind[fs+1] = elem_ind[fs] + fsSize;
+      }
+      
+      for (i=0; i<fsSize; ++i) {
+        /* Element List */
+        points = NULL;
+        ierr = DMPlexGetTransitiveClosure(dm, faces[i], PETSC_FALSE, &numPoints, &points);CHKERRQ(ierr);
+        elem_list[elem_ind[fs] + i] = points[2] +1;
+        ierr = DMPlexRestoreTransitiveClosure(dm, faces[i], PETSC_FALSE, &numPoints, &points);CHKERRQ(ierr);
+        
+        /* Side List */
+        points = NULL;
+        ierr = DMPlexGetTransitiveClosure(dm, elem_list[elem_ind[fs] + i]-1, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+        for (j=1; j<numPoints; ++j) {
+          if (points[j*2]==faces[i]) {break;}
+        }
+        /* Convert HEX sides */
+        if (numPoints == 27) {
+          if      (j == 1) {j = 5;}
+          else if (j == 2) {j = 6;}
+          else if (j == 3) {j = 1;}
+          else if (j == 4) {j = 3;}
+          else if (j == 5) {j = 2;}
+          else if (j == 6) {j = 4;}
+        }
+        /* Convert TET sides */
+        if (numPoints == 15) {
+          --j;
+          if (j == 0) {j = 4;}
+        }
+        side_list[elem_ind[fs] + i] = j;
+        ierr = DMPlexRestoreTransitiveClosure(dm, elem_list[elem_ind[fs] + i]-1, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+        
+      }
+      ierr = ISRestoreIndices(stratumIS, &faces);CHKERRQ(ierr);
+      ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(fsIS, &fsIdx);CHKERRQ(ierr);
+    ierr = ISDestroy(&fsIS);CHKERRQ(ierr);
+    
+    /* Put side sets */
+    for (fs=0; fs<num_fs; ++fs) {
+      PetscStackCallStandard(ex_put_set,(exoid, EX_SIDE_SET, fsIdx[fs], &elem_list[elem_ind[fs]], &side_list[elem_ind[fs]]));
+    }
+    ierr = PetscFree3(elem_ind,elem_list,side_list);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  VecViewPlex_ExodusII_Nodal_Internal - Write a Vec corresponding to a nodal field to an exodus file
+
+  Collective on v
+
+  Input Parameters:
++ v  - The vector to be written
+. exoid - the exodus id of a file (obtained from ex_open or ex_create for instance)
+- step - the time step to write at (exodus steps are numbered starting from 1)
+
+  Notes:
+  The exodus result nodal variable index is obtained by comparing the Vec name and the
+  names of nodal variables declared in the exodus file. For instance for a Vec named "V"
+  the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
+  amongst all nodal variables.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: EXOGetVarIndex_Private(),DMPlexView_ExodusII_Internal(),VecLoadNodal_PlexEXO(),VecViewZonal_PlexEXO(),VecLoadZonal_PlexEXO()
+@*/
+PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
+{
+  MPI_Comm         comm;
+  PetscMPIInt      size;
+  DM               dm;
+  Vec              vNatural, vComp;
+  const PetscReal *varray;
+  const char      *vecname;
+  PetscInt         xs, xe, bs;
+  PetscBool        useNatural;
+  int              offset;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
+  useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
+  if (useNatural) {
+    ierr = DMGetGlobalVector(dm, &vNatural);CHKERRQ(ierr);
+    ierr = DMPlexGlobalToNaturalBegin(dm, v, vNatural);CHKERRQ(ierr);
+    ierr = DMPlexGlobalToNaturalEnd(dm, v, vNatural);CHKERRQ(ierr);
+  } else {
+    vNatural = v;
+  }
+  /* Get the location of the variable in the exodus file */
+  ierr = PetscObjectGetName((PetscObject) v, &vecname);CHKERRQ(ierr);
+  ierr = EXOGetVarIndex_Private(exoid, EX_NODAL, vecname, &offset);CHKERRQ(ierr);
+  if (!offset) SETERRQ1(comm, PETSC_ERR_FILE_UNEXPECTED, "Cannot locate nodal variable %s in exodus file\n", vecname);
+  /* Write local chunk of the result in the exodus file
+     exodus stores each component of a vector-valued field as a separate variable.
+     We assume that they are stored sequentially */
+  ierr = VecGetOwnershipRange(vNatural, &xs, &xe);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vNatural, &bs);CHKERRQ(ierr);
+  if (bs == 1) {
+    ierr = VecGetArrayRead(vNatural, &varray);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_put_partial_var,(exoid, step, EX_NODAL, offset, 1, xs+1, xe-xs, varray));
+    ierr = VecRestoreArrayRead(vNatural, &varray);CHKERRQ(ierr);
+  } else {
+    IS       compIS;
+    PetscInt c;
+
+    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    for (c = 0; c < bs; ++c) {
+      ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
+      ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(vComp, &varray);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_put_partial_var,(exoid, step, EX_NODAL, offset+c, 1, xs/bs+1, (xe-xs)/bs, varray));
+      ierr = VecRestoreArrayRead(vComp, &varray);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&compIS);CHKERRQ(ierr);
+  }
+  if (useNatural) {ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*
+  VecLoadPlex_ExodusII_Nodal_Internal - Read a Vec corresponding to a nodal field from an exodus file
+
+  Collective on v
+
+  Input Parameters:
++ v  - The vector to be written
+. exoid - the exodus id of a file (obtained from ex_open or ex_create for instance)
+- step - the time step to read at (exodus steps are numbered starting from 1)
+
+  Notes:
+  The exodus result nodal variable index is obtained by comparing the Vec name and the
+  names of nodal variables declared in the exodus file. For instance for a Vec named "V"
+  the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
+  amongst all nodal variables.
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: EXOGetVarIndex_Private(), DMPlexView_ExodusII_Internal(), VecViewPlex_ExodusII_Nodal_Internal(), VecViewZonal_PlexEXO(), VecLoadZonal_PlexEXO()
+*/
+PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
+{
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  DM             dm;
+  Vec            vNatural, vComp;
+  PetscReal     *varray;
+  const char    *vecname;
+  PetscInt       xs, xe, bs;
+  PetscBool      useNatural;
+  int            offset;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
+  ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
+  useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
+  if (useNatural) {ierr = DMGetGlobalVector(dm,&vNatural);CHKERRQ(ierr);}
+  else            {vNatural = v;}
+  /* Get the location of the variable in the exodus file */
+  ierr = PetscObjectGetName((PetscObject) v, &vecname);CHKERRQ(ierr);
+  ierr = EXOGetVarIndex_Private(exoid, EX_NODAL, vecname, &offset);CHKERRQ(ierr);
+  if (!offset) SETERRQ1(comm, PETSC_ERR_FILE_UNEXPECTED, "Cannot locate nodal variable %s in exodus file", vecname);
+  /* Read local chunk from the file */
+  ierr = VecGetOwnershipRange(vNatural, &xs, &xe);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vNatural, &bs);CHKERRQ(ierr);
+  if (bs == 1) {
+    ierr = VecGetArray(vNatural, &varray);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_get_partial_var,(exoid, step, EX_NODAL, offset, 1, xs+1, xe-xs, varray));
+    ierr = VecRestoreArray(vNatural, &varray);CHKERRQ(ierr);
+  } else {
+    IS       compIS;
+    PetscInt c;
+
+    ierr = ISCreateStride(PETSC_COMM_SELF, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);
+    for (c = 0; c < bs; ++c) {
+      ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
+      ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+      ierr = VecGetArray(vComp, &varray);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_partial_var,(exoid, step, EX_NODAL, offset+c, 1, xs/bs+1, (xe-xs)/bs, varray));
+      ierr = VecRestoreArray(vComp, &varray);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&compIS);CHKERRQ(ierr);
+  }
+  if (useNatural) {
+    ierr = DMPlexNaturalToGlobalBegin(dm, vNatural, v);CHKERRQ(ierr);
+    ierr = DMPlexNaturalToGlobalEnd(dm, vNatural, v);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  VecViewPlex_ExodusII_Zonal_Internal - Write a Vec corresponding to a zonal (cell based) field to an exodus file
+
+  Collective on v
+
+  Input Parameters:
++ v  - The vector to be written
+. exoid - the exodus id of a file (obtained from ex_open or ex_create for instance)
+- step - the time step to write at (exodus steps are numbered starting from 1)
+
+  Notes:
+  The exodus result zonal variable index is obtained by comparing the Vec name and the
+  names of zonal variables declared in the exodus file. For instance for a Vec named "V"
+  the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
+  amongst all zonal variables.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: EXOGetVarIndex_Private(),DMPlexView_ExodusII_Internal(),VecViewPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Nodal_Internal(),VecLoadPlex_ExodusII_Zonal_Internal()
+*/
+PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
+{
+  MPI_Comm          comm;
+  PetscMPIInt       size;
+  DM                dm;
+  Vec               vNatural, vComp;
+  const PetscReal  *varray;
+  const char       *vecname;
+  PetscInt          xs, xe, bs;
+  PetscBool         useNatural;
+  int               offset;
+  IS                compIS;
+  PetscInt         *csSize, *csID;
+  PetscInt          numCS, set, csxs = 0;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)v, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
+  useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
+  if (useNatural) {
+    ierr = DMGetGlobalVector(dm, &vNatural);CHKERRQ(ierr);
+    ierr = DMPlexGlobalToNaturalBegin(dm, v, vNatural);CHKERRQ(ierr);
+    ierr = DMPlexGlobalToNaturalEnd(dm, v, vNatural);CHKERRQ(ierr);
+  } else {
+    vNatural = v;
+  }
+  /* Get the location of the variable in the exodus file */
+  ierr = PetscObjectGetName((PetscObject) v, &vecname);CHKERRQ(ierr);
+  ierr = EXOGetVarIndex_Private(exoid, EX_ELEM_BLOCK, vecname, &offset);CHKERRQ(ierr);
+  if (!offset) SETERRQ1(comm, PETSC_ERR_FILE_UNEXPECTED, "Cannot locate zonal variable %s in exodus file\n", vecname);
+  /* Write local chunk of the result in the exodus file
+     exodus stores each component of a vector-valued field as a separate variable.
+     We assume that they are stored sequentially
+     Zonal variables are accessed one element block at a time, so we loop through the cell sets,
+     but once the vector has been reordered to natural size, we cannot use the label informations
+     to figure out what to save where. */
+  numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
+  ierr = PetscMalloc2(numCS, &csID, numCS, &csSize);CHKERRQ(ierr);
+  PetscStackCallStandard(ex_get_ids,(exoid, EX_ELEM_BLOCK, csID));
+  for (set = 0; set < numCS; ++set) {
+    ex_block block;
+
+    block.id   = csID[set];
+    block.type = EX_ELEM_BLOCK;
+    PetscStackCallStandard(ex_get_block_param,(exoid, &block));
+    csSize[set] = block.num_entry;
+  }
+  ierr = VecGetOwnershipRange(vNatural, &xs, &xe);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vNatural, &bs);CHKERRQ(ierr);
+  if (bs > 1) {ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);}
+  for (set = 0; set < numCS; set++) {
+    PetscInt csLocalSize, c;
+
+    /* range of indices for set setID[set]: csxs:csxs + csSize[set]-1
+       local slice of zonal values:         xs/bs,xm/bs-1
+       intersection:                        max(xs/bs,csxs),min(xm/bs-1,csxs + csSize[set]-1) */
+    csLocalSize = PetscMax(0, PetscMin(xe/bs, csxs+csSize[set]) - PetscMax(xs/bs, csxs));
+    if (bs == 1) {
+      ierr = VecGetArrayRead(vNatural, &varray);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_put_partial_var,(exoid, step, EX_ELEM_BLOCK, offset, csID[set], PetscMax(xs-csxs, 0)+1, csLocalSize, &varray[PetscMax(0, csxs-xs)]));
+      ierr = VecRestoreArrayRead(vNatural, &varray);CHKERRQ(ierr);
+    } else {
+      for (c = 0; c < bs; ++c) {
+        ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
+        ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(vComp, &varray);CHKERRQ(ierr);
+        PetscStackCallStandard(ex_put_partial_var,(exoid, step, EX_ELEM_BLOCK, offset+c, csID[set], PetscMax(xs/bs-csxs, 0)+1, csLocalSize, &varray[PetscMax(0, csxs-xs/bs)]));
+        ierr = VecRestoreArrayRead(vComp, &varray);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+      }
+    }
+    csxs += csSize[set];
+  }
+  ierr = PetscFree2(csID, csSize);CHKERRQ(ierr);
+  if (bs > 1) {ierr = ISDestroy(&compIS);CHKERRQ(ierr);}
+  if (useNatural) {ierr = DMRestoreGlobalVector(dm,&vNatural);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*
+  VecLoadPlex_ExodusII_Zonal_Internal - Read a Vec corresponding to a zonal (cell based) field from an exodus file
+
+  Collective on v
+
+  Input Parameters:
++ v  - The vector to be written
+. exoid - the exodus id of a file (obtained from ex_open or ex_create for instance)
+- step - the time step to read at (exodus steps are numbered starting from 1)
+
+  Notes:
+  The exodus result zonal variable index is obtained by comparing the Vec name and the
+  names of zonal variables declared in the exodus file. For instance for a Vec named "V"
+  the location in the exodus file will be the first match of "V", "V_X", "V_XX", "V_1", or "V_11"
+  amongst all zonal variables.
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: EXOGetVarIndex_Private(), DMPlexView_ExodusII_Internal(), VecViewPlex_ExodusII_Nodal_Internal(), VecLoadPlex_ExodusII_Nodal_Internal(), VecLoadPlex_ExodusII_Zonal_Internal()
+*/
+PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
+{
+  MPI_Comm          comm;
+  PetscMPIInt       size;
+  DM                dm;
+  Vec               vNatural, vComp;
+  PetscReal        *varray;
+  const char       *vecname;
+  PetscInt          xs, xe, bs;
+  PetscBool         useNatural;
+  int               offset;
+  IS                compIS;
+  PetscInt         *csSize, *csID;
+  PetscInt          numCS, set, csxs = 0;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
+  useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
+  if (useNatural) {ierr = DMGetGlobalVector(dm,&vNatural);CHKERRQ(ierr);}
+  else            {vNatural = v;}
+  /* Get the location of the variable in the exodus file */
+  ierr = PetscObjectGetName((PetscObject) v, &vecname);CHKERRQ(ierr);
+  ierr = EXOGetVarIndex_Private(exoid, EX_ELEM_BLOCK, vecname, &offset);CHKERRQ(ierr);
+  if (!offset) SETERRQ1(comm, PETSC_ERR_FILE_UNEXPECTED, "Cannot locate zonal variable %s in exodus file\n", vecname);
+  /* Read local chunk of the result in the exodus file
+     exodus stores each component of a vector-valued field as a separate variable.
+     We assume that they are stored sequentially
+     Zonal variables are accessed one element block at a time, so we loop through the cell sets,
+     but once the vector has been reordered to natural size, we cannot use the label informations
+     to figure out what to save where. */
+  numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
+  ierr = PetscMalloc2(numCS, &csID, numCS, &csSize);CHKERRQ(ierr);
+  PetscStackCallStandard(ex_get_ids,(exoid, EX_ELEM_BLOCK, csID));
+  for (set = 0; set < numCS; ++set) {
+    ex_block block;
+
+    block.id   = csID[set];
+    block.type = EX_ELEM_BLOCK;
+    PetscStackCallStandard(ex_get_block_param,(exoid, &block));
+    csSize[set] = block.num_entry;
+  }
+  ierr = VecGetOwnershipRange(vNatural, &xs, &xe);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vNatural, &bs);CHKERRQ(ierr);
+  if (bs > 1) {ierr = ISCreateStride(comm, (xe-xs)/bs, xs, bs, &compIS);CHKERRQ(ierr);}
+  for (set = 0; set < numCS; ++set) {
+    PetscInt csLocalSize, c;
+
+    /* range of indices for set setID[set]: csxs:csxs + csSize[set]-1
+       local slice of zonal values:         xs/bs,xm/bs-1
+       intersection:                        max(xs/bs,csxs),min(xm/bs-1,csxs + csSize[set]-1) */
+    csLocalSize = PetscMax(0, PetscMin(xe/bs, csxs+csSize[set]) - PetscMax(xs/bs, csxs));
+    if (bs == 1) {
+      ierr = VecGetArray(vNatural, &varray);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_partial_var,(exoid, step, EX_ELEM_BLOCK, offset, csID[set], PetscMax(xs-csxs, 0)+1, csLocalSize, &varray[PetscMax(0, csxs-xs)]));
+      ierr = VecRestoreArray(vNatural, &varray);CHKERRQ(ierr);
+    } else {
+      for (c = 0; c < bs; ++c) {
+        ierr = ISStrideSetStride(compIS, (xe-xs)/bs, xs+c, bs);CHKERRQ(ierr);
+        ierr = VecGetSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+        ierr = VecGetArray(vComp, &varray);CHKERRQ(ierr);
+        PetscStackCallStandard(ex_get_partial_var,(exoid, step, EX_ELEM_BLOCK, offset+c, csID[set], PetscMax(xs/bs-csxs, 0)+1, csLocalSize, &varray[PetscMax(0, csxs-xs/bs)]));
+        ierr = VecRestoreArray(vComp, &varray);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(vNatural, compIS, &vComp);CHKERRQ(ierr);
+      }
+    }
+    csxs += csSize[set];
+  }
+  ierr = PetscFree2(csID, csSize);CHKERRQ(ierr);
+  if (bs > 1) {ierr = ISDestroy(&compIS);CHKERRQ(ierr);}
+  if (useNatural) {
+    ierr = DMPlexNaturalToGlobalBegin(dm, vNatural, v);CHKERRQ(ierr);
+    ierr = DMPlexNaturalToGlobalEnd(dm, vNatural, v);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*@C
-  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+  DMPlexCreateExodusFromFile - Create a DMPlex mesh from an ExodusII file.
 
   Collective on comm
 
@@ -29,7 +867,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_EXODUSII)
-  int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+  int   CPU_word_size = sizeof(PetscReal), IO_word_size = 0, exoid = -1;
   float version;
 #endif
 
@@ -42,7 +880,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
     if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
   }
   ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
-  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+  if (!rank) {PetscStackCallStandard(ex_close,(exoid));}
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
@@ -91,8 +929,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
     ierr = PetscMemzero(title,(PETSC_MAX_PATH_LEN+1)*sizeof(char));CHKERRQ(ierr);
-    ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
-    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ExodusII ex_get_init() failed with error code %D\n",ierr);
+    PetscStackCallStandard(ex_get_init,(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs));
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
   }
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
@@ -115,22 +952,22 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get cell sets IDs */
     ierr = PetscMalloc1(num_cs, &cs_id);CHKERRQ(ierr);
-    ierr = ex_get_ids (exoid, EX_ELEM_BLOCK, cs_id);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_get_ids,(exoid, EX_ELEM_BLOCK, cs_id));
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
     /* First set sizes */
     for (cs = 0, c = 0; cs < num_cs; cs++) {
-      ierr = ex_get_block(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr));
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
       }
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (cs = 0, c = 0; cs < num_cs; cs++) {
-      ierr = ex_get_block(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, 0, 0, &num_attr);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_block,(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, 0, 0, &num_attr));
       ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,&cs_connect,num_vertex_per_cell,&cone);CHKERRQ(ierr);
-      ierr = ex_get_conn (exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL);CHKERRQ(ierr);
-      /* EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
+      PetscStackCallStandard(ex_get_conn,(exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL));
+      /* EXO uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
@@ -159,16 +996,9 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    /* Maintain Cell Sets label */
-    {
-      DMLabel label;
-
-      ierr = DMRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
-      if (label) {ierr = DMAddLabel(idm, label);CHKERRQ(ierr);}
-    }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
@@ -185,11 +1015,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get vertex set ids */
     ierr = PetscMalloc1(num_vs, &vs_id);CHKERRQ(ierr);
-    ierr = ex_get_ids(exoid, EX_NODE_SET, vs_id);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_get_ids,(exoid, EX_NODE_SET, vs_id));
     for (vs = 0; vs < num_vs; ++vs) {
-      ierr = ex_get_set_param(exoid, EX_NODE_SET, vs_id[vs], &num_vertex_in_set, NULL);
+      PetscStackCallStandard(ex_get_set_param,(exoid, EX_NODE_SET, vs_id[vs], &num_vertex_in_set, NULL));
       ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
-      ierr = ex_get_set(exoid, EX_NODE_SET, vs_id[vs], vs_vertex_list, NULL);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_set,(exoid, EX_NODE_SET, vs_id[vs], vs_vertex_list, NULL));
       for (v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
@@ -215,10 +1045,10 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
-    float *x, *y, *z;
+    PetscReal *x, *y, *z;
 
     ierr = PetscMalloc3(numVertices,&x,numVertices,&y,numVertices,&z);CHKERRQ(ierr);
-    ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_get_coord,(exoid, x, y, z));
     if (dim > 0) {
       for (v = 0; v < numVertices; ++v) coords[v*dim+0] = x[v];
     }
@@ -248,11 +1078,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get side set ids */
     ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
-    ierr = ex_get_ids(exoid, EX_SIDE_SET, fs_id);CHKERRQ(ierr);
+    PetscStackCallStandard(ex_get_ids,(exoid, EX_SIDE_SET, fs_id));
     for (fs = 0; fs < num_fs; ++fs) {
-      ierr = ex_get_set_param(exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_set_param,(exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL));
       ierr = PetscMalloc2(num_side_in_set,&fs_vertex_count_list,num_side_in_set*4,&fs_vertex_list);CHKERRQ(ierr);
-      ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
+      PetscStackCallStandard(ex_get_side_set_node_list,(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list));
       /* Get the specific name associated with this side set ID. */
       int fs_name_err = ex_get_name(exoid, EX_SIDE_SET, fs_id[fs], fs_name);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {

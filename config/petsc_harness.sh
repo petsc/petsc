@@ -7,9 +7,16 @@ TIMEOUT=60
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
 fi
+if test -d "${rundir}" && test -n "${rundir}"; then
+  rm -f ${rundir}/*.tmp ${rundir}/*.err ${rundir}/*.out
+fi
 mkdir -p ${rundir}
-if test -n "${runfiles}"; then 
-  cp ${runfiles} ${rundir}
+if test -n "${runfiles}"; then
+  for runfile in ${runfiles}; do
+      subdir=`dirname ${runfile}`
+      mkdir -p ${rundir}/${subdir}
+      cp -r ${runfile} ${rundir}/${subdir}
+  done
 fi
 cd ${rundir}
 
@@ -32,6 +39,7 @@ OPTIONS
   -j ................ Pass -j to petscdiff (just use diff)
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
+  -M ................ Update alt files using petscdiff
   -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
@@ -48,7 +56,7 @@ cleanup=false
 debugger=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mn:t:vV" arg
+while getopts "a:cde:fhjJ:mMn:t:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -61,6 +69,7 @@ do
     j ) diff_flags="-j"      ;;  
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
+    M ) diff_flags="-M"      ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
@@ -76,7 +85,8 @@ done
 shift $(( $OPTIND - 1 ))
 
 # Individual tests can extend the default
-TIMEOUT=$((TIMEOUT*timeoutfactor))
+export MPIEXEC_TIMEOUT=$((TIMEOUT*timeoutfactor))
+STARTTIME=`date +%s`
 
 if test -n "$extra_args"; then
   args="$args $extra_args"
@@ -101,42 +111,30 @@ function petsc_testrun() {
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
   filter=$5
-  job_control=true
   cmd="$1 > $2 2> $3"
   if test -n "$filter"; then
     if test "${filter:0:6}"=="Error:"; then
-      job_control=false      # redirection error method causes job control probs
       filter=${filter##Error:}
-      cmd="$1 2>&1 | cat > $2 2> $3"
+      cmd="$1 2>&1 | cat > $2"
     fi
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
-  if $job_control; then
-    # The action:
-    eval "($cmd) &"
-    pid=$!
-    # Put a watcher process in that will kill a job that exceeds limit
-    $petsc_dir/config/watchtime.sh $pid $TIMEOUT &
-    watcher=$!
-
-    # See if the job we want finishes
-    wait $pid 2> /dev/null
-    cmd_res=$?
-    if ps -p $watcher > /dev/null; then
-      # Keep processes tidy by killing watcher
-      pkill -13 -P $watcher
-      wait $watcher 2>/dev/null  # Wait used here to capture the kill message
-    else
-      # Timeout
+  eval "{ time -p $cmd ; } 2>> timing.out"
+  cmd_res=$?
+  touch "$2" "$3"
+  # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
+  # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
+  if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
+        fgrep -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
+        fgrep -q -s MPIEXEC_TIMEOUT "$2" "$3" || \
+        fgrep -q -s 'APPLICATION TERMINATED WITH THE EXIT STRING: job ending due to timeout' "$2" "$3" || \
+        grep -q -s "Timeout after [0-9]* seconds. Terminating job" "$2" "$3"; then
+    timed_out=1
+    # If timed out, then ensure non-zero error code
+    if [ $cmd_res -eq 0 ]; then
       cmd_res=1
-      echo "Exceeded timeout limit of $TIMEOUT s" > $3
     fi
-  else
-    # The action -- assume no timeout needed
-    eval "$cmd"
-    # We are testing error codes so just make it pass
-    cmd_res=0
   fi
 
   # Handle filters separately and assume no timeout check needed
@@ -144,7 +142,6 @@ function petsc_testrun() {
     cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
     echo "$cmd" >> ${tlabel}.sh
     eval "$cmd"
-    let cmd_res+=$?
   fi
 
   # Report errors
@@ -161,7 +158,16 @@ function petsc_testrun() {
     else
       printf "not ok $tlabel\n" | tee -a ${testlogfile}
     fi
-    awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+    if [ -n "$timed_out" ]; then
+      printf "#\tExceeded timeout limit of $MPIEXEC_TIMEOUT s\n" | tee -a ${testlogfile}
+    else
+      # We've had tests fail but stderr->stdout. Fix with this test.
+      if test -s $3; then
+        awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+      else
+        awk '{print "#\t" $0}' < $2 | tee -a ${testlogfile}
+      fi
+    fi
     let failed=$failed+1
     failures="$failures $tlabel"
   fi
@@ -188,6 +194,9 @@ function petsc_testend() {
   if test ${skip} -gt 0; then
     printf "skip $skip\n" >> $logfile
   fi
+  ENDTIME=`date +%s`
+  timing=`touch timing.out && egrep '(user|sys)' timing.out | awk '{sum += sprintf("%.2f",$2)} END {printf "%.2f\n",sum}'`
+  printf "time $timing\n" >> $logfile
   if $cleanup; then
     echo "Cleaning up"
     /bin/rm -f $rmfiles
@@ -199,7 +208,8 @@ function petsc_mpiexec_valgrind() {
   npopt=$1;shift
   np=$1;shift
 
-  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_dir/bin/maint/petsc-val.supp"
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp"
+
   $mpiexec $npopt $np $valgrind $*
 }
 export LC_ALL=C

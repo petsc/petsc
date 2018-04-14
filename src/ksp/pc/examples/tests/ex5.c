@@ -12,11 +12,12 @@ This example also demonstrates matrix-free methods\n\n";
 /*
   This is not a good example to understand the use of multigrid with PETSc.
 */
+
 #include <petscksp.h>
 
 PetscErrorCode  residual(Mat,Vec,Vec,Vec);
 PetscErrorCode  gauss_seidel(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
-PetscErrorCode  jacobi(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
+PetscErrorCode  jacobi_smoother(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode  interpolate(Mat,Vec,Vec,Vec);
 PetscErrorCode  restrct(Mat,Vec,Vec);
 PetscErrorCode  Create1dLaplacian(PetscInt,Mat*);
@@ -101,7 +102,7 @@ int main(int Argc,char **Args)
     */
     ierr = PCShellSetApplyRichardson(pc,gauss_seidel);CHKERRQ(ierr);
     if (use_jacobi) {
-      ierr = PCShellSetApplyRichardson(pc,jacobi);CHKERRQ(ierr);
+      ierr = PCShellSetApplyRichardson(pc,jacobi_smoother);CHKERRQ(ierr);
     }
     ierr = KSPSetType(ksp[i],KSPRICHARDSON);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE);CHKERRQ(ierr);
@@ -237,7 +238,7 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
+PetscErrorCode jacobi_smoother(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n,n1;
   PetscErrorCode    ierr;
@@ -381,3 +382,10 @@ PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 }
 
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

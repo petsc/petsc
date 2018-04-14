@@ -1,6 +1,7 @@
 
 static char help[] = "Demonstrates use of color map\n";
 
+
 #include <petscsys.h>
 #include <petscdraw.h>
 
@@ -28,3 +29,14 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+     requires: x
+
+   test:
+     output_file: output/ex1_1.out
+
+TEST*/

@@ -26,6 +26,25 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     PetscViewerFormat format;
 
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_LOAD_BALANCE) {
+      PetscInt      i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal;
+      DMDALocalInfo info;
+      PetscMPIInt   size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      nzlocal = info.xm*info.ym;
+      ierr = PetscMalloc1(size,&nz);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+      for (i=0; i<(PetscInt)size; i++) {
+        nmax = PetscMax(nmax,nz[i]);
+        nmin = PetscMin(nmin,nz[i]);
+        navg += nz[i];
+      }
+      ierr = PetscFree(nz);CHKERRQ(ierr);
+      navg = navg/size;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -428,20 +447,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*dof;
   ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
-  /* generate appropriate vector scatters */
-  /* local to global inserts non-ghost point region into global */
-  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
-  left  = xs - Xs; right = left + x;
-  down  = ys - Ys; up = down + y;
-  count = 0;
-  for (i=down; i<up; i++) {
-    for (j=left; j<right; j++) {
-      idx[count++] = i*(Xe-Xs) + j;
-    }
-  }
+  /* generate global to local vector scatter and local to global mapping*/
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
+  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   if (stencil_type == DMDA_STENCIL_BOX) {
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);

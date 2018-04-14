@@ -55,9 +55,19 @@ int main(int argc, char *argv[])
   ierr = DMRestoreGlobalVector(daX, &basisX);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daY, &basisY);CHKERRQ(ierr);
   /* Cleanup */
+  ierr = MPI_Comm_free(&commX);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&commY);CHKERRQ(ierr);
   ierr = DMDestroy(&daX);CHKERRQ(ierr);
   ierr = DMDestroy(&daY);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+TEST*/

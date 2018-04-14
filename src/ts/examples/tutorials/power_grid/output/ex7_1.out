@@ -1,0 +1,18 @@
+    0 SNES Function norm 6.499662468802e-02 
+    1 SNES Function norm 2.926183624856e-14 
+    0 SNES Function norm 6.499304611621e-02 
+    1 SNES Function norm 5.276344759239e-08 
+    0 SNES Function norm 6.161769323446e-02 
+    1 SNES Function norm 4.214103188935e-08 
+    0 SNES Function norm 2.086396195359e-04 
+    1 SNES Function norm 2.486850729323e-10 
+sum(p)*dw*dtheta at t = 0.005000 = 1.000000
+    0 SNES Function norm 6.487186058126e-02 
+    1 SNES Function norm 2.460530705938e-13 
+    0 SNES Function norm 6.485704918767e-02 
+    1 SNES Function norm 3.255004205679e-10 
+    0 SNES Function norm 6.133853869110e-02 
+    1 SNES Function norm 2.331622430391e-10 
+    0 SNES Function norm 2.064152232074e-03 
+    1 SNES Function norm 1.472968437375e-11 
+sum(p)*dw*dtheta at t = 0.055000 = 1.000000

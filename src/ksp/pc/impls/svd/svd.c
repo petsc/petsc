@@ -258,17 +258,9 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = PCSVDGetVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDGetVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
-#else
-  ierr = MatMultHermitianTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
-#endif
+  ierr = MatMult(jac->Vt,xred,work);CHKERRQ(ierr);
   ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
-#else
-  ierr = MatMultHermitianTranspose(jac->U,xred,work);CHKERRQ(ierr);
-#endif
+  ierr = MatMult(jac->U,work,yred);CHKERRQ(ierr);
   ierr = PCSVDRestoreVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDRestoreVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -38,7 +38,7 @@ static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
 }
 
 /*@
-    PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may
+    PCFactorSetUpMatSolverType - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may
        set the options for that particular factorization object.
 
   Input Parameter:
@@ -46,18 +46,18 @@ static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
 
   Notes: After you have called this function (which has to be after the KSPSetOperators() or PCSetOperators()) you can call PCFactorGetMatrix() and then set factor options on that matrix.
 
-.seealso: PCFactorSetMatSolverPackage(), PCFactorGetMatrix()
+.seealso: PCFactorSetMatSolverType(), PCFactorGetMatrix()
 
   Level: intermediate
 
 @*/
-PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetUpMatSolverPackage_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetUpMatSolverType_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 }
 
 /*@C
-   PCFactorSetMatSolverPackage - sets the software that is used to perform the factorization
+   PCFactorSetMatSolverType - sets the software that is used to perform the factorization
 
    Logically Collective on PC
 
@@ -423,7 +423,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 -  stype - for example, superlu, superlu_dist
 
    Options Database Key:
-.  -pc_factor_mat_solver_package <stype> - petsc, superlu, superlu_dist, mumps, cusparse
+.  -pc_factor_mat_solver_type <stype> - petsc, superlu, superlu_dist, mumps, cusparse
 
    Level: intermediate
 
@@ -433,21 +433,21 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
+.seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
 @*/
-PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
+PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetMatSolverPackage_C",(PC,const MatSolverPackage),(pc,stype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetMatSolverType_C",(PC,MatSolverType),(pc,stype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PCFactorGetMatSolverPackage - gets the software that is used to perform the factorization
+   PCFactorGetMatSolverType - gets the software that is used to perform the factorization
 
    Not Collective
 
@@ -462,16 +462,16 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
+.seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
 @*/
-PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
+PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
 {
-  PetscErrorCode ierr,(*f)(PC,const MatSolverPackage*);
+  PetscErrorCode ierr,(*f)(PC,MatSolverType*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } else {
@@ -724,9 +724,9 @@ PetscErrorCode PCFactorInitialize(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",PCFactorGetShiftType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",PCFactorGetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverType_C",PCFactorGetMatSolverType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverType_C",PCFactorSetMatSolverType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverType_C",PCFactorSetUpMatSolverType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);

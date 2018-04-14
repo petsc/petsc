@@ -6,6 +6,8 @@ static char help[] = "Solves a tridiagonal linear system.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -191,3 +193,24 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -ksp_monitor_short -ksp_rtol 1e-6 -ksp_type pipefgmres
+
+TEST*/

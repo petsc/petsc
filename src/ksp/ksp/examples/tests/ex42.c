@@ -66,3 +66,16 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_type minres -pc_type none -ksp_converged_reason
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -ksp_type minres -pc_type none -ksp_converged_reason
+
+TEST*/

@@ -38,7 +38,6 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
-  TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscErrorCode               ierr;
 
@@ -58,11 +57,14 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
+  tao->reason = TAO_CONTINUE_ITERATING;
   while (PETSC_TRUE) {
     ierr=PetscInfo3(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
     /* Check the termination criteria */
-    ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t,&reason);CHKERRQ(ierr);
-    if (reason!=TAO_CONTINUE_ITERATING) break;
+    ierr = TaoLogConvergenceHistory(tao,ssls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason!=TAO_CONTINUE_ITERATING) break;
     tao->niter++;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
@@ -121,11 +123,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
   ssls->rho = 2.1;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   /* Note: linesearch objective and objectivegradient routines are set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
 
   /* Override default settings (unless already changed) */
@@ -142,5 +146,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-
-

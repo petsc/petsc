@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import cPickle
+import string
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -97,13 +98,13 @@ class Configure(config.base.Configure):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','options')):
+    for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+    for utility in sorted(os.listdir(os.path.join('config','BuildSystem','config','utilities'))):
       self.registerPythonFile(utility,'config.utilities')
 
-    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+    for package in sorted(os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages'))):
       obj = self.registerPythonFile(package,'config.packages')
       if obj:
         obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)
@@ -143,7 +144,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes','immintrin','zmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
@@ -174,19 +175,19 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
-    fd.write('cflags_dep="'+self.compilers.dependenciesGenerationFlag.get('C','')+'"\n')
-    fd.write('ldflag_rpath="'+self.setCompilers.CSharedLinkerFlag+'"\n')
+    fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+    fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
+    fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
 
     fd.write('\n')
@@ -197,8 +198,7 @@ class Configure(config.base.Configure):
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
     # Remove RPATH flags from library list.  User can add them using
     # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
-    lflags = self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in lflags if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in self.packagelibs+self.complibs if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
 
     fd.close()
     return
@@ -228,12 +228,12 @@ proc ModulesHelp { } {
 }
 module-whatis "PETSc - Portable, Extensible Toolkit for Scientific Computation"
 
-set petsc_dir   %s
-set petsc_arch  %s
+set petsc_dir   "%s"
+set petsc_arch  "%s"
 
-setenv PETSC_ARCH $petsc_arch
-setenv PETSC_DIR $petsc_dir
-prepend-path PATH %s
+setenv PETSC_ARCH "$petsc_arch"
+setenv PETSC_DIR "$petsc_dir"
+prepend-path PATH "%s"
 ''' % (self.petscdir.version, installdir, installarch, installpath))
     fd.close()
     return
@@ -246,6 +246,18 @@ prepend-path PATH %s
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
       self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
+    self.setCompilers.pushLanguage('C')
+    compiler = self.setCompilers.getCompiler()
+    if compiler.endswith('mpicc') or compiler.endswith('mpiicc'):
+      try:
+        output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+        compiler = output.split(' ')[0]
+        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n')+'"')
+      except:
+        self.addDefine('MPICC_SHOW','"Unavailable"')
+    else:
+      self.addDefine('MPICC_SHOW','"Unavailable"')
+    self.setCompilers.popLanguage()
 #-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
@@ -368,31 +380,30 @@ prepend-path PATH %s
     # print include and lib for makefiles
     self.framework.packages.reverse()
     includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
-    libs = []
+    self.packagelibs = []
     for i in self.framework.packages:
       if i.useddirectly:
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      if i.linkedbypetsc: libs.extend(i.lib)
+      if i.linkedbypetsc: self.packagelibs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
-    self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
       self.petsclib = '-lpetsc'
     else:
       self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
-    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split())
+    self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
+    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+self.packagelibs+self.complibs)
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
-      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
-    else:
-      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
-    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
+      string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
+
+    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
     self.allincludes = self.headers.toStringNoDupes(includes)
     self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
     self.PETSC_CC_INCLUDES = self.allincludes
@@ -402,7 +413,6 @@ prepend-path PATH %s
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
 
-    self.addMakeMacro('DESTDIR',self.installdir.dir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
@@ -413,7 +423,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.PETSC_WITH_EXTERNAL_LIB)
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -460,6 +470,7 @@ prepend-path PATH %s
 
   def dumpMachineInfo(self):
     import platform
+    import datetime
     import time
     import script
     def escape(s):
@@ -467,22 +478,26 @@ prepend-path PATH %s
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
-    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
+    buildhost = platform.node()
+    if os.environ.get('SOURCE_DATE_EPOCH'):
+      buildhost = "reproducible"
+    buildtime = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
+    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (buildtime, buildhost))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
-    fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.petscdir.dir)))
-    fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.arch.arch)))
+    fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.installdir.petscDir)))
+    fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.installdir.petscArch)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
+    fd.write('\"Using C compiler: %s %s \\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
+      fd.write('\"Using Fortran compiler: %s %s  %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+escape(os.path.join(self.petscdir.dir, self.arch.arch, 'include')), '-I'+escape(os.path.join(self.petscdir.dir, 'include')), escape(self.PETSC_CC_INCLUDES)))
+    fd.write('\"Using include paths: %s\\n\"\n' % (escape(self.PETSC_CC_INCLUDES).replace(self.petscdir.dir,self.installdir.petscDir).replace(self.arch.arch,self.installdir.petscArch)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -492,7 +507,7 @@ prepend-path PATH %s
       self.setCompilers.pushLanguage('FC')
       fd.write('\"Using Fortran linker: %s\\n\"\n' % (escape(self.setCompilers.getLinker())))
       self.setCompilers.popLanguage()
-    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(self.petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.installdir.petscDir, self.installdir.petscArch, 'lib')), escape(os.path.join(self.installdir.petscDir, self.installdir.petscArch, 'lib')), escape(self.petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
@@ -622,7 +637,7 @@ prepend-path PATH %s
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
     else:
       self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
@@ -636,9 +651,9 @@ prepend-path PATH %s
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
-      except (ImportError, KeyError), e:
+      except (ImportError, KeyError) as e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       self.argDB.readonly = oldRead
       if self.cmakeboot_success:
@@ -930,16 +945,17 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
-      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir, log = self.log)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.installdir.petscDir, log = self.log)
       self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
-      (petscdir,error,status) = self.executeShellCommand('cygpath -m '+self.petscdir.dir, log = self.log)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -m '+self.installdir.petscDir, log = self.log)
       self.addMakeMacro('wPETSC_DIR',petscdir)
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
-      self.addDefine('DIR', '"'+self.petscdir.dir+'"')
-      self.addMakeMacro('wPETSC_DIR',self.petscdir.dir)
+      self.addDefine('DIR','"'+self.installdir.petscDir+'"')
+      self.addMakeMacro('wPETSC_DIR',self.installdir.petscDir)
+    self.addDefine('ARCH','"'+self.installdir.petscArch+'"')
     return
 
 #-----------------------------------------------------------------------------------------------------
@@ -965,7 +981,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
-      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','petscvariables')+'\n')
+      fd.write('include '+os.path.join('$(PETSC_DIR)','$(PETSC_ARCH)','lib','petsc','conf','petscvariables')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
     elif os.path.isfile(conffile):
@@ -1007,8 +1023,8 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     try:
-      os.chmod(scriptName, 0775)
-    except OSError, e:
+      os.chmod(scriptName, 0o775)
+    except OSError as e:
       self.framework.logPrint('Unable to make reconfigure script executable:\n'+str(e))
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
@@ -1021,7 +1037,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
                                               '-@echo "========================================="'])
     else:
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
                                               '-@echo "========================================="'])
       return
 
@@ -1097,9 +1113,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
     self.executeTest(self.configureViewFromOptions)
-    # dummy rules, always needed except for remote builds
-    self.addMakeRule('remote','')
-    self.addMakeRule('remoteclean','')
 
     self.Dump()
     self.dumpConfigInfo()

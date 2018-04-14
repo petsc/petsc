@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v5.1.0-p4'
+    self.gitcommit         = 'v5.1.0-p5'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-metis']
     self.functions         = ['METIS_PartGraphKway']
@@ -35,3 +35,17 @@ class Configure(config.package.CMakePackage):
       args.append('-DMETIS_USE_LONGINDEX=1')
     args.append('-DMATH_LIB="'+self.libraries.toStringNoDupes(self.mathlib.lib)+'"')
     return args
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if not self.checkCompile('#include "metis.h"', '#if (IDXTYPEWIDTH != '+ str(self.getDefaultIndexSize())+')\n#error incompatible IDXTYPEWIDTH\n#endif'):
+      if self.defaultIndexSize == 64:
+        msg= '--with-64-bit-indices option requires a metis build with IDXTYPEWIDTH=64.\n'
+      else:
+        msg= 'IDXTYPEWIDTH=64 metis build appears to be specified for a default 32-bit-indices build of PETSc.\n'
+      raise RuntimeError('Metis specified is incompatible!\n'+msg+'Suggest using --download-metis for a compatible metis')
+
+    self.compilers.CPPFLAGS = oldFlags
+    return

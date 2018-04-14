@@ -39,7 +39,6 @@ typedef struct {
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
   Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage */
   Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage */
-  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose */
   Vec          VecCostIntegral0; /* backup for roll-backs due to events */
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
@@ -610,7 +609,6 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
   if(ts->vecs_sensip) {
     ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -621,57 +619,72 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   const PetscInt   s    = tab->s;
   const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
   PetscScalar     *w    = rk->work;
-  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu,*VecSensiTemp = rk->VecSensiTemp;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu;
   PetscInt         i,j,nadj;
   PetscReal        t = ts->ptime;
   PetscErrorCode   ierr;
   PetscReal        h = ts->time_step;
-  Mat              J,Jp;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
   for (i=s-1; i>=0; i--) {
-    rk->stage_time = t + h*(1.0-c[i]);
-    for (nadj=0; nadj<ts->numcost; nadj++) {
-      ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
-      for (j=i+1; j<s; j++) {
-        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);CHKERRQ(ierr);
+    Mat       J;
+    PetscReal stage_time = t + h*(1.0-c[i]);
+    PetscBool zero = PETSC_FALSE;
+
+    ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,stage_time,Y[i],J,J);CHKERRQ(ierr);
+    if (ts->vec_costintegral) {
+      ierr = TSAdjointComputeDRDYFunction(ts,stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
+    }
+    /* Stage values of mu */
+    if (ts->vecs_sensip) {
+      ierr = TSAdjointComputeRHSJacobian(ts,stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = TSAdjointComputeDRDPFunction(ts,stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
       }
     }
-    /* Stage values of lambda */
-    ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-    ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
-    if (ts->vec_costintegral) {
-      ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
-    }
+
+    if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      DM  dm;
+      Vec VecSensiTemp;
+
+      ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
+      /* Stage values of lambda */
+      if (!zero) {
+        ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp);CHKERRQ(ierr);
+        ierr = VecScale(VecSensiTemp,-h*b[i]);CHKERRQ(ierr);
+        for (j=i+1; j<s; j++) w[j-i-1]  = -h*A[j*s+i];
+        ierr = VecMAXPY(VecSensiTemp,s-i-1,w,&VecDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
+        ierr = MatMultTranspose(J,VecSensiTemp,VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      } else {
+        ierr = VecSet(VecDeltaLam[nadj*s+i],0);CHKERRQ(ierr);
+      }
       if (ts->vec_costintegral) {
         ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdy[nadj]);CHKERRQ(ierr);
       }
-    }
 
-    /* Stage values of mu */
-    if(ts->vecs_sensip) {
-      ierr = TSAdjointComputeRHSJacobian(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
-      if (ts->vec_costintegral) {
-        ierr = TSAdjointComputeDRDPFunction(ts,rk->stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
-      }
-
-      for (nadj=0; nadj<ts->numcost; nadj++) {
-        ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+      /* Stage values of mu */
+      if (ts->vecs_sensip) {
+        if (!zero) {
+          ierr = MatMultTranspose(ts->Jacp,VecSensiTemp,VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+        } else {
+          ierr = VecSet(VecDeltaMu[nadj*s+i],0);CHKERRQ(ierr);
+        }
         if (ts->vec_costintegral) {
           ierr = VecAXPY(VecDeltaMu[nadj*s+i],-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
       }
+      ierr = DMRestoreGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
     }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
   for (nadj=0; nadj<ts->numcost; nadj++) {
     ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
-    if(ts->vecs_sensip) {
+    if (ts->vecs_sensip) {
       ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
     }
   }
@@ -745,22 +758,8 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSRKTableauReset(ts);CHKERRQ(ierr);
   ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-static PetscErrorCode TSDestroy_RK(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSReset_RK(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 
 static PetscErrorCode DMCoarsenHook_TSRK(DM fine,DM coarse,void *ctx)
 {
@@ -840,10 +839,8 @@ static PetscErrorCode TSSetUp_RK(TS ts)
     ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
   }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -863,7 +860,7 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     PetscBool      flg;
     const char   **namelist;
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSRKSetType(ts,namelist[choice]);CHKERRQ(ierr);}
@@ -1013,14 +1010,29 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 
 static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 {
-  TS_RK          *rk = (TS_RK*)ts->data;
+  TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
   *ns = rk->tableau->s;
-  if(Y) *Y  = rk->Y;
+  if (Y) *Y = rk->Y;
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSDestroy_RK(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_RK(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
 /*MC

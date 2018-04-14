@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logger
 
 import os
@@ -72,7 +73,7 @@ class Retriever(logger.Logger):
 
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo, log = self.log)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -96,7 +97,7 @@ Unable to download package %s from: %s
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url[5:]+' '+newgitrepo)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -120,7 +121,7 @@ Unable to download package %s from: %s
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url+' '+newgitrepo)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -151,7 +152,7 @@ Unable to download package %s from: %s
       socket.setdefaulttimeout(30)
       urllib.urlretrieve(url, localFile)
       socket.setdefaulttimeout(sav_timeout)
-    except Exception, e:
+    except Exception as e:
       socket.setdefaulttimeout(sav_timeout)
       failureMessage = '''\
 Unable to download package %s from: %s
@@ -184,7 +185,7 @@ Downloaded package %s from: %s is not a tarball.
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))
-      except tarfile.ReadError, e:
+      except tarfile.ReadError as e:
         raise RuntimeError(str(e)+'\n'+failureMessage)
       if not tf: raise RuntimeError(failureMessage)
       #git puts 'pax_global_header' as the first entry and some tar utils process this as a file
@@ -212,7 +213,7 @@ Downloaded package %s from: %s is not a tarball.
         config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
       else:
         self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error changing permissions for '+dirname+' obtained from '+localFile+ ' : '+str(e))
     os.unlink(localFile)
     return

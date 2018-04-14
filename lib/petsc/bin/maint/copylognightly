@@ -1,0 +1,36 @@
+#! /bin/csh
+#
+#  usage: copylognightly [-dirname=name] tname1[:branch1] tname2[:branch2] ...
+#
+#  tname1 is the name of a file in $PETSC_DIR/lib/petsc/bin/maint/confignightly that defines
+#  a machine from which the results of job started with startnightly/buildtest should be copied
+#  over to a central common directory
+
+set dir=`dirname $0`
+
+if ("$1" =~ "-dirname") then
+  set LOGDIR=$2
+  set cnt=3
+else
+  set LOGDIR=/mcs/ftp/pub/petsc/nightlylogs
+  set cnt=1
+endif
+
+foreach TEST ($argv[${cnt}-])
+  source $dir/confignightly/default
+  source $dir/confignightly/${TNAME}
+
+  $SCP $USR@${MACH}:${PETSC_DIR}/build.log ${LOGDIR}/build_${BRANCH}_${PETSC_ARCH}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/build_${BRANCH}_${PETSC_ARCH}_${MACH}.log &
+  $SCP $USR@${MACH}:${PETSC_DIR}/configure.log ${LOGDIR}/configure_${BRANCH}_${PETSC_ARCH}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/configure_${BRANCH}_${PETSC_ARCH}_${MACH}.log &
+  $SCP $USR@${MACH}:${PETSC_DIR}/make.log ${LOGDIR}/make_${BRANCH}_${PETSC_ARCH}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/make_${BRANCH}_${PETSC_ARCH}_${MACH}.log &
+  $SCP $USR@${MACH}:${PETSC_DIR}/examples.log ${LOGDIR}/examples_${BRANCH}_${PETSC_ARCH}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/examples_${BRANCH}_${PETSC_ARCH}_${MACH}.log &
+  $SCP $USR@${MACH}:${PETSC_DIR}/gcov.tar.gz ${LOGDIR}/gcov/gcov_${BRANCH}_${PETSC_ARCH}_${MACH}.tar.gz ;/bin/chmod a+r ${LOGDIR}/gcov/gcov_${BRANCH}_${PETSC_ARCH}_${MACH}.tar.gz &
+  if ( "${PETSC_ARCH}" == "arch-linux-analyzer") then
+    $SCP -r -q $USR@${MACH}:${PETSC_DIR}/analyzer-src-results/ ${LOGDIR}/analyzer-src_${BRANCH}.log &
+    $SCP -r -q $USR@${MACH}:${PETSC_DIR}/analyzer-ex-results/ ${LOGDIR}/analyzer-ex_${BRANCH}.log &
+  endif
+end
+sleep 40
+/bin/chmod a+r ${LOGDIR}/*
+wait
+/bin/chmod a+r ${LOGDIR}/*

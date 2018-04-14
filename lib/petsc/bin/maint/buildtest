@@ -1,0 +1,168 @@
+#! /usr/bin/env tcsh
+#
+# Compiles and tests PETSc on one particular machine with one particular PETSC_ARCH
+#
+#  Three wasy to run:
+#     cd $PETSC_DIR ; ./lib/petsc/bin/maint/buildtest PETSC_ARCH
+#     /fullpathtopetsc/lib/petsc/bin/maint/buildtest PETSC_ARCH
+#     PETSC_DIR=/fullpathtopetsc  anypath/lib/petsc/bin/maint/buildtest PETSC_ARCH
+#
+# The file ${PETSC_DIR}/config/examples/${PETSC_ARCH}.py must exist
+# and defines the options PETSc is tested with
+#
+# The file ${PETSC_DIR}/config/examples/${PETSC_ARCH}.csh may exist
+# and provides additional PETSC_OPTION values specific to that configuration
+#
+set day=`date | cut -f1 -d" "`
+set nPETSC_DIR=`pwd`
+if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
+  set maintdir=`dirname $0`
+  set bindir=`dirname $maintdir`
+  set nPETSC_DIR=`dirname $bindir`
+  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petscsys.h )) then
+    if (${?PETSC_DIR}) then 
+      set nPETSC_DIR=${PETSC_DIR}
+      if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
+        echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+        exit
+      endif
+    else
+      echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+      exit
+    endif
+  endif
+endif
+
+if (${#argv} > 0) then 
+  set nPETSC_ARCH=${1}
+else
+  echo "PETSC_ARCH not specified to buildtest"
+  exit
+endif
+if (${#argv} > 1) then 
+  set CONFIGURE_ARGS="${argv[2-]}"
+else 
+  set CONFIGURE_ARGS=""
+endif
+
+set MACH=`hostname`
+cd $nPETSC_DIR
+rm -f build.log
+echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b %Y %H:%M:%S %z'` " > build.log
+
+# Note: we are using detatched heads - so 'git fetch/pull' is not done here.
+# Note use 'git clean' intead of manually deleting seleted old files.
+echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
+# externalpackages can be a git repo - so one has to explicitly remove them
+rm -rf ./${nPETSC_ARCH}
+echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
+git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& build.log
+
+set PETSC_DIR=$nPETSC_DIR
+set PETSC_ARCH=${nPETSC_ARCH}
+set CONFIGURE='yes'
+set CONFIGURE_FILE=$PETSC_ARCH
+
+# check for cygwin/windows build - and use TMP=PETSC_DIR/tmp for win32fe
+if ( -f /usr/bin/cygcheck.exe ) then
+  setenv TMP ${PETSC_DIR}/tmp
+  mkdir -p $TMP
+endif
+
+set PETSC_OPTIONS=""
+# Run initialization script
+if ( -f ./config/examples/${CONFIGURE_FILE}.csh ) then
+  source ./config/examples/${CONFIGURE_FILE}.csh
+endif
+set PETSC_OPTIONS="${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout"
+
+# Run Configure
+./config/examples/${CONFIGURE_FILE}.py PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+if ( $err ) exit
+#
+# check if PETSC_ARCH has name analyzer - if so enable build with clang static analyzer
+#
+echo $PETSC_ARCH | grep analyzer > /dev/null
+if ( $? ) then
+  set ANALYZER=""
+  set ANALYZER_PCC=""
+else
+  set ANALYZER="scan-build -o analyzer-results-dir"
+  #set ANALYZER_PCC="PCC=/nfs2/petsc/soft/linux-Ubuntu_12.04-x86_64/clang-3.8.0/libexec/ccc-analyzer"
+  set ANALYZER_PCC=P`scan-build env |grep ^CC=`
+endif
+#
+# check if PETSC_ARCH has name valgrind - if so enable valgrind runs
+#
+echo $PETSC_ARCH | grep valgrind > /dev/null
+if ( $? ) then
+  set VALGRIND='DUMMYARGUMENT=foobar'
+  set TIMEOUT=600
+else
+  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind"`
+  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp"
+  set TIMEOUT=7200
+endif
+#
+#check gcov
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
+#
+# check for prefix install
+set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`
+grep 'Now to install the libraries do' $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscrules > /dev/null
+if ( $? ) then
+  set INSTALLTARGET=""
+else
+  set INSTALLTARGET="install"
+endif
+#
+# do build/install
+${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR all ${INSTALLTARGET} >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+echo "Finishing build run on $MACH $PETSC_ARCH at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& build.log
+if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
+#
+# change PETSC_DIR/PETSC_ARCH for prefix install
+if ( "${INSTALLTARGET}" == "install" ) then
+  set PETSC_DIR="${PREFIXDIR}"
+  set PETSC_ARCH=""
+endif
+#
+# do test
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+echo "Finishing test run on $MACH $nPETSC_ARCH at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& build.log
+if ( $err ) exit
+#
+# check analyzer
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-src-results
+endif
+#
+# Run examples
+#
+rm -f examples.log
+echo "Starting examples run on $MACH $nPETSC_ARCH $nPETSC_DIR ${VALGRIND} ${ANALYZER_PCC} at `date +'%a, %d %b %Y %H:%M:%S %z'` " > examples.log
+echo '******************************************************' >>& examples.log
+git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
+$ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
+echo '******************************************************' >>& examples.log
+
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-ex-results
+endif
+
+if ( "${GCOV}" != "" ) then
+  rm -f gcov.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
+endif
+
+echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& examples.log
+echo 'X******************************************************X' >>& examples.log
+
+

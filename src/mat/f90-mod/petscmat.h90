@@ -127,6 +127,12 @@
           integer z
         end subroutine
 
+        subroutine MatCreateSchurComplement(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a,b,c,d,e,f
+          integer z
+        end subroutine
+
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
           use petscmatdef
           MPI_Comm a
@@ -373,6 +379,17 @@
       Interface MatSetValuesBlocked
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
+        subroutine MatSetValuesBlocked2(a,b,c,d,e,f,g,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar, pointer :: f (:,:)
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
         subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
           use petscmatdef
           Mat a ! Mat
@@ -651,12 +668,39 @@
       End Interface
 
       Interface
+         subroutine MatGetGetNullSpace(A,n,ierr)
+         use petscmatdef
+         Mat  A
+         MatNullSpace n
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
          subroutine MatFactorInfoInitialize(info ,ierr)
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
          MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
+
+      Interface
+      subroutine MatSetType(a,b,z)
+      use petscmatdef
+       Mat a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine MatView(a,b,z)
+      use petscmatdef
+       Mat a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE

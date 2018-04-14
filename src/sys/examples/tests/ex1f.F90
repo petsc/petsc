@@ -58,7 +58,6 @@
 !/*TEST
 !
 !   test:
-!     filter: grep  "My error handler" | sort -b
-!     filter_output:   sort -b
+!     filter: grep  "My error handler" | wc -l
 !
 !TEST*/

@@ -664,6 +664,11 @@ $                 if (flg) {
 
           list is usually something like PCASMTypes or some other predefined list of enum names
 
+          If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
@@ -778,6 +783,11 @@ $                 if (flg) {
 +  value - the integer value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
+   Notes: If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
    Level: beginner
 
    Concepts: options database^has int
@@ -840,6 +850,12 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 
    Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
+          If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
+
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsReal(), PetscOptionsBool(),
@@ -884,6 +900,11 @@ $                 if (flg) {
    Output Parameter:
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Notes:  If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
    Level: beginner
 
@@ -937,6 +958,11 @@ $                 if (flg) {
    Output Parameter:
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Notes: If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
    Level: beginner
 
@@ -1035,6 +1061,11 @@ $                 if (flg) {
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
+          If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
    See PetscOptionsEList() for when the choices are given in a string array
 
    To get a listing of all currently specified options,
@@ -1093,6 +1124,9 @@ $                 if (flg) {
    Level: intermediate
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+         If the user does not supply the option at all value is NOT changed. Thus
+          you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
    See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
@@ -1292,6 +1326,16 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
 .  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Notes:
+       TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
+       FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
+
+      If the option is given, but no value is provided, then flg and set are both given the value PETSC_TRUE. That is -requested_bool
+     is equivalent to -requested_bool true
+
+       If the user does not supply the option at all flg is NOT changed. Thus
+     you should ALWAYS initialize the flg if you access it without first checking if the set flag is true.
 
    Level: beginner
 

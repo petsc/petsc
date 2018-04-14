@@ -4,12 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://www.open-mpi.org/software/hwloc/v1.10/downloads/hwloc-1.10.0.tar.gz']
+    self.download          = ['http://www.open-mpi.org/software/hwloc/v1.11/downloads/hwloc-1.11.1.tar.gz']
     self.functions         = ['hwloc_topology_init']
     self.includes          = ['hwloc.h']
     self.liblist           = [['libhwloc.a'],['libhwloc.a','libxml2.a']]
     self.downloadonWindows = 1
-    self.linkedbypetsc     = 0
     return
 
   def getSearchDirectories(self):

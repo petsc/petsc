@@ -129,13 +129,12 @@ int main(int argc,char **argv)
 }
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
-#define PETSc_CHKERRQ CHKERRQ
 PetscErrorCode testPTAPRectangular(void)
 {
 
   const int      rows = 3;
   const int      cols = 5;
-  PetscErrorCode _ierr;
+  PetscErrorCode ierr;
   int            i;
   Mat            A;
   Mat            P;
@@ -143,59 +142,49 @@ PetscErrorCode testPTAPRectangular(void)
 
   PetscFunctionBegin;
   /* set up A  */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, NULL, &A);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, NULL, &A);CHKERRQ(ierr);
   for (i=0; i<rows; i++) {
-    _ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);
-    PETSc_CHKERRQ(_ierr);
+    ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);CHKERRQ(ierr);
   }
-  _ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* set up P */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, NULL, &P);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 0, 0,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 0, 1,  2.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 0, 2,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, NULL, &P);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 0, 0,  1.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 0, 1,  2.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 0, 2,  0.0, INSERT_VALUES);CHKERRQ(ierr);
 
-  _ierr = MatSetValue(P, 0, 3, -1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  ierr = MatSetValue(P, 0, 3, -1.0, INSERT_VALUES);CHKERRQ(ierr);
 
-  _ierr = MatSetValue(P, 1, 0,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 1, 1, -1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 1, 2,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  ierr = MatSetValue(P, 1, 0,  0.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 1, 1, -1.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 1, 2,  1.0, INSERT_VALUES);CHKERRQ(ierr);
 
-  _ierr = MatSetValue(P, 2, 0,  3.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 2, 1,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
-  _ierr = MatSetValue(P, 2, 2, -3.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  ierr = MatSetValue(P, 2, 0,  3.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 2, 1,  0.0, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(P, 2, 2, -3.0, INSERT_VALUES);CHKERRQ(ierr);
 
-  _ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* compute C */
-  _ierr = MatPtAP(A, P, MAT_INITIAL_MATRIX, 1.0, &C);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatPtAP(A, P, MAT_INITIAL_MATRIX, 1.0, &C);CHKERRQ(ierr);
 
-  _ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* compare results */
   /*
   printf("C:\n");
-  _ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);PETSc_CHKERRQ(_ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   blitz::Array<double,2> actualC(cols, cols);
   actualC = 0.0;
   for (int i=0; i<cols; i++) {
     for (int j=0; j<cols; j++) {
-      _ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));
-      PETSc_CHKERRQ(_ierr); ;
+      ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));
+      CHKERRQ(ierr); ;
     }
   }
   blitz::Array<double,2> expectedC(cols, cols);
@@ -222,13 +211,61 @@ PetscErrorCode testPTAPRectangular(void)
   validateEqualsWithParams3(check, -1 , "testPTAPRectangular()", check, actualC(check), expectedC(check));
   */
 
-  _ierr = MatDestroy(&A);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatDestroy(&P);
-  PETSc_CHKERRQ(_ierr);
-  _ierr = MatDestroy(&C);
-  PETSc_CHKERRQ(_ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -B_matmatmult_via nonscalable
+
+   test:
+      suffix: 3
+      nsize: 2
+      output_file: output/ex93_2.out
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -A_matptap_via scalable
+      output_file: output/ex93_2.out
+
+   test:
+      suffix: btheap
+      args: -B_matmatmult_via btheap
+      output_file: output/ex93_1.out
+
+   test:
+      suffix: heap
+      args: -B_matmatmult_via heap
+      output_file: output/ex93_1.out
+
+   test:
+      suffix: hypre
+      nsize: 3
+      requires: hypre
+      args: -B_matmatmult_via hypre -A_matptap_via hypre -test_hypre
+
+   test:
+      suffix: llcondensed
+      args: -B_matmatmult_via llcondensed
+      output_file: output/ex93_1.out
+
+   test:
+      suffix: scalable
+      args: -B_matmatmult_via scalable
+      output_file: output/ex93_1.out
+
+   test:
+      suffix: scalable_fast
+      args: -B_matmatmult_via scalable_fast
+      output_file: output/ex93_1.out
+
+TEST*/

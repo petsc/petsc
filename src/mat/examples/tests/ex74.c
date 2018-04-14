@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat            A;                    /* linear system matrix */
   Mat            sA,sB,sFactor;        /* symmetric matrices */
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
-  PetscReal      norm1,norm2,rnorm,tol=PETSC_SMALL;
+  PetscReal      norm1,norm2,rnorm,tol=10*PETSC_SMALL;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm, iscol;
   PetscRandom    rdm;
@@ -75,7 +75,7 @@ int main(int argc,char **args)
 
     } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (PetscInt) (PetscSqrtReal((PetscReal)n) + 0.001);
-      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!");
+      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
@@ -362,3 +362,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8}}
+
+TEST*/

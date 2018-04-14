@@ -9,4 +9,4 @@
   Linear stokes_fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 3
   Linear stokes_fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 3
 Linear stokes_ solve converged due to CONVERGED_RTOL iterations 10
-5.8824e-02   1.7880e-02   1.1228e-04   2.9336e-03 
+5.8824e-02   1.7880e-02   1.1228e-04   2.9336e-03

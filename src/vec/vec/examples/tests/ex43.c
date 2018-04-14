@@ -1,4 +1,6 @@
 static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
+
+
 #include <petscvec.h>
 
 int main(int argc, char **argv)
@@ -37,11 +39,11 @@ int main(int argc, char **argv)
       /* Check result */
       for (j=0;j<i;j++) {
         if (PetscAbsScalar(val_mdot[j] - val_dot[j])/PetscAbsScalar(val_dot[j]) > 1e-5) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, val_mdot[j]=%g, val_dot[j]=%g\n", i, j, val_mdot[j], val_dot[j]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, val_mdot[j]=%g, val_dot[j]=%g\n",i,j,(double)PetscAbsScalar(val_mdot[j]), (double)PetscAbsScalar(val_dot[j]));CHKERRQ(ierr);
           break;
         }
         if (PetscAbsScalar(tval_mdot[j] - tval_dot[j])/PetscAbsScalar(tval_dot[j]) > 1e-5) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, tval_mdot[j]=%g, tval_dot[j]=%g\n", i, j, tval_mdot[j], tval_dot[j]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, tval_mdot[j]=%g, tval_dot[j]=%g\n",i,j,(double)PetscAbsScalar(tval_mdot[j]), (double)PetscAbsScalar(tval_dot[j]));CHKERRQ(ierr);
           break;
         }
       }
@@ -58,3 +60,16 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: cuda
+      args: -vec_type cuda
+      output_file: output/ex43_1.out
+      requires: veccuda
+
+TEST*/

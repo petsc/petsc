@@ -8,21 +8,21 @@ Labels:
   marker: 1 strata with value/size (1 (128))
   Face Sets: 1 strata with value/size (1 (120))
   depth: 3 strata with value/size (0 (289), 1 (800), 2 (512))
-  DM_0x84000000_0 in 2 dimensions:
+  DM_0x84000000_1 in 2 dimensions:
     0-cells:   95  
     1-cells:   246  
     2-cells:   152  
   Labels:
     _boundary_: 1 strata with value/size (1 (36))
     depth: 3 strata with value/size (0 (95), 1 (246), 2 (152))
-    DM_0x84000000_1 in 2 dimensions:
+    DM_0x84000000_2 in 2 dimensions:
       0-cells:     38    
       1-cells:     91    
       2-cells:     54    
     Labels:
       _boundary_: 1 strata with value/size (1 (20))
       depth: 3 strata with value/size (0 (38), 1 (91), 2 (54))
-      DM_0x84000000_2 in 2 dimensions:
+      DM_0x84000000_3 in 2 dimensions:
         0-cells:       19      
         1-cells:       40      
         2-cells:       22      
@@ -31,9 +31,10 @@ Labels:
         depth: 3 strata with value/size (0 (19), 1 (40), 2 (22))
   0 SNES Function norm 8.32828 
     0 KSP unpreconditioned resid norm 8.328278903362e+00 true resid norm 8.328278903362e+00 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP unpreconditioned resid norm 5.274358775533e-06 true resid norm 5.274358775533e-06 ||r(i)||/||b|| 6.333071738753e-07
-    2 KSP unpreconditioned resid norm 2.976628734213e-12 true resid norm 2.976628734213e-12 ||r(i)||/||b|| 3.574122299160e-13
+    1 KSP unpreconditioned resid norm 5.274358775793e-06 true resid norm 5.274358775793e-06 ||r(i)||/||b|| 6.333071739064e-07
+    2 KSP unpreconditioned resid norm 2.976750476392e-12 true resid norm 2.976750476392e-12 ||r(i)||/||b|| 3.574268478438e-13
   1 SNES Function norm < 1.e-11
+L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -191,5 +192,3 @@ SNES Object: 1 MPI processes
       total: nonzeros=1457, allocated nonzeros=1457
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-Number of SNES iterations = 1
-L_2 Error: 0.00131794

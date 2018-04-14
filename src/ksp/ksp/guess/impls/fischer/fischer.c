@@ -139,7 +139,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
       ierr = VecScale(itg->xtilde[curl],1.0/norm);CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(guess,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
+      ierr = PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -202,7 +202,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
       ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(guess,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
+      ierr = PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -257,9 +257,9 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
 
    Level: advanced
 
-.keywords: KSP, set, options, prefix, database
+.keywords: set, options, prefix, database
 
-.seealso: KSPGuess, KSPGuessCreate(), KSPSetUseFischerGuess(), KSPSetGuess(), KSPGetGuess()
+.seealso: KSPGuess, KSPGuessCreate(), KSPSetUseFischerGuess(), KSPSetGuess(), KSPGetGuess(), KSP
 @*/
 PetscErrorCode  KSPGuessFischerSetModel(KSPGuess guess,PetscInt model,PetscInt size)
 {

@@ -62,14 +62,14 @@ class Configure(config.package.Package):
     if self.installNeeded('SLmake.inc'):
       try:
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make cleanlib', timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         pass
       try:
         self.logPrintBox('Compiling and installing Scalapack; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         libDir = os.path.join(self.installDir, self.libdir)
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')
     return self.installDir

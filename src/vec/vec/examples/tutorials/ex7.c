@@ -11,7 +11,6 @@ and from Fortran to C\n\n";
 /*T
    Concepts: vectors^fortran-c;
    Processors: n
-   depends: ex7f.F
 T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -72,3 +71,16 @@ PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
   *ierr = MPI_Barrier(comm);
 
 }
+
+/*TEST
+
+   build:
+     depends: ex7f.F
+     requires: fortran
+
+   test:
+      nsize: 3
+      filter: sort -b |grep -v "MPI processes"
+      filter_output: sort -b
+
+TEST*/

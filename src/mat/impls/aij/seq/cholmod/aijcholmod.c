@@ -43,7 +43,7 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;
@@ -77,7 +77,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   B->ops->destroy                = MatDestroy_CHOLMOD;
   B->ops->getinfo                = MatGetInfo_External;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_cholmod);CHKERRQ(ierr);
 
   B->factortype   = MAT_FACTOR_CHOLESKY;
   B->assembled    = PETSC_TRUE; /* required by -ksp_view */

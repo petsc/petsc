@@ -123,6 +123,22 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATCOLORINGSL - implements the SL (smallest last) coloring routine
+
+   Level: beginner
+
+   Notes: Supports only distance two colorings (for computation of Jacobians)
+
+          This is a sequential algorithm
+
+   References:
+.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+   pp. 187-209, 1983.
+
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+M*/
+
 PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
 {
     PetscFunctionBegin;
@@ -215,6 +231,22 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   }
   PetscFunctionReturn(0);
 }
+
+/*MC
+  MATCOLORINGLF - implements the LF (largest first) coloring routine
+
+   Level: beginner
+
+   Notes: Supports only distance two colorings (for computation of Jacobians)
+
+          This is a sequential algorithm
+
+   References:
+.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+   pp. 187-209, 1983.
+
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
 {
@@ -311,6 +343,21 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATCOLORINGID - implements the ID (incidence degree) coloring routine
+
+   Level: beginner
+
+   Notes: Supports only distance two colorings (for computation of Jacobians)
+
+          This is a sequential algorithm
+
+   References:
+.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+   pp. 187-209, 1983.
+
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
+M*/
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)
 {

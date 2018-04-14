@@ -47,10 +47,12 @@ J*/
 #define TAONTR      "ntr"
 #define TAONTL      "ntl"
 #define TAOCG       "cg"
+#define TAOPGD      "pgd"
 #define TAOTRON     "tron"
 #define TAOOWLQN    "owlqn"
 #define TAOBMRM     "bmrm"
 #define TAOBLMVM    "blmvm"
+#define TAOBNCG     "bncg"
 #define TAOBQPIP    "bqpip"
 #define TAOGPCG     "gpcg"
 #define TAONM       "nm"
@@ -171,6 +173,7 @@ PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat);
 
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat, Mat, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianMFFD(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(Tao, Vec*, Vec*);
@@ -198,6 +201,8 @@ PETSC_EXTERN PetscErrorCode TaoGetIterationNumber(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetIterationNumber(Tao, PetscInt);
 PETSC_EXTERN PetscErrorCode TaoGetTotalIterationNumber(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetTotalIterationNumber(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoGetResidualNorm(Tao,PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoGetObjective(Tao,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
@@ -214,7 +219,7 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao,PetscReal*,PetscReal*,P
 PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
-PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(Tao, void*);
@@ -231,7 +236,7 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, v
 
 PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
-PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoConvergedReason*);
+PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal);
 typedef struct _n_TaoMonitorDrawCtx* TaoMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TaoMonitorDrawCtx*);
 PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx*);

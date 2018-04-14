@@ -1,5 +1,13 @@
 
-      Interface DMCompositeGetEntries
+        Interface DMCompositeGetEntriesArray
+        Subroutine DMCompositeGetEntries1(dm1, d,ierr)
+          use petscdmdef
+          DM dm1
+          DM d(*)
+          PetscErrorCode ierr
+        End Subroutine
+
+        Interface DMCompositeGetEntries
         Subroutine DMCompositeGetEntries1(dm1, d1,ierr)
           use petscdmdef
           DM dm1
@@ -49,5 +57,58 @@
           PetscScalar,pointer :: d2(:)
           PetscScalar,pointer :: d4(:)
           PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeGetAccessArray
+        Subroutine DMCompositeGetAccessArray(a,b,c,d,e,z)
+          use petscdmdef
+          DM a
+          Vec b
+          PetscInt c,d(*)
+          Vec e(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeRestoreAccessArray
+        Subroutine DMCompositeRestoreAccessArray(a,b,c,d,e,z)
+          use petscdmdef
+          DM a
+          Vec b
+          PetscInt c,d(*)
+          Vec e(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeGetLocalAccessArray
+        Subroutine DMCompositeGetLocalAccessArray(a,b,c,d,e,z)
+          use petscdmdef
+          DM a
+          Vec b
+          PetscInt c,d(*)
+          Vec e(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeRestoreLocalAccessArray
+        Subroutine DMCompositeRestoreLocalAccessArray(a,b,c,d,e,z)
+          use petscdmdef
+          DM a
+          Vec b
+          PetscInt c,d(*)
+          Vec e(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeGetGlobalISs
+        Subroutine DMCompositeGetGlobalISs(a,b,z)
+          use petscdmdef
+          DM a
+          IS b(*)
+          PetscErrorCode z
         End Subroutine
       End Interface

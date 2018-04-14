@@ -1,6 +1,7 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
 #include <petsc/private/isimpl.h>
+#include <petsc/private/glvisviewerimpl.h>
 #include <petscds.h>
 
 /*@C
@@ -15,6 +16,8 @@
 -   formcouplelocations - routine to set the nonzero locations in the matrix
 
     Level: advanced
+
+    Not available from Fortran
 
     Notes: See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
         this routine
@@ -44,6 +47,7 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(com);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -605,6 +609,8 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
 
     Level: advanced
 
+    Not available from Fortran, Fortran users can use DMCompositeGatherArray()
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
@@ -701,14 +707,14 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
   PetscFunctionReturn(0);
 }
 
-/*@C
-    DMCompositeAddDM - adds a DM  vector to a DMComposite
+/*@
+    DMCompositeAddDM - adds a DM vector to a DMComposite
 
     Collective on DMComposite
 
     Input Parameter:
-+    dm - the packer object
--    dm - the DM object, if the DM is a da you will need to caste it with a (DM)
++    dmc - the DMComposite (packer) object
+-    dm - the DM object
 
     Level: advanced
 
@@ -784,18 +790,18 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
 
     /* loop over packed objects, handling one at at time */
     while (next) {
-      Vec         vec;
-      PetscScalar *array;
-      PetscInt    bs;
+      Vec               vec;
+      const PetscScalar *array;
+      PetscInt          bs;
 
       /* Should use VecGetSubVector() eventually, but would need to forward the DM for that to work */
       ierr = DMGetGlobalVector(next->dm,&vec);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
-      ierr = VecPlaceArray(vec,array+next->rstart);CHKERRQ(ierr);
-      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(vec,(PetscScalar*)array+next->rstart);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecView(vec,viewer);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
       ierr = VecResetArray(vec);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&vec);CHKERRQ(ierr);
       ierr = PetscViewerDrawBaseAdd(viewer,bs);CHKERRQ(ierr);
       cnt += bs;
@@ -851,6 +857,8 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 
     Notes:
        Each entry of ltogs should be destroyed with ISLocalToGlobalMappingDestroy(), the ltogs array should be freed with PetscFree().
+
+    Not available from Fortran
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
@@ -934,6 +942,8 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
    To get index sets for pieces of the composite global vector, use DMCompositeGetGlobalISs().
 
    Each returned IS should be destroyed with ISDestroy(), the array should be freed with PetscFree().
+
+   Not available from Fortran
 
 .seealso: DMCompositeGetGlobalISs(), DMCompositeGetISLocalToGlobalMappings(), MatGetLocalSubMatrix(), MatCreateLocalRef()
 @*/
@@ -1112,6 +1122,8 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
 
     Level: advanced
 
+    Not available from Fortran
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeRestoreLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
@@ -1151,6 +1163,8 @@ PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
 .   Vec ... - the individual sequential Vecs
 
     Level: advanced
+
+    Not available from Fortran
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
@@ -1192,6 +1206,8 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
 .   DM ... - the individual entries (DMs)
 
     Level: advanced
+
+    Fortran Notes: Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntriesArray()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
@@ -1249,6 +1265,106 @@ PetscErrorCode DMCompositeGetEntriesArray(DM dm,DM dms[])
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* loop over packed objects, handling one at at time */
   for (next=com->next,i=0; next; next=next->next,i++) dms[i] = next->dm;
+  PetscFunctionReturn(0);
+}
+
+typedef struct {
+  DM          dm;
+  PetscViewer *subv;
+  Vec         *vecs;
+} GLVisViewerCtx;
+
+static PetscErrorCode  DestroyGLVisViewerCtx_Private(void *vctx)
+{
+  GLVisViewerCtx *ctx = (GLVisViewerCtx*)vctx;
+  PetscInt       i,n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetNumberDM(ctx->dm,&n);CHKERRQ(ierr);
+  for (i = 0; i < n; i++) {
+    ierr = PetscViewerDestroy(&ctx->subv[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(ctx->subv,ctx->vecs);CHKERRQ(ierr);
+  ierr = DMDestroy(&ctx->dm);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  DMCompositeSampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXfield[], void *vctx)
+{
+  Vec            X = (Vec)oX;
+  GLVisViewerCtx *ctx = (GLVisViewerCtx*)vctx;
+  PetscInt       i,n,cumf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetNumberDM(ctx->dm,&n);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccessArray(ctx->dm,X,n,NULL,ctx->vecs);CHKERRQ(ierr);
+  for (i = 0, cumf = 0; i < n; i++) {
+    PetscErrorCode (*g2l)(PetscObject,PetscInt,PetscObject[],void*);
+    void           *fctx;
+    PetscInt       nfi;
+
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nfi,NULL,NULL,&g2l,NULL,&fctx);CHKERRQ(ierr);
+    if (!nfi) continue;
+    if (g2l) {
+      ierr = (*g2l)((PetscObject)ctx->vecs[i],nfi,oXfield+cumf,fctx);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(ctx->vecs[i],(Vec)(oXfield[cumf]));CHKERRQ(ierr);
+    }
+    cumf += nfi;
+  }
+  ierr = DMCompositeRestoreAccessArray(ctx->dm,X,n,NULL,ctx->vecs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  DMSetUpGLVisViewer_Composite(PetscObject odm, PetscViewer viewer)
+{
+  DM             dm = (DM)odm, *dms;
+  Vec            *Ufds;
+  GLVisViewerCtx *ctx;
+  PetscInt       i,n,tnf,*sdim;
+  char           **fecs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  ctx->dm = dm;
+  ierr = DMCompositeGetNumberDM(dm,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&dms);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntriesArray(dm,dms);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&ctx->subv,n,&ctx->vecs);CHKERRQ(ierr);
+  for (i = 0, tnf = 0; i < n; i++) {
+    PetscInt nf;
+
+    ierr = PetscViewerCreate(PetscObjectComm(odm),&ctx->subv[i]);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(ctx->subv[i],PETSCVIEWERGLVIS);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisSetDM_Private(ctx->subv[i],(PetscObject)dms[i]);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nf,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    tnf += nf;
+  }
+  ierr = PetscFree(dms);CHKERRQ(ierr);
+  ierr = PetscMalloc3(tnf,&fecs,tnf,&sdim,tnf,&Ufds);CHKERRQ(ierr);
+  for (i = 0, tnf = 0; i < n; i++) {
+    PetscInt   *sd,nf,f;
+    const char **fec;
+    Vec        *Uf;
+
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nf,&fec,&sd,NULL,(PetscObject**)&Uf,NULL);CHKERRQ(ierr);
+    for (f = 0; f < nf; f++) {
+      ierr = PetscStrallocpy(fec[f],&fecs[tnf+f]);CHKERRQ(ierr);
+      Ufds[tnf+f] = Uf[f];
+      sdim[tnf+f] = sd[f];
+    }
+    tnf += nf;
+  }
+  ierr = PetscViewerGLVisSetFields(viewer,tnf,(const char**)fecs,sdim,DMCompositeSampleGLVisFields_Private,(PetscObject*)Ufds,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+  for (i = 0; i < tnf; i++) {
+    ierr = PetscFree(fecs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(fecs,sdim,Ufds);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1627,10 +1743,12 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   p->ops->destroy                         = DMDestroy_Composite;
   p->ops->view                            = DMView_Composite;
   p->ops->setup                           = DMSetUp_Composite;
+
+  ierr = PetscObjectComposeFunction((PetscObject)p,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     DMCompositeCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
 

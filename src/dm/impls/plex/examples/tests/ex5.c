@@ -329,7 +329,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm = NULL;
+  DM             idm;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -378,8 +378,6 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);
   }
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
-  ierr = DMCopyLabels(*dm, idm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
@@ -448,7 +446,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 
 PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm = NULL;
+  DM             idm;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -506,8 +504,6 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);
   }
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
-  ierr = DMCopyLabels(*dm, idm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
@@ -516,7 +512,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
 PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm   = NULL;
+  DM             idm;
   PetscInt       depth = 3, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -540,7 +536,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
       for(p = 0; p < 8; ++p) {ierr = DMSetLabelValue(idm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       for(p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
@@ -576,7 +571,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
       for(p = 0; p < 6; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
@@ -598,7 +592,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
       for(p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
@@ -609,7 +602,6 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
     ierr = DMCreateLabel(idm, "fault");CHKERRQ(ierr);
   }
   ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);

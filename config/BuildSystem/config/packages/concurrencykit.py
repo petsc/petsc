@@ -23,7 +23,7 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
     # CK configure is buggy and ignores --disable-shared; you must turn off PIC to turn off shared libraries
-    if not ((self.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.argDB['download-'+self.package+'-shared']):
+    if not ((self.argDB['with-shared-libraries'] and 'download-'+self.package+'-shared' not in self.framework.clArgDB) or  self.argDB['download-'+self.package+'-shared']):
       args.append('--without-pic')
 
     # Concurrency configure errors out on certain standard configure arguments

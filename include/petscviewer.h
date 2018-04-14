@@ -58,6 +58,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,Pets
 PETSC_EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],size_t,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer,PetscDrawType);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer,PetscDrawType*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawSetTitle(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetTitle(PetscViewer,const char*[]);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer,PetscInt);
@@ -77,8 +80,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFil
 E*/
 typedef enum {PETSC_VIEWER_GLVIS_DUMP, PETSC_VIEWER_GLVIS_SOCKET} PetscViewerGLVisType;
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm,PetscViewerGLVisType,const char*,PetscInt,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],const char*[],PetscInt[],PetscInt[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),void*,PetscErrorCode(*)(void*));
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*));
 
 PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
@@ -135,7 +139,8 @@ typedef enum {
   PETSC_VIEWER_BINARY_MATLAB,
   PETSC_VIEWER_NATIVE,
   PETSC_VIEWER_HDF5_VIZ,
-  PETSC_VIEWER_NOFORMAT
+  PETSC_VIEWER_NOFORMAT,
+  PETSC_VIEWER_LOAD_BALANCE
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
 

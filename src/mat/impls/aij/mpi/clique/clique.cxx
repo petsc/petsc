@@ -47,7 +47,7 @@ PetscErrorCode MatDestroy_SparseElemental(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -75,7 +75,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const 
 
   Use ./configure --download-elemental to have PETSc installed with Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_package sparseelemental to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type sparseelemental to use this direct solver
 
   This is currently not supported.
 
@@ -86,11 +86,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const 
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/
 
-PetscErrorCode MatFactorGetSolverPackage_SparseElemental(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSPARSEELEMENTAL;
@@ -105,11 +105,11 @@ static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A,MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SparseElemental(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSPARSEELEMENTAL,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_sparseelemental);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_sparseelemental);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

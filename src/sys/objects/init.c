@@ -91,7 +91,6 @@ PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDe
 /*
   This is needed to turn on/off GPU synchronization
 */
-PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 PetscBool PetscCUDASynchronize = PETSC_FALSE;
 
@@ -269,7 +268,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
   /*
@@ -295,6 +294,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg3) {
     ierr = PetscMallocSetDumpLogThreshold((PetscLogDouble)logthreshold);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2);CHKERRQ(ierr);
+  if (flg2) {ierr = PetscMallocSetCoalesce(flg1);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
@@ -312,7 +313,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
+  /* ignore this option if malloc is already set */
+  if (flg1 && !petscsetmallocvisited) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL);CHKERRQ(ierr);
@@ -386,7 +388,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
-    ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
@@ -433,18 +435,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program.
     */
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size > 2) {
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
+          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,comm);CHKERRQ(ierr);
         }
       }
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status);CHKERRQ(ierr);
         }
       }
     }
@@ -515,7 +517,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
-      sprintf(name,"%s.%d",mname,rank);
+      PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
@@ -523,7 +525,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }
 
-  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
     if (format == PETSC_VIEWER_ASCII_XML){
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);
@@ -534,6 +536,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
@@ -548,12 +551,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     for (device = 0; device < devCount; ++device) {
       err = cudaGetDeviceProperties(&prop, (int)device);
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
   if (!PetscCUDAInitialized) {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size>1) {
       int         devCount;
       PetscInt    device;
@@ -573,7 +576,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
         if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
 
         /* next determine the rank and then set the device via a mod */
-        ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+        ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
         device = rank % devCount;
         err    = cudaSetDevice((int)device);
         if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
@@ -645,7 +648,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -memory_view: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log[_summary _summary_python]: logging objects and events\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_view [:filename:[format]]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n");CHKERRQ(ierr);
@@ -681,19 +684,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
   }
 
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
-  ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
 #endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
-  PetscCUSPSynchronize = flg3;
-#elif defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscViennaCLSynchronize = flg3;
-#elif defined(PETSC_HAVE_VECCUDA)
+#endif
+#if defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_synchronize",&flg3,NULL);CHKERRQ(ierr);
   PetscCUDASynchronize = flg3;
 #endif
@@ -704,4 +705,3 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   PetscFunctionReturn(0);
 }
-

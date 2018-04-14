@@ -39,8 +39,7 @@ PetscErrorCode  SNESFinalizePackage(void)
 PetscErrorCode  SNESInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg,cls;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -65,21 +64,26 @@ PetscErrorCode  SNESInitializePackage(void)
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLINESEARCH_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("snes",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscInfoDeactivateClass(DMSNES_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("sneslinesearch",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscInfoDeactivateClass(SNESLINESEARCH_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("snes",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscLogEventDeactivateClass(DMSNES_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("sneslinesearch",logList,',',&cls);CHKERRQ(ierr);
+    if (pkg || cls) {ierr = PetscLogEventDeactivateClass(SNESLINESEARCH_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(SNESFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

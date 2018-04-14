@@ -21,6 +21,13 @@ int main(int argc,char **args)
   for (i = 0; i < 10; ++i) {
     ierr = PetscViewerASCIIPrintf(viewer, "test line %d\n", i);CHKERRQ(ierr);
   }
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+
+TEST*/

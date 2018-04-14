@@ -4,7 +4,7 @@ Parse the test file and return a dictionary.
 
 Quick usage::
 
-  bin/maint/testparse.py -t src/ksp/ksp/examples/tutorials/ex1.c
+  lib/petsc/bin/maint/testparse.py -t src/ksp/ksp/examples/tutorials/ex1.c
 
 From the command line, it prints out the dictionary.  
 This is meant to be used by other scripts, but it is 
@@ -34,9 +34,9 @@ Example language
 TEST*/
 
 """
+from __future__ import print_function
 
 import os, re, glob, types
-from distutils.sysconfig import parse_makefile
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -45,8 +45,6 @@ import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 maintdir=os.path.join(os.path.join(os.path.dirname(thisscriptdir),'bin'),'maint')
 sys.path.insert(0,maintdir) 
-# Don't print out trace when raise Exceptions 
-sys.tracebacklimit = 0
 
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
@@ -119,8 +117,8 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
               else:
                 raise Exception(err)
 
-
-  return newTestStr
+  # Allow line continuation character '\'
+  return newTestStr.replace('\\\n', ' ')
 
 def parseLoopArgs(varset):
   """
@@ -142,14 +140,14 @@ def _getSeparateTestvars(testDict):
   vals=None
   sepvars=[]
   # Check nsize
-  if testDict.has_key('nsize'): 
+  if 'nsize' in testDict: 
     varset=testDict['nsize']
     if '{{' in varset:
       keynm,lvars,ftype=parseLoopArgs(varset)
       if ftype=='separate': sepvars.append(keynm)
 
   # Now check args
-  if not testDict.has_key('args'): return sepvars
+  if 'args' not in testDict: return sepvars
   for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
     if not varset.strip(): continue
     if '{{' in varset:
@@ -159,58 +157,87 @@ def _getSeparateTestvars(testDict):
 
   return sepvars
 
+def _getNewArgs(args):
+  """
+  Given: String that has args that might have loops in them
+  Return:  All of the arguments/values that do not have 
+             for 'separate output' in for loops
+  """
+  newargs=''
+  if not args.strip(): return args
+  for varset in re.split('-(?=[a-zA-Z])',args):
+    if not varset.strip(): continue
+    if '{{' not in varset:
+      if 'separate' not in varset:
+        newargs+="-"+varset.strip()+" "
+
+  return newargs
+
 def _getVarVals(findvar,testDict):
   """
   Given: variable that is either nsize or in args
-  Return:  Values to loop over
+  Return:  Values to loop over and the other arguments
+    Note that we keep the other arguments even if they have
+    for loops to enable stepping through all of the for lops
   """
-  vals=None
-  newargs=''
+  save_vals=None
   if findvar=='nsize':
     varset=testDict[findvar]
-    keynm,vals,ftype=parseLoopArgs('nsize '+varset)
+    keynm,save_vals,ftype=parseLoopArgs('nsize '+varset)
   else:
     varlist=[]
     for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
       if not varset.strip(): continue
-      if '{{' in varset:
-        keyvar,vals,ftype=parseLoopArgs(varset)
-        if keyvar!=findvar: 
-          newargs+="-"+varset.strip()+" "
-          continue
-      else:
-        newargs+="-"+varset.strip()+" "
+      if '{{' not in varset: continue
+      keyvar,vals,ftype=parseLoopArgs(varset)
+      if keyvar==findvar: 
+        save_vals=vals
 
-  if not vals: raise StandardError("Could not find separate_testvar: "+findvar)
-  return vals,newargs
+  if not save_vals: raise Exception("Could not find separate_testvar: "+findvar)
+  return save_vals
 
 def genTestsSeparateTestvars(intests,indicts):
   """
   Given: testname, sdict with 'separate_testvars
   Return: testnames,sdicts: List of generated tests
+    The tricky part here is the {{ ... }separate output}
+    that can be used multiple times
   """
   testnames=[]; sdicts=[]
   for i in range(len(intests)):
     testname=intests[i]; sdict=indicts[i]; i+=1
     separate_testvars=_getSeparateTestvars(sdict)
     if len(separate_testvars)>0:
+      sep_dicts=[sdict.copy()]
+      if 'args' in sep_dicts[0]:
+        sep_dicts[0]['args']=_getNewArgs(sdict['args'])
+      sep_testnames=[testname]
       for kvar in separate_testvars:
-        kvals,newargs=_getVarVals(kvar,sdict)
-        # No errors means we are good to go
+        kvals=_getVarVals(kvar,sdict)
+
+        # Have to do loop over previous var/val combos as well
+        # and accumulate as we go
+        val_testnames=[]; val_dicts=[]
         for val in kvals.split():
-          kvardict=sdict.copy()
-          gensuffix="_"+kvar+"-"+val
-          newtestnm=testname+gensuffix
-          if sdict.has_key('suffix'):
-            kvardict['suffix']=sdict['suffix']+gensuffix
-          else:
-            kvardict['suffix']=gensuffix
-          if kvar=='nsize':
-            kvardict[kvar]=val
-          else:
-            kvardict['args']=newargs+"-"+kvar+" "+val
-          testnames.append(newtestnm)
-          sdicts.append(kvardict)
+          gensuffix="_"+kvar+"-"+val.replace(',','__')
+          for kvaltestnm in sep_testnames:
+            val_testnames.append(kvaltestnm+gensuffix)
+          for kv in sep_dicts:
+            kvardict=kv.copy()
+            # If the last var then we have the final version
+            if 'suffix' in sdict:
+              kvardict['suffix']+=gensuffix
+            else:
+              kvardict['suffix']=gensuffix
+            if kvar=='nsize':
+              kvardict[kvar]=val
+            else:
+              kvardict['args']+="-"+kvar+" "+val+" "
+            val_dicts.append(kvardict)
+        sep_testnames=val_testnames
+        sep_dicts=val_dicts
+      testnames+=sep_testnames
+      sdicts+=sep_dicts
     else:
       testnames.append(testname)
       sdicts.append(sdict)
@@ -225,9 +252,9 @@ def genTestsSubtestSuffix(testnames,sdicts):
   for i in range(len(testnames)):
     testname=testnames[i]
     rmsubtests=[]; keepSubtests=False
-    if sdicts[i].has_key('subtests'):
+    if 'subtests' in sdicts[i]:
       for stest in sdicts[i]["subtests"]:
-        if sdicts[i][stest].has_key('suffix'):
+        if 'suffix' in sdicts[i][stest]:
           rmsubtests.append(stest)
           gensuffix="_"+sdicts[i][stest]['suffix']
           newtestnm=testname+gensuffix
@@ -237,15 +264,15 @@ def genTestsSubtestSuffix(testnames,sdicts):
           # Have to hand update
           # Append
           for kup in appendlist:
-            if sdicts[i][stest].has_key(kup):
-              if sdicts[i].has_key(kup):
+            if kup in sdicts[i][stest]:
+              if kup in sdicts[i]:
                 newsdict[kup]=sdicts[i][kup]+" "+sdicts[i][stest][kup]
               else:
                 newsdict[kup]=sdicts[i][stest][kup]
           # Promote
           for kup in acceptedkeys:
             if kup in appendlist: continue
-            if sdicts[i][stest].has_key(kup): 
+            if kup in sdicts[i][stest]: 
               newsdict[kup]=sdicts[i][stest][kup]
           # Cleanup
           for st in sdicts[i]["subtests"]: del newsdict[st]
@@ -296,7 +323,7 @@ def parseTest(testStr,srcfile,verbosity):
   testname="run"+os.path.splitext(bn)[0]
 
   # Tests that have default everything (so empty effectively)
-  if len(testStr)==0: return testname, {}
+  if len(testStr)==0: return [testname], [{}]
 
   striptest=_stripIndent(testStr,srcfile)
 
@@ -307,7 +334,7 @@ def parseTest(testStr,srcfile,verbosity):
   indentlevel=0
   for ln in striptest.split("\n"):
     line=ln.split('#')[0].rstrip()
-    if verbosity>2: print line
+    if verbosity>2: print(line)
     comment=("" if len(ln.split("#"))>0 else " ".join(ln.split("#")[1:]).strip())
     if comment: comments.append(comment)
     if not line.strip(): continue
@@ -321,18 +348,18 @@ def parseTest(testStr,srcfile,verbosity):
     if line.startswith(" "):
       subdict[subtestname][var]=val
       if not indentlevel: indentlevel=indentcount
-      #if indentlevel!=indentcount: print "Error in indentation:", ln
+      #if indentlevel!=indentcount: print("Error in indentation:", ln)
     # Determine subtest name and make dict
     elif var=="test":
       subtestname="test"+str(subtestnum)
       subdict[subtestname]={}
-      if not subdict.has_key("subtests"): subdict["subtests"]=[]
+      if "subtests" not in subdict: subdict["subtests"]=[]
       subdict["subtests"].append(subtestname)
       subtestnum=subtestnum+1
     # The rest are easy
     else:
       # For convenience, it is sometimes convenient to list twice
-      if subdict.has_key(var):
+      if var in subdict:
         if var in appendlist:
           subdict[var]+=" "+val
         else:
@@ -364,9 +391,10 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
 
   # The first entry should be test: but it might be indented. 
   newTestStr=_stripIndent(testStr,srcfile,entireBlock=True,fileNums=fileNums)
-  if verbosity>2: print srcfile
+  if verbosity>2: print(srcfile)
 
-  ## Check and see if we have build reuqirements
+  ## Check and see if we have build requirements
+  addToRunRequirements=None
   if "\nbuild:" in newTestStr:
     testDict['build']={}
     # The file info is already here and need to append
@@ -376,13 +404,27 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
       if bkey+":" in fileInfo:
         testDict['build'][bkey]=fileInfo.split(bkey+":")[1].split("\n")[0].strip()
         #if verbosity>1: bkey+": "+testDict['build'][bkey]
+      # If a runtime requires are put into build, push them down to all run tests
+      # At this point, we are working with strings and not lists
+      if 'requires' in testDict['build']:
+         if 'datafilespath' in testDict['build']['requires']: 
+             newreqs=re.sub('datafilespath','',testDict['build']['requires'])
+             testDict['build']['requires']=newreqs.strip()
+             addToRunRequirements='datafilespath'
+
 
   # Now go through each test.  First elem in split is blank
   for test in re.split("\ntest(?:set)?:",newTestStr)[1:]:
     testnames,subdicts=parseTest(test,srcfile,verbosity)
     for i in range(len(testnames)):
-      if testDict.has_key(testnames[i]):
+      if testnames[i] in testDict:
         raise RuntimeError("Multiple test names specified: "+testnames[i]+" in file: "+srcfile)
+      # Add in build requirements that need to be moved
+      if addToRunRequirements:
+          if 'requires' in subdicts[i]:
+              subdicts[i]['requires']+=addToRunRequirements
+          else:
+              subdicts[i]['requires']=addToRunRequirements
       testDict[testnames[i]]=subdicts[i]
 
   return testDict
@@ -393,29 +435,25 @@ def parseTestFile(srcfile,verbosity):
     testDict[srcfile][test][subtest]
   """
   debug=False
+  basename=os.path.basename(srcfile)
+  if basename=='makefile': return {}
+
   curdir=os.path.realpath(os.path.curdir)
   basedir=os.path.dirname(os.path.realpath(srcfile))
-  basename=os.path.basename(srcfile)
   os.chdir(basedir)
 
   testDict={}
-  sh=open(srcfile,"r"); fileStr=sh.read(); sh.close()
+  sh=open(basename,"r"); fileStr=sh.read(); sh.close()
 
   ## Start with doing the tests
   #
   fsplit=fileStr.split("/*TEST\n")[1:]
-  if len(fsplit)==0: 
-    if debug: print "No test found in: "+srcfile
-    return {}
   fstart=len(fileStr.split("/*TEST\n")[0].split("\n"))+1
   # Allow for multiple "/*TEST" blocks even though it really should be
   # one
   srcTests=[]
   for t in fsplit: srcTests.append(t.split("TEST*/")[0])
   testString=" ".join(srcTests)
-  if len(testString.strip())==0:
-    print "No test found in: "+srcfile
-    return {}
   flen=len(testString.split("\n"))
   fend=fstart+flen-1
   fileNums=range(fstart,fend)
@@ -439,7 +477,7 @@ def parseTestDir(directory,verbosity):
   os.chdir(basedir)
 
   tDict={}
-  for test_file in glob.glob("new_ex*.*"):
+  for test_file in sorted(glob.glob("new_ex*.*")):
     tDict.update(parseTestFile(test_file,verbosity))
 
   os.chdir(curdir)
@@ -451,23 +489,23 @@ def printExParseDict(rDict):
   """
   indent="   "
   for sfile in rDict:
-    print sfile
+    print(sfile)
     sortkeys=rDict[sfile].keys()
     sortkeys.sort()
     for runex in sortkeys:
-      print indent+runex
-      if type(rDict[sfile][runex])==types.StringType:
-        print indent*2+rDict[sfile][runex]
+      print(indent+runex)
+      if type(rDict[sfile][runex])==bytes:
+        print(indent*2+rDict[sfile][runex])
       else:
         for var in rDict[sfile][runex]:
           if var.startswith("test"): continue
-          print indent*2+var+": "+str(rDict[sfile][runex][var])
-        if rDict[sfile][runex].has_key('subtests'):
+          print(indent*2+var+": "+str(rDict[sfile][runex][var]))
+        if 'subtests' in rDict[sfile][runex]:
           for var in rDict[sfile][runex]['subtests']:
-            print indent*2+var
+            print(indent*2+var)
             for var2 in rDict[sfile][runex][var]:
-              print indent*3+var2+": "+str(rDict[sfile][runex][var][var2])
-      print "\n"
+              print(indent*3+var2+": "+str(rDict[sfile][runex][var][var2]))
+      print("\n")
   return
 
 def main(directory='',test_file='',verbosity=0):
@@ -496,7 +534,7 @@ if __name__ == '__main__':
         sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
         exit(1)
     if not opts.test_file and not opts.directory:
-      print "test file or directory is required"
+      print("test file or directory is required")
       parser.print_usage()
       sys.exit()
 

@@ -196,7 +196,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat,Vec,Vec);
 
 /*static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDIS(default)","Natural","NESDIS(small=20000)","NESDIS(small=4,no constrained)","NESDIS()"};*/
 
-static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
+static PetscErrorCode MatView_Info_CHOLMOD(Mat F,PetscViewer viewer)
 {
   Mat_CHOLMOD          *chol = (Mat_CHOLMOD*)F->data;
   const cholmod_common *c    = chol->common;
@@ -263,7 +263,7 @@ PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_CHOLMOD(F,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_CHOLMOD(F,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -342,7 +342,7 @@ PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;
@@ -355,7 +355,7 @@ static PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const Mat
 
   Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
 
-  Use -pc_type lu -pc_factor_mat_solver_package cholmod to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type cholmod to use this direct solver
 
   Consult CHOLMOD documentation for more information about the Common parameters
   which correspond to the options database keys below.
@@ -379,7 +379,7 @@ static PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const Mat
 
    Note: CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: PCCHOLESKY, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCCHOLESKY, PCFactorSetMatSolverType(), MatSolverType
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
@@ -408,7 +408,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;
-  ierr                           = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr                           = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqsbaij_cholmod);CHKERRQ(ierr);
   B->factortype                  = MAT_FACTOR_CHOLESKY;
   B->assembled                   = PETSC_TRUE; /* required by -ksp_view */
   B->preallocated                = PETSC_TRUE;

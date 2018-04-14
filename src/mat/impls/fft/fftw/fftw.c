@@ -1225,6 +1225,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
       break;
     }
   }
+  free(pdim);
   ierr      = PetscObjectChangeTypeName((PetscObject)A,MATFFTW);CHKERRQ(ierr);
   ierr      = PetscNewLog(A,&fftw);CHKERRQ(ierr);
   fft->data = (void*)fftw;

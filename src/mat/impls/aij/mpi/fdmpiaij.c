@@ -1,11 +1,11 @@
-
+#include <../src/mat/impls/sell/mpi/mpisell.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h>
 
-PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
+PetscErrorCode MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
-  PetscErrorCode    (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
+  PetscErrorCode    (*f)(void*,Vec,Vec,void*)=(PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode    ierr;
   PetscInt          k,cstart,cend,l,row,col,nz,spidx,i,j;
   PetscScalar       dx=0.0,*w3_array,*dy_i,*dy=coloring->dy;
@@ -372,7 +372,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscScalar            *A_val,*B_val,**valaddrhit;
   MatEntry               *Jentry;
   MatEntry2              *Jentry2;
-  PetscBool              isBAIJ;
+  PetscBool              isBAIJ,isSELL;
   PetscInt               bcols=c->bcols;
 #if defined(PETSC_USE_CTABLE)
   PetscTable             colmap=NULL;
@@ -388,6 +388,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
     Mat_SeqBAIJ *spA,*spB;
@@ -411,6 +412,26 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       }
       ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->cmap->n,PETSC_DETERMINE,B->cmap->n,garray,&c->vscale);CHKERRQ(ierr);
       ierr = PetscFree(garray);CHKERRQ(ierr);
+    }
+  } else if (isSELL) {
+    Mat_MPISELL *sell=(Mat_MPISELL*)mat->data;
+    Mat_SeqSELL *spA,*spB;
+    A = sell->A;  spA = (Mat_SeqSELL*)A->data; A_val = spA->val;
+    B = sell->B;  spB = (Mat_SeqSELL*)B->data; B_val = spB->val;
+    nz = spA->nz + spB->nz; /* total nonzero entries of mat */
+    if (!sell->colmap) {
+      /* Allow access to data structures of local part of matrix
+       - creates aij->colmap which maps global column number to local number in part B */
+      ierr = MatCreateColmap_MPISELL_Private(mat);CHKERRQ(ierr);
+    }
+    colmap = sell->colmap;
+    ierr = MatGetColumnIJ_SeqSELL_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
+    ierr = MatGetColumnIJ_SeqSELL_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
+
+    bs = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
+
+    if (ctype == IS_COLORING_GLOBAL && c->htype[0] == 'd') { /* create vscale for storing dx */
+      ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->cmap->n,PETSC_DETERMINE,B->cmap->n,sell->garray,&c->vscale);CHKERRQ(ierr);
     }
   } else {
     Mat_MPIAIJ *aij=(Mat_MPIAIJ*)mat->data;
@@ -574,7 +595,10 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(bs*mat->rmap->n,&c->dy);CHKERRQ(ierr);
-  } else {
+  } else if (isSELL) {
+    ierr = MatRestoreColumnIJ_SeqSELL_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
+    ierr = MatRestoreColumnIJ_SeqSELL_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
+  }else {
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
   }
@@ -593,16 +617,37 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 {
   PetscErrorCode ierr;
   PetscInt       bs,nis=iscoloring->n,m=mat->rmap->n;
-  PetscBool      isBAIJ;
+  PetscBool      isBAIJ,isSELL;
 
   PetscFunctionBegin;
   /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian;
    bcols is chosen s.t. dy-array takes 50% of memory space as mat */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISELL,&isSELL);CHKERRQ(ierr);
   if (isBAIJ || m == 0) {
     c->brows = m;
     c->bcols = 1;
+  } else if (isSELL) {
+    /* bcols is chosen s.t. dy-array takes 50% of local memory space as mat */
+    Mat_MPISELL *sell=(Mat_MPISELL*)mat->data;
+    Mat_SeqSELL *spA,*spB;
+    Mat        A,B;
+    PetscInt   nz,brows,bcols;
+    PetscReal  mem;
+
+    bs    = 1; /* only bs=1 is supported for MPISELL matrix */
+
+    A = sell->A;  spA = (Mat_SeqSELL*)A->data;
+    B = sell->B;  spB = (Mat_SeqSELL*)B->data;
+    nz = spA->nz + spB->nz; /* total local nonzero entries of mat */
+    mem = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*m*sizeof(PetscInt);
+    bcols = (PetscInt)(0.5*mem /(m*sizeof(PetscScalar)));
+    brows = 1000/bcols;
+    if (bcols > nis) bcols = nis;
+    if (brows == 0 || brows > m) brows = m;
+    c->brows = brows;
+    c->bcols = bcols;
   } else { /* mpiaij matrix */
     /* bcols is chosen s.t. dy-array takes 50% of local memory space as mat */
     Mat_MPIAIJ *aij=(Mat_MPIAIJ*)mat->data;

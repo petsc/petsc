@@ -5,9 +5,16 @@ Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21272;-1.01736], Cost
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21272;-1.01736], Cost function f=1.21244e-06
 Tao Object: 1 MPI processes
   type: blmvm
-      Gradient steps: 0
+  Gradient steps: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=4.76929e-10

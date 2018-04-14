@@ -1,0 +1,45 @@
+1D -- DM_BOUNDARY_NONE
+DM Object: (n1d_) 1 MPI processes
+  type: da
+Processor [0] M 8 m 1 w 1 s 1
+X range of indices: 0 8
+1D -- DM_BOUNDARY_GHOSTED
+DM Object: (g1d_) 1 MPI processes
+  type: da
+Processor [0] M 8 m 1 w 2 s 1
+X range of indices: 0 8
+1D -- DM_BOUNDARY_PERIODIC
+DM Object: (p1d_) 1 MPI processes
+  type: da
+Processor [0] M 8 m 1 w 2 s 1
+X range of indices: 0 8
+2D -- DM_BOUNDARY_NONE
+DM Object: (n2d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 m 1 n 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8
+2D -- DM_BOUNDARY_GHOSTED
+DM Object: (g2d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 m 1 n 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8
+2D -- DM_BOUNDARY_PERIODIC
+DM Object: (p2d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 m 1 n 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8
+3D -- DM_BOUNDARY_NONE
+DM Object: (n3d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 P 8 m 1 n 1 p 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8, Z range of indices: 0 8
+3D -- DM_BOUNDARY_GHOSTED
+DM Object: (g3d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 P 8 m 1 n 1 p 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8, Z range of indices: 0 8
+3D -- DM_BOUNDARY_PERIODIC
+DM Object: (p3d_) 1 MPI processes
+  type: da
+Processor [0] M 8 N 8 P 8 m 1 n 1 p 1 w 2 s 1
+X range of indices: 0 8, Y range of indices: 0 8, Z range of indices: 0 8

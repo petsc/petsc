@@ -33,6 +33,7 @@ const char *const PetscViewerFormats[] = {
   "NATIVE",
   "HDF5_VIZ",
   "NOFORMAT",
+  "LOAD_BALANCE",
   "PetscViewerFormat",
   "PETSC_VIEWER_",
   0

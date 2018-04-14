@@ -135,3 +135,22 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -bs 2 -block 0 -sliced_mat_type baij -alpha 10 -u0 0.1
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -bs 2 -block 1 -sliced_mat_type aij -alpha 10 -u0 0.1
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -bs 2 -block 0 -sliced_mat_type aij -alpha 10 -u0 0.1
+
+TEST*/

@@ -36,20 +36,23 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
 
+  /* if A is symmetric, set its flag -- required by MatGetInertia() */
+  ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
+
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  if (!rank) PetscPrintf(PETSC_COMM_SELF,"ex125: nrhs %D\n",nrhs);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ex125: nrhs %D\n",nrhs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   /* #define DEBUGEX */
-#if defined(DEBUGEX)   
+#if defined(DEBUGEX)
   {
     PetscInt    row,j,M,cols[nrhs];
     PetscScalar vals[nrhs];
@@ -81,29 +84,29 @@ int main(int argc,char **args)
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
-    if (!rank) printf(" SUPERLU LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   case 1:
-    if (!rank) printf(" SUPERLU_DIST LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU_DIST LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   case 2:
-    if (!rank) printf(" MUMPS LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
-      PetscInt    icntl;   
-      PetscReal   cntl; 
-     
+      PetscInt    icntl;
+      PetscReal   cntl;
+
       icntl = 2;        /* sequential matrix ordering */
       ierr = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
 
@@ -115,12 +118,12 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   case 3:
-    if (!rank) printf(" MKL_PARDISO LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MKL_PARDISO LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   default:
-    if (!rank) printf(" PETSC LU:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
@@ -130,40 +133,49 @@ int main(int argc,char **args)
   ierr           = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {
-    if (!rank) PetscPrintf(PETSC_COMM_SELF," %D-the LU numfactorization \n",nfact);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the LU numfactorization \n",nfact);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-    { /* Test MatSuperluDistGetDiagU() 
+    if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
-    PetscInt    M;
-    PetscScalar *diag;
+      PetscInt    M;
+      PetscScalar *diag;
+#if !defined(PETSC_USE_COMPLEX)
+      PetscInt nneg,nzero,npos;
+#endif
 
-    ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
-    ierr = MatSuperluDistGetDiagU(F,diag);CHKERRQ(ierr);
-    ierr = PetscFree(diag);CHKERRQ(ierr);
+      ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(M,&diag);CHKERRQ(ierr);
+      ierr = MatSuperluDistGetDiagU(F,diag);CHKERRQ(ierr);
+      ierr = PetscFree(diag);CHKERRQ(ierr);
+
+#if !defined(PETSC_USE_COMPLEX)
+      /* Test MatGetInertia() */
+      ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+      }
+#endif
     }
 #endif
 
     /* Test MatMatSolve() */
-    if (testMatMatSolve) { 
+    if (testMatMatSolve) {
       if (!nfact) {
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       } else {
         ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       }
       for (nsolve = 0; nsolve < 2; nsolve++) {
-        if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the MatMatSolve \n",nsolve);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the MatMatSolve \n",nsolve);CHKERRQ(ierr);
         ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
         /* Check the error */
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          if (!rank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
-          }
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);CHKERRQ(ierr);
         }
       }
       if (ipack == 2 && size == 1) {
@@ -173,16 +185,14 @@ int main(int argc,char **args)
         ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
         ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
         for (nsolve = 0; nsolve < 2; nsolve++) {
-          if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the sparse MatMatSolve \n",nsolve);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the sparse MatMatSolve \n",nsolve);CHKERRQ(ierr);
           ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
 
           /* Check the error */
           ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
           ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
           if (norm > tol) {
-            if (!rank) {
-              ierr = PetscPrintf(PETSC_COMM_SELF,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
-            }
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
           }
         }
         ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
@@ -203,7 +213,7 @@ int main(int argc,char **args)
         ierr = VecCopy(x,u);CHKERRQ(ierr);
         ierr = MatMult(A,x,b);CHKERRQ(ierr);
 
-        if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the MatSolve \n",nsolve);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the MatSolve \n",nsolve);CHKERRQ(ierr);
         ierr = MatSolve(F,b,x);CHKERRQ(ierr);
 
         /* Check the error */
@@ -214,9 +224,7 @@ int main(int argc,char **args)
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
-          if (!rank) {
-            ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, resi %g, LU numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
-          }
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, LU numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
         }
       }
     }
@@ -240,3 +248,50 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 10
+      output_file: output/ex125.out
+
+   test:
+      suffix: mkl_pardiso
+      requires: mkl_pardiso datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 3
+
+   test:
+      suffix: mumps
+      requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
+      output_file: output/ex125_mumps_seq.out
+
+   test:
+      suffix: mumps_2
+      nsize: 3
+      requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
+      output_file: output/ex125_mumps_par.out
+
+   test:
+      suffix: superlu_dist
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NATURAL
+
+   test:
+      suffix: superlu_dist_2
+      nsize: 3
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NATURAL
+      output_file: output/ex125_superlu_dist.out
+
+   test:
+      suffix: superlu_dist_complex
+      nsize: 3
+      requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
+      output_file: output/ex125_superlu_dist_complex.out
+
+TEST*/

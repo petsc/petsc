@@ -8,7 +8,7 @@
 !  CG Types
 !
       type tKSP
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tKSP
 
       KSP, parameter :: PETSC_NULL_KSP = tKSP(-1)
@@ -70,11 +70,13 @@
 !
 !  Possible arguments to KSPSetNormType()
 !
+      PetscEnum KSP_NORM_DEFAULT
       PetscEnum KSP_NORM_NONE
       PetscEnum KSP_NORM_PRECONDITIONED
       PetscEnum KSP_NORM_UNPRECONDITIONED
       PetscEnum KSP_NORM_NATURAL
 
+      parameter (KSP_NORM_DEFAULT=0)
       parameter (KSP_NORM_NONE=0)
       parameter (KSP_NORM_PRECONDITIONED=1)
       parameter (KSP_NORM_UNPRECONDITIONED=2)

@@ -206,6 +206,8 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
 
+  ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
+
   tao->ntotalits += tao->niter;
   ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
 
@@ -366,6 +368,8 @@ PetscErrorCode TaoDestroy(Tao *tao)
 . -tao_draw_step - graphically view step vector at each iteration
 . -tao_draw_gradient - graphically view gradient at each iteration
 . -tao_fd_gradient - use gradient computed with finite differences
+. -tao_fd_hessian - use hessian computed with finite differences
+. -tao_mf_hessian - use matrix-free hessian computed with finite differences
 . -tao_cancelmonitors - cancels all monitors (except those set with command line)
 . -tao_view - prints information about the Tao after solving
 - -tao_converged_reason - prints the reason TAO stopped iterating
@@ -454,7 +458,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDefaultMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-tao_smonitor","Use the short convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -502,7 +506,26 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     if (flg) {
       ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEnum("-tao_subset_type","subset type", "", TaoSubSetTypes,(PetscEnum)tao->subset_type, (PetscEnum*)&tao->subset_type, 0);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_fd_hessian","compute hessian using finite differences","TaoDefaultComputeHessian",flg,&flg,NULL);CHKERRQ(ierr);
+    if (flg) {
+      Mat H;
+
+      ierr = MatCreate(PetscObjectComm((PetscObject)tao),&H);CHKERRQ(ierr);
+      ierr = MatSetType(H,MATAIJ);CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,H,H,TaoDefaultComputeHessian,NULL);CHKERRQ(ierr);
+      ierr = MatDestroy(&H);CHKERRQ(ierr);
+    }
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_mf_hessian","compute matrix-free hessian using finite differences","TaoDefaultComputeHessianMFFD",flg,&flg,NULL);CHKERRQ(ierr);
+    if (flg) {
+      Mat H;
+
+      ierr = MatCreate(PetscObjectComm((PetscObject)tao),&H);CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,H,H,TaoDefaultComputeHessianMFFD,NULL);CHKERRQ(ierr);
+      ierr = MatDestroy(&H);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsEnum("-tao_subset_type","subset type","",TaoSubSetTypes,(PetscEnum)tao->subset_type,(PetscEnum*)&tao->subset_type,NULL);CHKERRQ(ierr);
 
     if (tao->ops->setfromoptions) {
       ierr = (*tao->ops->setfromoptions)(PetscOptionsObject,tao);CHKERRQ(ierr);
@@ -553,8 +576,10 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
+    PetscInt        tabs;
+    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
 
     if (tao->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -562,20 +587,24 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     if (tao->linesearch) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->linesearch),viewer);CHKERRQ(ierr);
+      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
     }
     if (tao->ksp) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer);CHKERRQ(ierr);
+      ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+
     if (tao->XL || tao->XU) {
       ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]);CHKERRQ(ierr);
     }
 
-    ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: gatol=%g,",(double)tao->gatol);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(viewer," steptol=%g,",(double)tao->steptol);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol);CHKERRQ(ierr);
-
+    ierr = PetscViewerASCIIPrintf(viewer,"convergence tolerances: gatol=%g,",(double)tao->gatol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," steptol=%g,",(double)tao->steptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%g\n",(double)tao->residual);CHKERRQ(ierr);
 
     if (tao->cnorm>0 || tao->catol>0 || tao->crtol>0){
@@ -676,6 +705,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       }
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(viewer, tabs); CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
@@ -1344,7 +1374,7 @@ $     int mymonitor(Tao tao,void *mctx)
 
 
    Options Database Keys:
-+    -tao_monitor        - sets TaoDefaultMonitor()
++    -tao_monitor        - sets TaoMonitorDefault()
 .    -tao_smonitor       - sets short monitor
 .    -tao_cmonitor       - same as smonitor plus constraint norm
 .    -tao_view_solution   - view solution at each iteration
@@ -1362,7 +1392,7 @@ $     int mymonitor(Tao tao,void *mctx)
 
    Level: intermediate
 
-.seealso: TaoDefaultMonitor(), TaoCancelMonitors(),  TaoSetDestroyRoutine()
+.seealso: TaoMonitorDefault(), TaoCancelMonitors(),  TaoSetDestroyRoutine()
 @*/
 PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *ctx,PetscErrorCode (*dest)(void**))
 {
@@ -1406,7 +1436,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoCancelMonitors(Tao tao)
 {
@@ -1425,7 +1455,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 }
 
 /*@
-   TaoDefaultMonitor - Default routine for monitoring progress of the
+   TaoMonitorDefault - Default routine for monitoring progress of the
    Tao solvers (default).  This monitor prints the function value and gradient
    norm at each iteration.  It can be turned on from the command line using the
    -tao_monitor option
@@ -1443,10 +1473,10 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 
 .seealso: TaoDefaultSMonitor(), TaoSetMonitor()
 @*/
-PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       its;
+  PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
 
@@ -1455,19 +1485,25 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  if (its == 0 && ((PetscObject)tao)->prefix) {
+     ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+   }
+  ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
   if (gnorm >= PETSC_INFINITY) {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: Inf \n");CHKERRQ(ierr);
   } else {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %g \n",(double)gnorm);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
    TaoDefaultSMonitor - Default routine for monitoring progress of the
-   solver. Same as TaoDefaultMonitor() except
+   solver. Same as TaoMonitorDefault() except
    it prints fewer digits of the residual as the residual gets smaller.
    This is because the later digits are meaningless and are often
    different on different machines; by using this routine different
@@ -1485,7 +1521,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 {
@@ -1514,7 +1550,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 }
 
 /*@
-   TaoDefaultCMonitor - same as TaoDefaultMonitor() except
+   TaoDefaultCMonitor - same as TaoMonitorDefault() except
    it prints the norm of the constraints function. It can be turned on
    from the command line using the -tao_cmonitor option
 
@@ -1529,7 +1565,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 {
@@ -2080,7 +2116,7 @@ PetscErrorCode TaoRegisterDestroy(void)
 
 .keywords: Tao, nonlinear, get, iteration, number,
 
-.seealso:   TaoGetLinearSolveIterations()
+.seealso:   TaoGetLinearSolveIterations(), TaoGetResidualNorm(), TaoGetObjective()
 @*/
 PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
 {
@@ -2088,6 +2124,63 @@ PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidIntPointer(iter,2);
   *iter = tao->niter;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TaoGetObjective - Gets the current value of the objective function
+   at this time.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  value - the current value
+
+   Level: intermediate
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetResidualNorm()
+@*/
+PetscErrorCode  TaoGetObjective(Tao tao,PetscReal *value)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidRealPointer(value,2);
+  *value = tao->fc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TaoGetResidualNorm - Gets the current value of the norm of the residual
+   at this time.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  value - the current value
+
+   Level: intermediate
+
+   Developer Note: This is the 2-norm of the residual, we cannot use TaoGetGradientNorm() because that has
+                   a different meaning. For some reason Tao sometimes calls the gradient the residual.
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetObjective()
+@*/
+PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidRealPointer(value,2);
+  *value = tao->residual;
   PetscFunctionReturn(0);
 }
 
@@ -2340,12 +2433,12 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
-.seealso TaoGetConvergedReason(), TaoDefaultMonitor(), TaoSetMonitor()
+.seealso TaoGetConvergedReason(), TaoMonitorDefault(), TaoSetMonitor()
 
    Level: developer
 
 @*/
-PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoConvergedReason *reason)
+PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2359,15 +2452,10 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   if (!its) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }
-  TaoLogConvergenceHistory(tao,f,res,cnorm,tao->ksp_its);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(res)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-  if (tao->ops->convergencetest) {
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-  }
   for (i=0;i<tao->numbermonitors;i++) {
     ierr = (*tao->monitor[i])(tao,tao->monitorcontext[i]);CHKERRQ(ierr);
   }
-  *reason = tao->reason;
   PetscFunctionReturn(0);
 }
 

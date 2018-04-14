@@ -47,6 +47,6 @@
 
 #-ts_monitor_lg_solution
 #-draw_pause -2
-#-lg_use_markers false
-#-ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
+-lg_use_markers false
+-ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
 #-ts_monitor_envelope

@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-import sys
+import sys, os
 if not type(sys.version_info) is tuple and sys.version_info.major > 2:
-  print('Configure does not support Python 3 yet, please run as')
+  if os.path.basename(sys.executable) == 'python2':
+    # Exit to prevent an infinite loop in case the environment is corrupted such
+    # that "python2" in PATH is actually a Python 3 interpreter.
+    print('Executable not a valid Python 2 interpreter: ' + sys.executable)
+    sys.exit(1)
+  print('Configure does not support Python 3 yet, attempting to run as')
   print('  python2 ' + ' '.join(["'" + a + "'" for a in sys.argv]))
-  sys.exit(1)
+  os.execlp('python2', 'python2', *sys.argv)
 
-import os
 execfile(os.path.join(os.path.dirname(__file__), 'config', 'configure.py'))

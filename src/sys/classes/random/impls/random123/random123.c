@@ -86,10 +86,10 @@ PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscRandomGetValueReal_Random123(PetscRandom r,PetscScalar *val)
+PetscErrorCode  PetscRandomGetValueReal_Random123(PetscRandom r,PetscReal *val)
 {
   PetscRandom123 *r123 = (PetscRandom123 *) r->data;
-  PetscScalar     rreal;
+  PetscReal       rreal;
 
   PetscFunctionBegin;
   rreal = PetscRandom123Step(r123);

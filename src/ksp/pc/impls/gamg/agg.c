@@ -796,7 +796,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       }
 
       /* get Q - row oriented */
-      PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       if (INFO != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %d",-INFO);
 
       for (ii = 0; ii < M; ii++) {
@@ -1166,12 +1166,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
     ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
     ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
+    ierr = KSPSetErrorIfNotConverged(eksp,PETSC_FALSE);CHKERRQ(ierr);
 
     ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
@@ -1179,6 +1176,10 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
     ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
     ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
+
+    ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
 
     /* solve - keep stuff out of logging */
     ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);

@@ -2,7 +2,7 @@
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,PetscInt np[],PetscInt *_npoints,PetscReal **_xi)
 {
@@ -328,7 +328,7 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[])
+PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
   PetscErrorCode ierr;
   PetscInt f,dim;
@@ -344,7 +344,7 @@ PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt proje
       for (f=0; f<nfields; f++) {
         PetscReal *swarm_field;
         
-        ierr = DataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
+        ierr = DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
         ierr = DMSwarmProjectField_ApproxQ1_DA_2D(swarm,swarm_field,celldm,vecs[f]);CHKERRQ(ierr);
       }
       break;

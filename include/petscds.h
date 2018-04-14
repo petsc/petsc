@@ -53,7 +53,10 @@ PETSC_EXTERN PetscErrorCode PetscDSView(PetscDS,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDSRegister(const char [], PetscErrorCode (*)(PetscDS));
 PETSC_EXTERN PetscErrorCode PetscDSRegisterDestroy(void);
 
+PETSC_EXTERN PetscErrorCode PetscDSGetHeightSubspace(PetscDS, PetscInt, PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSGetSpatialDimension(PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetCoordinateDimension(PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSSetCoordinateDimension(PetscDS, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumFields(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalComponents(PetscDS, PetscInt *);
@@ -138,6 +141,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetJacobian(PetscDS, PetscInt, PetscInt,
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                         PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS, PetscInt, PetscInt,
                                                void (**)(PetscInt, PetscInt, PetscInt,
@@ -283,7 +287,9 @@ PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscReal ***, Pet
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetRefCoordArrays(PetscDS, PetscReal **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode PetscDSCopyConstants(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSSelectEquations(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(void), PetscInt *, const PetscInt **, void **);

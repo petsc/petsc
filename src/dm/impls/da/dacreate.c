@@ -173,7 +173,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
   PetscSection   section;
@@ -294,6 +294,17 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   ierr = DMDASetStencilWidth(*newdm, da->s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   ierr = DMSetUp(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
+{
+  DM_DA          *da = (DM_DA *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = da->interptype == DMDA_Q1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -430,6 +441,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->refinehierarchy             = DMRefineHierarchy_DA;
   da->ops->coarsenhierarchy            = DMCoarsenHierarchy_DA;
   da->ops->getinjection                = DMCreateInjection_DA;
+  da->ops->hascreateinjection          = DMHasCreateInjection_DA;
   da->ops->getaggregates               = DMCreateAggregates_DA;
   da->ops->destroy                     = DMDestroy_DA;
   da->ops->view                        = 0;

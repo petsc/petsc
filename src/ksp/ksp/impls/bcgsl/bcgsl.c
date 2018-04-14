@@ -326,9 +326,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
    Level: intermediate
 
-.keywords: KSP, BiCGStab(L), set, exact residuals
+.keywords: BiCGStab(L), set, exact residuals
 
-.seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol()
+.seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol(), KSP
 @*/
 PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
@@ -364,9 +364,9 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
    Level: intermediate
 
-.keywords: KSP, BiCGStab(L), set, polynomial
+.keywords: BiCGStab(L), set, polynomial
 
-.seealso: KSPBCGSLSetEll()
+.seealso: KSPBCGSLSetEll(), KSP
 @*/
 PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 {
@@ -394,9 +394,9 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 
    Level: intermediate
 
-.keywords: KSP, BiCGStab(L), set, polynomial
+.keywords: BiCGStab(L), set, polynomial
 
-.seealso: @()
+.seealso: KSP, KSPBCGSL, KSPCreate(), KSPSetType()
 @*/
 PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 {
@@ -441,9 +441,9 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
    test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
    allows the iteration to complete successfully. See KSPBCGSLSetUsePseudoinverse() to switch to a conventional solve.
 
-.keywords: KSP, BiCGStab(L), set, exact residuals,
+.keywords: BiCGStab(L), set, exact residuals,
 
-.seealso: KSPBCGSLSetUsePseudoinverse()
+.seealso: KSPBCGSLSetUsePseudoinverse(), KSP, KSPBCGSL
 @*/
 PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
 {

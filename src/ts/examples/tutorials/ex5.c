@@ -479,7 +479,16 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
   return 0;
 }
 
+/*TEST
 
+    test:
+      requires: x
+
+    test:
+      suffix: nox
+      args: -nox
+
+TEST*/
 
 
 

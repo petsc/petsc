@@ -646,15 +646,15 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
 
         nactive_edges++;
         /* skip if I have a bigger edge someplace (lid_max_ew gets updated) */
-        if (PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12) continue;
+        if (PetscRealPart(lid_max_ew[lid0]) > e->weight + PETSC_SMALL) continue;
 
         if (cpid1 == -1) {
-          if (PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12) continue;
+          if (PetscRealPart(lid_max_ew[lid1]) > e->weight + PETSC_SMALL) continue;
         } else {
           /* see if edge might get matched on other proc */
           PetscReal g_max_e = PetscRealPart(cpcol_max_ew[cpid1]);
-          if (g_max_e > e->weight + 1.e-12) continue;
-          else if (e->weight > g_max_e - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) > rank) {
+          if (g_max_e > e->weight + PETSC_SMALL) continue;
+          else if (e->weight > g_max_e - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) > rank) {
             /* check for max_e == to this edge and larger processor that will deal with this */
             continue;
           }
@@ -672,7 +672,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
               if (cpcol_matched[lidj]) continue;
               ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if (ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) {
+              if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid0]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) {
                 isOK = PETSC_FALSE;
               }
             }
@@ -689,7 +689,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
                 if (cpcol_matched[lidj]) continue;
                 ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if (ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) {
+                if (ew > max_e - PETSC_SMALL && ew > PetscRealPart(lid_max_ew[lid1]) - PETSC_SMALL && (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > rank) {
                   isOK = PETSC_FALSE;
                 }
               }
@@ -793,7 +793,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           n  = *pt++; kk = *pt++;
           while (n--) {
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
-            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"Recieved deleted gid %D, deleted by (lid) %D from proc %D\n",sub_it,gid1,kk);
+            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %D, deleted by (lid) %D from proc %D\n",sub_it,gid1,kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             ierr              = PetscCDSizeAt(agg_llists, lid1, &kk);CHKERRQ(ierr);
             count2           += kk + 2;
@@ -941,7 +941,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
               if (cpcol_matched[lidj]) continue;
               ew = PetscRealPart(ap[jj]); v1_max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* get max pe that has a max_e == to this edge w */
-              if ((pe=cpcol_pe[idx[jj]]) > max_pe && ew > v1_max_e - 1.e-12 && ew > v0_max_e - 1.e-12) max_pe = pe;
+              if ((pe=cpcol_pe[idx[jj]]) > max_pe && ew > v1_max_e - PETSC_SMALL && ew > v0_max_e - PETSC_SMALL) max_pe = pe;
             }
             vval = (PetscScalar)max_pe;
           }

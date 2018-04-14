@@ -202,6 +202,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
   user.x_ob[1] = x_ptr[1];
+  ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
@@ -291,8 +292,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   PetscScalar       *x_ptr,*y_ptr;
   PetscErrorCode    ierr;
 
-  ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = VecGetArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
   user->mu = x_ptr[0];
+  ierr = VecRestoreArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -337,6 +340,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
+  ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
@@ -351,7 +355,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetCostGradients(ts,1,user->lambda,user->mup);CHKERRQ(ierr);
 
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -360,3 +364,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    build:
+      requires: !complex !single
+
+    test:
+      suffix: 1
+      args: -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 -ts_trajectory_dirname ex16opt_pdir
+
+TEST*/

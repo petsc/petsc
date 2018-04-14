@@ -925,10 +925,10 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",(double)(param->lid_depth*param->L),(double)(param->fault_depth*param->L));CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)grid->dx*param->L,(double)(grid->dz*param->L));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)(grid->dx*param->L),(double)(grid->dz*param->L));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet);CHKERRQ(ierr);
 
@@ -1250,7 +1250,8 @@ PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *u
 #if defined(PETSC_HAVE_ERF)
   return (PetscReal)(erf((double)PetscRealPart(z*param->L/2.0/param->skt)));
 #else
-  SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
+  (*PetscErrorPrintf)("erf() not available on this machine\n");
+  MPI_Abort(PETSC_COMM_SELF,1);
 #endif
 }
 
@@ -1455,3 +1456,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex erf
+
+   test:
+      args: -ni 18
+      filter: grep -v Destination
+      requires: !single
+
+TEST*/

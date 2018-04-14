@@ -200,7 +200,7 @@ typedef struct {
 }
 DM_Forest_geometry_pforest;
 
-#define GeometryMapping_pforest _append_pforest(Geometry)
+#define GeometryMapping_pforest _append_pforest(GeometryMapping)
 static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which_tree, const double abc[3], double xyz[3])
 {
   DM_Forest_geometry_pforest *geom_pforest = (DM_Forest_geometry_pforest*)geom->user;
@@ -792,7 +792,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
+        PetscBool  isDepth, isGhost, isVTK, isDim;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -801,6 +801,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(base, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
+        ierr = PetscStrcmp(name,"dim",&isDim);CHKERRQ(ierr);
+        if (isDim) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -3767,11 +3769,11 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
       }
       for (i = 0; i < nCoords; i++) {
         PetscScalar *coord              = &coords[off + i * coordDim];
-        double      coordP4est[3]       = {0.};
-        double      coordP4estMapped[3] = {0.};
+        PetscReal   coordP4est[3]       = {0.};
+        PetscReal   coordP4estMapped[3] = {0.};
         PetscInt    j;
 
-        for (j = 0; j < p4estCoordDim; j++) coordP4est[j] = (double) PetscRealPart(coord[j]);
+        for (j = 0; j < p4estCoordDim; j++) coordP4est[j] = PetscRealPart(coord[j]);
         ierr = (map)(base,coarsePoint,p4estCoordDim,coordP4est,coordP4estMapped,mapCtx);CHKERRQ(ierr);
         for (j = 0; j < p4estCoordDim; j++) coord[j] = (PetscScalar) coordP4estMapped[j];
       }
@@ -4199,6 +4201,16 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscFunctionReturn(0);
 }
 
+#define DMHasCreateInjection_pforest _append_pforest(DMHasCreateInjection)
+static PetscErrorCode DMHasCreateInjection_pforest(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 #define DMForestTransferVec_pforest _append_pforest(DMForestTransferVec)
 static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
@@ -4577,6 +4589,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->clone                     = DMClone_pforest;
   dm->ops->createinterpolation       = DMCreateInterpolation_pforest;
   dm->ops->getinjection              = DMCreateInjection_pforest;
+  dm->ops->hascreateinjection        = DMHasCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;

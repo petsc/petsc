@@ -1,0 +1,21 @@
+#! /bin/csh
+#
+# This 'default' config is sourced by startnightly/copylogsnightly/killnightly
+# which sets some common configuration data for these scripts.
+#
+# It uses "TEST" variable set by the calling script - and setup:
+# TNAME : the actual config file for this test
+# RNAME : name of the local repo clone for this test
+# URL  : petsc repo url
+#
+  set SSH=ssh
+  set SCP=scp
+  set DASHN=-n
+  set GIT=yes
+  set URL=https://bitbucket.org/petsc/petsc
+  set TNAME=`echo ${TEST} | cut -d ':' -f 1`
+  set BRANCH=`echo ${TEST} | cut -s -d ':' -f 2`
+  if ("$BRANCH" == "") then
+    set BRANCH='next'
+  endif
+  set RNAME=petsc.$BRANCH

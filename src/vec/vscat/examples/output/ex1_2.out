@@ -1,0 +1,57 @@
+scatter type mpi3node
+
+SCATTER_FORWARD y:
+Vec Object: 4 MPI processes
+  type: node
+Process [0]
+6.
+5.
+7.
+9.
+9.
+Process [1]
+0.
+0.
+0.
+0.
+3.
+Process [2]
+0.
+0.
+0.
+0.
+0.
+Process [3]
+0.
+0.
+0.
+0.
+0.
+
+SCATTER_REVERSE x:
+Vec Object: 4 MPI processes
+  type: node
+Process [0]
+0.
+27.
+0.
+9.
+0.
+Process [1]
+1.
+0.
+2.
+0.
+4.
+Process [2]
+0.
+0.
+0.
+0.
+0.
+Process [3]
+0.
+0.
+0.
+0.
+0.

@@ -124,3 +124,30 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      output_file: output/ex161.out
+   test:
+      suffix: 2
+      args: -matmattransmult_color -mat_no_inode
+      output_file: output/ex161.out
+
+   test:
+      suffix: 3
+      args: -matmattransmult_color -mat_no_inode -matden2sp_brows 3
+      output_file: output/ex161.out
+
+   test:
+      suffix: 4
+      args: -matmattransmult_color -mat_no_inode -A_matrart_via matmattransposemult
+      output_file: output/ex161.out
+
+   test:
+      suffix: 5
+      args: -matmattransmult_color -mat_no_inode -A_matrart_via coloring_rart
+      output_file: output/ex161.out
+
+TEST*/

@@ -1,4 +1,3 @@
-
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -17,7 +16,6 @@ PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
   ierr = VecScatterBegin(dd->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
@@ -40,7 +38,7 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
@@ -60,7 +58,7 @@ PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   if (mode == ADD_VALUES) {
     ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
@@ -146,20 +144,20 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(n,VEC_CLASSID,4);
   if (!dd->gton) {
     /* create the scatter context */
     ierr = DMDAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(dd->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gton,g,n,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -191,16 +189,16 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  ierr = VecScatterEnd(dd->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(n,VEC_CLASSID,4);
+  ierr = VecScatterEnd(dd->gton,g,n,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -233,20 +231,20 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(n,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   if (!dd->gton) {
     /* create the scatter context */
     ierr = DMDAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(dd->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(dd->gton,n,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +262,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Output Parameter:
 .  l  - the global values in the PETSc DMDA ordering
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
    The global and local vectors used here need not be the same as those
@@ -278,16 +276,15 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
-PetscErrorCode  DMDANaturalToGlobalEnd(DM da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode  DMDANaturalToGlobalEnd(DM da,Vec n,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(n,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
-  ierr = VecScatterEnd(dd->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(dd->gton,n,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

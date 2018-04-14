@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=es
-set USR=petsc
-set LOC=/scratch/petsc/${RNAME}-3
-set CONF=arch-c-exodus-dbg-builder

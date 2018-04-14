@@ -39,7 +39,9 @@
      &           tPetscViewer(15)
 
       PetscViewer PETSC_VIEWER_STDOUT_
+      PetscViewer PETSC_VIEWER_DRAW_
       external PETSC_VIEWER_STDOUT_
+      external PETSC_VIEWER_DRAW_
       external PetscViewerAndFormatDestroy
 !
 !  Flags for binary I/O

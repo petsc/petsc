@@ -154,3 +154,32 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      TODO: Need to develop comparison test
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -splitreduction_async
+      TODO: Need to develop comparison test
+
+   test:
+      suffix: 2_cuda
+      nsize: 3
+      args: -splitreduction_async -vec_type cuda
+      requires: veccuda
+      TODO: Need to develop comparison test
+
+   test:
+      suffix: cuda
+      nsize: 3
+      args: -vec_type cuda
+      TODO: Need to develop comparison test
+      requires: veccuda
+ 
+TEST*/

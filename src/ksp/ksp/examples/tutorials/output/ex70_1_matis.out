@@ -1,0 +1,124 @@
+  DMSWARM_PIC: Using method CellDM->LocatePoints
+  DMSWARM_PIC: Using method CellDM->GetNeigbors
+DM Object: 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 4290 
+  buffer             = 100 
+  allocated          = 4390 
+  nfields registered = 6 
+    [  0]     DMSwarm_pid : Mem. usage       = 3.51e-02 (MB) [rank0]
+                            blocksize        = 1 
+    [  1]    DMSwarm_rank : Mem. usage       = 1.76e-02 (MB) [rank0]
+                            blocksize        = 1 
+    [  2] DMSwarmPIC_coor : Mem. usage       = 7.02e-02 (MB) [rank0]
+                            blocksize        = 2 
+    [  3]  DMSwarm_cellid : Mem. usage       = 1.76e-02 (MB) [rank0]
+                            blocksize        = 1 
+    [  4]             eta : Mem. usage       = 3.51e-02 (MB) [rank0]
+                            blocksize        = 1 
+    [  5]             rho : Mem. usage       = 3.51e-02 (MB) [rank0]
+                            blocksize        = 1 
+  Total mem. usage                           = 2.11e-01 (MB) (collective)
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.8568e-04 , dt 2.6928e+02 : [total] max v 1.8568e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... ....pop cont: adjusted 30 cells
+.... project
+.... interp
+step 1 : time 2.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.8803e-04 , dt 2.6592e+02 : [total] max v 1.8803e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 2 : time 4.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.9039e-04 , dt 2.6261e+02 : [total] max v 1.9039e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 3 : time 6.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.9275e-04 , dt 2.5941e+02 : [total] max v 1.9275e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 4 : time 8.00e+00 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.9508e-04 , dt 2.5630e+02 : [total] max v 1.9508e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 5 : time 1.00e+01 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.9740e-04 , dt 2.5330e+02 : [total] max v 1.9740e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 6 : time 1.20e+01 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 1.9971e-04 , dt 2.5036e+02 : [total] max v 1.9971e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 7 : time 1.40e+01 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 2.0201e-04 , dt 2.4752e+02 : [total] max v 2.0201e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 8 : time 1.60e+01 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 2.0433e-04 , dt 2.4470e+02 : [total] max v 2.0433e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+step 9 : time 1.80e+01 
+.... assemble
+.... bc imposition
+.... solve
+.... max v 2.0686e-04 , dt 2.4171e+02 : [total] max v 2.0686e-04 , dt_max 2.0000e+00
+.... advect
+.... migrate
+.... populate cells
+.... project
+.... interp
+.... write XDMF, VTS
+step 10 : time 2.00e+01 

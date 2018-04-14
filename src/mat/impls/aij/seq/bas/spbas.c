@@ -18,7 +18,7 @@
      levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
      we recommend not using this functionality.
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetDropTolerance()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, PCFactorSetLevels(), PCFactorSetDropTolerance()
 
 M*/
 
@@ -532,7 +532,7 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix * result)
 /*
    spbas_mergesort
 
-      mergesort for an array of intergers and an array of associated
+      mergesort for an array of integers and an array of associated
       reals
 
       on output, icol[0..nnz-1] is increasing;

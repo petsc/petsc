@@ -293,5 +293,17 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+    test:
+      requires: !single
+      args: -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor
+
+    test:
+      suffix: 2
+      requires: !single
+      args: -da_grid_x 100 -ts_type theta -ts_theta_theta 0.5
+
+
+TEST*/
 

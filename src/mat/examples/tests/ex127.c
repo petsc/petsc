@@ -102,19 +102,35 @@ int main(int argc,char **args)
 
   /* Check whether A is Hermitian, then set A->hermitian flag */
   ierr = PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
-  if (flg) {
+  if (flg && size == 1) {
     ierr = MatIsHermitian(A,0.0,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_SUPERLU_DIST)
   /* Test Cholesky factorization */
   ierr = PetscOptionsHasName(NULL,NULL, "-test_choleskyfactor", &flg);CHKERRQ(ierr);
   if (flg) {
-    Mat F;
-    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    Mat      F;
+    IS       perm,iperm;
+    MatFactorInfo info;
+    PetscInt nneg,nzero,npos;
+
+    ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
+
+    ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&F);CHKERRQ(ierr);
+    ierr = ISDestroy(&perm);CHKERRQ(ierr);
+    ierr = ISDestroy(&iperm);CHKERRQ(ierr);
   }
+#endif
 
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
@@ -165,3 +181,28 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: complex
+
+   test:
+      args: -n 1000
+      output_file: output/ex127.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -n 1000
+      output_file: output/ex127.out
+
+
+   test:
+      suffix: superlu_dist
+      nsize: 3
+      requires: superlu_dist
+      args: -test_choleskyfactor -mat_superlu_dist_rowperm NATURAL
+      output_file: output/ex127_superlu_dist.out
+TEST*/

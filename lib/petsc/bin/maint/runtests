@@ -1,0 +1,30 @@
+#! /bin/csh
+#
+# usage: runtest branch   (see startnightly for details of running)
+#
+#
+#  Put the following in your .ssh/config  file
+# host cron
+#     ProxyCommand ssh -q -a -x petsc@login.mcs.anl.gov /bin/nc thwomp %p
+#
+echo "---------------------------------------------------------------------------------------------"
+set testbranchname=barry-test
+#set testbranches="knl:$testbranchname"
+set testbranches="knl:$testbranchname thrash3:$testbranchname"
+set tbranch=$1
+git checkout $tbranch
+git branch -D $testbranchname
+git branch $testbranchname
+git checkout $testbranchname
+git push -f  --set-upstream origin $testbranchname
+echo "---------------------------------------------------------------------------------------------"
+time ssh petsc@cron /sandbox/petsc/petsc.clone/lib/petsc/bin/maint/startnightly $testbranches
+echo "---------------------------------------------------------------------------------------------"
+ssh petsc@cron rm -f "/mcs/ftp/pub/petsc/nightlylogs/${testbranchname}/*"
+echo "---------------------------------------------------------------------------------------------"
+time ssh petsc@cron /sandbox/petsc/petsc.clone/lib/petsc/bin/maint/copylognightly -dirname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname $testbranches
+echo "---------------------------------------------------------------------------------------------"
+time ssh petsc@cron /sandbox/petsc/petsc.clone/lib/petsc/bin/maint/runhtml.py $testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname /mcs/ftp/pub/petsc/nightlylogs/$testbranchname/$testbranchname.html
+echo "---------------------------------------------------------------------------------------------"
+echo "Results can be viewed at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/${testbranchname}/${testbranchname}.html"
+echo "---------------------------------------------------------------------------------------------"

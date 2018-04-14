@@ -1,0 +1,93 @@
+  0 SNES Function norm 257. 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 3
+    0 KSP Residual norm 13.4762 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 3
+    1 KSP Residual norm 2.1658 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 0.0358528 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 0.00142908 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 5.45798e-05 
+  1 SNES Function norm 0.134171 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 4.73809 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 2.21953 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 5
+    2 KSP Residual norm 1.34688 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 5
+    3 KSP Residual norm 0.796302 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 0.351204 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    5 KSP Residual norm 0.128654 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    6 KSP Residual norm 0.045035 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    7 KSP Residual norm 0.0160181 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    8 KSP Residual norm 0.00574199 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    9 KSP Residual norm 0.00213012 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+   10 KSP Residual norm 0.000791692 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+   11 KSP Residual norm 0.000308655 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+   12 KSP Residual norm 0.000122934 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+   13 KSP Residual norm 5.32062e-05 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+   14 KSP Residual norm 2.38922e-05 
+  2 SNES Function norm 0.11173 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    0 KSP Residual norm 0.521443 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 0.11863 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 0.015732 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 0.00164335 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 0.000228671 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    5 KSP Residual norm 5.43454e-05 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    6 KSP Residual norm 6.52386e-06 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    7 KSP Residual norm 8.90127e-07 
+  3 SNES Function norm 0.021018 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    0 KSP Residual norm 0.084344 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    1 KSP Residual norm 0.016822 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 0.00209059 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 0.000291082 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 4.20469e-05 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    5 KSP Residual norm 6.25565e-06 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    6 KSP Residual norm 8.96731e-07 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    7 KSP Residual norm 1.29581e-07 
+  4 SNES Function norm 0.0036853 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    0 KSP Residual norm 0.00244439 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    1 KSP Residual norm 0.000225006 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 4.44947e-05 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 5.38135e-06 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 7.19389e-07 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    5 KSP Residual norm 1.12909e-07 
+    Linear fieldsplit_u_ solve converged due to CONVERGED_RTOL iterations 4
+    6 KSP Residual norm 1.65484e-08 
+  5 SNES Function norm 0.000110707 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5

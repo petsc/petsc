@@ -33,6 +33,6 @@ int main(int argc,char **argv)
 
    test:
       args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
-      filter: grep -v malloc_dump |grep -v options_left |grep -v nox
+      filter: egrep -v \(malloc_dump\|options_left\|nox\|vecscatter_mpi1\)
 
 TEST*/

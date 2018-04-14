@@ -23,6 +23,8 @@ or the chained Rosenbrock function:\n\
 T*/
 
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines that evaluate the function,
@@ -114,14 +116,16 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
-  PetscInt       i,nn=user->n/2;
-  PetscErrorCode ierr;
-  PetscReal      ff=0,t1,t2,alpha=user->alpha;
-  PetscReal      *x,*g;
+  AppCtx            *user = (AppCtx *) ptr;
+  PetscInt          i,nn=user->n/2;
+  PetscErrorCode    ierr;
+  PetscReal         ff=0,t1,t2,alpha=user->alpha;
+  PetscScalar       *g;
+  const PetscScalar *x;
 
+  PetscFunctionBeginUser;
   /* Get pointers to vector data */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
 
   /* Compute G(X) */
@@ -143,12 +147,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
-  *f=ff;
+  *f   = ff;
 
   ierr = PetscLogFlops(nn*15);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -168,19 +172,21 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 */
 PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscErrorCode ierr;
-  PetscInt       i, ind[2];
-  PetscReal      alpha=user->alpha;
-  PetscReal      v[2][2],*x;
-  PetscBool      assembled;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscErrorCode    ierr;
+  PetscInt          i, ind[2];
+  PetscReal         alpha=user->alpha;
+  PetscReal         v[2][2];
+  const PetscScalar *x;
+  PetscBool         assembled;
 
+  PetscFunctionBeginUser;
   /* Zero existing matrix entries */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
 
   /* Get a pointer to vector data */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Compute H(X) entries */
   if (user->chained) {
@@ -203,11 +209,36 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       ierr = MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Assemble matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(9.0*user->n/2.0);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -tao_type nls
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -tao_smonitor -tao_type lmvm -tao_gttol 1.e-2
+
+   test:
+      suffix: 3
+      args: -tao_smonitor -tao_type ntr
+      requires: !single
+
+   test:
+      suffix: 4
+      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none
+
+TEST*/

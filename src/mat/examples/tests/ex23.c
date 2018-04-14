@@ -53,10 +53,16 @@ int main(int argc,char **args)
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatISSetPreallocation(A,3,NULL,0,NULL);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    PetscScalar v[3] = { -1.*(i+1),2.*(i+1),-1.*(i+1)};
-    PetscInt    cols[3] = {(i-1+n)%n,i%n,(i+1)%n};
- 
-    ierr = MatSetValuesLocal(A,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
+    PetscScalar v[3];
+    PetscInt    cols[3];
+
+    v[0]    = -1.*(i+1);
+    v[1]    = 2.*(i+1);
+    v[2]    = -1.*(i+1);
+    cols[0] = (i-1+n)%n;
+    cols[1] = i%n;
+    cols[2] = (i+1)%n;
+    ierr    = MatSetValuesLocal(A,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -92,10 +98,16 @@ int main(int argc,char **args)
   ierr = MatSetLocalToGlobalMapping(B,rmap,cmap);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,3,NULL,3,NULL);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    PetscScalar v[3] = { -1.*(i+1),2.*(i+1),-1.*(i+1)};
-    PetscInt    cols[3] = {(i-1+n)%n,i%n,(i+1)%n};
- 
-    ierr = MatSetValuesLocal(B,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
+    PetscScalar v[3];
+    PetscInt    cols[3];
+
+    v[0]    = -1.*(i+1);
+    v[1]    = 2.*(i+1);
+    v[2]    = -1.*(i+1);
+    cols[0] = (i-1+n)%n;
+    cols[1] = i%n;
+    cols[2] = (i+1)%n;
+    ierr    = MatSetValuesLocal(B,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -134,11 +146,17 @@ int main(int argc,char **args)
   ierr = MatGetLocalSubMatrix(A2,rodd,ceven,&Aoe);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(A2,rodd,codd,&Aoo);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    PetscScalar v[3] = { -1.*(i+1),2.*(i+1),-1.*(i+1)};
-    PetscInt    cols[3] = {(i-1+n)%n,i%n,(i+1)%n};
     PetscInt    j,je,jo,colse[3], colso[3];
     PetscScalar ve[3], vo[3];
+    PetscScalar v[3];
+    PetscInt    cols[3];
 
+    v[0]    = -1.*(i+1);
+    v[1]    = 2.*(i+1);
+    v[2]    = -1.*(i+1);
+    cols[0] = (i-1+n)%n;
+    cols[1] = i%n;
+    cols[2] = (i+1)%n;
     for (j=0,je=0,jo=0;j<3;j++) {
       if (cols[j]%2) {
         vo[jo] = v[j];
@@ -177,8 +195,8 @@ int main(int argc,char **args)
   ierr  = PetscOptionsGetBool(NULL,NULL,"-test_trans",&testT,NULL);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_Nest_IS\n");CHKERRQ(ierr);
-  nr = 2;
-  nc = 2;
+  nr   = 2;
+  nc   = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nr",&nr,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);
   if (testT) {
@@ -267,8 +285,10 @@ int main(int argc,char **args)
   /* Create an IS required by MatZeroRows(): just rank zero provides the rows to be eliminated */
   if (size > 1) {
     if (!rank) {
-      PetscInt st = (m+1)/2;
-      PetscInt len = PetscMin(m/2,PetscMax(m-(m+1)/2-1,0));
+      PetscInt st,len;
+
+      st   = (m+1)/2;
+      len  = PetscMin(m/2,PetscMax(m-(m+1)/2-1,0));
       ierr = ISCreateStride(PETSC_COMM_WORLD,len,st,1,&is);CHKERRQ(ierr);
     } else {
       ierr = ISCreateStride(PETSC_COMM_WORLD,0,0,1,&is);CHKERRQ(ierr);
@@ -295,8 +315,8 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatShift\n");CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
-    ierr = MatShift(A2,1.0);CHKERRQ(ierr);
-    ierr = MatShift(B2,1.0);CHKERRQ(ierr);
+    ierr = MatShift(A2,2.0);CHKERRQ(ierr);
+    ierr = MatShift(B2,2.0);CHKERRQ(ierr);
     ierr = CheckMat(A2,B2,PETSC_FALSE,"MatShift");CHKERRQ(ierr);
     ierr = MatDestroy(&A2);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);
@@ -348,7 +368,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     }
     ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
     ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);CHKERRQ(ierr);
+    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);
   } else {
     Vec       rv,rv2,lv,lv2;
     PetscReal error1,error2;
@@ -373,7 +393,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     ierr = VecDestroy(&rv);CHKERRQ(ierr);
     ierr = VecDestroy(&rv2);CHKERRQ(ierr);
 
-    if (error1 > PETSC_SQRT_MACHINE_EPSILON || error2 > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: (mult) %g, (multt) %g",func,error1,error2);CHKERRQ(ierr);
+    if (error1 > PETSC_SQRT_MACHINE_EPSILON || error2 > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: (mult) %g, (multt) %g",func,error1,error2);
   }
   PetscFunctionReturn(0);
 }
@@ -447,7 +467,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
   if (square) {
     ierr = VecAXPY(b2,-1.,b);CHKERRQ(ierr);
     ierr = VecNorm(b2,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",error,diagstr);CHKERRQ(ierr);
+    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",error,diagstr);
   }
   /* test MatMissingDiagonal */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatMissingDiagonal\n");CHKERRQ(ierr);
@@ -482,3 +502,26 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -test_trans
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -matis_convert_local_nest -nr 3 -nc 4
+
+   test:
+      suffix: 3
+      nsize: 5
+      args: -m 11 -n 10 -matis_convert_local_nest -nr 2 -nc 1
+
+   test:
+      suffix: 4
+      nsize: 6
+      args: -m 9 -n 12 -test_trans -nr 2 -nc 7
+
+TEST*/

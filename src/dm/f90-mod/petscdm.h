@@ -7,7 +7,7 @@
 
       type tDM
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tDM
 
       DM, parameter :: PETSC_NULL_DM = tDM(-1)

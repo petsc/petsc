@@ -12,7 +12,7 @@
 !    -bmy <byg>, where <byg> = number of grid points under plate in 2nd direction
 !    -bheight <ht>, where <ht> = height of the plate
 !
-!/*T
+!!/*T
 !   Concepts: TAO^Solving a bound constrained minimization problem
 !   Routines: TaoCreate();
 !   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
@@ -25,7 +25,21 @@
 !   Processors: n
 !T*/
 
-#include "plate2f.h"
+      module mymodule
+#include "petsc/finclude/petscdmda.h"
+#include "petsc/finclude/petsctao.h"
+      use petscdmda
+      use petsctao
+
+      Vec              localX, localV
+      Vec              Top, Left
+      Vec              Right, Bottom
+      DM               dm
+      PetscReal      bheight
+      PetscInt         bmx, bmy
+      PetscInt         mx, my, Nx, Ny, N
+      end module
+
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -36,6 +50,8 @@
 !    Nx, Ny           number of processors in x- and y- directions
 !    mx, my           number of grid points in x,y directions
 !    N    global dimension of vector
+      use mymodule
+      implicit none
 
       PetscErrorCode   ierr          ! used to check for functions returning nonzeros
       Vec              x             ! solution vector
@@ -223,8 +239,9 @@
 
 
       subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
-#include "plate2f.h"
-
+      use mymodule
+      implicit none
+      
 ! Input/output variables
 
       Tao        tao
@@ -489,7 +506,8 @@
 !           by calling MatSetValuesLocal()
 
       subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Tao     tao
       Vec            X
@@ -736,7 +754,8 @@
 !*/
 
       subroutine MSA_BoundaryConditions(ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       PetscErrorCode   ierr
       PetscInt         i,j,k,limit,maxits
@@ -905,7 +924,8 @@
 !*/
 
       subroutine MSA_Plate(tao,xl,xu,dummy,ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Tao        tao
       Vec              xl,xu
@@ -979,7 +999,8 @@
 !*/
 
       subroutine MSA_InitialPoint(X, ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Vec               X
       PetscErrorCode    ierr
@@ -1064,3 +1085,25 @@
 
       return
       end
+
+!
+!/*TEST
+!
+!   build:
+!      requires: !complex
+! 
+!   test:
+!      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm -tao_gttol 1.e-4
+!      filter: sort -b
+!      filter_output: sort -b
+!      requires: !single
+!
+!   test:
+!      suffix: 2
+!      nsize: 2
+!      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm -tao_gttol 1.e-4
+!      filter: sort -b
+!      filter_output: sort -b
+!      requires: !single
+!
+!TEST*/

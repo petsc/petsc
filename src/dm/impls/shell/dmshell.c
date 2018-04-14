@@ -24,7 +24,7 @@ typedef struct  {
 
    Level: advanced
 
-   Note:  This is not normally called directly by user code, generally user code calls DMGlobalToLocalBegin() and DMGlobalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function. 
+   Note:  This is not normally called directly by user code, generally user code calls DMGlobalToLocalBegin() and DMGlobalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function.
 
 .seealso: DMGlobalToLocalEndDefaultShell()
 @*/
@@ -76,7 +76,7 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
    Level: advanced
 
-   Note:  This is not normally called directly by user code, generally user code calls DMLocalToGlobalBegin() and DMLocalToGlobalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function. 
+   Note:  This is not normally called directly by user code, generally user code calls DMLocalToGlobalBegin() and DMLocalToGlobalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function.
 
 .seealso: DMLocalToGlobalEndDefaultShell()
 @*/
@@ -130,7 +130,7 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
 
    Level: advanced
 
-   Note:  This is not normally called directly by user code, generally user code calls DMLocalToLocalBegin() and DMLocalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToLocal() then those routines might have reason to call this function. 
+   Note:  This is not normally called directly by user code, generally user code calls DMLocalToLocalBegin() and DMLocalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToLocal() then those routines might have reason to call this function.
 
 .seealso: DMLocalToLocalEndDefaultShell()
 @*/
@@ -397,7 +397,7 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
-  ierr           = VecGetDM(X,&vdm);CHKERRQ(ierr);
+  ierr = VecGetDM(X,&vdm);CHKERRQ(ierr);
   /*
       if the vector proposed as the new base global vector for the DM is a DM vector associated
       with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
@@ -513,7 +513,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 -  end - the routine that ends the global to local scatter
 
    Notes: If these functions are not provided but DMShellSetGlobalToLocalVecScatter() is called then
-   DMGlobalToLocalBeginDefaultShell()/DMGlobalToLocalEndDefaultShell() are used to to perform the transfers 
+   DMGlobalToLocalBeginDefaultShell()/DMGlobalToLocalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced
 
@@ -537,7 +537,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 -  end - the routine that ends the local to global scatter
 
    Notes: If these functions are not provided but DMShellSetLocalToGlobalVecScatter() is called then
-   DMLocalToGlobalBeginDefaultShell()/DMLocalToGlobalEndDefaultShell() are used to to perform the transfers 
+   DMLocalToGlobalBeginDefaultShell()/DMLocalToGlobalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced
 
@@ -561,7 +561,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 -  end - the routine that ends the local to local scatter
 
    Notes: If these functions are not provided but DMShellSetLocalToLocalVecScatter() is called then
-   DMLocalToLocalBeginDefaultShell()/DMLocalToLocalEndDefaultShell() are used to to perform the transfers 
+   DMLocalToLocalBeginDefaultShell()/DMLocalToLocalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced
 
@@ -782,6 +782,22 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMHasCreateInjection_Shell(DM dm, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) {
+    *flg = PETSC_FALSE;
+  } else {
+    *flg = dm->ops->getinjection ? PETSC_TRUE : PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
 /*@C
    DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
 
@@ -873,7 +889,7 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 
 .seealso: DMCreateSubDM(), DMShellSetContext(), DMShellGetContext()
 @*/
-PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,PetscInt[],IS*,DM*))
+PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,const PetscInt[],IS*,DM*))
 {
   PetscErrorCode ierr;
   PetscBool      isshell;
@@ -924,7 +940,7 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
 
@@ -958,6 +974,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   dm->ops->createsubdm        = DMCreateSubDM_Shell;
+  dm->ops->hascreateinjection = DMHasCreateInjection_Shell;
   PetscFunctionReturn(0);
 }
 

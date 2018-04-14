@@ -85,7 +85,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PC_ILU                 *ilu = (PC_ILU*)pc->data;
   MatInfo                info;
   PetscBool              flg;
-  const MatSolverPackage stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -180,11 +180,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     }
   }
 
-  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverPackage solverpackage;
-    ierr = MatFactorGetSolverPackage(((PC_Factor*)ilu)->fact,&solverpackage);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
+    MatSolverType solverpackage;
+    ierr = MatFactorGetSolverType(((PC_Factor*)ilu)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -43,3 +43,42 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+      test:
+         filter: grep -v -i Process
+         output_file: output/ex24_1.out
+
+      test:
+         suffix: 1
+         nsize: 2
+         filter: grep -v -i Process
+         output_file: output/ex24_2.out
+
+      test:
+         suffix: 2
+         nsize: 3
+         filter: grep -v -i Process
+         output_file: output/ex24_2.out
+
+      test:
+         suffix: 3
+         nsize: 4
+         filter: grep -v -i Process
+         output_file: output/ex24_2.out
+
+      test:
+         suffix: 4
+         nsize: 5
+         filter: grep -v -i Process
+         output_file: output/ex24_2.out
+
+      test:
+         suffix: 5
+         nsize: 6
+         filter: grep -v -i Process
+         output_file: output/ex24_2.out
+
+TEST*/

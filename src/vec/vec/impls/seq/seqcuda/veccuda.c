@@ -9,9 +9,65 @@
 #define PETSC_SKIP_SPINLOCK
 
 #include <petscconf.h>
+#include <petsccuda.h>
 #include <petsc/private/vecimpl.h>          /*I <petscvec.h> I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
+
+static PetscErrorCode PetscCUBLASDestroyHandle();
+
+/*
+   Implementation for obtaining read-write access to the cuBLAS handle.
+   Required to properly deal with repeated calls of PetscInitizalize()/PetscFinalize().
+ */
+static PetscErrorCode PetscCUBLASGetHandle_Private(cublasHandle_t **handle)
+{
+  static cublasHandle_t cublasv2handle = NULL;
+  cublasStatus_t        cberr;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  if (!cublasv2handle) {
+    cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
+    /* Make sure that the handle will be destroyed properly */
+    ierr = PetscRegisterFinalize(PetscCUBLASDestroyHandle);CHKERRQ(ierr);
+  }
+  *handle = &cublasv2handle;
+  PetscFunctionReturn(0);
+}
+
+/*
+   Singleton for obtaining a handle to cuBLAS.
+   The handle is required for calls to routines in cuBLAS.
+ */
+PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
+{
+  cublasHandle_t *p_cublasv2handle;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle_Private(&p_cublasv2handle);CHKERRQ(ierr);
+  *handle = *p_cublasv2handle;
+  PetscFunctionReturn(0);
+}
+
+
+/*
+   Destroys the CUBLAS handle.
+   This function is intended and registered for PetscFinalize - do not call manually!
+ */
+PetscErrorCode PetscCUBLASDestroyHandle()
+{
+  cublasHandle_t *p_cublasv2handle;
+  cublasStatus_t cberr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle_Private(&p_cublasv2handle);CHKERRQ(ierr);
+  cberr = cublasDestroy(*p_cublasv2handle);CHKERRCUBLAS(cberr);
+  *p_cublasv2handle = NULL;  /* Ensures proper reinitialization */
+  PetscFunctionReturn(0);
+}
 
 /*
     Allocates space for the vector array on the Host if it does not exist.
@@ -35,8 +91,8 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
     ierr = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-    if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED) {
-      v->valid_GPU_array = PETSC_CUDA_CPU;
+    if (v->valid_GPU_array == PETSC_OFFLOAD_UNALLOCATED) {
+      v->valid_GPU_array = PETSC_OFFLOAD_CPU;
     }
   }
   PetscFunctionReturn(0);
@@ -158,7 +214,7 @@ PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 
   PetscFunctionBegin;
   ierr = VecSetRandom_SeqCUDA_Private(xin,r);CHKERRQ(ierr);
-  xin->valid_GPU_array = PETSC_CUDA_CPU;
+  xin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +225,7 @@ PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_SeqCUDA_Private(vin);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -180,7 +236,7 @@ PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +247,7 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -201,11 +257,11 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
  Collective on MPI_Comm
 
  Input Parameter:
- .  comm - the communicator, should be PETSC_COMM_SELF
- .  n - the vector length
+ +  comm - the communicator, should be PETSC_COMM_SELF
+ -  n - the vector length
 
  Output Parameter:
- .  V - the vector
+ .  v - the vector
 
  Notes:
  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
@@ -248,7 +304,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(V);CHKERRQ(ierr);
-  V->valid_GPU_array = PETSC_CUDA_GPU;
+  V->valid_GPU_array = PETSC_OFFLOAD_GPU;
   ierr = VecCreate_SeqCUDA_Private(V,((Vec_CUDA*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -357,10 +413,11 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
       err = cudaStreamCreate(&veccuda->stream);CHKERRCUDA(err);
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      V->valid_GPU_array = PETSC_CUDA_UNALLOCATED;
+      V->valid_GPU_array = PETSC_OFFLOAD_UNALLOCATED;
     }
     veccuda = (Vec_CUDA*)V->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
   }
+
   PetscFunctionReturn(0);
 }

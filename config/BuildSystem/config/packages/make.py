@@ -21,6 +21,7 @@ class Configure(config.package.GNUPackage):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel tests'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
@@ -52,12 +53,12 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1, conffile)
     return self.installDir
@@ -112,7 +113,7 @@ class Configure(config.package.GNUPackage):
         minor = int(gver.group(2))
         if ((major > 3) or (major == 3 and minor > 80)): haveGNUMake = 1
         if (major > 3): haveGNUMake4 = 1
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
     return haveGNUMake, haveGNUMake4
 
@@ -154,26 +155,46 @@ class Configure(config.package.GNUPackage):
     else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
     return
 
+  def compute_make_test_np(self,i):
+    f32 = 0.35
+    f99 = 0.20
+    if (i<=2):    return 1
+    elif (i<=4):  return 2
+    elif (i<=32): return int(2+(i-4)*f32)
+    else:         return int(2+28*f32+(i-32)*f99)
+    return
+
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
     try:
       import multiprocessing # python-2.6 feature
       cores = multiprocessing.cpu_count()
       make_np = self.compute_make_np(cores)
+      make_test_np = self.compute_make_test_np(cores)
       self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
-    except (ImportError), e:
+    except (ImportError) as e:
       cores = 2
       make_np = 2
+      make_test_np = 1
       self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
 
     if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
         self.logPrint('using user-provided make_np = %d' % make_np)
         make_np = self.argDB['with-make-np']
 
+    if not self.argDB.get('with-mpi'):
+      make_test_np = make_np
+
+    if 'with-make-test-np' in self.argDB and self.argDB['with-make-test-np']:
+        self.logPrint('using user-provided make_test_np = %d' % make_test_np)
+        make_test_np = self.argDB['with-make-test-np']
+
     self.make_np = make_np
+    self.make_test_np = make_test_np
     self.addMakeMacro('MAKE_NP',str(make_np))
+    self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j ' + str(self.make_np)
+    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(cores)
     return
 
   def configure(self):

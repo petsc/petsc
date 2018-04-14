@@ -452,7 +452,7 @@ PetscErrorCode DMSNESSetNGS(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  f - relaxation function which performs Gauss-Seidel sweeps, see SNESGSFunction 
++  f - relaxation function which performs Gauss-Seidel sweeps, see SNESGSFunction
 -  ctx - context for residual evaluation
 
    Level: advanced

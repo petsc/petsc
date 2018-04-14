@@ -13,9 +13,12 @@ static PetscInt petsc_checkpointer_intensity = 1;
    Input Arguments:
 .  intensity - how much to check pointers for validity
 
+   Options Database:
+.  -check_pointer_intensity - intensity (0, 1, or 2)
+
    Level: advanced
 
-.seealso: PetscCheckPointer(), PetscFunctionBeginHot
+.seealso: PetscCheckPointer(), PetscFunctionBeginHot()
 @*/
 PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 {
@@ -50,6 +53,7 @@ PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 
    Level: developer
 
+.seealso: PetscCheckPointerSetIntensity()
 @*/
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
@@ -79,8 +83,12 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
     }
 #if defined(PETSC_USE_COMPLEX)
     case PETSC_SCALAR:{         /* C++ is seriously dysfunctional with volatile std::complex. */
+#if defined(PETSC_USE_CXXCOMPLEX)
       PetscReal xreal = ((volatile PetscReal*)ptr)[0],ximag = ((volatile PetscReal*)ptr)[1];
       PETSC_UNUSED volatile PetscScalar x = xreal + PETSC_i*ximag;
+#else
+      PETSC_UNUSED PetscScalar x = *(volatile PetscScalar*)ptr;
+#endif
       break;
     }
 #endif

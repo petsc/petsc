@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=churn
-set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-3
-set CONF=arch-linux-dbg-quad

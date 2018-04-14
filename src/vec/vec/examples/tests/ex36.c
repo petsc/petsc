@@ -102,3 +102,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -set_option_negidx -set_values_negidx -get_values_negidx
+
+TEST*/

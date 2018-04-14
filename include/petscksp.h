@@ -36,6 +36,7 @@ typedef const char* KSPType;
 #define KSPGROPPCG    "groppcg"
 #define KSPPIPECG     "pipecg"
 #define KSPPIPECGRR   "pipecgrr"
+#define KSPPIPELCG     "pipelcg"
 #define   KSPCGNE       "cgne"
 #define   KSPCGNASH     "nash"
 #define   KSPCGSTCG     "stcg"
@@ -442,7 +443,7 @@ typedef enum {/* converged */
 PETSC_EXTERN const char *const*KSPConvergedReasons;
 
 /*MC
-     KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)
+     KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b) or rtol*norm(b - A*x_0) if KSPConvergedDefaultSetUIRNorm() was called
 
    Level: beginner
 
@@ -450,7 +451,9 @@ PETSC_EXTERN const char *const*KSPConvergedReasons;
        for left preconditioning it is the 2-norm of the preconditioned residual, and the
        2-norm of the residual for right preconditioning
 
-.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+   See also KSP_CONVERGED_ATOL which may apply before this tolerance.
+
+.seealso:  KSP_CONVERGED_ATOL, KSP_DIVERGED_DTOL, KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
 M*/
 
@@ -463,9 +466,9 @@ M*/
        for left preconditioning it is the 2-norm of the preconditioned residual, and the
        2-norm of the residual for right preconditioning
 
-   Level: beginner
+   See also KSP_CONVERGED_RTOL which may apply before this tolerance.
 
-.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+.seealso:  KSP_CONVERGED_RTOL, KSP_DIVERGED_DTOL, KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
 M*/
 
@@ -480,7 +483,7 @@ M*/
 
    Level: beginner
 
-.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+.seealso:  KSP_CONVERGED_ATOL, KSP_DIVERGED_RTOL, KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
 M*/
 
@@ -678,7 +681,7 @@ PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP,PetscBool*);
 
 .seealso: MatSchurComplementGetAinvType(), MatSchurComplementSetAinvType(), MatSchurComplementGetPmat(), MatGetSchurComplement(), MatCreateSchurComplementPmat()
 E*/
-typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP} MatSchurComplementAinvType;
+typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG} MatSchurComplementAinvType;
 PETSC_EXTERN const char *const MatSchurComplementAinvTypes[];
 
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);

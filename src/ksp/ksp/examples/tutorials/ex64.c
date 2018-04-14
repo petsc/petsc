@@ -180,3 +180,13 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      requires: superlu_dist parmetis
+      args: -ksp_monitor -pc_gasm_overlap 1 -sub_pc_type lu -sub_pc_factor_mat_solver_type superlu_dist -pc_gasm_total_subdomains 2
+
+TEST*/

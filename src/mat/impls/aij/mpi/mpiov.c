@@ -94,7 +94,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
     }
     ierr = ISRestoreIndices(is[i],&indices[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(indices,length);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscInt***)&indices,length);CHKERRQ(ierr);
   /* test if we need to exchange messages
    * generally speaking, we do not need to exchange
    * data when overlap is 1
@@ -476,7 +476,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(imax,&idx,imax,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc2(imax,(PetscInt***)&idx,imax,&n);CHKERRQ(ierr);
 
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
@@ -636,7 +636,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(idx,n);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscInt***)&idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -1957,7 +1957,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const I
 PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
-  PetscInt       nmax,nstages,i,pos,max_no,nrow,ncol,in[2],out[2];
+  PetscInt       nmax,nstages=0,i,pos,max_no,nrow,ncol,in[2],out[2];
   PetscBool      rowflag,colflag,wantallmatrix=PETSC_FALSE;
   Mat_SeqAIJ     *subc;
   Mat_SubSppt    *smat;
@@ -2091,7 +2091,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
   rank = c->rank;
 
   ierr = PetscMalloc4(ismax,&row2proc,ismax,&cmap,ismax,&rmap,ismax+1,&allcolumns);CHKERRQ(ierr);
-  ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],&issorted[i]);CHKERRQ(ierr);
@@ -2852,7 +2852,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
   /* Destroy allocated memory */
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
-  ierr = PetscFree5(irow,icol,nrow,ncol,issorted);CHKERRQ(ierr);
+  ierr = PetscFree5(*(PetscInt***)&irow,*(PetscInt***)&icol,nrow,ncol,issorted);CHKERRQ(ierr);
 
   for (i=0; i<nrqs; ++i) {
     ierr = PetscFree(rbuf4[i]);CHKERRQ(ierr);

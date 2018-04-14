@@ -96,6 +96,7 @@
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
+#define SETERRMPI(comm,ierr,s) return (PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s),PETSC_MPI_ERROR_CODE)
 
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected,
@@ -423,10 +424,10 @@ M*/
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
 #define CHKERRQ(ierr)          do {if (PetscUnlikely(ierr)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");} while (0)
-
 #define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
 #define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
 #define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRMPI(ierr)        do {if (PetscUnlikely(ierr)) return (PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," "),PETSC_MPI_ERROR_CODE);} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -500,6 +501,7 @@ M*/
 */
 
 #define SETERRQ(c,ierr,s)
+#define SETERRMPI(comm,ierr,s)
 #define SETERRQ1(c,ierr,s,a1)
 #define SETERRQ2(c,ierr,s,a1,a2)
 #define SETERRQ3(c,ierr,s,a1,a2,a3)
@@ -514,6 +516,7 @@ M*/
 #define CHKERRV(ierr)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(ierr) ;
+#define CHKERRMPI(ierr) ;
 #define CHKMEMQ        ;
 #define CHKERRCUDA(err) ;
 #define CHKERRCUBLAS(err) ;

@@ -155,18 +155,37 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
   n   /= bs;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    if (is->isperm) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
+    PetscViewerFormat fmt;
+
+    ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
+    if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
+      IS             ist;
+      const char     *name;
+      const PetscInt *idx;
+      PetscInt       n;
+
+      ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+      ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,idx,PETSC_USE_POINTER,&ist);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)ist,name);CHKERRQ(ierr);
+      ierr = ISView(ist,viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&ist);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+      if (is->isperm) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %D\n",bs);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %D\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block %D Index %D\n",i,idx[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %D\n",bs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %D\n",n);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block %D Index %D\n",i,idx[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

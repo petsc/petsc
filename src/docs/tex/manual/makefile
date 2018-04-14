@@ -2,14 +2,27 @@
 #clean is required - otherwise 'temporary file manual.pdf can upset the build
 ALL: clean manual.pdf
 
+#  Run make manual.pdf LOC=$PETSC_DIR GONULL="" to display all the error messages from running pdflatex on the manual
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
+PDFLATEXOPTS = -interaction=nonstopmode -halt-on-error
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
 # Build the entire manual as well as the intro part
+
+chk:
+	@if [ ! -f ${LOC}/docs/manualpages/htmlmap ] ; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
+          echo "You must first run make alldocs in ${PETSC_DIR}"; \
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
+	@if [ ${PDFLATEX}foo = foo ] ; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
+          echo "You must have sowing installed, run ./configure again with the additional option"; \
+          echo " --download-sowing and make sure pdflatex is in your path"; \
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
 rclean:
 	-@${RM} *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out tmp anchors manual.pdf intro.pdf index.tex
@@ -25,32 +38,32 @@ MANUAL_LISTINGS_INCLUDE=\
                         listing_snesex1ftmp.tex \
                         listing_drawex3tmp.tex \
 
-manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex ${MANUAL_LISTINGS_INCLUDE}
+manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex ${MANUAL_LISTINGS_INCLUDE}
 # Generate a list of labels
 	-@${MAKE} rclean
 	-@sed "s?hyperbaseurl?\\\hyperbaseurl{${LOC}/docs/}?g" manual.tex > manual1.tex
-	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PYTHON} ${PETSC_DIR}/bin/maint/getpdflabels.py > anchors
+	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/getpdflabels.py > anchors
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | \
-	${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
+	${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat acknowl.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > acknowltmp.tex
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > acknowltmp.tex
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	-bibtex manual1 ${GONULL}
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	makeindex manual1  ${GONULL}
 	${MV} part2tmp.tex tmp
 	grep -v "end{theindex}" tmp > part2tmp.tex
 	sed -e 's/_/\\_/g' manual1.ind | grep -v "begin{theindex}" >>  part2tmp.tex
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
-	${PDFLATEX} -halt-on-error manual1
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	${MV} manual1.pdf ${LOC}/docs/manual.pdf
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual1.aux intro.aux
-	${PDFLATEX} -halt-on-error intro
+	${PDFLATEX} ${PDFLATEXOPTS} intro  ${GONULL}
 	${RM} part1tmp.tex part2tmp.tex acknowltemp.tex tmp ${MANUAL_LISTINGS_INCLUDE}
 #	${MAKE} rclean
 
@@ -61,7 +74,7 @@ listing_kspex2tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/
 	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex2.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/examples/tutorials/ex1.c
@@ -69,7 +82,7 @@ listing_kspex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/ksp/ksp/
 	-@cat ../../../../src/ksp/ksp/examples/tutorials/ex1.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_snesex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1.c
@@ -77,7 +90,7 @@ listing_snesex1tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/ex
 	-@cat ../../../../src/snes/examples/tutorials/ex1.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_snesex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex3.c
@@ -85,7 +98,7 @@ listing_snesex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/ex
 	-@cat ../../../../src/snes/examples/tutorials/ex3.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_vecex19ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/examples/tests/ex19f.F
@@ -93,7 +106,7 @@ listing_vecex19ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/ve
 	-@cat ../../../../src/vec/vec/examples/tests/ex19f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_vecex4ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec/examples/tutorials/ex4f.F
@@ -101,7 +114,7 @@ listing_vecex4ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/vec/vec
 	-@cat ../../../../src/vec/vec/examples/tutorials/ex4f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_drawex5ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/examples/tests/ex5f.F
@@ -109,7 +122,7 @@ listing_drawex5ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cl
 	-@cat ../../../../src/sys/classes/draw/examples/tests/ex5f.F >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1f.F90
@@ -117,7 +130,7 @@ listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/e
 	-@cat ../../../../src/snes/examples/tutorials/ex1f.F90 >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
 listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/classes/draw/examples/tests/ex3.c
@@ -125,15 +138,15 @@ listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cla
 	-@cat ../../../../src/sys/classes/draw/examples/tests/ex3.c >> listing_tmp.tex
 	-@printf '\\end{lstlisting}\n' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-developers.pdf: chk_loc developers.tex
+developers.pdf: chk_loc chk developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
-	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
-	${PDFLATEX} developerstmp.tex
+	  ${PYTHON} ../../../../lib/petsc/bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
 	bibtex developerstmp ${GONULL}
-	${PDFLATEX} developerstmp.tex
-	${PDFLATEX} developerstmp.tex
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
 	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
 

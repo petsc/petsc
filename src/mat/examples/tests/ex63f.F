@@ -87,3 +87,11 @@
       call PetscViewerDestroy(view,ierr)
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!   test:
+!      nsize: 2
+!      output_file: output/ex63_1.out
+!
+!TEST*/

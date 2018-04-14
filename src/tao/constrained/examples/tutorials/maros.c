@@ -106,7 +106,7 @@ PetscErrorCode main(int argc,char **argv)
       This algorithm produces matrices with zeros along the diagonal therefore we need to use
     SuperLU which does partial pivoting
   */
-  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
 
@@ -141,10 +141,10 @@ PetscErrorCode InitializeProblem(AppCtx *user)
 
   PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscStrncpy(filebase,user->name,128);CHKERRQ(ierr);
-  ierr = PetscStrncat(filebase,"/",1);CHKERRQ(ierr);
-  ierr = PetscStrncpy(filename,filebase,128);CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"f",3);CHKERRQ(ierr);
+  ierr = PetscStrncpy(filebase,user->name,sizeof(filebase));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filebase,"/",sizeof(filebase));CHKERRQ(ierr);
+  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"f",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&user->d);CHKERRQ(ierr);
@@ -154,8 +154,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
   user->n = nrows;
 
-  ierr = PetscStrncpy(filename,filebase,128);CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"H",3);CHKERRQ(ierr);
+  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"H",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&user->H);CHKERRQ(ierr);
@@ -167,8 +167,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   if (ncols != user->n) SETERRQ(comm,0,"H: ncols != n\n");
   ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
 
-  ierr = PetscStrncpy(filename,filebase,128);CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"Aeq",3);CHKERRQ(ierr);
+  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"Aeq",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);
   if (ierr) {
     user->Aeq = NULL;
@@ -183,8 +183,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     user->me = nrows;
   }
 
-  ierr = PetscStrncpy(filename,filebase,128);CHKERRQ(ierr);
-  ierr = PetscStrncat(filename,"Beq",3);CHKERRQ(ierr);
+  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
+  ierr = PetscStrlcat(filename,"Beq",sizeof(filename));CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
   if (ierr) {
     user->beq = 0;
@@ -289,3 +289,15 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      requires: superlu
+      localrunfiles: HS21
+
+TEST*/

@@ -112,7 +112,6 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscFunctionReturn(0);
   }
 
-
   /* Initialization */
   mt->bracket = 0;
   stage1 = 1;

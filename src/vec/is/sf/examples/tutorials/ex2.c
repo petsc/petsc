@@ -93,3 +93,19 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: basic
+      nsize: 2
+      args: -sf_type basic
+
+   test:
+      suffix: window
+      nsize: 2
+      args: -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+
+TEST*/

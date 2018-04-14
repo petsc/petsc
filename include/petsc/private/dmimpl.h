@@ -25,12 +25,15 @@ struct _DMOps {
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
+  PetscErrorCode (*createcoordinatefield)(DM,DMField*);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*createrestriction)(DM,DM,Mat*);
+  PetscErrorCode (*createmassmatrix)(DM,DM,Mat*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
+  PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
   PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
@@ -51,7 +54,8 @@ struct _DMOps {
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
-  PetscErrorCode (*createsubdm)(DM,PetscInt,PetscInt*,IS*,DM*);
+  PetscErrorCode (*createsubdm)(DM,PetscInt,const PetscInt*,IS*,DM*);
+  PetscErrorCode (*createsuperdm)(DM*,PetscInt,IS**,DM*);
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
@@ -191,6 +195,7 @@ struct _p_DM {
   /* Topology */
   PetscInt                dim;                  /* The topological dimension */
   /* Flexible communication */
+  PetscSF                 sfMigration;          /* SF for point distribution created during distribution */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
   PetscSF                 sfNatural;            /* SF mapping to the "natural" ordering */
@@ -208,6 +213,7 @@ struct _p_DM {
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
   PetscBool               periodic;             /* Is the DM periodic? */
+  DMField                 coordinateField;      /* Coordinates as an abstract field */
   PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
@@ -228,7 +234,8 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_Lo
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
-PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,PetscInt[],IS*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,const PetscInt[],IS*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateSuperDM_Section_Private(DM[],PetscInt,IS**,DM*);
 
 /*
 

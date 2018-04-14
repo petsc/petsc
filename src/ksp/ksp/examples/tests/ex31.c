@@ -154,3 +154,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -f ${DATAFILESPATH}/matrices/small -partition -mat_partitioning_type parmetis 
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) parmetis
+      output_file: output/ex31.out
+      nsize: 3
+ 
+TEST*/

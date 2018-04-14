@@ -35,6 +35,8 @@ The command line options are:\n\
    Processors: n
 T*/
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -62,30 +64,31 @@ static PetscErrorCode ConvergenceTest(Tao, void*);
 
 int main( int argc, char **argv )
 {
-  PetscErrorCode     ierr;               /* used to check for functions returning nonzeros */
-  PetscInt           Nx, Ny;             /* number of processors in x- and y- directions */
+  PetscErrorCode     ierr;            /* used to check for functions returning nonzeros */
+  PetscInt           Nx, Ny;          /* number of processors in x- and y- directions */
   PetscInt           m;               /* number of local elements in vectors */
-  Vec                x;                  /* variables vector */
-  Vec                xl,xu;                  /* bounds vectors */
+  Vec                x;               /* variables vector */
+  Vec                xl,xu;           /* bounds vectors */
   PetscReal          d1000 = 1000;
-  PetscBool          flg;              /* A return variable when checking for user options */
-  Tao                tao;                /* Tao solver context */
+  PetscBool          flg,testgetdiag; /* A return variable when checking for user options */
+  Tao                tao;             /* Tao solver context */
   KSP                ksp;
-  AppCtx             user;               /* user-defined work context */
-  PetscReal          zero=0.0;           /* lower bound on all variables */
+  AppCtx             user;            /* user-defined work context */
+  PetscReal          zero = 0.0;      /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
   ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   /* Set the default values for the problem parameters */
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
+  testgetdiag = PETSC_FALSE;
 
   /* Check for any command line arguments that override defaults */
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_getdiagonal",&testgetdiag,NULL);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mx: %D,  my: %D,  ecc: %g \n\n",user.nx,user.ny,(double)user.ecc);CHKERRQ(ierr);
@@ -115,6 +118,10 @@ int main( int argc, char **argv )
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.dm,&user.A);CHKERRQ(ierr);
+
+  if (testgetdiag) {
+    ierr = MatSetOperation(user.A,MATOP_GET_DIAGONAL,NULL);CHKERRQ(ierr);
+  }
 
   /* User defined function -- compute linear term of quadratic */
   ierr = ComputeB(&user);CHKERRQ(ierr);
@@ -451,8 +458,49 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
   if (its == 100) {
-    TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS);
+    ierr = TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -mx 8 -my 12 -tao_type tron -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -tao_smonitor -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4
+      requires: !single
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 -test_getdiagonal
+      output_file: output/jbearing2_3.out
+      requires: !single
+      
+   test:
+      suffix: 5
+      args: -tao_smonitor -mx 8 -my 12 -tao_type pgd -tao_gttol 1.e-3 -tao_gatol 1e-4
+      requires: !single
+      
+   test:
+      suffix: 6
+      args: -tao_monitor -tao_view -mx 8 -my 12 -tao_type bncg -tao_gatol 1e-4
+      requires: !single
+
+TEST*/

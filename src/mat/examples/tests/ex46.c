@@ -51,3 +51,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+TEST*/

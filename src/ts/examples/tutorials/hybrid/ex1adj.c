@@ -110,10 +110,10 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   }
   if (actx->mode == 1) {
     actx->mode = 2;
-    /* ierr = PetscPrintf(PETSC_COMM_SELF,"Change from mode 1 to 2 at t = %f \n",t);CHKERRQ(ierr); */
+    /* ierr = PetscPrintf(PETSC_COMM_SELF,"Change from mode 1 to 2 at t = %f \n",(double)t);CHKERRQ(ierr); */
   } else if (actx->mode == 2) {
     actx->mode = 1;
-    /* ierr = PetscPrintf(PETSC_COMM_SELF,"Change from mode 2 to 1 at t = %f \n",t);CHKERRQ(ierr); */
+    /* ierr = PetscPrintf(PETSC_COMM_SELF,"Change from mode 2 to 1 at t = %f \n",(double)t);CHKERRQ(ierr); */
   }
   PetscFunctionReturn(0);
 }
@@ -307,7 +307,7 @@ int main(int argc,char **argv)
   ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -339,3 +339,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -ts_monitor -ts_adjoint_monitor
+
+TEST*/

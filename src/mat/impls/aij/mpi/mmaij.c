@@ -3,6 +3,7 @@
    Support for the parallel AIJ matrix vector multiply
 */
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
@@ -22,84 +23,93 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 #endif
 
   PetscFunctionBegin;
+  if (!aij->garray) {
 #if defined(PETSC_USE_CTABLE)
-  /* use a table */
-  ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<aij->B->rmap->n; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      PetscInt data,gid1 = aj[B->i[i] + j] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
-      if (!data) {
-        /* one based table */
-        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+    /* use a table */
+    ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
+    for (i=0; i<aij->B->rmap->n; i++) {
+      for (j=0; j<B->ilen[i]; j++) {
+        PetscInt data,gid1 = aj[B->i[i] + j] + 1;
+        ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+        if (!data) {
+          /* one based table */
+          ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
-  }
-  /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
-  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
-  while (tpos) {
-    ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
-    gid--;
-    lid--;
-    garray[lid] = gid;
-  }
-  ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
-  ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<ec; i++) {
-    ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  /* compact out the extra columns in B */
-  for (i=0; i<aij->B->rmap->n; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      PetscInt gid1 = aj[B->i[i] + j] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+    /* form array of columns we need */
+    ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+    ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
+    while (tpos) {
+      ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
+      gid--;
       lid--;
-      aj[B->i[i] + j] = lid;
+      garray[lid] = gid;
     }
-  }
-  aij->B->cmap->n = aij->B->cmap->N = ec;
-  aij->B->cmap->bs = 1;
+    ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
+    ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
+    for (i=0; i<ec; i++) {
+      ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    /* compact out the extra columns in B */
+    for (i=0; i<aij->B->rmap->n; i++) {
+      for (j=0; j<B->ilen[i]; j++) {
+        PetscInt gid1 = aj[B->i[i] + j] + 1;
+        ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+        lid--;
+        aj[B->i[i] + j] = lid;
+      }
+    }
+    aij->B->cmap->n = aij->B->cmap->N = ec;
+    aij->B->cmap->bs = 1;
 
-  ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
-  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
+    ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
-  /* Make an array as long as the number of columns */
-  /* mark those columns that are in aij->B */
-  ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
-  for (i=0; i<aij->B->rmap->n; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      if (!indices[aj[B->i[i] + j]]) ec++;
-      indices[aj[B->i[i] + j]] = 1;
+    /* Make an array as long as the number of columns */
+    /* mark those columns that are in aij->B */
+    ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
+    for (i=0; i<aij->B->rmap->n; i++) {
+      for (j=0; j<B->ilen[i]; j++) {
+        if (!indices[aj[B->i[i] + j]]) ec++;
+        indices[aj[B->i[i] + j]] = 1;
+      }
     }
-  }
 
-  /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
-  ec   = 0;
-  for (i=0; i<N; i++) {
-    if (indices[i]) garray[ec++] = i;
-  }
-
-  /* make indices now point into garray */
-  for (i=0; i<ec; i++) {
-    indices[garray[i]] = i;
-  }
-
-  /* compact out the extra columns in B */
-  for (i=0; i<aij->B->rmap->n; i++) {
-    for (j=0; j<B->ilen[i]; j++) {
-      aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
+    /* form array of columns we need */
+    ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+    ec   = 0;
+    for (i=0; i<N; i++) {
+      if (indices[i]) garray[ec++] = i;
     }
-  }
-  aij->B->cmap->n = aij->B->cmap->N = ec;
-  aij->B->cmap->bs = 1;
 
-  ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+    /* make indices now point into garray */
+    for (i=0; i<ec; i++) {
+      indices[garray[i]] = i;
+    }
+
+    /* compact out the extra columns in B */
+    for (i=0; i<aij->B->rmap->n; i++) {
+      for (j=0; j<B->ilen[i]; j++) {
+        aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
+      }
+    }
+    aij->B->cmap->n = aij->B->cmap->N = ec;
+    aij->B->cmap->bs = 1;
+
+    ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
+    ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif
-  /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
+  } else {
+    garray = aij->garray;
+  }
+
+  if (!aij->lvec) {
+    /* create local vector that is used to scatter into */
+    ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
+  }
 
   /* create two temporary Index sets for build scatter gather */
   ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
@@ -111,21 +121,28 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
-  ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
+  if (aij->Mvctx_mpi1_flg) {
+    ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr = VecScatterSetType(aij->Mvctx_mpi1,VECSCATTERMPI1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  aij->garray = garray;
+
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
-  aij->garray = garray;
-
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
      Takes the local part of an already assembled MPIAIJ matrix
@@ -149,7 +166,6 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
   ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   if (aij->colmap) {
 #if defined(PETSC_USE_CTABLE)
     ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);

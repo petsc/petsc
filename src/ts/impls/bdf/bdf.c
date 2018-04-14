@@ -138,7 +138,7 @@ static PetscErrorCode TSBDF_Interpolate(TS ts,PetscInt order,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
+static PetscErrorCode TSBDF_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
   PetscErrorCode ierr;
@@ -163,7 +163,7 @@ static PetscErrorCode TSBDF_Restart(TS ts,PetscBool *accept)
   bdf->time[0] = ts->ptime + ts->time_step/2;
   ierr = VecCopy(bdf->work[1],bdf->work[0]);CHKERRQ(ierr);
   ierr = TSPreStage(ts,bdf->time[0]);CHKERRQ(ierr);
-  ierr = TS_SNESSolve(ts,NULL,bdf->work[0]);CHKERRQ(ierr);
+  ierr = TSBDF_SNESSolve(ts,NULL,bdf->work[0]);CHKERRQ(ierr);
   ierr = TSPostStage(ts,bdf->time[0],0,&bdf->work[0]);CHKERRQ(ierr);
   ierr = TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],accept);CHKERRQ(ierr);
   if (!*accept) PetscFunctionReturn(0);
@@ -203,7 +203,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
     bdf->time[0] = ts->ptime + ts->time_step;
     ierr = TSBDF_Extrapolate(ts,bdf->k-(accept?0:1),bdf->time[0],bdf->work[0]);CHKERRQ(ierr);
     ierr = TSPreStage(ts,bdf->time[0]);CHKERRQ(ierr);
-    ierr = TS_SNESSolve(ts,NULL,bdf->work[0]);CHKERRQ(ierr);
+    ierr = TSBDF_SNESSolve(ts,NULL,bdf->work[0]);CHKERRQ(ierr);
     ierr = TSPostStage(ts,bdf->time[0],0,&bdf->work[0]);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(ts->adapt,ts,bdf->time[0],bdf->work[0],&stageok);CHKERRQ(ierr);
     if (!stageok) goto reject_step;

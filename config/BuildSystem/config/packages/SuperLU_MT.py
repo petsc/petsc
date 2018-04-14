@@ -61,7 +61,7 @@ class Configure(config.package.Package):
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make all LAAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+' cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on SUPERLU_MT: '+str(e))
       self.postInstall(output+err,'make.inc')
     return self.installDir

@@ -37,3 +37,15 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+      output_file: output/ex4_1.out
+
+TEST*/

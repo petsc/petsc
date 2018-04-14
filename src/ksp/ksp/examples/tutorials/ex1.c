@@ -6,6 +6,8 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
    Processors: 1
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -183,3 +185,39 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2_aijcusparse
+      requires: veccuda
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+
+   test:
+      suffix: 3
+      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3_aijcusparse
+      requires: veccuda
+      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+
+   test:
+      suffix: aijcusparse
+      requires: veccuda
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+      output_file: output/ex1_1_aijcusparse.out
+
+   test:
+      suffix: changepcside
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -change_pc_side
+
+TEST*/

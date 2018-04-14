@@ -1,2 +1,18 @@
+      Interface
+      subroutine PCSetType(a,b,z)
+      use petscpcdef
+       PC a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
 
+      Interface
+      subroutine PCView(a,b,z)
+      use petscpcdef
+       PC a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface
 

@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     return
 
   def configure(self):
+    self.framework.packages.append(self)
     self.lib   = self.libraries.math
     self.dlib  = self.libraries.math
     self.found = 1

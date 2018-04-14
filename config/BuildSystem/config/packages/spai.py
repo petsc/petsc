@@ -45,7 +45,7 @@ class Configure(config.package.Package):
       output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && '+self.installSudo+' cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
       try:
         output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
       self.postInstall(output1+err1+output2+err2+output3+err3,'Makefile.in')
     return self.installDir
