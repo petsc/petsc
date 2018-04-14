@@ -277,6 +277,27 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
+{
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *arnorm = lsqr->arnorm;
+  if (anorm) {
+    if (lsqr->anorm < 0.0) {
+      PC  pc;
+      Mat Amat;
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr);
+      ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
+    }
+    *anorm = lsqr->anorm;
+  }
+  if (rhs_norm) *rhs_norm = lsqr->rhs_norm;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method and the norm of the residual of the normal equations A'*A x = A' b
 
