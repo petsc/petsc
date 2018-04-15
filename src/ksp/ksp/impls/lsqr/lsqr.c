@@ -449,6 +449,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
+  void           *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -462,11 +463,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;
   ksp->ops->destroy        = KSPDestroy_LSQR;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_LSQR;
   ksp->ops->view           = KSPView_LSQR;
-  ksp->converged           = KSPLSQRDefaultConverged;
+
+  ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,KSPLSQRDefaultConverged,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -12,5 +12,6 @@ PC Object: 2 MPI processes
   Mat Object: 2 MPI processes
     type: normal
     rows=4, cols=4
+KSP type: cg
 Number of iterations =   0
 Residual norm 0.
