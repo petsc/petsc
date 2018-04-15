@@ -218,7 +218,19 @@ cdef extern from * nogil:
     int PCMGGetLevels(PetscPC,PetscInt*)
     int PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
     int PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
+    int PCBDDCSetDiscreteGradient(PetscPC,PetscMat,PetscInt,PetscInt,PetscBool,PetscBool)
     int PCBDDCSetDivergenceMat(PetscPC,PetscMat,PetscBool,PetscIS)
+    int PCBDDCSetChangeOfBasisMat(PetscPC,PetscMat,PetscBool)
+    int PCBDDCSetPrimalVerticesIS(PetscPC,PetscIS)
+    int PCBDDCSetPrimalVerticesLocalIS(PetscPC,PetscIS)
+    int PCBDDCSetCoarseningRatio(PetscPC,PetscInt)
+    int PCBDDCSetLevels(PetscPC,PetscInt)
+    int PCBDDCSetDirichletBoundaries(PetscPC,PetscIS)
+    int PCBDDCSetDirichletBoundariesLocal(PetscPC,PetscIS)
+    int PCBDDCSetNeumannBoundaries(PetscPC,PetscIS)
+    int PCBDDCSetNeumannBoundariesLocal(PetscPC,PetscIS)
+    int PCBDDCSetDofsSplitting(PetscPC,PetscInt,PetscIS[])
+    int PCBDDCSetDofsSplittingLocal(PetscPC,PetscInt,PetscIS[])
 
 # --------------------------------------------------------------------
 

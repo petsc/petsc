@@ -579,10 +579,66 @@ cdef class PC(Object):
     # --- BDDC ---
 
     def setBDDCDivergenceMat(self, Mat div, trans=False, IS l2l=None):
-        cdef PetscBool ptrans=trans
+        cdef PetscBool ptrans = trans
         cdef PetscIS pl2l = NULL
         if l2l is not None: pl2l = l2l.iset
         CHKERR( PCBDDCSetDivergenceMat(self.pc, div.mat, ptrans, pl2l) )
+
+    def setBDDCDiscreteGradient(self, Mat G, order=1, field=1, gord=True, conforming=True):
+        cdef PetscInt porder = asInt(order)
+        cdef PetscInt pfield = asInt(field)
+        cdef PetscBool pgord = gord
+        cdef PetscBool pconforming = conforming
+        CHKERR( PCBDDCSetDiscreteGradient(self.pc, G.mat, porder, pfield, pgord, pconforming) )
+
+    def setBDDCChangeOfBasisMat(self, Mat T, interior=False):
+        cdef PetscBool pinterior = interior
+        CHKERR( PCBDDCSetChangeOfBasisMat(self.pc, T.mat, pinterior) )
+
+    def setBDDCPrimalVerticesIS(self, IS primv):
+        CHKERR( PCBDDCSetPrimalVerticesIS(self.pc, primv.iset) )
+
+    def setBDDCPrimalVerticesLocalIS(self, IS primv):
+        CHKERR( PCBDDCSetPrimalVerticesLocalIS(self.pc, primv.iset) )
+
+    def setBDDCCoarseningRatio(self, cratio):
+        cdef PetscInt pcratio = asInt(cratio)
+        CHKERR( PCBDDCSetCoarseningRatio(self.pc, pcratio) )
+
+    def setBDDCLevels(self, levels):
+        cdef PetscInt plevels = asInt(levels)
+        CHKERR( PCBDDCSetLevels(self.pc, plevels) )
+
+    def setBDDCDirichletBoundaries(self, IS bndr):
+        CHKERR( PCBDDCSetDirichletBoundaries(self.pc, bndr.iset) )
+
+    def setBDDCDirichletBoundariesLocal(self, IS bndr):
+        CHKERR( PCBDDCSetDirichletBoundariesLocal(self.pc, bndr.iset) )
+
+    def setBDDCNeumannBoundaries(self, IS bndr):
+        CHKERR( PCBDDCSetNeumannBoundaries(self.pc, bndr.iset) )
+
+    def setBDDCNeumannBoundariesLocal(self, IS bndr):
+        CHKERR( PCBDDCSetNeumannBoundariesLocal(self.pc, bndr.iset) )
+
+    def setBDDCDofsSplitting(self, isfields):
+        isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
+        cdef Py_ssize_t i, n = len(isfields)
+        cdef PetscIS  *cisfields = NULL
+        cdef object tmp
+        tmp = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
+        CHKERR( PCBDDCSetDofsSplitting(self.pc, <PetscInt>n, cisfields) )
+
+
+    def setBDDCDofsSplittingLocal(self, isfields):
+        isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
+        cdef Py_ssize_t i, n = len(isfields)
+        cdef PetscIS  *cisfields = NULL
+        cdef object tmp
+        tmp = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
+        CHKERR( PCBDDCSetDofsSplittingLocal(self.pc, <PetscInt>n, cisfields) )
 
 # --------------------------------------------------------------------
 
