@@ -42,6 +42,8 @@
       PetscScalar   pfive
       PetscReal   tol
       PetscBool   setls
+      PetscViewer viewer
+      double precision threshold,oldthreshold
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -69,6 +71,11 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
+      call PetscLogNestedBegin(ierr);CHKERRA(ierr);
+      threshold = 1.0
+      call PetscLogSetThreshold(threshold,oldthreshold,ierr)
+! dummy test of logging a reduction
+      ierr = PetscAReduce()
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then; SETERRA(PETSC_COMM_SELF,1,'Uniprocessor example'); endif
@@ -166,6 +173,10 @@
       call VecDestroy(r,ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
+      call PetscViewerASCIIOpen(PETSC_COMM_WORLD,'filename.xml',viewer,ierr)
+      call PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_XML,ierr)
+      call PetscLogView(viewer,ierr)
+      call PetscViewerDestroy(viewer,ierr)
       call PetscFinalize(ierr)
       end
 !

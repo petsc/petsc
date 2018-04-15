@@ -207,6 +207,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
   petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);
 }
+PETSC_EXTERN PetscErrorCode PetscLogSetThreshold(PetscLogDouble,PetscLogDouble*);
 
 #if defined (PETSC_HAVE_MPE)
 PETSC_EXTERN PetscErrorCode PetscLogMPEBegin(void);
@@ -228,6 +229,7 @@ PETSC_EXTERN PetscErrorCode PetscLogNestedBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
 PETSC_EXTERN PetscErrorCode PetscLogActions(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogObjects(PetscBool);
+
 /* General functions */
 PETSC_EXTERN PetscErrorCode PetscLogDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
@@ -421,6 +423,7 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PetscLogFlops(n) 0
+#define PetscLogSetThreshold(a,b) 0
 
 #define PetscLogEventActivate(a)   0
 #define PetscLogEventDeactivate(a) 0
