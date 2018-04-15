@@ -70,6 +70,7 @@
         end function
 
         module petscsys
+        use iso_c_binding
         use petscsysdef
 #include <../src/sys/f90-mod/petscsys.h90>
         interface

@@ -3,6 +3,5 @@
 PetscErrorCode PetscLogInitializeNested(void);
 PetscErrorCode PetscLogFreeNested(void);
 PetscErrorCode PetscLogViewNested(PetscViewer);
-PetscErrorCode PetscLogSetThreshold(PetscLogDouble, PetscLogDouble *);
 #endif
 

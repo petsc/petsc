@@ -5,7 +5,7 @@
  *************************************************************************************
  *    content: Support for nested PetscTimers                                        *
  *************************************************************************************/
-#include <petsclog.h>
+#include <petsclog.h>                  /*I "petsclog.h" I*/
 #include <petsc/private/logimpl.h>
 #include <petsctime.h>
 #include <petscviewer.h>
@@ -100,6 +100,29 @@ static PetscLogDouble   threshTime      = 0.01; /* initial value was .1 */
 static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
 static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
 
+/*@C
+  PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
+  rates and object creation and should not slow programs down too much.
+
+  Logically Collective over PETSC_COMM_WORLD
+
+  Options Database Keys:
+. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+
+  Usage:
+.vb
+      PetscInitialize(...);
+      PetscLogNestedBegin();
+       ... code ...
+      PetscLogView(viewer);
+      PetscFinalize();
+.ve
+
+  Level: advanced
+
+.keywords: log, begin
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin()
+@*/
 PetscErrorCode PetscLogNestedBegin(void)
 {
   PetscErrorCode    ierr;
@@ -341,12 +364,41 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
   PetscFunctionReturn(0);
 }
 
-/* Set the threshold time for logging the events 
- */
+/*@
+   PetscLogSetThreshold - Set the threshold time for logging the events; this is a percentage out of 100, so 1. means any event
+          that takes 1 or more percent of the time.
+
+  Logically Collective over PETSC_COMM_WORLD
+
+  Input Parameter:
+.   newThresh - the threshold to use
+
+  Output Parameter:
+.   oldThresh - the previously set threshold value
+
+  Options Database Keys:
+. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+
+  Usage:
+.vb
+      PetscInitialize(...);
+      PetscLogNestedBegin();
+      PetscLogSetThreshold(.1,&oldthresh);
+       ... code ...
+      PetscLogView(viewer);
+      PetscFinalize();
+.ve
+
+  Level: advanced
+
+.keywords: log, begin
+.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogTraceBegin(), PetscLogDefaultBegin(),
+          PetscLogNestedBegin()
+@*/
 PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *oldThresh)
 {
   PetscFunctionBegin;
-  *oldThresh = threshTime;
+  if (oldThresh) *oldThresh = threshTime;
   threshTime = newThresh;
   PetscFunctionReturn(0);
 }
@@ -1371,6 +1423,41 @@ PetscErrorCode  PetscLogView_Nested(PetscViewer viewer)
   ierr = PetscViewerXMLEndSection(viewer, "petscroot");CHKERRQ(ierr);
   ierr = PetscViewerFinalASCII_XML(viewer);CHKERRQ(ierr);
   ierr = PetscLogNestedEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
+{
+#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  petsc_send_ct++;
+#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  ierr = PetscMPITypeSize(&petsc_send_len,count, MPI_Type_f2c((MPI_Fint) datatype)); CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
+{
+#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+  petsc_recv_ct++;
+#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  ierr = PetscMPITypeSize(&petsc_recv_len,count, MPI_Type_f2c((MPI_Fint) datatype)); CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscAReduce()
+{
+  PetscFunctionBegin;
+  petsc_allreduce_ct++;
   PetscFunctionReturn(0);
 }
 
