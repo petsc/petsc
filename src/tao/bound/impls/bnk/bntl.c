@@ -141,9 +141,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
          However, we deliberately do not change the step norm and the trust radius 
          in order for the safeguard to more closely mimic a piece-wise linesearch 
          along the bounds. */
-      ierr = MatMult(bnk->H_inactive, tao->stepdirection, bnk->Xwork);CHKERRQ(ierr);
-      ierr = VecAYPX(bnk->Xwork, -0.5, bnk->G_inactive);CHKERRQ(ierr);
-      ierr = VecDot(bnk->Xwork, tao->stepdirection, &prered);
+      ierr = TaoBNKRecomputePred(tao, tao->stepdirection, &prered);CHKERRQ(ierr);
     } else {
       /* Step did not change, so we can just recover the pre-computed prediction */
       ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);

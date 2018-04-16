@@ -10,7 +10,8 @@ Context for bounded Newton-Krylov type optimization algorithms
 typedef struct {
   Mat H_inactive, Hpre_inactive, M;
   Vec W, Xwork, Gwork, inactive_work, active_work;
-  Vec Xold, Gold, Diag, Diag_min, Diag_max, G_inactive;
+  Vec Xold, Gold, Diag, Diag_red, Diag_min, Diag_max;
+  Vec X_inactive, G_inactive;
   Vec unprojected_gradient, unprojected_gradient_old;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
@@ -236,6 +237,7 @@ PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
+PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);

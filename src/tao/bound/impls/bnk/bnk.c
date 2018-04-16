@@ -15,7 +15,7 @@ PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
   PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
-  ierr = MatLMVMSolveInactive(M, b, x);CHKERRQ(ierr);
+  ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,11 +93,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
   /* create vectors for the limited memory preconditioner */
   if ((BNK_PC_BFGS == bnk->pc_type) && (BFGS_SCALE_BFGS != bnk->bfgs_scale_type)) {
     if (!bnk->Diag) {ierr = VecDuplicate(tao->solution,&bnk->Diag);CHKERRQ(ierr);}
-    if (!bnk->Diag_min) {ierr = VecDuplicate(tao->solution,&bnk->Diag_min);CHKERRQ(ierr);}
-    if (!bnk->Diag_max) {ierr = VecDuplicate(tao->solution,&bnk->Diag_max);CHKERRQ(ierr);}
-    ierr = VecSet(bnk->Diag_min, bnk->dmin);CHKERRQ(ierr);
-    ierr = VecSet(bnk->Diag_max, bnk->dmax);CHKERRQ(ierr);
   }
+  ierr = VecSet(bnk->Diag_min, bnk->dmin);CHKERRQ(ierr);
+  ierr = VecSet(bnk->Diag_max, bnk->dmax);CHKERRQ(ierr);
 
   /* Modify the preconditioner to use the bfgs approximation */
   ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
@@ -332,6 +330,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao)
     /* Compute the trial step vector with which we will estimate the active set at the next iteration */
     if (BNK_PC_BFGS == bnk->pc_type) {
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
+      ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
       /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
@@ -406,14 +405,16 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Determine the active and inactive sets */
   ierr = TaoBNKEstimateActiveSet(tao);CHKERRQ(ierr);
 
-  /* Prepare masked matrices for the inactive set */
+  /* Prepare the reduced sub-matrices for the inactive set */
   if (BNK_PC_BFGS == bnk->pc_type) { ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr); }
   if (bnk->inactive_idx) {
-    ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
+    ierr = MatDestroy(&bnk->H_inactive);
+    ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = TaoMatGetSubMat(tao->hessian_pre, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->Hpre_inactive);CHKERRQ(ierr);
+      ierr = MatDestroy(&bnk->Hpre_inactive);
+      ierr = MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
   } else {
     ierr = MatDestroy(&bnk->H_inactive);
@@ -437,7 +438,16 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Update the diagonal scaling for the BFGS preconditioner, this time with the Hessian perturbation */
   if ((BNK_PC_BFGS == bnk->pc_type) && (BFGS_SCALE_PHESS == bnk->bfgs_scale_type)) {
     /* Obtain diagonal for the bfgs preconditioner  */
-    ierr = MatGetDiagonal(bnk->H_inactive, bnk->Diag);CHKERRQ(ierr);
+    ierr = VecSet(bnk->Diag, 1.0);CHKERRQ(ierr);
+    if (bnk->inactive_idx) {
+      ierr = VecGetSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
+    } else {
+      bnk->Diag_red = bnk->Diag;
+    }
+    ierr = MatGetDiagonal(bnk->H_inactive, bnk->Diag_red);CHKERRQ(ierr);
+    if (bnk->inactive_idx) {
+      ierr = VecRestoreSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
+    }
     ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
     ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
     ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
@@ -446,16 +456,19 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   
   /* Solve the Newton system of equations */
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
+  ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
-  ierr = VecCopy(bnk->unprojected_gradient, bnk->G_inactive);CHKERRQ(ierr);
-  if (bnk->active_idx) {
-    ierr = VecGetSubVector(bnk->G_inactive, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
-    ierr = VecSet(bnk->active_work, 0.0);CHKERRQ(ierr);
-    ierr = VecRestoreSubVector(bnk->G_inactive, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
+  ierr = VecCopy(bnk->unprojected_gradient, bnk->Gwork);CHKERRQ(ierr);
+  if (bnk->inactive_idx) {
+    ierr = VecGetSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+    ierr = VecGetSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
+  } else {
+    bnk->G_inactive = bnk->unprojected_gradient;
+    bnk->X_inactive = tao->stepdirection;
   }
   if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
     ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;
     tao->ksp_tot_its+=kspits;
@@ -479,7 +492,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         tao->trust = PetscMin(tao->trust, bnk->max_radius);
 
         ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
+        ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
         tao->ksp_its+=kspits;
         tao->ksp_tot_its+=kspits;
@@ -489,10 +502,15 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
       }
     }
   } else {
-    ierr = KSPSolve(tao->ksp, bnk->G_inactive, tao->stepdirection);CHKERRQ(ierr);
+    ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
     tao->ksp_tot_its+=kspits;
+  }
+  /* Restore sub vectors back */
+  if (bnk->inactive_idx) {
+    ierr = VecRestoreSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
   }
   /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
@@ -526,6 +544,39 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/* Routine for recomputing the predicted reduction for a given step vector */
+
+PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
+{
+  PetscErrorCode               ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  
+  PetscFunctionBegin;
+  /* Extract subvectors associated with the inactive set */
+  if (bnk->inactive_idx){
+    ierr = VecGetSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
+    ierr = VecGetSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
+    ierr = VecGetSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+  } else {
+    bnk->X_inactive = tao->stepdirection;
+    bnk->inactive_work = bnk->Xwork;
+    bnk->G_inactive = bnk->Gwork;
+  }
+  /* Recompute the predicted decrease based on the quadratic model */
+  ierr = MatMult(bnk->H_inactive, bnk->X_inactive, bnk->inactive_work);CHKERRQ(ierr);
+  ierr = VecAYPX(bnk->inactive_work, -0.5, bnk->G_inactive);CHKERRQ(ierr);
+  ierr = VecDot(bnk->inactive_work, bnk->X_inactive, prered);
+  /* Restore the sub vectors */
+  if (bnk->inactive_idx){
+    ierr = VecRestoreSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -986,9 +1037,9 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   if (!bnk->unprojected_gradient) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient);CHKERRQ(ierr);}
   if (!bnk->unprojected_gradient_old) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient_old);CHKERRQ(ierr);}
   if (!bnk->G_inactive) {ierr = VecDuplicate(tao->solution,&bnk->G_inactive);CHKERRQ(ierr);}
+  if (!bnk->Diag_min) {ierr = VecDuplicate(tao->solution,&bnk->Diag_min);CHKERRQ(ierr);}
+  if (!bnk->Diag_max) {ierr = VecDuplicate(tao->solution,&bnk->Diag_max);CHKERRQ(ierr);}
   bnk->Diag = 0;
-  bnk->Diag_min = 0;
-  bnk->Diag_max = 0;
   bnk->inactive_work = 0;
   bnk->active_work = 0;
   bnk->inactive_idx = 0;
@@ -1023,10 +1074,10 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
     ierr = VecDestroy(&bnk->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->unprojected_gradient_old);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->G_inactive);CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->Diag_max);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
-  ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);
-  ierr = VecDestroy(&bnk->Diag_max);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->M);CHKERRQ(ierr);
   if (bnk->Hpre_inactive != bnk->H_inactive) {ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);}
   ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);

@@ -70,6 +70,8 @@ typedef struct{
   Vec Q;
   Vec Xwork, Bwork;
   IS  inactive_idx;
+  PetscInt nfull, Nfull;
+  PetscInt nred, Nred;
 
   PetscReal delta;
   PetscReal sigma;
@@ -78,7 +80,7 @@ typedef struct{
   PetscReal *beta;
 
   PetscBool useDefaultH0;
-  Mat H0_mat;
+  Mat H0_mat, H0_mat_red;
   KSP H0_ksp;
   Vec H0_norm;
 
@@ -128,7 +130,6 @@ PETSC_EXTERN PetscErrorCode MatLMVMGetX0(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);
 PETSC_EXTERN PetscErrorCode MatLMVMSolve(Mat, Vec, Vec);
-PETSC_EXTERN PetscErrorCode MatLMVMSolveInactive(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMSetInactive(Mat, IS);
 
 #endif
