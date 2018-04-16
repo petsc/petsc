@@ -1835,6 +1835,9 @@ PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
+PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char*,size_t*);
+PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char*,char *);
+
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*);
