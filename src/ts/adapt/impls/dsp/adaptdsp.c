@@ -319,7 +319,8 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
 
    References: http://dx.doi.org/10.1145/641876.641877
 
-   Notes: Valid filter names are
+   Notes:
+    Valid filter names are
 +  "basic" - similar to TSADAPTBASIC but with different criteria for step rejections.
 .  "PI30", "PI42", "PI33", "PI34" - PI controlers.
 .  "PC11", "PC47", "PC36" - predictive controllers.

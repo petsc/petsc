@@ -1936,7 +1936,8 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 
    Level: developer
 
-   Notes: In the parallel case the todata is actually the indices
+   Notes:
+    In the parallel case the todata is actually the indices
           from which the data is TAKEN! The from stuff is where the
           data is finally put. This is VERY VERY confusing!
 

@@ -234,13 +234,15 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
    Level: beginner
 
-   Notes: x^{n+1} = x^{n} + scale*B(b - A x^{n})
+   Notes:
+    x^{n+1} = x^{n} + scale*B(b - A x^{n})
 
           Here B is the application of the preconditioner
 
           This method often (usually) will not converge unless scale is very small.
 
-   Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
+   Notes:
+    For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
     thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
     (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
     you specifically call KSPSetNormType(ksp,KSP_NORM_NONE);

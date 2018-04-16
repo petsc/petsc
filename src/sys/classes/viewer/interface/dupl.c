@@ -15,7 +15,8 @@
 
    Level: advanced
 
-   Notes: Call PetscViewerRestoreSubViewer() to return this PetscViewer, NOT PetscViewerDestroy()
+   Notes:
+    Call PetscViewerRestoreSubViewer() to return this PetscViewer, NOT PetscViewerDestroy()
 
      This is most commonly used to view a sequential object that is part of a
     parallel object. For example block Jacobi PC view could use this to obtain a
@@ -55,7 +56,8 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
 
    Level: advanced
 
-   Notes: Call PetscViewerGetSubViewer() to get this PetscViewer, NOT PetscViewerCreate()
+   Notes:
+    Call PetscViewerGetSubViewer() to get this PetscViewer, NOT PetscViewerCreate()
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSubViewer()
 @*/

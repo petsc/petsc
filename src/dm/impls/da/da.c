@@ -286,7 +286,8 @@ PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
 
   Level: intermediate
 
-  Notes: This is used primarily to overlap a computation on a local DA with that on a global DA without
+  Notes:
+    This is used primarily to overlap a computation on a local DA with that on a global DA without
   changing boundary conditions or subdomain features that depend upon the global offsets.
 
 .keywords:  distributed array, degrees of freedom
@@ -614,7 +615,8 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
    Level: intermediate
 
-   Notes: you should call this on the coarser of the two DMDAs you pass to DMCreateInterpolation()
+   Notes:
+    you should call this on the coarser of the two DMDAs you pass to DMCreateInterpolation()
 
 .keywords:  distributed array, interpolation
 
@@ -673,11 +675,13 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 .     ranks - the neighbors ranks, stored with the x index increasing most rapidly.
               this process itself is in the list
 
-   Notes: In 2d the array is of length 9, in 3d of length 27
+   Notes:
+    In 2d the array is of length 9, in 3d of length 27
           Not supported in 1d
           Do not free the array, it is freed when the DMDA is destroyed.
 
-   Fortran Notes: In fortran you must pass in an array of the appropriate length.
+   Fortran Notes:
+    In fortran you must pass in an array of the appropriate length.
 
    Level: intermediate
 
@@ -751,7 +755,8 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
 
   Level: intermediate
 
-    Notes: Pass PETSC_IGNORE to leave a value unchanged
+    Notes:
+    Pass PETSC_IGNORE to leave a value unchanged
 
 .seealso: DMRefine(), DMDAGetRefinementFactor()
 @*/
@@ -786,7 +791,8 @@ PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refin
 
   Level: intermediate
 
-    Notes: Pass NULL for values you do not need
+    Notes:
+    Pass NULL for values you do not need
 
 .seealso: DMRefine(), DMDASetRefinementFactor()
 @*/
@@ -813,7 +819,8 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 
   Level: developer
 
-   Notes: See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for
+   Notes:
+    See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for
        the diagonal and off-diagonal blocks of the matrix
 
    Not supported from Fortran
@@ -1334,7 +1341,8 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
 +   da - the DMDA object
 -   gll - the GLL object
 
-   Notes: the parallel decomposition of grid points must correspond to the degree of the GLL. That is, the number of grid points
+   Notes:
+    the parallel decomposition of grid points must correspond to the degree of the GLL. That is, the number of grid points
           on each process much be divisible by the number of GLL elements needed per process. This depends on whether the DM is
           periodic or not.
 

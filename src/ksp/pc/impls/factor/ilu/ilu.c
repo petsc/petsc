@@ -263,7 +263,8 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
   Concepts: incomplete factorization
 
-   Notes: Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
+   Notes:
+    Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
           For BAIJ matrices this implements a point block ILU
 

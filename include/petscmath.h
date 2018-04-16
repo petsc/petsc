@@ -451,7 +451,8 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -473,7 +474,8 @@ M*/
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -496,7 +498,8 @@ M*/
 .  a - lower end of interval
 -  b - upper end of interval
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -564,7 +567,8 @@ M*/
    Input Parameter:
 .   v1 - the value
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 

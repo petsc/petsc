@@ -1006,7 +1006,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
    Level: intermediate
 
-   Notes: Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
+   Notes:
+    Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
    have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
 
    For matrices containing parallel submatrices and variable block sizes, see MATNEST.

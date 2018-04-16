@@ -156,7 +156,8 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
 
    Level: intermediate
 
-   Notes: for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
+   Notes:
+    for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
     If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
 
    Concepts: random numbers^range

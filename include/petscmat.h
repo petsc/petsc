@@ -338,7 +338,8 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
    Any additions/changes here must also be made in src/mat/interface/dlregismat.c in MatOptions[]
 
-   Developer Notes: Entries that are negative need not be called collectively by all processes.
+   Developer Notes:
+    Entries that are negative need not be called collectively by all processes.
 
 .seealso: MatSetOption()
 E*/
@@ -435,7 +436,8 @@ $                               and does not copy it, using zeros for the numeri
 $                               child matrices will share their index (i and j) arrays, and you cannot
 $                               insert new nonzero entries into either matrix.
 
-Notes: Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in
+Notes:
+    Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in
 this case the behavior is as if MAT_DO_NOT_COPY_VALUES has been specified.
 
 .seealso: MatDuplicate()
@@ -1087,7 +1089,8 @@ PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
     Level: beginner
 
-    Developer Notes: Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+    Developer Notes:
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
 .seealso: MatGetFactor()
 S*/
@@ -1103,7 +1106,8 @@ PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat,PetscReal*,PetscInt*)
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
 $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
-   Notes: These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
+   Notes:
+    These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
 
       You can use MatFactorInfoInitialize() to set default values.
 
@@ -1633,7 +1637,8 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Ve
     MatMFFD - A data structured used to manage the computation of the h differencing parameter for matrix-free
               Jacobian vector products
 
-    Notes: MATMFFD is a specific MatType which uses the MatMFFD data structure
+    Notes:
+    MATMFFD is a specific MatType which uses the MatMFFD data structure
 
            MatMFFD*() methods actually take the Mat as their first argument. Not a MatMFFD data structure
 

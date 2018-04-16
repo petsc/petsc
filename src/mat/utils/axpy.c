@@ -136,7 +136,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
    Level: intermediate
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 
@@ -203,7 +204,8 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
    Neighbor-wise Collective on Mat and Vec
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 

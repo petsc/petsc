@@ -108,7 +108,8 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Level: advanced
 
-   Notes: This routine does not work for factorizations done with external packages.
+   Notes:
+    This routine does not work for factorizations done with external packages.
    This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
 
    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
@@ -137,7 +138,8 @@ PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row
 
    Level: advanced
 
-   Notes:    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+   Notes:
+    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
 .seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
@@ -159,7 +161,8 @@ PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 
    Level: developer
 
-   Notes: This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+   Notes:
+    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
 
 .seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorGetError(), MatFactorGetErrorZeroPivot()
 @*/
@@ -211,7 +214,8 @@ static PetscErrorCode MatFindNonzeroRows_Basic(Mat mat,IS *keptrows)
   Output Parameter:
 .    keptrows - the rows that are not completely zero
 
-  Notes: keptrows is set to NULL if all rows are nonzero.
+  Notes:
+    keptrows is set to NULL if all rows are nonzero.
 
   Level: intermediate
 
@@ -243,7 +247,8 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   Output Parameter:
 .    zerorows - the rows that are completely zero
 
-  Notes: zerorows is set to NULL if no rows are zero.
+  Notes:
+    zerorows is set to NULL if no rows are zero.
 
   Level: intermediate
 
@@ -282,7 +287,8 @@ PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
    Output Parameters:
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
 
-   Notes: see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
+   Notes:
+    see the manual page for MatCreateAIJ() for more information on the "diagonal part" of the matrix.
           Use caution, as the reference count on the returned matrix is not incremented and it is used as
 	  part of the containing MPI Mat's normal operation.
 
@@ -382,7 +388,8 @@ PetscErrorCode MatRealPart(Mat mat)
 +   nghosts - number of ghosts (note for BAIJ matrices there is one ghost for each block)
 -   ghosts - the global indices of the ghost points
 
-   Notes: the nghosts and ghosts are suitable to pass into VecCreateGhost()
+   Notes:
+    the nghosts and ghosts are suitable to pass into VecCreateGhost()
 
    Level: advanced
 
@@ -769,7 +776,8 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A,const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -923,7 +931,8 @@ PetscErrorCode MatSetUp(Mat A)
 -  -viewer_binary_filename <name> -
    Level: beginner
 
-   Notes: see the manual page for MatLoad() for the exact format of the binary file when the binary
+   Notes:
+    see the manual page for MatLoad() for the exact format of the binary file when the binary
       viewer is used.
 
       See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
@@ -1261,7 +1270,8 @@ PetscErrorCode MatDestroy(Mat *A)
 
    Level: beginner
 
-   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+   Developer Notes:
+    This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting entries in
@@ -2067,7 +2077,8 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
 
    Concepts: matrices^putting entries in with local numbering
 
-   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+   Developer Notes:
+    This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
@@ -2154,7 +2165,8 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
 
    Level: intermediate
 
-   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+   Developer Notes:
+    This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting blocked values in with local numbering
@@ -2935,7 +2947,8 @@ $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
 
 
-   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
+   Notes:
+    See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -3787,7 +3800,8 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
    Application programmers will not generally use MatSOR() directly,
    but instead will employ the KSP/PC interface.
 
-   Notes: for BAIJ, SBAIJ, and AIJ matrices with Inodes this does a block SOR smoothing, otherwise it does a pointwise smoothing
+   Notes:
+    for BAIJ, SBAIJ, and AIJ matrices with Inodes this does a block SOR smoothing, otherwise it does a pointwise smoothing
 
    Notes for Advanced Users:
    The flags are implemented as bitwise inclusive or operations.
@@ -4391,7 +4405,8 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType f
 
    Concepts: matrices^duplicating
 
-   Notes: You cannot change the nonzero pattern for the parent or child matrix if you use MAT_SHARE_NONZERO_PATTERN.
+   Notes:
+    You cannot change the nonzero pattern for the parent or child matrix if you use MAT_SHARE_NONZERO_PATTERN.
 
 .seealso: MatCopy(), MatConvert(), MatDuplicateOption
 @*/
@@ -4488,7 +4503,8 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Level: intermediate
 
-   Notes: The result of this call are the same as if one converted the matrix to dense format
+   Notes:
+    The result of this call are the same as if one converted the matrix to dense format
       and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
 
     This code is only implemented for a couple of matrix formats.
@@ -4530,7 +4546,8 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Level: intermediate
 
-   Notes: if a row is completely empty or has only 0.0 values then the idx[] value for that
+   Notes:
+    if a row is completely empty or has only 0.0 values then the idx[] value for that
     row is 0 (the first column).
 
     This code is only implemented for a couple of matrix formats.
@@ -4572,7 +4589,8 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Level: intermediate
 
-   Notes: The result of this call are the same as if one converted the matrix to dense format
+   Notes:
+    The result of this call are the same as if one converted the matrix to dense format
       and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
 
     This code is only implemented for a couple of matrix formats.
@@ -4613,7 +4631,8 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Level: intermediate
 
-   Notes: if a row is completely empty or has only 0.0 values then the idx[] value for that
+   Notes:
+    if a row is completely empty or has only 0.0 values then the idx[] value for that
     row is 0 (the first column).
 
     This code is only implemented for a couple of matrix formats.
@@ -4653,7 +4672,8 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 
    Level: intermediate
 
-   Notes: This code is slow since it is not currently specialized for different formats
+   Notes:
+    This code is slow since it is not currently specialized for different formats
 
    Concepts: matrices^getting row sums
 
@@ -5347,7 +5367,8 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_IGNORE_LOWER_TRIANGULAR - For SBAIJ matrices will ignore any insertions you make in the lower triangular
         part of the matrix (since they should match the upper triangular part).
 
-   Notes: Can only be called after MatSetSizes() and MatSetType() have been set.
+   Notes:
+    Can only be called after MatSetSizes() and MatSetType() have been set.
 
    Level: intermediate
 
@@ -5444,7 +5465,8 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
    Output Parameter:
 .  flg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE)
 
-    Notes: Can only be called after MatSetSizes() and MatSetType() have been set.
+    Notes:
+    Can only be called after MatSetSizes() and MatSetType() have been set.
 
    Level: intermediate
 
@@ -5501,7 +5523,8 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
 
    Level: intermediate
 
-   Notes: If the matrix was not preallocated then a default, likely poor preallocation will be set in the matrix, so this should be called after the preallocation phase.
+   Notes:
+    If the matrix was not preallocated then a default, likely poor preallocation will be set in the matrix, so this should be called after the preallocation phase.
    See the Performance chapter of the users manual for information on preallocating matrices.
 
    Concepts: matrices^zeroing
@@ -6301,7 +6324,8 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 +  m - the global index of the first local column
 -  n - one more than the global index of the last local column
 
-   Notes: both output parameters can be NULL on input.
+   Notes:
+    both output parameters can be NULL on input.
 
    Level: developer
 
@@ -6477,7 +6501,8 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
 
-   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
+   Notes:
+    See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -6763,7 +6788,8 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const 
 
    Level: advanced
 
-    Notes: Frees not only the matrices, but also the array that contains the matrices
+    Notes:
+    Frees not only the matrices, but also the array that contains the matrices
            In Fortran will not free the array.
 
 .seealso: MatCreateSubMatrices() MatDestroySubMatrices()
@@ -6799,7 +6825,8 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 
    Level: advanced
 
-    Notes: Frees not only the matrices, but also the array that contains the matrices
+    Notes:
+    Frees not only the matrices, but also the array that contains the matrices
            In Fortran will not free the array.
 
 .seealso: MatCreateSubMatrices()
@@ -6869,7 +6896,8 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct)
 
    Level: advanced
 
-    Notes: Frees not only the matrices, but also the array that contains the matrices
+    Notes:
+    Frees not only the matrices, but also the array that contains the matrices
 
 .seealso: MatGetSeqNonzeroStructure()
 @*/
@@ -8261,7 +8289,8 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
 
    Level: developer
 
-   Notes: Works only for MPIAIJ and MPIBAIJ matrices
+   Notes:
+    Works only for MPIAIJ and MPIBAIJ matrices
 
 .seealso: MatDiagonalScale()
 @*/
@@ -8308,7 +8337,8 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
 
    Level: advanced
 
-   Notes: Matrix must have been factored by MatCholeskyFactor()
+   Notes:
+    Matrix must have been factored by MatCholeskyFactor()
 
 
 @*/
@@ -8385,7 +8415,8 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
    Output Parameters:
 .  flg - the result
 
-   Notes: For real numbers MatIsSymmetric() and MatIsHermitian() return identical results
+   Notes:
+    For real numbers MatIsSymmetric() and MatIsHermitian() return identical results
 
    Level: intermediate
 
@@ -8640,7 +8671,8 @@ PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Petsc
    Notes:
     The blocksize of the returned vectors is determined by the row and column block sizes set with MatSetBlockSizes() or the single blocksize (same for both) set by MatSetBlockSize().
 
-  Notes: These are new vectors which are not owned by the Mat, they should be destroyed in VecDestroy() when no longer needed
+  Notes:
+    These are new vectors which are not owned by the Mat, they should be destroyed in VecDestroy() when no longer needed
 
   Level: advanced
 
@@ -8688,7 +8720,8 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
 .    info - the MatFactorInfo data structure
 
 
-   Notes: The solvers are generally used through the KSP and PC objects, for example
+   Notes:
+    The solvers are generally used through the KSP and PC objects, for example
           PCLU, PCILU, PCCHOLESKY, PCICC
 
    Level: developer
@@ -8718,7 +8751,8 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 +  mat - the factored matrix
 -  is - the index set defining the Schur indices (0-based)
 
-   Notes:  Call MatFactorSolveSchurComplement() or MatFactorSolveSchurComplementTranspose() after this call to solve a Schur complement system.
+   Notes:
+    Call MatFactorSolveSchurComplement() or MatFactorSolveSchurComplementTranspose() after this call to solve a Schur complement system.
 
    You can call MatFactorGetSchurComplement() or MatFactorCreateSchurComplement() after this call.
 
@@ -8771,7 +8805,8 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 
    Use MatFactorGetSchurComplement() to get access to the Schur complement matrix inside the factored matrix instead of making a copy of it (which this function does)
 
-   Developer Notes: The reason this routine exists is because the representation of the Schur complement within the factor matrix may be different than a standard PETSc
+   Developer Notes:
+    The reason this routine exists is because the representation of the Schur complement within the factor matrix may be different than a standard PETSc
    matrix representation and we normally do not want to use the time or memory to make a copy as a regular PETSc matrix.
 
    See MatCreateSchurComplement() or MatGetSchurComplement() for ways to create virtual or approximate Schur complements.
@@ -8982,7 +9017,8 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 
-   Notes: Must be called after MatFactorSetSchurIS().
+   Notes:
+    Must be called after MatFactorSetSchurIS().
 
    Call MatFactorGetSchurComplement() or  MatFactorCreateSchurComplement() AFTER this call to actually compute the inverse and get access to it.
 
@@ -9014,7 +9050,8 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 
-   Notes: Must be called after MatFactorSetSchurIS().
+   Notes:
+    Must be called after MatFactorSetSchurIS().
 
    Level: advanced
 
@@ -10314,7 +10351,8 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
 
     Level: advanced
 
-     Notes: These are used internally for some implementations of MatRARt()
+     Notes:
+    These are used internally for some implementations of MatRARt()
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplyDenToSp()
 
@@ -10351,7 +10389,8 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
 
     Level: advanced
 
-     Notes: These are used internally for some implementations of MatRARt()
+     Notes:
+    These are used internally for some implementations of MatRARt()
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
@@ -10422,7 +10461,8 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTrans
   Output Parameter:
 .    state - the current state
 
-  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between
+  Notes:
+    You can only compare states from two different calls to the SAME matrix, you cannot compare calls between
          different matrices
 
   Level: intermediate
@@ -10453,7 +10493,8 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 
     Level: advanced
 
-   Notes: The number of columns of the matrix in EACH processor MUST be the same.
+   Notes:
+    The number of columns of the matrix in EACH processor MUST be the same.
 
 @*/
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
@@ -10487,7 +10528,8 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
 
     Level: advanced
 
-    Notes: number of subdomains must be smaller than the communicator size
+    Notes:
+    number of subdomains must be smaller than the communicator size
 @*/
 PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[])
 {

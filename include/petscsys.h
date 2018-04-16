@@ -1196,7 +1196,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc2()
+   Notes:
+    Memory must have been obtained with PetscMalloc2()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree()
 
@@ -1221,7 +1222,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc3()
+   Notes:
+    Memory must have been obtained with PetscMalloc3()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3()
 
@@ -1247,7 +1249,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc4()
+   Notes:
+    Memory must have been obtained with PetscMalloc4()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4()
 
@@ -1274,7 +1277,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc5()
+   Notes:
+    Memory must have been obtained with PetscMalloc5()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5()
 
@@ -1303,7 +1307,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc6()
+   Notes:
+    Memory must have been obtained with PetscMalloc6()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6()
 
@@ -1333,7 +1338,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc7()
+   Notes:
+    Memory must have been obtained with PetscMalloc7()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(),
           PetscMalloc7()

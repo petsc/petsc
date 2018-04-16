@@ -12,7 +12,8 @@
   OutputParameter:
 . S - The index set containing the indices i where vec1[i] == vec2[i]
 
-  Notes: the two vectors must have the same parallel layout
+  Notes:
+    the two vectors must have the same parallel layout
 
   Level: advanced
 @*/
@@ -644,7 +645,8 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   Output Parameter:
 . GP - gradient projection vector
 
-  Notes: GP may be the same vector as G
+  Notes:
+    GP may be the same vector as G
 
   Level: advanced
 @*/
@@ -757,7 +759,8 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 .     wolfemin -  (may be NULL this it is not computed)
 -     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
 
-     Notes: For complex numbers only compares the real part
+     Notes:
+    For complex numbers only compares the real part
 
   Level: advanced
 @*/
@@ -833,7 +836,8 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
      Output Parameter:
 .    step - largest value such that x[i] + step*DX[i] >= 0 for all i
 
-     Notes: For complex numbers only compares the real part
+     Notes:
+    For complex numbers only compares the real part
 
   Level: advanced
  @*/

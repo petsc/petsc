@@ -78,7 +78,8 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
 
    Level: developer
 
-   Notes: This is an internal routine called by DMDAGlobalToNatural() to
+   Notes:
+    This is an internal routine called by DMDAGlobalToNatural() to
      create the scatter context.
 
 .keywords: distributed array, global to local, begin

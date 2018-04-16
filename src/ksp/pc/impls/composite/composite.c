@@ -541,7 +541,8 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 
    Level: Developer
 
-    Notes: To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+    Notes:
+    To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
             call PCSetOperators() on that PC.
 
 .keywords: PC, get, composite preconditioner, sub preconditioner
@@ -573,7 +574,8 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
    Concepts: composing solvers
 
-   Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
+   Notes:
+    To use a Krylov method inside the composite preconditioner, set the PCType of one or more
           inner PCs to be PCKSP.
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the outer Krylov method

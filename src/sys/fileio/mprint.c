@@ -99,7 +99,8 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 +   format - the PETSc format string
 -   fullLength - the amount of space in str actually used.
 
-    Developer Notes: this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
+    Developer Notes:
+    this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
       a recursion will occur and possible crash.
 
  Level: developer
@@ -221,10 +222,12 @@ $}
 then before the call to PetscInitialize() do the assignment
 $    PetscVFPrintf = mypetscvfprintf;
 
-      Notes: For error messages this may be called by any process, for regular standard out it is
+      Notes:
+    For error messages this may be called by any process, for regular standard out it is
           called only by process 0 of a given communicator
 
-      Developer Notes: this could be called by an error handler, if that happens then a recursion of the error handler may occur
+      Developer Notes:
+    this could be called by an error handler, if that happens then a recursion of the error handler may occur
                        and a crash
 
   Level:  developer

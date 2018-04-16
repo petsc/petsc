@@ -45,7 +45,8 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 
    Level: intermediate
 
-   Notes: All processors that share the draw MUST call this routine
+   Notes:
+    All processors that share the draw MUST call this routine
 
 .seealso: PetscDrawGetPopup(), PetscDrawTensorContour()
 

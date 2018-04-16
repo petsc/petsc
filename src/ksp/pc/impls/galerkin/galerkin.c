@@ -163,7 +163,8 @@ static PetscErrorCode  PCGalerkinSetComputeSubmatrix_Galerkin(PC pc,PetscErrorCo
 +  pc - the preconditioner context
 -  R - the restriction operator
 
-   Notes: Either this or PCGalerkinSetInterpolation() or both must be called
+   Notes:
+    Either this or PCGalerkinSetInterpolation() or both must be called
 
    Level: Intermediate
 
@@ -192,7 +193,8 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 +  pc - the preconditioner context
 -  R - the interpolation operator
 
-   Notes: Either this or PCGalerkinSetRestriction() or both must be called
+   Notes:
+    Either this or PCGalerkinSetRestriction() or both must be called
 
    Level: Intermediate
 
@@ -233,13 +235,15 @@ $    computeAsub(PC pc,Mat A, Mat Ap, Mat *cAP,void *ctx);
 
    Level: Intermediate
 
-   Notes: Instead of providing this routine you can call PCGalerkinGetKSP() and then KSPSetOperators() to provide the submatrix,
+   Notes:
+    Instead of providing this routine you can call PCGalerkinGetKSP() and then KSPSetOperators() to provide the submatrix,
           but that will not work for multiple KSPSolves with different matrices unless you call it for each solve.
 
           This routine is called each time the outter matrix is changed. In the first call the Ap argument is NULL and the routine should create the
           matrix and computes its values in cAp. On each subsequent call the routine should up the Ap matrix.
 
-   Developer Notes: If the user does not call this routine nor call PCGalerkinGetKSP() and KSPSetOperators() then PCGalerkin could
+   Developer Notes:
+    If the user does not call this routine nor call PCGalerkinGetKSP() and KSPSetOperators() then PCGalerkin could
                     could automatically compute the submatrix via calls to MatGalerkin() or MatRARt()
 
 .keywords: PC, get, Galerkin preconditioner, sub preconditioner
@@ -271,7 +275,8 @@ PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub
 
    Level: Intermediate
 
-   Notes: Once you have called this routine you can call KSPSetOperators() on the resulting ksp to provide the operator for the Galerkin problem,
+   Notes:
+    Once you have called this routine you can call KSPSetOperators() on the resulting ksp to provide the operator for the Galerkin problem,
           an alternative is to use PCGalerkinSetComputeSubmatrix() to provide a routine that computes the submatrix as needed.
 
 .keywords: PC, get, Galerkin preconditioner, sub preconditioner

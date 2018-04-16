@@ -254,7 +254,8 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
 
    Level: developer
 
-   Notes: If PetscScalar is __float128 then the binary files are written in double precision
+   Notes:
+    If PetscScalar is __float128 then the binary files are written in double precision
 
    Concepts: VTK files
    Concepts: PetscViewer^creating

@@ -86,7 +86,8 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
 
    Level: advanced
 
-   Notes: The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
+   Notes:
+    The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
           or c) interface pressure ordering (if -ksp_fetidp_pressure_all false).
           In cases b) and c), the pressure ordering of dofs needs to satisfy
              pid_1 < pid_2  iff  gid_1 < gid_2
@@ -1222,7 +1223,8 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    Level: Advanced
 
-   Notes: Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
+   Notes:
+    Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
 .vb
       -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
@@ -1245,7 +1247,8 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    The converged reason and number of iterations computed are passed from the inner KSP to this KSP at the end of the solution.
 
-   Developer Notes: Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
+   Developer Notes:
+    Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
     This is so users do not have to change KSPNormType options when they switch from other KSP methods to this one.
 
    References:

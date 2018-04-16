@@ -44,7 +44,8 @@ static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
   Input Parameter:
 .  pc  - the preconditioner context
 
-  Notes: After you have called this function (which has to be after the KSPSetOperators() or PCSetOperators()) you can call PCFactorGetMatrix() and then set factor options on that matrix.
+  Notes:
+    After you have called this function (which has to be after the KSPSetOperators() or PCSetOperators()) you can call PCFactorGetMatrix() and then set factor options on that matrix.
 
 .seealso: PCFactorSetMatSolverType(), PCFactorGetMatrix()
 
@@ -601,7 +602,8 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 
     Level: intermediate
 
-    Notes: nested dissection is used by default
+    Notes:
+    nested dissection is used by default
 
     For Cholesky and ICC and the SBAIJ format reorderings are not available,
     since only the upper triangular part of the matrix is stored. You can use the

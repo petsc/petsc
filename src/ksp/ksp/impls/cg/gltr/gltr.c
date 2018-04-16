@@ -1352,7 +1352,8 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObj
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
 
-   Notes: This is rarely used directly
+   Notes:
+    This is rarely used directly
 
   Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function

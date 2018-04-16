@@ -278,7 +278,8 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 
    Level: advanced
 
-   Notes: This sets the prefix on the upsweep smoothers to -fas_continuation
+   Notes:
+    This sets the prefix on the upsweep smoothers to -fas_continuation
 
 .keywords: FAS, MG, smoother, continuation
 

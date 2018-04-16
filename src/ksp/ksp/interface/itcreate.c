@@ -533,7 +533,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 
     Level: intermediate
 
-   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
+   Notes:
+    DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 

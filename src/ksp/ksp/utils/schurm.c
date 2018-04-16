@@ -172,7 +172,8 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather, this
+   Notes:
+    The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using formula S = A11 - A10 A^{-1} A01
 	  for Schur complement S and a KSP solver to approximate the action of A^{-1}.
 
@@ -185,7 +186,8 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           MatSchurComplementGetPmat() can be called on the output of this function to generate an explicit approximation to the Schur complement.
 
-    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    Developer Notes:
+    The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
     remove redundancy and be clearer and simplier.
 
 
@@ -217,7 +219,8 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather, this
+   Notes:
+    The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using formula S = A11 - A10 A^{-1} A01
 	  for Schur complement S and a KSP solver to approximate the action of A^{-1}.
 
@@ -352,7 +355,8 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 
    Level: intermediate
 
-   Notes: All four matrices must have the same MPI communicator
+   Notes:
+    All four matrices must have the same MPI communicator
 
           A00 and  A11 must be square matrices
 
@@ -526,7 +530,8 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
   PetscFunctionReturn(0);
 }
 
-/* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
+/* Developer Notes:
+    This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
 PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr;
@@ -616,7 +621,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     In other words calling MatCreateSchurComplement() followed by MatSchurComplementGetPmat() produces the same output as this function but with slightly different
     inputs. The actually submatrices of the original block matrix instead of index sets to the submatrices.
 
-    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    Developer Notes:
+    The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
     remove redundancy and be clearer and simplier.
 
     Level: advanced
@@ -864,7 +870,8 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
     "MatSchurComplementGetPmat_C" to their function.  If their function needs to fall back to the default implementation,
     it should call MatSchurComplementGetPmat_Basic().
 
-    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    Developer Notes:
+    The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
     remove redundancy and be clearer and simplier.
 
     Level: advanced

@@ -49,7 +49,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 
    Level: advanced
 
-   Notes: x and y may be the same vector
+   Notes:
+    x and y may be the same vector
           if a particular y_i is zero, it is treated as 1 in the above formula
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
@@ -581,7 +582,8 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -626,7 +628,8 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: BLAS
    Concepts: vector^BLAS
@@ -669,7 +672,8 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 
    Level: intermediate
 
-   Notes: x, y and z must be different vectors
+   Notes:
+    x, y and z must be different vectors
 
    Developer Note:   alpha = 1 or gamma = 1 or gamma = 0.0 are handled as special cases
 
@@ -720,7 +724,8 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -763,7 +768,8 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: w cannot be either x or y, but x and y can be the same
+   Notes:
+    w cannot be either x or y, but x and y can be the same
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -1196,7 +1202,8 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
    Level: intermediate
 
-   Notes: y cannot be any of the x vectors
+   Notes:
+    y cannot be any of the x vectors
 
    Concepts: BLAS
 
@@ -2942,7 +2949,8 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
    Input Parameter:
 .  x - the vector
 
-   Notes: If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
+   Notes:
+    If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
 
     Call VecLockPop() to remove the latest lock
 

@@ -35,7 +35,8 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 -  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
 
-    Notes: If the coloring is not provided through the context, this will first try to get the
+    Notes:
+    If the coloring is not provided through the context, this will first try to get the
         coloring from the DM.  If the DM type has no coloring routine, then it will try to
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
         precomputed.  

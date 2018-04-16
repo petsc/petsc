@@ -15,7 +15,8 @@
 
    Level: intermediate
 
-   Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
+   Notes:
+    Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DMDA.
 
           The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
@@ -307,7 +308,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
    Level: intermediate
 
-   Notes: Unlike hypre's general semi-struct object consisting of a collection of structured-grid objects and unstructured
+   Notes:
+    Unlike hypre's general semi-struct object consisting of a collection of structured-grid objects and unstructured
           grid objects, we restrict the semi-struct objects to consist of only structured-grid components.
 
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block

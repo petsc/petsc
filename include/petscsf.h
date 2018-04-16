@@ -15,7 +15,8 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
    Level: beginner
 
-   Notes: The two approaches provided are
+   Notes:
+    The two approaches provided are
 $     PETSCSFBASIC which uses MPI 1 message passing to perform the communication and
 $     PETSCSFWINDOW which uses MPI 2 one-sided operations to perform the communication, this may be more efficient,
 $                   but may not be available for all MPI distributions. In particular OpenMPI has bugs in its one-sided

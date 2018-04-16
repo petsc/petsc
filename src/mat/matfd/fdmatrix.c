@@ -289,7 +289,8 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
 
    Level: advanced
 
-   Notes: This function is usually used automatically by SNES (when one uses SNESSetJacobian() with the argument
+   Notes:
+    This function is usually used automatically by SNES (when one uses SNESSetJacobian() with the argument
      SNESComputeJacobianDefaultColor()) and only needs to be used by someone computing a matrix via coloring directly by
      calling MatFDColoringApply()
 

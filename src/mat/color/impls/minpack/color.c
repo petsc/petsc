@@ -128,7 +128,8 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 
    Level: beginner
 
-   Notes: Supports only distance two colorings (for computation of Jacobians)
+   Notes:
+    Supports only distance two colorings (for computation of Jacobians)
 
           This is a sequential algorithm
 
@@ -237,7 +238,8 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 
    Level: beginner
 
-   Notes: Supports only distance two colorings (for computation of Jacobians)
+   Notes:
+    Supports only distance two colorings (for computation of Jacobians)
 
           This is a sequential algorithm
 
@@ -348,7 +350,8 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 
    Level: beginner
 
-   Notes: Supports only distance two colorings (for computation of Jacobians)
+   Notes:
+    Supports only distance two colorings (for computation of Jacobians)
 
           This is a sequential algorithm
 

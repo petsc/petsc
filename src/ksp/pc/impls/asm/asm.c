@@ -1053,7 +1053,8 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
     Options Database Key:
 .   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
-    Notes: if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
+    Notes:
+    if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
     to limit the local processor interpolation
 
     Level: intermediate
@@ -1259,7 +1260,8 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
       will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
       -pc_asm_type basic to use the standard ASM.
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
+   Notes:
+    Each processor can have one or more blocks, but a block cannot be shared by more
      than one processor. Use PCGASM for subdomains shared by multiple processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
@@ -1697,7 +1699,8 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
 
     Level: advanced
 
-    Notes: Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
+    Notes:
+    Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
 
            Usually one would use PCSetModifySubmatrices() to change the submatrices in building the preconditioner.
 

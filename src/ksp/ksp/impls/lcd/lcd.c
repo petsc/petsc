@@ -191,7 +191,8 @@ PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ks
 
    Level: beginner
 
-    Notes: Support only for left preconditioning
+    Notes:
+    Support only for left preconditioning
 
     References:
 +    1. - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate

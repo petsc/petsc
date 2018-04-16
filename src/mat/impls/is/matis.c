@@ -151,7 +151,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
 
    Level: advanced
 
-   Notes: This function does not need to be called by the user.
+   Notes:
+    This function does not need to be called by the user.
 
 .keywords: matrix
 
@@ -1001,7 +1002,8 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
 
    Level: intermediate
 
-   Notes: This function has the same interface as the MPIAIJ preallocation routine in order to simplify the transition
+   Notes:
+    This function has the same interface as the MPIAIJ preallocation routine in order to simplify the transition
           from the asssembled format to the unassembled one. It overestimates the preallocation of MATIS local
           matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
 
@@ -1372,7 +1374,8 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
 
   Level: developer
 
-  Notes: mat and *newmat cannot be the same object when MAT_REUSE_MATRIX is requested.
+  Notes:
+    mat and *newmat cannot be the same object when MAT_REUSE_MATRIX is requested.
 
 .seealso: MATIS
 @*/
@@ -2237,7 +2240,8 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
 
    Level: advanced
 
-   Notes: See MATIS for more details.
+   Notes:
+    See MATIS for more details.
           m and n are NOT related to the size of the map; they represent the size of the local parts of the vectors
           used in MatMult operations. The sizes of rmap and cmap define the size of the local matrices.
           If either rmap or cmap are NULL, then the matrix is assumed to be square.
@@ -2298,7 +2302,8 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
    Options Database Keys:
 . -mat_type is - sets the matrix type to "is" during a call to MatSetFromOptions()
 
-   Notes: Options prefix for the inner matrix are given by -is_mat_xxx
+   Notes:
+    Options prefix for the inner matrix are given by -is_mat_xxx
 
           You must call MatSetLocalToGlobalMapping() before using this matrix type.
 

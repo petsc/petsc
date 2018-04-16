@@ -224,7 +224,8 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 
    Level: intermediate
 
-   Notes: Requires 2 norms and 1 inner product, but they are computed together
+   Notes:
+    Requires 2 norms and 1 inner product, but they are computed together
        so only one parallel collective operation is needed. See MATMFFD_WP for a method
        (with GMRES) that requires NO collective operations.
 

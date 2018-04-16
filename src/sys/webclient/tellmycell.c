@@ -21,13 +21,15 @@
 
    Level: intermediate
 
-   Notes: You must register for an account at tellmycell.com (you get 10 free texts with registration)
+   Notes:
+    You must register for an account at tellmycell.com (you get 10 free texts with registration)
 
    You must provide -tellmycell_user <Username> and -tellmycell_password <Password> in the options database
 
    It would be nice to provide this as a free service but that would require making the PETSc TellMyCell password public.
 
-   Developer Notes:  Perhaps the Username and Password should be arguments to this function.
+   Developer Notes:
+    Perhaps the Username and Password should be arguments to this function.
 
 .seealso: PetscTextBelt(), PetscHTTPSRequest(), PetscHTTPSConnect(), PetscSSLInitializeContext()
 @*/

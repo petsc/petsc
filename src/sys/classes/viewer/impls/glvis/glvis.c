@@ -116,7 +116,8 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .  ctx        - User context to store the relevant data to apply g2lfields
 -  destroyctx - Destroy function for userctx
 
-  Notes: g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
+  Notes:
+    g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
@@ -586,7 +587,8 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
   Output Parameters:
 -  viewer    - the PetscViewer object
 
-  Notes: misses Fortran binding
+  Notes:
+    misses Fortran binding
 
   Level: beginner
 
@@ -623,7 +625,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
 
   Level: intermediate
 
-  Notes: misses Fortran bindings
+  Notes:
+    misses Fortran bindings
 
   Environmental variables:
 + PETSC_VIEWER_GLVIS_FILENAME : output filename (if specified dump to disk, and takes precedence on PETSC_VIEWER_GLVIS_HOSTNAME)

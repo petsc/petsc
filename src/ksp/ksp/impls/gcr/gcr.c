@@ -307,7 +307,8 @@ static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 
    Level: beginner
 
-    Notes: The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
+    Notes:
+    The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
            which may vary from one iteration to the next. Users can can define a method to vary the
            preconditioner between iterates via KSPGCRSetModifyPC().
 

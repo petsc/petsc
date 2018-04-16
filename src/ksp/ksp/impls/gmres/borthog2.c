@@ -23,7 +23,8 @@
 -   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is
                                    used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
-    Notes: Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used
+    Notes:
+    Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used
 
    Level: intermediate
 

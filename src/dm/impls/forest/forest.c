@@ -281,7 +281,8 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
 + dm - the forest
 - base - the base DM of the forest
 
-  Notes: Currently the base DM must be a DMPLEX
+  Notes:
+    Currently the base DM must be a DMPLEX
 
   Level: intermediate
 

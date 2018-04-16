@@ -59,7 +59,8 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
    Level: beginner
 
-   Notes: A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
+   Notes:
+    A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
           (see MatFDColoringCreate()).
 
           Some coloring types only support distance two colorings
@@ -134,7 +135,8 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 
    Level: beginner
 
-   Notes:  Possible types include the sequential types MATCOLORINGLF,
+   Notes:
+    Possible types include the sequential types MATCOLORINGLF,
    MATCOLORINGSL, and MATCOLORINGID from the MINPACK package as well
    as a parallel MATCOLORINGMIS algorithm.
 
@@ -237,7 +239,8 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
    Level: beginner
 
-   Notes: The distance of the coloring denotes the minimum number
+   Notes:
+    The distance of the coloring denotes the minimum number
    of edges in the graph induced by the matrix any two vertices
    of the same color are.  Distance-1 colorings are the classical
    coloring, where no two vertices of the same color are adjacent.
@@ -291,7 +294,8 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
    Level: beginner
 
-   Notes:  This may be used to compute a certain number of
+   Notes:
+    This may be used to compute a certain number of
    independent sets from the graph.  For instance, while using
    MATCOLORINGMIS and maxcolors = 1, one gets out an MIS.  Vertices
    not in a color are set to have color maxcolors+1, which is not

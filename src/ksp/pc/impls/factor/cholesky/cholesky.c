@@ -238,13 +238,15 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
 .  -pc_factor_in_place - Activates in-place factorization
 -  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
-   Notes: Not all options work for all matrix formats
+   Notes:
+    Not all options work for all matrix formats
 
    Level: beginner
 
    Concepts: Cholesky factorization, direct solver
 
-   Notes: Usually this will compute an "exact" solution in one iteration and does
+   Notes:
+    Usually this will compute an "exact" solution in one iteration and does
           not need a Krylov method (i.e. you can use -ksp_type preonly, or
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 

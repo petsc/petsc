@@ -533,7 +533,8 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
    Options Database Keys:
 .   -ksp_gmres_kyrlov_monitor
 
-   Notes: A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
+   Notes:
+    A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
@@ -847,7 +848,8 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 
    Level: beginner
 
-   Notes: Left and right preconditioning are supported, but not symmetric preconditioning.
+   Notes:
+    Left and right preconditioning are supported, but not symmetric preconditioning.
 
    References:
 .     1. - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.

@@ -6,7 +6,8 @@
     Input Parameter:
 .     a - the PetscReal Value
 
-     Notes: uses the C99 standard isnormal() on systems where they exist.
+     Notes:
+    uses the C99 standard isnormal() on systems where they exist.
       Uses isnormalq() with __float128
       Otherwises always returns true
 
@@ -35,7 +36,8 @@ PetscBool PetscIsNormalReal(PetscReal a)
     Input Parameter:
 .     a - the floating point number
 
-     Notes: uses the C99 standard isinf() on systems where it exists.
+     Notes:
+    uses the C99 standard isinf() on systems where it exists.
       Otherwises uses (a && a/2 == a), note that some optimizing compiles compile
       out this form, thus removing the check.
 
@@ -75,7 +77,8 @@ PetscBool PetscIsInfReal(PetscReal a)
     Input Parameter:
 .     a - the floating point number
 
-     Notes: uses the C99 standard isnan() on systems where it exists.
+     Notes:
+    uses the C99 standard isnan() on systems where it exists.
       Otherwises uses (a != a), note that some optimizing compiles compile
       out this form, thus removing the check.
 

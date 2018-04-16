@@ -209,7 +209,8 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
    Level: beginner
 
-   Notes: eigenvalue computation routines will return information about the
+   Notes:
+    eigenvalue computation routines will return information about the
           spectrum of A^t*A, rather than A.
 
 

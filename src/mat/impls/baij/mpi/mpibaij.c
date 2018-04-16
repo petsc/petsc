@@ -2818,7 +2818,8 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
 
    Level: developer
 
-   Notes: The order of the entries in values is specified by the MatOption MAT_ROW_ORIENTED.  For example, C programs
+   Notes:
+    The order of the entries in values is specified by the MatOption MAT_ROW_ORIENTED.  For example, C programs
    may want to use the default MAT_ROW_ORIENTED=PETSC_TRUE and use an array v[nnz][bs][bs] where the second index is
    over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
    MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
@@ -3731,7 +3732,8 @@ PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colma
 . v - numerical values input
 - addvin - INSERT_VALUES or ADD_VALUES
 
-  Notes: This has a complete copy of MatSetValuesBlocked_MPIBAIJ() which is terrible code un-reuse.
+  Notes:
+    This has a complete copy of MatSetValuesBlocked_MPIBAIJ() which is terrible code un-reuse.
 
   Level: advanced
 

@@ -225,7 +225,8 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
 
     Level: intermediate
 
-    Notes: Like KSPFBCGS, the KSPPIPEBCGS implementation only allows for right preconditioning.
+    Notes:
+    Like KSPFBCGS, the KSPPIPEBCGS implementation only allows for right preconditioning.
     MPI configuration may be necessary for reductions to make asynchronous progress, which is important for 
     performance of pipelined methods. See the FAQ on the PETSc website for details.
 	

@@ -18,7 +18,8 @@
 .   x_user, y_user - user coordinates of location (user may pass in NULL).
 -   x_phys, y_phys - window coordinates (user may pass in NULL).
 
-    Notes: Only processor 0 actually waits for the button to be pressed.
+    Notes:
+    Only processor 0 actually waits for the button to be pressed.
 
     Level: intermediate
 @*/

@@ -199,7 +199,8 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: See KSPBCGSL for additional stabilization
+   Notes:
+    See KSPBCGSL for additional stabilization
           Supports left and right preconditioning but not symmetric
 
    References:
