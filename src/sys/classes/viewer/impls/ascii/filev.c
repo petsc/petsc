@@ -987,6 +987,20 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     va_start(Argp,format);
     ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
+    if (fullLength > next->size-2*vascii->tab) {
+      ierr = PetscFree(next->string);CHKERRQ(ierr);
+      next->size = fullLength + 2*vascii->tab;
+      ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
+      ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      string     = next->string;
+      tab        = 2*vascii->tab;
+      while (tab--) {
+        *string++ = ' ';
+      }
+      va_start(Argp,format);
+      ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,NULL,Argp);CHKERRQ(ierr);
+      va_end(Argp);
+    }
   }
   PetscFunctionReturn(0);
 }
