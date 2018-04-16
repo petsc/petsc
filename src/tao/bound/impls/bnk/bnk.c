@@ -143,12 +143,12 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
         if (needH) {
           /* Compute the Hessian at the new step, and extract the inactive subsystem */
           ierr = TaoComputeHessian(tao, tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
+          ierr = MatDestroy(&bnk->H_inactive);
           if (bnk->inactive_idx) {
             ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
             ierr = VecWhichInactive(tao->XL,tao->solution,bnk->unprojected_gradient,tao->XU,PETSC_TRUE,&bnk->inactive_idx);CHKERRQ(ierr);
-            ierr = TaoMatGetSubMat(tao->hessian, bnk->inactive_idx, bnk->Xwork, TAO_SUBSET_MASK, &bnk->H_inactive);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
           } else {
-            ierr = MatDestroy(&bnk->H_inactive);
             ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);
           }
           needH = 0;
@@ -173,8 +173,19 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType)
               sigma = -tao->trust / bnk->gnorm;
             }
             /* Compute the predicted and actual reduction */
-            ierr = MatMult(bnk->H_inactive, tao->gradient, bnk->W);CHKERRQ(ierr);
-            ierr = VecDot(tao->gradient, bnk->W, &prered);CHKERRQ(ierr);
+            if (bnk->inactive_idx) {
+              ierr = VecGetSubVector(bnk->unprojected_gradient, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+              ierr = VecGetSubVector(bnk->W, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
+            } else {
+              bnk->G_inactive = bnk->unprojected_gradient;
+              bnk->inactive_work = bnk->W;
+            }
+            ierr = MatMult(bnk->H_inactive, bnk->G_inactive, bnk->inactive_work);CHKERRQ(ierr);
+            ierr = VecDot(bnk->G_inactive, bnk->inactive_work, &prered);CHKERRQ(ierr);
+            if (bnk->inactive_idx) {
+              ierr = VecRestoreSubVector(bnk->unprojected_gradient, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+              ierr = VecRestoreSubVector(bnk->W, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
+            }
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
             if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
@@ -621,6 +632,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       *stepType = BNK_GRADIENT;
     } else {
       /* Attempt to use the BFGS direction */
+      ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
       /* Check for success (descent direction) 

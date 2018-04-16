@@ -3,10 +3,10 @@
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   1, Function value 1.51314, Residual: 0.199846 
-iter =   2, Function value 1.50568, Residual: 0.00598437 
-iter =   3, Function value 1.50566, Residual: 2.51899e-05 
-iter =   4, Function value 1.50566, Residual: < 1.0e-6 
+iter =   1, Function value 1.53886, Residual: 0.204673 
+iter =   2, Function value 1.50771, Residual: 0.13018 
+iter =   3, Function value 1.50566, Residual: 0.00271745 
+iter =   4, Function value 1.50566, Residual: 2.4862e-06 
 Tao Object: 1 MPI processes
   type: bntr
     Rejected matrix updates: 0
@@ -16,8 +16,8 @@ Tao Object: 1 MPI processes
     Gradient steps: 0
     KSP termination reasons:
       atol: 0
-      rtol: 4
-      ctol: 0
+      rtol: 3
+      ctol: 1
       negc: 0
       dtol: 0
       iter: 0
@@ -47,10 +47,10 @@ Tao Object: 1 MPI processes
       total: nonzeros=190, allocated nonzeros=190
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  total KSP iterations: 79
+  total KSP iterations: 60
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=5.72059e-10
+  Residual in Function/Gradient:=2.4862e-06
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=15,      (max: 4000)
