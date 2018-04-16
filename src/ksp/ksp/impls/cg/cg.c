@@ -20,7 +20,7 @@
         KSPSetUp_XXX()
         KSPView_XXX()            - Prints details of solver being used.
 
-    Detailed notes:
+    Detailed Notes:
     By default, this code implements the CG (Conjugate Gradient) method,
     which is valid for real symmetric (and complex Hermitian) positive
     definite matrices. Note that for the complex Hermitian case, the

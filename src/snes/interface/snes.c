@@ -3706,7 +3706,7 @@ M*/
    SNESMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNES object
+   Fortran Notes: Only a single monitor function can be set for each SNES object
 
    Level: intermediate
 

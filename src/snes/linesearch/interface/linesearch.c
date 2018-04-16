@@ -95,7 +95,7 @@ PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
    SNESLineSearchMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNESLineSearch object
+   Fortran Notes: Only a single monitor function can be set for each SNESLineSearch object
 
    Level: intermediate
 

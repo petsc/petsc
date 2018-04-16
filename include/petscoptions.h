@@ -123,7 +123,7 @@ typedef struct _p_PetscOptionItems {
   Notes: Needs to be ended by a call the PetscOptionsEnd()
          Can add subheadings with PetscOptionsHead()
 
-  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
+  Developer Notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
 $             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
 $             the loop is run ONCE with a PetscOptionsPublishCount of 1.
 $             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc

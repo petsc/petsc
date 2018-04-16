@@ -2574,7 +2574,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Developer notes:
+   Developer Notes:
 
    Contributed by Stefano Zampini
 

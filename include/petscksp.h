@@ -410,7 +410,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match petsc/finclude/petscksp.h
+   Developer Notes: this must match petsc/finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.

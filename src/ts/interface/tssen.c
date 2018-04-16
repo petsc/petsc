@@ -586,7 +586,7 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
    This routine adds an additional monitor to the list of monitors that
    already has been loaded.
 
-   Fortran notes: Only a single monitor function can be set for each TS object
+   Fortran Notes: Only a single monitor function can be set for each TS object
 
    Level: intermediate
 
