@@ -240,26 +240,10 @@ PetscErrorCode MatLMVMSetInactive(Mat A, IS inactive_idx)
 {
   MatLMVMCtx     *shell;
   PetscErrorCode ierr;
-  Mat            Anew;
-  PetscInt       n, N;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
   shell->inactive_idx = inactive_idx;
-  if (shell->inactive_idx) {
-    /* If the inactive index set exists, change the matrix shell sizing to match */
-    ierr = ISGetLocalSize(shell->inactive_idx, &shell->nred);CHKERRQ(ierr);
-    ierr = ISGetSize(shell->inactive_idx, &shell->Nred);CHKERRQ(ierr);
-    n = shell->nred;
-    N = shell->Nred;
-  } else {
-    /* If the inactive index set is NULL, Restore matrix shell sizing to the full space problem */
-    n = shell->nfull;
-    N = shell->Nfull;
-  }
-  ierr = MatCreateShell(PetscObjectComm((PetscObject)A), n, n, N, N, shell, &Anew);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(Anew,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(Anew,MATOP_VIEW,(void(*)(void))MatView_LMVM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

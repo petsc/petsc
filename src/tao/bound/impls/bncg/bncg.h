@@ -16,10 +16,13 @@ typedef struct {
     IS  inactive_set;
     Vec inactive_grad, inactive_step;
 
+    PetscReal f;
     PetscReal rho, pow;
     PetscReal eta;         /*  Restart tolerance */
     PetscReal delta_max;   /*  Minimum value for scaling */
     PetscReal delta_min;   /*  Maximum value for scaling */
+    
+    PetscBool recycle;
 
     PetscInt cg_type;           /*  Formula to use */
 
@@ -29,3 +32,4 @@ typedef struct {
 #endif /* ifndef __TAO_BNCG_H */
 
 PETSC_INTERN PetscErrorCode TaoBNCGResetStepForNewInactives(Tao, Vec);
+PETSC_EXTERN PetscErrorCode TaoBNCGSetRecycleFlag(Tao, PetscBool);

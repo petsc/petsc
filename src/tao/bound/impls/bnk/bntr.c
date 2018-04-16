@@ -90,7 +90,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao, bnk->init_type);CHKERRQ(ierr);
+  ierr = TaoBNKInitialize(tao, bnk->init_type, &stepAccepted);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -196,6 +196,5 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNTR(Tao tao)
   
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
-  bnk->sval = 0.0; /* disable Hessian shifting */
   PetscFunctionReturn(0);
 }

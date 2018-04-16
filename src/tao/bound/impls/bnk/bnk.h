@@ -6,13 +6,23 @@ Context for bounded Newton-Krylov type optimization algorithms
 #define __TAO_BNK_H
 #include <petsc/private/taoimpl.h>
 #include <../src/tao/matrix/lmvmmat.h>
+#include <../src/tao/bound/impls/bncg/bncg.h>
 
 typedef struct {
-  Mat H_inactive, Hpre_inactive, M;
-  Vec W, Xwork, Gwork, inactive_work, active_work;
-  Vec Xold, Gold, Diag, Diag_red, Diag_min, Diag_max;
-  Vec X_inactive, G_inactive;
+  /* Embedded TAOBNCG */
+  Tao bncg;
+  TAO_BNCG *bncg_ctx;
+  PetscInt max_cg_its;
+  Vec bncg_sol;
+  
+  /* Allocated vectors */
+  Vec W, Xwork, Gwork, Xold, Gold;
   Vec unprojected_gradient, unprojected_gradient_old;
+  Vec Diag_min, Diag_max;
+  
+  /* Unallocated matrices and vectors */
+  Mat H_inactive, Hpre_inactive, M;
+  Vec Diag, Diag_red, X_inactive, G_inactive, inactive_work, active_work;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
   /* Scalar values for the solution and step */
@@ -232,10 +242,11 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
-PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt);
+PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
+PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);

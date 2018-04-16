@@ -53,12 +53,21 @@ PetscErrorCode TaoBNCGResetStepForNewInactives(Tao tao, Vec step)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TaoBNCGSetRecycleFlag(Tao tao, PetscBool recycle)
+{
+  TAO_BNCG                     *cg = (TAO_BNCG*)tao->data;
+
+  PetscFunctionBegin;
+  cg->recycle = recycle;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TaoSolve_BNCG(Tao tao)
 {
   TAO_BNCG                     *cg = (TAO_BNCG*)tao->data;
   PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                    step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta,dnorm;
+  PetscReal                    step=1.0,gnorm,gnorm2,delta,gd,ginner,beta,dnorm;
   PetscReal                    gd_old,gnorm2_old,f_old;
   PetscBool                    cg_restart;
 
@@ -71,9 +80,11 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
 
   /*  Compute the objective function and criteria */
-  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, cg->unprojected_gradient);CHKERRQ(ierr);
+  if (!cg->recycle) {
+    ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient);CHKERRQ(ierr);
+  }
   ierr = VecNorm(cg->unprojected_gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  if (PetscIsInfOrNanReal(cg->f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
   /* Project the gradient and calculate the norm */
   ierr = VecBoundGradientProjection(cg->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
@@ -82,13 +93,13 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   
   /* Convergence check */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step);CHKERRQ(ierr);
+  ierr = TaoLogConvergenceHistory(tao, cg->f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, cg->f, gnorm, 0.0, step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   
   /* Start optimization iterations */
-  f_old = f;
+  f_old = cg->f;
   gnorm2_old = gnorm2;
   ierr = VecCopy(tao->solution, cg->X_old);CHKERRQ(ierr);
   ierr = VecCopy(tao->gradient, cg->G_old);CHKERRQ(ierr);
@@ -99,7 +110,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     /* Check restart conditions for using steepest descent */
     cg_restart = PETSC_FALSE;
     ierr = VecDot(tao->gradient, cg->G_old, &ginner);CHKERRQ(ierr);
-    if (tao->niter == 0) {
+    if (tao->niter == 0 && !cg->recycle) {
       /* 1) First iteration */
       cg_restart = PETSC_TRUE;
     } else if (PetscAbsScalar(ginner) >= cg->eta * gnorm2) {
@@ -168,11 +179,11 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     ierr = VecCopy(tao->gradient, cg->G_old);CHKERRQ(ierr);
     ierr = VecCopy(cg->unprojected_gradient, cg->unprojected_gradient_old);CHKERRQ(ierr);
     gnorm2_old = gnorm2;
-    f_old = f;
+    f_old = cg->f;
     
     /* Perform bounded line search */
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
-    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
+    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
     
     /*  Check linesearch failure */
@@ -180,7 +191,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       cg->ls_fails++;
       /* Restore previous point */
       gnorm2 = gnorm2_old;
-      f = f_old;
+      cg->f = f_old;
       ierr = VecCopy(cg->X_old, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(cg->G_old, tao->gradient);CHKERRQ(ierr);
       ierr = VecCopy(cg->unprojected_gradient_old, cg->unprojected_gradient);CHKERRQ(ierr);
@@ -191,14 +202,14 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
       
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);CHKERRQ(ierr);
-      ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
+      ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
         
       if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
         cg->ls_fails++;
         /* Restore previous point */
         gnorm2 = gnorm2_old;
-        f = f_old;
+        cg->f = f_old;
         ierr = VecCopy(cg->X_old, tao->solution);CHKERRQ(ierr);
         ierr = VecCopy(cg->G_old, tao->gradient);CHKERRQ(ierr);
         ierr = VecCopy(cg->unprojected_gradient_old, cg->unprojected_gradient);CHKERRQ(ierr);
@@ -216,8 +227,8 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     
     /* Convergence test */
     tao->niter++;
-    ierr = TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao, cg->f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, tao->niter, cg->f, gnorm, 0.0, step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -250,7 +261,6 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
     ierr = VecDestroy(&cg->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&cg->unprojected_gradient_old);CHKERRQ(ierr);
   }
-  ierr = TaoLineSearchDestroy(&tao->linesearch);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -269,6 +279,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
     ierr = PetscOptionsEList("-tao_BNCG_type","cg formula", "", CG_Table, CG_Types, CG_Table[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_BNCG_delta_min","minimum delta value", "", cg->delta_min,&cg->delta_min,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_BNCG_delta_max","maximum delta value", "", cg->delta_max,&cg->delta_max,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-tao_BNCG_recycle","enable recycling the existing solution and gradient at the start of a new solve","",cg->recycle,&cg->recycle,NULL);CHKERRQ(ierr);
    ierr = PetscOptionsTail();CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
@@ -348,5 +359,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   cg->delta_min = 1e-7;
   cg->delta_max = 100;
   cg->cg_type = CG_DaiYuan;
+  cg->recycle = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

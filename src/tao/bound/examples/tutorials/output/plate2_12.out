@@ -2,11 +2,10 @@
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
-iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   1, Function value 1.53886, Residual: 0.204673 
-iter =   2, Function value 1.51279, Residual: 0.169055 
-iter =   3, Function value 1.50584, Residual: 0.0501193 
-iter =   4, Function value 1.50566, Residual: 0.000277597 
+iter =   1, Function value 1.58436, Residual: 0.551899 
+iter =   2, Function value 1.51541, Residual: 0.222306 
+iter =   3, Function value 1.50573, Residual: 0.0173978 
+iter =   4, Function value 1.50566, Residual: 9.03179e-05 
 iter =   5, Function value 1.50566, Residual: < 1.0e-6 
 Tao Object: 1 MPI processes
   type: bntl
@@ -17,9 +16,9 @@ Tao Object: 1 MPI processes
     Gradient steps: 0
     KSP termination reasons:
       atol: 0
-      rtol: 3
-      ctol: 2
-      negc: 0
+      rtol: 4
+      ctol: 0
+      negc: 1
       dtol: 0
       iter: 0
       othr: 0
@@ -48,12 +47,12 @@ Tao Object: 1 MPI processes
       total: nonzeros=190, allocated nonzeros=190
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  total KSP iterations: 62
+  total KSP iterations: 81
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=5.38087e-08
+  Residual in Function/Gradient:=3.47838e-09
   Objective value=1.50566
   total number of iterations=5,                          (max: 50)
-  total number of function/gradient evaluations=17,      (max: 4000)
-  total number of Hessian evaluations=6
+  total number of function/gradient evaluations=16,      (max: 4000)
+  total number of Hessian evaluations=5
   Solution converged:    ||g(X)|| <= gatol

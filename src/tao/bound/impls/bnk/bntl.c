@@ -107,7 +107,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao, bnk->init_type);CHKERRQ(ierr);
+  ierr = TaoBNKInitialize(tao, bnk->init_type, &stepAccepted);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
@@ -116,7 +116,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
     tao->ksp_its=0;
     
     /* Compute the hessian and update the BFGS preconditioner at the new iterate*/
-    ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
+    if (stepAccepted) {ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);}
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
     ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
@@ -169,6 +169,7 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
       ierr = TaoBNKPerformLineSearch(tao, stepType, &steplen, &ls_reason);CHKERRQ(ierr);
       if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) {
         /* Line search failed, revert solution and terminate */
+        stepAccepted = PETSC_FALSE;
         bnk->f = bnk->fold;
         ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
         ierr = VecCopy(bnk->Gold, tao->gradient);CHKERRQ(ierr);
@@ -225,6 +226,5 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
   
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
-  bnk->sval = 0.0; /* disable Hessian shifting */
   PetscFunctionReturn(0);
 }
