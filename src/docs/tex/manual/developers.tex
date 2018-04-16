@@ -201,13 +201,13 @@ PetscScalar a;
 PetscInt i,j; /* Incorrect */
 \end{lstlisting}
 
-\item Assignment operations, i.e. \lstinline{x = 22.0} should have single spaces are around the \lstinline{=}, this is also true for
-comparison operations such as \lstinline{x < 22.0}. This is true even
-when assignments are given directly in a line that declares the
-variable such as \lstinline{PetscReal r = 22.3}. The exception is when
-these symbols are used in a for loop when there should be no spaces,
-for example, for \lstinline{(i=0; i<m; i++)}. Comparisons
-in \lstinline{while()} constructs should have the space.
+\item Assignment and comparison operations, i.e. \lstinline{x = 22.0} or
+\lstinline{x < 22.0}, should have single spaces around the operator.
+This is true even when assignments are given directly in a line that declares
+the variable, such as \lstinline{PetscReal r = 22.3}. The exception is when
+these symbols are used in a \lstinline{for} loop; then, there should be no spaces,
+for example, \lstinline{for (i=0; i<m; i++)}. Comparisons in \lstinline{while()}
+constructs should have the spaces.
 \item When declaring variables there should be no space between multiple variables, that is it should be \lstinline{PetscReal a,b,c} not \lstinline{PetscReal a, b, c}.
 \item The prototypes for functions should not include the names of the variables; for example write
 \begin{lstlisting}
