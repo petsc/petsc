@@ -15,7 +15,7 @@ cdef extern from * nogil:
     int PetscSFReset(PetscSF)
     int PetscSFDestroy(PetscSF*)
 
-    struct PetscSFNode:
+    ctypedef struct PetscSFNode:
         PetscInt rank
         PetscInt index
     ctypedef PetscSFNode const_PetscSFNode "const PetscSFNode"
