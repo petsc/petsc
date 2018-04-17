@@ -12,7 +12,7 @@ typedef struct {
   /* Embedded TAOBNCG */
   Tao bncg;
   TAO_BNCG *bncg_ctx;
-  PetscInt max_cg_its;
+  PetscInt max_cg_its, tot_cg_its;
   Vec bncg_sol;
   
   /* Allocated vectors */
@@ -227,16 +227,6 @@ typedef struct {
 #define BNK_AS_NONE             0
 #define BNK_AS_BERTSEKAS        1
 #define BNK_AS_TYPES            2
-
-static const char *BNK_PC[64] = {"none", "ahess", "bfgs", "petsc"};
-
-static const char *BFGS_SCALE[64] = {"ahess", "phess", "bfgs"};
-
-static const char *BNK_INIT[64] = {"constant", "direction", "interpolation"};
-
-static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
-
-static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);

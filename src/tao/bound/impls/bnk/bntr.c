@@ -84,7 +84,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   KSPConvergedReason           ksp_reason;
 
   PetscReal                    resnorm, oldTrust, prered, actred, stepNorm, steplen;
-  PetscBool                    stepAccepted = PETSC_TRUE, shift = PETSC_FALSE;
+  PetscBool                    cgTerminate, stepAccepted = PETSC_TRUE, shift = PETSC_FALSE;
   PetscInt                     stepType = BNK_NEWTON;
   
   PetscFunctionBegin;
@@ -94,15 +94,24 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
+  if (!stepAccepted) {tao->niter = 1;}
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     
     if (stepAccepted) { 
       tao->niter++;
       tao->ksp_its=0;
-      /* Compute the hessian and update the BFGS preconditioner at the new iterate*/
+      /* Compute the hessian, update the BFGS preconditioner and estimate the active-set at the new iterate */
       ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
+      ierr = TaoBNKEstimateActiveSet(tao);CHKERRQ(ierr);
     }
     
+    /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
+    ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
+    if (cgTerminate) {
+      tao->reason = bnk->bncg->reason;
+      PetscFunctionReturn(0);
+    }
+
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
     ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
 

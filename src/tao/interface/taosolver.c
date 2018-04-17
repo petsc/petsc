@@ -1920,7 +1920,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   } else if (trradius < steptol && niter > 0){
     ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", (double)trradius,(double)steptol);CHKERRQ(ierr);
     reason = TAO_CONVERGED_STEPTOL;
-  } else if (niter > tao->max_it) {
+  } else if (niter >= tao->max_it) {
     ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_it);CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXITS;
   } else {

@@ -92,6 +92,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   gnorm2 = gnorm*gnorm;
   
   /* Convergence check */
+  tao->niter = 0;
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoLogConvergenceHistory(tao, cg->f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao, tao->niter, cg->f, gnorm, 0.0, step);CHKERRQ(ierr);
@@ -104,7 +105,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   ierr = VecCopy(tao->solution, cg->X_old);CHKERRQ(ierr);
   ierr = VecCopy(tao->gradient, cg->G_old);CHKERRQ(ierr);
   ierr = VecCopy(cg->unprojected_gradient, cg->unprojected_gradient_old);CHKERRQ(ierr);
-  tao->niter = cg->ls_fails = cg->broken_ortho = cg->descent_error = 0;
+  cg->ls_fails = cg->broken_ortho = cg->descent_error = 0;
   cg->resets = -1;
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Check restart conditions for using steepest descent */
