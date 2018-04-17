@@ -20,16 +20,16 @@ PETSC_HASH_MAP(HashIJKL, PetscHashIJKLKey, PetscInt, PetscHashIJKLKeyHash, Petsc
 
 /*
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell
+  This assumes that the mesh is not interpolated from the depth of point p to the vertices
 */
 PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   const PetscInt *cone = NULL;
-  PetscInt        maxConeSize, maxSupportSize, coneSize;
+  PetscInt        coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
   ierr = DMPlexGetRawFaces_Internal(dm, dim, coneSize, cone, numFaces, faceSize, faces);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, Pets
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, (void *) faces);CHKERRQ(ierr);
+  if (faces) { ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, (void *) faces);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -59,6 +59,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (faces && coneSize) PetscValidIntPointer(cone,4);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), MPIU_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
@@ -69,8 +70,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 2;
-      if (faceSize) *faceSize         = 1;
+      if (numFaces) *numFaces = 2;
+      if (faceSize) *faceSize = 1;
       break;
     default:
       SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
@@ -85,8 +86,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[4] = cone[2]; facesTmp[5] = cone[0];
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 3;
-      if (faceSize) *faceSize         = 2;
+      if (numFaces) *numFaces = 3;
+      if (faceSize) *faceSize = 2;
       break;
     case 4:
       /* Vertices follow right hand rule */
@@ -97,8 +98,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[6] = cone[3]; facesTmp[7] = cone[0];
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 4;
-      if (faceSize) *faceSize         = 2;
+      if (numFaces) *numFaces = 4;
+      if (faceSize) *faceSize = 2;
       break;
     default:
       SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
@@ -113,8 +114,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[4] = cone[2]; facesTmp[5] = cone[0];
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 3;
-      if (faceSize) *faceSize         = 2;
+      if (numFaces) *numFaces = 3;
+      if (faceSize) *faceSize = 2;
       break;
     case 4:
       /* Vertices of first face follow right hand rule and normal points away from last vertex */
@@ -125,8 +126,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[9] = cone[2]; facesTmp[10] = cone[1]; facesTmp[11] = cone[3];
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 4;
-      if (faceSize) *faceSize         = 3;
+      if (numFaces) *numFaces = 4;
+      if (faceSize) *faceSize = 3;
       break;
     case 8:
       /*  7--------6
@@ -149,8 +150,8 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
         facesTmp[20] = cone[0]; facesTmp[21] = cone[4]; facesTmp[22] = cone[7]; facesTmp[23] = cone[1]; /* Left */
         *faces = facesTmp;
       }
-      if (numFaces) *numFaces         = 6;
-      if (faceSize) *faceSize         = 4;
+      if (numFaces) *numFaces = 6;
+      if (faceSize) *faceSize = 4;
       break;
     default:
       SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
