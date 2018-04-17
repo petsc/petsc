@@ -355,6 +355,9 @@ cdef class PC(Object):
         CHKERR( PCFactorGetMatSolverType(self.pc, &cval) )
         return bytes2str(cval)
 
+    def setFactorSetUpSolverPackage(self):
+        CHKERR( PCFactorSetUpMatSolverPackage(self.pc) )
+
     def setFactorOrdering(self, ord_type=None, nzdiag=None, reuse=None):
         cdef PetscMatOrderingType cval = NULL
         if ord_type is not None:
