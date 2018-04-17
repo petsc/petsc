@@ -319,8 +319,48 @@ PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(pet
 
 #if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 typedef PetscComplex PetscScalar;
+
+/*MC
+   PetscRealPart - Returns the real part of a PetscScalar
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscScalar PetscRealPart(PetscScalar v)
+
+   Not Collective
+
+   Input Parameter:
+.  v - value to find the real part of
+
+   Level: beginner
+
+.seealso: PetscScalar, PetscImaginaryPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscRealPart(a)      PetscRealPartComplex(a)
+
+/*MC
+   PetscImaginaryPart - Returns the imaginary part of a PetscScalar
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscScalar PetscImaginaryPart(PetscScalar v)
+
+   Not Collective
+
+   Input Parameter:
+.  v - value to find the imaginary part of
+
+   Level: beginner
+
+   Notes:
+       If PETSc was configured for real numbers then this always returns the value 0
+
+.seealso: PetscScalar, PetscRealPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
+
 #define PetscAbsScalar(a)     PetscAbsComplex(a)
 #define PetscConj(a)          PetscConjComplex(a)
 #define PetscSqrtScalar(a)    PetscSqrtComplex(a)
