@@ -5985,6 +5985,8 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
     ierr = DMGetLabelName(dmA, l, &name);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
     if (flg) continue;
+    ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
+    if (flg) continue;
     ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
     ierr = DMAddLabel(dmB, labelNew);CHKERRQ(ierr);
