@@ -68,6 +68,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->maxCell                  = NULL;
   v->bdtype                   = NULL;
   v->dimEmbed                 = PETSC_DEFAULT;
+  v->dim                      = PETSC_DETERMINE;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
