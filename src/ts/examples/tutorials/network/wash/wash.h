@@ -11,6 +11,7 @@ struct _p_Junction{
   PetscInt      isEnd;                /* -1: left end; 0: not an end; 1: right end */
   PetscInt      nedges_in,nedges_out; /* number of connected in/out edges */
   PetscReal     latitude, longitude;  /* GPS data */
+  Mat           *jacobian;
 };
 typedef struct _p_Junction *Junction;
 
