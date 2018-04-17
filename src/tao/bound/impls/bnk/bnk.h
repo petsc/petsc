@@ -233,7 +233,7 @@ PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 
 PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);
-PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao);
+PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);

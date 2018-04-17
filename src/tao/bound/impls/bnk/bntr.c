@@ -100,9 +100,8 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     if (stepAccepted) { 
       tao->niter++;
       tao->ksp_its=0;
-      /* Compute the hessian, update the BFGS preconditioner and estimate the active-set at the new iterate */
+      /* Compute the hessian and update the BFGS preconditioner at the new iterate */
       ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
-      ierr = TaoBNKEstimateActiveSet(tao);CHKERRQ(ierr);
     }
     
     /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */

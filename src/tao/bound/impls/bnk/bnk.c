@@ -59,7 +59,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
-  ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
+  ierr = VecNorm(tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
   /* Test the initial point for convergence */
@@ -146,6 +146,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
     case BNK_INIT_INTERPOLATION:
       /* Use interpolation based on the initial Hessian */
       max_radius = 0.0;
+      tao->trust = tao->trust0;
       for (j = 0; j < j_max; ++j) {
         f_min = bnk->f;
         sigma = 0.0;
@@ -153,13 +154,11 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
         if (*needH) {
           /* Compute the Hessian at the new step, and extract the inactive subsystem */
           ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
-          ierr = TaoBNKEstimateActiveSet(tao);CHKERRQ(ierr);
+          ierr = TaoBNKEstimateActiveSet(tao, BNK_AS_NONE);CHKERRQ(ierr);
           if (bnk->inactive_idx) {
-            ierr = MatDestroy(&bnk->H_inactive);
             ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
           } else {
-            ierr = MatDestroy(&bnk->H_inactive);
-            ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);
+            ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
           }
           *needH = PETSC_FALSE;
         }
@@ -182,25 +181,28 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
               f_min = ftrial;
               sigma = -tao->trust / bnk->gnorm;
             }
+            
             /* Compute the predicted and actual reduction */
             if (bnk->inactive_idx) {
-              ierr = VecGetSubVector(bnk->W, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
-              ierr = VecGetSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
+              ierr = VecGetSubVector(bnk->W, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
+              ierr = VecGetSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
             } else {
-              bnk->G_inactive = bnk->unprojected_gradient;
-              bnk->inactive_work = bnk->W;
+              bnk->X_inactive = bnk->W;
+              bnk->inactive_work = bnk->Xwork;
             }
-            ierr = MatMult(bnk->H_inactive, bnk->inactive_work, bnk->G_inactive);CHKERRQ(ierr);
-            ierr = VecDot(bnk->G_inactive, bnk->inactive_work, &prered);CHKERRQ(ierr);
+            ierr = MatMult(bnk->H_inactive, bnk->X_inactive, bnk->inactive_work);CHKERRQ(ierr);
+            ierr = VecDot(bnk->X_inactive, bnk->inactive_work, &prered);CHKERRQ(ierr);
             if (bnk->inactive_idx) {
-              ierr = VecRestoreSubVector(bnk->W, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
-              ierr = VecRestoreSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
-            }
+              ierr = VecRestoreSubVector(bnk->W, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
+              ierr = VecRestoreSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
+            } 
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
-            if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
+            if ((PetscAbsScalar(actred) <= bnk->epsilon) &&
+                (PetscAbsScalar(prered) <= bnk->epsilon)) {
               kappa = 1.0;
-            } else {
+            }
+            else {
               kappa = actred / prered;
             }
 
@@ -210,22 +212,21 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
             tau_max = PetscMax(tau_1, tau_2);
 
             if (PetscAbsScalar(kappa - 1.0) <= bnk->mu1_i) {
-              /* Great agreement */
+              /*  Great agreement */
               max_radius = PetscMax(max_radius, tao->trust);
 
               if (tau_max < 1.0) {
                 tau = bnk->gamma3_i;
-              } else if (tau_max > bnk->gamma4_i) {
+              }
+              else if (tau_max > bnk->gamma4_i) {
                 tau = bnk->gamma4_i;
-              } else if (tau_1 >= 1.0 && tau_1 <= bnk->gamma4_i && tau_2 < 1.0) {
-                tau = tau_1;
-              } else if (tau_2 >= 1.0 && tau_2 <= bnk->gamma4_i && tau_1 < 1.0) {
-                tau = tau_2;
-              } else {
+              }
+              else {
                 tau = tau_max;
               }
-            } else if (PetscAbsScalar(kappa - 1.0) <= bnk->mu2_i) {
-              /* Good agreement */
+            }
+            else if (PetscAbsScalar(kappa - 1.0) <= bnk->mu2_i) {
+              /*  Good agreement */
               max_radius = PetscMax(max_radius, tao->trust);
 
               if (tau_max < bnk->gamma2_i) {
@@ -235,17 +236,20 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
               } else {
                 tau = tau_max;
               }
-            } else {
-              /* Not good agreement */
+            }
+            else {
+              /*  Not good agreement */
               if (tau_min > 1.0) {
                 tau = bnk->gamma2_i;
               } else if (tau_max < bnk->gamma1_i) {
                 tau = bnk->gamma1_i;
               } else if ((tau_min < bnk->gamma1_i) && (tau_max >= 1.0)) {
                 tau = bnk->gamma1_i;
-              } else if ((tau_1 >= bnk->gamma1_i) && (tau_1 < 1.0) && ((tau_2 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
+              } else if ((tau_1 >= bnk->gamma1_i) && (tau_1 < 1.0) &&
+                        ((tau_2 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
                 tau = tau_1;
-              } else if ((tau_2 >= bnk->gamma1_i) && (tau_2 < 1.0) && ((tau_1 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
+              } else if ((tau_2 >= bnk->gamma1_i) && (tau_2 < 1.0) &&
+                        ((tau_1 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
                 tau = tau_2;
               } else {
                 tau = tau_max;
@@ -330,13 +334,13 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 
 /* Routine for estimating the active set */
 
-PetscErrorCode TaoBNKEstimateActiveSet(Tao tao) 
+PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) 
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
-  switch (bnk->as_type) {
+  switch (asType) {
   case BNK_AS_NONE:
     ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
     ierr = VecWhichInactive(tao->XL, tao->solution, bnk->unprojected_gradient, tao->XU, PETSC_TRUE, &bnk->inactive_idx);CHKERRQ(ierr);
@@ -459,6 +463,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   
   PetscFunctionBegin;
   /* Prepare the reduced sub-matrices for the inactive set */
+  ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
   if (BNK_PC_BFGS == bnk->pc_type) { ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr); }
   if (bnk->inactive_idx) {
     ierr = MatDestroy(&bnk->H_inactive);
