@@ -143,7 +143,7 @@ class Help(Info):
 
 
   def outputDownload(self):
-    ''' Looks for downloaded packages in --with-packages-dir
+    ''' Looks for downloaded packages in --with-packages-download-dir
         For any it finds it updates the --download-xxx= argument to point to this local copy
         If it does not find some needed packages then prints the packages that need to be downloaded and exits'''
     import nargs
@@ -152,7 +152,7 @@ class Help(Info):
     global _outputDownloadDone
     if _outputDownloadDone: return
     _outputDownloadDone = 1
-    pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-dir', self.clArgs)))
+    pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-download-dir', self.clArgs)))
     missing = 0
     for i in self.argDB.dlist.keys():
       if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
