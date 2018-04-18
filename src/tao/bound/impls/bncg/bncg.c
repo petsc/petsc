@@ -111,8 +111,9 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     /* Check restart conditions for using steepest descent */
     cg_restart = PETSC_FALSE;
     ierr = VecDot(tao->gradient, cg->G_old, &ginner);CHKERRQ(ierr);
-    if (tao->niter == 0 && !cg->recycle) {
-      /* 1) First iteration */
+    ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);CHKERRQ(ierr);
+    if (tao->niter == 0 && !cg->recycle && dnorm != 0.0) {
+      /* 1) First iteration, with recycle disabled, and a non-zero previous step */
       cg_restart = PETSC_TRUE;
     } else if (PetscAbsScalar(ginner) >= cg->eta * gnorm2) {
       /* 2) Gradients are far from orthogonal */

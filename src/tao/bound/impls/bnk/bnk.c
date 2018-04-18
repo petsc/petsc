@@ -88,6 +88,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   
   /* Initialize the Hessian perturbation */
   bnk->pert = bnk->sval;
+  
+  /* Reset initial steplength to zero (this helps BNCG reset its direction internally) */
+  ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
 
   /* Allocate the vectors needed for the BFGS approximation */
   if (BNK_PC_BFGS == bnk->pc_type) {
@@ -260,23 +263,28 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
         }
 
         if (f_min < bnk->f) {
-          /* We found a solution better than the initial, so let's test and accept it */
+          /* We accidentally found a solution better than the initial, so accept it */
           bnk->f = f_min;
+          ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
           ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+          ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
+          ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
-
+          /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
           ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           *needH = PETSC_TRUE;
-          
+          /* Test the new step for convergence */
           ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->Gwork);CHKERRQ(ierr);
           ierr = VecNorm(bnk->Gwork, NORM_2, &resnorm);CHKERRQ(ierr);
           ierr = TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
           ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
           ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
           if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+          /* active BNCG recycling early because we have a stepdirection computed */
+          ierr = TaoBNCGSetRecycleFlag(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
         }
       }
       tao->trust = PetscMax(tao->trust, max_radius);
@@ -420,13 +428,10 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
   *terminate = PETSC_FALSE;
   if (bnk->max_cg_its > 0) {
     /* Copy the current solution, unprojected gradient and step info into BNCG */
+    bnk->bncg_ctx->f = bnk->f;
     ierr = VecCopy(tao->solution, bnk->bncg->solution);CHKERRQ(ierr);
-    if (tao->niter > 1) {
-      bnk->bncg_ctx->f = bnk->f;
-      ierr = VecCopy(bnk->unprojected_gradient, bnk->bncg_ctx->unprojected_gradient);CHKERRQ(ierr);
-      ierr = VecCopy(tao->stepdirection, bnk->bncg->stepdirection);CHKERRQ(ierr);
-      ierr = TaoBNCGSetRecycleFlag(bnk->bncg, PETSC_TRUE);CHKERRQ(ierr);
-    }
+    ierr = VecCopy(bnk->unprojected_gradient, bnk->bncg_ctx->unprojected_gradient);CHKERRQ(ierr);
+    ierr = VecCopy(tao->stepdirection, bnk->bncg->stepdirection);CHKERRQ(ierr);
     /* Take some small finite number of BNCG iterations */
     ierr = TaoSolve(bnk->bncg);CHKERRQ(ierr);
     /* Add the number of gradient and function evaluations to the total */
@@ -439,8 +444,7 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     bnk->f = bnk->bncg_ctx->f;
     ierr = VecCopy(bnk->bncg->solution, tao->solution);
     ierr = VecCopy(bnk->bncg_ctx->unprojected_gradient, bnk->unprojected_gradient);
-    ierr = VecCopy(bnk->bncg->gradient, tao->gradient);
-    /* Check to see if BNCG converged the problem */
+    ierr = VecCopy(bnk->bncg->gradient, tao->gradient);CHKERRQ(ierr);
     if (bnk->bncg->reason == TAO_CONVERGED_GATOL || bnk->bncg->reason == TAO_CONVERGED_GRTOL || bnk->bncg->reason == TAO_CONVERGED_GTTOL || bnk->bncg->reason == TAO_CONVERGED_MINF) {
       *terminate = PETSC_TRUE;
     }
@@ -513,6 +517,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   }
   
   /* Solve the Newton system of equations */
+  tao->ksp_its = 0;
   ierr = VecSet(tao->stepdirection, 0.0);CHKERRQ(ierr);
   ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(tao->ksp,bnk->H_inactive,bnk->Hpre_inactive);CHKERRQ(ierr);
@@ -756,7 +761,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
   Newton step does not produce a valid step length.
 */
 
-PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
+PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
@@ -770,13 +775,13 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
   ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &bnk->f, bnk->unprojected_gradient, tao->stepdirection, steplen, &ls_reason);CHKERRQ(ierr);
   ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
-  while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && (stepType != BNK_GRADIENT || stepType !=BNK_SCALED_GRADIENT)) {
+  while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && *stepType != BNK_GRADIENT) {
     /* Linesearch failed, revert solution */
     bnk->f = bnk->fold;
     ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
 
-    switch(stepType) {
+    switch(*stepType) {
     case BNK_NEWTON:
       /* Failed to obtain acceptable iterate with Newton step
          Update the perturbation for next time */
@@ -795,10 +800,11 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       if (BNK_PC_BFGS != bnk->pc_type) {
         /* We don't have the bfgs matrix around and being updated
            Must use gradient direction in this case */
-        ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        stepType = BNK_GRADIENT;
+        ierr = VecCopy(bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+        *stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
+        ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
         ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
         /* Check for success (descent direction) 
            NOTE: Negative gdx means not a descent direction because the step here is missing a negative sign. */
@@ -814,14 +820,14 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
           ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
-          stepType = BNK_SCALED_GRADIENT;
+          *stepType = BNK_SCALED_GRADIENT;
         } else {
           ierr = MatLMVMGetUpdates(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
           if (1 == bfgsUpdates) {
             /* The first BFGS direction is always the scaled gradient */
-            stepType = BNK_SCALED_GRADIENT;
+            *stepType = BNK_SCALED_GRADIENT;
           } else {
-            stepType = BNK_BFGS;
+            *stepType = BNK_BFGS;
           }
         }
       }
@@ -835,25 +841,25 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt stepType, PetscReal *st
       ierr = MatLMVMSetDelta(bnk->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+      ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
-      stepType = BNK_SCALED_GRADIENT;
+      *stepType = BNK_SCALED_GRADIENT;
       break;
 
     case BNK_SCALED_GRADIENT:
       /* Can only enter if pc_type == BNK_PC_BFGS
          The scaled gradient step did not produce a new iterate;
-         attemp to use the gradient direction.
-         Need to make sure we are not using a different diagonal scaling */
+         reset the BFGS matrix and attemp to use the gradient direction. */
       ierr = MatLMVMSetScale(bnk->M,0);CHKERRQ(ierr);
       ierr = MatLMVMSetDelta(bnk->M,1.0);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecCopy(bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
-      stepType = BNK_GRADIENT;
+      *stepType = BNK_GRADIENT;
       break;
     }
     /* Make sure the safeguarded fall-back step is zero for actively bounded variables */
@@ -1105,6 +1111,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     ierr = TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetFunctionLowerBound(bnk->bncg, tao->fmin);CHKERRQ(ierr);
     
+    ierr = TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP);CHKERRQ(ierr);
     ierr = TaoSetObjectiveRoutine(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
     ierr = TaoSetGradientRoutine(bnk->bncg, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
     ierr = TaoSetObjectiveAndGradientRoutine(bnk->bncg, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
@@ -1113,6 +1120,7 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
       ierr = TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
+    ierr = TaoSetUp(bnk->bncg);CHKERRQ(ierr);
     bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
   }
   bnk->Diag = 0;

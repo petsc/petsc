@@ -240,6 +240,6 @@ PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
-PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt, PetscReal*, TaoLineSearchConvergedReason*);
+PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt*, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKAddStepCounts(Tao, PetscInt);
