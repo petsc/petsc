@@ -58,7 +58,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
-  ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+  ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
+  ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
+  ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
@@ -271,7 +273,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
-          ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+          ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
+          ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
+          ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
           /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
           ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
@@ -346,6 +350,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscBool                    hessComputed;
 
   PetscFunctionBegin;
   switch (asType) {
@@ -363,12 +368,18 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
-      /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
-      ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
-      ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);
-      ierr = VecMedian(bnk->Diag_min, bnk->Xwork, bnk->Diag_max, bnk->Xwork);CHKERRQ(ierr);
-      ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
+      ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
+      if (hessComputed) {
+        /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
+        ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
+        ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);
+        ierr = VecMedian(bnk->Diag_min, bnk->Xwork, bnk->Diag_max, bnk->Xwork);CHKERRQ(ierr);
+        ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
+        ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
+      } else {
+        /* If the Hessian does not exist yet, we will simply use gradient step */
+        ierr = VecCopy(bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
+      }
     }
     ierr = VecScale(bnk->W, -1.0);CHKERRQ(ierr);
     ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->as_step, &bnk->as_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
@@ -389,23 +400,17 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, Vec step)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   
   PetscFunctionBegin;
-  if (bnk->active_idx) {
-    switch (bnk->as_type) {
-    case BNK_AS_NONE:
-      if (bnk->active_idx) { 
-        ierr = VecGetSubVector(step, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
-        ierr = VecSet(bnk->active_work, 0.0);CHKERRQ(ierr);
-        ierr = VecRestoreSubVector(step, bnk->active_idx, &bnk->active_work);CHKERRQ(ierr);
-      }
-      break;
+  switch (bnk->as_type) {
+  case BNK_AS_NONE:
+    if (bnk->active_idx) {ierr = VecISSet(step, bnk->active_idx, 0.0);CHKERRQ(ierr);}
+    break;
 
-    case BNK_AS_BERTSEKAS:
-      ierr = TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, step);CHKERRQ(ierr);
-      break;
+  case BNK_AS_BERTSEKAS:
+    ierr = TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, step);CHKERRQ(ierr);
+    break;
 
-    default:
-      break;
-    }
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -447,6 +452,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     ierr = VecCopy(bnk->bncg->gradient, tao->gradient);CHKERRQ(ierr);
     if (bnk->bncg->reason == TAO_CONVERGED_GATOL || bnk->bncg->reason == TAO_CONVERGED_GRTOL || bnk->bncg->reason == TAO_CONVERGED_GTTOL || bnk->bncg->reason == TAO_CONVERGED_MINF) {
       *terminate = PETSC_TRUE;
+    } else {
+      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);
     }
   }
   PetscFunctionReturn(0);
@@ -467,7 +474,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   
   PetscFunctionBegin;
   /* Prepare the reduced sub-matrices for the inactive set */
-  ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
   if (BNK_PC_BFGS == bnk->pc_type) { ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr); }
   if (bnk->inactive_idx) {
     ierr = MatDestroy(&bnk->H_inactive);

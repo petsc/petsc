@@ -9,12 +9,14 @@
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
-    Vec G_old;
-    Vec X_old;
+    Vec G_old, X_old, W;
     Vec unprojected_gradient;
     Vec unprojected_gradient_old;
-    IS  inactive_set;
+    IS  active_lower, active_upper, active_fixed, active_idx, inactive_idx, inactive_old, new_inactives;
     Vec inactive_grad, inactive_step;
+    
+    PetscInt  as_type;
+    PetscReal as_step, as_tol;
 
     PetscReal f;
     PetscReal rho, pow;
@@ -31,5 +33,6 @@ typedef struct {
 
 #endif /* ifndef __TAO_BNCG_H */
 
-PETSC_INTERN PetscErrorCode TaoBNCGResetStepForNewInactives(Tao, Vec);
+PETSC_INTERN PetscErrorCode TaoBNCGEstimateActiveSet(Tao, PetscInt);
+PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoBNCGSetRecycleFlag(Tao, PetscBool);

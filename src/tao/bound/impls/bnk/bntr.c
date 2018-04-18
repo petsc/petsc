@@ -155,7 +155,9 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
         needH = PETSC_TRUE;
         ++bnk->newt;
         ierr = TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-        ierr = VecBoundGradientProjection(bnk->unprojected_gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+        ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
+        ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
+        ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
         ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
         if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
       } else {
