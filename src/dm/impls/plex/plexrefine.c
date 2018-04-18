@@ -8587,6 +8587,10 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
       if (cMax >= 0) *cellRefiner = REFINER_HYBRID_SIMPLEX_3D;
       else *cellRefiner = REFINER_SIMPLEX_3D;
       break;
+    case 5:
+      if (cMax == 0) *cellRefiner = REFINER_HYBRID_SIMPLEX_3D;
+      else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %d in dimension %d for cell refiner", coneSize, dim);
+      break;
     case 6:
       if (cMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_3D;
       else *cellRefiner = REFINER_HEX_3D;
