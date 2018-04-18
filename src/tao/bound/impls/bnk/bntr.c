@@ -147,6 +147,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
       /* Compute the actual reduction and update the trust radius */
       ierr = TaoComputeObjective(tao, tao->solution, &bnk->f);CHKERRQ(ierr);
       actred = bnk->fold - bnk->f;
+      oldTrust = tao->trust;
       ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted);CHKERRQ(ierr);
 
       if (stepAccepted) {
