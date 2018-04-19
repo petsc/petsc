@@ -7839,6 +7839,9 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
   }
+  cMax = cMax < 0 ? cEnd : cMax;
+  fMax = fMax < 0 ? fEnd : fMax;
+  eMax = eMax < 0 ? eEnd : eMax;
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label, labelNew;
     const char     *lname;
