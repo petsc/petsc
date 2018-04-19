@@ -742,6 +742,21 @@ static PetscErrorCode TSReset_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSAdjointReset_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaLam2);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsDeltaMu2);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsSensiTemp);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&th->VecsSensi2Temp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSDestroy_Theta(TS ts)
 {
   PetscErrorCode ierr;
@@ -1043,10 +1058,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 
   PetscFunctionBegin;
   ts->ops->reset           = TSReset_Theta;
+  ts->ops->adjointreset    = TSAdjointReset_Theta;
   ts->ops->destroy         = TSDestroy_Theta;
   ts->ops->view            = TSView_Theta;
   ts->ops->setup           = TSSetUp_Theta;
   ts->ops->adjointsetup    = TSAdjointSetUp_Theta;
+  ts->ops->adjointreset    = TSAdjointReset_Theta;
   ts->ops->step            = TSStep_Theta;
   ts->ops->interpolate     = TSInterpolate_Theta;
   ts->ops->evaluatewlte    = TSEvaluateWLTE_Theta;

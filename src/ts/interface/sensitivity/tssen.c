@@ -674,6 +674,38 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 }
 
 /*@
+   TSAdjointReset - Resets a TSAdjoint context and removes any allocated Vecs and Mats.
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: beginner
+
+.keywords: TS, timestep, reset
+
+.seealso: TSCreate(), TSAdjointSetup(), TSADestroy()
+@*/
+PetscErrorCode TSAdjointReset(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->ops->adjointreset) {
+    ierr = (*ts->ops->adjointreset)(ts);CHKERRQ(ierr);
+  }
+  ts->vecs_sensi         = NULL;
+  ts->vecs_sensip        = NULL;
+  ts->vecs_sensi2        = NULL;
+  ts->vecs_sensip2       = NULL;
+  ts->vec_dir            = NULL;
+  ts->adjointsetupcalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
 
    Logically Collective on TS
