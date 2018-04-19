@@ -2306,7 +2306,8 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell, but vertex numbers are global and an SF is built for them
 */
-static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscSF *sfVert)
+/* TODO: invertCells and spaceDim arguments could be added also to to DMPlexCreateFromCellListParallel(), DMPlexBuildFromCellList_Internal() and DMPlexCreateFromCellList() */
+PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells, PetscSF *sfVert)
 {
   PetscSF         sfPoint;
   PetscLayout     vLayout;
@@ -2363,6 +2364,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
       if (lv < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %D in local connectivity", gv);
       cone[p] = lv+numCells;
     }
+    if (invertCells) { ierr = DMPlexInvertCell_Internal(spaceDim, numCorners, cone);CHKERRQ(ierr); }
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -2408,7 +2410,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
 /*
   This takes as input the coordinates for each owned vertex
 */
-static PetscErrorCode DMPlexBuildCoordinates_Parallel_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numV, PetscSF sfVert, const PetscReal vertexCoords[])
+PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numV, PetscSF sfVert, const PetscReal vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
@@ -2523,7 +2525,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   PetscValidLogicalCollectiveInt(*dm, dim, 2);
   PetscValidLogicalCollectiveInt(*dm, spaceDim, 8);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Parallel_Private(*dm, numCells, numVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Parallel_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE, &sfVert);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
@@ -2531,7 +2533,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  ierr = DMPlexBuildCoordinates_Parallel_Private(*dm, spaceDim, numCells, numVertices,sfVert, vertexCoords);CHKERRQ(ierr);
+  ierr = DMPlexBuildCoordinates_Parallel_Internal(*dm, spaceDim, numCells, numVertices, sfVert, vertexCoords);CHKERRQ(ierr);
   if (vertexSF) *vertexSF = sfVert;
   else {ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -2540,7 +2542,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
 /*
   This takes as input the common mesh generator output, a list of the vertices for each cell
 */
-static PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[])
+PetscErrorCode DMPlexBuildFromCellList_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, const int cells[], PetscBool invertCells)
 {
   PetscInt      *cone, c, p;
   PetscErrorCode ierr;
@@ -2556,6 +2558,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, 
     for (p = 0; p < numCorners; ++p) {
       cone[p] = cells[c*numCorners+p]+numCells;
     }
+    if (invertCells) { ierr = DMPlexInvertCell_Internal(spaceDim, numCorners, cone);CHKERRQ(ierr); }
     ierr = DMPlexSetCone(dm, c, cone);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numCorners, MPIU_INT, &cone);CHKERRQ(ierr);
@@ -2567,7 +2570,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Private(DM dm, PetscInt numCells, 
 /*
   This takes as input the coordinates for each vertex
 */
-static PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
+PetscErrorCode DMPlexBuildCoordinates_Internal(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
@@ -2660,7 +2663,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList_Private(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);
+  ierr = DMPlexBuildFromCellList_Internal(*dm, spaceDim, numCells, numVertices, numCorners, cells, PETSC_FALSE);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
@@ -2668,7 +2671,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  ierr = DMPlexBuildCoordinates_Private(*dm, spaceDim, numCells, numVertices, vertexCoords);CHKERRQ(ierr);
+  ierr = DMPlexBuildCoordinates_Internal(*dm, spaceDim, numCells, numVertices, vertexCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2904,6 +2907,9 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   Output Parameter:
 . dm - The DM
 
+  Options Database Keys:
+. -dm_plex_create_from_hdf5_xdmf - use the PETSC_VIEWER_HDF5_XDMF format for reading HDF5 
+
   Level: beginner
 
 .seealso: DMPlexCreateFromDAG(), DMPlexCreateFromCellList(), DMPlexCreate()
@@ -2948,15 +2954,19 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isHDF5) {
+    PetscBool      load_hdf5_xdmf = PETSC_FALSE;
     PetscViewer viewer;
 
+    ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_create_from_hdf5_xdmf", &load_hdf5_xdmf, NULL);CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    if (load_hdf5_xdmf) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF);CHKERRQ(ierr);}
     ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
+    if (load_hdf5_xdmf) {ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);}
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
     if (interpolate) {
