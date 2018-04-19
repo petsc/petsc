@@ -408,9 +408,9 @@ PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscInt *nDiff)
     ierr = VecGetArrayRead(XU, &xu);
 
     for (i=0;i<n;++i){
-      if ((x[i] < xl[i]) && (xl[i] > PETSC_NINFINITY)) {
+      if ((xl[i] > PETSC_NINFINITY) && (x[i] < xl[i])) {
         x[i] = xl[i]; ++nDiff_loc;
-      } else if ((x[i] > xu[i]) && (xu[i] < PETSC_INFINITY)) {
+      } else if ((xu[i] < PETSC_INFINITY) && (x[i] > xu[i])) {
         x[i] = xu[i]; ++nDiff_loc;
       }
     }
