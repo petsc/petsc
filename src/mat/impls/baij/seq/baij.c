@@ -2854,7 +2854,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       B->ops->multadd = MatMultAdd_SeqBAIJ_7;
       break;
     case 9:
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
       B->ops->mult    = MatMult_SeqBAIJ_9_AVX2;
       B->ops->multadd = MatMultAdd_SeqBAIJ_9_AVX2;
 #else
