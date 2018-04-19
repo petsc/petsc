@@ -84,7 +84,8 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 -  refresh_token - can be used for ever to obtain new access_tokens with PetscBoxRefresh(), guard this like a password
                    it gives access to your Box Drive
 
-   Notes: This call requires stdout and stdin access from process 0 on the MPI communicator
+   Notes:
+    This call requires stdout and stdin access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/examples/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -box_refresh_token XXX

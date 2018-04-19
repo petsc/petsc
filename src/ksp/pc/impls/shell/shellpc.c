@@ -40,7 +40,8 @@ typedef struct {
     Notes:
     This routine is intended for use within various shell routines
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: PC, shell, get, context
@@ -72,7 +73,8 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
 
    Level: advanced
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 
@@ -432,7 +434,8 @@ static PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 
 .  ptr - the application context
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -468,7 +471,8 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 
 .  pc - the preconditioner, get the application context with PCShellGetContext()
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -504,7 +508,8 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 +  pc - the preconditioner, get the application context with PCShellGetContext()
 -  v   - viewer
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -540,7 +545,8 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -576,7 +582,8 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -612,7 +619,8 @@ PetscErrorCode  PCShellSetApplySymmetricLeft(PC pc,PetscErrorCode (*apply)(PC,Ve
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -648,7 +656,8 @@ PetscErrorCode  PCShellSetApplySymmetricRight(PC pc,PetscErrorCode (*apply)(PC,V
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -684,7 +693,8 @@ PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -725,7 +735,8 @@ PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -763,7 +774,8 @@ PetscErrorCode  PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,V
 .  xin - input vector
 -  xout - output vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -860,7 +872,8 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
 .  dtol - if residual norm increases by this factor than return
 -  maxits - number of iterations to run
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 

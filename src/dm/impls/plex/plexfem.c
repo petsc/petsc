@@ -1016,7 +1016,8 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   Output Parameter:
 . locC - A Vec which holds the Clement interpolant of the gradient
 
-  Notes: Add citation to (Clement, 1975) and definition of the interpolant
+  Notes:
+    Add citation to (Clement, 1975) and definition of the interpolant
   \nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
 
   Level: developer

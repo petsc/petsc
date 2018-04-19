@@ -87,7 +87,8 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 
    Level: intermediate
 
-   Notes: Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
+   Notes:
+    Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
 .seealso: NormType, MatNorm()

@@ -680,7 +680,8 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See the FAQ on the PETSc website for details.
 
-   Developer Notes: This class is subclassed off of KSPGMRES.
+   Developer Notes:
+    This class is subclassed off of KSPGMRES.
 
    Reference:
     P. Sanan, S.M. Schnepp, and D.A. May,

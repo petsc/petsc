@@ -23,7 +23,8 @@ $ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
 
   Level: intermediate
 
-  Notes: Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+  Notes:
+    Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
 
 .keywords: TS, sensitivity
 .seealso:
@@ -100,7 +101,8 @@ $   PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
     Level: intermediate
 
-    Notes: For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
+    Notes:
+    For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
@@ -290,7 +292,8 @@ PetscErrorCode TSComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
 
    Level: beginner
 
-   Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
+   Notes:
+    the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
 
    After TSAdjointSolve() is called the lamba and the mu contain the computed sensitivities
 
@@ -386,7 +389,8 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
    Level: intermediate
 
-   Notes: Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
+   Notes:
+    Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
           so as to integrate back to less than the original timestep
 
 .keywords: TS, timestep, set, maximum, iterations
@@ -586,7 +590,8 @@ $    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numco
    This routine adds an additional monitor to the list of monitors that
    already has been loaded.
 
-   Fortran notes: Only a single monitor function can be set for each TS object
+   Fortran Notes:
+    Only a single monitor function can be set for each TS object
 
    Level: intermediate
 
@@ -728,7 +733,8 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Vec
 
    Level: developer
 
-   Notes: This is not normally called directly by users
+   Notes:
+    This is not normally called directly by users
 
 .keywords: TS, trajectory, timestep, set, options, database
 

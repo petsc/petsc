@@ -14,7 +14,8 @@
 
   The mass matrix for the element corresponds to the diagona matrix whose entries are the weights[]
 
-  Developer Notes: This may eventually get merged into a more abstract or general object for managing 
+  Developer Notes:
+    This may eventually get merged into a more abstract or general object for managing 
     integration schemes or discretization schemes.
 
   References: XXXX

@@ -181,11 +181,14 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
    Level: beginner
 
-   Notes: See DMDALocalInfo for the information that is returned
+   Notes:
+    See DMDALocalInfo for the information that is returned
 
-   Fortran Notes: In Fortran the routine is DMDAGetLocalInfoF90(), see DMDALocalInfo for how to access the values
+   Fortran Notes:
+    In Fortran the routine is DMDAGetLocalInfoF90(), see DMDALocalInfo for how to access the values
 
-   Developer Notes: Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
+   Developer Notes:
+    Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
 
 .keywords: distributed array, get, information
 

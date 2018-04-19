@@ -398,7 +398,7 @@ The Fortran interface files supplied by user go into the two directories  \trl{f
 \subsection{Manual Page Format}
 Each function, typedef, class, macro, enum, etc. in the public API should include the following data, correctly formatted
 (see above section) to generate complete manual pages and Fortran interfaces with Sowing.
-All entries below should be separated by blank lines.
+All entries below should be separated by blank lines. Except where noted, add a newline after the section headings.
 \begin{itemize}
   \item The item's name, followed by a dash and brief (one-sentence) description
   \item If documenting a function, a description of the function's ``collectivity'' (whether all ranks in an MPI communicator need to participate)
@@ -410,13 +410,13 @@ All entries below should be separated by blank lines.
   \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
   \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
   \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
-  \item (Optional) a \trl{Notes: } In-depth discussion, technical caveats, special cases, and so on should be listed here.
-    If it is ambiguous whether returned pointers need to be freed by the user or not, this information should be mentioned here.
-  \item (If applicable) a \trl{Fortran Notes: } Detailing any relevant differences in calling or using the item from Fortran.
-  \item \trl{Level: } followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}
-  \item (Optional) a list of \trl{Concepts: }
-  \item (Optional) a list of \trl{Keywords: }
-  \item The \trl{.seealso: } A list of related manual pages. These manual pages should usually also point back to this manual page in their seealso section.
+  \item (Optional) a \trl{Notes: } section. In-depth discussion, technical caveats, special cases, and so on should be listed here.
+    If it is ambiguous whether returned pointers/objects need to be freed/destroyed by the user or not, this information should be mentioned here.
+  \item (If applicable) a \trl{Fortran Notes: } section detailing any relevant differences in calling or using the item from Fortran.
+  \item \trl{Level: } (no newline) followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}.
+  \item (Optional) \trl{Concepts: } (no newline), followed by a list of concepts.
+  \item (Optional) \trl{Keywords: } (no newline), followed by a list of keywords.
+  \item \trl{.seealso: } (no newline), followed by a list of related manual pages. These manual pages should usually also point back to this manual page in their \trl{seealso:} sections.
 \end{itemize}
 
 % -----------------------------------------------------------------------------------

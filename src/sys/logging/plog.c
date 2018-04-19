@@ -31,7 +31,8 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 
    Level: developer
 
-   Developer Notes: Currently we do not always do a good job of associating all memory allocations with an object. 
+   Developer Notes:
+    Currently we do not always do a good job of associating all memory allocations with an object. 
 
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
@@ -1872,7 +1873,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: Only works in C/C++, not Fortran
+   Notes:
+    Only works in C/C++, not Fortran
 
      Flags available within the macro.
 +    PetscPreLoadingUsed - true if we are or have done preloading
@@ -1912,7 +1914,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: only works in C/C++ not fortran
+   Notes:
+    only works in C/C++ not fortran
 
    Level: intermediate
 
@@ -1939,7 +1942,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: only works in C/C++ not fortran
+   Notes:
+    only works in C/C++ not fortran
 
    Level: intermediate
 

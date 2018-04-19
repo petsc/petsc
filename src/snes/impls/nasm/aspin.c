@@ -73,7 +73,8 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 .  -npc_sub_ksp_ - options prefix of the subdomain Krylov solver
 -  -npc_sub_pc_ - options prefix of the subdomain preconditioner
 
-    Notes: This routine sets up an instance of NETWONLS with nonlinear left preconditioning.  It differs from other
+    Notes:
+    This routine sets up an instance of NETWONLS with nonlinear left preconditioning.  It differs from other
     similar functionality in SNES as it creates a linear shell matrix that corresponds to the product:
 
     \sum_{i=0}^{N_b}J_b({X^b_{converged}})^{-1}J(X + \sum_{i=0}^{N_b}(X^b_{converged} - X^b))

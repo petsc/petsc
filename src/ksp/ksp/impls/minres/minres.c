@@ -188,7 +188,8 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
    Level: beginner
 
-   Notes: The operator and the preconditioner must be symmetric and the preconditioner must
+   Notes:
+    The operator and the preconditioner must be symmetric and the preconditioner must
           be positive definite for this method.
           Supports only left preconditioning.
 

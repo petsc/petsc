@@ -536,7 +536,8 @@ static PetscErrorCode TaoComputeDual_BQPIP(Tao tao,Vec DXL,Vec DXU)
  TAOBQPIP - interior-point method for quadratic programs with
     box constraints.
 
- Notes: This algorithms solves quadratic problems only, the Hessian will
+ Notes:
+    This algorithms solves quadratic problems only, the Hessian will
         only be computed once.
 
  Options Database Keys:

@@ -183,7 +183,8 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 
    Concepts: debugger^starting from program
 
-   Developer Notes: Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
+   Developer Notes:
+    Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
 
 .seealso: PetscSetDebugger()
 @*/
@@ -461,9 +462,11 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
 
    Level: developer
 
-   Notes: This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
+   Notes:
+    This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
 
-   Developer Notes: Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
+   Developer Notes:
+    Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
 
    Concepts: debugger^waiting for attachment
 

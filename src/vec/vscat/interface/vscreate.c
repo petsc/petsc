@@ -102,7 +102,8 @@ PetscErrorCode VecScatterGetType(VecScatter vscat, VecScatterType *type)
   Input Parameter:
 . vscat - The vector scatter
 
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+  Notes:
+    To see all options, run your program with the -help option, or consult the users manual.
           Must be called after VecScatterCreate() but before the vector scatter is used.
 
   Level: beginner

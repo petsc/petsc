@@ -50,7 +50,8 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
         number of degrees of freedom per node within the DMDA
 -  names - the name of the field (component)
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -109,7 +110,8 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 +  dm - the DMDA object
 -  names - the names of the components, final string must be NULL, must have the same number of entries as the dof used in creating the DMDA
 
-   Notes: It must be called after having called DMSetUp().
+   Notes:
+    It must be called after having called DMSetUp().
 
    Level: intermediate
 
@@ -150,7 +152,8 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
    Output Parameter:
 .  names - the name of the field (component)
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -181,7 +184,8 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 .  nf - coordinate number for the DMDA (0, 1, ... dim-1),
 -  name - the name of the coordinate
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -217,7 +221,8 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
    Output Parameter:
 .  names - the name of the coordinate direction
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 

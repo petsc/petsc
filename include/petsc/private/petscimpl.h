@@ -421,7 +421,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
-   Notes: object state is an integer which gets increased every time
+   Notes:
+    object state is an integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.

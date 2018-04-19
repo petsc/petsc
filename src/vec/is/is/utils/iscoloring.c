@@ -250,7 +250,8 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 
    Level: advanced
 
-    Notes: By default sets coloring type to  IS_COLORING_GLOBAL
+    Notes:
+    By default sets coloring type to  IS_COLORING_GLOBAL
 
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
@@ -716,7 +717,8 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
     Output Parameter:
 .   isout - the complement
 
-    Notes:  The communicator for this new IS is the same as for the input IS
+    Notes:
+    The communicator for this new IS is the same as for the input IS
 
       For a parallel IS, this will generate the local part of the complement on each process
 

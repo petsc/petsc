@@ -271,7 +271,8 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 
    Level: advanced
 
-   Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
+   Notes:
+    The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
           If global is true, the rows of G should be given in global ordering for the whole dofs;
           if false, the ordering should be global for the Nedelec field.
@@ -328,7 +329,8 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 
    Level: advanced
 
-   Notes: This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+   Notes:
+    This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
           If vl2l is NULL, the local ordering for velocities in divudotp should match that of the preconditioning matrix
 
 .seealso: PCBDDC
@@ -1010,7 +1012,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 
    Level: intermediate
 
-   Notes: A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
+   Notes:
+    A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
 .seealso: PCBDDC,PetscCopyMode
 @*/
@@ -2574,7 +2577,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Developer notes:
+   Developer Notes:
 
    Contributed by Stefano Zampini
 

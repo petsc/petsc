@@ -1023,7 +1023,8 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
    Level: intermediate
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: SNES, nonlinear, set, application, context
@@ -1055,7 +1056,8 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
    Output Parameter:
 .  usrP - user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
@@ -1306,7 +1308,8 @@ PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 
    Level: intermediate
 
-   Notes: Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
+   Notes:
+    Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
@@ -1369,7 +1372,8 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
    Options Database Keys:
 . -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
 
-   Notes: By default this is 0; that is SNES returns on the first failed linear solve
+   Notes:
+    By default this is 0; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
@@ -1398,7 +1402,8 @@ PetscErrorCode  SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
 
    Level: intermediate
 
-   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+   Notes:
+    By default this is 1; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
@@ -1533,7 +1538,8 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 
    Level: beginner
 
-   Developer Notes: SNES always creates a KSP object even though many SNES methods do not use it. This is
+   Developer Notes:
+    SNES always creates a KSP object even though many SNES methods do not use it. This is
                     unfortunate and should be fixed at some point. The flag snes->usesksp indicates if the
                     particular method does use KSP and regulates if the information about the KSP is printed
                     in SNESView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
@@ -2422,7 +2428,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
 
-   Developer Notes: This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used 
+   Developer Notes:
+    This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used 
       for with the SNESType of test that has been removed.
 
    Level: developer
@@ -2929,7 +2936,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
    Level: intermediate
 
-   Notes: Also calls the application context destroy routine set with SNESSetComputeApplicationContext()
+   Notes:
+    Also calls the application context destroy routine set with SNESSetComputeApplicationContext()
 
 .keywords: SNES, destroy
 
@@ -3244,7 +3252,8 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
 
-   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
+   Notes:
+    This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
    several solves, and for implicit time-stepping, where Jacobian lagging in the inner nonlinear solve over several
    timesteps may present huge efficiency gains.
 
@@ -3276,7 +3285,8 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
 
-   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
+   Notes:
+    This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
    by several solves, and for implicit time-stepping, where preconditioner lagging in the inner nonlinear solve over
    several timesteps may present huge efficiency gains.
 
@@ -3706,7 +3716,8 @@ M*/
    SNESMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNES object
+   Fortran Notes:
+    Only a single monitor function can be set for each SNES object
 
    Level: intermediate
 
@@ -3842,7 +3853,8 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 
    Level: intermediate
 
-   Notes: Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
+   Notes:
+    Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
 
 .keywords: SNES, nonlinear, set, convergence, test
 
@@ -4384,7 +4396,8 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   and the user's application is taking responsibility for choosing the
   appropriate method.
 
-    Developer Notes: SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
+    Developer Notes:
+    SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
     the constructor in that list and calls it to create the spexific object.
 
   Level: intermediate
@@ -4692,7 +4705,8 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -5235,7 +5249,8 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   Output Parameter:
 . pc - preconditioner context
 
-  Notes: If a SNES was previously set with SNESSetNPC() then that SNES is returned.
+  Notes:
+    If a SNES was previously set with SNESSetNPC() then that SNES is returned.
 
   Level: developer
 
@@ -5305,7 +5320,8 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
     Options Database Keys:
 .   -snes_pc_side <right,left>
 
-    Notes: SNESNRICHARDSON and SNESNCG only support left preconditioning.
+    Notes:
+    SNESNRICHARDSON and SNESNCG only support left preconditioning.
 
     Level: intermediate
 

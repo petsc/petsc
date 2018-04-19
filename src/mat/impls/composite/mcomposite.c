@@ -382,7 +382,8 @@ static struct _MatOps MatOps_Values = {0,
 /*MC
    MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices (all matrices are of same size and parallel layout).
 
-   Notes: to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
+   Notes:
+    to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
 
   Level: advanced
 

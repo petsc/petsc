@@ -507,7 +507,8 @@ PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -1078,7 +1079,8 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Level: developer
 
-    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
+    Notes:
+    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
 
         For DMDA objects you can use this interpolation (more precisely the interpolation from the DMGetCoordinateDM()) to interpolate the mesh coordinate vectors
@@ -1116,7 +1118,8 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
     Level: developer
 
-    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
+    Notes:
+    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
 
 
@@ -1151,7 +1154,8 @@ PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
 
     Level: developer
 
-   Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
+   Notes:
+    For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the injection.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMCreateInterpolation()
@@ -1237,7 +1241,8 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 
     Level: beginner
 
-    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you
+    Notes:
+    This properly preallocates the number of nonzeros in the sparse matrix so you
        do not need to do it yourself.
 
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
@@ -1366,7 +1371,8 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 
   Level: developer
 
-  Developer Notes: count and dtype are ignored, they are only needed for DMGetWorkArray()
+  Developer Notes:
+    count and dtype are ignored, they are only needed for DMGetWorkArray()
 .seealso DMDestroy(), DMCreate()
 @*/
 PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
@@ -1745,7 +1751,8 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 . oscat - scatter from global vector to overlapping global vector entries on subdomain
 - gscat - scatter from global vector to local vector on subdomain (fills in ghosts)
 
-  Notes: This is an alternative to the iis and ois arguments in DMCreateDomainDecomposition that allow for the solution
+  Notes:
+    This is an alternative to the iis and ois arguments in DMCreateDomainDecomposition that allow for the solution
   of general nonlinear problems with overlapping subdomain methods.  While merely having index sets that enable subsets
   of the residual equations to be created is fine for linear problems, nonlinear problems require local assembly of
   solution and residual data.
@@ -1972,7 +1979,8 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 
     Level: advanced
 
-    Notes: This value is used by PCMG to determine how many multigrid levels to use
+    Notes:
+    This value is used by PCMG to determine how many multigrid levels to use
 
 .seealso DMCoarsen(), DMGetCoarsenLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
@@ -2260,7 +2268,8 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 .   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
 -   g - the global vector
 
-    Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
+    Notes:
+    In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
            INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
 
     Level: beginner
@@ -3043,7 +3052,8 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: advanced
 
-    Notes: This is generally not called by users. It calls the function provided by the user with DMSetVariableBounds()
+    Notes:
+    This is generally not called by users. It calls the function provided by the user with DMSetVariableBounds()
 
 .seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
@@ -6577,7 +6587,8 @@ PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,voi
     Input Parameter:
 .    coloring - the MatFDColoring object
 
-    Developer Notes: this routine exists because the PETSc Mat library does not know about the DM objects
+    Developer Notes:
+    this routine exists because the PETSc Mat library does not know about the DM objects
 
     Level: advanced
 

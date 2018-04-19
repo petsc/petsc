@@ -445,7 +445,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 .   -snes_linesearch_type <cp,l2,basic> - Line search type.
 -   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
-   Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
+   Notes:
+    This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
           gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
           chooses the initial search direction as F(x) for the initial guess x.
 

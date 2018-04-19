@@ -175,7 +175,8 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 
    Level: advanced
 
-   Notes: TSIRM is a new two-stage iteration method for solving large sparse linear systems of the form Ax=b. The main idea behind this new 
+   Notes:
+    TSIRM is a new two-stage iteration method for solving large sparse linear systems of the form Ax=b. The main idea behind this new 
           method is the use a least-squares residual minimization to improve the convergence of Krylov based iterative methods, typically those of GMRES variants.
           The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called inner solver, and to frequently store the current residual
           computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix 

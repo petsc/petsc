@@ -40,7 +40,8 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
   Output Parameter:
 . G - gradient vector
 
-  Notes: TaoComputeGradient() is typically used within minimization implementations,
+  Notes:
+    TaoComputeGradient() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -90,7 +91,8 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   Output Parameter:
 . f - Objective value at X
 
-  Notes: TaoComputeObjective() is typically used within minimization implementations,
+  Notes:
+    TaoComputeObjective() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -143,7 +145,8 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 + f - Objective value at X
 - g - Gradient vector at X
 
-  Notes: TaoComputeObjectiveAndGradient() is typically used within minimization implementations,
+  Notes:
+    TaoComputeObjectiveAndGradient() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -322,7 +325,8 @@ PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n,
   Output Parameter:
 . f - Objective vector at X
 
-  Notes: TaoComputeSeparableObjective() is typically used within minimization implementations,
+  Notes:
+    TaoComputeSeparableObjective() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced

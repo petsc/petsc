@@ -865,7 +865,8 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 -    -ts_sundials_monitor_steps - Monitor SUNDIALS internal steps
 
 
-    Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply,
+    Notes:
+    This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply,
            only PETSc PC options.
 
     Level: beginner

@@ -491,7 +491,8 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
 
    Level: intermediate
 
-   Notes: Insure that SNESMonitorRatio() is called when you set this monitor
+   Notes:
+    Insure that SNESMonitorRatio() is called when you set this monitor
 .keywords: SNES, nonlinear, monitor, norm
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()

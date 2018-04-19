@@ -869,11 +869,13 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 .  b - right hand side vector
 -  x - solution vector
 
-   Notes: For complex numbers this solve the non-Hermitian transpose system.
+   Notes:
+    For complex numbers this solve the non-Hermitian transpose system.
 
    This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
 
-   Developer Notes: We need to implement a KSPSolveHermitianTranspose()
+   Developer Notes:
+    We need to implement a KSPSolveHermitianTranspose()
 
    Level: developer
 
@@ -1780,7 +1782,8 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
    KSPMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each KSP object
+   Fortran Notes:
+    Only a single monitor function can be set for each KSP object
 
    Level: beginner
 
@@ -1884,7 +1887,8 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 
    Level: advanced
 
-   Notes: The array is NOT freed by PETSc so the user needs to keep track of
+   Notes:
+    The array is NOT freed by PETSc so the user needs to keep track of
            it and destroy once the KSP object is destroyed.
 
    If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
@@ -2149,7 +2153,8 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 -   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
 
 
-    Notes: Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
+    Notes:
+    Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
        where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
 
     BE CAREFUL with this routine: it actually scales the matrix and right
@@ -2298,7 +2303,8 @@ $  func(KSP ksp,Mat A,Mat B,void *ctx)
 .  B - preconditioning matrix
 -  ctx - optional user-provided context
 
-   Notes: The user provided func() will be called automatically at the very next call to KSPSolve(). It will not be called at future KSPSolve() calls
+   Notes:
+    The user provided func() will be called automatically at the very next call to KSPSolve(). It will not be called at future KSPSolve() calls
           unless either KSPSetComputeOperators() or KSPSetOperators() is called before that KSPSolve() is called.
 
           To reuse the same preconditioner for the next KSPSolve() and not compute a new one based on the most recently computed matrix call KSPSetReusePreconditioner()
@@ -2337,7 +2343,8 @@ $  func(KSP ksp,Vec b,void *ctx)
 .  b - right hand side of linear system
 -  ctx - optional user-provided context
 
-   Notes: The routine you provide will be called EACH you call KSPSolve() to prepare the new right hand side for that solve
+   Notes:
+    The routine you provide will be called EACH you call KSPSolve() to prepare the new right hand side for that solve
 
    Level: beginner
 

@@ -549,7 +549,8 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 .  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectDereference((PetscObject)mat);
 
-   Notes: PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
+   Notes:
+    PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
 
    Level: advanced
 

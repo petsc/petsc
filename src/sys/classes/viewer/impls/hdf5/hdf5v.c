@@ -94,7 +94,8 @@ PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscB
 .  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 
 
-  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+  Notes:
+    Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
          of one when the dimension is lower. Others think the option is crazy.
 
   Level: intermediate
@@ -124,7 +125,8 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg
   Output Parameter:
 .  flg - if PETSC_TRUE the vector will always have at least a dimension of 2 even if that first dimension is of size 1
 
-  Notes: Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
+  Notes:
+    Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
          of one when the dimension is lower. Others think the option is crazy.
 
   Level: intermediate
@@ -165,7 +167,8 @@ PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool fl
 .  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
 
 
-  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+  Notes:
+    Setting this option does not make any difference if PETSc is compiled with single precision
          in the first place. It does not affect reading datasets (HDF5 handle this internally).
 
   Level: intermediate
@@ -196,7 +199,8 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
   Output Parameter:
 .  flg - if PETSC_TRUE the data will be written to disk with single precision
 
-  Notes: Setting this option does not make any difference if PETSc is compiled with single precision
+  Notes:
+    Setting this option does not make any difference if PETSc is compiled with single precision
          in the first place. It does not affect reading datasets (HDF5 handle this internally).
 
   Level: intermediate

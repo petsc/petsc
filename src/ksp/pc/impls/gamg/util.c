@@ -194,7 +194,8 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
    Level: developer
 
-   Notes: This is called before graph coarsers are called.
+   Notes:
+    This is called before graph coarsers are called.
 
 .seealso: PCGAMGSetThreshold()
 @*/

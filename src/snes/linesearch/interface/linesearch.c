@@ -95,7 +95,8 @@ PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
    SNESLineSearchMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNESLineSearch object
+   Fortran Notes:
+    Only a single monitor function can be set for each SNESLineSearch object
 
    Level: intermediate
 
@@ -274,7 +275,8 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
    Input Parameters:
 .  linesearch - The LineSearch instance.
 
-   Notes: Usually only called by SNESReset()
+   Notes:
+    Usually only called by SNESReset()
 
    Level: developer
 
@@ -309,7 +311,8 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 
    Level: developer
 
-   Notes: This is used internally by PETSc and not called by users
+   Notes:
+    This is used internally by PETSc and not called by users
 
 .keywords: get, linesearch, pre-check
 

@@ -648,13 +648,16 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 
    Level: beginner
 
-    Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
+    Notes:
+    See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
            Only right preconditioning is supported.
 
-    Notes: The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
+    Notes:
+    The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
            be bi-CG-stab with a preconditioner of Jacobi.
 
-    Developer Notes: This object is subclassed off of KSPGMRES
+    Developer Notes:
+    This object is subclassed off of KSPGMRES
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),

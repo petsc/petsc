@@ -53,7 +53,8 @@ static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp
    Output Parameter:
 .  gll - the nodes
 
-   Notes: For n > 30  the Newton approach computes duplicate (incorrect) values for some nodes because the initial guess is apparently not
+   Notes:
+    For n > 30  the Newton approach computes duplicate (incorrect) values for some nodes because the initial guess is apparently not
           close enough to the desired solution
 
    These are useful for implementing spectral methods based on Gauss-Lobatto-Legendre (GLL) nodes
@@ -255,7 +256,8 @@ PetscErrorCode PetscGLLIntegrate(PetscGLL *gll,const PetscReal *f,PetscReal *in)
 
    Level: beginner
 
-   Notes: Destroy this with PetscGLLElementLaplacianDestroy()
+   Notes:
+    Destroy this with PetscGLLElementLaplacianDestroy()
 
    You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented (the array is symmetric)
 
@@ -375,7 +377,8 @@ PetscErrorCode PetscGLLElementLaplacianDestroy(PetscGLL *gll,PetscReal ***AA)
 
    Level: beginner
 
-   Notes: Destroy this with PetscGLLElementGradientDestroy()
+   Notes:
+    Destroy this with PetscGLLElementGradientDestroy()
 
    You can access entries in these arrays with AA[i][j] but in memory it is stored in contiguous memory, row oriented
 
@@ -464,7 +467,8 @@ PetscErrorCode PetscGLLElementGradientDestroy(PetscGLL *gll,PetscReal ***AA,Pets
 
    Level: beginner
 
-   Notes: Destroy this with PetscGLLElementAdvectionDestroy()
+   Notes:
+    Destroy this with PetscGLLElementAdvectionDestroy()
 
    This is the same as the Gradient operator multiplied by the diagonal mass matrix
 

@@ -1599,7 +1599,7 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
 
   Consider trying TSARKIMEX if the stiff part is strongly nonlinear.
 
-  Developer notes:
+  Developer Notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
 
 $  udot = f(u)

@@ -237,7 +237,8 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Level: intermediate
 
-  Fortran Notes: From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
+  Fortran Notes:
+    From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
 
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()

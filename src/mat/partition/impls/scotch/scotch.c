@@ -380,7 +380,8 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 
    Level: beginner
 
-   Notes: See http://www.labri.fr/perso/pelegrin/scotch/
+   Notes:
+    See http://www.labri.fr/perso/pelegrin/scotch/
 
 .keywords: Partitioning, create, context
 

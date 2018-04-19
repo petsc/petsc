@@ -84,7 +84,8 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
 
    Level: intermediate
 
-   Notes: The hermitian transpose A' is NOT actually formed! Rather the new matrix
+   Notes:
+    The hermitian transpose A' is NOT actually formed! Rather the new matrix
           object performs the matrix-vector product by using the MatMultHermitianTranspose() on
           the original matrix
 

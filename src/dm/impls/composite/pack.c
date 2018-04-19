@@ -19,7 +19,8 @@
 
     Not available from Fortran
 
-    Notes: See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
+    Notes:
+    See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
         this routine
 
 @*/
@@ -156,7 +157,8 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
     Output Parameters:
 .    Vec* ... - the packed parallel vectors, NULL for those that are not needed
 
-    Notes: Use DMCompositeRestoreAccess() to return the vectors when you no longer need them
+    Notes:
+    Use DMCompositeRestoreAccess() to return the vectors when you no longer need them
 
     Fortran Notes:
 
@@ -225,7 +227,8 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
     Output Parameters:
 .    vecs - array of requested global vectors (must be allocated)
 
-    Notes: Use DMCompositeRestoreAccessArray() to return the vectors when you no longer need them
+    Notes:
+    Use DMCompositeRestoreAccessArray() to return the vectors when you no longer need them
 
     Level: advanced
 
@@ -284,7 +287,8 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
     Output Parameters:
 .    vecs - array of requested local vectors (must be allocated)
 
-    Notes: Use DMCompositeRestoreLocalAccessArray() to return the vectors
+    Notes:
+    Use DMCompositeRestoreLocalAccessArray() to return the vectors
     when you no longer need them.
 
     Level: advanced
@@ -1207,7 +1211,8 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
 
     Level: advanced
 
-    Fortran Notes: Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
+    Fortran Notes:
+    Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntriesArray()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),

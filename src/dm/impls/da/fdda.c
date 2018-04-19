@@ -62,7 +62,8 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
 
     Level: developer
 
-    Notes: This only makes sense when you are doing multicomponent problems but using the
+    Notes:
+    This only makes sense when you are doing multicomponent problems but using the
        MPIAIJ matrix format
 
            The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries

@@ -216,7 +216,8 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
    convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer Notes: this must match petsc/finclude/petscsnes.h
+   Developer Notes:
+    this must match petsc/finclude/petscsnes.h
 
        The string versions of these are in SNESConvergedReasons, if you change any value here you must
      also adjust that array.
@@ -590,7 +591,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order
 
    Level: intermediate
 
-   Developer Notes: this must match petsc/finclude/petscsnes.h
+   Developer Notes:
+    this must match petsc/finclude/petscsnes.h
 
    Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
      also adjust that array.

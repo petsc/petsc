@@ -86,7 +86,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 
    Level: advanced
 
-    Notes: this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
+    Notes:
+    this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
      be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
 
