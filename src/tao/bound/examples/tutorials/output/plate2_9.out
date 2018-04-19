@@ -26,10 +26,10 @@ iter =  21, Function value 1.50566, Residual: 9.77095e-05
 Tao Object: 1 MPI processes
   type: bncg
     CG Type: dy
-    Resets: 2
+    Resets: 1
       Broken ortho: 2
       Not a descent dir.: 0
-    Line search fails: 0
+    Line search fails: 1
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30

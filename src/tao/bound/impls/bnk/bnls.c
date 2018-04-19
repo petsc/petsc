@@ -9,20 +9,29 @@
  
  x_0 = VecMedian(x_0)
  f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
- pg_0 = VecBoundGradientProjection(g_0)
+ pg_0 = project(g_0)
  check convergence at pg_0
- trust = max_radius
+ needH = TaoBNKInitialize(default:BNK_INIT_DIRECTION)
  niter = 0
+ step_accepted = true
  
  while niter < max_it
     niter += 1
-    H_k = TaoComputeHessian(x_k)
-    if pc_type == BNK_PC_BFGS
-      add correction to BFGS approx
-      if scale_type == BNK_SCALE_AHESS
-         D = VecMedian(1e-6, abs(diag(H_k)), 1e6)
-         scale BFGS with VecReciprocal(D)
+    
+    if needH
+      If max_cg_steps > 0
+        x_k, g_k, pg_k = TaoSolve(BNCG)
       end
+
+      H_k = TaoComputeHessian(x_k)
+      if pc_type == BNK_PC_BFGS
+        add correction to BFGS approx
+        if scale_type == BNK_SCALE_AHESS
+          D = VecMedian(1e-6, abs(diag(H_k)), 1e6)
+          scale BFGS with VecReciprocal(D)
+        end
+      end
+      needH = False
     end
     
     if pc_type = BNK_PC_BFGS
@@ -38,17 +47,16 @@
       U = {i : (x_k)_i >= u_i - eps && (g_k)_i < 0}
       F = {i : l_i = (x_k)_i = u_i}
       A = {L + U + F}
-      I = {i : i not in A}
+      IA = {i : i not in A}
     
-    generate the reduced system Hr_k dr_k = -gr_k for variables in I
+    generate the reduced system Hr_k dr_k = -gr_k for variables in IA
     if p > 0
-      Hr_k += p*I
+      Hr_k += p*
     end
     if pc_type == BNK_PC_BFGS && scale_type == BNK_SCALE_PHESS
       D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
       scale BFGS with VecReciprocal(D)
     end
-    trust = max_radius
     solve Hr_k dr_k = -gr_k
     set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
     
@@ -72,7 +80,7 @@
       pg_{k+1} = pg_k
       terminate
     else
-      pg_{k+1} = VecBoundGradientProjection(g_{k+1})
+      pg_{k+1} = project(g_{k+1})
       count the accepted step type (Newton, BFGS, scaled grad or grad)
     end 
     
@@ -143,7 +151,6 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
       ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF, 1, "User provided compute function generated Not-a-Number");
       /* update the trust radius based on the step length */
       ierr = TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);
       /* count the accepted step type */

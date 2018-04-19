@@ -1,4 +1,5 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
+#include <petsc/private/vecimpl.h>
 #include <petsc/private/taoimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
@@ -79,7 +80,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       ierr = VecGetArray(*vreduced,&rv);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&s);CHKERRQ(ierr);
       if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_WORLD,1,"IS local size %d > Vec local size %d",nlocal,fhigh-flow);
-      for (i=0;i<nlocal;i++) {
+      for (i=0;i<nlocal;++i) {
         rv[s[i]-flow] = fv[s[i]-flow];
       }
       ierr = ISRestoreIndices(is,&s);CHKERRQ(ierr);
@@ -178,24 +179,53 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   This estimation is based on Bertsekas' method, with a built in diagonal scaling value of 1.0e-3.
   
 @*/
-PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, PetscReal steplen, PetscReal *bound_tol, 
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, 
                                        IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
 {
   PetscErrorCode               ierr;
   
-  Vec                          W;
   PetscReal                    wnorm;
-  PetscInt                     i, n_isl=0, n_isu=0, n_isf=0;
-  PetscInt                     n, low, high;
-  PetscInt                     *isl=NULL, *isu=NULL, *isf=NULL;
+  PetscReal                    mach_eps = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+  PetscInt                     i, n_isl=0, n_isu=0, n_isf=0, n_isa=0, n_isi=0;
+  PetscInt                     N_isl, N_isu, N_isf, N_isa, N_isi;
+  PetscInt                     n, low, high, nDiff;
+  PetscInt                     *isl=NULL, *isu=NULL, *isf=NULL, *isa=NULL, *isi=NULL;
   const PetscScalar            *xl, *xu, *x, *g;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(G,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(S,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(W,VEC_CLASSID,6);
+  
+  PetscValidType(X,1);
+  PetscValidType(XL,2);
+  PetscValidType(XU,3);
+  PetscValidType(G,4);
+  PetscValidType(S,5);
+  PetscValidType(W,6);
+  PetscCheckSameType(X,1,XL,2);
+  PetscCheckSameType(X,1,XU,3);
+  PetscCheckSameType(X,1,G,4);
+  PetscCheckSameType(X,1,S,5);
+  PetscCheckSameType(X,1,W,6);
+  PetscCheckSameComm(X,1,XL,2);
+  PetscCheckSameComm(X,1,XU,3);
+  PetscCheckSameComm(X,1,G,4);
+  PetscCheckSameComm(X,1,S,5);
+  PetscCheckSameComm(X,1,W,6);
+  VecCheckSameSize(X,1,XL,2);
+  VecCheckSameSize(X,1,XU,3);
+  VecCheckSameSize(X,1,G,4);
+  VecCheckSameSize(X,1,S,5);
+  VecCheckSameSize(X,1,W,6);
+    
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
-  ierr = VecDuplicate(S, &W);CHKERRQ(ierr);
-  ierr = VecCopy(S, W);CHKERRQ(ierr);
-  ierr = VecAXPBY(W, 1.0, steplen, X);CHKERRQ(ierr);
-  ierr = VecMedian(XL, W, XU, W);CHKERRQ(ierr);
+  ierr = VecCopy(X, W);CHKERRQ(ierr);
+  ierr = VecAXPBY(W, steplen, 1.0, S);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(XL, XU, W, &nDiff);CHKERRQ(ierr);
   ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
   ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);
   *bound_tol = PetscMin(*bound_tol, wnorm);
@@ -212,16 +242,24 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Pets
     ierr = PetscMalloc1(n, &isl);CHKERRQ(ierr);
     ierr = PetscMalloc1(n, &isu);CHKERRQ(ierr);
     ierr = PetscMalloc1(n, &isf);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      if (xl[i] == xu[i]) {
-        /* Fixed variables here */
+    ierr = PetscMalloc1(n, &isa);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &isi);CHKERRQ(ierr);
+    for (i=0; i<n; ++i) {
+      if ((xl[i] == xu[i]) && (xl[i] > PETSC_NINFINITY) && (xu[i] < PETSC_INFINITY)) {
+        /* Fixed variables */
         isf[n_isf]=low+i; ++n_isf;
-      } else if ((x[i] <= xl[i] + *bound_tol) && (g[i] > 0.0)) {
-        /* Lower bounded variables here */
+        isa[n_isa]=low+i; ++n_isa;
+      } else if ((x[i] <= xl[i] + *bound_tol) && (g[i] > -mach_eps) && (xl[i] > PETSC_NINFINITY)) {
+        /* Lower bounded variables */
         isl[n_isl]=low+i; ++n_isl;
-      } else if ((x[i] >= xu[i] - *bound_tol) && (g[i] < 0.0)) {
-        /* Upper bounded variables here */
+        isa[n_isa]=low+i; ++n_isa;
+      } else if ((x[i] >= xu[i] - *bound_tol) && (g[i] < mach_eps) && (xu[i] < PETSC_INFINITY)) {
+        /* Upper bounded variables */
         isu[n_isu]=low+i; ++n_isu;
+        isa[n_isa]=low+i; ++n_isa;
+      } else {
+        /* Inactive variables */
+        isi[n_isi]=low+i; ++n_isi;
       }
     }
     
@@ -231,48 +269,42 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Pets
     ierr = VecRestoreArrayRead(G, &g);CHKERRQ(ierr);
   }
   
-  /* Create index set for lower bounded variables */
+  /* Clear all index sets */
   ierr = ISDestroy(active_lower);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
-  /* Create index set for upper bounded variables */
   ierr = ISDestroy(active_upper);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isu, isu, PETSC_OWN_POINTER, active_upper);CHKERRQ(ierr);
-  /* Create index set for fixed variables */
   ierr = ISDestroy(active_fixed);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isf, isf, PETSC_OWN_POINTER, active_fixed);CHKERRQ(ierr);
-  
-  /* Create the combined active set */
   ierr = ISDestroy(active);CHKERRQ(ierr);
-  if (*active_lower && *active_upper && *active_fixed) {
-    /* All three types of active variables exist */
-    const IS islist[3] = {*active_lower, *active_upper, *active_fixed};
-    ierr = ISConcatenate(PetscObjectComm((PetscObject)X), 3, islist, active);CHKERRQ(ierr);
-    ierr = ISSort(*active);CHKERRQ(ierr);
-  } else if (*active_lower && *active_upper) {
-    /* Only lower and upper bounded active variables exist */
-    ierr = ISSum(*active_lower, *active_upper, active);CHKERRQ(ierr);
-  } else if (*active_lower && *active_fixed) {
-    /* Only lower bounded and fixed active variables exist */
-    ierr = ISSum(*active_lower, *active_fixed, active);CHKERRQ(ierr);
-  } else if (*active_upper && *active_fixed) {
-    /* Only upper bounded and fixed active variables exist */
-    ierr = ISSum(*active_upper, *active_fixed, active);CHKERRQ(ierr);
-  } else if (*active_lower) {
-    /* Only lower bounded active variables exist */
-    *active = *active_lower;
-  } else if (*active_upper) {
-    /* Only upper bounded active variables exist */
-    *active = *active_upper;
-  } else if (*active_fixed) {
-    /* Only fixed active variables exist */
-    *active = *active_fixed;
-  }
-  /* Create the inactive set */
   ierr = ISDestroy(inactive);CHKERRQ(ierr);
-  if (*active) { ierr = ISComplementVec(*active, X, inactive);CHKERRQ(ierr); }
   
+  /* Collect global sizes */
+  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  
+  /* Create index set for lower bounded variables */
+  if (N_isl > 0) {
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
+  }
+  /* Create index set for upper bounded variables */
+  if (N_isu > 0) {
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isu, isu, PETSC_OWN_POINTER, active_upper);CHKERRQ(ierr);
+  }
+  /* Create index set for fixed variables */
+  if (N_isf > 0) {
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isf, isf, PETSC_OWN_POINTER, active_fixed);CHKERRQ(ierr);
+  }
+  /* Create index set for all actively bounded variables */
+  if (N_isa > 0) {
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isa, isa, PETSC_OWN_POINTER, active);CHKERRQ(ierr);
+  }
+  /* Create index set for all inactive variables */
+  if (N_isi > 0) {
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isi, isi, PETSC_OWN_POINTER, inactive);CHKERRQ(ierr);
+  }
+
   /* Clean up and exit */
-  ierr = VecDestroy(&W);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -291,7 +323,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Pets
   Output Parameters:
 . S - step direction to be modified
 @*/
-PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, Vec S) 
+PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S) 
 {
   PetscErrorCode               ierr;
   
@@ -307,6 +339,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     ierr = VecGetSubVector(XL, active_lower, &bound_lower);CHKERRQ(ierr);
     ierr = VecCopy(bound_lower, step_lower);CHKERRQ(ierr);
     ierr = VecAXPY(step_lower, -1.0, x_lower);CHKERRQ(ierr);
+    ierr = VecScale(step_lower, scale);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(S, active_lower, &step_lower);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(X, active_lower, &x_lower);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(XL, active_lower, &bound_lower);CHKERRQ(ierr);
@@ -319,6 +352,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     ierr = VecGetSubVector(XU, active_upper, &bound_upper);CHKERRQ(ierr);
     ierr = VecCopy(bound_upper, step_upper);CHKERRQ(ierr);
     ierr = VecAXPY(step_upper, -1.0, x_upper);CHKERRQ(ierr);
+    ierr = VecScale(step_upper, scale);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(S, active_upper, &step_upper);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(X, active_upper, &x_upper);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(XU, active_upper, &bound_upper);CHKERRQ(ierr);
@@ -330,5 +364,61 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
     ierr = VecSet(step_fixed, 0.0);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(S, active_fixed, &step_fixed);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TaoBoundSolution - Ensures that the solution vector is snapped into the bounds.
+
+  Input Parameters:
++ XL - lower bound vector
+. XU - upper bound vector
+- X - solution vector
+
+  Output Parameters:
+. X - modified solution vector
+@*/
+PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscInt *nDiff)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n,low,high,nDiff_loc=0;
+  PetscScalar       *x;
+  const PetscScalar *xl,*xu;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
+
+  PetscValidType(X,1);
+  PetscValidType(XL,2);
+  PetscValidType(XU,3);
+  PetscCheckSameType(X,1,XL,2);
+  PetscCheckSameType(X,1,XU,3);
+  PetscCheckSameComm(X,1,XL,2);
+  PetscCheckSameComm(X,1,XU,3);
+  VecCheckSameSize(X,1,XL,2);
+  VecCheckSameSize(X,1,XU,3);
+
+  ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  if (n>0){
+    ierr = VecGetArray(X, &x);
+    ierr = VecGetArrayRead(XL, &xl);
+    ierr = VecGetArrayRead(XU, &xu);
+
+    for (i=0;i<n;++i){
+      if ((x[i] < xl[i]) && (xl[i] > PETSC_NINFINITY)) {
+        x[i] = xl[i]; ++nDiff_loc;
+      } else if ((x[i] > xu[i]) && (xu[i] < PETSC_INFINITY)) {
+        x[i] = xu[i]; ++nDiff_loc;
+      }
+    }
+
+    ierr = VecRestoreArray(X, &x);
+    ierr = VecRestoreArrayRead(XL, &xl);
+    ierr = VecRestoreArrayRead(XU, &xu);
+  }
+  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

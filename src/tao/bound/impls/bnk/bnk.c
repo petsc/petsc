@@ -41,7 +41,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal                    resnorm, delta;
   
-  PetscInt                     n,N;
+  PetscInt                     n,N,nDiff;
 
   PetscInt                     i_max = 5;
   PetscInt                     j_max = 1;
@@ -54,7 +54,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
   /* Project the initial point onto the feasible region */
-  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, &nDiff);CHKERRQ(ierr);
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -172,10 +172,12 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           /* Take a steepest descent step and snap it to bounds */
           ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
           ierr = VecAXPY(tao->solution, -tao->trust/bnk->gnorm, tao->gradient);CHKERRQ(ierr);
-          ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
-          /* Recompute the step after bound snapping so that it can be used in predicted decrease calculation later */
-          ierr = VecCopy(tao->solution, bnk->W);CHKERRQ(ierr);
-          ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
+          ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution,&nDiff);CHKERRQ(ierr);
+          if (nDiff > 0) {
+            /* Solution bounding changed variables so let's recompute the step we actually accepted */
+            ierr = VecCopy(tao->solution, bnk->W);CHKERRQ(ierr);
+            ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
+          }
           /* Compute the objective at the trial */
           ierr = TaoComputeObjective(tao, tao->solution, &ftrial);CHKERRQ(ierr);
           ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
@@ -269,7 +271,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           bnk->f = f_min;
           ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
-          ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+          ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, &nDiff);CHKERRQ(ierr);
           ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -277,7 +279,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
           ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
           /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
-          ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
+          ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           *needH = PETSC_TRUE;
           /* Test the new step for convergence */
@@ -323,6 +325,8 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscBool                    diagExists;
+  PetscReal                    delta;
 
   PetscFunctionBegin;
   /* Compute the Hessian */
@@ -331,12 +335,17 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   if (BNK_PC_BFGS == bnk->pc_type) {
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     /* Update the BFGS diagonal scaling */
-    if (BFGS_SCALE_AHESS == bnk->bfgs_scale_type) {
+    ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+    if (BFGS_SCALE_AHESS == bnk->bfgs_scale_type && diagExists) {
       ierr = MatGetDiagonal(tao->hessian, bnk->Diag);CHKERRQ(ierr);
       ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
       ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
       ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
       ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
+    } else {
+      /* Fall back onto stand-alone BFGS scaling */
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
+      ierr = MatLMVMSetDelta(bnk->M,delta);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -350,7 +359,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PetscBool                    hessComputed;
+  PetscBool                    hessComputed, diagExists;
 
   PetscFunctionBegin;
   switch (asType) {
@@ -369,7 +378,8 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
       ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
-      if (hessComputed) {
+      ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+      if (hessComputed && diagExists) {
         /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
         ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
         ierr = VecAbs(bnk->Xwork);CHKERRQ(ierr);
@@ -377,13 +387,14 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
         ierr = VecReciprocal(bnk->Xwork);CHKERRQ(ierr);CHKERRQ(ierr);
         ierr = VecPointwiseMult(bnk->W, bnk->Xwork, bnk->unprojected_gradient);CHKERRQ(ierr);
       } else {
-        /* If the Hessian does not exist yet, we will simply use gradient step */
+        /* If the Hessian or its diagonal does not exist, we will simply use gradient step */
         ierr = VecCopy(bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
       }
     }
     ierr = VecScale(bnk->W, -1.0);CHKERRQ(ierr);
-    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->as_step, &bnk->as_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
-
+    ierr = TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx);CHKERRQ(ierr);
+    break;
+    
   default:
     break;
   }
@@ -402,11 +413,13 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, Vec step)
   PetscFunctionBegin;
   switch (bnk->as_type) {
   case BNK_AS_NONE:
-    if (bnk->active_idx) {ierr = VecISSet(step, bnk->active_idx, 0.0);CHKERRQ(ierr);}
+    if (bnk->active_idx) {
+      ierr = VecISSet(step, bnk->active_idx, 0.0);CHKERRQ(ierr);
+    }
     break;
 
   case BNK_AS_BERTSEKAS:
-    ierr = TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, step);CHKERRQ(ierr);
+    ierr = TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, 1.0, step);CHKERRQ(ierr);
     break;
 
   default:
@@ -432,12 +445,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
   PetscFunctionBegin;
   *terminate = PETSC_FALSE;
   if (bnk->max_cg_its > 0) {
-    /* Copy the current solution, unprojected gradient and step info into BNCG */
+    /* Copy the current function value (important vectors are already shared) */
     bnk->bncg_ctx->f = bnk->f;
-    ierr = VecCopy(tao->solution, bnk->bncg->solution);CHKERRQ(ierr);
-    ierr = VecCopy(bnk->unprojected_gradient, bnk->bncg_ctx->unprojected_gradient);CHKERRQ(ierr);
-    ierr = VecCopy(bnk->Gold, bnk->bncg_ctx->G_old);CHKERRQ(ierr);
-    ierr = VecCopy(tao->stepdirection, bnk->bncg->stepdirection);CHKERRQ(ierr);
     /* Take some small finite number of BNCG iterations */
     ierr = TaoSolve(bnk->bncg);CHKERRQ(ierr);
     /* Add the number of gradient and function evaluations to the total */
@@ -446,11 +455,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     tao->ngrads += bnk->bncg->ngrads;
     tao->nhess += bnk->bncg->nhess;
     bnk->tot_cg_its += bnk->bncg->niter;
-    /* Extract the BNCG solution out and save it into BNK */
+    /* Extract the BNCG function value out and save it into BNK */
     bnk->f = bnk->bncg_ctx->f;
-    ierr = VecCopy(bnk->bncg->solution, tao->solution);
-    ierr = VecCopy(bnk->bncg_ctx->unprojected_gradient, bnk->unprojected_gradient);
-    ierr = VecCopy(bnk->bncg->gradient, tao->gradient);CHKERRQ(ierr);
     if (bnk->bncg->reason == TAO_CONVERGED_GATOL || bnk->bncg->reason == TAO_CONVERGED_GRTOL || bnk->bncg->reason == TAO_CONVERGED_GTTOL || bnk->bncg->reason == TAO_CONVERGED_MINF) {
       *terminate = PETSC_TRUE;
     } else {
@@ -472,6 +478,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   PetscReal                    delta;
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     kspits;
+  PetscBool                    diagExists;
   
   PetscFunctionBegin;
   /* Prepare the reduced sub-matrices for the inactive set */
@@ -506,22 +513,29 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   
   /* Update the diagonal scaling for the BFGS preconditioner, this time with the Hessian perturbation */
   if ((BNK_PC_BFGS == bnk->pc_type) && (BFGS_SCALE_PHESS == bnk->bfgs_scale_type)) {
-    /* Obtain diagonal for the bfgs preconditioner  */
-    ierr = VecSet(bnk->Diag, 1.0);CHKERRQ(ierr);
-    if (bnk->inactive_idx) {
-      ierr = VecGetSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
+    ierr = MatHasOperation(bnk->H_inactive, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+    if (diagExists) {
+      /* Obtain diagonal for the bfgs preconditioner  */
+      ierr = VecSet(bnk->Diag, 1.0);CHKERRQ(ierr);
+      if (bnk->inactive_idx) {
+        ierr = VecGetSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
+      } else {
+        bnk->Diag_red = bnk->Diag;
+      }
+      ierr = MatGetDiagonal(bnk->H_inactive, bnk->Diag_red);CHKERRQ(ierr);
+      if (bnk->inactive_idx) {
+        ierr = VecRestoreSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
+      }
+      ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
+      ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
+      ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
+      ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
     } else {
-      bnk->Diag_red = bnk->Diag;
+      /* Fall back onto stand-alone BFGS scaling */
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / (bnk->gnorm*bnk->gnorm);
+      ierr = MatLMVMSetDelta(bnk->M,delta);CHKERRQ(ierr);
     }
-    ierr = MatGetDiagonal(bnk->H_inactive, bnk->Diag_red);CHKERRQ(ierr);
-    if (bnk->inactive_idx) {
-      ierr = VecRestoreSubVector(bnk->Diag, bnk->inactive_idx, &bnk->Diag_red);CHKERRQ(ierr);
-    }
-    ierr = VecAbs(bnk->Diag);CHKERRQ(ierr);
-    ierr = VecMedian(bnk->Diag_min, bnk->Diag, bnk->Diag_max, bnk->Diag);CHKERRQ(ierr);
-    ierr = VecReciprocal(bnk->Diag);CHKERRQ(ierr);
-    ierr = MatLMVMSetScale(bnk->M,bnk->Diag);CHKERRQ(ierr);
-  }
+  } 
   
   /* Solve the Newton system of equations */
   tao->ksp_its = 0;
@@ -1100,35 +1114,68 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);}
-  if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);}
-  if (!bnk->W) {ierr = VecDuplicate(tao->solution,&bnk->W);CHKERRQ(ierr);}
-  if (!bnk->Xold) {ierr = VecDuplicate(tao->solution,&bnk->Xold);CHKERRQ(ierr);}
-  if (!bnk->Gold) {ierr = VecDuplicate(tao->solution,&bnk->Gold);CHKERRQ(ierr);}
-  if (!bnk->Xwork) {ierr = VecDuplicate(tao->solution,&bnk->Xwork);CHKERRQ(ierr);}
-  if (!bnk->Gwork) {ierr = VecDuplicate(tao->solution,&bnk->Gwork);CHKERRQ(ierr);}
-  if (!bnk->unprojected_gradient) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient);CHKERRQ(ierr);}
-  if (!bnk->unprojected_gradient_old) {ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient_old);CHKERRQ(ierr);}
-  if (!bnk->Diag_min) {ierr = VecDuplicate(tao->solution,&bnk->Diag_min);CHKERRQ(ierr);}
-  if (!bnk->Diag_max) {ierr = VecDuplicate(tao->solution,&bnk->Diag_max);CHKERRQ(ierr);}
+  if (!tao->gradient) {
+    ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
+  }
+  if (!tao->stepdirection) {
+    ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);
+  }
+  if (!bnk->W) {
+    ierr = VecDuplicate(tao->solution,&bnk->W);CHKERRQ(ierr);
+  }
+  if (!bnk->Xold) {
+    ierr = VecDuplicate(tao->solution,&bnk->Xold);CHKERRQ(ierr);
+  }
+  if (!bnk->Gold) {
+    ierr = VecDuplicate(tao->solution,&bnk->Gold);CHKERRQ(ierr);
+  }
+  if (!bnk->Xwork) {
+    ierr = VecDuplicate(tao->solution,&bnk->Xwork);CHKERRQ(ierr);
+  }
+  if (!bnk->Gwork) {
+    ierr = VecDuplicate(tao->solution,&bnk->Gwork);CHKERRQ(ierr);
+  }
+  if (!bnk->unprojected_gradient) {
+    ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient);CHKERRQ(ierr);
+  }
+  if (!bnk->unprojected_gradient_old) {
+    ierr = VecDuplicate(tao->solution,&bnk->unprojected_gradient_old);CHKERRQ(ierr);
+  }
+  if (!bnk->Diag_min) {
+    ierr = VecDuplicate(tao->solution,&bnk->Diag_min);CHKERRQ(ierr);
+  }
+  if (!bnk->Diag_max) {
+    ierr = VecDuplicate(tao->solution,&bnk->Diag_max);CHKERRQ(ierr);
+  }
   if (bnk->max_cg_its > 0) {
-    if (!bnk->bncg_sol) {ierr = VecDuplicate(tao->solution,&bnk->bncg_sol);CHKERRQ(ierr);}
-    ierr = TaoSetInitialVector(bnk->bncg, bnk->bncg_sol);CHKERRQ(ierr);
+    /* Ensure that the important common vectors are shared between BNK and embedded BNCG */
+    bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
+    ierr = PetscObjectReference((PetscObject)(bnk->unprojected_gradient));CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->bncg_ctx->unprojected_gradient);CHKERRQ(ierr);
+    bnk->bncg_ctx->unprojected_gradient = bnk->unprojected_gradient;
+    ierr = PetscObjectReference((PetscObject)(bnk->Gold));CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->bncg_ctx->G_old);CHKERRQ(ierr);
+    bnk->bncg_ctx->G_old = bnk->Gold;
+    ierr = PetscObjectReference((PetscObject)(tao->gradient));CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->bncg->gradient);CHKERRQ(ierr);
+    bnk->bncg->gradient = tao->gradient;
+    ierr = PetscObjectReference((PetscObject)(tao->stepdirection));CHKERRQ(ierr);
+    ierr = VecDestroy(&bnk->bncg->stepdirection);CHKERRQ(ierr);
+    bnk->bncg->stepdirection = tao->stepdirection;
+    ierr = TaoSetInitialVector(bnk->bncg, tao->solution);CHKERRQ(ierr);
+    /* Copy over some settings from BNK into BNCG */
     ierr = TaoSetMaximumIterations(bnk->bncg, bnk->max_cg_its);CHKERRQ(ierr);
     ierr = TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetFunctionLowerBound(bnk->bncg, tao->fmin);CHKERRQ(ierr);
-    
     ierr = TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP);CHKERRQ(ierr);
     ierr = TaoSetObjectiveRoutine(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
     ierr = TaoSetGradientRoutine(bnk->bncg, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
     ierr = TaoSetObjectiveAndGradientRoutine(bnk->bncg, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg));CHKERRQ(ierr);
-    for (i=0; i<tao->numbermonitors; i++) {
+    for (i=0; i<tao->numbermonitors; ++i) {
       ierr = TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
-    ierr = TaoSetUp(bnk->bncg);CHKERRQ(ierr);
-    bnk->bncg_ctx = (TAO_BNCG *)bnk->bncg->data;
   }
   bnk->Diag = 0;
   bnk->Diag_red = 0;
@@ -1169,15 +1216,18 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
     ierr = VecDestroy(&bnk->unprojected_gradient_old);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->Diag_max);CHKERRQ(ierr);
-    if (bnk->max_cg_its > 0) {
-      ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
-      ierr = VecDestroy(&bnk->bncg_sol);CHKERRQ(ierr);
-    }
+  }
+  if (bnk->max_cg_its > 0) {
+    ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->M);CHKERRQ(ierr);
-  if (bnk->Hpre_inactive != tao->hessian_pre && bnk->Hpre_inactive != bnk->H_inactive) {ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);}
-  if (bnk->H_inactive != tao->hessian) {ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);}
+  if (bnk->Hpre_inactive != tao->hessian_pre && bnk->Hpre_inactive != bnk->H_inactive) {
+    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  }
+  if (bnk->H_inactive != tao->hessian) {
+    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
+  }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

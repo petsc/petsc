@@ -7,17 +7,22 @@
  
  ------------------------------------------------------------
  
- initialize trust radius (default: BNK_INIT_INTERPOLATION)
  x_0 = VecMedian(x_0)
- f_0, g_0 = TaoComputeObjectiveAndGradient(x_0)
- pg_0 = VecBoundGradientProjection(g_0)
+ f_0, g_0= TaoComputeObjectiveAndGradient(x_0)
+ pg_0 = project(g_0)
  check convergence at pg_0
+ needH = TaoBNKInitialize(default:BNK_INIT_INTERPOLATION)
  niter = 0
- step_accepted = true
+ step_accepted = false
  
  while niter <= max_it
-    if step_accepted
-      niter += 1
+    niter += 1
+    
+    if needH
+      If max_cg_steps > 0
+        x_k, g_k, pg_k = TaoSolve(BNCG)
+      end
+    
       H_k = TaoComputeHessian(x_k)
       if pc_type == BNK_PC_BFGS
         add correction to BFGS approx
@@ -26,6 +31,7 @@
           scale BFGS with VecReciprocal(D)
         end
       end
+      needH = False
     end
 
     if pc_type = BNK_PC_BFGS
@@ -41,39 +47,44 @@
       U = {i : (x_k)_i >= u_i - eps && (g_k)_i < 0}
       F = {i : l_i = (x_k)_i = u_i}
       A = {L + U + F}
-      I = {i : i not in A}
+      IA = {i : i not in A}
       
-    generate the reduced system Hr_k dr_k = -gr_k for variables in I
+    generate the reduced system Hr_k dr_k = -gr_k for variables in IA
     if pc_type == BNK_PC_BFGS && scale_type == BNK_SCALE_PHESS
       D = VecMedian(1e-6, abs(diag(Hr_k)), 1e6)
       scale BFGS with VecReciprocal(D)
     end
-    solve Hr_k dr_k = -gr_k
-    set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
     
-    x_{k+1} = VecMedian(x_k + d_k)
-    s = x_{k+1} - x_k
-    prered = dot(s, 0.5*gr_k - Hr_k*s)
-    f_{k+1} = TaoComputeObjective(x_{k+1})
-    actred = f_k - f_{k+1}
+    while !stepAccepted
+      solve Hr_k dr_k = -gr_k
+      set d_k to (l - x) for variables in L, (u - x) for variables in U, and 0 for variables in F
+      
+      x_{k+1} = VecMedian(x_k + d_k)
+      s = x_{k+1} - x_k
+      prered = dot(s, 0.5*gr_k - Hr_k*s)
+      f_{k+1} = TaoComputeObjective(x_{k+1})
+      actred = f_k - f_{k+1}
 
-    oldTrust = trust
-    step_accepted, trust = TaoBNKUpdateTrustRadius(default: BNK_UPDATE_REDUCTION)
-    if step_accepted
-      g_{k+1} = TaoComputeGradient(x_{k+1})
-      pg_{k+1} = VecBoundGradientProjection(g_{k+1})
-      count the accepted Newton step
-    else
-      f_{k+1} = f_k
-      x_{k+1} = x_k
-      g_{k+1} = g_k
-      pg_{k+1} = pg_k
-      if trust == oldTrust
-        terminate because we cannot shrink the radius any further
-      end
-    end 
-
-    check convergence at pg_{k+1}
+      oldTrust = trust
+      step_accepted, trust = TaoBNKUpdateTrustRadius(default: BNK_UPDATE_REDUCTION)
+      if step_accepted
+        g_{k+1} = TaoComputeGradient(x_{k+1})
+        pg_{k+1} = project(g_{k+1})
+        count the accepted Newton step
+        needH = True
+      else
+        f_{k+1} = f_k
+        x_{k+1} = x_k
+        g_{k+1} = g_k
+        pg_{k+1} = pg_k
+        if trust == oldTrust
+          terminate because we cannot shrink the radius any further
+        end
+      end 
+      
+      check convergence at pg_{k+1}
+    end
+    
  end
 */
 
@@ -83,9 +94,9 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
 
-  PetscReal                    resnorm, oldTrust, prered, actred, stepNorm, steplen;
+  PetscReal                    resnorm, oldTrust, prered, actred, steplen;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
-  PetscInt                     stepType = BNK_NEWTON;
+  PetscInt                     stepType = BNK_NEWTON, nDiff;
   
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
@@ -95,7 +106,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
-    tao->niter++;
+    ++tao->niter;
     
     if (needH) { 
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
@@ -126,17 +137,14 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
 
       /* Temporarily accept the step and project it into the bounds */
       ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution);CHKERRQ(ierr);
+      ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, &nDiff);CHKERRQ(ierr);
 
       /* Check if the projection changed the step direction */
-      ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
-      ierr = VecNorm(tao->stepdirection, NORM_2, &stepNorm);CHKERRQ(ierr);
-      if (stepNorm != bnk->dnorm) {
-        /* Projection changed the step, so we have to recompute predicted reduction.
-           However, we deliberately do not change the step norm and the trust radius 
-           in order for the safeguard to more closely mimic a piece-wise linesearch 
-           along the bounds. */
+      if (nDiff > 0) {
+        /* Projection changed the step, so we have to recompute the step and 
+           the predicted reduction. Leave the trust radius unchanged. */
+        ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
         ierr = TaoBNKRecomputePred(tao, tao->stepdirection, &prered);CHKERRQ(ierr);
       } else {
         /* Step did not change, so we can just recover the pre-computed prediction */
