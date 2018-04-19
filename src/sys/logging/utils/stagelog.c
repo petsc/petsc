@@ -19,7 +19,8 @@ PetscStageLog petsc_stageLog = 0;
 
   Level: developer
 
-  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Notes:
+    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
 .seealso: PetscStageLogCreate()
@@ -52,7 +53,8 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
 
   Level: developer
 
-  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Notes:
+    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
 .seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
@@ -89,7 +91,8 @@ PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
 
   Level: developer
 
-  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+  Developer Notes:
+    Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
 .seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()

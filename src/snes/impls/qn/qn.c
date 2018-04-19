@@ -776,7 +776,8 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 .     -snes_linesearch_type <cp, l2, basic> - Type of line search.
 -     -snes_qn_monitor - Monitors the quasi-newton Jacobian.
 
-      Notes: This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
+      Notes:
+    This implements the L-BFGS, Broyden, and "Bad" Broyden algorithms for the solution of F(x) = b using
       previous change in F(x) and x to form the approximate inverse Jacobian using a series of multiplicative rank-one
       updates.
 

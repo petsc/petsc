@@ -678,6 +678,11 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
     ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
     osm->dm_subdomains = PETSC_FALSE;
   }
+  ierr = PetscOptionsInt("-pc_asm_local_blocks","Number of local subdomains","PCASMSetLocalSubdomains",osm->n_local_true,&blocks,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCASMSetLocalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr);
+    osm->dm_subdomains = PETSC_FALSE;
+  }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr);
@@ -892,6 +897,11 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 -   is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
          (or NULL to not provide these)
 
+    Options Database Key:
+    To set the total number of subdomain blocks rather than specify the
+    index sets, use the option
+.    -pc_asm_local_blocks <blks> - Sets local blocks
+
     Notes:
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
 
@@ -1043,7 +1053,8 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
     Options Database Key:
 .   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
-    Notes: if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
+    Notes:
+    if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
     to limit the local processor interpolation
 
     Level: intermediate
@@ -1249,7 +1260,8 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
       will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
       -pc_asm_type basic to use the standard ASM.
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
+   Notes:
+    Each processor can have one or more blocks, but a block cannot be shared by more
      than one processor. Use PCGASM for subdomains shared by multiple processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
@@ -1687,7 +1699,8 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
 
     Level: advanced
 
-    Notes: Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
+    Notes:
+    Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
 
            Usually one would use PCSetModifySubmatrices() to change the submatrices in building the preconditioner.
 

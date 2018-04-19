@@ -719,9 +719,11 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
 
  Level: beginner
 
- Notes : Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+ Notes:
+    Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
 
- Developer Notes: This object is subclassed off of KSPDGMRES
+ Developer Notes:
+    This object is subclassed off of KSPDGMRES
 
  Contributed by Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr>
  Inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>

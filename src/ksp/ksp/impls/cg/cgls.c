@@ -35,7 +35,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   Mat            A;
   Vec            x,b,r,p,q,ss;
   PetscScalar    beta;
-  PetscReal      alpha,gamma,oldgamma,rnorm;
+  PetscReal      alpha,gamma,oldgamma;
   PetscInt       maxiter_ls = 15;
   
   PetscFunctionBegin;
@@ -83,12 +83,6 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
     ierr = VecAYPX(p,beta,ss);CHKERRQ(ierr);       /* p = s + beta * p        */
   } while (ksp->its<ksp->max_it && !ksp->reason);
   
-  ierr = MatMult(A,x,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-  ksp->rnorm = rnorm;
-  ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->its>=maxiter_ls && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
@@ -116,6 +110,9 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
    Level: beginner
 
    Supports non-square (rectangular) matrices.
+
+   Notes:
+    This does not use the preconditioner, so one should probably use KSPLSQR instead.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG

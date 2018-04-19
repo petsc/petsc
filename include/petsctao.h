@@ -78,7 +78,8 @@ $   1) an incorrectly coded or computed gradient or Hessian
 $   2) failure or lack of convergence in the linear system (in this case we recommend
 $      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
 
-   Developer Notes: this must match petsc/finclude/petsctao.h
+   Developer Notes:
+    this must match petsc/finclude/petsctao.h
 
        The string versions of these are in TAOConvergedReasons, if you change any value here you must
      also adjust that array.

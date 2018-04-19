@@ -59,7 +59,8 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
    Supported types are:
      TS_EQ_UNSPECIFIED (default)
@@ -90,7 +91,8 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
    Each reason has its own manual page.
 
@@ -176,7 +178,8 @@ M*/
 
    Level: beginner
 
-   Notes: See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
+   Notes:
+    See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason(), TSSetMaxSNESFailures()
 M*/
@@ -186,7 +189,8 @@ M*/
 
    Level: beginner
 
-   Notes: See TSSetMaxStepRejections() for how to allow more step rejections.
+   Notes:
+    See TSSetMaxStepRejections() for how to allow more step rejections.
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxStepRejections()
 M*/
@@ -196,7 +200,8 @@ M*/
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
 $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time

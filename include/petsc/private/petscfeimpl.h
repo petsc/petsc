@@ -30,6 +30,7 @@ struct _p_PetscSpace {
   void                   *data;          /* Implementation object */
   PetscInt                order;         /* The approximation order of the space */
   PetscInt                Nc;            /* The number of components */
+  PetscInt                Nv;            /* The number of variables in the space, e.g. x and y */
   DM                      dm;            /* Shell to use for temp allocation */
 };
 
@@ -42,7 +43,6 @@ typedef struct {
 } PetscSpace_Poly;
 
 typedef struct {
-  PetscInt        numVariables; /* The spatial dimension */
   PetscQuadrature quad;         /* The points defining the space */
 } PetscSpace_Point;
 
@@ -57,8 +57,11 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
   PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
   PetscErrorCode (*getheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
+  PetscErrorCode (*getpointsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
   PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
-  PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+  PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFEGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+  PetscErrorCode (*applyall)(PetscDualSpace, const PetscScalar *, PetscScalar *);
+  PetscErrorCode (*createallpoints)(PetscDualSpace, PetscQuadrature *);
 };
 
 struct _p_PetscDualSpace {
@@ -68,6 +71,7 @@ struct _p_PetscDualSpace {
   PetscInt         order;      /* The approximation order of the space */
   PetscInt         Nc;         /* The number of components */
   PetscQuadrature *functional; /* The basis of functionals for this space */
+  PetscQuadrature  allPoints;
   PetscBool        setupcalled;
 };
 
@@ -97,12 +101,12 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
-  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
-  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEFaceGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
-  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
-  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
-  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFEFaceGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
+  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
+  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -120,15 +124,12 @@ struct _p_PetscFE {
   PetscReal      *F;                     /* Tabulation of basis at face centroids */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
+  PetscBool       setupcalled;
 };
 
 typedef struct {
   PetscInt cellType;
 } PetscFE_Basic;
-
-typedef struct {
-  PetscInt dummy;
-} PetscFE_Nonaffine;
 
 #ifdef PETSC_HAVE_OPENCL
 
@@ -158,24 +159,24 @@ typedef struct {
 } PetscFE_Composite;
 
 /* Utility functions */
-PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal J[], const PetscReal xi[], PetscReal x[])
+PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal J[], const PetscReal xi[], PetscReal x[])
 {
   PetscInt d, e;
 
   for (d = 0; d < dimReal; ++d) {
     x[d] = v0[d];
     for (e = 0; e < dimRef; ++e) {
-      x[d] += J[d*dimReal+e]*(xi[e] + 1.0);
+      x[d] += J[d*dimReal+e]*(xi[e] - xi0[e]);
     }
   }
 }
 
-PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
+PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
 {
   PetscInt d, e;
 
   for (d = 0; d < dimRef; ++d) {
-    xi[d] = -1.;
+    xi[d] = xi0[d];
     for (e = 0; e < dimReal; ++e) {
       xi[d] += invJ[d*dimReal+e]*(x[e] - v0[e]);
     }

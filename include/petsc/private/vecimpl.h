@@ -216,9 +216,11 @@ typedef struct {
   PetscBool      nonmatching_computed;
   PetscInt       n_nonmatching;        /* number of "from"s  != "to"s */
   PetscInt       *slots_nonmatching;   /* locations of "from"s  != "to"s */
-  PetscBool      is_copy;
-  PetscInt       copy_start;   /* local scatter is a copy starting at copy_start */
-  PetscInt       copy_length;
+  PetscBool      made_of_copies;       /* if local scatter is made of copies */
+  PetscInt       n_copies;             /* number of copies */
+  PetscInt       *copy_starts;         /* i-th copy starts at copy_starts[i] */
+  PetscInt       *copy_lengths;        /* with length copy_lengths[i] */
+  PetscBool      same_copy_starts;     /* to's copy_starts[] values are as same as from's. Used to quickly test if we are doing a self-copy */
 } VecScatter_Seq_General;
 
 typedef struct {
@@ -317,6 +319,8 @@ PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter,VecScatter_Seq_General*,VecScatter_Seq_General*,PetscInt);
+
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);

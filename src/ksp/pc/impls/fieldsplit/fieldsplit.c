@@ -55,7 +55,8 @@ typedef struct {
 } PC_FieldSplit;
 
 /*
-    Notes: there is no particular reason that pmat, x, and y are stored as arrays in PC_FieldSplit instead of
+    Notes:
+    there is no particular reason that pmat, x, and y are stored as arrays in PC_FieldSplit instead of
    inside PC_FieldSplitLink, just historical. If you want to be able to add new fields after already using the
    PC you could change this.
 */
@@ -1512,7 +1513,8 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
 
     Level: intermediate
 
-    Notes: Use PCFieldSplitSetIS() to set a completely general set of indices as a field.
+    Notes:
+    Use PCFieldSplitSetIS() to set a completely general set of indices as a field.
 
      The PCFieldSplitSetFields() is for defining fields as strided blocks. For example, if the block
      size is three then one can define a field as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean

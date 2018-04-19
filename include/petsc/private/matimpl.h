@@ -563,6 +563,7 @@ struct _p_MatColoring {
   MatColoringWeightType weight_type;      /* type of weight computation to be performed */
   PetscReal             *user_weights;    /* custom weights and permutation */
   PetscInt              *user_lperm;
+  PetscBool             valid_iscoloring; /* check to see if matcoloring is produced a valid iscoloring */
 };
 
 struct  _p_MatTransposeColoring{

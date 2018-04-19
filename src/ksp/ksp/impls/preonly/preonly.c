@@ -41,10 +41,12 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
    Level: beginner
 
-   Notes: Since this does not involve an iteration the basic KSP parameters such as tolerances and iteration counts
+   Notes:
+    Since this does not involve an iteration the basic KSP parameters such as tolerances and iteration counts
           do not apply
 
-   Developer Notes: Even though this method does not use any norms, the user is allowed to set the KSPNormType to any value.
+   Developer Notes:
+    Even though this method does not use any norms, the user is allowed to set the KSPNormType to any value.
     This is so the users does not have to change KSPNormType options when they switch from other KSP methods to this one.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP

@@ -153,7 +153,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "temperature");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);

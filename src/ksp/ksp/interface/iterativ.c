@@ -78,7 +78,8 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
 
    Level: intermediate
 
-   Notes: Use KSPGetIterationNumber() to get the count for the most recent solve only
+   Notes:
+    Use KSPGetIterationNumber() to get the count for the most recent solve only
    If this is called within a linear solve (such as in a KSPMonitor routine) then it does not include iterations within that current solve
 
 .keywords: KSP, get, residual norm
@@ -1056,7 +1057,8 @@ $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned
    Options Database:
 .   -ksp_converged_reason - prints the reason to standard out
 
-   Notes: If this routine is called before or doing the KSPSolve() the value of KSP_CONVERGED_ITERATING is returned
+   Notes:
+    If this routine is called before or doing the KSPSolve() the value of KSP_CONVERGED_ITERATING is returned
 
    The values  KSP_CONVERGED_CG_NEG_CURVE, KSP_CONVERGED_CG_CONSTRAINED, and KSP_CONVERGED_STEP_LENGTH are returned only by the special KSPCGNASH, KSPCGSTCG, and KSPCGGLTR
    solvers which are used by the SNESNEWTONTR (trust region) solver.
@@ -1086,7 +1088,8 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 +  ksp - the preconditioner context
 -  dm - the dm, cannot be NULL
 
-   Notes: If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
+   Notes:
+    If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
           set with DMKSPSetComputeOperators(). Use KSPSetDMActive(ksp,PETSC_FALSE) to instead use the matrix
           you've provided with KSPSetOperators().
 
@@ -1184,7 +1187,8 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 +  ksp - the KSP context
 -  usrP - optional user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
@@ -1217,7 +1221,8 @@ PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
    Output Parameter:
 .  usrP - user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate

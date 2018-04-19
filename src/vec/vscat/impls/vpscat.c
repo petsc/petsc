@@ -263,6 +263,8 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
 
   ierr = PetscFree(to->local.vslots);CHKERRQ(ierr);
   ierr = PetscFree(from->local.vslots);CHKERRQ(ierr);
+  ierr = PetscFree2(to->local.copy_starts,to->local.copy_lengths);CHKERRQ(ierr);
+  ierr = PetscFree2(from->local.copy_starts,from->local.copy_lengths);CHKERRQ(ierr);
   ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
   ierr = PetscFree2(from->counts,from->displs);CHKERRQ(ierr);
   ierr = PetscFree(to->local.slots_nonmatching);CHKERRQ(ierr);
@@ -276,38 +278,6 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
   ierr = PetscFree4(from->values,from->indices,from->starts,from->procs);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------------------------*/
-/*
-    Special optimization to see if the local part of the scatter is actually
-    a copy. The scatter routines call PetscMemcpy() instead.
-
-*/
-PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter scatter,VecScatter_Seq_General *to,VecScatter_Seq_General *from,PetscInt bs)
-{
-  PetscInt       n = to->n,i,*to_slots = to->vslots,*from_slots = from->vslots;
-  PetscInt       to_start,from_start;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  to_start   = to_slots[0];
-  from_start = from_slots[0];
-
-  for (i=1; i<n; i++) {
-    to_start   += bs;
-    from_start += bs;
-    if (to_slots[i]   != to_start)   PetscFunctionReturn(0);
-    if (from_slots[i] != from_start) PetscFunctionReturn(0);
-  }
-  to->is_copy       = PETSC_TRUE;
-  to->copy_start    = to_slots[0];
-  to->copy_length   = bs*sizeof(PetscScalar)*n;
-  from->is_copy     = PETSC_TRUE;
-  from->copy_start  = from_slots[0];
-  from->copy_length = bs*sizeof(PetscScalar)*n;
-  ierr = PetscInfo(scatter,"Local scatter is a copy, optimizing for it\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -364,6 +334,23 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   }
 
   /* allocate entire receive context */
+  if (in_to->local.made_of_copies) {
+    PetscInt n_copies = in_to->local.n_copies;
+    out_to->local.made_of_copies     = PETSC_TRUE;
+    out_from->local.made_of_copies   = PETSC_TRUE;
+    out_to->local.n_copies           = n_copies;
+    out_from->local.n_copies         = n_copies;
+    out_to->local.same_copy_starts   = in_to->local.same_copy_starts;
+    out_from->local.same_copy_starts = in_from->local.same_copy_starts;
+
+    ierr = PetscMalloc2(n_copies,&out_to->local.copy_starts,n_copies,&out_to->local.copy_lengths);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n_copies,&out_from->local.copy_starts,n_copies,&out_from->local.copy_lengths);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.copy_starts,in_to->local.copy_starts,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.copy_lengths,in_to->local.copy_lengths,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.copy_starts,in_from->local.copy_starts,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.copy_lengths,in_from->local.copy_lengths,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
   out_from->format    = in_from->format;
   ny                  = in_from->starts[in_from->n];
   out_from->n         = in_from->n;
@@ -537,6 +524,23 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
   }
 
   /* allocate entire receive context */
+  if (in_to->local.made_of_copies) {
+    PetscInt n_copies = in_to->local.n_copies;
+    out_to->local.made_of_copies     = PETSC_TRUE;
+    out_from->local.made_of_copies   = PETSC_TRUE;
+    out_to->local.n_copies           = n_copies;
+    out_from->local.n_copies         = n_copies;
+    out_to->local.same_copy_starts   = in_to->local.same_copy_starts;
+    out_from->local.same_copy_starts = in_from->local.same_copy_starts;
+
+    ierr = PetscMalloc2(n_copies,&out_to->local.copy_starts,n_copies,&out_to->local.copy_lengths);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n_copies,&out_from->local.copy_starts,n_copies,&out_from->local.copy_lengths);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.copy_starts,in_to->local.copy_starts,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.copy_lengths,in_to->local.copy_lengths,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.copy_starts,in_from->local.copy_starts,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.copy_lengths,in_from->local.copy_lengths,n_copies*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
   out_from->format    = in_from->format;
   ny                  = in_from->starts[in_from->n];
   out_from->n         = in_from->n;
@@ -2944,7 +2948,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
 
   ctx->ops->view = VecScatterView_MPI;
 
-  /* Check if the local scatter is actually a copy; important special case */
+  /* Check if the local scatter is made of copies; important special case */
   if (to->local.n) {
     ierr = VecScatterLocalOptimizeCopy_Private(ctx,&to->local,&from->local,bs);CHKERRQ(ierr);
   }

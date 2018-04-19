@@ -122,7 +122,8 @@ PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
 
    Level: intermediate
 
-   Notes: The transpose A' is NOT actually formed! Rather the new matrix
+   Notes:
+    The transpose A' is NOT actually formed! Rather the new matrix
           object performs the matrix-vector product by using the MatMultTranspose() on
           the original matrix
 

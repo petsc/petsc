@@ -25,6 +25,7 @@ struct _DMOps {
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
+  PetscErrorCode (*createcoordinatefield)(DM,DMField*);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, Mat*);
@@ -212,6 +213,7 @@ struct _p_DM {
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
   PetscBool               periodic;             /* Is the DM periodic? */
+  DMField                 coordinateField;      /* Coordinates as an abstract field */
   PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */

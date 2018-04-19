@@ -283,7 +283,8 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
 
    Level: intermediate
 
-   Notes: When run on one processor the number of smoothings is lits*its
+   Notes:
+    When run on one processor the number of smoothings is lits*its
 
 .keywords: PC, SOR, SSOR, set, iterations
 
@@ -394,7 +395,8 @@ PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
 
    Level: intermediate
 
-   Notes: When run on one processor the number of smoothings is lits*its
+   Notes:
+    When run on one processor the number of smoothings is lits*its
 
 .keywords: PC, SOR, SSOR, set, iterations
 
@@ -430,7 +432,8 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 
   Concepts: SOR, preconditioners, Gauss-Seidel
 
-   Notes: Only implemented for the AIJ  and SeqBAIJ matrix formats.
+   Notes:
+    Only implemented for the AIJ  and SeqBAIJ matrix formats.
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
 

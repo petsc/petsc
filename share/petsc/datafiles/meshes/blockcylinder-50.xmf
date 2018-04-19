@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" [
+<!ENTITY HeavyData "blockcylinder-50.h5">
+]>
+
+<Xdmf>
+  <Domain Name="domain">
+    <DataItem Name="cells"
+	      ItemType="Uniform"
+	      Format="HDF"
+	      NumberType="Float" Precision="8"
+	      Dimensions="56 8">
+      &HeavyData;:/viz/topology/cells
+    </DataItem>
+    <DataItem Name="vertices"
+	      Format="HDF"
+	      Dimensions="125 3">
+      &HeavyData;:/geometry/vertices
+    </DataItem>
+    <!-- ============================================================ -->
+      <Grid Name="domain" GridType="Uniform">
+	<Topology
+	   TopologyType="Hexahedron"
+	   NumberOfElements="56">
+	  <DataItem Reference="XML">
+	    /Xdmf/Domain/DataItem[@Name="cells"]
+	  </DataItem>
+	</Topology>
+	<Geometry GeometryType="XYZ">
+	  <DataItem Reference="XML">
+	    /Xdmf/Domain/DataItem[@Name="vertices"]
+	  </DataItem>
+	</Geometry>
+      </Grid>
+  </Domain>
+</Xdmf>

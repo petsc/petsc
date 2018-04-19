@@ -341,7 +341,8 @@ PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer viewer,PetscInt fc)
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Developer Notes: This must be called on all processes because Dave May changed
+    Developer Notes:
+    This must be called on all processes because Dave May changed
     the source code that this may be trigger a PetscViewerSetUp() call if it was not previously triggered.
 
 
@@ -374,7 +375,8 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType(). If you use PetscViewerBinaryOpen() then
+    Notes:
+    This must be called after PetscViewerSetType(). If you use PetscViewerBinaryOpen() then
     you can only skip the info file with the -viewer_binary_skip_info flag. To use the function you must open the
     viewer with PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinarySkipInfo().
 
@@ -453,7 +455,8 @@ static PetscErrorCode PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer,Pet
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType()
+    Notes:
+    This must be called after PetscViewerSetType()
 
     Concepts: PetscViewerBinary^accessing info file
 
@@ -492,7 +495,8 @@ static PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType()
+    Notes:
+    This must be called after PetscViewerSetType()
 
    Concepts: PetscViewerBinary^accessing info file
 
@@ -532,7 +536,8 @@ static PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType()
+    Notes:
+    This must be called after PetscViewerSetType()
 
    Concepts: PetscViewerBinary^accessing info file
 
@@ -571,7 +576,8 @@ static PetscErrorCode PetscViewerBinarySetSkipHeader_Binary(PetscViewer viewer,P
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType()
+    Notes:
+    This must be called after PetscViewerSetType()
 
            Can ONLY be called on a binary viewer
 
@@ -609,7 +615,8 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer,P
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType()
+    Notes:
+    This must be called after PetscViewerSetType()
 
             Returns false for PETSCSOCKETVIEWER, you cannot skip the header for it.
 
@@ -917,7 +924,8 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt num,
 
    Level: beginner
 
-   Notes: because byte-swapping may be done on the values in data it cannot be declared const
+   Notes:
+    because byte-swapping may be done on the values in data it cannot be declared const
 
    Concepts: binary files
 
@@ -958,7 +966,8 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
 
    Concepts: binary files
 
-    Notes: array of strings is null terminated
+    Notes:
+    array of strings is null terminated
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
@@ -1003,7 +1012,8 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char *
 
    Concepts: binary files
 
-    Notes: array of strings is null terminated
+    Notes:
+    array of strings is null terminated
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),

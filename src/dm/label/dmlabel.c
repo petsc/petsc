@@ -181,7 +181,7 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
   tmpV[v] = value;
   tmpS[v] = 0;
   PetscHashICreate(tmpH[v]);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,0,NULL,PETSC_OWN_POINTER,&tmpP[v]);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&tmpP[v]);CHKERRQ(ierr);
   tmpB[v] = PETSC_TRUE;
   ++label->numStrata;
   ierr = PetscFree(label->stratumValues);CHKERRQ(ierr);
@@ -1045,7 +1045,12 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
     ierr = ISRestoreIndices((*labelNew)->points[v],&points);CHKERRQ(ierr);
     ierr = PetscSortInt(size, pointsNew);CHKERRQ(ierr);
     ierr = ISDestroy(&((*labelNew)->points[v]));CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,pointsNew,PETSC_OWN_POINTER,&((*labelNew)->points[v]));CHKERRQ(ierr);
+    if (size > 0 && pointsNew[size - 1] == pointsNew[0] + size - 1) {
+      ierr = ISCreateStride(PETSC_COMM_SELF,size,pointsNew[0],1,&((*labelNew)->points[v]));CHKERRQ(ierr);
+      ierr = PetscFree(pointsNew);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,size,pointsNew,PETSC_OWN_POINTER,&((*labelNew)->points[v]));CHKERRQ(ierr);
+    }
     ierr = PetscObjectSetName((PetscObject) ((*labelNew)->points[v]), "indices");CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(permutation, &perm);CHKERRQ(ierr);

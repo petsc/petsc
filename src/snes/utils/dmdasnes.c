@@ -423,7 +423,8 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
 .  f - dimensional pointer to residual, write the residual here
 -  ctx - optional context passed above
 
-   Notes:  The user must use
+   Notes:
+    The user must use
     extern PetscErrorCode  SNESPicardComputeFunction(SNES,Vec,Vec,void*);
     extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
     ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);

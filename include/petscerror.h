@@ -534,7 +534,8 @@ M*/
 
   PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
 
-  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
+  Developer Notes:
+    This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
 .seealso: PetscError(), SETERRXX()
 E*/
@@ -577,7 +578,8 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the  (default) stderr
 -    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
 
-   Notes: Use
+   Notes:
+    Use
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
 $                        error is handled.) and
 $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can use your own function
@@ -872,7 +874,8 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
 +   func-  name of the routine
 -   args - arguments to the routine surrounded by ()
 
-   Notes: This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
+   Notes:
+    This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
 
    Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 

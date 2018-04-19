@@ -373,7 +373,8 @@ PETSC_EXTERN PetscClassId PETSC_SECTION_SYM_CLASSID;
 
   Level: developer
 
-  Notes: PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
+  Notes:
+    PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
 
 .seealso: PetscSectionSymSetType(), PetscSectionSym, PetscSectionSymCreate(), PetscSectionSymRegister()
 J*/

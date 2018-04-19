@@ -86,7 +86,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 
    Level: advanced
 
-    Notes: this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
+    Notes:
+    this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
      be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
 
@@ -387,7 +388,7 @@ PetscErrorCode PetscCitationsInitialize(void)
 
   PetscFunctionBegin;
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley and Dave A. May and Lois Curfman McInnes\n            and Richard Tran Mills and Todd Munson and Karl Rupp and Patrick Sanan\n            and Barry F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.8},\n  Institution = {Argonne National Laboratory},\n  Year = {2017}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley and Dave A. May and Lois Curfman McInnes\n            and Richard Tran Mills and Todd Munson and Karl Rupp and Patrick Sanan\n            and Barry F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.9},\n  Institution = {Argonne National Laboratory},\n  Year = {2018}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

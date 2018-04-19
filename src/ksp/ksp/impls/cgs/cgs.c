@@ -135,10 +135,12 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
    References:
 .     1. - Sonneveld, 1989.
 
-   Notes: Does not require a symmetric matrix. Does not apply transpose of the matrix.
+   Notes:
+    Does not require a symmetric matrix. Does not apply transpose of the matrix.
         Supports left and right preconditioning, but not symmetric.
 
-   Developer Notes: Has this weird support for doing the convergence test with the natural norm, I assume this works only with
+   Developer Notes:
+    Has this weird support for doing the convergence test with the natural norm, I assume this works only with
       no preconditioning and symmetric positive definite operator.
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()

@@ -422,7 +422,8 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
   Level: advanced
 
-  Notes: The user must PetscFree the adj array if it was not passed in.
+  Notes:
+    The user must PetscFree the adj array if it was not passed in.
 
 .seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMCreateMatrix(), DMPlexPreallocateOperator()
 @*/

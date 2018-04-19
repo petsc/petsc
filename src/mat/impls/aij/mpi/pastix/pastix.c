@@ -489,7 +489,8 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 + -mat_pastix_verbose   <0,1,2>   - print level
 - -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
 
-  Notes: This only works for matrices with symmetric nonzero structure, if you pass it a matrix with
+  Notes:
+    This only works for matrices with symmetric nonzero structure, if you pass it a matrix with
    nonsymmetric structure PasTiX and hence PETSc return with an error.
 
   Level: beginner

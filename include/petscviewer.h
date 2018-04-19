@@ -103,9 +103,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[
 
    Level: beginner
 
-   The values below are also listed in petsc/finclude/petscviewer.h. If another values is added below it
-   must also be added there.
-
 .seealso: PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
 typedef enum {
@@ -138,7 +135,9 @@ typedef enum {
   PETSC_VIEWER_VTK_VTU,
   PETSC_VIEWER_BINARY_MATLAB,
   PETSC_VIEWER_NATIVE,
+  PETSC_VIEWER_HDF5_PETSC,
   PETSC_VIEWER_HDF5_VIZ,
+  PETSC_VIEWER_HDF5_XDMF,
   PETSC_VIEWER_NOFORMAT,
   PETSC_VIEWER_LOAD_BALANCE
   } PetscViewerFormat;

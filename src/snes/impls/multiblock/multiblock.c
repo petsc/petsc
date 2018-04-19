@@ -757,7 +757,8 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
 
   Level: intermediate
 
-  Notes: Use SNESMultiblockSetIS() to set a completely general set of row indices as a block.
+  Notes:
+    Use SNESMultiblockSetIS() to set a completely general set of row indices as a block.
 
   The SNESMultiblockSetFields() is for defining blocks as a group of strided indices, or fields.
   For example, if the vector block size is three then one can define a block as field 0, or

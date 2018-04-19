@@ -211,8 +211,14 @@ PETSC_INTERN PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscError
 PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
+PETSC_INTERN PetscErrorCode DMPlexBuildFromCellList_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt, const int[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt, const int[], PetscBool, PetscSF *);
+PETSC_INTERN PetscErrorCode DMPlexBuildCoordinates_Internal(DM, PetscInt, PetscInt, PetscInt, const double[]);
+PETSC_INTERN PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM, PetscInt, PetscInt, PetscInt, PetscSF, const PetscReal[]);
+PETSC_INTERN PetscErrorCode DMPlexLoadLabels_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
@@ -277,8 +283,8 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
   return DihedralCompose(N,DihedralInvert(N,a),b);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscInt, PetscInt, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscInt, PetscInt, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, IS , PetscReal, Vec, Vec, PetscReal, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)

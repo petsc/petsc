@@ -182,7 +182,8 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
    Level: beginner
 
-   Notes: The operator and the preconditioner must be symmetric for this method. The
+   Notes:
+    The operator and the preconditioner must be symmetric for this method. The
           preconditioner must be POSITIVE-DEFINITE.
 
           Supports only left preconditioning.

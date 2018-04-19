@@ -720,7 +720,8 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
    Options Database Key:
 .  -pc_gamg_process_eq_limit <limit>
 
-   Notes: GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process 
+   Notes:
+    GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process 
           that has degrees of freedom
 
    Level: intermediate
@@ -799,7 +800,8 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_repartition <true,false>
 
-   Notes: this will generally improve the loading balancing of the work on each level
+   Notes:
+    this will generally improve the loading balancing of the work on each level
 
    Level: intermediate
 
@@ -841,7 +843,8 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 
    Level: intermediate
 
-   Notes: this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
+   Notes:
+    this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
           rebuilding the preconditioner quicker.
 
    Concepts: Unstructured multigrid preconditioner
@@ -994,7 +997,8 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_threshold <threshold>
 
-   Notes: Before aggregating the graph GAMG will remove small values from the graph thus reducing the coupling in the graph and a different
+   Notes:
+    Before aggregating the graph GAMG will remove small values from the graph thus reducing the coupling in the graph and a different
     (perhaps better) coarser set of points.
 
    Level: intermediate
@@ -1252,7 +1256,8 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
 
 
-  Notes: In order to obtain good performance for PCGAMG for vector valued problems you must
+  Notes:
+    In order to obtain good performance for PCGAMG for vector valued problems you must
        Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
        Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
        See the Users Manual Chapter 4 for more details

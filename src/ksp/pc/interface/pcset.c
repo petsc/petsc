@@ -190,7 +190,8 @@ PetscErrorCode  PCSetFromOptions(PC pc)
 
    Level: intermediate
 
-   Developer Notes: The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is 
+   Developer Notes:
+    The routines KSP/SNES/TSSetDM() require the dm to be non-NULL, but this one can be NULL since all it does is 
     replace the current DM
 
 .seealso: PCGetDM(), KSPSetDM(), KSPGetDM()

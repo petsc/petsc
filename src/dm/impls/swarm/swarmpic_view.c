@@ -2,7 +2,7 @@
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm,const char filename[],PetscViewer *v)
 {

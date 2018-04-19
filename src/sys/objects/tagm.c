@@ -359,7 +359,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval
 
     Level: developer
 
-    Notes: This should be called only with an PetscCommDuplicate() communictor
+    Notes:
+    This should be called only with an PetscCommDuplicate() communictor
 
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
@@ -427,7 +428,8 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
     Notes:
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
-    Developer Notes: Assumes the scomm->ranks[] is sorted
+    Developer Notes:
+    Assumes the scomm->ranks[] is sorted
 
     It may be better to rewrite this to map multiple global ranks to local in the same function call
 

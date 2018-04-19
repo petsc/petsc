@@ -1264,7 +1264,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = PetscSpaceSetType(bspace,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
       ierr = PetscSpaceSetOrder(bspace,0);CHKERRQ(ierr);
       ierr = PetscSpaceSetNumComponents(bspace,Nc);CHKERRQ(ierr);
-      ierr = PetscSpacePolynomialSetNumVariables(bspace,spdim);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumVariables(bspace,spdim);CHKERRQ(ierr);
       ierr = PetscSpaceSetUp(bspace);CHKERRQ(ierr);
       ierr = PetscFVGetDualSpace(fv,&dspace);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(dspace,&fSize);CHKERRQ(ierr);
@@ -1336,8 +1336,10 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
       ierr = DMPlexComputeCellGeometryFEM(dm, parent, NULL, v0parent, Jparent, invJparent, &detJparent);CHKERRQ(ierr);
       for (i = 0; i < nPoints; i++) {
-        CoordinatesRefToReal(spdim, spdim, v0, J, &pointsRef[i*spdim],vtmp);
-        CoordinatesRealToRef(spdim, spdim, v0parent, invJparent, vtmp, &pointsReal[i*spdim]);
+        const PetscReal xi0[3] = {-1.,-1.,-1.};
+
+        CoordinatesRefToReal(spdim, spdim, xi0, v0, J, &pointsRef[i*spdim],vtmp);
+        CoordinatesRealToRef(spdim, spdim, xi0, v0parent, invJparent, vtmp, &pointsReal[i*spdim]);
       }
       ierr = EvaluateBasis(bspace,fSize,fSize,Nc,nPoints,sizes,pointsReal,weights,work,Bmat);CHKERRQ(ierr);
       ierr = MatMatSolve(Amat,Bmat,Xmat);CHKERRQ(ierr);
@@ -2106,13 +2108,14 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
         PetscReal coord[3], newCoord[3];
         PetscInt  vPerm = perm[v];
         PetscInt  kParent;
+        const PetscReal xi0[3] = {-1.,-1.,-1.};
 
         ierr = DMPlexGetTreeParent(K,v,&kParent,NULL);CHKERRQ(ierr);
         if (kParent != v) {
           /* this is a new vertex */
           ierr = PetscSectionGetOffset(vSection,vPerm,&off);CHKERRQ(ierr);
           for (l = 0; l < dim; ++l) coord[l] = PetscRealPart(coordvals[off+l]);
-          CoordinatesRefToReal(dim, dim, v0, J, coord, newCoord);CHKERRQ(ierr);
+          CoordinatesRefToReal(dim, dim, xi0, v0, J, coord, newCoord);CHKERRQ(ierr);
           for (l = 0; l < dim; ++l) newVertexCoords[offset+l] = newCoord[l];
           offset += dim;
         }
@@ -3217,6 +3220,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           for (j = 0; j < numPoints; j++) {
             PetscInt          childCell = -1;
             PetscReal         *parentValAtPoint;
+            const PetscReal   xi0[3] = {-1.,-1.,-1.};
             const PetscReal   *pointReal = &points[dim * j];
             const PetscScalar *point;
             PetscReal         *Bchild;
@@ -3253,8 +3257,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             if (childCell < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate quadrature point");
             ierr = DMPlexComputeCellGeometryFEM(refTree, childCell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
             ierr = DMPlexComputeCellGeometryFEM(refTree, parentCell, NULL, v0parent, Jparent, NULL, &detJparent);CHKERRQ(ierr);
-            CoordinatesRefToReal(dim, dim, v0parent, Jparent, pointReal, vtmp);
-            CoordinatesRealToRef(dim, dim, v0, invJ, vtmp, pointRef);
+            CoordinatesRefToReal(dim, dim, xi0, v0parent, Jparent, pointReal, vtmp);
+            CoordinatesRealToRef(dim, dim, xi0, v0, invJ, vtmp, pointRef);
 
             ierr = PetscFEGetTabulation(fe,1,pointRef,&Bchild,NULL,NULL);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(refTree,childCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);

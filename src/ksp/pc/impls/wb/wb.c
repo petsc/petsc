@@ -608,7 +608,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 +  pc - the preconditioner context
 -  type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
 
-   Notes: The face based interpolation has 1 degree of freedom per face and ignores the
+   Notes:
+    The face based interpolation has 1 degree of freedom per face and ignores the
      edge and vertex values completely in the coarse problem. For any seven point
      stencil the interpolation of a constant on all faces into the interior is that constant.
 
@@ -757,7 +758,8 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
      This uses the PCMG infrastructure restricted to two levels and the face and wirebasket based coarse
    grid spaces.
 
-   Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+   Notes:
+    By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
 
    References:
 +  1. - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction

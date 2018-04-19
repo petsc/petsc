@@ -195,7 +195,8 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
    Concepts: vector^pointwise multiply
@@ -236,7 +237,8 @@ PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
    Concepts: vector^pointwise multiply
@@ -276,7 +278,8 @@ PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise multiply
 
@@ -315,7 +318,8 @@ PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise divide
 
@@ -512,7 +516,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
 
-   Notes: You can pass any number of vector objects, or other PETSc objects to the same viewer.
+   Notes:
+    You can pass any number of vector objects, or other PETSc objects to the same viewer.
 
    Notes for binary viewer: If you pass multiply vectors to a binary viewer you can read them back in in the same order
 $     with VecLoad().
@@ -1094,7 +1099,8 @@ PetscErrorCode  VecConjugate(Vec x)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise multiply
 
@@ -1252,7 +1258,8 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
   Input Parameter:
 . vec - The vector
 
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+  Notes:
+    To see all options, run your program with the -help option, or consult the users manual.
           Must be called after VecCreate() but before the vector is used.
 
   Level: beginner
@@ -1459,7 +1466,8 @@ PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced

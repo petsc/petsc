@@ -494,11 +494,13 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
    Level: intermediate
 
-   Notes: The default KSP is preonly and the default PC is LU.
+   Notes:
+    The default KSP is preonly and the default PC is LU.
 
    PCFactorSetShiftType() applied to this PC will convey they shift type into the inner PC if it is factorization based.
 
-   Developer Notes: Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
+   Developer Notes:
+    Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()

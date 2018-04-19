@@ -372,13 +372,25 @@ PETSC_STATIC_INLINE PetscInt GetQuadSubfaceInverse_Static(PetscInt o, PetscInt s
   return (o < 0 ? 4-(o+s) : 4+s-o)%4;
 }
 
-static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt cStart, PetscInt cEnd)
 {
-  PetscInt       depth, cStart, cStartNew, cEnd, cMax, c, vStart, vStartNew, vEnd, vMax, v, fStart, fStartNew, fEnd, fMax, f, eStart, eStartNew, eEnd, eMax, e, r;
+  IS             cIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!refiner) PetscFunctionReturn(0);
+  ierr = ISCreateStride(PETSC_COMM_SELF, cEnd - cStart, cStart, 1, &cIS);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(label, value, cIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&cIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+{
+  PetscInt       depth, cStart, cStartNew, cEnd, cEndNew, cMax, c, vStart, vStartNew, vEnd, vEndNew, vMax, v, fStart, fStartNew, fEnd, fEndNew, fMax, f, eStart, eStartNew, eEnd, eEndNew, eMax, e, r;
+  DMLabel        depthLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
@@ -386,6 +398,18 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
+  ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
+  ierr = DMCreateLabel(rdm,"depth");CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(rdm,&depthLabel);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumBounds(depthLabel, 0, vStartNew, vEndNew);CHKERRQ(ierr);
+  if (depth > 2) ierr = DMLabelSetStratumBounds(depthLabel, 1, eStartNew, eEndNew);CHKERRQ(ierr);
+  if (depth > 1) ierr = DMLabelSetStratumBounds(depthLabel, depth - 1, fStartNew, fEndNew);CHKERRQ(ierr);
+  if (depth > 0) ierr = DMLabelSetStratumBounds(depthLabel, depth, cStartNew, cEndNew);CHKERRQ(ierr);
+  {
+    DM_Plex *plex = (DM_Plex *) rdm->data;
+    ierr = DMLabelGetState(depthLabel, &plex->depthState);CHKERRQ(ierr);
+  }
+  if (!refiner) PetscFunctionReturn(0);
   switch (refiner) {
   case REFINER_SIMPLEX_1D:
     /* All cells have 2 vertices */
@@ -8306,19 +8330,17 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   /* Step 1: Set chart */
   for (d = 0; d <= depth; ++d) pEnd += depthSize[d];
   ierr = DMPlexSetChart(rdm, pStart, pEnd);CHKERRQ(ierr);
-  /* Step 2: Set cone/support sizes */
+  /* Step 2: Set cone/support sizes (automatically stratifies) */
   ierr = CellRefinerSetConeSizes(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 3: Setup refined DM */
   ierr = DMSetUp(rdm);CHKERRQ(ierr);
-  /* Step 4: Set cones and supports */
+  /* Step 4: Set cones and supports (automatically symmetrizes) */
   ierr = CellRefinerSetCones(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 5: Stratify */
-  ierr = DMPlexStratify(rdm);CHKERRQ(ierr);
-  /* Step 6: Create pointSF */
+  /* Step 5: Create pointSF */
   ierr = CellRefinerCreateSF(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 7: Create labels */
+  /* Step 6: Create labels */
   ierr = CellRefinerCreateLabels(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 8: Set coordinates */
+  /* Step 7: Set coordinates */
   ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
 

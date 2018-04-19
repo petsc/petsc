@@ -593,6 +593,10 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 
     if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(interpolate, X_c, X, X_new);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) X_c, "Coarse correction");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(X_c, NULL, "-fas_coarse_solution_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) X_new, "Updated Fine solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(X_new, NULL, "-fas_levels_1_solution_view");CHKERRQ(ierr);
     if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);

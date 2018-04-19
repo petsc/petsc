@@ -85,7 +85,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscFE          fe;
   PetscQuadrature  quad;
   PetscScalar     *vals;
-  PetscReal       *v0, *J, *invJ, detJ, *coords;
+  PetscReal       *v0, *J, *invJ, detJ, *coords, *xi0;
   PetscInt        *cellid;
   const PetscReal *qpoints;
   PetscInt         Ncell, c, Nq, q, dim;
@@ -93,7 +93,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -114,7 +114,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmSetLocalSizes(*sw, Ncell * Nq, 0);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
+  for (c = 0; c < dim; c++) xi0[c] = -1.;
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, "f_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
@@ -122,14 +123,14 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
     for (q = 0; q < Nq; ++q) {
       ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
       cellid[c*Nq + q] = c;
-      CoordinatesRefToReal(dim, dim, v0, J, &qpoints[q*dim], &coords[(c*Nq + q)*dim]);
+      CoordinatesRefToReal(dim, dim, xi0, v0, J, &qpoints[q*dim], &coords[(c*Nq + q)*dim]);
       linear(dim, 0.0, &coords[(c*Nq + q)*dim], 1, &vals[c*Nq + q], NULL);
     }
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, "f_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
-  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  ierr = PetscFree4(xi0, v0, J, invJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

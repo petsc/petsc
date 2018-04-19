@@ -1,9 +1,8 @@
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 3
+Supports:
+[0] Max support size: 3
 [0]: 1 ----> 9
 [0]: 1 ----> 11
 [0]: 1 ----> 12
@@ -32,7 +31,7 @@ cap --> base:
 [0]: 13 ----> 8
 [0]: 14 ----> 7
 [0]: 14 ----> 8
-[1] Max sizes cone: 4 support: 3
+[1] Max support size: 3
 [1]: 1 ----> 9
 [1]: 1 ----> 11
 [1]: 1 ----> 12
@@ -61,7 +60,8 @@ cap --> base:
 [1]: 13 ----> 8
 [1]: 14 ----> 7
 [1]: 14 ----> 8
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 5 (0)
 [0]: 0 <---- 6 (0)
 [0]: 0 <---- 7 (0)
@@ -90,6 +90,7 @@ base <-- cap:
 [0]: 13 <---- 3 (0)
 [0]: 14 <---- 2 (0)
 [0]: 14 <---- 4 (0)
+[1] Max cone size: 4
 [1]: 0 <---- 5 (0)
 [1]: 0 <---- 6 (0)
 [1]: 0 <---- 7 (0)

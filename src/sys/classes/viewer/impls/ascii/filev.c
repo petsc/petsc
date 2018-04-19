@@ -890,7 +890,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 
     Level: intermediate
 
-    Notes: You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
+    Notes:
+    You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
 
     Fortran Note:
       Can only print a single character* string

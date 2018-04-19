@@ -22,7 +22,8 @@ typedef struct {
 
    Level: advanced
 
-     Notes: Only writes array values on processor 0.
+     Notes:
+    Only writes array values on processor 0.
 
 @*/
 PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const PetscScalar *array,const char *name)
@@ -69,7 +70,8 @@ PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char *name
 
    Level: advanced
 
-     Notes: Only reads in array values on processor 0.
+     Notes:
+    Only reads in array values on processor 0.
 
 @*/
 PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,const char *name)

@@ -5,6 +5,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 #include <petscdraw.h>
+#include <petscdmfield.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
@@ -111,7 +112,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
     if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vcdof[0]);CHKERRQ(ierr);}
     if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &vcdof[1]);CHKERRQ(ierr);}
   }
-  ierr = MPI_Allreduce(&vcdof, &globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   if (globalvcdof[0]) {
     *sStart = vStart;
     *sEnd   = vEnd;
@@ -614,10 +615,9 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (name) {ierr = PetscViewerASCIIPrintf(viewer, "%s in %D dimension%s:\n", name, dim, dim == 1 ? "" : "s");CHKERRQ(ierr);}
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimension%s:\n", dim, dim == 1 ? "" : "s");CHKERRQ(ierr);}
     if (cellHeight) {ierr = PetscViewerASCIIPrintf(viewer, "  Cells are at height %D\n", cellHeight);CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer, "orientation is missing\n", name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "cap --> base:\n", name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Supports:\n", name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Max sizes cone: %D support: %D\n", rank,maxConeSize, maxSupportSize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Max support size: %D\n", rank, maxSupportSize);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, s;
 
@@ -628,7 +628,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "base <-- cap:\n", name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Cones:\n", name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Max cone size: %D\n", rank, maxConeSize);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, c;
 
@@ -1004,9 +1005,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     }
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
     ierr = DMPlexView_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -1041,7 +1040,13 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
   else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = DMPlexLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ) {
+      ierr = DMPlexLoad_HDF5_Xdmf_Internal(dm, viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+    }
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -1397,7 +1402,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 }
 
 /*@
-  DMPlexSetCone - Set the points on the in-edges for this point in the DAG
+  DMPlexSetCone - Set the points on the in-edges for this point in the DAG; that is these are the points that cover the specific point
 
   Not collective
 
@@ -1411,9 +1416,11 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   Note:
   This should be called after all calls to DMPlexSetConeSize() and DMSetUp().
 
+  Developer Note: Why not call this DMPlexSetCover()
+
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp()
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart(), DMPlexSetConeSize(), DMSetUp(), DMPlexSetSupport(), DMPlexSetSupportSize()
 @*/
 PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 {
@@ -1692,14 +1699,14 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 }
 
 /*@
-  DMPlexSetSupport - Set the points on the out-edges for this point in the DAG
+  DMPlexSetSupport - Set the points on the out-edges for this point in the DAG, that is the list of points that this point covers
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
 . p - The point, which must lie in the chart set with DMPlexSetChart()
-- support - An array of points which are on the in-edges for point p
+- support - An array of points which are on the out-edges for point p
 
   Output Parameter:
 
@@ -1708,7 +1715,7 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
   Level: beginner
 
-.seealso: DMPlexCreate(), DMPlexGetSupport(), DMPlexSetChart(), DMPlexSetSupportSize(), DMSetUp()
+.seealso: DMPlexSetCone(), DMPlexSetConeSize(), DMPlexCreate(), DMPlexGetSupport(), DMPlexSetChart(), DMPlexSetSupportSize(), DMSetUp()
 @*/
 PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 {
@@ -3444,7 +3451,8 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   Output Parameter:
 . section - The PetscSection object
 
-  Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
+  Notes:
+    numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
   number of dof for field 0 on each edge.
 
   The chart permutation is the same one set using PetscSectionSetPermutation()
@@ -3495,6 +3503,22 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = DMSetDefaultConstraints(*cdm, s, m);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = MatDestroy(&m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field)
+{
+  Vec            coordsLocal;
+  DM             coordsDM;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *field = NULL;
+  ierr = DMGetCoordinatesLocal(dm,&coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm,&coordsDM);CHKERRQ(ierr);
+  if (coordsLocal && coordsDM) {
+    ierr = DMFieldCreateDS(coordsDM, 0, coordsLocal, field);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -6044,6 +6068,27 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel dimLabel, PetscInt d, PetscInt dMax)
+{
+  IS             is, his;
+  PetscInt       first, stride;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetStratumIS(depthLabel, d, &is);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) is, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {
+    ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);
+  }
+  if (!isStride || stride != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
+  ierr = ISCreateStride(PETSC_COMM_SELF, (dMax - first), first, 1, &his);CHKERRQ(ierr);
+  ierr = DMLabelSetStratumIS(dimLabel, d, his);CHKERRQ(ierr);
+  ierr = ISDestroy(&his);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
 
@@ -6062,6 +6107,8 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       dim;
+  DMLabel        depthLabel;
+  DMLabel        dimLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6071,6 +6118,16 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
   if (fMax >= 0) mesh->hybridPointMax[dim-1] = fMax;
   if (eMax >= 0) mesh->hybridPointMax[1]     = eMax;
   if (vMax >= 0) mesh->hybridPointMax[0]     = vMax;
+  ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+  if (!dimLabel) {
+    ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim, cMax);CHKERRQ(ierr);}
+  if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
+  if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 1, eMax);CHKERRQ(ierr);}
+  if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 0, vMax);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -6300,7 +6357,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
   ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(rdm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) rdm), dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
   ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);

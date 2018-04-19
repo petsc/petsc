@@ -9,8 +9,6 @@
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
-PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
-PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list);
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -423,7 +421,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
-   Notes: object state is an integer which gets increased every time
+   Notes:
+    object state is an integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.

@@ -1,9 +1,8 @@
 DM Object: Pre Adaptation Mesh 1 MPI processes
   type: plex
 Pre Adaptation Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 14
+Supports:
+[0] Max support size: 14
 [0]: 162 ----> 682
 [0]: 162 ----> 683
 [0]: 162 ----> 686
@@ -2344,7 +2343,8 @@ cap --> base:
 [0]: 881 ----> 580
 [0]: 882 ----> 596
 [0]: 882 ----> 597
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 226 (0)
 [0]: 0 <---- 227 (0)
 [0]: 0 <---- 228 (0)
@@ -4928,9 +4928,8 @@ Label 'marker':
 DM Object: Post Adaptation Mesh 1 MPI processes
   type: plex
 Post Adaptation Mesh in 3 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 4 support: 16
+Supports:
+[0] Max support size: 16
 [0]: 191 ----> 792
 [0]: 191 ----> 793
 [0]: 191 ----> 796
@@ -7677,7 +7676,8 @@ cap --> base:
 [0]: 1032 ----> 705
 [0]: 1032 ----> 706
 [0]: 1032 ----> 707
-base <-- cap:
+Cones:
+[0] Max cone size: 4
 [0]: 0 <---- 264 (0)
 [0]: 0 <---- 265 (0)
 [0]: 0 <---- 266 (0)

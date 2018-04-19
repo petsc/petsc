@@ -1311,7 +1311,8 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   Level: advanced
 
-  Notes: conj(x) is the complex conjugate of x when x is complex
+  Notes:
+    conj(x) is the complex conjugate of x when x is complex
 
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()

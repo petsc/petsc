@@ -551,7 +551,8 @@ PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,MatSolverType *type)
 . -mat_superlu_ilu_norm <0>             - ILU_Norm (None)
 - -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
-   Notes: Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
+   Notes:
+    Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 
    Level: beginner
 

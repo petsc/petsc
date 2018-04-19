@@ -297,7 +297,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
    Level: beginner
 
-    Notes: the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+    Notes:
+    the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
 
 .keywords: AO, create
@@ -340,7 +341,8 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
 
    Level: beginner
 
-    Notes: the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+    Notes:
+    the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes"
 
 .keywords: AO, create

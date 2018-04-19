@@ -120,10 +120,12 @@ typedef struct _p_PetscOptionItems {
 
   Level: intermediate
 
-  Notes: Needs to be ended by a call the PetscOptionsEnd()
+  Notes:
+    Needs to be ended by a call the PetscOptionsEnd()
          Can add subheadings with PetscOptionsHead()
 
-  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
+  Developer Notes:
+    PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
 $             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
 $             the loop is run ONCE with a PetscOptionsPublishCount of 1.
 $             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
@@ -168,7 +170,8 @@ M*/
 
   Level: intermediate
 
-  Notes: Needs to be ended by a call the PetscOptionsEnd()
+  Notes:
+    Needs to be ended by a call the PetscOptionsEnd()
          Can add subheadings with PetscOptionsHead()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
@@ -199,7 +202,8 @@ M*/
 
   Level: intermediate
 
-  Notes: Needs to be preceded by a call to PetscOptionsBegin() or PetscObjectOptionsBegin()
+  Notes:
+    Needs to be preceded by a call to PetscOptionsBegin() or PetscObjectOptionsBegin()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -229,7 +233,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
 
   Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin()/PetscObjectOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin()/PetscObjectOptionsBegin() and a PetscOptionsEnd()
 
           Must be preceded by a call to PetscOptionsHead() in the same function.
 

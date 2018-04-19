@@ -115,7 +115,8 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
 
    Concepts: Kaczmarz, preconditioners, row projection
 
-   Notes: In parallel this is block-Jacobi with Kaczmarz inner solve.
+   Notes:
+    In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
 .  1. - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",

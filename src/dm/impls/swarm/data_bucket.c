@@ -1,4 +1,4 @@
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 /* string helpers */
 PetscErrorCode DMSwarmDataFieldStringInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscBool *val)

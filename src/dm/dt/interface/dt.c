@@ -230,14 +230,15 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Output Parameters:
 + dim - The spatial dimension
-, Nc - The number of components
+. Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
 
   Level: intermediate
 
-  Fortran Notes: From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
+  Fortran Notes:
+    From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
 
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
@@ -602,7 +603,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -819,7 +820,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -414,7 +414,8 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
    Output Parameters:
 .  isout   - The concatenated index set; empty, if len == 0.
 
-   Notes: The semantics of calling this on comm imply that the comms of the members if islist also contain this rank.
+   Notes:
+    The semantics of calling this on comm imply that the comms of the members if islist also contain this rank.
 
    Level: intermediate
 

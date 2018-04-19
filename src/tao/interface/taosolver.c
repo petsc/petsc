@@ -1388,7 +1388,8 @@ $     int mymonitor(Tao tao,void *mctx)
    TaoSetMonitor() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran Notes: Only one monitor function may be set
+   Fortran Notes:
+    Only one monitor function may be set
 
    Level: intermediate
 
@@ -1960,7 +1961,8 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   Output Parameters:
 . prefix - pointer to the prefix string used is returned
 
-  Notes: On the fortran side, the user should pass in a string 'prefix' of
+  Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
   sufficient length to hold the prefix.
 
   Level: advanced

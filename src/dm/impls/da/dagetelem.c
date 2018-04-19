@@ -211,7 +211,8 @@ PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscI
 
    Level: intermediate
 
-   Notes: It returns the same number of elements, irrespective of the DMDAElementType
+   Notes:
+    It returns the same number of elements, irrespective of the DMDAElementType
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements
 @*/
@@ -388,7 +389,8 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
    Level: intermediate
 
-   Notes: Call DMDARestoreSubdomainCornersIS() once you have finished accessing the index set.
+   Notes:
+    Call DMDARestoreSubdomainCornersIS() once you have finished accessing the index set.
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements(), DMDARestoreElementsCornersIS()
 @*/

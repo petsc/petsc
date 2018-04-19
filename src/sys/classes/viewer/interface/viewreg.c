@@ -111,7 +111,8 @@ static PetscInt  inoviewers = 0;
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPopGetViewerOff()
@@ -133,7 +134,8 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff()
@@ -156,7 +158,8 @@ PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff(), PetscOptionsPopGetViewerOff()
@@ -186,7 +189,8 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 
    Level: intermediate
 
-   Notes: If no value is provided ascii:stdout is used
+   Notes:
+    If no value is provided ascii:stdout is used
 $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, 
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there

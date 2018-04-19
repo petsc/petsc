@@ -3,7 +3,7 @@
 #include <petscsf.h>
 #include <petscdmda.h>
 #include <petscdmplex.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 /* 
  Error chceking macto to ensure the swarm type is correct and that a cell DM has been set
