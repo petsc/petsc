@@ -6641,7 +6641,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    individual index sets according to the local submatrix desired.
 
    When finished using the submatrices, the user should destroy
-   them with MatDestroyMatrices().
+   them with MatDestroySubMatrices().
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the
    original matrix has not changed from that last call to MatCreateSubMatrices().
@@ -6656,7 +6656,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
 
    Fortran Note:
    The Fortran interface is slightly different from that given below; it
-   requires one to pass in  as submat a Mat (integer) array of size at least m.
+   requires one to pass in  as submat a Mat (integer) array of size at least n+1.
 
    Level: advanced
 

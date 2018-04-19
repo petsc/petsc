@@ -339,7 +339,7 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
    PCBJacobiGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
 
-   Note Collective
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner context
