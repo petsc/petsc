@@ -5,11 +5,11 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 DIRS             = network
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c \
-                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex23.c \
+                ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex23.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex32.c ex34.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c ex66.c ex67.c ex68.c ex69.c ex70.c ex100.c
+                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c ex66.c ex67.c ex68.c ex69.c ex70.c ex72.c ex100.c
 EXAMPLESF        = ex1f.F90 ex2f.F90 ex6f.F90 ex11f.F90 ex13f90.F90 ex14f.F90 ex15f.F90 ex21f.F90 ex22f.F90 ex44f.F90 ex45f.F90 \
                    ex52f.F90 ex54f.F90 ex61f.F90 ex100f.F90
 MANSEC           = KSP
@@ -66,10 +66,6 @@ ex8: ex8.o  chkopts
 ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_KSP_LIB}
 	${RM} ex9.o
-
-ex10: ex10.o  chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_KSP_LIB}
-	${RM} ex10.o
 
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_KSP_LIB}
@@ -330,6 +326,10 @@ ex70: ex70.o  chkopts
 ex71: ex71.o  chkopts
 	-${CLINKER} -o ex71 ex71.o  ${PETSC_KSP_LIB}
 	${RM} ex71.o
+
+ex72: ex72.o  chkopts
+	-${CLINKER} -o ex72 ex72.o  ${PETSC_KSP_LIB}
+	${RM} ex72.o
 
 ex100: ex100.o  chkopts
 	-${CLINKER} -o ex100 ex100.o  ${PETSC_KSP_LIB}

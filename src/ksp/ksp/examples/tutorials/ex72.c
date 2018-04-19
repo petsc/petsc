@@ -13,12 +13,12 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
-   ./ex10 -f0 <datafile> -ksp_type preonly  \n\
+   ./ex72 -f0 <datafile> -ksp_type preonly  \n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu or superlu_dist or mumps \n\
         -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps \n\
-   mpiexec -n <np> ./ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
+   mpiexec -n <np> ./ex72 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
 /*T
@@ -157,7 +157,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* Make A singular for testing zero-pivot of ilu factorization */
-  /* Example: ./ex10 -f0 <datafile> -test_zeropivot -pc_factor_shift_type <shift_type> */
+  /* Example: ./ex72 -f0 <datafile> -test_zeropivot -pc_factor_shift_type <shift_type> */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-test_zeropivot", &flg,NULL);CHKERRQ(ierr);
   if (flg) { /* set a row as zeros */
@@ -687,7 +687,7 @@ int main(int argc,char **args)
    testset:
       # The output file here is the same as mumps
       suffix: mumps_cholesky
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
@@ -701,7 +701,7 @@ int main(int argc,char **args)
    testset:
       # The output file here is the same as mumps
       suffix: mumps_lu
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       test:
@@ -725,7 +725,7 @@ int main(int argc,char **args)
    testset:
       # The output file here is the same as mumps
       suffix: mumps_redundant
-      output_file: output/ex10_mumps_redundant.out
+      output_file: output/ex72_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
@@ -733,7 +733,7 @@ int main(int argc,char **args)
    testset:
       suffix: pastix_cholesky
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       nsize: {{1 2}}
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
 
@@ -741,7 +741,7 @@ int main(int argc,char **args)
       suffix: pastix_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       test:
          args: -mat_type seqaij
       test:
@@ -750,7 +750,7 @@ int main(int argc,char **args)
 
    testset:
       suffix: pastix_redundant
-      output_file: output/ex10_mumps_redundant.out
+      output_file: output/ex72_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
@@ -759,20 +759,20 @@ int main(int argc,char **args)
    testset:
       suffix: superlu_dist_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
 
    testset:
       suffix: superlu_dist_redundant
       nsize: 8
-      output_file: output/ex10_mumps_redundant.out
+      output_file: output/ex72_mumps_redundant.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: superlu_lu
-      output_file: output/ex10_mumps.out
+      output_file: output/ex72_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu -num_numfac 2 -num_rhs 2
 
