@@ -245,15 +245,15 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
     ierr = PetscMalloc1(n, &isa);CHKERRQ(ierr);
     ierr = PetscMalloc1(n, &isi);CHKERRQ(ierr);
     for (i=0; i<n; ++i) {
-      if ((xl[i] == xu[i]) && (xl[i] > PETSC_NINFINITY) && (xu[i] < PETSC_INFINITY)) {
+      if (xl[i] == xu[i]) {
         /* Fixed variables */
         isf[n_isf]=low+i; ++n_isf;
         isa[n_isa]=low+i; ++n_isa;
-      } else if ((x[i] <= xl[i] + *bound_tol) && (g[i] > -mach_eps) && (xl[i] > PETSC_NINFINITY)) {
+      } else if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + *bound_tol) && (g[i] >= -mach_eps)) {
         /* Lower bounded variables */
         isl[n_isl]=low+i; ++n_isl;
         isa[n_isa]=low+i; ++n_isa;
-      } else if ((x[i] >= xu[i] - *bound_tol) && (g[i] < mach_eps) && (xu[i] < PETSC_INFINITY)) {
+      } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - *bound_tol) && (g[i] <= mach_eps)) {
         /* Upper bounded variables */
         isu[n_isu]=low+i; ++n_isu;
         isa[n_isa]=low+i; ++n_isa;
