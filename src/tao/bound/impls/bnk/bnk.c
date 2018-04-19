@@ -207,11 +207,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
             } 
             prered = tao->trust * (bnk->gnorm - 0.5 * tao->trust * prered / (bnk->gnorm * bnk->gnorm));
             actred = bnk->f - ftrial;
-            if ((PetscAbsScalar(actred) <= bnk->epsilon) &&
-                (PetscAbsScalar(prered) <= bnk->epsilon)) {
+            if ((PetscAbsScalar(actred) <= bnk->epsilon) && (PetscAbsScalar(prered) <= bnk->epsilon)) {
               kappa = 1.0;
-            }
-            else {
+            } else {
               kappa = actred / prered;
             }
 
@@ -226,11 +224,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
               if (tau_max < 1.0) {
                 tau = bnk->gamma3_i;
-              }
-              else if (tau_max > bnk->gamma4_i) {
+              } else if (tau_max > bnk->gamma4_i) {
                 tau = bnk->gamma4_i;
-              }
-              else {
+              } else {
                 tau = tau_max;
               }
             }
@@ -254,11 +250,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
                 tau = bnk->gamma1_i;
               } else if ((tau_min < bnk->gamma1_i) && (tau_max >= 1.0)) {
                 tau = bnk->gamma1_i;
-              } else if ((tau_1 >= bnk->gamma1_i) && (tau_1 < 1.0) &&
-                        ((tau_2 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
+              } else if ((tau_1 >= bnk->gamma1_i) && (tau_1 < 1.0) && ((tau_2 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
                 tau = tau_1;
-              } else if ((tau_2 >= bnk->gamma1_i) && (tau_2 < 1.0) &&
-                        ((tau_1 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
+              } else if ((tau_2 >= bnk->gamma1_i) && (tau_2 < 1.0) && ((tau_1 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
                 tau = tau_2;
               } else {
                 tau = tau_max;
@@ -486,7 +480,9 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   
   PetscFunctionBegin;
   /* Prepare the reduced sub-matrices for the inactive set */
-  if (BNK_PC_BFGS == bnk->pc_type) { ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr); }
+  if (BNK_PC_BFGS == bnk->pc_type) { 
+    ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
+  }
   if (bnk->inactive_idx) {
     ierr = MatDestroy(&bnk->H_inactive);
     ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
@@ -716,7 +712,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
          NOTE: Negative gdx here means not a descent direction because 
          the fall-back step is missing a negative sign. */
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
-      if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
+      if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
         /* BFGS direction is not descent or direction produced not a number
            We can assert bfgsUpdates > 1 in this case because
            the first solve produces the scaled gradient direction,
@@ -834,7 +830,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
         /* Check for success (descent direction) 
            NOTE: Negative gdx means not a descent direction because the step here is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
-        if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
+        if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
           /* BFGS direction is not descent or direction produced not a number
              We can assert bfgsUpdates > 1 in this case
              Use steepest descent direction (scaled) */
@@ -958,16 +954,13 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
            happen in infinite precision arithmetic.  Step should
            be rejected! */
         tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
-      }
-      else {
+      } else {
         if (PetscIsInfOrNanReal(actred)) {
           tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
         } else {
-          if ((PetscAbsScalar(actred) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon) &&
-              (PetscAbsScalar(prered) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon)) {
+          if ((PetscAbsScalar(actred) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon) && (PetscAbsScalar(prered) <= PetscMax(1.0, PetscAbsScalar(bnk->f))*bnk->epsilon)) {
             kappa = 1.0;
-          }
-          else {
+          } else {
             kappa = actred / prered;
           }
 
@@ -975,8 +968,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
           if (kappa < bnk->eta1) {
             /* Reject the step */
             tao->trust = bnk->alpha1 * PetscMin(tao->trust, bnk->dnorm);
-          }
-          else {
+          } else {
             /* Accept the step */
             *accept = PETSC_TRUE;
             /* Update the trust region radius only if the computed step is at the trust radius boundary */
@@ -984,16 +976,13 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
               if (kappa < bnk->eta2) {
                 /* Marginal bad step */
                 tao->trust = bnk->alpha2 * tao->trust;
-              }
-              else if (kappa < bnk->eta3) {
+              } else if (kappa < bnk->eta3) {
                 /* Reasonable step */
                 tao->trust = bnk->alpha3 * tao->trust;
-              }
-              else if (kappa < bnk->eta4) {
+              } else if (kappa < bnk->eta4) {
                 /* Good step */
                 tao->trust = bnk->alpha4 * tao->trust;
-              }
-              else {
+              } else {
                 /* Very good step */
                 tao->trust = bnk->alpha5 * tao->trust;
               }
