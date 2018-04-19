@@ -436,6 +436,7 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     bnk->bncg_ctx->f = bnk->f;
     ierr = VecCopy(tao->solution, bnk->bncg->solution);CHKERRQ(ierr);
     ierr = VecCopy(bnk->unprojected_gradient, bnk->bncg_ctx->unprojected_gradient);CHKERRQ(ierr);
+    ierr = VecCopy(bnk->Gold, bnk->bncg_ctx->G_old);CHKERRQ(ierr);
     ierr = VecCopy(tao->stepdirection, bnk->bncg->stepdirection);CHKERRQ(ierr);
     /* Take some small finite number of BNCG iterations */
     ierr = TaoSolve(bnk->bncg);CHKERRQ(ierr);
