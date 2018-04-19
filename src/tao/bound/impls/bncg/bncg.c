@@ -115,7 +115,9 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
   /* Project the gradient and calculate the norm */
   ierr = VecCopy(cg->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-  ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
+  if (cg->active_idx) {
+    ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
+  }
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   gnorm2 = gnorm*gnorm;
   
@@ -191,12 +193,14 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
       ierr = ISDifference(cg->inactive_old, cg->inactive_idx, &cg->new_inactives);
       /* Selectively reset the CG step those freshly inactive variables to be the gradient descent direction */
-      ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecGetSubVector(tao->gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
-      ierr = VecCopy(cg->inactive_grad, cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecScale(cg->inactive_step, -1.0);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(tao->gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
+      if (cg->new_inactives) {
+        ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecGetSubVector(tao->gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
+        ierr = VecCopy(cg->inactive_grad, cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecScale(cg->inactive_step, -1.0);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(tao->gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
+      }
     }
     
     /* Verify that this is a descent direction */
@@ -261,7 +265,9 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
       /* Compute the projected gradient and its norm */
       ierr = VecCopy(cg->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-      ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
+      if (cg->active_idx) {
+        ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
+      }
       ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
       gnorm2 = gnorm*gnorm;
     }
