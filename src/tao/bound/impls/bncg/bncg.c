@@ -94,9 +94,12 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   /* Project the initial point onto the feasible region */
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
 
-  /*  Compute the objective function and criteria */
   if (!cg->recycle) {
+    /*  Solver is not being recycled so just compute the objective function and criteria */
     ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient);CHKERRQ(ierr);
+  } else {
+    /* We are recycling, so we have to compute ||g_old||^2 for use in the CG step calculation */
+    ierr = VecDot(cg->G_old, cg->G_old, &gnorm2_old);CHKERRQ(ierr);
   }
   ierr = VecNorm(cg->unprojected_gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(cg->f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
@@ -179,8 +182,10 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     ierr = VecAXPBY(tao->stepdirection, -1.0, beta, tao->gradient);CHKERRQ(ierr);
     ierr = TaoBNCGBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
     if (cg->inactive_old) {
+      /* Compute which new indexes that were active before became inactive this iteration */
       ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
       ierr = ISDifference(cg->inactive_old, cg->inactive_idx, &cg->new_inactives);
+      /* Selectively reset the CG step those freshly inactive variables to be the gradient descent direction */
       ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
       ierr = VecGetSubVector(tao->gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
       ierr = VecCopy(cg->inactive_grad, cg->inactive_step);CHKERRQ(ierr);
