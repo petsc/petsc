@@ -829,8 +829,6 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode VecScatterLocalOptimizeCopy(VecScatter,VecScatter_Seq_General*,VecScatter_Seq_General*,PetscInt);
-
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 extern PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 extern PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
@@ -1984,7 +1982,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *fromma
       }
 
       to->local.made_of_copies = from->local.made_of_copies = PETSC_FALSE;
-      VecScatterLocalOptimizeCopy(scat,&to->local,&from->local,to->bs);
+      VecScatterLocalOptimizeCopy_Private(scat,&to->local,&from->local,to->bs);
     } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
       for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
     } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
