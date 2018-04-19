@@ -612,6 +612,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   PetscScalar    *v;
 
   PetscFunctionBegin;
+  if (!S) PetscFunctionReturn(0); /* simply return with no-op if the index set is NULL */
   PetscValidHeaderSpecific(V,VEC_CLASSID,1);
   PetscValidHeaderSpecific(S,IS_CLASSID,2);
   PetscValidType(V,3);

@@ -65,9 +65,7 @@ PetscErrorCode TaoBNCGBoundStep(Tao tao, Vec step)
   PetscFunctionBegin;
   switch (cg->as_type) {
   case CG_AS_NONE:
-    if (cg->active_idx) {
-      ierr = VecISSet(step, cg->active_idx, 0.0);CHKERRQ(ierr);
-    }
+    ierr = VecISSet(step, cg->active_idx, 0.0);CHKERRQ(ierr);
     break;
 
   case CG_AS_BERTSEKAS:
@@ -115,9 +113,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
   /* Project the gradient and calculate the norm */
   ierr = VecCopy(cg->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-  if (cg->active_idx) {
-    ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
-  }
+  ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   gnorm2 = gnorm*gnorm;
   
@@ -191,7 +187,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     if (cg->inactive_old) {
       /* Compute which new indexes that were active before became inactive this iteration */
       ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
-      ierr = ISDifference(cg->inactive_old, cg->inactive_idx, &cg->new_inactives);
+      ierr = ISDifference(cg->inactive_idx, cg->inactive_old, &cg->new_inactives);CHKERRQ(ierr);
       /* Selectively reset the CG step those freshly inactive variables to be the gradient descent direction */
       if (cg->new_inactives) {
         ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
@@ -265,16 +261,20 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
 
       /* Compute the projected gradient and its norm */
       ierr = VecCopy(cg->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-      if (cg->active_idx) {
-        ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
-      }
+      ierr = VecISSet(tao->gradient, cg->active_idx, 0.0);CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
       gnorm2 = gnorm*gnorm;
     }
     
     /* Convergence test */
-    ierr = VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W);CHKERRQ(ierr);
-    ierr = VecNorm(cg->W, NORM_2, &resnorm);CHKERRQ(ierr);
+    if (!cg->inactive_idx) {
+      /* There are no inactive variables left, so set convergence norm to exact zero */
+      resnorm = 0.0;
+    } else {
+      /* Still have inactive variables so we have to test the actual gradient */
+      ierr = VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W);CHKERRQ(ierr);
+      ierr = VecNorm(cg->W, NORM_2, &resnorm);CHKERRQ(ierr);
+    }
     ierr = TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);

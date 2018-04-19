@@ -60,9 +60,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
   ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-  if (bnk->active_idx) {
-    ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-  }
+  ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
@@ -273,9 +271,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
           ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-          if (bnk->active_idx) {
-            ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-          }
+          ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
           /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
           ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(bnk->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
@@ -411,9 +407,7 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, Vec step)
   PetscFunctionBegin;
   switch (bnk->as_type) {
   case BNK_AS_NONE:
-    if (bnk->active_idx) {
-      ierr = VecISSet(step, bnk->active_idx, 0.0);CHKERRQ(ierr);
-    }
+    ierr = VecISSet(step, bnk->active_idx, 0.0);CHKERRQ(ierr);
     break;
 
   case BNK_AS_BERTSEKAS:

@@ -149,9 +149,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       /* compute the projected gradient */
       ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);
       ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-      if (bnk->active_idx) {
-        ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-      }
+      ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
       /* update the trust radius based on the step length */
       ierr = TaoBNKUpdateTrustRadius(tao, 0.0, 0.0, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);
@@ -162,8 +160,14 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     }
 
     /*  Check for termination */
-    ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->Gwork);CHKERRQ(ierr);
-    ierr = VecNorm(bnk->Gwork, NORM_2, &resnorm);CHKERRQ(ierr);
+    if (!bnk->inactive_idx) {
+      /* There are no inactive variables left, so set convergence norm to exact zero */
+      resnorm = 0.0;
+    } else {
+      /* Still have inactive variables so we have to test the actual gradient */
+      ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
+      ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
+    }
     ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
