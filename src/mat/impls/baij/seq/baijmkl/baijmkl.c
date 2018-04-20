@@ -145,13 +145,16 @@ PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
 
 PETSC_INTERN PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
 {
-  PetscErrorCode ierr;
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqBAIJMKL  *baijmkl = (Mat_SeqBAIJMKL*)A->spptr;
-  PetscInt        mbs, nbs, nz, bs, i;
+  PetscInt        mbs, nbs, nz, bs;
   MatScalar       *aa;
   PetscInt        *aj,*ai;
   sparse_status_t stat;
+#ifndef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
+  PetscErrorCode  ierr;
+  PetsInt         i;
+#endif
 
   PetscFunctionBegin;
   if (baijmkl->sparse_optimized) {
