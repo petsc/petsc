@@ -1301,6 +1301,36 @@ PetscErrorCode TSForwardSetUp(TS ts)
 }
 
 /*@
+  TSForwardReset - Reset the internal data structures used by forward sensitivity analysis
+
+  Collective on TS
+
+  Input Parameter:
+. ts - the TS context obtained from TSCreate()
+
+  Level: advanced
+
+.keywords: TS, forward sensitivity, reset
+
+.seealso: TSCreate(), TSDestroy(), TSForwardSetUp()
+@*/
+PetscErrorCode TSForwardReset(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->ops->forwardreset) {
+    ierr = (*ts->ops->forwardreset)(ts);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
+  ts->vecs_integral_sensip = NULL;
+  ts->forward_solve        = PETSC_FALSE;
+  ts->forwardsetupcalled   = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
   TSForwardSetIntegralGradients - Set the vectors holding forward sensitivities of the integral term.
 
   Input Parameter:

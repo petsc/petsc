@@ -52,6 +52,7 @@ struct _TSOps {
   PetscErrorCode (*adjointreset)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardsetup)(TS);
+  PetscErrorCode (*forwardreset)(TS);
   PetscErrorCode (*forwardstep)(TS);
   PetscErrorCode (*forwardintegral)(TS);
   PetscErrorCode (*forwardgetstages)(TS,PetscInt*,Mat**);

@@ -846,6 +846,22 @@ static PetscErrorCode TSForwardSetUp_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSForwardReset_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ts->vecs_integral_sensip) {
+    ierr = VecDestroy(&th->VecIntegralSensipTemp);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ts->numcost,&th->VecsIntegralSensip0);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&th->VecDeltaFwdSensipCol);CHKERRQ(ierr);
+  ierr = MatDestroy(&th->MatDeltaFwdSensip);CHKERRQ(ierr);
+  ierr = MatDestroy(&th->MatFwdSensip0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSSetUp_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
@@ -1081,6 +1097,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->default_adapt_type   = TSADAPTNONE;
 
   ts->ops->forwardsetup     = TSForwardSetUp_Theta;
+  ts->ops->forwardreset     = TSForwardReset_Theta;
   ts->ops->forwardstep      = TSForwardStep_Theta;
   ts->ops->forwardgetstages = TSForwardGetStages_Theta;
 
