@@ -97,7 +97,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   /* Project the initial point onto the feasible region */
   ierr = TaoBoundSolution(tao->XL,tao->XU,tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
 
-  if (!cg->recycle) {
+  if (nDiff > 0 || !cg->recycle) {
     /*  Solver is not being recycled so just compute the objective function and criteria */
     ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient);CHKERRQ(ierr);
   } else {
