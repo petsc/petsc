@@ -185,7 +185,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscErrorCode               ierr;
   
   PetscReal                    wnorm;
-  PetscReal                    mach_eps = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+  PetscReal                    zero = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   PetscInt                     i, n_isl=0, n_isu=0, n_isf=0, n_isa=0, n_isi=0;
   PetscInt                     N_isl, N_isu, N_isf, N_isa, N_isi;
   PetscInt                     n, low, high, nDiff;
@@ -225,7 +225,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPBY(W, steplen, 1.0, S);CHKERRQ(ierr);
-  ierr = TaoBoundSolution(XL, XU, W, &nDiff);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(XL, XU, W, 0.0, &nDiff);CHKERRQ(ierr);
   ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
   ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);
   *bound_tol = PetscMin(*bound_tol, wnorm);
@@ -249,11 +249,11 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
         /* Fixed variables */
         isf[n_isf]=low+i; ++n_isf;
         isa[n_isa]=low+i; ++n_isa;
-      } else if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + *bound_tol) && (g[i] >= -mach_eps)) {
+      } else if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + *bound_tol) && (g[i] > zero)) {
         /* Lower bounded variables */
         isl[n_isl]=low+i; ++n_isl;
         isa[n_isa]=low+i; ++n_isa;
-      } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - *bound_tol) && (g[i] <= mach_eps)) {
+      } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - *bound_tol) && (g[i] < zero)) {
         /* Upper bounded variables */
         isu[n_isu]=low+i; ++n_isu;
         isa[n_isa]=low+i; ++n_isa;
@@ -378,7 +378,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
   Output Parameters:
 . X - modified solution vector
 @*/
-PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscInt *nDiff)
+PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscReal bound_tol, PetscInt *nDiff)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,low,high,nDiff_loc=0;
@@ -408,9 +408,9 @@ PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscInt *nDiff)
     ierr = VecGetArrayRead(XU, &xu);
 
     for (i=0;i<n;++i){
-      if ((xl[i] > PETSC_NINFINITY) && (x[i] < xl[i])) {
+      if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + bound_tol)) {
         x[i] = xl[i]; ++nDiff_loc;
-      } else if ((xu[i] < PETSC_INFINITY) && (x[i] > xu[i])) {
+      } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - bound_tol)) {
         x[i] = xu[i]; ++nDiff_loc;
       }
     }

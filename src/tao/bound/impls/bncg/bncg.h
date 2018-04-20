@@ -10,8 +10,7 @@
 
 typedef struct {
     Vec G_old, X_old, W, work;
-    Vec unprojected_gradient;
-    Vec unprojected_gradient_old;
+    Vec unprojected_gradient, unprojected_gradient_old;
     IS  active_lower, active_upper, active_fixed, active_idx, inactive_idx, inactive_old, new_inactives;
     Vec inactive_grad, inactive_step;
     

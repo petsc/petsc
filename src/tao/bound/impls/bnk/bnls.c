@@ -95,7 +95,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
 
-  PetscReal                    resnorm, steplen = 1.0;
+  PetscReal                    steplen = 1.0, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_TRUE;
   PetscInt                     stepType;
   
@@ -109,7 +109,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     
-    if (needH) {
+    if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
       ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
       if (cgTerminate) {
@@ -160,14 +160,8 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
     }
 
     /*  Check for termination */
-    if (!bnk->inactive_idx) {
-      /* There are no inactive variables left, so set convergence norm to exact zero */
-      resnorm = 0.0;
-    } else {
-      /* Still have inactive variables so we have to test the actual gradient */
-      ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
-      ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-    }
+    ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
+    ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
     ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
