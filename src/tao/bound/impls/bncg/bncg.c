@@ -321,6 +321,13 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
     ierr = VecDestroy(&cg->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&cg->unprojected_gradient_old);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&cg->active_lower);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->active_upper);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->active_fixed);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->active_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->inactive_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->inactive_old);CHKERRQ(ierr);
+  ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1216,9 +1216,11 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
     ierr = VecDestroy(&bnk->Diag_min);CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->Diag_max);CHKERRQ(ierr);
   }
-  if (bnk->max_cg_its > 0) {
-    ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&bnk->active_lower);CHKERRQ(ierr);
+  ierr = ISDestroy(&bnk->active_upper);CHKERRQ(ierr);
+  ierr = ISDestroy(&bnk->active_fixed);CHKERRQ(ierr);
+  ierr = ISDestroy(&bnk->active_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
   ierr = VecDestroy(&bnk->Diag);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->M);CHKERRQ(ierr);
   if (bnk->Hpre_inactive != tao->hessian_pre && bnk->Hpre_inactive != bnk->H_inactive) {
@@ -1226,6 +1228,9 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
   }
   if (bnk->H_inactive != tao->hessian) {
     ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
+  }
+  if (bnk->max_cg_its > 0) {
+    ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
