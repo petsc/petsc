@@ -696,6 +696,9 @@ PetscErrorCode TSAdjointReset(TS ts)
   if (ts->ops->adjointreset) {
     ierr = (*ts->ops->adjointreset)(ts);CHKERRQ(ierr);
   }
+  if (ts->vec_dir) { /* second-order adjoint */
+    ierr = TSForwardReset(ts);CHKERRQ(ierr);
+  }
   ts->vecs_sensi         = NULL;
   ts->vecs_sensip        = NULL;
   ts->vecs_sensi2        = NULL;

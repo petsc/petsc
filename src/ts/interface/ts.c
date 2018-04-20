@@ -2694,7 +2694,6 @@ PetscErrorCode  TSReset(TS ts)
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
-  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
   while (ilink) {
     next = ilink->next;
@@ -2734,6 +2733,8 @@ PetscErrorCode  TSDestroy(TS *ts)
   if (--((PetscObject)(*ts))->refct > 0) {*ts = 0; PetscFunctionReturn(0);}
 
   ierr = TSReset((*ts));CHKERRQ(ierr);
+  ierr = TSAdjointReset((*ts));CHKERRQ(ierr);
+  ierr = TSForwardReset((*ts));CHKERRQ(ierr);
 
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
