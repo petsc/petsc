@@ -812,16 +812,30 @@ At each iteration, the bound tolerance is estimated as $\epsilon_{k+1} = \mbox{m
 with $w_k = x_k - \mathfrak{B}(x_k - \beta D_k g_k)$, where the diagonal matrix $D_k$ is an approximation 
 of the Hessian inverse $H_k^{-1}$. The initial bound tolerance $\epsilon_0$ and the step length $\beta$ 
 have default values of $0.001$ and can be adjusted using {\tt -tao\_bnk\_as\_tol} and 
-{\tt -tao\_bnk\_as\_step} flags, respectively.
+{\tt -tao\_bnk\_as\_step} flags, respectively. The active-set estimation can be disabled using the option 
+{\tt -tao\_bnk\_as\_type none}, in which case the algorithm simply uses the current iterate with no bound 
+tolerances to determine which variables are actively bounded and which are free.
 
 BNK algorithms invert the reduced Hessian using a Krylov iterative method. Trust-region conjugate gradient 
 methods ({\tt KSPNASH}, {\tt KSPSTCG}, and {\tt KSPGLTR}) are required for the BNTR and BNTL algorithms, 
-and recommended for the BNLS algorithm. A BFGS approximation is used both to precondition the Krylov 
-solution and to construct the step direction for the active-set estimation. The preconditioner 
-type can be changed using the {\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ahess}/{\tt bfgs}/{\tt petsc}.
-The {\tt ahess} option results in a Jacobi preconditioner, while {\tt petsc} option allows the 
-user to specify a built-in PETSc preconditioner with {\tt -pc\_type}. When the BFGS preconditioner 
-is not available, the active-set estimation falls back to using the inverse diagonal of the Hessian.
+and recommended for the BNLS algorithm. The preconditioner type can be changed using the 
+{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ahess}/{\tt bfgs}/{\tt petsc}. The {\tt ahess} option, which is 
+also the default, results in an absolute-valued Jacobi preconditioner, while the {\tt bfgs} option 
+preconditions the Krylov solution with an {\tt TAO\_LMVM} matrix. The {\tt petsc} option allows the user to 
+bypass the algorithm's special preconditioners specify a built-in PETSc preconditioner with {\tt -pc\_type} 
+({\tt ilu} and {\tt icc} preconditioners can yield good results for dense explicit Hessian matrices). The 
+BFGS and Jacobi preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
+If neither are available, or if the Hessian matrix does not have {\tt MATOP\_GET\_DIAGONAL} defined, then the 
+active-set estimation falls back onto using an identity matrix in place of $D_k$ (this is equivalent to 
+estimating the active-set using a gradient descent step).
+
+A special option is available to ``accelerate'' the convergence of the BNK algorithms by taking a finite 
+number of BNCG iterations at each Newton iteration. By default, the number of BNCG iterations is set to zero 
+and the algorithms do not take any BNCG steps. This can be changed using the option flag 
+{\tt -tao\_bnk\_max\_cg\_its <i>}. While this reduces the number of Newton iterations, in practice it simply 
+trades off the Hessian evaluations in the BNK solver for more function and gradient evaluations in the BNCG 
+solver. However, it may be useful for certain types of problems where the Hessian evaluation is 
+disproportionately more expensive than the objective function or its gradient.
 
 \subsubsection{Bounded Newton Line Search (BNLS)}\label{sec:bnls}
 
