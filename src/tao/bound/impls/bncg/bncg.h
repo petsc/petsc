@@ -20,8 +20,6 @@ typedef struct {
     PetscReal f;
     PetscReal rho, pow;
     PetscReal eta;         /*  Restart tolerance */
-    PetscReal delta_max;   /*  Minimum value for scaling */
-    PetscReal delta_min;   /*  Maximum value for scaling */
     
     PetscBool recycle;
 

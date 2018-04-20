@@ -217,7 +217,6 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     f_old = cg->f;
     
     /* Perform bounded line search */
-    step = 1.0;
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
     
@@ -235,8 +234,6 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
       ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
-      
-      step = 1.0;
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
         
@@ -269,6 +266,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     /* Convergence test */
     ierr = VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W);CHKERRQ(ierr);
     ierr = VecNorm(cg->W, NORM_2, &resnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(resnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     ierr = TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -340,8 +338,6 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
     ierr = PetscOptionsReal("-tao_bncg_pow","descent direction exponent", "", cg->pow,&cg->pow,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_bncg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_bncg_as_type","active set estimation method", "", CG_AS_TYPE, CG_AS_SIZE, CG_AS_TYPE[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_bncg_delta_min","minimum delta value", "", cg->delta_min,&cg->delta_min,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_bncg_delta_max","maximum delta value", "", cg->delta_max,&cg->delta_max,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tao_bncg_recycle","enable recycling the existing solution and gradient at the start of a new solve","",cg->recycle,&cg->recycle,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_bncg_as_tol", "initial tolerance used when estimating actively bounded variables","",cg->as_tol,&cg->as_tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_bncg_as_step", "step length used when estimating actively bounded variables","",cg->as_step,&cg->as_step,NULL);CHKERRQ(ierr);
@@ -378,9 +374,7 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
 .      -tao_bncg_type <taocg_type> - cg formula
 .      -tao_bncg_as_type <none,bertsekas> - active set estimation method
 .      -tao_bncg_as_tol <r> - tolerance used in Bertsekas active-set estimation
-.      -tao_bncg_as_step <r> - trial step length used in Bertsekas active-set estimation 
-.      -tao_bncg_delta_min <r> - minimum delta value
--      -tao_bncg_delta_max <r> - maximum delta value
+.      -tao_bncg_as_step <r> - trial step length used in Bertsekas active-set estimation
 
   Notes:
      CG formulas are:
@@ -425,8 +419,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   cg->rho = 1e-4;
   cg->pow = 2.1;
   cg->eta = 0.5;
-  cg->delta_min = 1e-7;
-  cg->delta_max = 100;
   cg->as_step = 0.001;
   cg->as_tol = 0.001;
   cg->as_type = CG_AS_BERTSEKAS;
