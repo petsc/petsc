@@ -1187,19 +1187,19 @@ int main(int argc, char **argv)
   # 2D Q_3 on a quadrilaterial
   test:
     suffix: q3_2d_0
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope !single
     args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -convergence
   test:
     suffix: q3_2d_1
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope !single
     args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 1
   test:
     suffix: q3_2d_2
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope !single
     args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 2
   test:
     suffix: q3_2d_3
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope !single
     args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
