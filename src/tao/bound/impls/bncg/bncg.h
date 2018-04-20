@@ -33,5 +33,5 @@ typedef struct {
 #endif /* ifndef __TAO_BNCG_H */
 
 PETSC_INTERN PetscErrorCode TaoBNCGEstimateActiveSet(Tao, PetscInt);
-PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, Vec);
+PETSC_INTERN PetscErrorCode TaoBNCGBoundStep(Tao, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode TaoBNCGSetRecycleFlag(Tao, PetscBool);

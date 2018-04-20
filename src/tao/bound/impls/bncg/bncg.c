@@ -58,13 +58,13 @@ PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGBoundStep(Tao tao, Vec step) 
+PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step)
 {
   PetscErrorCode               ierr;
   TAO_BNCG                     *cg = (TAO_BNCG *)tao->data;
   
   PetscFunctionBegin;
-  switch (cg->as_type) {
+  switch (asType) {
   case CG_AS_NONE:
     ierr = VecISSet(step, cg->active_idx, 0.0);CHKERRQ(ierr);
     break;
@@ -181,7 +181,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     
     /*  Compute the direction d=-g + beta*d */
     ierr = VecAXPBY(tao->stepdirection, -1.0, beta, tao->gradient);CHKERRQ(ierr);
-    ierr = TaoBNCGBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
+    ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
     
     /* Figure out which previously active variables became inactive this iteration */
     ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       /* Fall back on the gradient descent step */
       ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-      ierr = TaoBNCGBoundStep(tao, tao->stepdirection);CHKERRQ(ierr);
+      ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
       
       step = 1.0;
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);

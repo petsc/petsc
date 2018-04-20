@@ -224,9 +224,9 @@ typedef struct {
 #define BNK_UPDATE_INTERPOLATION  2
 #define BNK_UPDATE_TYPES          3
 
-#define BNK_AS_NONE             0
-#define BNK_AS_BERTSEKAS        1
-#define BNK_AS_TYPES            2
+#define BNK_AS_NONE        0
+#define BNK_AS_BERTSEKAS   1
+#define BNK_AS_TYPES       2
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
@@ -235,7 +235,7 @@ PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
-PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, Vec);
+PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, PetscInt, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
