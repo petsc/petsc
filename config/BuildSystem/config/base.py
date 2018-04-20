@@ -255,7 +255,7 @@ class Configure(script.Script):
             break
         if found: break
     if not found:
-      dirs = self.argDB['search-dirs']
+      dirs = self.argDB['with-executables-search-path']
       if not isinstance(dirs, list): dirs = [dirs]
       for d in dirs:
         for name in names:

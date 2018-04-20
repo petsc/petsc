@@ -79,7 +79,7 @@ class Configure(config.package.Package):
     yield ''
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
-    for packageDir in self.argDB['package-dirs']:
+    for packageDir in self.argDB['with-packages-search-path']:
       packageDir = os.path.abspath(packageDir)
       if not os.path.isdir(packageDir):
         raise RuntimeError('Invalid package directory: '+packageDir)

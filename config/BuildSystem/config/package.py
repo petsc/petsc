@@ -613,7 +613,7 @@ class Package(config.base.Configure):
       return
 
   def downLoad(self):
-    '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
+    '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
     import retrieval
 
     if self.havePETSc:
