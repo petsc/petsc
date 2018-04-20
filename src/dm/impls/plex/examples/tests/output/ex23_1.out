@@ -150,6 +150,44 @@ Vec Object: Local Field Volumetric Primary and Volumetric Auxiliary 1 MPI proces
 1.
 1.5
 1.5
+Vec Object: Local Field Input Volumetric Auxiliary Update with Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+0.
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
+Vec Object: Local Field Volumetric Auxiliary Update with Volumetric Primary 1 MPI processes
+  type: seq
+0.
+1.
+-2.46519e-32
+2.
+3.
+1.
+2.
+3.
+1.
+4.
+5.
+2.
+0.5
+0.5
+1.
+1.5
+1.5
 Vec Object: Function Boundary Primary 1 MPI processes
   type: seq
 0.

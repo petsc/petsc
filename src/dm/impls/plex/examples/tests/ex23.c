@@ -241,7 +241,7 @@ int main(int argc, char **argv)
     /* Update of Volumetric Auxiliary Data with primary Volumetric Data */
     ierr = DMGetLocalVector(dm, &la);CHKERRQ(ierr);
     ierr = VecSet(la, 1.0);CHKERRQ(ierr);
-    //ierr = TestFieldProjection(auxdm, dm, la, &user);CHKERRQ(ierr);
+    ierr = TestFieldProjection(auxdm, dm, la, "Volumetric Auxiliary Update with Volumetric Primary", &user);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &la);CHKERRQ(ierr);
     ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
   }
@@ -283,3 +283,12 @@ int main(int argc, char **argv)
     args: -dim 2 -velocity_petscspace_order 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_order 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
 
 TEST*/
+
+/*
+  Post-processing wants to project a function of the fields into some FE space
+  - This is DMProjectField()
+  - What about changing the number of components of the output, like displacement to stress? Aux vars
+
+  Update of state variables
+  - This is DMProjectField(), but solution must be the aux var
+*/
