@@ -1,0 +1,15 @@
+iter =   0, Function value 1., Residual: 2. 
+iter =   1, Function value 0.773446, Residual: 6.07754 
+iter =   2, Function value 0.520003, Residual: 2.7095 
+iter =   3, Function value 0.399519, Residual: 9.37099 
+iter =   4, Function value 0.207877, Residual: 0.782443 
+iter =   5, Function value 0.143719, Residual: 2.90222 
+iter =   6, Function value 0.0790804, Residual: 4.10384 
+iter =   7, Function value 0.0349179, Residual: 1.65969 
+iter =   8, Function value 0.0144478, Residual: 3.10156 
+iter =   9, Function value 0.00322162, Residual: 0.431816 
+iter =  10, Function value 0.000506136, Residual: 0.847379 
+iter =  11, Function value 9.85568e-06, Residual: 0.0220311 
+iter =  12, Function value 9.85744e-09, Residual: 0.00402753 
+iter =  13, Function value 4.83791e-15, Residual: < 1.0e-6 
+iter =  14, Function value 2.40331e-27, Residual: < 1.0e-11 

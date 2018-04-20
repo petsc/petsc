@@ -95,7 +95,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
   
   /* Project the initial point onto the feasible region */
-  ierr = TaoBoundSolution(tao->XL,tao->XU,tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
 
   if (nDiff > 0 || !cg->recycle) {
     /*  Solver is not being recycled so just compute the objective function and criteria */

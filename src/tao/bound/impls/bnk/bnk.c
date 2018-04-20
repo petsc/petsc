@@ -54,7 +54,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
   /* Project the initial point onto the feasible region */
-  ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &bnk->f, bnk->unprojected_gradient);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           /* Take a steepest descent step and snap it to bounds */
           ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
           ierr = VecAXPY(tao->solution, -tao->trust/bnk->gnorm, tao->gradient);CHKERRQ(ierr);
-          ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
+          ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
           /* Compute the step we actually accepted */
           ierr = VecCopy(tao->solution, bnk->W);CHKERRQ(ierr);
           ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           bnk->f = f_min;
           ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
-          ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
+          ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
           ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
           ierr = TaoComputeGradient(tao,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);

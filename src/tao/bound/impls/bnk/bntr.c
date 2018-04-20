@@ -137,7 +137,7 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
 
       /* Temporarily accept the step and project it into the bounds */
       ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);
-      ierr = TaoBoundSolution(tao->XL, tao->XU, tao->solution, 0.0, &nDiff);CHKERRQ(ierr);
+      ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
 
       /* Check if the projection changed the step direction */
       if (nDiff > 0) {

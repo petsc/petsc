@@ -225,7 +225,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   /* Update the tolerance for bound detection (this is based on Bertsekas' method) */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
   ierr = VecAXPBY(W, steplen, 1.0, S);CHKERRQ(ierr);
-  ierr = TaoBoundSolution(XL, XU, W, 0.0, &nDiff);CHKERRQ(ierr);
+  ierr = TaoBoundSolution(W, XL, XU, 0.0, &nDiff, W);CHKERRQ(ierr);
   ierr = VecAXPBY(W, 1.0, -1.0, X);CHKERRQ(ierr);
   ierr = VecNorm(W, NORM_2, &wnorm);CHKERRQ(ierr);
   *bound_tol = PetscMin(*bound_tol, wnorm);
@@ -383,51 +383,60 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
   Input Parameters:
 + XL - lower bound vector
 . XU - upper bound vector
-- X - solution vector
+. X - solution vector
+.
+-
 
   Output Parameters:
 . X - modified solution vector
 @*/
-PetscErrorCode TaoBoundSolution(Vec XL, Vec XU, Vec X, PetscReal bound_tol, PetscInt *nDiff)
+PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n,low,high,nDiff_loc=0;
-  PetscScalar       *x;
-  const PetscScalar *xl,*xu;
+  PetscScalar       *xout;
+  const PetscScalar *x,*xl,*xu;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(Xout,VEC_CLASSID,4);
 
   PetscValidType(X,1);
   PetscValidType(XL,2);
   PetscValidType(XU,3);
+  PetscValidType(Xout,4);
   PetscCheckSameType(X,1,XL,2);
   PetscCheckSameType(X,1,XU,3);
+  PetscCheckSameType(X,1,Xout,4);
   PetscCheckSameComm(X,1,XL,2);
   PetscCheckSameComm(X,1,XU,3);
+  PetscCheckSameComm(X,1,Xout,4);
   VecCheckSameSize(X,1,XL,2);
   VecCheckSameSize(X,1,XU,3);
+  VecCheckSameSize(X,1,Xout,4);
 
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   if (n>0){
-    ierr = VecGetArray(X, &x);
+    ierr = VecGetArrayRead(X, &x);
     ierr = VecGetArrayRead(XL, &xl);
     ierr = VecGetArrayRead(XU, &xu);
+    ierr = VecGetArray(Xout, &xout);
 
     for (i=0;i<n;++i){
       if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + bound_tol)) {
-        x[i] = xl[i]; ++nDiff_loc;
+        xout[i] = xl[i]; ++nDiff_loc;
       } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - bound_tol)) {
-        x[i] = xu[i]; ++nDiff_loc;
+        xout[i] = xu[i]; ++nDiff_loc;
       }
     }
 
-    ierr = VecRestoreArray(X, &x);
+    ierr = VecRestoreArrayRead(X, &x);
     ierr = VecRestoreArrayRead(XL, &xl);
     ierr = VecRestoreArrayRead(XU, &xu);
+    ierr = VecRestoreArray(Xout, &xout);
   }
   ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);
