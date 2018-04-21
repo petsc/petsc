@@ -424,7 +424,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               if (PetscRealPart(sharedspace[-1] - yv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,yv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,PetscRealPart(sharedspace[-1]),msrank,PetscRealPart(yv[-1]));
               }
               /* i-the core has not reached the current object statecnt yet, wait ... */
               /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],yv[-1]); */
@@ -468,7 +468,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               if (PetscRealPart(sharedspace[-1] - xv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,xv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,PetscRealPart(sharedspace[-1]),msrank,PetscRealPart(xv[-1]));
               }
               /* i-the core has not reached the current object state cnt yet, wait ... */
               /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],xv[-1]); */
