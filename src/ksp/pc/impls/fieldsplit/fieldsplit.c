@@ -52,6 +52,7 @@ typedef struct {
   PetscBool                 dm_splits;              /* Whether to use DMCreateFieldDecomposition() whenever possible */
   PetscBool                 diag_use_amat;          /* Whether to extract diagonal matrix blocks from Amat, rather than Pmat (weaker than -pc_use_amat) */
   PetscBool                 offdiag_use_amat;       /* Whether to extract off-diagonal matrix blocks from Amat, rather than Pmat (weaker than -pc_use_amat) */
+  PetscBool                 detect;                 /* Whether to form 2-way split by finding zero diagonal entries */
 } PC_FieldSplit;
 
 /*
@@ -319,7 +320,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscBool         fieldsplit_default = PETSC_FALSE,stokes = PETSC_FALSE,coupling = PETSC_FALSE;
+  PetscBool         fieldsplit_default = PETSC_FALSE,coupling = PETSC_FALSE;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -328,9 +329,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
    Should probably be rewritten.
    */
   if (!ilink) {
-    ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_coupling",&coupling,NULL);CHKERRQ(ierr);
-    if (pc->dm && jac->dm_splits && !stokes && !coupling) {
+    if (pc->dm && jac->dm_splits && !jac->detect && !coupling) {
       PetscInt  numFields, f, i, j;
       char      **fieldNames;
       IS        *fields;
@@ -400,7 +400,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         } else jac->bs = 1;
       }
 
-      if (stokes) {
+      if (jac->detect) {
         IS       zerodiags,rest;
         PetscInt nmin,nmax;
 
@@ -1233,7 +1233,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
 {
   PetscErrorCode  ierr;
   PetscInt        bs;
-  PetscBool       flg,stokes = PETSC_FALSE;
+  PetscBool       flg;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 
@@ -1248,13 +1248,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
   ierr = PetscOptionsBool("-pc_fieldsplit_diag_use_amat","Use Amat (not Pmat) to extract diagonal fieldsplit blocks", "PCFieldSplitSetDiagUseAmat",jac->diag_use_amat,&jac->diag_use_amat,NULL);CHKERRQ(ierr);
   jac->offdiag_use_amat = pc->useAmat;
   ierr = PetscOptionsBool("-pc_fieldsplit_off_diag_use_amat","Use Amat (not Pmat) to extract off-diagonal fieldsplit blocks", "PCFieldSplitSetOffDiagUseAmat",jac->offdiag_use_amat,&jac->offdiag_use_amat,NULL);CHKERRQ(ierr);
-  /* FIXME: No programmatic equivalent to the following. */
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
-  if (stokes) {
-    ierr          = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
-    jac->schurpre = PC_FIELDSPLIT_SCHUR_PRE_SELF;
-  }
-
+  ierr = PetscOptionsBool("-pc_fieldsplit_detect_saddle_point","Form 2-way split by detecting zero diagonal entries", "PCFieldSplitSetDetectSaddlePoint",jac->detect,&jac->detect,NULL);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetDetectSaddlePoint(pc,jac->detect);CHKERRQ(ierr); /* Sets split type and Schur PC type */
   ierr = PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&ctype,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFieldSplitSetType(pc,ctype);CHKERRQ(ierr);
@@ -2283,6 +2278,67 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
   PetscFunctionReturn(0);
 }
 
+/*@
+   PCFieldSplitGetDetectSaddlePoint - Returns flag indicating whether PCFieldSplit will attempt to automatically determine fields based on zero diagonal entries.
+
+   Logically Collective
+
+   Input Parameter:
+.  pc   - the preconditioner context
+
+   Output Parameter:
+.  flg  - boolean indicating whether to detect fields or not
+
+   Level: Intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetDetectSaddlePoint()
+
+@*/
+PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc,PetscBool *flg)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = jac->detect;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCFieldSplitSetDetectSaddlePoint - Sets flag indicating whether PCFieldSplit will attempt to automatically determine fields based on zero diagonal entries.
+
+   Logically Collective
+
+   Notes:
+   Also sets the split type to PC_COMPOSITE_SCHUR (see PCFieldSplitSetType()) and the Schur preconditioner type to PC_FIELDSPLIT_SCHUR_PRE_SELF (see PCFieldSplitSetSchurPre()).
+
+   Input Parameter:
+.  pc   - the preconditioner context
+
+   Output Parameter:
+.  flg  - boolean indicating whether to detect fields or not
+
+   Options Database Key:
+.  -pc_fieldsplit_detect_saddle_point
+
+   Level: Intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetDetectSaddlePoint(), PCFieldSplitSetType(), PCFieldSplitSetSchurPre()
+
+@*/
+PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  jac->detect = flg;
+  if (jac->detect) {
+    ierr = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc,PC_FIELDSPLIT_SCHUR_PRE_SELF,NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------*/
 /*MC
    PCFIELDSPLIT - Preconditioner created by combining separate preconditioners for individual
@@ -2303,7 +2359,7 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur> - type of relaxation or factorization splitting
 .   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11; see PCFieldSplitSetSchurPre()
-.   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
+.   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
      for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
@@ -2365,7 +2421,8 @@ $              (  0   S  )
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
-          MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale()
+          MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(),
+          PCFieldSplitSetDetectSaddlePoint()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
@@ -2383,6 +2440,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
   jac->schurscale         = -1.0;
   jac->dm_splits          = PETSC_TRUE;
+  jac->detect             = PETSC_FALSE;
 
   pc->data = (void*)jac;
 
@@ -2403,6 +2461,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitRestrictIS_C",PCFieldSplitRestrictIS_FieldSplit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-

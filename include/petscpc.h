@@ -225,6 +225,8 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurScale(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
