@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail 
   test:
     suffix: 2
-    requires: hdf5 exodusii chaco
+    requires: hdf5 exodusii chaco !trilinos
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -petscpartitioner_type chaco
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
     args: -interpolate {{0 1}separate output}
   test:
     suffix: 2a
-    requires: hdf5 exodusii chaco
+    requires: hdf5 exodusii chaco !trilinos
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -petscpartitioner_type chaco
