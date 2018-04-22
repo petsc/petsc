@@ -1399,6 +1399,7 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
     numCells    = !rank ?        n : 0;
     numVertices = !rank ?  2*(n+1) : 0;
     ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
+    ierr = DMPlexSetHybridBounds(*dm, 0, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(*dm, c, 6);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {
