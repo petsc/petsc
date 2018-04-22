@@ -779,10 +779,10 @@ PetscErrorCode PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
     ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
   } else {
     size_t length;
-    char   buff[len];
+    char   buff[length];
 
     ierr = PetscVSNPrintf(buff,sizeof(buff),format,&length,Argp);CHKERRQ(ierr);
-    mexPrintf("%s",buf);
+    mexPrintf("%s",buff);
   }
   PetscFunctionReturn(0);
 }
