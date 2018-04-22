@@ -51,6 +51,9 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 4:
       *cellType = 10; /* VTK_TETRA */
       break;
+    case 6:
+      *cellType = 13; /* VTK_WEDGE */
+      break;
     case 8:
       *cellType = 12; /* VTK_HEXAHEDRON */
       break;
@@ -76,7 +79,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   PetscInt       dim;
   PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
   PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
-  PetscInt       numLabelCells, maxLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       numLabelCells, maxLabelCells, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    size, rank, proc, tag;
   PetscErrorCode ierr;
 
@@ -89,8 +92,6 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
   ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
@@ -233,7 +234,7 @@ static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
 {
   MPI_Comm       comm;
   PetscInt       numCells = 0, cellHeight;
-  PetscInt       numLabelCells, cMax, cStart, cEnd, c;
+  PetscInt       numLabelCells, cStart, cEnd, c;
   PetscMPIInt    size, rank, proc, tag;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
@@ -245,8 +246,6 @@ static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
@@ -278,7 +277,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar        *array;
   PetscInt           numDof = 0, maxDof;
-  PetscInt           numLabelCells, cellHeight, cMax, cStart, cEnd, numLabelVertices, vMax, vStart, vEnd, pStart, pEnd, p;
+  PetscInt           numLabelCells, cellHeight, cStart, cEnd, numLabelVertices, vMax, vStart, vEnd, pStart, pEnd, p;
   PetscMPIInt        size, rank, proc, tag;
   PetscBool          hasLabel;
   PetscErrorCode     ierr;
@@ -296,8 +295,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, &vMax);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
+  ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
   if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
   pStart   = PetscMax(PetscMin(cStart, vStart), pStart);
   pEnd     = PetscMin(PetscMax(cEnd,   vEnd),   pEnd);
