@@ -153,7 +153,7 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
   sparse_status_t stat;
 #ifndef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
   PetscErrorCode  ierr;
-  PetsInt         i;
+  PetscInt        i;
 #endif
 
   PetscFunctionBegin;
