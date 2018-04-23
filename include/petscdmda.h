@@ -85,7 +85,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,
 /* function to wrap coordinates around boundary */
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMDACreateCompatibleDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);

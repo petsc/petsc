@@ -10,7 +10,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DMDAGetReducedDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +386,7 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 }
 
 /*@
-   DMDAGetReducedDMDA - Gets the DMDA with the same layout but with fewer or more fields
+   DMDACreateCompatibleDMDA - Creates a DMDA with the same layout but with fewer or more fields
 
    Collective on DMDA
 
@@ -403,7 +403,7 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 
 .seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
-PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
+PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
   PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;
