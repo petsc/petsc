@@ -1248,53 +1248,53 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsEList("-tao_bnk_init_type", "radius initialization type", "", BNK_INIT, BNK_INIT_TYPES, BNK_INIT[bnk->init_type], &bnk->init_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_bnk_update_type", "radius update type", "", BNK_UPDATE, BNK_UPDATE_TYPES, BNK_UPDATE[bnk->update_type], &bnk->update_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_bnk_as_type", "active set estimation method", "", BNK_AS, BNK_AS_TYPES, BNK_AS[bnk->as_type], &bnk->as_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_sval", "Hessian perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_imin", "minimum initial Hessian perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_imax", "maximum initial Hessian perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_imfac", "initial merit factor for Hessian perturbation", "", bnk->imfac, &bnk->imfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_pmin", "minimum Hessian perturbation", "", bnk->pmin, &bnk->pmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_pmax", "maximum Hessian perturbation", "", bnk->pmax, &bnk->pmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_pgfac", "Hessian perturbation growth factor", "", bnk->pgfac, &bnk->pgfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_psfac", "Hessian perturbation shrink factor", "", bnk->psfac, &bnk->psfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_pmgfac", "merit growth factor for Hessian perturbation", "", bnk->pmgfac, &bnk->pmgfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_pmsfac", "merit shrink factor for Hessian perturbation", "", bnk->pmsfac, &bnk->pmsfac,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_eta1", "threshold for rejecting step (-tao_bnk_update_type reduction)", "", bnk->eta1, &bnk->eta1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_eta2", "threshold for accepting marginal step (-tao_bnk_update_type reduction)", "", bnk->eta2, &bnk->eta2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_eta3", "threshold for accepting reasonable step (-tao_bnk_update_type reduction)", "", bnk->eta3, &bnk->eta3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_eta4", "threshold for accepting good step (-tao_bnk_update_type reduction)", "", bnk->eta4, &bnk->eta4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_alpha1", "radius reduction factor for rejected step (-tao_bnk_update_type reduction)", "", bnk->alpha1, &bnk->alpha1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_alpha2", "radius reduction factor for marginally accepted bad step (-tao_bnk_update_type reduction)", "", bnk->alpha2, &bnk->alpha2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_alpha3", "radius increase factor for reasonable accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha3, &bnk->alpha3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_alpha4", "radius increase factor for good accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha4, &bnk->alpha4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_alpha5", "radius increase factor for very good accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha5, &bnk->alpha5,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_nu1", "threshold for small line-search step length (-tao_bnk_update_type step)", "", bnk->nu1, &bnk->nu1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_nu2", "threshold for reasonable line-search step length (-tao_bnk_update_type step)", "", bnk->nu2, &bnk->nu2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_nu3", "threshold for large line-search step length (-tao_bnk_update_type step)", "", bnk->nu3, &bnk->nu3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_nu4", "threshold for very large line-search step length (-tao_bnk_update_type step)", "", bnk->nu4, &bnk->nu4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_omega1", "radius reduction factor for very small line-search step length (-tao_bnk_update_type step)", "", bnk->omega1, &bnk->omega1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_omega2", "radius reduction factor for small line-search step length (-tao_bnk_update_type step)", "", bnk->omega2, &bnk->omega2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_omega3", "radius factor for decent line-search step length (-tao_bnk_update_type step)", "", bnk->omega3, &bnk->omega3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_omega4", "radius increase factor for large line-search step length (-tao_bnk_update_type step)", "", bnk->omega4, &bnk->omega4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_omega5", "radius increase factor for very large line-search step length (-tao_bnk_update_type step)", "", bnk->omega5, &bnk->omega5,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_mu1_i", "threshold for accepting very good step (-tao_bnk_init_type interpolation)", "", bnk->mu1_i, &bnk->mu1_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_mu2_i", "threshold for accepting good step (-tao_bnk_init_type interpolation)", "", bnk->mu2_i, &bnk->mu2_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma1_i", "radius reduction factor for rejected very bad step (-tao_bnk_init_type interpolation)", "", bnk->gamma1_i, &bnk->gamma1_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma2_i", "radius reduction factor for rejected bad step (-tao_bnk_init_type interpolation)", "", bnk->gamma2_i, &bnk->gamma2_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma3_i", "radius increase factor for accepted good step (-tao_bnk_init_type interpolation)", "", bnk->gamma3_i, &bnk->gamma3_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma4_i", "radius increase factor for accepted very good step (-tao_bnk_init_type interpolation)", "", bnk->gamma4_i, &bnk->gamma4_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_theta_i", "trust region interpolation factor (-tao_bnk_init_type interpolation)", "", bnk->theta_i, &bnk->theta_i,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_mu1", "threshold for accepting very good step (-tao_bnk_update_type interpolation)", "", bnk->mu1, &bnk->mu1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_mu2", "threshold for accepting good step (-tao_bnk_update_type interpolation)", "", bnk->mu2, &bnk->mu2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma1", "radius reduction factor for rejected very bad step (-tao_bnk_update_type interpolation)", "", bnk->gamma1, &bnk->gamma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma2", "radius reduction factor for rejected bad step (-tao_bnk_update_type interpolation)", "", bnk->gamma2, &bnk->gamma2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma3", "radius increase factor for accepted good step (-tao_bnk_update_type interpolation)", "", bnk->gamma3, &bnk->gamma3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_gamma4", "radius increase factor for accepted very good step (-tao_bnk_update_type interpolation)", "", bnk->gamma4, &bnk->gamma4,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_theta", "trust region interpolation factor (-tao_bnk_update_type interpolation)", "", bnk->theta, &bnk->theta,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_min_radius", "lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_max_radius", "upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_epsilon", "tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_as_tol", "initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bnk_as_step", "step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_sval", "(developer) Hessian perturbation starting value", "", bnk->sval, &bnk->sval,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imin", "(developer) minimum initial Hessian perturbation", "", bnk->imin, &bnk->imin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imax", "(developer) maximum initial Hessian perturbation", "", bnk->imax, &bnk->imax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_imfac", "(developer) initial merit factor for Hessian perturbation", "", bnk->imfac, &bnk->imfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmin", "(developer) minimum Hessian perturbation", "", bnk->pmin, &bnk->pmin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmax", "(developer) maximum Hessian perturbation", "", bnk->pmax, &bnk->pmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pgfac", "(developer) Hessian perturbation growth factor", "", bnk->pgfac, &bnk->pgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_psfac", "(developer) Hessian perturbation shrink factor", "", bnk->psfac, &bnk->psfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmgfac", "(developer) merit growth factor for Hessian perturbation", "", bnk->pmgfac, &bnk->pmgfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_pmsfac", "(developer) merit shrink factor for Hessian perturbation", "", bnk->pmsfac, &bnk->pmsfac,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta1", "(developer) threshold for rejecting step (-tao_bnk_update_type reduction)", "", bnk->eta1, &bnk->eta1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta2", "(developer) threshold for accepting marginal step (-tao_bnk_update_type reduction)", "", bnk->eta2, &bnk->eta2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta3", "(developer) threshold for accepting reasonable step (-tao_bnk_update_type reduction)", "", bnk->eta3, &bnk->eta3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_eta4", "(developer) threshold for accepting good step (-tao_bnk_update_type reduction)", "", bnk->eta4, &bnk->eta4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha1", "(developer) radius reduction factor for rejected step (-tao_bnk_update_type reduction)", "", bnk->alpha1, &bnk->alpha1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha2", "(developer) radius reduction factor for marginally accepted bad step (-tao_bnk_update_type reduction)", "", bnk->alpha2, &bnk->alpha2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha3", "(developer) radius increase factor for reasonable accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha3, &bnk->alpha3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha4", "(developer) radius increase factor for good accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha4, &bnk->alpha4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_alpha5", "(developer) radius increase factor for very good accepted step (-tao_bnk_update_type reduction)", "", bnk->alpha5, &bnk->alpha5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu1", "(developer) threshold for small line-search step length (-tao_bnk_update_type step)", "", bnk->nu1, &bnk->nu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu2", "(developer) threshold for reasonable line-search step length (-tao_bnk_update_type step)", "", bnk->nu2, &bnk->nu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu3", "(developer) threshold for large line-search step length (-tao_bnk_update_type step)", "", bnk->nu3, &bnk->nu3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_nu4", "(developer) threshold for very large line-search step length (-tao_bnk_update_type step)", "", bnk->nu4, &bnk->nu4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega1", "(developer) radius reduction factor for very small line-search step length (-tao_bnk_update_type step)", "", bnk->omega1, &bnk->omega1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega2", "(developer) radius reduction factor for small line-search step length (-tao_bnk_update_type step)", "", bnk->omega2, &bnk->omega2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega3", "(developer) radius factor for decent line-search step length (-tao_bnk_update_type step)", "", bnk->omega3, &bnk->omega3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega4", "(developer) radius increase factor for large line-search step length (-tao_bnk_update_type step)", "", bnk->omega4, &bnk->omega4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_omega5", "(developer) radius increase factor for very large line-search step length (-tao_bnk_update_type step)", "", bnk->omega5, &bnk->omega5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu1_i", "(developer) threshold for accepting very good step (-tao_bnk_init_type interpolation)", "", bnk->mu1_i, &bnk->mu1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu2_i", "(developer) threshold for accepting good step (-tao_bnk_init_type interpolation)", "", bnk->mu2_i, &bnk->mu2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma1_i", "(developer) radius reduction factor for rejected very bad step (-tao_bnk_init_type interpolation)", "", bnk->gamma1_i, &bnk->gamma1_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma2_i", "(developer) radius reduction factor for rejected bad step (-tao_bnk_init_type interpolation)", "", bnk->gamma2_i, &bnk->gamma2_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma3_i", "(developer) radius increase factor for accepted good step (-tao_bnk_init_type interpolation)", "", bnk->gamma3_i, &bnk->gamma3_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma4_i", "(developer) radius increase factor for accepted very good step (-tao_bnk_init_type interpolation)", "", bnk->gamma4_i, &bnk->gamma4_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_theta_i", "(developer) trust region interpolation factor (-tao_bnk_init_type interpolation)", "", bnk->theta_i, &bnk->theta_i,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu1", "(developer) threshold for accepting very good step (-tao_bnk_update_type interpolation)", "", bnk->mu1, &bnk->mu1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_mu2", "(developer) threshold for accepting good step (-tao_bnk_update_type interpolation)", "", bnk->mu2, &bnk->mu2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma1", "(developer) radius reduction factor for rejected very bad step (-tao_bnk_update_type interpolation)", "", bnk->gamma1, &bnk->gamma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma2", "(developer) radius reduction factor for rejected bad step (-tao_bnk_update_type interpolation)", "", bnk->gamma2, &bnk->gamma2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma3", "(developer) radius increase factor for accepted good step (-tao_bnk_update_type interpolation)", "", bnk->gamma3, &bnk->gamma3,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_gamma4", "(developer) radius increase factor for accepted very good step (-tao_bnk_update_type interpolation)", "", bnk->gamma4, &bnk->gamma4,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_theta", "(developer) trust region interpolation factor (-tao_bnk_update_type interpolation)", "", bnk->theta, &bnk->theta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_min_radius", "(developer) lower bound on initial radius", "", bnk->min_radius, &bnk->min_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_max_radius", "(developer) upper bound on radius", "", bnk->max_radius, &bnk->max_radius,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_epsilon", "(developer) tolerance used when computing actual and predicted reduction", "", bnk->epsilon, &bnk->epsilon,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);
@@ -1349,56 +1349,57 @@ static PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
-+ -tao_bnk_pc_type - preconditioner type ("none", "ahess", "bfgs", "petsc")
++ -tao_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+. -tao_bnk_pc_type - preconditioner type ("none", "ahess", "bfgs", "petsc")
 . -tao_bnk_bfgs_scale_type - BFGS preconditioner diagonal scaling type ("ahess", "phess", "bfgs")
 . -tao_bnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
 . -tao_bnk_update_type - trust radius update method ("step", "direction", "interpolation")
 . -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
-. -tao_bnk_sval - Hessian perturbation starting value
-. -tao_bnk_imin - minimum initial Hessian perturbation
-. -tao_bnk_imax - maximum initial Hessian perturbation
-. -tao_bnk_pmin - minimum Hessian perturbation
-. -tao_bnk_pmax - maximum Hessian perturbation
-. -tao_bnk_pgfac - Hessian perturbation growth factor
-. -tao_bnk_psfac - Hessian perturbation shrink factor
-. -tao_bnk_imfac - initial merit factor for Hessian perturbation
-. -tao_bnk_pmgfac - merit growth factor for Hessian perturbation
-. -tao_bnk_pmsfac - merit shrink factor for Hessian perturbation
-. -tao_bnk_eta1 - threshold for rejecting step (-tao_bnk_update_type reduction)
-. -tao_bnk_eta2 - threshold for accepting marginal step (-tao_bnk_update_type reduction)
-. -tao_bnk_eta3 - threshold for accepting reasonable step (-tao_bnk_update_type reduction)
-. -tao_bnk_eta4 - threshold for accepting good step (-tao_bnk_update_type reduction)
-. -tao_bnk_alpha1 - radius reduction factor for rejected step (-tao_bnk_update_type reduction)
-. -tao_bnk_alpha2 - radius reduction factor for marginally accepted bad step (-tao_bnk_update_type reduction)
-. -tao_bnk_alpha3 - radius increase factor for reasonable accepted step (-tao_bnk_update_type reduction)
-. -tao_bnk_alpha4 - radius increase factor for good accepted step (-tao_bnk_update_type reduction)
-. -tao_bnk_alpha5 - radius increase factor for very good accepted step (-tao_bnk_update_type reduction)
-. -tao_bnk_mu1 - threshold for accepting very good step (-tao_bnk_update_type interpolation)
-. -tao_bnk_mu2 - threshold for accepting good step (-tao_bnk_update_type interpolation)
-. -tao_bnk_gamma1 - radius reduction factor for rejected very bad step (-tao_bnk_update_type interpolation)
-. -tao_bnk_gamma2 - radius reduction factor for rejected bad step (-tao_bnk_update_type interpolation)
-. -tao_bnk_gamma3 - radius increase factor for accepted good step (-tao_bnk_update_type interpolation)
-. -tao_bnk_gamma4 - radius increase factor for accepted very good step (-tao_bnk_update_type interpolation)
-. -tao_bnk_theta - trust region interpolation factor (-tao_bnk_update_type interpolation)
-. -tao_bnk_nu1 - threshold for small line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_nu2 - threshold for reasonable line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_nu3 - threshold for large line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_nu4 - threshold for very large line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_omega1 - radius reduction factor for very small line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_omega2 - radius reduction factor for small line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_omega3 - radius factor for decent line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_omega4 - radius increase factor for large line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_omega5 - radius increase factor for very large line-search step length (-tao_bnk_update_type step)
-. -tao_bnk_mu1_i -  threshold for accepting very good step (-tao_bnk_init_type interpolation)
-. -tao_bnk_mu2_i -  threshold for accepting good step (-tao_bnk_init_type interpolation)
-. -tao_bnk_gamma1_i - radius reduction factor for rejected very bad step (-tao_bnk_init_type interpolation)
-. -tao_bnk_gamma2_i - radius reduction factor for rejected bad step (-tao_bnk_init_type interpolation)
-. -tao_bnk_gamma3_i - radius increase factor for accepted good step (-tao_bnk_init_type interpolation)
-. -tao_bnk_gamma4_i - radius increase factor for accepted very good step (-tao_bnk_init_type interpolation)
-. -tao_bnk_theta_i -  trust region interpolation factor (-tao_bnk_init_type interpolation)
-. -tao_bnk_as_tol -  initial tolerance used in estimating bounded active variables (-tao_bnk_as_type bertsekas)
-. -tao_bnk_as_step - trial step length used in estimating bounded active variables (-tao_bnk_as_type bertsekas)
-- -tao_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+. -tao_bnk_as_tol - (developer) initial tolerance used in estimating bounded active variables (-tao_bnk_as_type bertsekas)
+. -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-tao_bnk_as_type bertsekas)
+. -tao_bnk_sval - (developer) Hessian perturbation starting value
+. -tao_bnk_imin - (developer) minimum initial Hessian perturbation
+. -tao_bnk_imax - (developer) maximum initial Hessian perturbation
+. -tao_bnk_pmin - (developer) minimum Hessian perturbation
+. -tao_bnk_pmax - (developer) aximum Hessian perturbation
+. -tao_bnk_pgfac - (developer) Hessian perturbation growth factor
+. -tao_bnk_psfac - (developer) Hessian perturbation shrink factor
+. -tao_bnk_imfac - (developer) initial merit factor for Hessian perturbation
+. -tao_bnk_pmgfac - (developer) merit growth factor for Hessian perturbation
+. -tao_bnk_pmsfac - (developer) merit shrink factor for Hessian perturbation
+. -tao_bnk_eta1 - (developer) threshold for rejecting step (-tao_bnk_update_type reduction)
+. -tao_bnk_eta2 - (developer) threshold for accepting marginal step (-tao_bnk_update_type reduction)
+. -tao_bnk_eta3 - (developer) threshold for accepting reasonable step (-tao_bnk_update_type reduction)
+. -tao_bnk_eta4 - (developer) threshold for accepting good step (-tao_bnk_update_type reduction)
+. -tao_bnk_alpha1 - (developer) radius reduction factor for rejected step (-tao_bnk_update_type reduction)
+. -tao_bnk_alpha2 - (developer) radius reduction factor for marginally accepted bad step (-tao_bnk_update_type reduction)
+. -tao_bnk_alpha3 - (developer) radius increase factor for reasonable accepted step (-tao_bnk_update_type reduction)
+. -tao_bnk_alpha4 - (developer) radius increase factor for good accepted step (-tao_bnk_update_type reduction)
+. -tao_bnk_alpha5 - (developer) radius increase factor for very good accepted step (-tao_bnk_update_type reduction)
+. -tao_bnk_epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance (-tao_bnk_update_type reduction)
+. -tao_bnk_mu1 - (developer) threshold for accepting very good step (-tao_bnk_update_type interpolation)
+. -tao_bnk_mu2 - (developer) threshold for accepting good step (-tao_bnk_update_type interpolation)
+. -tao_bnk_gamma1 - (developer) radius reduction factor for rejected very bad step (-tao_bnk_update_type interpolation)
+. -tao_bnk_gamma2 - (developer) radius reduction factor for rejected bad step (-tao_bnk_update_type interpolation)
+. -tao_bnk_gamma3 - (developer) radius increase factor for accepted good step (-tao_bnk_update_type interpolation)
+. -tao_bnk_gamma4 - (developer) radius increase factor for accepted very good step (-tao_bnk_update_type interpolation)
+. -tao_bnk_theta - (developer) trust region interpolation factor (-tao_bnk_update_type interpolation)
+. -tao_bnk_nu1 - (developer) threshold for small line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_nu2 - (developer) threshold for reasonable line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_nu3 - (developer) threshold for large line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_nu4 - (developer) threshold for very large line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_omega1 - (developer) radius reduction factor for very small line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_omega2 - (developer) radius reduction factor for small line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_omega3 - (developer) radius factor for decent line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_omega4 - (developer) radius increase factor for large line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_omega5 - (developer) radius increase factor for very large line-search step length (-tao_bnk_update_type step)
+. -tao_bnk_mu1_i -  (developer) threshold for accepting very good step (-tao_bnk_init_type interpolation)
+. -tao_bnk_mu2_i -  (developer) threshold for accepting good step (-tao_bnk_init_type interpolation)
+. -tao_bnk_gamma1_i - (developer) radius reduction factor for rejected very bad step (-tao_bnk_init_type interpolation)
+. -tao_bnk_gamma2_i - (developer) radius reduction factor for rejected bad step (-tao_bnk_init_type interpolation)
+. -tao_bnk_gamma3_i - (developer) radius increase factor for accepted good step (-tao_bnk_init_type interpolation)
+. -tao_bnk_gamma4_i - (developer) radius increase factor for accepted very good step (-tao_bnk_init_type interpolation)
+- -tao_bnk_theta_i - (developer) trust region interpolation factor (-tao_bnk_init_type interpolation)
 
   Level: beginner
 M*/
