@@ -1527,7 +1527,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       its;
+  PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
 
@@ -1536,6 +1536,8 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value %g,",(double)fct);CHKERRQ(ierr);
   if (gnorm >= PETSC_INFINITY) {
@@ -1547,6 +1549,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   } else {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1571,7 +1574,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       its;
+  PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
 
@@ -1580,10 +1583,13 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer,"iter = %D,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %g ",(double)gnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Constraint: %g \n",(double)tao->cnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
