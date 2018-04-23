@@ -671,6 +671,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt     numLabels, l, numColors, numLColors, dim, depth, cStart, cEnd, c, vStart, vEnd, v, eStart = 0, eEnd = 0, e, p;
     PetscMPIInt  rank, size;
     char         **names, **colors, **lcolors;
+    PetscBool    plotEdges, flg;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -693,6 +694,10 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       numLColors = 4;
       for (c = 0; c < numLColors; ++c) {ierr = PetscStrallocpy(deflcolors[c], &lcolors[c]);CHKERRQ(ierr);}
     }
+    plotEdges = (PetscBool)(depth > 1 && useNumbers && dim < 3);
+    ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_edges", &plotEdges, &flg);CHKERRQ(ierr);
+    if (flg && plotEdges && depth < dim) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh must be interpolated");
+    if (depth < dim) plotEdges = PETSC_FALSE;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -752,8 +757,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     /* Plot edges */
-    if (depth > 1) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
-    if (dim < 3 && useNumbers) {
+    if (depth > 1 || plotEdges) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
+    if (plotEdges) {
       ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "\\path\n");CHKERRQ(ierr);
       for (e = eStart; e < eEnd; ++e) {
@@ -768,7 +773,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
         for (d = 0; d < dof; ++d) {
-          tcoords[d] = (double) (scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
+          tcoords[d] = (double) (0.5*scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
           tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
         }
         /* Rotate coordinates since PGF makes z point out of the page instead of up */
