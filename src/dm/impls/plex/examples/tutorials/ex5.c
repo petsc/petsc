@@ -165,7 +165,7 @@ int main(int argc, char **argv)
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
-    requires: hdf5 exodusii
+    requires: hdf5 exodusii !define(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
 TEST*/
