@@ -1499,7 +1499,7 @@ PetscSF Object: 8 MPI processes
   [6]    32 <- 31
   [6]    36 <- 32
   [7] Roots referenced by my leaves, by rank
-DM Object: 8 MPI processes
+DM Object: (new_) 8 MPI processes
   type: plex
 DM_0x84000004_0 in 3 dimensions:
 Supports:
@@ -2551,6 +2551,6 @@ Process 4:
 Process 5:
 Process 6:
 Process 7:
-PetscSF Object: 8 MPI processes
+PetscSF Object: (new_) 8 MPI processes
   type not yet set
   PetscSFSetGraph() has not been called yet

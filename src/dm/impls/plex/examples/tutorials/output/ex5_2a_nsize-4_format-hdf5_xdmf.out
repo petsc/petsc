@@ -1277,7 +1277,7 @@ PetscSF Object: 4 MPI processes
   [2]    62 <- 37
   [2]    63 <- 38
   [3] Roots referenced by my leaves, by rank
-DM Object: 4 MPI processes
+DM Object: (new_) 4 MPI processes
   type: plex
 DM_0x84000004_0 in 3 dimensions:
 Supports:
@@ -2392,7 +2392,7 @@ Process 3:
   (  61) dim  3 offset 141 -0.25 -0.433013 -1.
   (  62) dim  3 offset 144 1. 0.5 -1.
   (  63) dim  3 offset 147 1. 1. -1.
-PetscSF Object: point SF 4 MPI processes
+PetscSF Object: point SF (new_) 4 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=64, leaves=25, remote ranks=1

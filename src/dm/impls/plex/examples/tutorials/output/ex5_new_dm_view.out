@@ -1,4 +1,4 @@
-DM Object: 2 MPI processes
+DM Object: (new_) 2 MPI processes
   type: plex
 DM_0x84000004_0 in 2 dimensions:
 Supports:
@@ -33,6 +33,6 @@ Process 0:
   (   6) dim  2 offset   8 1. -0.5
   (   7) dim  2 offset  10 1. 0.5
 Process 1:
-PetscSF Object: 2 MPI processes
+PetscSF Object: (new_) 2 MPI processes
   type not yet set
   PetscSFSetGraph() has not been called yet

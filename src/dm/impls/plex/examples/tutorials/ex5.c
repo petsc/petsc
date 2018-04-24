@@ -69,7 +69,8 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
   if (user.distribute) {
     DM dmdist;
@@ -83,6 +84,7 @@ int main(int argc, char **argv)
     }
   }
 
+  ierr = DMSetOptionsPrefix(dm,NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -94,7 +96,8 @@ int main(int argc, char **argv)
     ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
   }
 
-  ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dmnew,"new_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmnew, NULL, "-dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
 
