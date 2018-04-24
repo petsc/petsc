@@ -283,14 +283,22 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
   char           *buff = str;
   size_t         fullLength;
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_VA_COPY)
   va_list        Argpcopy;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_VA_COPY)
   va_copy(Argpcopy,Argp);
+#endif
   ierr = PetscVSNPrintf(str,sizeof(str),format,&fullLength,Argp);CHKERRQ(ierr);
   if (fullLength > sizeof(str)) {
     ierr = PetscMalloc1(fullLength,&buff);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VA_COPY)
     ierr = PetscVSNPrintf(buff,fullLength,format,NULL,Argpcopy);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
+#endif
   }
   fprintf(fd,"%s",buff);CHKERRQ(ierr);
   fflush(fd);
