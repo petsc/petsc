@@ -460,7 +460,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
 
    test:
       suffix: 2
-      args: -tao_monitor -tao_type ssfls -tao_max_it 9
+      args: -tao_monitor -tao_type ssfls -tao_max_it 10
       requires: !single
 
    test:
@@ -475,17 +475,17 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
 
    test:
       suffix: 5
-      args: -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi -tao_max_it 5
+      args: -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi -tao_max_it 6
       requires: !single
 
    test:
       suffix: 6
-      args: -tao_monitor -tao_type asfls -tao_subset_type subvec -tao_max_it 9
+      args: -tao_monitor -tao_type asfls -tao_subset_type subvec -tao_max_it 10
       requires: !single
 
    test:
       suffix: 7
-      args: -tao_monitor -tao_type asfls -tao_subset_type mask -tao_max_it 9
+      args: -tao_monitor -tao_type asfls -tao_subset_type mask -tao_max_it 10
       requires: !single
 
 TEST*/
