@@ -133,6 +133,7 @@ int main(int argc, char **argv)
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -petscpartitioner_type simple
+    args: -dm_view ascii::ascii_info_detail
     args: -new_dm_view ascii::ascii_info_detail
     args: -format {{default hdf5_petsc}separate output}
     args: -interpolate {{0 1}separate output}
@@ -142,6 +143,7 @@ int main(int argc, char **argv)
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -petscpartitioner_type simple
+    args: -dm_view ascii::ascii_info_detail
     args: -new_dm_view ascii::ascii_info_detail
     args: -format {{hdf5_xdmf hdf5_viz}separate output}
   test:
