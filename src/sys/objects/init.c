@@ -83,11 +83,7 @@ MPI_Datatype MPIU_ENUM;
 */
 PetscErrorCode (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
-#else
 PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
-#endif
 /*
   This is needed to turn on/off GPU synchronization
 */
