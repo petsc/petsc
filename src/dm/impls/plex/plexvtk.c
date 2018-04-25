@@ -321,6 +321,9 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
   enforceDof = PetscMax(enforceDof, maxDof);
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   if (!rank) {
+#if defined(PETSC_USE_REAL___FLOAT128)
+    double dval;
+#endif
     char formatString[8];
 
     ierr = PetscSNPrintf(formatString, 8, "%%.%de", precision);CHKERRQ(ierr);
@@ -347,7 +350,12 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
           if (d > 0) {
             ierr = PetscFPrintf(comm, fp, " ");CHKERRQ(ierr);
           }
+#if defined(PETSC_USE_REAL___FLOAT128)
+          dval = (double)PetscRealPart(array[off+d])*scale;
+          ierr = PetscFPrintf(comm, fp, formatString, dval);CHKERRQ(ierr);
+#else
           ierr = PetscFPrintf(comm, fp, formatString, PetscRealPart(array[off+d])*scale);CHKERRQ(ierr);
+#endif
         }
         for (d = dof; d < enforceDof; d++) {
           ierr = PetscFPrintf(comm, fp, " 0.0");CHKERRQ(ierr);
@@ -368,7 +376,12 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
           if (d > 0) {
             ierr = PetscFPrintf(comm, fp, " ");CHKERRQ(ierr);
           }
+#if defined(PETSC_USE_REAL___FLOAT128)
+          dval = PetscRealPart(remoteValues[p*maxDof+d])*scale;
+          ierr = PetscFPrintf(comm, fp, formatString, dval);CHKERRQ(ierr);
+#else
           ierr = PetscFPrintf(comm, fp, formatString, PetscRealPart(remoteValues[p*maxDof+d])*scale);CHKERRQ(ierr);
+#endif
         }
         for (d = maxDof; d < enforceDof; ++d) {
           ierr = PetscFPrintf(comm, fp, " 0.0");CHKERRQ(ierr);
