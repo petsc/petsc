@@ -124,7 +124,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
-#include <mpi.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#  include <petsc/mpiuni/mpi.h>
+#else
+#  include <mpi.h>
+#endif
 
 /*
    Perform various sanity checks that the correct mpi.h is being included at compile time.
