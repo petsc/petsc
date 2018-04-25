@@ -15,6 +15,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
@@ -1222,8 +1223,9 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_hypre_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_is_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3045,8 +3047,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C",MatSeqBAIJSetPreallocationCSR_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_baij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqbaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);

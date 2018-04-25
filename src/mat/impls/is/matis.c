@@ -8,7 +8,6 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/sfimpl.h>
 
 #define MATIS_MAX_ENTRIES_INSERTION 2048
@@ -279,62 +278,328 @@ static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+static PetscErrorCode MatConvert_SeqXAIJ_IS(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  Mat_MPIAIJ             *aij  = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ             *diag = (Mat_SeqAIJ*)(aij->A->data);
-  Mat_SeqAIJ             *offd = (Mat_SeqAIJ*)(aij->B->data);
-  Mat                    lA;
+  Mat            B,lB;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (reuse != MAT_REUSE_MATRIX) {
+    ISLocalToGlobalMapping rl2g,cl2g;
+    PetscInt               bs;
+    IS                     is;
+
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A),A->rmap->n/bs,0,1,&is);CHKERRQ(ierr);
+    if (bs > 1) {
+      IS       is2;
+      PetscInt i,*aux;
+
+      ierr = ISGetLocalSize(is,&i);CHKERRQ(ierr);
+      ierr = ISGetIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+      ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),bs,i,aux,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      is   = is2;
+    }
+    ierr = ISSetIdentity(is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A),A->cmap->n/bs,0,1,&is);CHKERRQ(ierr);
+    if (bs > 1) {
+      IS       is2;
+      PetscInt i,*aux;
+
+      ierr = ISGetLocalSize(is,&i);CHKERRQ(ierr);
+      ierr = ISGetIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+      ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),bs,i,aux,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      is   = is2;
+    }
+    ierr = ISSetIdentity(is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = MatCreateIS(PetscObjectComm((PetscObject)A),bs,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,rl2g,cl2g,&B);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&lB);CHKERRQ(ierr);
+    if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
+  } else {
+    B    = *newmat;
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    lB   = A;
+  }
+  ierr = MatISSetLocalMat(B,lB);CHKERRQ(ierr);
+  ierr = MatDestroy(&lB);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatISScaleDisassembling_Private(Mat A)
+{
+  Mat_IS            *matis = (Mat_IS*)(A->data);
+  const PetscScalar *sc;
+  PetscScalar       *aa;
+  const PetscInt    *ii,*jj;
+  PetscInt          i,n,m;
+  PetscInt          *ecount,**eneighs,n_neigh,*neigh,*n_shared,**shared;
+  PetscBool         flg;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(matis->counter,&n);CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&ecount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(A->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  for (i=1,m=0;i<n_neigh;i++) {
+    PetscInt j;
+
+    m += n_shared[i];
+    for (j=0;j<n_shared[i];j++) ecount[shared[i][j]]++;
+  }
+  if (n) { ierr = PetscMalloc1(m,&eneighs[0]);CHKERRQ(ierr); }
+  for (i=1;i<n;i++) eneighs[i] = eneighs[i-1] + ecount[i-1];
+  ierr = PetscMemzero(ecount,n*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=1;i<n_neigh;i++) {
+    PetscInt j;
+
+    for (j=0;j<n_shared[i];j++) {
+      PetscInt k = shared[i][j];
+
+      eneighs[k][ecount[k]] = neigh[i];
+      ecount[k]++;
+    }
+  }
+  for (i=0;i<n;i++) { ierr = PetscSortRemoveDupsInt(&ecount[i],eneighs[i]);CHKERRQ(ierr); }
+  ierr = ISLocalToGlobalMappingRestoreInfo(A->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(matis->counter,&sc);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&m,&ii,&jj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get IJ structure");
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D != %D",m,n);
+  ierr = MatSeqAIJGetArray(matis->A,&aa);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    if (PetscUnlikely(ecount[i])) {
+      PetscInt          j;
+
+      for (j=ii[i];j<ii[i+1];j++) {
+        PetscInt i2 = jj[j],p,p2;
+        PetscScalar scal = 1.0;
+
+        for (p=0;p<ecount[i];p++) {
+          for (p2=0;p2<ecount[i2];p2++) {
+            if (eneighs[i][p] == eneighs[i2][p2]) { scal += 1.0; break; }
+          }
+        }
+        aa[j] /= scal;
+      }
+    }
+  }
+  ierr = PetscFree(ecount);CHKERRQ(ierr);
+  if (n) {
+    ierr = PetscFree(eneighs[0]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(eneighs);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(matis->A,&aa);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&m,&ii,&jj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore IJ structure");
+  ierr = VecRestoreArrayRead(matis->counter,&sc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLocalToGlobalMapping *l2g)
+{
+  Mat            /*Ad,*/Ao;
+  IS             is;
+  MPI_Comm       comm;
+  const PetscInt *garray;
+  PetscInt       bs, mode = 0;
+  PetscBool      ismpiaij,ismpibaij,useAl2g = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-mat_aij_is_usel2g",&useAl2g,NULL);CHKERRQ(ierr);
+  if (useAl2g) {
+    ierr = MatGetLocalToGlobalMapping(A,l2g,NULL);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  if (ismpiaij) {
+    bs   = 1;
+    ierr = MatMPIAIJGetSeqAIJ(A,NULL,&Ao,&garray);CHKERRQ(ierr);
+  } else if (ismpibaij) {
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    ierr = MatMPIBAIJGetSeqBAIJ(A,NULL,&Ao,&garray);CHKERRQ(ierr);
+  } else SETERRQ1(comm,PETSC_ERR_SUP,"Type %s",((PetscObject)A)->type_name);
+  if (!garray) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"garray not present");
+  switch(mode) {
+  default:
+    if (A->rmap->n) {
+      PetscInt i,dc,oc,stc,*aux;
+
+      ierr = MatGetLocalSize(A,NULL,&dc);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Ao,NULL,&oc);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRangeColumn(A,&stc,NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1((dc+oc)/bs,&aux);CHKERRQ(ierr);
+      for (i=0; i<dc/bs; i++) aux[i]       = i+stc/bs;
+      for (i=0; i<oc/bs; i++) aux[i+dc/bs] = garray[i];
+      ierr = ISCreateBlock(comm,bs,(dc+oc)/bs,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateBlock(comm,1,0,NULL,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    }
+    ierr = ISLocalToGlobalMappingCreateIS(is,l2g);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+{
+  Mat                    lA,Ad,Ao,B = NULL;
   ISLocalToGlobalMapping rl2g,cl2g;
   IS                     is;
   MPI_Comm               comm;
   void                   *ptrs[2];
   const char             *names[2] = {"_convert_csr_aux","_convert_csr_data"};
+  const PetscInt         *garray;
   PetscScalar            *dd,*od,*aa,*data;
-  PetscInt               *di,*dj,*oi,*oj;
+  const PetscInt         *di,*dj,*oi,*oj;
+  const PetscInt         *odi,*odj,*ooi,*ooj;
   PetscInt               *aux,*ii,*jj;
-  PetscInt               lc,dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
+  PetscInt               bs,lc,dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
+  PetscBool              flg,ismpiaij,ismpibaij,was_inplace = PETSC_FALSE;
+  PetscMPIInt            size;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  if (!aij->garray) SETERRQ(comm,PETSC_ERR_SUP,"garray not present");
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatConvert_SeqXAIJ_IS(A,type,reuse,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (reuse != MAT_REUSE_MATRIX && A->cmap->N == A->rmap->N) {
+    ierr = MatMPIXAIJComputeLocalToGlobalMapping_Private(A,&rl2g);CHKERRQ(ierr);
+    ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATIS);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(B,rl2g,rl2g);CHKERRQ(ierr);
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(B,bs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+    if (reuse == MAT_INPLACE_MATRIX) was_inplace = PETSC_TRUE;
+    reuse = MAT_REUSE_MATRIX;
+  }
+  if (reuse == MAT_REUSE_MATRIX) {
+    Mat            *newlA, lA;
+    IS             rows, cols;
+    const PetscInt *ridx, *cidx;
+    PetscInt       rbs, cbs, nr, nc;
+
+    if (!B) B = *newmat;
+    ierr = MatGetLocalToGlobalMapping(B,&rl2g,&cl2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockIndices(rl2g,&ridx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockIndices(cl2g,&cidx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(rl2g,&nr);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(cl2g,&nc);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(rl2g,&rbs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(cl2g,&cbs);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,rbs,nr/rbs,ridx,PETSC_USE_POINTER,&rows);CHKERRQ(ierr);
+    if (rl2g != cl2g) {
+      ierr = ISCreateBlock(comm,cbs,nc/cbs,cidx,PETSC_USE_POINTER,&cols);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject)rows);CHKERRQ(ierr);
+      cols = rows;
+    }
+    ierr = MatISGetLocalMat(B,&lA);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&rows,&cols,MAT_INITIAL_MATRIX,&newlA);CHKERRQ(ierr);
+    ierr = MatConvert(newlA[0],MATSEQAIJ,MAT_INPLACE_MATRIX,&newlA[0]);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(rl2g,&ridx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(cl2g,&cidx);CHKERRQ(ierr);
+    ierr = ISDestroy(&rows);CHKERRQ(ierr);
+    ierr = ISDestroy(&cols);CHKERRQ(ierr);
+    if (!lA->preallocated) { /* first time */
+      ierr = MatDuplicate(newlA[0],MAT_COPY_VALUES,&lA);CHKERRQ(ierr);
+      ierr = MatISSetLocalMat(B,lA);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)lA);CHKERRQ(ierr);
+    }
+    ierr = MatCopy(newlA[0],lA,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroySubMatrices(1,&newlA);CHKERRQ(ierr);
+    ierr = MatISScaleDisassembling_Private(B);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (was_inplace) { ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr); }
+    else *newmat = B;
+    PetscFunctionReturn(0);
+  }
+  /* rectangular case, just compress out the column space */
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  if (ismpiaij) {
+    bs   = 1;
+    ierr = MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray);CHKERRQ(ierr);
+  } else if (ismpibaij) {
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    ierr = MatMPIBAIJGetSeqBAIJ(A,&Ad,&Ao,&garray);CHKERRQ(ierr);
+    ierr = MatConvert(Ad,MATSEQAIJ,MAT_INITIAL_MATRIX,&Ad);CHKERRQ(ierr);
+    ierr = MatConvert(Ao,MATSEQAIJ,MAT_INITIAL_MATRIX,&Ao);CHKERRQ(ierr);
+  } else SETERRQ1(comm,PETSC_ERR_SUP,"Type %s",((PetscObject)A)->type_name);
+  ierr = MatSeqAIJGetArray(Ad,&dd);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(Ao,&od);CHKERRQ(ierr);
+  if (!garray) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"garray not present");
 
   /* access relevant information from MPIAIJ */
   ierr = MatGetOwnershipRange(A,&str,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&stc,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&dr,&dc);CHKERRQ(ierr);
-  di   = diag->i;
-  dj   = diag->j;
-  dd   = diag->a;
-  oc   = aij->B->cmap->n;
-  oi   = offd->i;
-  oj   = offd->j;
-  od   = offd->a;
-  nnz  = diag->i[dr] + offd->i[dr];
+  ierr = MatGetLocalSize(Ao,NULL,&oc);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(Ad,0,PETSC_FALSE,PETSC_FALSE,&i,&di,&dj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get IJ structure");
+  ierr = MatGetRowIJ(Ao,0,PETSC_FALSE,PETSC_FALSE,&i,&oi,&oj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get IJ structure");
+  nnz = di[dr] + oi[dr];
+  /* store original pointers to be restored later */
+  odi = di; odj = dj; ooi = oi; ooj = oj;
 
   /* generate l2g maps for rows and cols */
-  ierr = ISCreateStride(comm,dr,str,1,&is);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,dr/bs,str/bs,1,&is);CHKERRQ(ierr);
+  if (bs > 1) {
+    IS is2;
+
+    ierr = ISGetLocalSize(is,&i);CHKERRQ(ierr);
+    ierr = ISGetIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,bs,i,aux,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is,(const PetscInt**)&aux);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    is   = is2;
+  }
   ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   if (dr) {
-    ierr = PetscMalloc1(dc+oc,&aux);CHKERRQ(ierr);
-    for (i=0; i<dc; i++) aux[i]    = i+stc;
-    for (i=0; i<oc; i++) aux[i+dc] = aij->garray[i];
-    ierr = ISCreateGeneral(comm,dc+oc,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    ierr = PetscMalloc1((dc+oc)/bs,&aux);CHKERRQ(ierr);
+    for (i=0; i<dc/bs; i++) aux[i]       = i+stc/bs;
+    for (i=0; i<oc/bs; i++) aux[i+dc/bs] = garray[i];
+    ierr = ISCreateBlock(comm,bs,(dc+oc)/bs,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
     lc   = dc+oc;
   } else {
-    ierr = ISCreateGeneral(comm,0,NULL,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,bs,0,NULL,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
     lc   = 0;
   }
   ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* create MATIS object */
-  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*newmat,dr,dc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,MATIS);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,cl2g);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,dr,dc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATIS);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,bs);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(B,rl2g,cl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
 
@@ -352,6 +617,14 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
      *(++ii) = *(di++) + *(oi++);
   }
   for (;cum<dr;cum++) *(++ii) = nnz;
+
+  ierr = MatRestoreRowIJ(Ad,0,PETSC_FALSE,PETSC_FALSE,&i,&odi,&odj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore IJ structure");
+  ierr = MatRestoreRowIJ(Ao,0,PETSC_FALSE,PETSC_FALSE,&i,&ooi,&ooj,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore IJ structure");
+  ierr = MatSeqAIJRestoreArray(Ad,&dd);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(Ao,&od);CHKERRQ(ierr);
+
   ii   = aux;
   jj   = aux+dr+1;
   aa   = data;
@@ -369,12 +642,19 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
     ierr = PetscObjectCompose((PetscObject)lA,names[i],(PetscObject)c);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
   }
+  if (ismpibaij) { /* destroy converted local matrices */
+    ierr = MatDestroy(&Ad);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ao);CHKERRQ(ierr);
+  }
 
   /* finalize matrix */
-  ierr = MatISSetLocalMat(*newmat,lA);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(B,lA);CHKERRQ(ierr);
   ierr = MatDestroy(&lA);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else *newmat = B;
   PetscFunctionReturn(0);
 }
 
@@ -1678,14 +1958,15 @@ PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_IS         *matis = (Mat_IS*)(mat->data);
-  PetscInt       bs,m,n,M,N;
+  PetscInt       rbs,cbs,m,n,M,N;
   Mat            B,localmat;
 
   PetscFunctionBegin;
-  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(mat->rmap->mapping,&rbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(mat->cmap->mapping,&cbs);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,mat->rmap->mapping,mat->cmap->mapping,&B);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),rbs == cbs ? rbs : 1,m,n,M,N,mat->rmap->mapping,mat->cmap->mapping,&B);CHKERRQ(ierr);
   ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
   ierr = MatDestroy(&localmat);CHKERRQ(ierr);

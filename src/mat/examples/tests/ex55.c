@@ -146,6 +146,22 @@ int main(int argc,char **args)
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
+
+  /* test BAIJ to MATIS */
+  if (size > 1) {
+    ierr = MatConvert(C,MATIS,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to MATIS");
+    ierr = MatConvert(C,MATIS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion (reuse) from BAIJ to MATIS");
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATIS,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion (inplace) from BAIJ to MATIS");
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
