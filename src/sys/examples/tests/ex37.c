@@ -33,12 +33,12 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"buffer :%s: fullLength %d\n",buffer,(int)fullLength);CHKERRQ(ierr);
 
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is not long enough */
-  for (i=0; i<255; i++) longstr[i] = 's'; longstr[255] = 0;
+  for (i=0; i<255; i++) {longstr[i] = 's';} longstr[255] = 0;
   ierr = TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s",longstr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"longstr fullLength %d\n",(int)fullLength);CHKERRQ(ierr);
 
   /* test that PetscPrintf() works for strings longer than the default buffer size */
-  for (i=0; i<9998; i++) superlongstr[i] = 's'; superlongstr[9998] = 't'; superlongstr[9999] = 0;
+  for (i=0; i<9998; i++) {superlongstr[i] = 's';} superlongstr[9998] = 't'; superlongstr[9999] = 0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Greetings %s",superlongstr);CHKERRQ(ierr);
 
   /* test that PetscSynchronizedPrintf() works for strings longer than the default buffer size */
