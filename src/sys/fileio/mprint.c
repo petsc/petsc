@@ -173,12 +173,8 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fu
     ierr      = PetscMalloc1(newLength, &newformat);CHKERRQ(ierr);
   }
   ierr = PetscFormatConvert(format,newformat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VSNPRINTF_CHAR)
-  flen = vsnprintf(str,len,newformat,(char*)Argp);
-#elif defined(PETSC_HAVE_VSNPRINTF)
+#if defined(PETSC_HAVE_VSNPRINTF)
   flen = vsnprintf(str,len,newformat,Argp);
-#elif defined(PETSC_HAVE__VSNPRINTF)
-  flen = _vsnprintf(str,len,newformat,Argp);
 #else
 #error "vsnprintf not found"
 #endif
