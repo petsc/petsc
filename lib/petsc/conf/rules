@@ -371,31 +371,18 @@ getautoconfargs:
 	fi
 
 .c.o .ad.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
 	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
 
 .cpp.o .cxx.o .cc.o .C.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
 	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
-
 #
 #   Compiles CUDA code
 .cu.o:
