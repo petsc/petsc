@@ -324,7 +324,13 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     }
     /* Solve stage equation LHS X = RHS for second-order adjoint */
     for (nadj=0; nadj<ts->numcost; nadj++) {
+      KSPConvergedReason kspreason;
       ierr = KSPSolveTranspose(ksp,VecsSensi2Temp[nadj],VecsDeltaLam2[nadj]);CHKERRQ(ierr);
+      ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
+      if (kspreason < 0) {
+        ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
+        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+      }
     }
   }
 
