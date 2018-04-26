@@ -176,7 +176,7 @@ PetscErrorCode MatFactorClearError(Mat mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFindNonzeroRows_Basic(Mat mat,IS *keptrows)
+PETSC_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat,PetscBool cols,PetscReal tol,IS *nonzero)
 {
   PetscErrorCode    ierr;
   Vec               r,l;
@@ -184,22 +184,39 @@ static PetscErrorCode MatFindNonzeroRows_Basic(Mat mat,IS *keptrows)
   PetscInt          i,nz,gnz,N,n;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mat,&n,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(mat,&r,&l);CHKERRQ(ierr);
-  ierr = VecSet(l,0.0);CHKERRQ(ierr);
-  ierr = VecSetRandom(r,NULL);CHKERRQ(ierr);
-  ierr = MatMult(mat,r,l);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(l,&al);CHKERRQ(ierr);
-  for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nz++;
+  if (!cols) { /* nonzero rows */
+    ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(mat,&n,NULL);CHKERRQ(ierr);
+    ierr = VecSet(l,0.0);CHKERRQ(ierr);
+    ierr = VecSetRandom(r,NULL);CHKERRQ(ierr);
+    ierr = MatMult(mat,r,l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(l,&al);CHKERRQ(ierr);
+  } else { /* nonzero columns */
+    ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(mat,NULL,&n);CHKERRQ(ierr);
+    ierr = VecSet(r,0.0);CHKERRQ(ierr);
+    ierr = VecSetRandom(l,NULL);CHKERRQ(ierr);
+    ierr = MatMultTranspose(mat,l,r);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(r,&al);CHKERRQ(ierr);
+  }
+  if (tol <= 0.0) { for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nz++; }
+  else { for (i=0,nz=0;i<n;i++) if (PetscAbsScalar(al[i]) > tol) nz++; }
   ierr = MPIU_Allreduce(&nz,&gnz,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
   if (gnz != N) {
     PetscInt *nzr;
     ierr = PetscMalloc1(nz,&nzr);CHKERRQ(ierr);
-    if (nz) { for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nzr[nz++] = i; }
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),nz,nzr,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
-  } else *keptrows = NULL;
-  ierr = VecRestoreArrayRead(l,&al);CHKERRQ(ierr);
+    if (nz) {
+      if (tol < 0) { for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nzr[nz++] = i; }
+      else { for (i=0,nz=0;i<n;i++) if (PetscAbsScalar(al[i]) > tol) nzr[nz++] = i; }
+    }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),nz,nzr,PETSC_OWN_POINTER,nonzero);CHKERRQ(ierr);
+  } else *nonzero = NULL;
+  if (!cols) { /* nonzero rows */
+    ierr = VecRestoreArrayRead(l,&al);CHKERRQ(ierr);
+  } else {
+    ierr = VecRestoreArrayRead(r,&al);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&l);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -231,7 +248,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->findnonzerorows) {
-    ierr = MatFindNonzeroRows_Basic(mat,keptrows);CHKERRQ(ierr);
+    ierr = MatFindNonzeroRowsOrCols_Basic(mat,PETSC_FALSE,0.0,keptrows);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
   }
@@ -9103,6 +9120,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=NULL;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -9126,6 +9144,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
 
+    if (!(*C)->ops->ptapnumeric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"MatPtAPNumeric implementation is missing. You cannot use MAT_REUSE_MATRIX");
     ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
     ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
@@ -9139,7 +9158,8 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 
   fA = A->ops->ptap;
   fP = P->ops->ptap;
-  if (fP == fA) {
+  ierr = PetscStrcmp(((PetscObject)A)->type_name,((PetscObject)P)->type_name,&sametype);CHKERRQ(ierr);
+  if (fP == fA && sametype) {
     if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",((PetscObject)A)->type_name);
     ptap = fA;
   } else {
