@@ -1432,6 +1432,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
         p = buffer;
       }
       ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]);CHKERRQ(ierr);
+      countused--;
       countused += p - buffer;
       if (countused > ftablealloc-ftableused-1) { /* reallocate */
         char *ftablenew;

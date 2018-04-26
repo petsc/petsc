@@ -1836,10 +1836,14 @@ PETSC_EXTERN PetscErrorCode PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscPrintf(MPI_Comm,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintf(char*,size_t,const char [],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
+PETSC_EXTERN PetscErrorCode PetscFormatRealArray(char[],size_t,const char*,PetscInt,const PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+
+PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char*,size_t*);
+PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char*,char *);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);

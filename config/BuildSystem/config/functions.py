@@ -171,12 +171,8 @@ builtin and then its argument prototype would still apply. */
 
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
-    if self.checkLink('#include <stdio.h>\n', '_vsnprintf(0,0,0,0);\n'):
-      self.addDefine('HAVE__VSNPRINTF', 1)
-      return
-    self.check('vsnprintf')
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
-      self.addDefine('HAVE_VSNPRINTF_CHAR', 1)
+    if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
+      self.addDefine('HAVE_VSNPRINTF', 1)
     return
 
   def checkSignalHandlerType(self):
