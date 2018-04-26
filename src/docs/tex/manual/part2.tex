@@ -4619,10 +4619,10 @@ finite difference Jacobian approximation.  These are set with the command
 MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
 \end{lstlisting}
 The parameter \lstinline{rerror} is the square root of
-the relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision), which assumes 
-that the functions are evaluated to full floating-point precision accuracy. The
+the relative error in the function evaluations, $e_{rel}$; the default is 100 $\times$ the square root of machine epsilon (about $10^{-6}$ in double precision), which assumes
+that the functions are evaluated approximately to floating-point precision accuracy. The
 second parameter, \lstinline{umin}, is a bit more involved; its default is
-$ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
+$ 10e^{-6} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
 approximated by the formula
 \[
     F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
