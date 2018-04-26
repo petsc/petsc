@@ -307,7 +307,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     }
     /* Gather the ray data to proc 0 */
     if (size > 1) {
-      PetscInt *cnt, *displs, p;
+      int *cnt, *displs, p;
 
       ierr = PetscCalloc2(size, &cnt, size, &displs);CHKERRQ(ierr);
       ierr = MPI_Gather(&n, 1, MPIU_INT, cnt, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
