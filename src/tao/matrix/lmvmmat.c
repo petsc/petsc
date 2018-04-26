@@ -292,6 +292,8 @@ PetscErrorCode MatDestroy_LMVM(Mat M)
     ierr = VecDestroy(&ctx->P);CHKERRQ(ierr);
     ierr = VecDestroy(&ctx->Q);CHKERRQ(ierr);
     ierr = VecDestroy(&ctx->H0_norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Xwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Bwork);CHKERRQ(ierr);
     if (ctx->scale) {
       ierr = VecDestroy(&ctx->scale);CHKERRQ(ierr);
     }

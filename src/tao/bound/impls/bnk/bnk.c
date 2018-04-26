@@ -1227,9 +1227,7 @@ static PetscErrorCode TaoDestroy_BNK(Tao tao)
   if (bnk->H_inactive != tao->hessian) {
     ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   }
-  if (bnk->max_cg_its > 0) {
-    ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
-  }
+  ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
