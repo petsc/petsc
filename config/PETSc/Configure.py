@@ -270,6 +270,9 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      cxx_linker = self.setCompilers.getLinker()
+      self.addMakeMacro('CXX_LINKER',cxx_linker)
+      self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
 
     # C preprocessor values
