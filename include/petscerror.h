@@ -64,7 +64,6 @@
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
-#if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
@@ -493,39 +492,6 @@ M*/
 #define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(_7_ierr);} while(0)
 
 #define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)
-
-#else /* PETSC_USE_ERRORCHECKING */
-
-/*
-    These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
-*/
-
-#define SETERRQ(c,ierr,s)
-#define SETERRMPI(comm,ierr,s)
-#define SETERRQ1(c,ierr,s,a1)
-#define SETERRQ2(c,ierr,s,a1,a2)
-#define SETERRQ3(c,ierr,s,a1,a2,a3)
-#define SETERRQ4(c,ierr,s,a1,a2,a3,a4)
-#define SETERRQ5(c,ierr,s,a1,a2,a3,a4,a5)
-#define SETERRQ6(c,ierr,s,a1,a2,a3,a4,a5,a6)
-#define SETERRQ7(c,ierr,s,a1,a2,a3,a4,a5,a6,a7)
-#define SETERRQ8(c,ierr,s,a1,a2,a3,a4,a5,a6,a7,a8)
-#define SETERRABORT(comm,ierr,s)
-
-#define CHKERRQ(ierr)     ;
-#define CHKERRV(ierr)     ;
-#define CHKERRABORT(comm,n) ;
-#define CHKERRCONTINUE(ierr) ;
-#define CHKERRMPI(ierr) ;
-#define CHKMEMQ        ;
-#define CHKERRCUDA(err) ;
-#define CHKERRCUBLAS(err) ;
-
-#ifdef PETSC_CLANGUAGE_CXX
-#define CHKERRXX(ierr) ;
-#endif
-
-#endif /* PETSC_USE_ERRORCHECKING */
 
 /*E
   PetscErrorType - passed to the PETSc error handling routines indicating if this is the first or a later call to the error handlers
