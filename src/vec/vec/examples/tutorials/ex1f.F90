@@ -45,8 +45,7 @@
       three = 3.0
       n     = 20
       ithree = 3
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       nfloat = n
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -107,9 +106,7 @@
       if (rank .eq. 0) then
 #if defined(PETSC_USE_COMPLEX)
          write(6,100) int(PetscRealPart(dot))
-         write(6,110) int(PetscRealPart(dots(1))),                               &
-     &                int(PetscRealPart(dots(2))),                               &
-     &                int(PetscRealPart(dots(3)))
+         write(6,110) int(PetscRealPart(dots(1))),int(PetscRealPart(dots(2))),int(PetscRealPart(dots(3)))
 #else
          write(6,100) int(dot)
          write(6,110) int(dots(1)),int(dots(2)),int(dots(3))
