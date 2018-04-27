@@ -1,0 +1,16 @@
+
+---- Minimum Surface Area Problem -----
+mx: 4     my: 4
+
+iter =   0, Function value 1.41928, Residual: 0.210376
+iter =   0, Function value 1.41047, Residual: 0.106027
+  iter =   0,   Function value 1.41047,   Residual: 0.106027
+  iter =   1,   Function value 1.40906,   Residual: 0.0758774
+  iter =   2,   Function value 1.40812,   Residual: 0.0541528
+  iter =   3,   Function value 1.40792,   Residual: 0.0522321
+iter =   1, Function value 1.40731, Residual: 0.000760994
+  iter =   0,   Function value 1.40731,   Residual: 0.000760994
+  iter =   1,   Function value 1.40731,   Residual: 0.00022037
+  iter =   2,   Function value 1.40731,   Residual: 0.00022037
+  iter =   3,   Function value 1.40731,   Residual: 0.00022037
+iter =   2, Function value 1.40731, Residual: < 1.0e-6
