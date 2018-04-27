@@ -1,6 +1,15 @@
 # -*- mode: makefile -*-
 #
 
+ex%: ex%.o | chkopts
+	-${CLINKER} -o $@ $^  ${PETSC_LIB}
+
+ex%f: ex%f.o | chkopts
+	-${FLINKER} -o $@ $^  ${PETSC_LIB}
+
+ex%f90: ex%f90.o | chkopts
+	-${FLINKER} -o $@ $^  ${PETSC_LIB}
+
 
 TESTMODE = testexamples
 ALLTESTS_CHECK_FAILURES = no
