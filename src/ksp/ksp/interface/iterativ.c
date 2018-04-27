@@ -473,6 +473,8 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
   This is because the later digits are meaningless and are often
   different on different machines; by using this routine different
   machines will usually generate the same output.
+
+  Deprecated: Intentionally has no manual page
 */
 PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,PetscViewerAndFormat *dummy)
 {
