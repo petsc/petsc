@@ -7,7 +7,7 @@ MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex15.c ex16.c  ex18.c ex19.c ex42.c ex42a.c ex21.c
-EXAMPLESF	 = ex1f.F ex1f90.F90 ex2f.F ex3f.F ex4f.F ex4f90.F90 ex7f.F ex9f.F90 ex11f.F ex14f.F90 ex20f90.F90 ex21f90.F90
+EXAMPLESF	 = ex1f.F90 ex1f90.F90 ex2f.F ex3f.F ex4f.F ex4f90.F90 ex7f.F ex9f.F90 ex11f.F ex14f.F90 ex20f90.F90 ex21f90.F90
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
