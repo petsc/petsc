@@ -2,15 +2,15 @@
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
-iter =   0, Function value 1.67039, Residual: 0.47529 
-iter =   1, Function value 1.58436, Residual: 0.551899 
-iter =   2, Function value 1.52511, Residual: 0.255694 
-iter =   3, Function value 1.51512, Residual: 0.142772 
+  iter =   0,   Function value 1.67039,   Residual: 0.47529 
+  iter =   1,   Function value 1.58436,   Residual: 0.551899 
+  iter =   2,   Function value 1.52511,   Residual: 0.255694 
+  iter =   3,   Function value 1.51512,   Residual: 0.142772 
 iter =   1, Function value 1.50572, Residual: 0.0137756 
-iter =   0, Function value 1.50572, Residual: 0.0137743 
-iter =   1, Function value 1.50568, Residual: 0.00648062 
-iter =   2, Function value 1.50567, Residual: 0.00484078 
-iter =   3, Function value 1.50567, Residual: 0.00348228 
+  iter =   0,   Function value 1.50572,   Residual: 0.0137743 
+  iter =   1,   Function value 1.50568,   Residual: 0.00648062 
+  iter =   2,   Function value 1.50567,   Residual: 0.00484078 
+  iter =   3,   Function value 1.50567,   Residual: 0.00348228 
 iter =   2, Function value 1.50566, Residual: 5.08817e-06 
 Tao Object: 1 MPI processes
   type: bnls

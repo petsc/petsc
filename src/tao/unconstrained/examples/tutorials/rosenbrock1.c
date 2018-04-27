@@ -225,7 +225,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type nls
+      args: -tao_smonitor -tao_type nls -tao_gttol 1.e-5
       requires: !single
 
    test:
@@ -234,35 +234,35 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 
    test:
       suffix: 3
-      args: -tao_smonitor -tao_type ntr
+      args: -tao_smonitor -tao_type ntr -tao_gttol 1.e-5
       requires: !single
 
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none
+      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gttol 1.e-5
       
    test:
       suffix: 5
-      args: -tao_smonitor -tao_type bntr
+      args: -tao_smonitor -tao_type bntr -tao_gttol 1.e-5
       
    test:
       suffix: 6
-      args: -tao_smonitor -tao_type bntl
+      args: -tao_smonitor -tao_type bntl -tao_gttol 1.e-5
    
    test:
       suffix: 7
-      args: -tao_smonitor -tao_type bnls
+      args: -tao_smonitor -tao_type bnls -tao_gttol 1.e-5
    
    test:
       suffix: 8
-      args: -tao_smonitor -tao_type bntr -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
    
    test:
       suffix: 9
-      args: -tao_smonitor -tao_type bntl -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
    
    test:
       suffix: 10
-      args: -tao_smonitor -tao_type bnls -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
 
 TEST*/

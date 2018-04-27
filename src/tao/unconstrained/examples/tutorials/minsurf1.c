@@ -602,7 +602,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type nls -mx 10 -my 8
+      args: -tao_smonitor -tao_type nls -mx 10 -my 8 -tao_gttol 1.e-5
       requires: !single
 
    test:
@@ -617,26 +617,26 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
       
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type bntr -mx 10 -my 8
+      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_gttol 1.e-5
 
    test:
       suffix: 5
-      args: -tao_smonitor -tao_type bntl -mx 10 -my 8
+      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_gttol 1.e-5
 
    test:
       suffix: 6
-      args: -tao_smonitor -tao_type bnls -mx 10 -my 8
+      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_gttol 1.e-5
 
    test:
       suffix: 7
-      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bntr -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
 
    test:
       suffix: 8
-      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bntl -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
 
    test:
       suffix: 9
-      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3
+      args: -tao_smonitor -tao_type bnls -mx 10 -my 8 -tao_bnk_max_cg_its 3 -tao_gttol 1.e-5
 
 TEST*/

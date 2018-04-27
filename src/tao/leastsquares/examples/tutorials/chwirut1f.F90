@@ -423,7 +423,7 @@
 !      requires: !complex
 !
 !   test:
-!      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+!      args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gttol 1.e-5
 !      requires: !single
 !      TODO: too many inconsistent results across machines
 !

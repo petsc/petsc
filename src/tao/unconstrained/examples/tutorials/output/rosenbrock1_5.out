@@ -12,4 +12,3 @@ iter =   9, Function value 0.000205297, Residual: 0.367351
 iter =  10, Function value 3.68995e-06, Residual: 0.0380552 
 iter =  11, Function value 1.66478e-09, Residual: 0.0011571 
 iter =  12, Function value 3.55089e-16, Residual: < 1.0e-6 
-iter =  13, Function value 1.9968e-29, Residual: < 1.0e-11 

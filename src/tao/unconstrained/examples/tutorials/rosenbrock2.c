@@ -233,7 +233,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_type lmvm -tao_lmm_recycle -tao_monitor -tao_view
+      args: -tao_type lmvm -tao_lmm_recycle -tao_monitor -tao_view -tao_gttol 1.e-5
       requires: !single
 
 TEST*/

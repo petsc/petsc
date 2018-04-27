@@ -647,13 +647,13 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
       requires: !complex
 
     test:
-      args: -tao_max_it 5
+      args: -tao_max_it 5 -tao_gttol 1.e-5
       requires: !single
 
     test:
       suffix: 2
       nsize: 2
-      args: -tao_max_it 5
+      args: -tao_max_it 5 -tao_gttol 1.e-5
       requires: !single
 
 TEST*/

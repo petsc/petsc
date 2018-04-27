@@ -3,15 +3,15 @@
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   1, Function value 1.53574, Residual: 0.222631 
-iter =   2, Function value 1.51391, Residual: 0.189627 
-iter =   3, Function value 1.51031, Residual: 0.119047 
+  iter =   0,   Function value 1.57687,   Residual: 0.447462 
+  iter =   1,   Function value 1.53574,   Residual: 0.222631 
+  iter =   2,   Function value 1.51391,   Residual: 0.189627 
+  iter =   3,   Function value 1.51031,   Residual: 0.119047 
 iter =   1, Function value 1.50567, Residual: 0.00369492 
-iter =   0, Function value 1.50567, Residual: 0.00371589 
-iter =   1, Function value 1.50567, Residual: 0.00272504 
-iter =   2, Function value 1.50567, Residual: 0.00202831 
-iter =   3, Function value 1.50566, Residual: 0.00194302 
+  iter =   0,   Function value 1.50567,   Residual: 0.00371589 
+  iter =   1,   Function value 1.50567,   Residual: 0.00272504 
+  iter =   2,   Function value 1.50567,   Residual: 0.00202831 
+  iter =   3,   Function value 1.50566,   Residual: 0.00194302 
 iter =   2, Function value 1.50566, Residual: 1.20898e-06 
 Tao Object: 1 MPI processes
   type: bntr
