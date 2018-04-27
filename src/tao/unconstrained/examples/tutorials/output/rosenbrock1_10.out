@@ -31,6 +31,3 @@ iter =   5, Function value 1.84082e-05, Residual: 0.190248
 iter =   6, Function value 6.04025e-10, Residual: 0.00108009 
   iter =   0,   Function value 6.04025e-10,   Residual: 0.00108009 
   iter =   1,   Function value 1.57793e-11,   Residual: 3.55011e-06 
-  iter =   2,   Function value 5.69265e-12,   Residual: 2.13766e-06 
-  iter =   3,   Function value 5.26512e-12,   Residual: 2.79337e-05 
-iter =   7, Function value 3.02013e-21, Residual: < 1.0e-6 

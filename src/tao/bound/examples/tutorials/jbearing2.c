@@ -471,13 +471,13 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
       requires: !complex
 
    test:
-      args: -tao_smonitor -mx 8 -my 12 -tao_type tron -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 2
       nsize: 2
-      args: -tao_smonitor -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gatol 1.e-5
       requires: !single
 
    test:
@@ -495,7 +495,7 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
       
    test:
       suffix: 5
-      args: -tao_smonitor -mx 8 -my 12 -tao_type pgd -tao_gttol 1.e-3 -tao_gatol 1e-4
+      args: -tao_smonitor -mx 8 -my 12 -tao_type pgd -tao_gatol 1e-4
       requires: !single
       
    test:

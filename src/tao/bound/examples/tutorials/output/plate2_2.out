@@ -23,12 +23,6 @@ iter =  18, Function value 1.60115, Residual: 0.000347821
 iter =  19, Function value 1.60115, Residual: 0.000181043 
 iter =  20, Function value 1.60115, Residual: 0.000148093 
 iter =  21, Function value 1.60115, Residual: 7.11469e-05 
-iter =  22, Function value 1.60115, Residual: 4.8096e-05 
-iter =  23, Function value 1.60115, Residual: 3.38004e-05 
-iter =  24, Function value 1.60115, Residual: 1.26118e-05 
-iter =  25, Function value 1.60115, Residual: 6.70402e-06 
-iter =  26, Function value 1.60115, Residual: 5.15928e-06 
-iter =  27, Function value 1.60115, Residual: 3.31375e-06 
 Tao Object: 2 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -38,13 +32,13 @@ Tao Object: 2 MPI processes
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
     total number of function evaluations=0
     total number of gradient evaluations=0
-    total number of function/gradient evaluations=2
+    total number of function/gradient evaluations=1
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
-  Residual in Function/Gradient:=3.31375e-06
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=7.11469e-05
   Objective value=1.60115
-  total number of iterations=27,                          (max: 2000)
-  total number of function/gradient evaluations=32,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  total number of iterations=21,                          (max: 2000)
+  total number of function/gradient evaluations=25,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

@@ -311,7 +311,7 @@
 !
 !   test:
 !      requires: superlu
-!      args: -tao_monitor -tao_view -tao_gttol 1.e-5
+!      args: -tao_monitor -tao_view -tao_gatol 1.e-5
 !      filter: Error: grep -v IEEE_DENORMAL
 !
 !TEST*/

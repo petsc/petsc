@@ -7,4 +7,3 @@ iter =   0, Function value 1.43469, Residual: 0.20591
 iter =   1, Function value 1.42037, Residual: 0.0767408 
 iter =   2, Function value 1.41776, Residual: 0.00341205 
 iter =   3, Function value 1.41775, Residual: 9.96093e-06 
-iter =   4, Function value 1.41775, Residual: < 1.0e-6 

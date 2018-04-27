@@ -64,6 +64,23 @@ iter =  59, Function value 1.50566, Residual: 0.000578657
 iter =  60, Function value 1.50566, Residual: 0.000522073 
 iter =  61, Function value 1.50566, Residual: 0.000484231 
 iter =  62, Function value 1.50566, Residual: 0.000436874 
+iter =  63, Function value 1.50566, Residual: 0.000405201 
+iter =  64, Function value 1.50566, Residual: 0.000365569 
+iter =  65, Function value 1.50566, Residual: 0.00033906 
+iter =  66, Function value 1.50566, Residual: 0.000305894 
+iter =  67, Function value 1.50566, Residual: 0.000283709 
+iter =  68, Function value 1.50566, Residual: 0.000255955 
+iter =  69, Function value 1.50566, Residual: 0.000237389 
+iter =  70, Function value 1.50566, Residual: 0.000214165 
+iter =  71, Function value 1.50566, Residual: 0.000198629 
+iter =  72, Function value 1.50566, Residual: 0.000179196 
+iter =  73, Function value 1.50566, Residual: 0.000166195 
+iter =  74, Function value 1.50566, Residual: 0.000149934 
+iter =  75, Function value 1.50566, Residual: 0.000139056 
+iter =  76, Function value 1.50566, Residual: 0.00012545 
+iter =  77, Function value 1.50566, Residual: 0.000116347 
+iter =  78, Function value 1.50566, Residual: 0.000104963 
+iter =  79, Function value 1.50566, Residual: 9.73462e-05 
 Tao Object: 1 MPI processes
   type: pgd
   TaoLineSearch Object: 1 MPI processes
@@ -76,9 +93,9 @@ Tao Object: 1 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
-  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.001
-  Residual in Function/Gradient:=0.000436874
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=9.73462e-05
   Objective value=1.50566
-  total number of iterations=62,                          (max: 2000)
-  total number of function/gradient evaluations=131,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  total number of iterations=79,                          (max: 2000)
+  total number of function/gradient evaluations=165,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol
