@@ -344,8 +344,10 @@ PetscErrorCode PetscSNPrintf(char *str,size_t len,const char format[],...)
 +   str - the string to print to
 .   len - the length of str
 .   format - the usual printf() format string
-.   countused - number of characters used
 -   any arguments
+
+    Output Parameter:
+.   countused - number of characters used
 
    Level: intermediate
 
