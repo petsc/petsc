@@ -40,7 +40,7 @@ PetscErrorCode  DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,Pe
   DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;

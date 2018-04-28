@@ -200,6 +200,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
+#define PetscValidHeaderSpecificType(h,ck,arg,t) do {} while (0)
 #define PetscValidHeader(h,arg) do {} while (0)
 #define PetscValidPointer(h,arg) do {} while (0)
 #define PetscValidCharPointer(h,arg) do {} while (0)
@@ -209,6 +210,16 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidFunction(h,arg) do {} while (0)
 
 #else
+
+/*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
+#define PetscValidHeaderSpecificType(h,ck,arg,t) \
+  do {   \
+    PetscErrorCode __ierr; \
+    PetscBool      same; \
+    PetscValidHeaderSpecific(h,ck,arg); \
+    __ierr = PetscObjectTypeCompare((PetscObject)h,t,&same);CHKERRQ(__ierr);      \
+    if (!same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+  } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   do {                                                                  \
