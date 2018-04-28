@@ -10,7 +10,6 @@
 #define petscemacsclienterrorhandler_ PETSCEMACSCLIENTERRORHANDLER
 #define petscattachdebuggererrorhandler_   PETSCATTACHDEBUGGERERRORHANDLER
 #define petscerror_                PETSCERROR
-#define petscerrorf_                PETSCERRORF
 #define petscrealview_             PETSCREALVIEW
 #define petscintview_              PETSCINTVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -21,7 +20,6 @@
 #define petscemacsclienterrorhandler_ petscemacsclienterrorhandler
 #define petscattachdebuggererrorhandler_   petscattachdebuggererrorhandler
 #define petscerror_                petscerror
-#define petscerrorf_                petscerrorf
 #define petscrealview_             petscrealview
 #define petscintview_              petscintview
 #endif
@@ -94,12 +92,6 @@ PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *numbe
   FIXCHAR(message,len,t1);
   nierr = PetscError(MPI_Comm_f2c(*(comm)),0,NULL,NULL,*number,*p,t1);
   FREECHAR(message,t1);
-}
-
-/* helper routine for CHKERRQ and CHKERRABORT macros on the fortran side */
-PETSC_EXTERN void PETSC_STDCALL petscerrorf_(PetscErrorCode *number)
-{
-  PetscError(PETSC_COMM_SELF,0,NULL,NULL,*number,PETSC_ERROR_REPEAT,NULL);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
