@@ -143,6 +143,7 @@ cdef extern from * nogil:
 
     int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscMat*)
     int MatISGetLocalMat(PetscMat,PetscMat*)
+    int MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
 
     int MatCreateScatter(MPI_Comm,PetscScatter,PetscMat*)
     int MatScatterSetVecScatter(PetscMat,PetscScatter)
