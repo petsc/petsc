@@ -2,7 +2,7 @@
 static char help[] = "Tests the use of interface functions for MATIS matrices.\n\
 This example tests: MatZeroRows(), MatZeroRowsLocal(), MatView(), MatDuplicate(),\n\
 MatCopy(), MatCreateSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
-MatDiagonalSet(), MatTranspose(), MatPtAP() and MatISGetMPIXAIJ(). It also tests some\n\
+MatDiagonalSet(), MatTranspose() and MatPtAP(). It also tests some\n\
 conversion routines.\n";
 
 #include <petscmat.h>
@@ -134,11 +134,26 @@ int main(int argc,char **args)
   ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
 
-  /* test MatISGetMPIXAIJ */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISGetMPIXAIJ\n");CHKERRQ(ierr);
-  ierr = CheckMat(A,B,PETSC_FALSE,"MatISGetMPIXAIJ");CHKERRQ(ierr);
+  /* test CheckMat */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test CheckMat\n");CHKERRQ(ierr);
+  ierr = CheckMat(A,B,PETSC_FALSE,"CheckMat");CHKERRQ(ierr);
 
-  /* test MatConvert_XAIJ_IS */
+  /* test MatDuplicate and MatAXPY */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatDuplicate and MatAXPY\n");CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A,A2,PETSC_FALSE,"MatDuplicate and MatAXPY");CHKERRQ(ierr);
+
+  /* test MatConvert */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_IS_XAIJ\n");CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATAIJ,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(B,B2,PETSC_TRUE,"MatConvert_IS_XAIJ MAT_INITIAL_MATRIX");CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATAIJ,MAT_REUSE_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(B,B2,PETSC_TRUE,"MatConvert_IS_XAIJ MAT_REUSE_MATRIX");CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATAIJ,MAT_INPLACE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(B,A2,PETSC_TRUE,"MatConvert_IS_XAIJ MAT_INPLACE_MATRIX");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_XAIJ_IS\n");CHKERRQ(ierr);
   ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
   ierr = MatConvert(B2,MATIS,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
@@ -406,7 +421,14 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
 
   PetscFunctionBeginUser;
   if (!usemult) {
-    ierr = MatISGetMPIXAIJ(A,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
+    if (B) {
+      MatType Btype;
+
+      ierr = MatGetType(B,&Btype);CHKERRQ(ierr);
+      ierr = MatConvert(A,Btype,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
+    } else {
+      ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
+    }
     if (B) { /* if B is present, subtract it */
       ierr = MatAXPY(Bcheck,-1.,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
@@ -420,7 +442,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
         ierr = PetscObjectSetName((PetscObject)B,"Assembled AIJ");CHKERRQ(ierr);
         ierr = MatView(B,NULL);CHKERRQ(ierr);
         ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
-        ierr = MatISGetMPIXAIJ(A,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
+        ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&Bcheck);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)Bcheck,"Assembled IS");CHKERRQ(ierr);
         ierr = MatView(Bcheck,NULL);CHKERRQ(ierr);
       }
@@ -546,7 +568,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   ierr = VecDestroy(&b2);CHKERRQ(ierr);
 
   /* check the result of ZeroRows with that from MPIAIJ routines
-     assuming that MatISGetMPIXAIJ and MatZeroRows_MPIAIJ work fine */
+     assuming that MatConvert_IS_XAIJ and MatZeroRows_MPIAIJ work fine */
   ierr = MatDuplicate(Afull,MAT_COPY_VALUES,&Bcheck);CHKERRQ(ierr);
   ierr = MatSetOption(Bcheck,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatZeroRowsIS(Bcheck,is,diag,NULL,NULL);CHKERRQ(ierr);

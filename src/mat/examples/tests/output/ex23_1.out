@@ -9,7 +9,9 @@ Mat Object: 1 MPI processes
     type: seqaij
 row 0: (0, 2.)  (1, -2.) 
 row 1: (0, -4.)  (1, 4.) 
-Test MatISGetMPIXAIJ
+Test CheckMat
+Test MatDuplicate and MatAXPY
+Test MatConvert_IS_XAIJ
 Test MatConvert_XAIJ_IS
 Test MatDiagonalScale
 Test MatPtAP

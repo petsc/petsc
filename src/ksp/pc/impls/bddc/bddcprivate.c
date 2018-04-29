@@ -6614,13 +6614,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = VecGetLocalSize(pcis->vec1_global,&local_size);CHKERRQ(ierr);
       ierr = MatDuplicate(pc->pmat,MAT_DO_NOT_COPY_VALUES,&tmat);CHKERRQ(ierr);
       ierr = MatISSetLocalMat(tmat,localChangeOfBasisMatrix);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)pc),&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
       ierr = MatSetType(pcbddc->ChangeOfBasisMatrix,MATAIJ);CHKERRQ(ierr);
       ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
       ierr = MatSetBlockSize(pcbddc->ChangeOfBasisMatrix,bs);CHKERRQ(ierr);
       ierr = MatSetSizes(pcbddc->ChangeOfBasisMatrix,local_size,local_size,global_size,global_size);CHKERRQ(ierr);
       ierr = MatISSetMPIXAIJPreallocation_Private(tmat,pcbddc->ChangeOfBasisMatrix,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatISGetMPIXAIJ(tmat,MAT_REUSE_MATRIX,&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+      ierr = MatConvert(tmat,MATAIJ,MAT_REUSE_MATRIX,&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
       ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
@@ -6777,7 +6779,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = MatISSetLocalMat(tmat,eye);CHKERRQ(ierr);
           ierr = MatDestroy(&eye);CHKERRQ(ierr);
         }
-        ierr = MatISGetMPIXAIJ(tmat,MAT_INITIAL_MATRIX,&benign_global);CHKERRQ(ierr);
+        ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatConvert(tmat,MATAIJ,MAT_INITIAL_MATRIX,&benign_global);CHKERRQ(ierr);
         ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       }
       if (pcbddc->user_ChangeOfBasisMatrix) {
@@ -8047,7 +8051,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     PetscMPIInt size;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)coarse_mat_is),&size);CHKERRQ(ierr);
     if (!multilevel_allowed) {
-      ierr = MatISGetMPIXAIJ(coarse_mat_is,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
+      ierr = MatConvert(coarse_mat_is,MATAIJ,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     } else {
       Mat A;
 

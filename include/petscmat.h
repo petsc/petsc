@@ -1591,7 +1591,7 @@ PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
+PETSC_EXTERN PETSC_DEPRECATED("Use the MatConvert() interface") PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
