@@ -5033,6 +5033,30 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatNorm_Basic(Mat A,NormType type,PetscReal *nrm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (type == NORM_1 || type == NORM_INFINITY) {
+    Vec l,r;
+
+    ierr = MatCreateVecs(A,&r,&l);CHKERRQ(ierr);
+    if (type == NORM_INFINITY) {
+      ierr = VecSet(r,1.);CHKERRQ(ierr);
+      ierr = MatMult(A,r,l);CHKERRQ(ierr);
+      ierr = VecNorm(l,NORM_INFINITY,nrm);CHKERRQ(ierr);
+    } else {
+      ierr = VecSet(l,1.);CHKERRQ(ierr);
+      ierr = MatMultTranspose(A,l,r);CHKERRQ(ierr);
+      ierr = VecNorm(r,NORM_INFINITY,nrm);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&l);CHKERRQ(ierr);
+    ierr = VecDestroy(&r);CHKERRQ(ierr);
+  } else SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix class %s, norm type %d",((PetscObject)A)->type_name,type);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatNorm - Calculates various norms of a matrix.
 
@@ -5057,14 +5081,18 @@ PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
+  PetscValidLogicalCollectiveEnum(mat,type,2);
   PetscValidScalarPointer(nrm,3);
 
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->norm) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
 
-  ierr = (*mat->ops->norm)(mat,type,nrm);CHKERRQ(ierr);
+  if (!mat->ops->norm) {
+    ierr = MatNorm_Basic(mat,type,nrm);CHKERRQ(ierr);
+  } else {
+    ierr = (*mat->ops->norm)(mat,type,nrm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
