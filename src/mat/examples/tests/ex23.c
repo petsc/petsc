@@ -138,6 +138,18 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISGetMPIXAIJ\n");CHKERRQ(ierr);
   ierr = CheckMat(A,B,PETSC_FALSE,"MatISGetMPIXAIJ");CHKERRQ(ierr);
 
+  /* test MatConvert_XAIJ_IS */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_XAIJ_IS\n");CHKERRQ(ierr);
+  ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
+  ierr = MatConvert(B2,MATIS,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A,A2,PETSC_TRUE,"MatConvert_XAIJ_IS MAT_INITIAL_MATRIX");CHKERRQ(ierr);
+  ierr = MatConvert(B2,MATIS,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A,A2,PETSC_TRUE,"MatConvert_XAIJ_IS MAT_REUSE_MATRIX");CHKERRQ(ierr);
+  ierr = MatConvert(B2,MATIS,MAT_INPLACE_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(A,B2,PETSC_TRUE,"MatConvert_XAIJ_IS MAT_INPLACE_MATRIX");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+
   /* test MatDiagonalScale */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatDiagonalScale\n");CHKERRQ(ierr);
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
