@@ -287,7 +287,9 @@ cdef extern from * nogil:
     int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
     int MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec) 
     int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowSum(PetscMat,PetscVec)
