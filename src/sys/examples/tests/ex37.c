@@ -28,6 +28,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,newformatstr,twentytwo,3.47,3.0);CHKERRQ(ierr);
   ierr = PetscFree(newformatstr);CHKERRQ(ierr);
 
+  /* Test correct count is returned with %g format */
+  ierr = PetscSNPrintfCount(buffer,sizeof(buffer),"Test %g %g\n",&sz,3.33,2.7);CHKERRQ(ierr);
+  ierr = PetscStrlen(buffer,&fullLength);CHKERRQ(ierr);
+  if (sz != fullLength+1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSNPrintfCount() count should be %d it is %d\n",(int)fullLength+1,(int)sz);
+
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is long enough */
   ierr = TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s","This is my string");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"buffer :%s: fullLength %d\n",buffer,(int)fullLength);CHKERRQ(ierr);
