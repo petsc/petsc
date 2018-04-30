@@ -995,12 +995,12 @@ PetscErrorCode JunctionDestroyJacobian(DM dm,PetscInt v,Junction junc)
    test:
       suffix: 6
       nsize: 4
-      args: -ts_monitor -case 0 -ts_max_steps 1 -nox -petscpartitioner_type simple
+      args: -ts_monitor -case 0 -ts_max_steps 1 -petscpartitioner_type simple
       output_file: output/pipes1_4.out
 
    test:
       suffix: 7
-      args: -ts_monitor -case 2 -ts_max_steps 1 -nox
+      args: -ts_monitor -case 2 -ts_max_steps 1
 
    test:
       suffix: 8
