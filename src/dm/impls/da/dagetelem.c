@@ -179,7 +179,7 @@ PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (gx) PetscValidIntPointer(gx,2);
   if (gy) PetscValidIntPointer(gy,3);
   if (gz) PetscValidIntPointer(gz,4);
@@ -226,7 +226,7 @@ PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (mx) PetscValidIntPointer(mx,2);
   if (my) PetscValidIntPointer(my,3);
   if (mz) PetscValidIntPointer(mz,4);
@@ -275,7 +275,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
   PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,etype,2);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
   if (!isda) PetscFunctionReturn(0);
@@ -312,7 +312,7 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
   PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(etype,2);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
   if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
@@ -355,7 +355,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
@@ -401,7 +401,7 @@ PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
   PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(is,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
   if (!isda) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
@@ -441,7 +441,7 @@ PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
 PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
@@ -469,7 +469,7 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
 PetscErrorCode  DMDARestoreSubdomainCornersIS(DM dm,IS *is)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidHeaderSpecific(*is,IS_CLASSID,2);
   *is = NULL;
   PetscFunctionReturn(0);

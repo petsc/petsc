@@ -65,7 +65,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
@@ -201,7 +201,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
   DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   DM_DA *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
@@ -279,7 +279,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
@@ -323,7 +323,7 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
   PetscInt          N,Ni;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   dim  = dm->dim;
   ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
   if (coords) {

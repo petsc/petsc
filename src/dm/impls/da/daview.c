@@ -142,7 +142,7 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (dim) *dim = da->dim;
   if (M) {
     if (dd->Mo < 0) *M = dd->M;
@@ -200,7 +200,7 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(info,2);
   info->da  = da;
   info->dim = da->dim;
