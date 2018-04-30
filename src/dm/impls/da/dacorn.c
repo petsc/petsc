@@ -386,6 +386,20 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 }
 
 /*@
+   DMDAGetReducedDMDA - Deprecated; use DMDACreateCompatibleDMDA()
+
+   Level: deprecated
+@*/
+PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDACreateCompatibleDMDA(da,nfields,nda);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    DMDACreateCompatibleDMDA - Creates a DMDA with the same layout but with fewer or more fields
 
    Collective on DMDA

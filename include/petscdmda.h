@@ -86,6 +86,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
 PETSC_EXTERN PetscErrorCode DMDACreateCompatibleDMDA(DM,PetscInt,DM*);
+PETSC_EXTERN PETSC_DEPRECATED("Use DMDACreateCompatibleDMDA()") PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
