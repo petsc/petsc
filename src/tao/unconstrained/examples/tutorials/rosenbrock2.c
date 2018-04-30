@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSetMaximumIterations(tao, 10);CHKERRQ(ierr);
+  ierr = TaoSetMaximumIterations(tao, 5);CHKERRQ(ierr);
   cycle = 1;
   reason = TAO_CONTINUE_ITERATING;
   while (reason != TAO_CONVERGED_GATOL) {
@@ -233,7 +233,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_type lmvm -tao_lmm_recycle -tao_monitor -tao_view
+      args: -tao_type lmvm -tao_lmm_recycle -tao_monitor -tao_view -tao_gatol 1.e-3
       requires: !single
 
 TEST*/

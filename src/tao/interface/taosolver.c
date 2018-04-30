@@ -460,6 +460,12 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
       ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
+    
+    ierr = PetscOptionsString("-tao_gmonitor","Use the convergence monitor with extra globalization info","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoDefaultGMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsString("-tao_smonitor","Use the short convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1501,6 +1507,59 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+ 
+/*@
+   TaoDefaultGMonitor - Default routine for monitoring progress of the
+   Tao solvers (default) with extra detail on the globalization method.  
+   This monitor prints the function value and gradient norm at each 
+   iteration, as well as the step size and trust radius. Note that the 
+   step size and trust radius may be the same for some algorithms. 
+   It can be turned on from the command line using the
+   -tao_gmonitor option
+
+   Collective on Tao
+
+   Input Parameters:
++  tao - the Tao context
+-  ctx - PetscViewer context or NULL
+
+   Options Database Keys:
+.  -tao_monitor
+
+   Level: advanced
+
+.seealso: TaoDefaultSMonitor(), TaoSetMonitor()
+@*/
+PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       its, tabs;
+  PetscReal      fct,gnorm,stp,tr;
+  PetscViewer    viewer = (PetscViewer)ctx;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  its=tao->niter;
+  fct=tao->fc;
+  gnorm=tao->residual;
+  stp=tao->step;
+  tr=tao->trust;
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  if (its == 0 && ((PetscObject)tao)->prefix) {
+     ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+   }
+  ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
+  if (gnorm >= PETSC_INFINITY) {
+    ierr=PetscViewerASCIIPrintf(viewer,"  Residual: Inf,");CHKERRQ(ierr);
+  } else {
+    ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %g,",(double)gnorm);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"  Step: %g,  Trust: %g\n",(double)stp,(double)tr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
    TaoDefaultSMonitor - Default routine for monitoring progress of the
@@ -1861,7 +1920,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   } else if (trradius < steptol && niter > 0){
     ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", (double)trradius,(double)steptol);CHKERRQ(ierr);
     reason = TAO_CONVERGED_STEPTOL;
-  } else if (niter > tao->max_it) {
+  } else if (niter >= tao->max_it) {
     ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_it);CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXITS;
   } else {

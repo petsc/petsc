@@ -719,11 +719,42 @@ value of $f$ and its gradient.
 \section{Bound-Constrained Optimization}\sindex{bounds}
 \label{chapter:bound}
 
-Bound-constrained optimization algorithms
-minimize $f: \, \Re^n \to \Re$, subject to upper or
-lower bounds on some of the variables.
+Bound-constrained optimization algorithms solve optimization problems of the form
+\[
+\begin{array}{ll} \displaystyle
+\min_{x} & f(x) \\
+\mbox{subject to} & l \leq x \leq u.
+\end{array}
+\]
 These solvers use the bounds on the variables as well as objective
 function, gradient, and possibly Hessian information.
+
+For any unbounded variables, the bound value for the associated index can be set 
+to {\tt PETSC\_INFINITY} for the upper bound and {\tt PETSC\_NINFINITY} for the lower 
+bound. If all bounds are set to infinity, then the bounded algorithms are equivalent 
+to their unconstrained counterparts.
+
+Before introducing specific methods, we will first define two projection operations 
+used by all bound constrained algorithms.
+\begin{itemize}
+\item Gradient projection:
+\[
+\mathfrak{P}(g) = \left\{\begin{array}{ll}
+0 & \mbox{if} \; (x \leq l_i \land g_i > 0) \lor (x \geq u_i \land g_i < 0) \\
+g_i & \mbox{otherwise}
+\end{array}
+\right.
+\]
+\item Bound projection:
+\[
+\mathfrak{B}(x) = \left\{\begin{array}{ll}
+l_i & \mbox{if} \; x_i < l_i \\
+u_i & \mbox{if} \; x_i > u_i \\
+x_i & \mbox{otherwise}
+\end{array}
+\right.
+\]
+\end{itemize}
 
 \subsection{Projected Gradient Descent Method}
 \label{sec:pgd}
@@ -743,19 +774,97 @@ Like its unconstrained counterpart, BNCG offers a variety of CG updates: Fletche
 Polak-Ribi\'ere, Polak-Ribi\'ere-Plus, Hestenes-Stiefel, and the Dai-Yuan. These 
 conjugate gradient methods can be specified by using the command line argument 
 {\tt -tao\_bncg\_type <fr,pr,prp,hs,dy>}, respectively. The default value is {\tt dy}.
-BNCS is available via the TAO solver {\tt TAO\_BNCG} or the {\tt -tao\_type bncg} flag.
+BNCG is available via the TAO solver {\tt TAOBNCG} or the {\tt -tao\_type bncg} flag.
 
 In addition to automatic restarts under orthogonality conditions, BNCG also features 
-selective step restarts for previously active bounds that become inactive at a new 
-iterate, and a weak check on descent direction such that 
-$\nabla f(x_k)^T d_k \leq -\rho||d_k||^p$. Parameters for this weak check have 
-default values of $\rho = 10^{-4}$ and $p = 2.1$, respectively, and can be 
-modified using {\tt -tao\_bncg\_rho} and {\tt -tao\_bncg\_pow} flags. Finally, the 
-default orthogonality tolerance has been slightly relaxed compared to the 
-unconstrained version to improve convergence.
+selective step restarts for new variables added to the inactive index set at a new iterate, 
+and a weak check on descent direction such that $\nabla f(x_k)^T d_k \leq -\rho||d_k||^p$. 
+Parameters for this weak check have default values of $\rho = 10^{-4}$ and $p = 2.1$, 
+respectively, and can be modified using {\tt -tao\_bncg\_rho} and {\tt -tao\_bncg\_pow} 
+lags. Finally, the default orthogonality tolerance has been slightly relaxed compared to 
+the unconstrained version to improve convergence.
 
-\subsection{Trust-Region Newton Method}\label{sec:tron} \sindex{Newtons
-method} \sindex{trust region}
+\subsection{Bounded Newton-Krylov Methods}\sindex{projected Newton's
+method}\sindex{trust region}\label{sec:bnk}
+
+TAO features three bounded Newton-Krylov (BNK) class of algorithms, separated by their 
+globalization methods: projected line search (BNLS), trust region (BNTR), and trust region 
+with a projected line search fall-back (BNTL). They are available via the TAO 
+solvers {\tt TAOBNLS}, {\tt TAOBNTR} and {\tt TAOBNTL}, respectively, or the 
+{\tt -tao\_type} {\tt bnls}/{\tt bntr}/{\tt bntl} flag.
+
+The BNK class of methods use an active-set approach to solve the symmetric system of equations,
+\[
+H_k p_k = -g_k,
+\]
+only for inactive variables in the interior of the bounds. The active-set estimation is based on 
+Bertsekas \cite{bertsekas:projected} with the following variable index categories:
+\[
+\begin{array}{rlll} \displaystyle
+\mbox{lower bounded}: & \mathcal{L}(x) & = & \{ i \; : \; x_i \leq l_i + \epsilon \; \land \; g(x)_i > 0 \}, \\
+\mbox{upper bounded}: & \mathcal{U}(x) & = & \{ i \; : \; x_i \geq u_i + \epsilon \; \land \; g(x)_i < 0 \}, \\
+\mbox{fixed}: & \mathcal{F}(x) & = & \{ i \; : \; l_i = u_i \}, \\
+\mbox{active-set}: & \mathcal{A}(x) & = & \{ \mathcal{L}(x) \; \bigcup \; \mathcal{U}(x) \; \bigcup \; \mathcal{F}(x) \}, \\
+\mbox{inactive-set}: & \mathcal{I}(x) & = & \{ 1,2,\ldots,n \} \; \backslash \; \mathcal{A}(x).
+\end{array}
+\]
+At each iteration, the bound tolerance is estimated as $\epsilon_{k+1} = \mbox{min}(\epsilon_k, ||w_k||_2)$ 
+with $w_k = x_k - \mathfrak{B}(x_k - \beta D_k g_k)$, where the diagonal matrix $D_k$ is an approximation 
+of the Hessian inverse $H_k^{-1}$. The initial bound tolerance $\epsilon_0$ and the step length $\beta$ 
+have default values of $0.001$ and can be adjusted using {\tt -tao\_bnk\_as\_tol} and 
+{\tt -tao\_bnk\_as\_step} flags, respectively. The active-set estimation can be disabled using the option 
+{\tt -tao\_bnk\_as\_type none}, in which case the algorithm simply uses the current iterate with no bound 
+tolerances to determine which variables are actively bounded and which are free.
+
+BNK algorithms invert the reduced Hessian using a Krylov iterative method. Trust-region conjugate gradient 
+methods ({\tt KSPNASH}, {\tt KSPSTCG}, and {\tt KSPGLTR}) are required for the BNTR and BNTL algorithms, 
+and recommended for the BNLS algorithm. The preconditioner type can be changed using the 
+{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ahess}/{\tt bfgs}/{\tt petsc}. The {\tt ahess} option, which is 
+also the default, results in an absolute-valued Jacobi preconditioner, while the {\tt bfgs} option 
+preconditions the Krylov solution with an {\tt TAO\_LMVM} matrix. The {\tt petsc} option allows the user to 
+bypass the algorithm's special preconditioners specify a built-in PETSc preconditioner with {\tt -pc\_type} 
+({\tt ilu} and {\tt icc} preconditioners can yield good results for dense explicit Hessian matrices). The 
+BFGS and Jacobi preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
+If neither are available, or if the Hessian matrix does not have {\tt MATOP\_GET\_DIAGONAL} defined, then the 
+active-set estimation falls back onto using an identity matrix in place of $D_k$ (this is equivalent to 
+estimating the active-set using a gradient descent step).
+
+A special option is available to ``accelerate'' the convergence of the BNK algorithms by taking a finite 
+number of BNCG iterations at each Newton iteration. By default, the number of BNCG iterations is set to zero 
+and the algorithms do not take any BNCG steps. This can be changed using the option flag 
+{\tt -tao\_bnk\_max\_cg\_its <i>}. While this reduces the number of Newton iterations, in practice it simply 
+trades off the Hessian evaluations in the BNK solver for more function and gradient evaluations in the BNCG 
+solver. However, it may be useful for certain types of problems where the Hessian evaluation is 
+disproportionately more expensive than the objective function or its gradient.
+
+\subsubsection{Bounded Newton Line Search (BNLS)}\label{sec:bnls}
+
+BNLS safeguards the Newton step by falling back onto a BFGS, scaled gradient, or gradient 
+steps based on descent direction verifications. For problems with indefinite Hessian matrices, 
+the step direction is calculated using a perturbed system of equations,
+\[
+(H_k + \rho_k I)p_k = -g_k,
+\]
+where $\rho_k$ is a dynamically adjusted positive constant. The step is globalized using a 
+projected More-Thuente line search. If a trust-region conjugate gradient method is used for the 
+Hessian inversion, the trust radius is modified based on the line search step length.
+
+\subsubsection{Bounded Newton Trust Region (BNTR)}\label{sec:bntr}
+
+BNTR globalizes the Newton step using a trust region method based on the predicted versus 
+actual reduction in the cost function. The trust radius is increased only if the accepted 
+step is at the trust region boundary. The reduction check features a safeguard for numerical 
+values below machine epsilon, scaled by the latest function value, where the full Newton step 
+is accepted without modification.
+
+\subsubsection{Bounded Newton Trust Region with Line Search Fall-back (BNTL)}\label{sec:bntr}
+
+BNTL safeguards the trust-region globalization such that a line search is used in the event that 
+the step is initially rejected by the predicted versus actual decrease comparison. If the line 
+search fails to find a viable step length for the Newton step, it falls back onto a scaled gradient 
+or a gradient descent step. The trust radius is then modified based on the line search step length.
+
+\subsection{Trust-Region Newton Method}\label{sec:tron}\sindex{trust region}
 The TRON \cite{lin_c3} algorithm is an active-set method that uses a 
 combination of gradient projections and 
 a preconditioned conjugate gradient method to minimize an objective function.

@@ -241,7 +241,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     tron->f=f; tron->actred=actred; tao->trust=delta;
     tao->niter++;
     ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,stepsize);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
   PetscFunctionReturn(0);

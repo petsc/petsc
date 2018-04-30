@@ -282,7 +282,7 @@
 !      requires: !complex
 !
 !   test:
-!      args: -tao_smonitor -tao_type ntr
+!      args: -tao_smonitor -tao_type ntr -tao_gatol 1.e-5
 !      requires: !single
 !
 !TEST*/

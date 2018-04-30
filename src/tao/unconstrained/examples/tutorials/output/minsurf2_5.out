@@ -6,11 +6,15 @@ iter =   0, Function value 1.45591, Residual: 1.
 iter =   1, Function value 1.53418, Residual: 0.0182909 
 iter =   2, Function value 1.5314, Residual: 0.0103471 
 iter =   3, Function value 1.52832, Residual: 0.00487195 
+iter =   4, Function value 1.52832, Residual: 0.00334731 
+iter =   5, Function value 1.52771, Residual: 0.00181092 
+iter =   6, Function value 1.52771, Residual: 0.00143288 
+iter =   7, Function value 1.52729, Residual: 0.000716629 
 Tao Object: 2 MPI processes
   type: bmrm
-  convergence tolerances: gatol=1e-12,   steptol=0.,   gttol=0.01
-  Residual in Function/Gradient:=0.00487195
-  Objective value=1.52832
-  total number of iterations=3,                          (max: 2000)
-  total number of function/gradient evaluations=4,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=0.000716629
+  Objective value=1.52729
+  total number of iterations=7,                          (max: 2000)
+  total number of function/gradient evaluations=8,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

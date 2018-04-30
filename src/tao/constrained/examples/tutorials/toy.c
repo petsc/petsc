@@ -268,6 +268,6 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
 
    test:
       requires: superlu
-      args: -tao_smonitor -tao_view -tao_gatol 1e-8
+      args: -tao_smonitor -tao_view -tao_gatol 1.e-5
 
 TEST*/

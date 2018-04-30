@@ -119,6 +119,10 @@ PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *A)
   ctx->H0_ksp = 0;
   ctx->H0_norm = 0;
   ctx->useDefaultH0 = PETSC_TRUE;
+  
+  ctx->inactive_idx = 0;
+  ctx->nfull = n;
+  ctx->Nfull = N;
 
   ierr = MatCreateShell(comm, n, n, N, N, ctx, A);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);CHKERRQ(ierr);
@@ -133,6 +137,7 @@ PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
   PetscBool      scaled;
   MatLMVMCtx     *shell;
   PetscErrorCode ierr;
+  Vec            xred, ured;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -143,32 +148,60 @@ PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     shell->rho[0] = 1.0;
     shell->theta = 1.0;
   }
-
+  
+  /* Prep the work vectors that will be used in place of the given RHS and solution vectors */
   ierr = VecCopy(b,x);CHKERRQ(ierr);
+  ierr = VecSet(shell->Xwork, 0.0);CHKERRQ(ierr);
+  if (shell->inactive_idx) {
+    ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+    ierr = VecCopy(x, xred);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(x, shell->Xwork);CHKERRQ(ierr);
+  }
+  
   for (ll = 0; ll < shell->lmnow; ++ll) {
-    ierr = VecDot(x,shell->S[ll],&sq);CHKERRQ(ierr);
+    ierr = VecDot(shell->Xwork,shell->S[ll],&sq);CHKERRQ(ierr);
     shell->beta[ll] = sq * shell->rho[ll];
-    ierr = VecAXPY(x,-shell->beta[ll],shell->Y[ll]);CHKERRQ(ierr);
+    ierr = VecAXPY(shell->Xwork,-shell->beta[ll],shell->Y[ll]);CHKERRQ(ierr);
   }
 
   scaled = PETSC_FALSE;
   if (!scaled && !shell->useDefaultH0 && shell->H0_mat) {
-    ierr = KSPSolve(shell->H0_ksp,x,shell->U);CHKERRQ(ierr);
+    /* Create the reduced H0 matrix based on the inactive index set */
+    if (shell->inactive_idx) {
+      ierr = MatCreateSubMatrix(shell->H0_mat, shell->inactive_idx, shell->inactive_idx, MAT_INITIAL_MATRIX, &shell->H0_mat_red);CHKERRQ(ierr);
+      ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+      ierr = VecGetSubVector(shell->U, shell->inactive_idx, &ured);CHKERRQ(ierr);
+    } else {
+      shell->H0_mat_red = shell->H0_mat;
+      xred = shell->Xwork;
+      ured = shell->U;
+    }
+    /* Solve the reduced H0 system */
+    ierr = KSPReset(shell->H0_ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(shell->H0_ksp, shell->H0_mat_red, shell->H0_mat_red);CHKERRQ(ierr);
+    ierr = KSPSolve(shell->H0_ksp,xred,ured);CHKERRQ(ierr);
+    /* Restore the inactive vectors back into the work vectors */
+    if (shell->inactive_idx) {
+      ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(shell->U, shell->inactive_idx, &ured);CHKERRQ(ierr);
+    }
     ierr = VecScale(shell->U, shell->theta);CHKERRQ(ierr);
-    ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
+    ierr = VecDot(shell->Xwork,shell->U,&dd);CHKERRQ(ierr);
     if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
       /*  Accept Hessian solve */
-      ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
+      ierr = VecCopy(shell->U,shell->Xwork);CHKERRQ(ierr);
       scaled = PETSC_TRUE;
     }
   }
 
   if (!scaled && shell->useScale) {
-    ierr = VecPointwiseMult(shell->U,x,shell->scale);CHKERRQ(ierr);
-    ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(shell->U,shell->Xwork,shell->scale);CHKERRQ(ierr);
+    ierr = VecDot(shell->Xwork,shell->U,&dd);CHKERRQ(ierr);
     if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
       /*  Accept scaling */
-      ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
+      ierr = VecCopy(shell->U,shell->Xwork);CHKERRQ(ierr);
       scaled = PETSC_TRUE;
     }
   }
@@ -179,18 +212,38 @@ PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
       break;
 
     case MatLMVM_Scale_Scalar:
-      ierr = VecScale(x,shell->sigma);CHKERRQ(ierr);
+      ierr = VecScale(shell->Xwork,shell->sigma);CHKERRQ(ierr);
       break;
 
     case MatLMVM_Scale_Broyden:
-      ierr = VecPointwiseMult(x,x,shell->D);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(shell->Xwork,shell->Xwork,shell->D);CHKERRQ(ierr);
       break;
     }
   }
   for (ll = shell->lmnow-1; ll >= 0; --ll) {
-    ierr = VecDot(x,shell->Y[ll],&yq);CHKERRQ(ierr);
-    ierr = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);CHKERRQ(ierr);
+    ierr = VecDot(shell->Xwork,shell->Y[ll],&yq);CHKERRQ(ierr);
+    ierr = VecAXPY(shell->Xwork,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);CHKERRQ(ierr);
   }
+  
+  /* Extract just the solution for the inactive variables */
+  if (shell->inactive_idx) {
+    ierr = VecGetSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+    ierr = VecCopy(xred, x);CHKERRQ(ierr);
+    ierr = VecRestoreSubVector(shell->Xwork, shell->inactive_idx, &xred);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(shell->Xwork, x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatLMVMSetInactive(Mat A, IS inactive_idx)
+{
+  MatLMVMCtx     *shell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
+  shell->inactive_idx = inactive_idx;
   PetscFunctionReturn(0);
 }
 
@@ -239,6 +292,8 @@ PetscErrorCode MatDestroy_LMVM(Mat M)
     ierr = VecDestroy(&ctx->P);CHKERRQ(ierr);
     ierr = VecDestroy(&ctx->Q);CHKERRQ(ierr);
     ierr = VecDestroy(&ctx->H0_norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Xwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Bwork);CHKERRQ(ierr);
     if (ctx->scale) {
       ierr = VecDestroy(&ctx->scale);CHKERRQ(ierr);
     }
@@ -914,6 +969,8 @@ PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
   ierr = VecDuplicate(v,&ctx->P);CHKERRQ(ierr);
   ierr = VecDuplicate(v,&ctx->Q);CHKERRQ(ierr);
   ierr = VecDuplicate(v,&ctx->H0_norm);CHKERRQ(ierr);
+  ierr = VecDuplicate(v,&ctx->Xwork);CHKERRQ(ierr);
+  ierr = VecDuplicate(v,&ctx->Bwork);CHKERRQ(ierr);
   ctx->allocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

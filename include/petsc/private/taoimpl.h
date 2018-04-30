@@ -198,5 +198,8 @@ PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal o
 PETSC_INTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec*);
 PETSC_INTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
 PETSC_INTERN PetscErrorCode TaoGradientNorm(Tao, Vec, NormType, PetscReal*);
+PETSC_INTERN PetscErrorCode TaoEstimateActiveBounds(Vec, Vec, Vec, Vec, Vec, Vec, PetscReal, PetscReal*, IS*, IS*, IS*, IS*, IS*);
+PETSC_INTERN PetscErrorCode TaoBoundStep(Vec, Vec, Vec, IS, IS, IS, PetscReal, Vec);
+PETSC_INTERN PetscErrorCode TaoBoundSolution(Vec, Vec, Vec, PetscReal, PetscInt*, Vec);
 
 #endif
