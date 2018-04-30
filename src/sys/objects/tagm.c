@@ -336,10 +336,10 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval
   PetscCommShared scomm = (PetscCommShared)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting shared subcommunicator in a MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = MPI_Comm_free(&scomm->scomm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = PetscFree(scomm->ranks);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = PetscFree(val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting shared subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_free(&scomm->scomm);CHKERRMPI(ierr);
+  ierr = PetscFree(scomm->ranks);CHKERRMPI(ierr);
+  ierr = PetscFree(val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
