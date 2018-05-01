@@ -10,9 +10,9 @@ struct _p_Junction{
   PetscInt	id;                   /* global index */
   PetscInt      isEnd;                /* -1: left end; 0: not an end; 1: right end */
   PetscInt      nedges_in,nedges_out; /* number of connected in/out edges */
-  PetscReal     latitude, longitude;  /* GPS data */
   Mat           *jacobian;
-};
+  PetscReal     latitude, longitude;  /* GPS data */
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 typedef struct _p_Junction *Junction;
 
 /* wash                   */
@@ -28,7 +28,7 @@ struct _p_Wash
   /* Pipe */
   Pipe        pipe;
   PetscScalar Q0,H0,QL,HL;    /* left and right boundary conditions for wash-network (not individual pipe) */
-};
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 typedef struct _p_Wash *Wash;
 
 extern PetscErrorCode WashNetworkCreate(MPI_Comm,PetscInt,Wash*,PetscInt**);
