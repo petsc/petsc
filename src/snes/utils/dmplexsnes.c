@@ -2690,7 +2690,7 @@ PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, vo
     ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
   }
   ierr = DMPlexComputeJacobianAction_Internal(plex, cellIS, 0.0, 0.0, X, NULL, Y, Z, user);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

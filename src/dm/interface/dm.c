@@ -4452,7 +4452,7 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (field) PetscValidHeaderSpecific(field,DMFIELD_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)field);
+  ierr = PetscObjectReference((PetscObject)field);CHKERRQ(ierr);
   ierr = DMFieldDestroy(&dm->coordinateField);CHKERRQ(ierr);
   dm->coordinateField = field;
   PetscFunctionReturn(0);

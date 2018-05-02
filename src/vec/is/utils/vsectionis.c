@@ -216,8 +216,8 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscSectionGetChart(s1, &pStart, &pEnd);
-  ierr = PetscSectionGetChart(s2, &n1, &n2);
+  ierr = PetscSectionGetChart(s1, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s2, &n1, &n2);CHKERRQ(ierr);
   if (pStart != n1 || pEnd != n2) goto not_congruent;
 
   ierr = PetscSectionGetPermutation(s1, &perm1);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
     ierr = PetscSectionGetConstraintIndices(s1, p, &idx1);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintIndices(s2, p, &idx2);CHKERRQ(ierr);
-    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);
+    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
     if (!(*congruent)) goto not_congruent;
   }
 
@@ -270,7 +270,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
       ierr = PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);
+      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
       if (!(*congruent)) goto not_congruent;
     }
   }
