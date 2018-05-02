@@ -2102,12 +2102,23 @@ ${PETSC_DIR}/config/petsc_harness.sh
 \end{bashlisting}
 
 \section{Using the Test Harness for Regression Testing}
-The test system is primarily designed to to provide user-facing information and to be used in automated testing. However, it can also be helpful for contributing developers in regression testing, if one is willing to do a little investigation into the files that the test harness generates. A typical workflow might proceed as follows.
+The test system can also be helpful for contributing developers in regression testing.
+A typical workflow might proceed as follows.
 Note that the exact syntax of all input and output in this section is subject to change.
 
 \begin{enumerate}
-\item Make changes to the code base, and prepare a branch to submit upstream.
-\item To protect against unintended regressions, run the full test suite on your branch. (For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein).
+\item Run the full test suite on the development machine, using the branch of PETSc you want to base your changes on (usually \trl{master}).
+\begin{bashlisting}
+git checkout master
+make -f gmakefile.test test
+\end{bashlisting}
+Confirm that all of the tests pass.
+\item Create a new branch and make your changes.
+\begin{bashlisting}
+git checkout -b myname/my-feature
+# make and commit changes
+\end{bashlisting}
+\item Run the full test suite on your branch \footnote{For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein.}.
 \begin{bashlisting}
 make -f gmakefile.test test
 \end{bashlisting}
@@ -2127,7 +2138,7 @@ make -f gmakefile.test test
 # To rerun failed tests:
 #     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
 \end{outputlisting}
-The above indicates that three tests have failed and should be investigated. One would also probably check beforehand that no tests fail with an umodified version of PETSc on the development machine.
+The above indicates that three tests have failed and should be investigated.
 \item Rerun one of the failed tests, with additional verbosity.
 \begin{bashlisting}
 /opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-ex4_4'
@@ -2151,27 +2162,36 @@ not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc
 #	> Testing PetscViewerASCIIPrintf 0
 #	> Testing PetscViewerASCIIPrintf 1
 \end{outputlisting}
-This suggests that the output does not match the reference output.
+This indicates that the output does not match the reference output.
 \item Take a look in the directory where the test was run from.
 \begin{outputlisting}
-cd arch-darwin-master-double-debug/tests/sys/classes/viewer/examples/tests/
+cd $PETSC_ARCH/tests/sys/classes/viewer/examples/tests/
 \end{outputlisting}
-\item Examine the scripts and output files there. In this example, these are \trl{runex4_4.sh} and \trl{runex4_4/}, which contains \trl{sys_classes_viewer_tests-ex4_4.sh} along with various output files.
-\item By examining these files, one can determine that
-\begin{tightitemize}
-\item The command to run the test was
+\item The name of the test indicates that the test was defined in \trl{ex4.c}, with the suffix \trl{4}. This is defined in \trl{ex4.c} as such:
 \begin{outputlisting}
-/Users/patrick/petsc-master/arch-darwin-master-double-debug/bin/mpiexec  -n 1 ../ex4 -myviewer ascii:ex4a1.tmp::append
+   test:
+      suffix: 4
+      args: -myviewer ascii:ex4a1.tmp::append
+      filter: cat ex4a1.tmp
+      output_file: output/ex4a.out
 \end{outputlisting}
-\item The reference output is in
+(Note that the default number of MPI processes is 1.)
+\item We can deduce now that the command to rerun the example are
 \begin{outputlisting}
-/Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out
+make ex4
+$PETSC_DIR/$PETSC_ARCH/bin/mpiexec -n 1 ./ex4 -myviewer ascii:ex4a1.tmp::append
+cat ex4a1.tmp
 \end{outputlisting}
-\end{tightitemize}
+\item Similarly, we can deduce that the reference output is in
+\begin{outputlisting}
+$PETSC_DIR/src/sys/classes/viewer/examples/tests/output/ex4a.out
+\end{outputlisting}
+(Note that there is a default output location in \trl{output/testname_suffix}.)
 \item This should provide enough information to iteratively debug the problem by making changes, recompiling, and re-running this example directly.
 \item Repeat with other errors.
 \end{enumerate}
 
+\subsection{Additional Tips}
 To rerun just the reporting,
 \begin{bashlisting}
 config/report_tests.py
