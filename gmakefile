@@ -181,7 +181,8 @@ $(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/
 $(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/vec/f90-mod/petscvecmod.o
 $(OBJDIR)/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/dm/f90-mod/petscdmplexmod.o
 $(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
 $(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
