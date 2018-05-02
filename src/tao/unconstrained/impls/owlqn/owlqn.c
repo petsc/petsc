@@ -1,5 +1,4 @@
 #include <petsctaolinesearch.h>
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/unconstrained/impls/owlqn/owlqn.h>
 
 #define OWLQN_BFGS                0
@@ -88,12 +87,8 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
-  if (f != 0.0) {
-    delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-  } else {
-    delta = 2.0 / (gnorm*gnorm);
-  }
-  ierr = MatLMVMSetDelta(lmP->M,delta);CHKERRQ(ierr);
+  delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+  ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
 
   /* Set counter for gradient/reset steps */
   lmP->bfgs = 0;
@@ -104,7 +99,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+    ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
     ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -122,15 +117,11 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
          Use steepest descent direction (scaled) */
       ++lmP->grad;
 
-      if (f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-      } else {
-        delta = 2.0 / (gnorm*gnorm);
-      }
-      ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-      ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+      ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(lmP->M,lmP->GV, lmP->D);CHKERRQ(ierr);
+      ierr = MatSolve(lmP->M,lmP->GV, lmP->D);CHKERRQ(ierr);
 
       ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -173,15 +164,11 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
         /* Failed to obtain acceptable iterate with BFGS step
            Attempt to use the scaled gradient direction */
 
-        if (f != 0.0) {
-          delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-        } else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+        ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+        ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
         ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -194,10 +181,10 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
         /* The scaled gradient step did not produce a new iterate;
            attempt to use the gradient direction.
            Need to make sure we are not using a different diagonal scaling */
-        ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
-        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        ierr = MatLMVMSetJ0Scale(lmP->M, 1.0);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+        ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
         ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -260,8 +247,8 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
   /* Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
-  ierr = MatLMVMAllocateVectors(lmP->M,tao->solution);CHKERRQ(ierr);
+  ierr = MatCreateLBFGS(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

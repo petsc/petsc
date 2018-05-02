@@ -15,15 +15,22 @@ typedef struct {
   Mat M;
 
   Vec unprojected_gradient;
-  Vec Xold;
-  Vec Gold;
+  Vec Xold, Gold;
+  Vec W, work;
+  
+  PetscInt  as_type;
+  PetscReal as_step, as_tol;
+  IS active_lower, active_upper, active_fixed;
+  IS inactive_idx, active_idx;
 
   PetscInt n_free;
   PetscInt n_bind;
 
+  PetscInt bfgs;
   PetscInt grad;
-  PetscInt reset;
   Mat      H0;
+  
+  PetscBool recycle;
 } TAO_BLMVM;
 
 #endif  /* if !defined(__TAO_BLMVM_H) */

@@ -703,6 +703,29 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchurComplementAinvType,MatReuse,Mat*);
 
+PETSC_EXTERN PetscErrorCode MatCreateLDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLSBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMAllocate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatLMVMResetJ0(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0(Mat, Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Scale(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Diag(Mat, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0PC(Mat, PC);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0KSP(Mat, KSP);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
+
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetDM(KSP,DM*);

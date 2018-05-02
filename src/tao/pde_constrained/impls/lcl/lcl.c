@@ -1,5 +1,4 @@
 #include <../src/tao/pde_constrained/impls/lcl/lcl.h>
-#include <../src/tao/matrix/lmvmmat.h>
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLScatter(TAO_LCL*,Vec,Vec,Vec);
@@ -185,8 +184,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   lclP->rho = lclP->rho0;
   ierr = VecGetLocalSize(lclP->U,&nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal);CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
-  ierr = MatLMVMAllocateVectors(lclP->R,lclP->V);CHKERRQ(ierr);
+  ierr = MatCreateLBFGS(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(lclP->R,lclP->V,lclP->V);CHKERRQ(ierr);
   lclP->recompute_jacobian_flag = PETSC_TRUE;
 
   /* Scatter to U,V */
@@ -442,7 +441,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Compute the limited-memory quasi-newton direction */
       if (tao->niter > 0) {
-        ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
+        ierr = MatSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
         if (descent <= 0) {
           if (lclP->verbose) {
@@ -534,9 +533,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = VecScale(lclP->g2,-1.0);CHKERRQ(ierr);
 
       /* Update the quasi-newton approximation */
-      if (phase2_iter >= 0){
-        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);CHKERRQ(ierr);
-      }
       ierr = MatLMVMUpdate(lclP->R,lclP->V,lclP->g2);CHKERRQ(ierr);
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */
 

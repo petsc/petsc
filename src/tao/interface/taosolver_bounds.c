@@ -33,6 +33,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
   ierr = VecDestroy(&tao->XU);CHKERRQ(ierr);
   tao->XL = XL;
   tao->XU = XU;
+  tao->bounded = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -68,6 +69,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->user_boundsP = ctx;
   tao->ops->computebounds = func;
+  tao->bounded = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

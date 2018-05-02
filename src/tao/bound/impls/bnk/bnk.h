@@ -5,7 +5,6 @@ Context for bounded Newton-Krylov type optimization algorithms
 #if !defined(__TAO_BNK_H)
 #define __TAO_BNK_H
 #include <petsc/private/taoimpl.h>
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/bound/impls/bncg/bncg.h>
 
 typedef struct {
@@ -21,7 +20,7 @@ typedef struct {
   Vec Diag_min, Diag_max;
   
   /* Unallocated matrices and vectors */
-  Mat H_inactive, Hpre_inactive, M;
+  Mat H_inactive, Hpre_inactive, M, M_inactive;
   Vec Diag, Diag_red, X_inactive, G_inactive, inactive_work, active_work;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
@@ -231,7 +230,7 @@ typedef struct {
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 
-PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
+PETSC_INTERN PetscErrorCode TaoBNKPreconBFGS(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);

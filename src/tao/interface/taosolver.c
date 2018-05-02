@@ -144,6 +144,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewgradient=PETSC_FALSE;
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
+  
+  tao->bounded = PETSC_FALSE;
 
   /* These flags prevents algorithms from overriding user options */
   tao->max_it_changed   =PETSC_FALSE;

@@ -1,13 +1,6 @@
-#include <petsc/private/matimpl.h>
-#include <petscksp.h>                 /*I "petscksp.h" I*/
-const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","BLOCKDIAG","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
+#include <../src/ksp/ksp/utils/schurm/schurm.h> /*I "petscksp.h" I*/
 
-typedef struct {
-  Mat                        A,Ap,B,C,D;
-  KSP                        ksp;
-  Vec                        work1,work2;
-  MatSchurComplementAinvType ainvtype;
-} Mat_SchurComplement;
+const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","BLOCKDIAG","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
 PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)
 {
@@ -920,29 +913,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)N),&Na->ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscBool KSPMatRegisterAllCalled;
-
-/*@C
-  KSPMatRegisterAll - Registers all matrix implementations in the KSP package.
-
-  Not Collective
-
-  Level: advanced
-
-.keywords: Mat, KSP, register, all
-
-.seealso: MatRegisterAll(),  KSPInitializePackage()
-@*/
-PetscErrorCode KSPMatRegisterAll(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
-  KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegister(MATSCHURCOMPLEMENT,MatCreate_SchurComplement);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

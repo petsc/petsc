@@ -1,4 +1,3 @@
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/unconstrained/impls/ntl/ntlimpl.h>
 
 #include <petscksp.h>
@@ -30,22 +29,6 @@ static const char *NTL_INIT[64] = {"constant","direction","interpolation"};
 
 static const char *NTL_UPDATE[64] = {"reduction","interpolation"};
 
-/* Routine for BFGS preconditioner */
-
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
-{
-  PetscErrorCode ierr;
-  Mat            M;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
-  ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* Implements Newton's Method with a trust-region, line-search approach for
    solving unconstrained minimization problems.  A More'-Thuente line search
    is used to guarantee that the bfgs preconditioner remains positive
@@ -55,6 +38,17 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 #define NTL_BFGS                1
 #define NTL_SCALED_GRADIENT     2
 #define NTL_GRADIENT            3
+
+PetscErrorCode TaoNTLPrecondBFGS(PC BFGSpc, Vec X, Vec Y)
+{
+  PetscErrorCode ierr;
+  Mat *M;
+  
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(BFGSpc, (void**)&M);CHKERRQ(ierr);
+  ierr = MatSolve(*M, X, Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode TaoSolve_NTL(Tao tao)
 {
@@ -106,8 +100,8 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   if (NTL_PC_BFGS == tl->pc_type && !tl->M) {
     ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
     ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&tl->M);CHKERRQ(ierr);
-    ierr = MatLMVMAllocateVectors(tl->M,tao->solution);CHKERRQ(ierr);
+    ierr = MatCreateLBFGS(((PetscObject)tao)->comm,n,N,&tl->M);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(tl->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   }
 
   /* Check convergence criteria */
@@ -148,7 +142,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
     ierr = PCShellSetContext(pc, tl->M);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
+    ierr = PCShellSetApply(pc,TaoNTLPrecondBFGS);CHKERRQ(ierr);
     break;
 
   default:
@@ -282,12 +276,8 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
      This step is done after computing the initial trust-region radius
      since the function value may have decreased */
   if (NTL_PC_BFGS == tl->pc_type) {
-    if (f != 0.0) {
-      delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-    } else {
-      delta = 2.0 / (gnorm*gnorm);
-    }
-    ierr = MatLMVMSetDelta(tl->M, delta);CHKERRQ(ierr);
+    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+    ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
   }
 
   /* Set counter for gradient/reset steps */
@@ -312,7 +302,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         ierr = MatGetDiagonal(tao->hessian, tl->Diag);CHKERRQ(ierr);
         ierr = VecAbs(tl->Diag);CHKERRQ(ierr);
         ierr = VecReciprocal(tl->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetScale(tl->M, tl->Diag);CHKERRQ(ierr);
+        ierr = MatLMVMSetJ0Diag(tl->M, tl->Diag);CHKERRQ(ierr);
       }
 
       /* Update the limited memory preconditioner */
@@ -362,13 +352,9 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       /* Preconditioner is numerically indefinite; reset the
          approximate if using BFGS preconditioning. */
 
-      if (f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-      } else {
-        delta = 2.0 / (gnorm*gnorm);
-      }
-      ierr = MatLMVMSetDelta(tl->M, delta);CHKERRQ(ierr);
-      ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
+      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+      ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       bfgsUpdates = 1;
     }
@@ -518,7 +504,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
           stepType = NTL_GRADIENT;
         } else {
           /* Attempt to use the BFGS direction */
-          ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
           /* Check for success (descent direction) */
@@ -530,15 +516,11 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
                which is guaranteed to be descent */
 
             /* Use steepest descent direction (scaled) */
-            if (f != 0.0) {
-              delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-            } else {
-              delta = 2.0 / (gnorm*gnorm);
-            }
-            ierr = MatLMVMSetDelta(tl->M, delta);CHKERRQ(ierr);
-            ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
+            delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+            ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
+            ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
             ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-            ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
             ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
             bfgsUpdates = 1;
@@ -588,7 +570,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
             stepType = NTL_GRADIENT;
           } else {
             /* Attempt to use the BFGS direction */
-            ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+            ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
 
             /* Check for success (descent direction) */
@@ -598,15 +580,11 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
                  not a number.  We can assert bfgsUpdates > 1 in this case
                  Use steepest descent direction (scaled) */
 
-              if (f != 0.0) {
-                delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-              } else {
-                delta = 2.0 / (gnorm*gnorm);
-              }
-              ierr = MatLMVMSetDelta(tl->M, delta);CHKERRQ(ierr);
-              ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
+              delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+              ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
+              ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
               ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-              ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+              ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
               bfgsUpdates = 1;
               ++tl->sgrad;
@@ -629,15 +607,11 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
              Failed to obtain acceptable iterate with BFGS step
              Attempt to use the scaled gradient direction */
 
-          if (f != 0.0) {
-            delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-          } else {
-            delta = 2.0 / (gnorm*gnorm);
-          }
-          ierr = MatLMVMSetDelta(tl->M, delta);CHKERRQ(ierr);
-          ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
+          delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+          ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
+          ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-          ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           ++tl->sgrad;
@@ -649,11 +623,10 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
              The scaled gradient step did not produce a new iterate;
              attemp to use the gradient direction.
              Need to make sure we are not using a different diagonal scaling */
-          ierr = MatLMVMSetScale(tl->M, tl->Diag);CHKERRQ(ierr);
-          ierr = MatLMVMSetDelta(tl->M, 1.0);CHKERRQ(ierr);
-          ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
+          ierr = MatLMVMSetJ0Scale(tl->M, 1.0);CHKERRQ(ierr);
+          ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-          ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           ++tl->grad;
@@ -827,7 +800,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (NTL_PC_BFGS == tl->pc_type && tl->M) {
-      ierr = MatLMVMGetRejects(tl->M, &nrejects);CHKERRQ(ierr);
+      ierr = MatLMVMGetRejectCount(tl->M, &nrejects);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", nrejects);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "Trust-region steps: %D\n", tl->ntrust);CHKERRQ(ierr);

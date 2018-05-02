@@ -1,4 +1,3 @@
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/unconstrained/impls/ntr/ntrimpl.h>
 
 #include <petscksp.h>
@@ -30,18 +29,15 @@ static const char *NTR_INIT[64] = {"constant","direction","interpolation"};
 
 static const char *NTR_UPDATE[64] = {"reduction","interpolation"};
 
-/*  Routine for BFGS preconditioner */
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
+PetscErrorCode TaoNTRPreconBFGS(PC BFGSpc, Vec X, Vec Y)
 {
-    PetscErrorCode ierr;
-    Mat M;
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-    ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  Mat *M;
+  
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(BFGSpc, (void**)&M);CHKERRQ(ierr);
+  ierr = MatSolve(*M, X, Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -111,8 +107,8 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   if (NTR_PC_BFGS == tr->pc_type && !tr->M) {
     ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
     ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&tr->M);CHKERRQ(ierr);
-    ierr = MatLMVMAllocateVectors(tr->M,tao->solution);CHKERRQ(ierr);
+    ierr = MatCreateLBFGS(((PetscObject)tao)->comm,n,N,&tr->M);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(tr->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   }
 
   /* Check convergence criteria */
@@ -153,7 +149,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
     ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
     ierr = PCShellSetContext(pc, tr->M);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
+    ierr = PCShellSetApply(pc, TaoNTRPreconBFGS);CHKERRQ(ierr);
     break;
 
   default:
@@ -303,13 +299,8 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
      This step is done after computing the initial trust-region radius
      since the function value may have decreased */
   if (NTR_PC_BFGS == tr->pc_type) {
-    if (f != 0.0) {
-      delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-    }
-    else {
-      delta = 2.0 / (gnorm*gnorm);
-    }
-    ierr = MatLMVMSetDelta(tr->M,delta);CHKERRQ(ierr);
+    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+    ierr = MatLMVMSetJ0Scale(tr->M, delta);CHKERRQ(ierr);
   }
 
   /* Have not converged; continue with Newton method */
@@ -328,7 +319,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         ierr = MatGetDiagonal(tao->hessian, tr->Diag);CHKERRQ(ierr);
         ierr = VecAbs(tr->Diag);CHKERRQ(ierr);
         ierr = VecReciprocal(tr->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetScale(tr->M,tr->Diag);CHKERRQ(ierr);
+        ierr = MatLMVMSetJ0Diag(tr->M,tr->Diag);CHKERRQ(ierr);
       }
 
       /* Update the limited memory preconditioner */
@@ -382,14 +373,9 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
         /* Preconditioner is numerically indefinite; reset the
            approximate if using BFGS preconditioning. */
 
-        if (f != 0.0) {
-          delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-        }
-        else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetDelta(tr->M, delta);CHKERRQ(ierr);
-        ierr = MatLMVMReset(tr->M);CHKERRQ(ierr);
+        delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
+        ierr = MatLMVMSetJ0Scale(tr->M, delta);CHKERRQ(ierr);
+        ierr = MatLMVMReset(tr->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
         bfgsUpdates = 1;
       }
@@ -654,7 +640,7 @@ static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (NTR_PC_BFGS == tr->pc_type && tr->M) {
-      ierr = MatLMVMGetRejects(tr->M, &nrejects);CHKERRQ(ierr);
+      ierr = MatLMVMGetRejectCount(tr->M, &nrejects);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", nrejects);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

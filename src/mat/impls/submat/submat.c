@@ -105,6 +105,25 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSolve_SubMatrix(Mat N,Vec x,Vec y)
+{
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
+  Vec            xx  = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PreScaleLeft(N,x,&xx);CHKERRQ(ierr);
+  ierr = VecZeroEntries(Na->lwork);CHKERRQ(ierr);
+  ierr = VecScatterBegin(Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MatSolve(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
+  ierr = VecScatterBegin(Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = PostScaleRight(N,y);CHKERRQ(ierr);
+  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
@@ -280,6 +299,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   Na->scale = 1.0;
 
   N->ops->destroy          = MatDestroy_SubMatrix;
+  N->ops->solve            = MatSolve_SubMatrix;
   N->ops->mult             = MatMult_SubMatrix;
   N->ops->multadd          = MatMultAdd_SubMatrix;
   N->ops->multtranspose    = MatMultTranspose_SubMatrix;

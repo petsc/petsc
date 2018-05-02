@@ -1,15 +1,16 @@
 
+
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = kspmatregi.c dmproject.c
+SOURCEC  = lmvm.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = lmvm.h
 LIBBASE  = libpetscksp
-DIRS     = lmvm schurm
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/utils/
+DIRS     = ldfp lbfgs lsr1 lbrdn lmbrdn lsbrdn
+LOCDIR   = src/ksp/ksp/utils/lmvm/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
