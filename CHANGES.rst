@@ -6,6 +6,14 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.9.1
+=============
+
+- Add ``Mat.zeroRowsColumnsLocal()``.
+- Add ``Mat.getISLocalMat()``.
+- Add ``Mat.convertISToAIJ()``.
+
+
 Release 3.9.0
 =============
 
