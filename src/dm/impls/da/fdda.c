@@ -48,6 +48,55 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
   PetscFunctionReturn(0);
 }
 
+
+static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse,PetscInt w,PetscInt **rfill)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,nz,*fill;
+
+  PetscFunctionBegin;
+  if (!dfillsparse) PetscFunctionReturn(0);
+
+  /* Determine number of non-zeros */
+  nz = (dfillsparse[w] - w - 1);
+
+  /* Allocate space for our copy of the given sparse matrix representation. */
+  ierr = PetscMalloc1(nz + w + 1,&fill);CHKERRQ(ierr);
+
+  /* Copy the given sparse matrix representation. */
+  for(i = 0; i < (nz + w + 1); ++i)
+  {
+    fill[i] = dfillsparse[i];
+  }
+
+  *rfill = fill;
+  PetscFunctionReturn(0);
+}
+
+
+static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,k,cnt = 1;
+
+  PetscFunctionBegin;
+
+  /* ofillcount tracks the columns of ofill that have any nonzero in thems; the value in each location is the number of
+   columns to the left with any nonzeros in them plus 1 */
+  ierr = PetscCalloc1(dd->w,&dd->ofillcols);CHKERRQ(ierr);
+  for (i=0; i<dd->w; i++) {
+    for (k=dd->ofill[i]; k<dd->ofill[i+1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
+  }
+  for (i=0; i<dd->w; i++) {
+    if (dd->ofillcols[i]) {
+      dd->ofillcols[i] = cnt++;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
 /*@
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
@@ -87,23 +136,72 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
-  PetscInt       i,k,cnt = 1;
 
   PetscFunctionBegin;
+  /* save the given dfill and ofill information */
   ierr = DMDASetBlockFills_Private(dfill,dd->w,&dd->dfill);CHKERRQ(ierr);
   ierr = DMDASetBlockFills_Private(ofill,dd->w,&dd->ofill);CHKERRQ(ierr);
 
-  /* ofillcount tracks the columns of ofill that have any nonzero in thems; the value in each location is the number of
-   columns to the left with any nonzeros in them plus 1 */
-  ierr = PetscCalloc1(dd->w,&dd->ofillcols);CHKERRQ(ierr);
-  for (i=0; i<dd->w; i++) {
-    for (k=dd->ofill[i]; k<dd->ofill[i+1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
-  }
-  for (i=0; i<dd->w; i++) {
-    if (dd->ofillcols[i]) {
-      dd->ofillcols[i] = cnt++;
-    }
-  }
+  /* count nonzeros in ofill columns */
+  ierr = DMDASetBlockFills_Private2(dd);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+    DMDASetBlockFillsSparse - Sets the fill pattern in each block for a multi-component problem
+    of the matrix returned by DMCreateMatrix(), using sparse representations
+    of fill patterns.
+
+    Logically Collective on DMDA
+
+    Input Parameter:
++   da - the distributed array
+.   dfill - the sparse fill pattern in the diagonal block (may be NULL, means use dense block)
+-   ofill - the sparse fill pattern in the off-diagonal blocks
+
+
+    Level: developer
+
+    Notes: This only makes sense when you are doing multicomponent problems but using the
+       MPIAIJ matrix format
+
+           The format for dfill and ofill is a sparse representation of a
+           dof-by-dof matrix with 1 entries representing coupling and 0 entries
+           for missing coupling.  The sparse representation is a 1 dimensional
+           array of length nz + dof + 1, where nz is the number of non-zeros in
+           the matrix.  The first dof entries in the array give the 
+           starting array indices of each row's items in the rest of the array,
+           the dof+1st item indicates the total number of nonzeros,
+           and the remaining nz items give the column indices of each of
+           the 1s within the logical 2D matrix.  Each row's items within
+           the array are the column indices of the 1s within that row
+           of the 2D matrix.  PETSc developers may recognize that this is the
+           same format as that computed by the DMDASetBlockFills_Private()
+           function from a dense 2D matrix representation.
+
+     DMDASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
+     can be represented in the dfill, ofill format
+
+   Contributed by Philip C. Roth
+
+.seealso DMDASetBlockFills(), DMCreateMatrix(), DMDASetGetMatrix(), DMSetMatrixPreallocateOnly()
+
+@*/
+PetscErrorCode  DMDASetBlockFillsSparse(DM da,const PetscInt *dfillsparse,const PetscInt *ofillsparse)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* save the given dfill and ofill information */
+  ierr = DMDASetBlockFillsSparse_Private(dfillsparse,dd->w,&dd->dfill);CHKERRQ(ierr);
+  ierr = DMDASetBlockFillsSparse_Private(ofillsparse,dd->w,&dd->ofill);CHKERRQ(ierr);
+
+  /* count nonzeros in ofill columns */
+  ierr = DMDASetBlockFills_Private2(dd);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
