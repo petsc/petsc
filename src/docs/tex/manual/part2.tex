@@ -4619,7 +4619,7 @@ finite difference Jacobian approximation.  These are set with the command
 MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
 \end{lstlisting}
 The parameter \lstinline{rerror} is the square root of
-the relative error in the function evaluations, $e_{rel}$; the default is 100 $\times$ the square root of machine epsilon (about $10^{-6}$ in double precision), which assumes
+the relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision), which assumes
 that the functions are evaluated approximately to floating-point precision accuracy. The
 second parameter, \lstinline{umin}, is a bit more involved; its default is
 $ 10e^{-6} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
@@ -4627,17 +4627,24 @@ approximated by the formula
 \[
     F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
 \]
-where $ h $ is computed via
+where $ h $ is computed via:
 \begin{eqnarray*}
         h = e_{rel}*u_{i}             &    \hbox{if }  |u_{i}| > u_{min} \\
         h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.
 \end{eqnarray*}
+for MATMFFD\_DS
+or:
+\begin{eqnarray*}
+        h = e_{rel}*sqrt(\|u\|)
+\end{eqnarray*}
+for MATMFFD\_WP (default).
 These parameters may be set from the options database with
 \begin{lstlisting}
 -mat_fd_coloring_err <err>
 -mat_fd_coloring_umin <umin>
+-mat_fd_type <htype>
 \end{lstlisting}
-\findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
+\findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin} \findex{-mat_fd_type}
 
 Note that \lstinline{MatColoring} type \lstinline{MATCOLORINGSL}, \lstinline{MATCOLORINGLF}, and \lstinline{MATCOLORINGID} are sequential algorithms.  \lstinline{MATCOLORINGJP} and
 \lstinline{MATCOLORINGGREEDY} are parallel algorithms, although in practice they may create more colors than the sequential

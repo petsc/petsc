@@ -6,5 +6,6 @@
 #define __PETSCDMPLEXDEF_H
 
 #include "petsc/finclude/petscdm.h"
+#include "petsc/finclude/petscdmlabel.h"
 
 #endif
