@@ -201,7 +201,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     
     /* Verify that this is a descent direction */
     ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
-    ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);
+    ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);CHKERRQ(ierr);
     if (gd > -cg->rho*PetscPowReal(dnorm, cg->pow)) {
       /* Not a descent direction, so we reset back to projected gradient descent */
       ierr = VecAXPBY(tao->stepdirection, -1.0, 0.0, tao->gradient);CHKERRQ(ierr);

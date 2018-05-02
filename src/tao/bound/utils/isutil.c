@@ -420,10 +420,10 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   if (n>0){
-    ierr = VecGetArrayRead(X, &x);
-    ierr = VecGetArrayRead(XL, &xl);
-    ierr = VecGetArrayRead(XU, &xu);
-    ierr = VecGetArray(Xout, &xout);
+    ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
+    ierr = VecGetArray(Xout, &xout);CHKERRQ(ierr);
 
     for (i=0;i<n;++i){
       if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + bound_tol)) {
@@ -433,10 +433,10 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
       }
     }
 
-    ierr = VecRestoreArrayRead(X, &x);
-    ierr = VecRestoreArrayRead(XL, &xl);
-    ierr = VecRestoreArrayRead(XU, &xu);
-    ierr = VecRestoreArray(Xout, &xout);
+    ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(XL, &xl);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Xout, &xout);CHKERRQ(ierr);
   }
   ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);

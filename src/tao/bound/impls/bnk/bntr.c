@@ -121,7 +121,6 @@ static PetscErrorCode TaoSolve_BNTR(Tao tao)
     }
     
     /* Store current solution before it changes */
-    oldTrust = tao->trust;
     bnk->fold = bnk->f;
     ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
