@@ -22,6 +22,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel tests'))
+    help.addArgument('MAKE', '-with-make-load=<load>',                       nargs.ArgReal(None, None, min=1.0, help='max load to use for parallel builds'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
@@ -156,12 +157,19 @@ class Configure(config.package.GNUPackage):
     return
 
   def compute_make_test_np(self,i):
-    f32 = 0.35
-    f99 = 0.20
+    f32 = 0.50
+    f99 = 0.35
     if (i<=2):    return 1
     elif (i<=4):  return 2
-    elif (i<=32): return int(2+(i-4)*f32)
-    else:         return int(2+28*f32+(i-32)*f99)
+    elif (i<=32): return int(i*f32)
+    else:         return int(32*f32+(i-32)*f99)
+    return
+
+  def compute_make_load(self,i):
+    f64 = 1.5
+    f99 = 1.1
+    if (i<=64):   return i*f64
+    else:         return 64*f64+(i-64)*f99
     return
 
   def configureMakeNP(self):
@@ -171,30 +179,38 @@ class Configure(config.package.GNUPackage):
       cores = multiprocessing.cpu_count()
       make_np = self.compute_make_np(cores)
       make_test_np = self.compute_make_test_np(cores)
+      make_load = self.compute_make_load(cores)
       self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
     except (ImportError) as e:
       cores = 2
       make_np = 2
       make_test_np = 1
+      make_load = 3
       self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
 
     if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
-        self.logPrint('using user-provided make_np = %d' % make_np)
         make_np = self.argDB['with-make-np']
+        self.logPrint('using user-provided make_np = %d' % make_np)
 
     if not self.argDB.get('with-mpi'):
       make_test_np = make_np
 
     if 'with-make-test-np' in self.argDB and self.argDB['with-make-test-np']:
-        self.logPrint('using user-provided make_test_np = %d' % make_test_np)
         make_test_np = self.argDB['with-make-test-np']
+        self.logPrint('using user-provided make_test_np = %d' % make_test_np)
+
+    if 'with-make-load' in self.argDB and self.argDB['with-make-load']:
+        make_load = self.argDB['with-make-load']
+        self.logPrint('using user-provided make_load = %f' % make_load)
 
     self.make_np = make_np
     self.make_test_np = make_test_np
+    self.make_load = make_load
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
+    self.addMakeMacro('MAKE_LOAD',str(make_load))
     self.addMakeMacro('NPMAX',str(cores))
-    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(cores)
+    self.make_jnp = self.make + ' -j' + str(self.make_np) +' -l'+str(self.make_load)
     return
 
   def configure(self):
