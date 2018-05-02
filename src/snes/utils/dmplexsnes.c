@@ -1853,7 +1853,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, IS cellIS, PetscReal time, 
       if (dmGrad) {ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);}
     }
   }
-  ierr = ISDestroy(&chunkIS);CHKERRQ(ierr);
+  if (useFEM) {ierr = ISDestroy(&chunkIS);CHKERRQ(ierr);}
   ierr = ISRestorePointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
 
   if (useFEM) {
