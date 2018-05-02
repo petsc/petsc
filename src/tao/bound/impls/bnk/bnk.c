@@ -324,7 +324,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   /* Compute the Hessian */
   ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   /* Add a correction to the BFGS preconditioner */
-  if (BNK_PC_BFGS == bnk->pc_type) {
+  if (BNK_PC_BFGS == bnk->pc_type && bnk->M) {
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     /* Update the BFGS diagonal scaling */
     ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 
   case BNK_AS_BERTSEKAS:
     /* Compute the trial step vector with which we will estimate the active set at the next iteration */
-    if (BNK_PC_BFGS == bnk->pc_type) {
+    if (BNK_PC_BFGS == bnk->pc_type && bnk->M) {
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
       ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
