@@ -339,16 +339,16 @@ PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSetFromOptions(TS,const char[],const char[],const char[],PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat*),PetscErrorCode (*)(TS,PetscViewerAndFormat*));
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSSetRHSJacobianP")     PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeRHSJacobianP") PetscErrorCode TSAdjointComputeRHSJacobian(TS,PetscReal,Vec,Mat);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeDRDPFunction") PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSComputeDRDUFunction") PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
 
-PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobian(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointReset(TS);
-PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointCostIntegral(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointInitializeForward(TS,Mat);
 
