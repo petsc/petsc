@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscReal         norm;        /* norm of solution error */
   char              file[2][PETSC_MAX_PATH_LEN];
   PetscViewer       viewer;      /* viewer */
-  PetscBool         flg,preload;
+  PetscBool         flg,preload=PETSC_FALSE,same;
   PetscInt          its,j,len,start,idx,n1,n2;
   const PetscScalar *val;
 
@@ -67,9 +67,10 @@ int main(int argc,char **args)
     loop with maximal two iterations, depending whether preloading is turned on or
     not. If it is, either through the preload arg of PetscPreLoadBegin or through
     -preload command line, the trip count is 2, otherwise it is 1. One can use the
-    predefined variable PetscPreLoadIt with the loop body to get the current
-    iteration number. If preload is turned on, the runtime doesn't do profiling for
-    the first iteration, but it will do profiling for the second iteration instead.
+    predefined variable PetscPreLoadIt within the loop body to get the current
+    iteration number, which is 0 or 1. If preload is turned on, the runtime doesn't
+    do profiling for the first iteration, but it will do profiling for the second
+    iteration instead.
 
     One can solve a small system in the first iteration and a large system in
     the second iteration. This process preloads the instructions with the small
@@ -77,12 +78,10 @@ int main(int argc,char **args)
     with the large one (that actually is the system of interest).
 
     But in this example, we turned off preloading and duplicated the code for
-    the large system. In general, it is a bad practice and one should duplicate
+    the large system. In general, it is a bad practice and one should not duplicate
     code. We do that because we want to show profiling stages for both the small
     system and the large system.
   */
-
-  preload = PETSC_FALSE;
   PetscPreLoadBegin(preload,"Load System 0");
 
   /*=========================
@@ -105,7 +104,7 @@ int main(int argc,char **args)
    */
   ierr = MatGetLocalSize(A,NULL,&n1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(b,&n2);CHKERRQ(ierr);
-  PetscBool same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
+  same = (n1 == n2)? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   if (!same) { /* create a new vector b by padding the old one */
