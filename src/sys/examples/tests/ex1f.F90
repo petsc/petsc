@@ -58,6 +58,6 @@
 !/*TEST
 !
 !   test:
-!     filter: grep  "My error handler" | wc -l
+!     filter: egrep  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
 !
 !TEST*/
