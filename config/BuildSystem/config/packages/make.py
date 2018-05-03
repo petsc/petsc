@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://ftp.gnu.org/gnu/make/make-4.1.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.1.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.2.1-6.fc28.tar.gz']
     self.complex           = 1
     self.downloadonWindows = 1
     self.useddirectly      = 0
