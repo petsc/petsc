@@ -778,26 +778,6 @@ PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char*))
 }
 #endif
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <mex.h>
-PetscErrorCode PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (fd != stdout && fd != stderr) { /* handle regular files */
-    ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
-  } else {
-    size_t length;
-    char   buff[length];
-
-    ierr = PetscVSNPrintf(buff,sizeof(buff),format,&length,Argp);CHKERRQ(ierr);
-    mexPrintf("%s",buff);
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 
