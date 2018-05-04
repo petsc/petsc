@@ -147,7 +147,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
       /* new iterate so we need to recompute the Hessian */
       needH = PETSC_TRUE;
       /* compute the projected gradient */
-      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);
+      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
       ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
       ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);

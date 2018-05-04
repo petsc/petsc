@@ -324,7 +324,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   /* Compute the Hessian */
   ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   /* Add a correction to the BFGS preconditioner */
-  if (BNK_PC_BFGS == bnk->pc_type) {
+  if (BNK_PC_BFGS == bnk->pc_type && bnk->M) {
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     /* Update the BFGS diagonal scaling */
     ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 
   case BNK_AS_BERTSEKAS:
     /* Compute the trial step vector with which we will estimate the active set at the next iteration */
-    if (BNK_PC_BFGS == bnk->pc_type) {
+    if (BNK_PC_BFGS == bnk->pc_type && bnk->M) {
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
       ierr = MatLMVMSetInactive(bnk->M, NULL);CHKERRQ(ierr);
       ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
@@ -451,7 +451,7 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
     if (bnk->bncg->reason == TAO_CONVERGED_GATOL || bnk->bncg->reason == TAO_CONVERGED_GRTOL || bnk->bncg->reason == TAO_CONVERGED_GTTOL || bnk->bncg->reason == TAO_CONVERGED_MINF) {
       *terminate = PETSC_TRUE;
     } else {
-      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);
+      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -485,22 +485,22 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ierr = MatLMVMSetInactive(bnk->M, bnk->inactive_idx);CHKERRQ(ierr);
   }
   if (bnk->active_idx) {
-    ierr = MatDestroy(&bnk->H_inactive);
+    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDestroy(&bnk->Hpre_inactive);
+      ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
   } else {
-    ierr = MatDestroy(&bnk->H_inactive);
-    ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);
+    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
+    ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDestroy(&bnk->Hpre_inactive);
-      ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);
+      ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+      ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
   }
   
@@ -656,7 +656,7 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
   /* Recompute the predicted decrease based on the quadratic model */
   ierr = MatMult(bnk->H_inactive, bnk->X_inactive, bnk->inactive_work);CHKERRQ(ierr);
   ierr = VecAYPX(bnk->inactive_work, -0.5, bnk->G_inactive);CHKERRQ(ierr);
-  ierr = VecDot(bnk->inactive_work, bnk->X_inactive, prered);
+  ierr = VecDot(bnk->inactive_work, bnk->X_inactive, prered);CHKERRQ(ierr);
   /* Restore the sub vectors */
   if (bnk->active_idx){
     ierr = VecRestoreSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
@@ -1295,7 +1295,7 @@ static PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = TaoSetFromOptions(bnk->bncg);
+  ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
