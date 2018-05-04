@@ -75,6 +75,9 @@ class Configure(config.package.Package):
     if self.mpich.found:
       yield (self.mpich.installDir)
       raise RuntimeError('--download-mpich libraries cannot be used')
+    if self.openmpi.found:
+      yield (self.openmpi.installDir)
+      raise RuntimeError('--download-openmpi libraries cannot be used')
 
     yield ''
     # Try configure package directories
