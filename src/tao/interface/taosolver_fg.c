@@ -30,20 +30,21 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
 
 PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
 {
-  Vec              x = tao->solution,g2,g3;
-  PetscBool        complete_print = PETSC_FALSE,test = PETSC_FALSE;
-  PetscReal        hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
-  PetscScalar      dot;
-  MPI_Comm         comm;
-  PetscViewer      viewer;
-  PetscInt         tabs;
-  static PetscBool directionsprinted = PETSC_FALSE;
-  PetscErrorCode   ierr;
+  Vec               x = tao->solution,g2,g3;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE;
+  PetscReal         hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
+  PetscScalar       dot;
+  MPI_Comm          comm;
+  PetscViewer       viewer,mviewer;
+  PetscViewerFormat format;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   ierr = PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",complete_print,&complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -60,6 +61,9 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
     ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
     directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
   ierr = VecDuplicate(x,&g2);CHKERRQ(ierr);
@@ -83,14 +87,19 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded gradient ----------\n");CHKERRQ(ierr);
-    ierr = VecView(g1,viewer);CHKERRQ(ierr);
+    ierr = VecView(g1,mviewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference gradient ----------\n");CHKERRQ(ierr);
-    ierr = VecView(g2,viewer);CHKERRQ(ierr);
+    ierr = VecView(g2,mviewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference gradient ----------\n");CHKERRQ(ierr);
-    ierr = VecView(g3,viewer);CHKERRQ(ierr);
+    ierr = VecView(g3,mviewer);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&g2);CHKERRQ(ierr);
   ierr = VecDestroy(&g3);CHKERRQ(ierr);
+
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
