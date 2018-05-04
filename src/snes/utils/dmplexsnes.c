@@ -2064,7 +2064,7 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexComputeJacobianAction()
 @*/
 PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -2102,7 +2102,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexComputeJacobianAction()
 @*/
 PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
 {
@@ -2509,11 +2509,35 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, IS cellIS, PetscReal t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
+/*@
+  DMPlexComputeJacobianAction - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
+
+  Input Parameters:
++ dm - The mesh
+. cellIS - 
+. t  - The time
+. X_tShift - The multiplier for the Jacobian with repsect to X_t
+. X  - Local solution vector
+. X_t  - Time-derivative of the local solution vector
+. Y  - Local input vector
+- user - The user context
+
+  Output Parameter:
+. Z - Local output vector
+
+  Note:
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+  Level: developer
+
+.seealso: FormFunctionLocal()
+@*/
+PetscErrorCode DMPlexComputeJacobianAction(DM dm, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   const char       *name  = "Jacobian";
-  DM                dmAux, plex;
+  DM                dmAux, plex, plexAux = NULL;
   Vec               A;
   PetscDS           prob, probAux = NULL;
   PetscQuadrature   quad;
@@ -2529,6 +2553,16 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
+  ierr = DMSNESConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
+  if (!cellIS) {
+    PetscInt depth;
+
+    ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
+    ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
+    if (!cellIS) {ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);}
+  } else {
+    ierr = PetscObjectReference((PetscObject) cellIS);CHKERRQ(ierr);
+  }
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -2541,8 +2575,8 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
-    ierr = DMConvert(dmAux, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(plex, &sectionAux);CHKERRQ(ierr);
+    ierr = DMConvert(dmAux, DMPLEX, &plexAux);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(plexAux, &sectionAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
@@ -2565,9 +2599,9 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
       ierr = DMPlexVecRestoreClosure(dm, section, X_t, cell, NULL, &x_t);CHKERRQ(ierr);
     }
     if (dmAux) {
-      ierr = DMPlexVecGetClosure(plex, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(plexAux, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) a[cind*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(plex, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(plexAux, sectionAux, A, cell, NULL, &x);CHKERRQ(ierr);
     }
     ierr = DMPlexVecGetClosure(dm, section, Y, cell, NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < totDim; ++i) y[cind*totDim+i] = x[i];
@@ -2591,9 +2625,7 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
     ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
     ierr = DMFieldGetFEInvariance(coordField,cellIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
-    if (isAffine) {
-      ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&qGeom);CHKERRQ(ierr);
-    }
+    if (isAffine) {ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&qGeom);CHKERRQ(ierr);}
     if (!qGeom) {
       ierr = PetscFEGetQuadrature(fe,&qGeom);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)qGeom);CHKERRQ(ierr);
@@ -2640,14 +2672,14 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, IS cellIS, PetscReal 
     ierr = DMPlexVecSetClosure(dm, section, Z, cell, z, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree6(u,u_t,elemMat,elemMatD,y,z);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscFree(a);CHKERRQ(ierr);
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  }
   if (mesh->printFEM) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Z:\n");CHKERRQ(ierr);
     ierr = VecView(Z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  ierr = DMDestroy(&plexAux);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2691,46 +2723,6 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   if (hasJac && hasPrec) {ierr = MatZeroEntries(Jac);CHKERRQ(ierr);}
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = DMPlexComputeJacobian_Internal(plex, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, user);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexSNESComputeJacobianActionFEM - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
-
-  Input Parameters:
-+ dm - The mesh
-. X  - Local solution vector
-. Y  - Local input vector
-- user - The user context
-
-  Output Parameter:
-. Z - Local output vector
-
-  Note:
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
-
-  Level: developer
-
-.seealso: FormFunctionLocal()
-@*/
-PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, void *user)
-{
-  DM             plex;
-  IS             cellIS;
-  PetscInt       depth;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMSNESConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
-  ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
-  if (!cellIS) {
-    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
-  }
-  ierr = DMPlexComputeJacobianAction_Internal(plex, cellIS, 0.0, 0.0, X, NULL, Y, Z, user);CHKERRQ(ierr);
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
