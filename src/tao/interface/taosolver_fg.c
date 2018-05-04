@@ -30,15 +30,15 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
 
 PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
 {
-  Vec             x = tao->solution,g2,g3;
-  PetscBool       complete_print = PETSC_FALSE,test = PETSC_FALSE;
-  PetscReal       hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
-  PetscScalar     dot;
-  MPI_Comm        comm;
-  PetscViewer     viewer;
-  PetscInt        tabs;
+  Vec              x = tao->solution,g2,g3;
+  PetscBool        complete_print = PETSC_FALSE,test = PETSC_FALSE;
+  PetscReal        hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
+  PetscScalar      dot;
+  MPI_Comm         comm;
+  PetscViewer      viewer;
+  PetscInt         tabs;
   static PetscBool directionsprinted = PETSC_FALSE;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
