@@ -79,46 +79,46 @@ static PetscErrorCode test0(DM dm, AppCtx *options)
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
 static PetscErrorCode test1(DM dm, AppCtx *options)
 {
+  IS             cells;
   Vec            locX, locX_t, locA;
   PetscScalar    *u, *u_t, *a;
-  PetscInt       start, end;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  start = 0;
-  end = 0;
+  ierr = ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX_t);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locA);CHKERRQ(ierr);
-  ierr = DMPlexGetCellFields(    dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
-  ierr = DMPlexRestoreCellFields(dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexGetCellFields(    dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX_t);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locA);CHKERRQ(ierr);
+  ierr = ISDestroy(&cells);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
 static PetscErrorCode test2(DM dm, AppCtx *options)
 {
+  IS             cells;
   Vec            locX, locX_t, locA;
   PetscScalar    *u, *u_t, *a;
-  PetscInt       start, end;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  start = 0;
-  end = rank ? 0 : 1;
+  ierr = ISCreateStride(PETSC_COMM_SELF, rank ? 0 : 1, 0, 1, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX_t);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locA);CHKERRQ(ierr);
-  ierr = DMPlexGetCellFields(    dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
-  ierr = DMPlexRestoreCellFields(dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexGetCellFields(    dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX_t);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locA);CHKERRQ(ierr);
+  ierr = ISDestroy(&cells);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -154,41 +154,41 @@ static PetscErrorCode test4(DM dm, AppCtx *options)
 
 static PetscErrorCode test5(DM dm, AppCtx *options)
 {
+  IS             cells;
   Vec            locX, locX_t, locA;
   PetscScalar    *u, *u_t, *a;
-  PetscInt       start, end;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   locX_t = NULL;
   locA = NULL;
-  start = 0;
-  end = 0;
+  ierr = ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = DMPlexGetCellFields(    dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
-  ierr = DMPlexRestoreCellFields(dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexGetCellFields(    dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = ISDestroy(&cells);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode test6(DM dm, AppCtx *options)
 {
+  IS             cells;
   Vec            locX, locX_t, locA;
   PetscScalar    *u, *u_t, *a;
-  PetscInt       start, end;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  start = 0;
-  end = rank ? 0 : 1;
   locX_t = NULL;
   locA = NULL;
+  ierr = ISCreateStride(PETSC_COMM_SELF, rank ? 0 : 1, 0, 1, &cells);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = DMPlexGetCellFields(    dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
-  ierr = DMPlexRestoreCellFields(dm, start, end, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexGetCellFields(    dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
+  ierr = DMPlexRestoreCellFields(dm, cells, locX, locX_t, locA, &u, &u_t, &a);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = ISDestroy(&cells);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

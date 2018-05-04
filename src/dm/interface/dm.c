@@ -5563,7 +5563,7 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
 }
 
 /*@C
-  DMGetStratumIS - Set the points in a label stratum
+  DMSetStratumIS - Set the points in a label stratum
 
   Not Collective
 
