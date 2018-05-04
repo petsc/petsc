@@ -2297,7 +2297,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)snes);
+  ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   ierr = PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
@@ -2311,7 +2311,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian -------------\n");CHKERRQ(ierr);
   if (!complete_print && !directionsprinted) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_view and optionally -snes_test_jacobian <threshold> to show difference\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries great than <threshold>.\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries greater than <threshold>.\n");CHKERRQ(ierr);
   }
   if (!directionsprinted) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n");CHKERRQ(ierr);
