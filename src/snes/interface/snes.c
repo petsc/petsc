@@ -2282,24 +2282,25 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 
 PetscErrorCode SNESTestJacobian(SNES snes)
 {
-  Mat              A,B,C,D,jacobian;
-  Vec              x = snes->vec_sol,f = snes->vec_func;
-  PetscErrorCode   ierr;
-  PetscReal        nrm,gnorm;
-  PetscReal        threshold = 1.e-5;
-  PetscInt         m,n,M,N;
-  void             *functx;
-  PetscBool        complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
-  PetscViewer      viewer;
-  MPI_Comm         comm;
-  PetscInt         tabs;
-  static PetscBool directionsprinted = PETSC_FALSE;
+  Mat               A,B,C,D,jacobian;
+  Vec               x = snes->vec_sol,f = snes->vec_func;
+  PetscErrorCode    ierr;
+  PetscReal         nrm,gnorm;
+  PetscReal         threshold = 1.e-5;
+  PetscInt          m,n,M,N;
+  void              *functx;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscViewer       viewer,mviewer;
+  MPI_Comm          comm;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)snes);
   ierr = PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",complete_print,&complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -2316,6 +2317,9 @@ PetscErrorCode SNESTestJacobian(SNES snes)
     ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
     directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
   /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
@@ -2355,9 +2359,9 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Jacobian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(jacobian,viewer);CHKERRQ(ierr);
+      ierr = MatView(jacobian,mviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(B,viewer);CHKERRQ(ierr);
+      ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
 
     if (complete_print) {
@@ -2393,7 +2397,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian with tolerance %g ----------\n",(double)threshold);CHKERRQ(ierr);
-      ierr = MatView(C,viewer);CHKERRQ(ierr);
+      ierr = MatView(C,mviewer);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -2404,6 +2408,9 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian for preconditioner -------------\n");CHKERRQ(ierr);
     }
     else jacobian = NULL;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
