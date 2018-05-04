@@ -197,7 +197,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
    Options Database Keys:
 +     -tao_test_hessian - compare the user provided Hessian with one compute via finite differences to check for errors
 .     -tao_test_hessian <numerical value>  - display entries in the difference between the user provided Hessian and finite difference Hessian that are greater than a certain value to help users detect errors
--     -tao_test_hessian_display - display the user provided Hessian, the finite difference Hessian and the difference between them to help users detect the location of errors in the user provided Hessian
+-     -tao_test_hessian_view - display the user provided Hessian, the finite difference Hessian and the difference between them to help users detect the location of errors in the user provided Hessian
 
    Notes:
    Most users should not need to explicitly call this routine, as it

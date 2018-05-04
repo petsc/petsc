@@ -108,7 +108,7 @@ PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
 
   Options Database Keys:
 +    -tao_test_gradient - compare the user provided gradient with one compute via finite differences to check for errors
--    -tao_test_gradient_display - display the user provided gradient, the finite difference gradient and the difference between them to help users detect the location of errors in the user provided gradient
+-    -tao_test_gradient_view - display the user provided gradient, the finite difference gradient and the difference between them to help users detect the location of errors in the user provided gradient
 
   Notes:
     TaoComputeGradient() is typically used within minimization implementations,
