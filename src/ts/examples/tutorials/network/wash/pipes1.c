@@ -793,7 +793,8 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe,Mat *Jin,Mat *J[])
 {
   PetscErrorCode ierr;
   Mat            *Jpipe;
-  PetscInt       i,M,*ia1,*ja1,*ia2,*ja2;
+  PetscInt       i,M,rows[2],cols[2],*nz;
+  PetscScalar    *aa;
 
   PetscFunctionBegin;
   if (Jin) {
@@ -811,19 +812,34 @@ PetscErrorCode PipeCreateJacobian(Pipe pipe,Mat *Jin,Mat *J[])
 
   /* Jacobian for upstream vertex */
   ierr = MatGetSize(Jpipe[0],&M,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc2(M+1,&ia1,4,&ja1);CHKERRQ(ierr);
-  ia1[0] = 0; ja1[0] = 0; ja1[1] = 1;
-  ia1[1] = 2; ja1[2] = 0; ja1[3] = 1;
-  for (i=2; i<=M; i++) ia1[i] = 4;
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,M,2,ia1,ja1,NULL,&Jpipe[1]);CHKERRQ(ierr);
+  ierr = PetscCalloc2(M,&nz,4,&aa);CHKERRQ(ierr);
+  for (i=0; i<4; i++) aa[i] = 0.0;
+
+  ierr = MatCreate(PETSC_COMM_SELF,&Jpipe[1]);CHKERRQ(ierr);
+  ierr = MatSetSizes(Jpipe[1],PETSC_DECIDE,PETSC_DECIDE,M,2);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Jpipe[1]);CHKERRQ(ierr);
+  ierr = MatSetOption(Jpipe[1],MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
+  nz[0] = 2; nz[1] = 2;
+  rows[0] = 0; rows[1] = 1;
+  cols[0] = 0; cols[1] = 1;
+  ierr = MatSeqAIJSetPreallocation(Jpipe[1],0,nz);CHKERRQ(ierr);
+  ierr = MatSetValues(Jpipe[1],2,rows,2,cols,aa,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpipe[1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpipe[1],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Jacobian for downstream vertex */
-  ierr = PetscMalloc2(M+1,&ia2,4,&ja2);CHKERRQ(ierr);
-  for (i=0; i<M-2; i++) ia2[i] = 0;
-  ia2[M-2] = 0; ja2[0] = 0; ja2[1] = 1;
-  ia2[M-1] = 2; ja2[2] = 0; ja2[3] = 1;
-  ia2[M]   = 4;
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,M,2,ia2,ja2,NULL,&Jpipe[2]);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&Jpipe[2]);CHKERRQ(ierr);
+  ierr = MatSetSizes(Jpipe[2],PETSC_DECIDE,PETSC_DECIDE,M,2);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Jpipe[2]);CHKERRQ(ierr);
+  ierr = MatSetOption(Jpipe[2],MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
+  nz[0] = 0; nz[1] = 0; nz[M-2] = 2; nz[M-1] = 2;
+  rows[0] = M - 2; rows[1] = M - 1;
+  ierr = MatSeqAIJSetPreallocation(Jpipe[2],0,nz);CHKERRQ(ierr);
+  ierr = MatSetValues(Jpipe[2],2,rows,2,cols,aa,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpipe[2],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpipe[2],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = PetscFree2(nz,aa);CHKERRQ(ierr);
 
   *J = Jpipe;
   pipe->jacobian = Jpipe;
@@ -839,14 +855,6 @@ PetscErrorCode PipeDestroyJacobian(Pipe pipe)
   PetscFunctionBegin;
   if (Jpipe) {
     for (i=0; i<3; i++) {
-      if (i>0) {
-        PetscInt       n;
-        const PetscInt *ia,*ja;
-        PetscBool      done;
-        ierr = MatGetRowIJ(Jpipe[i],0,PETSC_FALSE,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-        ierr = PetscFree2(ia,ja);CHKERRQ(ierr);
-        ierr = MatRestoreRowIJ(Jpipe[i],0,PETSC_FALSE,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-      }
       ierr = MatDestroy(&Jpipe[i]);CHKERRQ(ierr);
     }
   }
