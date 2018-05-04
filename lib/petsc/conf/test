@@ -30,8 +30,8 @@ alltests:
           fi;
 
 allgtest-tap:
-	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(NPMAX) $(MAKEFLAGS)" ${OMAKE} -f gmakefile.test test V=0
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -f gmakefile.test test V=0
 
 allgtest:
-	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(NPMAX) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
 
