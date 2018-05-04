@@ -69,7 +69,8 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
   if (user.distribute) {
     DM dmdist;
@@ -83,6 +84,7 @@ int main(int argc, char **argv)
     }
   }
 
+  ierr = DMSetOptionsPrefix(dm,NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -94,7 +96,8 @@ int main(int argc, char **argv)
     ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, &dmnew);CHKERRQ(ierr);
   }
 
-  ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dmnew,"new_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmnew, NULL, "-dm_view");CHKERRQ(ierr);
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
 
@@ -129,19 +132,21 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -new_dm_view ascii::ascii_info_detail 
   test:
     suffix: 2
-    requires: hdf5 exodusii chaco !trilinos
+    requires: hdf5 exodusii
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
-    args: -petscpartitioner_type chaco
+    args: -petscpartitioner_type simple
+    args: -dm_view ascii::ascii_info_detail
     args: -new_dm_view ascii::ascii_info_detail
     args: -format {{default hdf5_petsc}separate output}
     args: -interpolate {{0 1}separate output}
   test:
     suffix: 2a
-    requires: hdf5 exodusii chaco !trilinos
+    requires: hdf5 exodusii
     nsize: {{1 2 4 8}separate output}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
-    args: -petscpartitioner_type chaco
+    args: -petscpartitioner_type simple
+    args: -dm_view ascii::ascii_info_detail
     args: -new_dm_view ascii::ascii_info_detail
     args: -format {{hdf5_xdmf hdf5_viz}separate output}
   test:
@@ -160,7 +165,7 @@ int main(int argc, char **argv)
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
-    requires: hdf5 exodusii
+    requires: hdf5 exodusii !define(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
 TEST*/
