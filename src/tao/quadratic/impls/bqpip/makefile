@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = bqpipimpl.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
-LOCDIR   = src/tao/bound/impls/bqpip/
+LOCDIR   = src/tao/quadratic/impls/bqpip/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

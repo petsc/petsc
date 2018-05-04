@@ -1,5 +1,5 @@
 #include <petscksp.h>
-#include <../src/tao/bound/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
+#include <../src/tao/quadratic/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
 
 static PetscErrorCode GPCGGradProjections(Tao tao);

@@ -4,7 +4,7 @@
 
  */
 
-#include <../src/tao/bound/impls/bqpip/bqpipimpl.h>
+#include <../src/tao/quadratic/impls/bqpip/bqpipimpl.h>
 #include <petscksp.h>
 
 static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp,Tao tao)

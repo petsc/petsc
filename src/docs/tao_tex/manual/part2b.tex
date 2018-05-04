@@ -891,28 +891,6 @@ The initial trust region can significantly alter the
 rate of convergence for the algorithm and should be
 tuned and adjusted for optimal performance.
 
-
-\subsection{Gradient Projection Conjugate Gradient Method}
-The GPCG \cite{more-toraldo} algorithm is much like the TRON algorithm, discussed in
-Section \ref{sec:tron}, except that
-it assumes that the objective function is quadratic and convex.
-Therefore, it evaluates the function, gradient, and Hessian only
-once.
-Since the objective function
-is quadratic, the algorithm does not use a trust region.  
-All the options that apply to TRON except for trust-region
-options also apply to GPCG.
-
-\subsection{Interior-Point Newton's Method}\label{sec:bqpip}
-The BQPIP algorithm is an interior-point method for bound
-constrained quadratic optimization.  It can be set by using the
-TAO solver of {\tt tao\_bqpip}.
-Since it assumes the objective function is quadratic, 
-it evaluates the function, gradient, and Hessian only once.
-This method also requires the solution of systems of linear equations,
-whose solver can be accessed and modified 
-with the command {\tt Tao\-Get\-KSP()}.
-
 \subsection{Bound-constrained Limited-Memory Variable-Metric Method}
 \label{sec:blmvm}
 
@@ -1156,8 +1134,6 @@ POUNDerS employs a derivative-free trust-region framework as described in
 \cite{Dfobook} in order to converge to local minimizers. An example of
 this version of POUNDerS applied to a
 practical least-squares problem can be found in \cite{UNEDF0}.
-
-
 
 \subsubsection{Derivative-Free Trust-Region Algorithm}
 In each iteration $k$, the algorithm maintains a model $m_k(x)$,
@@ -1453,3 +1429,35 @@ of the box, $[\ell,u]$, perhaps because of the presence of $\log$ functions,
 the feasibility-enforcing version of the algorithm, {\tt tao\_ssfls}, is a 
 reasonable alternative.
 
+\section{Quadratic Solvers}
+
+Quadratic solvers solve optimization problems of the form
+\[
+\begin{array}{ll}
+\displaystyle \min_{x} & \frac{1}{2}x^T Q x + c^T x \\
+\mbox{subject to} & l \geq x \geq u
+\end{array}
+\]
+where the gradient and the Hessian of the objective are both constant.
+
+\subsection{Gradient Projection Conjugate Gradient Method}
+The GPCG \cite{more-toraldo} algorithm is much like the TRON algorithm, discussed in
+Section \ref{sec:tron}, except that
+it assumes that the objective function is quadratic and convex.
+Therefore, it evaluates the function, gradient, and Hessian only
+once.
+Since the objective function
+is quadratic, the algorithm does not use a trust region.  
+All the options that apply to TRON except for trust-region
+options also apply to GPCG. It can be set by using the TAO solver 
+{\tt tao\_gpcg} or via the optio flag {\tt -tao\_type gpcg}.
+
+\subsection{Interior-Point Newton's Method}\label{sec:bqpip}
+The BQPIP algorithm is an interior-point method for bound
+constrained quadratic optimization.  It can be set by using the
+TAO solver of {\tt tao\_bqpip} or via the option flag {\tt -tao\_type bgpip}.
+Since it assumes the objective function is quadratic, 
+it evaluates the function, gradient, and Hessian only once.
+This method also requires the solution of systems of linear equations,
+whose solver can be accessed and modified 
+with the command {\tt Tao\-Get\-KSP()}.
