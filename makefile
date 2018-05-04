@@ -128,7 +128,7 @@ info:
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "------------------------------------------"
-	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) -l$(NPMAX) $(MAKEFLAGS)"
+	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)"
 	-@echo "=========================================="
 
 #
