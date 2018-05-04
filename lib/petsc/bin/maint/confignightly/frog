@@ -1,6 +1,6 @@
 #! /bin/csh
-
-set MACH=es
+#
+set MACH=frog
 set USR=petsc
 set PETSC_DIR=/sandbox/petsc/${RNAME}
-set PETSC_ARCH=arch-linux-pkgs-valgrind
+set PETSC_ARCH=arch-cuda-double
