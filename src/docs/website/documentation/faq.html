@@ -1458,7 +1458,7 @@ PETSC_COMM_WORLD = NewComm;
         </li>
 
         <li>
-          Run with <code>-snes_type test -snes_test_display</code> to see if the
+          Run with <code>-snes_test_jacobian -snes_test_jacobian_view</code> to see if the
           Jacobian you are using is wrong. Compare the output when you add
           <code>-mat_fd_type ds</code> to see if the result is sensitive to the
           choice of differencing parameter.
