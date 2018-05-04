@@ -59,23 +59,24 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
 
 PetscErrorCode TaoTestHessian(Tao tao)
 {
-  Mat              A,B,C,D,hessian;
-  Vec              x = tao->solution;
-  PetscErrorCode   ierr;
-  PetscReal        nrm,gnorm;
-  PetscReal        threshold = 1.e-5;
-  PetscInt         m,n,M,N;
-  PetscBool        complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
-  PetscViewer      viewer;
-  MPI_Comm         comm;
-  PetscInt         tabs;
-  static PetscBool directionsprinted = PETSC_FALSE;
+  Mat               A,B,C,D,hessian;
+  Vec               x = tao->solution;
+  PetscErrorCode    ierr;
+  PetscReal         nrm,gnorm;
+  PetscReal         threshold = 1.e-5;
+  PetscInt          m,n,M,N;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscViewer       viewer,mviewer;
+  MPI_Comm          comm;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   ierr = PetscOptionsName("-tao_test_hessian","Compare hand-coded and finite difference Hessians","None",&test);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_test_hessian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_test_hessian_view","View difference between hand-coded and finite difference Hessians element entries","None",complete_print,&complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_test_hessian", "Threshold for element difference between hand-coded and finite difference being meaningful","None",threshold,&threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-tao_test_hessian_view","View difference between hand-coded and finite difference Hessians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -92,6 +93,9 @@ PetscErrorCode TaoTestHessian(Tao tao)
     ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
     directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectTypeCompare((PetscObject)tao->hessian,MATMFFD,&flg);CHKERRQ(ierr);
@@ -127,9 +131,9 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Hessian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(hessian,viewer);CHKERRQ(ierr);
+      ierr = MatView(hessian,mviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Hessian ----------\n");CHKERRQ(ierr);
-      ierr = MatView(B,viewer);CHKERRQ(ierr);
+      ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
 
     if (complete_print) {
@@ -165,7 +169,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
       ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Finite-difference minus hand-coded Hessian with tolerance %g ----------\n",(double)threshold);CHKERRQ(ierr);
-      ierr = MatView(C,viewer);CHKERRQ(ierr);
+      ierr = MatView(C,mviewer);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -175,6 +179,9 @@ PetscErrorCode TaoTestHessian(Tao tao)
       hessian = tao->hessian_pre;
       ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Hessian for preconditioner -------------\n");CHKERRQ(ierr);
     } else hessian = NULL;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
