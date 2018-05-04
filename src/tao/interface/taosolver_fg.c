@@ -264,6 +264,8 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
   ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockPop(X);CHKERRQ(ierr);
+
+  ierr = TaoTestGradient(tao,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
