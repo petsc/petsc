@@ -199,6 +199,7 @@ cdef extern from * nogil:
     int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
     int MatGetOwnershipIS(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
+    int MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
 
     int MatEqual(PetscMat,PetscMat,PetscBool*)
@@ -288,7 +289,7 @@ cdef extern from * nogil:
     int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
     int MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec) 
+    int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
