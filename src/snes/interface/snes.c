@@ -2282,23 +2282,25 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 
 PetscErrorCode SNESTestJacobian(SNES snes)
 {
-  Mat            A = snes->jacobian,B,C;
-  Vec            x = snes->vec_sol,f = snes->vec_func;
-  PetscErrorCode ierr;
-  PetscReal      nrm,gnorm;
-  PetscReal      threshold = 1.e-5;
-  PetscInt       m,n,M,N;
-  void           *functx;
-  PetscBool      complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE;
-  PetscViewer    viewer;
-  MPI_Comm       comm;
-  PetscInt       tabs;
+  Mat               A,B,C,D,jacobian;
+  Vec               x = snes->vec_sol,f = snes->vec_func;
+  PetscErrorCode    ierr;
+  PetscReal         nrm,gnorm;
+  PetscReal         threshold = 1.e-5;
+  PetscInt          m,n,M,N;
+  void              *functx;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscViewer       viewer,mviewer;
+  MPI_Comm          comm;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)snes);
-  ierr = PetscOptionsBool("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",test,&test,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_test_jacobian_display","Display difference between hand-coded and finite difference Jacobians","None",complete_print,&complete_print,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -2306,88 +2308,110 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
-  if (!complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_display to show difference\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_display_threshold to show difference\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries great than threshold.\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian -------------\n");CHKERRQ(ierr);
+  if (!complete_print && !directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_view and optionally -snes_test_jacobian <threshold> to show difference\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries greater than <threshold>.\n");CHKERRQ(ierr);
+  }
+  if (!directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
+    directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
-  /* evaluate the function at this point because SNESComputeJacobianDefaultColor() assumes that the function has been evaluated and put into snes->vec_func */
+  /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
-  A    = snes->jacobian_pre;
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)snes->jacobian,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) jacobian = snes->jacobian;
+  else jacobian = snes->jacobian_pre;
 
-  ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
-  if (complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-  }
-  /* compare */
-  ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
-  if (complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Hand-coded Jacobian\n");CHKERRQ(ierr);
-    ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-    ierr = MatView(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-  }
-
-  if (threshold_print) {
-    PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
-    PetscScalar       *cvals;
-    const PetscInt    *bcols;
-    const PetscScalar *bvals;
-
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
-    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSetUp(C);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
-
-    for (row = Istart; row < Iend; row++) {
-      ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-      ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
-      for (j = 0, cncols = 0; j < bncols; j++) {
-        if (PetscAbsScalar(bvals[j]) > threshold) {
-          ccols[cncols] = bcols[j];
-          cvals[cncols] = bvals[j];
-          cncols += 1;
-        }
-      }
-      if(cncols) {
-        ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-      ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+  while (jacobian) {
+    ierr = PetscObjectTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    if (flg) {
+      A    = jacobian;
+      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    } else {
+      ierr = MatComputeExplicitOperator(jacobian,&A);CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Entries where difference is over threshold\n");CHKERRQ(ierr);
-    ierr = MatView(C,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
+    ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
+    ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
+
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
+    ierr = MatAYPX(D,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(D,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
+    ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    if (!gnorm) gnorm = 1; /* just in case */
+    ierr = PetscViewerASCIIPrintf(viewer,"  ||J - Jfd||_F/||J||_F = %g, ||J - Jfd||_F = %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
+
+    if (complete_print) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Jacobian ----------\n");CHKERRQ(ierr);
+      ierr = MatView(jacobian,mviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian ----------\n");CHKERRQ(ierr);
+      ierr = MatView(B,mviewer);CHKERRQ(ierr);
+    }
+
+    if (complete_print) {
+      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
+      PetscScalar       *cvals;
+      const PetscInt    *bcols;
+      const PetscScalar *bvals;
+
+      ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+      ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = MatSetUp(C);CHKERRQ(ierr);
+      ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
+
+      for (row = Istart; row < Iend; row++) {
+        ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
+        for (j = 0, cncols = 0; j < bncols; j++) {
+          if (PetscAbsScalar(bvals[j]) > threshold) {
+            ccols[cncols] = bcols[j];
+            cvals[cncols] = bvals[j];
+            cncols += 1;
+          }
+        }
+        if (cncols) {
+          ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+      }
+      ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian with tolerance %g ----------\n",(double)threshold);CHKERRQ(ierr);
+      ierr = MatView(C,mviewer);CHKERRQ(ierr);
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+    if (jacobian != snes->jacobian_pre) {
+      jacobian = snes->jacobian_pre;
+      ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian for preconditioner -------------\n");CHKERRQ(ierr);
+    }
+    else jacobian = NULL;
   }
-
-  if (!gnorm) gnorm = 1; /* just in case */
-  ierr = PetscViewerASCIIPrintf(viewer,"||J - Jfd||_F/||J||_F %g, ||J - Jfd||_F %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
