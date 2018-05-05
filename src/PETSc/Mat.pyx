@@ -1046,7 +1046,7 @@ cdef class Mat(Object):
             CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
         CHKERR( MatGetColumnVector(self.mat, result.vec, ival) )
         return result
-    
+
     def getRedundantMatrix(self, nsubcomm, subcomm=None, Mat out=None):
         cdef PetscInt _nsubcomm   = asInt(nsubcomm)
         cdef MPI_Comm _subcomm    = MPI_COMM_NULL
@@ -1497,6 +1497,18 @@ cdef class Mat(Object):
         cdef object tmpr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
         cdef object tmpc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
         CHKERR( MatNestGetISs(self.mat, cisrows, ciscols) )
+        cdef object isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
+        cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
+        return isetsrows, isetscols
+
+    def getNestLocalISs(self):
+        cdef PetscInt i, nrows =0, ncols = 0
+        cdef PetscIS *cisrows = NULL
+        cdef PetscIS *ciscols = NULL
+        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
+        cdef object tmpr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
+        cdef object tmpc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
+        CHKERR( MatNestGetLocalISs(self.mat, cisrows, ciscols) )
         cdef object isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
         cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
         return isetsrows, isetscols
