@@ -6,9 +6,10 @@
 #define CG_PolakRibierePlus     2
 #define CG_HestenesStiefel      3
 #define CG_DaiYuan              4
-#define CG_Types                5
+#define CG_GradientDescent      5
+#define CG_Types                6
 
-static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy"};
+static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy", "gd"};
 
 #define CG_AS_NONE       0
 #define CG_AS_BERTSEKAS  1
@@ -86,7 +87,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,gnorm,gnorm2,gd,ginner,beta,dnorm;
   PetscReal                    gd_old,gnorm2_old,f_old,resnorm;
-  PetscBool                    cg_restart;
+  PetscBool                    cg_restart, gd_fallback = PETSC_FALSE;
   PetscInt                     nDiff;
 
   PetscFunctionBegin;
@@ -172,6 +173,10 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
         ierr = VecDot(cg->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);
         beta = gnorm2 / (gd - gd_old);
         break;
+        
+      case CG_GradientDescent:
+        beta = 0.0;
+        break;
 
       default:
         beta = 0.0;
@@ -183,30 +188,36 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
     ierr = VecAXPBY(tao->stepdirection, -1.0, beta, tao->gradient);CHKERRQ(ierr);
     ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
     
-    /* Figure out which previously active variables became inactive this iteration */
-    ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
-    if (cg->inactive_idx && cg->inactive_old) {
-      ierr = ISDifference(cg->inactive_idx, cg->inactive_old, &cg->new_inactives);CHKERRQ(ierr);
-    }
-    
-    /* Selectively reset the CG step those freshly inactive variables */
-    if (cg->new_inactives) {
-      ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecGetSubVector(cg->unprojected_gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
-      ierr = VecCopy(cg->inactive_grad, cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecScale(cg->inactive_step, -1.0);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(cg->unprojected_gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
-    }
-    
-    /* Verify that this is a descent direction */
-    ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
-    ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);CHKERRQ(ierr);
-    if (gd > -cg->rho*PetscPowReal(dnorm, cg->pow)) {
-      /* Not a descent direction, so we reset back to projected gradient descent */
-      ierr = VecAXPBY(tao->stepdirection, -1.0, 0.0, tao->gradient);CHKERRQ(ierr);
-      ++cg->resets;
-      ++cg->descent_error;
+    if (cg->cg_type != CG_GradientDescent) {
+      /* Figure out which previously active variables became inactive this iteration */
+      ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
+      if (cg->inactive_idx && cg->inactive_old) {
+        ierr = ISDifference(cg->inactive_idx, cg->inactive_old, &cg->new_inactives);CHKERRQ(ierr);
+      }
+
+      /* Selectively reset the CG step those freshly inactive variables */
+      if (cg->new_inactives) {
+        ierr = VecGetSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecGetSubVector(cg->unprojected_gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
+        ierr = VecCopy(cg->inactive_grad, cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecScale(cg->inactive_step, -1.0);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(tao->stepdirection, cg->new_inactives, &cg->inactive_step);CHKERRQ(ierr);
+        ierr = VecRestoreSubVector(cg->unprojected_gradient, cg->new_inactives, &cg->inactive_grad);CHKERRQ(ierr);
+      }
+      
+      /* Verify that this is a descent direction */
+      ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
+      ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);
+      if (gd > -cg->rho*PetscPowReal(dnorm, cg->pow)) {
+        /* Not a descent direction, so we reset back to projected gradient descent */
+        ierr = VecAXPBY(tao->stepdirection, -1.0, 0.0, tao->gradient);CHKERRQ(ierr);
+        ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
+        ++cg->resets;
+        ++cg->descent_error;
+        gd_fallback = PETSC_TRUE;
+      } else {
+        gd_fallback = PETSC_FALSE;
+      }
     }
     
     /* Store solution and gradient info before it changes */
@@ -230,25 +241,33 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       ierr = VecCopy(cg->G_old, tao->gradient);CHKERRQ(ierr);
       ierr = VecCopy(cg->unprojected_gradient_old, cg->unprojected_gradient);CHKERRQ(ierr);
       
-      /* Fall back on the gradient descent step */
-      ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-      ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
-      ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
-      ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-        
-      if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
-        ++cg->ls_fails;
-        /* Restore previous point */
-        gnorm2 = gnorm2_old;
-        cg->f = f_old;
-        ierr = VecCopy(cg->X_old, tao->solution);CHKERRQ(ierr);
-        ierr = VecCopy(cg->G_old, tao->gradient);CHKERRQ(ierr);
-        ierr = VecCopy(cg->unprojected_gradient_old, cg->unprojected_gradient);CHKERRQ(ierr);
-        
+      if (cg->cg_type == CG_GradientDescent || gd_fallback){
         /* Nothing left to do but fail out of the optimization */
         step = 0.0;
         tao->reason = TAO_DIVERGED_LS_FAILURE;
+      } else {        
+        /* Fall back on the unscaled gradient step */
+        ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+        ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
+
+        ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
+        ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
+        ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
+
+        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
+          cg->ls_fails++;
+          /* Restore previous point */
+          gnorm2 = gnorm2_old;
+          cg->f = f_old;
+          ierr = VecCopy(cg->X_old, tao->solution);CHKERRQ(ierr);
+          ierr = VecCopy(cg->G_old, tao->gradient);CHKERRQ(ierr);
+          ierr = VecCopy(cg->unprojected_gradient_old, cg->unprojected_gradient);CHKERRQ(ierr);
+
+          /* Nothing left to do but fail out of the optimization */
+          step = 0.0;
+          tao->reason = TAO_DIVERGED_LS_FAILURE;
+        }
       }
     }
     
@@ -390,6 +409,7 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
          "prp" - Polak-Ribiere-Plus
          "hs" - Hestenes-Steifel
          "dy" - Dai-Yuan
+         "gd" - Gradient Descent
   Level: beginner
 M*/
 

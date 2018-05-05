@@ -756,34 +756,6 @@ x_i & \mbox{otherwise}
 \]
 \end{itemize}
 
-\subsection{Projected Gradient Descent Method}
-\label{sec:pgd}
-
-PGD is a steepest descent algorithm with projected gradients and a 
-bounded More-Thuente line search. The method can be set by using the 
-TAO solver {\tt TAO\_PGD} or the {\tt -tao\_type pgd} flag, and 
-serves as a useful worst-case benchmarking tool when developing 
-more advanced bound-constrained algorithms.
-
-\subsection{Bounded Nonlinear Conjugate Gradient}
-\label{sec:bncg}
-
-BNCG extends the unconstrained nonlinear conjugate gradient algorithm to 
-bound constraints via gradient projections and a bounded More-Thuente line search. 
-Like its unconstrained counterpart, BNCG offers a variety of CG updates: Fletched-Reeves, 
-Polak-Ribi\'ere, Polak-Ribi\'ere-Plus, Hestenes-Stiefel, and the Dai-Yuan. These 
-conjugate gradient methods can be specified by using the command line argument 
-{\tt -tao\_bncg\_type <fr,pr,prp,hs,dy>}, respectively. The default value is {\tt dy}.
-BNCG is available via the TAO solver {\tt TAOBNCG} or the {\tt -tao\_type bncg} flag.
-
-In addition to automatic restarts under orthogonality conditions, BNCG also features 
-selective step restarts for new variables added to the inactive index set at a new iterate, 
-and a weak check on descent direction such that $\nabla f(x_k)^T d_k \leq -\rho||d_k||^p$. 
-Parameters for this weak check have default values of $\rho = 10^{-4}$ and $p = 2.1$, 
-respectively, and can be modified using {\tt -tao\_bncg\_rho} and {\tt -tao\_bncg\_pow} 
-lags. Finally, the default orthogonality tolerance has been slightly relaxed compared to 
-the unconstrained version to improve convergence.
-
 \subsection{Bounded Newton-Krylov Methods}\sindex{projected Newton's
 method}\sindex{trust region}\label{sec:bnk}
 
@@ -863,6 +835,34 @@ BNTL safeguards the trust-region globalization such that a line search is used i
 the step is initially rejected by the predicted versus actual decrease comparison. If the line 
 search fails to find a viable step length for the Newton step, it falls back onto a scaled gradient 
 or a gradient descent step. The trust radius is then modified based on the line search step length.
+
+\subsection{Bounded Nonlinear Conjugate Gradient}
+\label{sec:bncg}
+
+BNCG extends the unconstrained nonlinear conjugate gradient algorithm to 
+bound constraints via gradient projections and a bounded More-Thuente line search. 
+
+Like its unconstrained counterpart, BNCG offers a variety of CG updates: Fletched-Reeves, 
+Polak-Ribi\'ere, Polak-Ribi\'ere-Plus, Hestenes-Stiefel, and the Dai-Yuan. Additionally, 
+the BNCG algorithm can also be configured to always use projected gradient descent steps
+instead of CG updates. These methods can be specified by using the command line argument 
+{\tt -tao\_bncg\_type <fr,pr,prp,hs,dy,gd>}, respectively. The default value is {\tt dy}.
+BNCG is available via the TAO solver {\tt TAOBNCG} or the {\tt -tao\_type bncg} flag.
+
+The active set estimation uses the Bertsekas-based method described in Section~\ref{sec:bnk}, 
+which can be deactivated using {\tt -tao\_bncg\_as\_type none}, in which case the 
+algorithm will use the current iterate to determine the bounded variables with no tolerancing 
+and no look-ahead step. As in the BNK algorithm, the initial bound tolerance and estimator 
+step length used in the Bertsekas method can be set via {\tt -tao\_bncg\_as\_tol} and 
+{\tt -tao\_bncg\_as\_step}, respectively.
+
+In addition to automatic restarts under orthogonality conditions, BNCG also features 
+selective step restarts for new variables added to the inactive index set at a new iterate, 
+and a weak check on descent direction such that $\nabla f(x_k)^T d_k \leq -\rho||d_k||^p$. 
+Parameters for this weak check have default values of $\rho = 10^{-4}$ and $p = 2.1$, 
+respectively, and can be modified using {\tt -tao\_bncg\_rho} and {\tt -tao\_bncg\_pow} 
+lags. Finally, the default orthogonality tolerance has been slightly relaxed compared to 
+the unconstrained version to improve convergence.
 
 \subsection{Trust-Region Newton Method}\label{sec:tron}\sindex{trust region}
 The TRON \cite{lin_c3} algorithm is an active-set method that uses a 

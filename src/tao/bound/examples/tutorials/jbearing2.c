@@ -495,7 +495,7 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
       
    test:
       suffix: 5
-      args: -tao_smonitor -mx 8 -my 12 -tao_type pgd -tao_gatol 1e-4
+      args: -tao_smonitor -mx 8 -my 12 -tao_type bncg -tao_bncg_type gd -tao_gatol 1e-4
       requires: !single
       
    test:
