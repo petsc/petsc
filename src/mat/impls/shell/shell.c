@@ -339,9 +339,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscFunctionBegin;
   if (shell->ops->getdiagonal) {
     ierr = (*shell->ops->getdiagonal)(A,v);CHKERRQ(ierr);
-  } else {
-    ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Must provide shell matrix with routine to return diagonal using\nMatShellSetOperation(S,MATOP_GET_DIAGONAL,...)");
   ierr = VecScale(v,shell->vscale);CHKERRQ(ierr);
   if (shell->dshift) {
     ierr = VecAXPY(v,1.0,shell->dshift);CHKERRQ(ierr);
