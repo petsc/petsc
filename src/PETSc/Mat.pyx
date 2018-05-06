@@ -1513,6 +1513,12 @@ cdef class Mat(Object):
         cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
         return isetsrows, isetscols
 
+    def getNestSubMatrix(self, idxm, jdxm):
+        cdef Mat submat = Mat()
+        CHKERR( MatNestGetSubMat(self.mat, idxm, jdxm, &submat.mat) )
+        PetscINCREF(submat.obj)
+        return submat
+
     # MatIS
 
     def convertISToAIJ(self, Mat out=None):
