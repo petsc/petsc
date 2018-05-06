@@ -157,7 +157,7 @@ PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(Tao, IS, IS);
 
 PETSC_EXTERN PetscErrorCode TaoComputeObjective(Tao, Vec, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoComputeSeparableObjective(Tao, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoTestGradient(Tao,Vec);
+PETSC_EXTERN PetscErrorCode TaoTestGradient(Tao,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeGradient(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeObjectiveAndGradient(Tao, Vec, PetscReal*, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeConstraints(Tao, Vec, Vec);

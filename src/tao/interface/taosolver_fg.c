@@ -28,9 +28,9 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoTestGradient(Tao tao,Vec g1)
+PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
 {
-  Vec               x = tao->solution,g2,g3;
+  Vec               g2,g3;
   PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE;
   PetscReal         hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
   PetscScalar       dot;
@@ -156,7 +156,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradientRoutine() has not been called");
   ierr = VecLockPop(X);CHKERRQ(ierr);
 
-  ierr = TaoTestGradient(tao,G);CHKERRQ(ierr);
+  ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -274,7 +274,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockPop(X);CHKERRQ(ierr);
 
-  ierr = TaoTestGradient(tao,G);CHKERRQ(ierr);
+  ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
