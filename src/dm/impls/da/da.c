@@ -1,17 +1,19 @@
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /*@
-  DMDASetSizes - Sets the global sizes
+  DMDASetSizes - Sets the number of grid points in the three dimensional directions
 
   Logically Collective on DMDA
 
   Input Parameters:
 + da - the DMDA
-. M - the global X size (or PETSC_DECIDE)
-. N - the global Y size (or PETSC_DECIDE)
-- P - the global Z size (or PETSC_DECIDE)
+. M - the global X size
+. N - the global Y size
+- P - the global Z size
 
   Level: intermediate
+
+  Developer Notes: Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
 
 .seealso: DMDAGetSize(), PetscSplitOwnership()
 @*/
@@ -25,6 +27,9 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   PetscValidLogicalCollectiveInt(da,N,3);
   PetscValidLogicalCollectiveInt(da,P,4);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  if (M < 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in X direction must be positive");
+  if (N < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Y direction must be positive");
+  if (P < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Z direction must be positive");
 
   dd->M = M;
   dd->N = N;
