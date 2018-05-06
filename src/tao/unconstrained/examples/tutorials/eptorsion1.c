@@ -606,6 +606,6 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
 
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type ntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
+      args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
 
 TEST*/
