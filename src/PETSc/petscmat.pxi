@@ -201,6 +201,7 @@ cdef extern from * nogil:
     int MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetLocalISs(PetscMat,PetscIS*,PetscIS*)
     int MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
+    int MatNestGetSubMat(PetscMat,PetscInt,PetscInt,PetscMat*)
 
     int MatEqual(PetscMat,PetscMat,PetscBool*)
     int MatLoad(PetscMat,PetscViewer)
