@@ -69,8 +69,8 @@ int main(int argc,char **argv)
     ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     /* check if y has correct values */
     ierr = VecGetArrayRead(y,&yval);CHKERRQ(ierr);
-    if ((PetscInt)yval[0] != ix[0]+i) errors++;
-    if ((PetscInt)yval[1] != ix[1]+i) errors++;
+    if ((PetscInt)PetscRealPart(yval[0]) != ix[0]+i) errors++;
+    if ((PetscInt)PetscRealPart(yval[1]) != ix[1]+i) errors++;
     ierr = VecRestoreArrayRead(y,&yval);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(event1,0,0,0,0);CHKERRQ(ierr);
@@ -123,8 +123,8 @@ int main(int argc,char **argv)
     ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     /* check if y has correct values */
     ierr = VecGetArrayRead(y,&yval);CHKERRQ(ierr);
-    if ((PetscInt)yval[0]  != ix[0]*bs+i) errors++;
-    if ((PetscInt)yval[bs] != ix[1]*bs+i) errors++;
+    if ((PetscInt)PetscRealPart(yval[0])  != ix[0]*bs+i) errors++;
+    if ((PetscInt)PetscRealPart(yval[bs]) != ix[1]*bs+i) errors++;
     ierr = VecRestoreArrayRead(y,&yval);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(event2,0,0,0,0);CHKERRQ(ierr);
