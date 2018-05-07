@@ -38,8 +38,10 @@ PETSC_EXTERN Action    *petsc_actions;
 PETSC_EXTERN Object    *petsc_objects;
 PETSC_EXTERN PetscBool petsc_logActions;
 PETSC_EXTERN PetscBool petsc_logObjects;
-PETSC_EXTERN int        petsc_numActions, petsc_maxActions;
-PETSC_EXTERN int        petsc_numObjects, petsc_maxObjects;
+PETSC_EXTERN int        petsc_numActions;
+PETSC_EXTERN int        petsc_maxActions;
+PETSC_EXTERN int        petsc_numObjects;
+PETSC_EXTERN int        petsc_maxObjects;
 PETSC_EXTERN int        petsc_numObjectsDestroyed;
 
 PETSC_EXTERN FILE          *petsc_tracefile;

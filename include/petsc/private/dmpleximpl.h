@@ -9,7 +9,29 @@
 #include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
 #include <petsc/private/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
+PETSC_EXTERN PetscLogEvent PETSCPARTITIONER_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeOverlap;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeField;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeData;
+PETSC_EXTERN PetscLogEvent DMPLEX_Migrate;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolateSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Preallocate;
+PETSC_EXTERN PetscLogEvent DMPLEX_ResidualFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_JacobianFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolatorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
