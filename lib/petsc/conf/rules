@@ -415,7 +415,6 @@ getautoconfargs:
 .cu.PETSc .c.PETSc .cxx.PETSc:
 	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
-          grep -v "warning: linker scope was specified more than once:" | \
           grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
           grep -v "(aka 'long \*') doesn't match specified 'MPI' type tag that requires 'long long \*'" | \
           grep -v "note: expanded from macro" |\
