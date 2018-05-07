@@ -1400,16 +1400,16 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
    Options Database Key:
 +  -dm_view - Calls DMView() at the conclusion of DMDACreate3d()
-.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
-.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
-.  -da_grid_z <nz> - number of grid points in z direction, if P < 0
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
+.  -da_grid_z <nz> - number of grid points in z direction
 .  -da_processors_x <MX> - number of processors in x direction
 .  -da_processors_y <MY> - number of processors in y direction
 .  -da_processors_z <MZ> - number of processors in z direction
 .  -da_refine_x <rx> - refinement ratio in x direction
 .  -da_refine_y <ry> - refinement ratio in y direction
 .  -da_refine_z <rz>- refinement ratio in z directio
--  -da_refine <n> - refine the DMDA n times before creating it, , if M, N, or P < 0
+-  -da_refine <n> - refine the DMDA n times before creating it
 
    Level: beginner
 
