@@ -20,9 +20,11 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   mxArray        *lhs[1];
   mxArray        *rhs[2];
   double         *xp, *op;
+  static int      cnt = 0;
 
   PetscFunctionBegin;
 
+  mexPrintf("Function start %d.\n", cnt++);
   rhs[0] = user->mat_handle;
   rhs[1] = user->mat_x;
 
@@ -30,6 +32,7 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (i = 0; i < user->n; ++i) {
     xp[i] = (double) x[i];
+    /* printf("x[%d] = %5.4e\n", i, xp[i]); */
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -39,10 +42,12 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   for (i = 0; i < user->m; ++i) {
     f[i] = (PetscReal) op[i];
+    /* printf("f[%d] = %5.4e\n", i, op[i]); */
   }
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
   mxDestroyArray(lhs[0]);
+  mexPrintf("Function end.\n");
   PetscFunctionReturn(0);
 }
 
@@ -52,7 +57,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   Tao             tao;
   Vec             X, F;
   PetscScalar    *x;
-  PetscInt        n, m;
   PetscInt        i;
   AppCtx          user;
  
@@ -86,16 +90,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
   user.mat_handle = (mxArray *)prhs[3];
 
-  plhs[0] = mxCreateDoubleMatrix(n,1,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix((int)user.n,1,mxREAL);
   user.mat_x = plhs[0];
   
   /* Initialize PETSc and create TAO pounders instance */
-  ierr = PetscInitialize(NULL,NULL,(char *)0,"taopounders");/*CHKERRQ(ierr);*/
+  ierr = PetscInitializeNoArguments();/*CHKERRQ(ierr);*/
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);/*CHKERRQ(ierr);*/
   ierr = TaoSetType(tao,TAOPOUNDERS);/*CHKERRQ(ierr);*/
 
   /* Create starting point and initialize */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&X);/*CHKERRQ(ierr);*/
+  ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&X);/*CHKERRQ(ierr);*/
   xp = mxGetPr(prhs[1]);
   ierr = VecGetArray(X,&x);/*CHKERRQ(ierr);*/
   for (i = 0; i < user.n; ++i) {
@@ -105,7 +109,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ierr = TaoSetInitialVector(tao,X);/*CHKERRQ(ierr);*/
 
   /* Create residuals vector and set objective function */  
-  ierr = VecCreateSeq(MPI_COMM_SELF,m,&F);/*CHKERRQ(ierr);*/
+  ierr = VecCreateSeq(PETSC_COMM_SELF,user.m,&F);/*CHKERRQ(ierr);*/
   ierr = TaoSetSeparableObjectiveRoutine(tao,F,EvaluateFunction,(void*)&user);/*CHKERRQ(ierr);*/
 
   /* Solve the problem */
@@ -123,10 +127,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ierr = VecRestoreArray(X,&x);/*CHKERRQ(ierr);*/
 
   /* Finish the problem */
-  ierr = TaoDestroy(&tao);/*CHKERRQ(ierr);*/
-  ierr = VecDestroy(&X);/*CHKERRQ(ierr);*/
-  ierr = VecDestroy(&F);/*CHKERRQ(ierr);*/
-  ierr = PetscFinalize();
+  /* ierr = TaoDestroy(&tao);CHKERRQ(ierr);*/
+  /* ierr = VecDestroy(&X);CHKERRQ(ierr);*/
+  /* ierr = VecDestroy(&F);CHKERRQ(ierr);*/
+  /* ierr = PetscFinalize(); */
   return;
 }
 
