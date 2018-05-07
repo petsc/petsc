@@ -1,21 +1,29 @@
-  0 TAO,  Function value: 0.0305641,  Residual: 0.0140536 
-  1 TAO,  Function value: 0.0120167,  Residual: 0.00811768 
-  2 TAO,  Function value: 0.00342817,  Residual: 0.00223305 
-  3 TAO,  Function value: 0.00211342,  Residual: 0.0014349 
-  4 TAO,  Function value: 0.000810666,  Residual: 0.000650661 
-  5 TAO,  Function value: 0.000301229,  Residual: 0.000317393 
-  6 TAO,  Function value: 7.64603e-05,  Residual: 0.000132062 
-  7 TAO,  Function value: 1.24576e-05,  Residual: 4.64611e-05 
-  8 TAO,  Function value: 1.00205e-06,  Residual: 1.2071e-05 
-  9 TAO,  Function value: 2.8188e-08,  Residual: 1.95297e-06 
- 10 TAO,  Function value: 1.12133e-10,  Residual: 1.22269e-07 
- 11 TAO,  Function value: 1.55922e-14,  Residual: 1.44107e-09 
+  0 TAO,  Function value: 0.0636039,  Residual: 0.0203472 
+  1 TAO,  Function value: 0.0276106,  Residual: 0.00969064 
+  2 TAO,  Function value: 0.0157957,  Residual: 0.00414311 
+  3 TAO,  Function value: 0.0113141,  Residual: 0.00252519 
+  4 TAO,  Function value: 0.00732026,  Residual: 0.00134497 
+  5 TAO,  Function value: 0.00483833,  Residual: 0.000751179 
+  6 TAO,  Function value: 0.0031041,  Residual: 0.000409567 
+  7 TAO,  Function value: 0.00196796,  Residual: 0.000224068 
+  8 TAO,  Function value: 0.00121948,  Residual: 0.000121638 
+  9 TAO,  Function value: 0.000737626,  Residual: 6.57433e-05 
+ 10 TAO,  Function value: 0.000432094,  Residual: 3.52721e-05 
+ 11 TAO,  Function value: 0.000242918,  Residual: 1.8755e-05 
+ 12 TAO,  Function value: 0.00012919,  Residual: 9.84542e-06 
+ 13 TAO,  Function value: 6.36203e-05,  Residual: 5.07257e-06 
+ 14 TAO,  Function value: 2.80489e-05,  Residual: 2.53855e-06 
+ 15 TAO,  Function value: 1.04769e-05,  Residual: 1.21094e-06 
+ 16 TAO,  Function value: 3.01605e-06,  Residual: 5.3095e-07 
+ 17 TAO,  Function value: 5.64894e-07,  Residual: 1.98867e-07 
+ 18 TAO,  Function value: 5.05242e-08,  Residual: 5.48053e-08 
+ 19 TAO,  Function value: 1.24426e-09,  Residual: 8.34439e-09 
 Tao Object: 1 MPI processes
   type: bqnls
     Rejected BFGS updates: 0
     CG steps: 0
     Newton steps: 0
-    BFGS steps: 10
+    BFGS steps: 18
     Scaled gradient steps: 1
     Gradient steps: 0
     KSP termination reasons:
@@ -35,7 +43,7 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 10
+      Number of updates: 18
       Number of rejects: 0
       Number of resets: 0
       Mat Object: (J0_) 1 MPI processes
@@ -46,7 +54,7 @@ Tao Object: 1 MPI processes
           Convex factor: theta=0.125
           Max. storage: 1
           Used storage: 1
-          Number of updates: 10
+          Number of updates: 18
           Number of rejects: 0
           Number of resets: 0
   TaoLineSearch Object: 1 MPI processes
@@ -75,7 +83,7 @@ Tao Object: 1 MPI processes
         Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 5
-        Number of updates: 10
+        Number of updates: 18
         Number of rejects: 0
         Number of resets: 0
         Mat Object: (J0_) 1 MPI processes
@@ -86,17 +94,17 @@ Tao Object: 1 MPI processes
             Convex factor: theta=0.125
             Max. storage: 1
             Used storage: 1
-            Number of updates: 10
+            Number of updates: 18
             Number of rejects: 0
             Number of resets: 0
   total KSP iterations: 0
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.44107e-09
-  Objective value=1.55922e-14
-  total number of iterations=11,                          (max: 50)
-  total number of function/gradient evaluations=12,      (max: 10000)
+  Residual in Function/Gradient:=8.34439e-09
+  Objective value=1.24426e-09
+  total number of iterations=19,                          (max: 50)
+  total number of function/gradient evaluations=20,      (max: 10000)
   Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes
   type: seq
-9.99998
+99.7009
