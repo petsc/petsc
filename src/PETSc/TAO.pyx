@@ -23,7 +23,6 @@ class TAOType:
     ASILS    = S_(TAOASILS)
     ASFLS    = S_(TAOASFLS)
     IPM      = S_(TAOIPM)
-    TEST     = S_(TAOTEST)
 
 class TAOConvergedReason:
     """
