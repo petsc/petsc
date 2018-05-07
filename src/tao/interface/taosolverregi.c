@@ -66,7 +66,9 @@ extern PetscBool TaoRegisterAllCalled;
 @*/
 PetscErrorCode TaoRegisterAll(void)
 {
+#if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
   if (TaoRegisterAllCalled) PetscFunctionReturn(0);
