@@ -55,7 +55,15 @@ struct _p_PC {
   PCFailedReason   failedreason;
 };
 
-PETSC_EXTERN PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-PETSC_EXTERN PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
+PETSC_EXTERN PetscLogEvent PC_SetUp;
+PETSC_EXTERN PetscLogEvent PC_SetUpOnBlocks;
+PETSC_EXTERN PetscLogEvent PC_Apply;
+PETSC_EXTERN PetscLogEvent PC_ApplyCoarse;
+PETSC_EXTERN PetscLogEvent PC_ApplyMultiple;
+PETSC_EXTERN PetscLogEvent PC_ApplySymmetricLeft;
+PETSC_EXTERN PetscLogEvent PC_ApplySymmetricRight;
+PETSC_EXTERN PetscLogEvent PC_ModifySubMatrices;
+PETSC_EXTERN PetscLogEvent PC_ApplyOnBlocks;
+PETSC_EXTERN PetscLogEvent PC_ApplyTransposeOnBlocks;
 
 #endif
