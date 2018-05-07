@@ -256,6 +256,8 @@ PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
+PETSC_EXTERN PetscErrorCode TSSetIJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS,PetscReal,Vec,Vec,PetscReal,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSComputeDRDUFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetIHessianProduct(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),

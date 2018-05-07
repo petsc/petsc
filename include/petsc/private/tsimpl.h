@@ -180,21 +180,22 @@ struct _p_TS {
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
   Vec       vec_costintegrand;      /* workspace for Adjoint computations */
-  Mat       Jacp;
-  void      *rhsjacobianpctx;
+  Mat       Jacp,Jacprhs;
+  void      *ijacobianpctx,*rhsjacobianpctx;
   void      *costintegrandctx;
   Vec       *vecs_drdu;
   Vec       *vecs_drdp;
 
   /* first-order adjoint */
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
+  PetscErrorCode (*ijacobianp)(TS,PetscReal,Vec,Vec,PetscReal,Mat,void*);
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
   PetscErrorCode (*drdufunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* second-order adjoint */
   Vec *vecs_sensi2;
-  Vec *vecs_sensip2;
+  Vec *vecs_sensi2p;
   Vec vec_dir; /* directional vector for optimization */
   Vec *vecs_fuu;
   Vec *vecs_fup;
