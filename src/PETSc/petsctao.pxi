@@ -20,7 +20,6 @@ cdef extern from * nogil:
     PetscTAOType TAOASILS
     PetscTAOType TAOASFLS
     PetscTAOType TAOIPM
-    PetscTAOType TAOTEST
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         #iterating
