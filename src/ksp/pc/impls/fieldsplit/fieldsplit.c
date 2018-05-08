@@ -556,13 +556,21 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
   } else {
+    MatReuse scall;
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      for (i=0; i<nsplit; i++) {
+        ierr = MatDestroy(&jac->pmat[i]);CHKERRQ(ierr);
+      }
+      scall = MAT_INITIAL_MATRIX;
+    } else scall = MAT_REUSE_MATRIX;
+
     for (i=0; i<nsplit; i++) {
       Mat pmat;
 
       /* Check for preconditioning matrix attached to IS */
       ierr = PetscObjectQuery((PetscObject) ilink->is, "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
       if (!pmat) {
-        ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is_col,scall,&jac->pmat[i]);CHKERRQ(ierr);
       }
       ilink = ilink->next;
     }
@@ -576,8 +584,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ilink = ilink->next;
       }
     } else {
+      MatReuse scall;
+      if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        for (i=0; i<nsplit; i++) {
+          ierr = MatDestroy(&jac->mat[i]);CHKERRQ(ierr);
+        }
+        scall = MAT_INITIAL_MATRIX;
+      } else scall = MAT_REUSE_MATRIX;
+
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,scall,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -611,10 +627,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         }
       } else {
+        MatReuse scall;
+        if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+          for (i=0; i<nsplit; i++) {
+            ierr = MatDestroy(&jac->Afield[1]);CHKERRQ(ierr);
+          }
+          scall = MAT_INITIAL_MATRIX;
+        } else scall = MAT_REUSE_MATRIX;
+
         if (jac->offdiag_use_amat) {
-          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
         } else {
-          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,scall,&jac->Afield[1]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -629,11 +653,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           ilink = ilink->next;
         }
       } else {
+        MatReuse scall;
+        if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+          for (i=0; i<nsplit; i++) {
+            ierr = MatDestroy(&jac->Afield[i]);CHKERRQ(ierr);
+          }
+          scall = MAT_INITIAL_MATRIX;
+        } else scall = MAT_REUSE_MATRIX;
+
         for (i=0; i<nsplit; i++) {
           if (jac->offdiag_use_amat) {
-            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
           } else {
-            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,scall,&jac->Afield[i]);CHKERRQ(ierr);
           }
           ilink = ilink->next;
         }
