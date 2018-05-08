@@ -183,7 +183,6 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
                                        IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
 {
   PetscErrorCode               ierr;
-  
   PetscReal                    wnorm;
   PetscReal                    zero = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   PetscInt                     i, n_isl=0, n_isu=0, n_isf=0, n_isa=0, n_isi=0;
@@ -191,6 +190,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscInt                     n, low, high, nDiff;
   PetscInt                     *isl=NULL, *isu=NULL, *isf=NULL, *isa=NULL, *isi=NULL;
   const PetscScalar            *xl, *xu, *x, *g;
+  MPI_Comm                     comm = PetscObjectComm((PetscObject)X);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -277,39 +277,39 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   ierr = ISDestroy(inactive);CHKERRQ(ierr);
   
   /* Collect global sizes */
-  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
   
   /* Create index set for lower bounded variables */
   if (N_isl > 0) {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n_isl, isl, PETSC_OWN_POINTER, active_lower);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(isl);CHKERRQ(ierr);
   }
   /* Create index set for upper bounded variables */
   if (N_isu > 0) {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isu, isu, PETSC_OWN_POINTER, active_upper);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n_isu, isu, PETSC_OWN_POINTER, active_upper);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(isu);CHKERRQ(ierr);
   }
   /* Create index set for fixed variables */
   if (N_isf > 0) {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isf, isf, PETSC_OWN_POINTER, active_fixed);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n_isf, isf, PETSC_OWN_POINTER, active_fixed);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(isf);CHKERRQ(ierr);
   }
   /* Create index set for all actively bounded variables */
   if (N_isa > 0) {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isa, isa, PETSC_OWN_POINTER, active);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n_isa, isa, PETSC_OWN_POINTER, active);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(isa);CHKERRQ(ierr);
   }
   /* Create index set for all inactive variables */
   if (N_isi > 0) {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)X), n_isi, isi, PETSC_OWN_POINTER, inactive);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n_isi, isi, PETSC_OWN_POINTER, inactive);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(isi);CHKERRQ(ierr);
   }
@@ -438,6 +438,6 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecRestoreArray(Xout, &xout);CHKERRQ(ierr);
   }
-  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
