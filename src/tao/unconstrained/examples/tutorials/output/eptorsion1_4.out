@@ -1,0 +1,18 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 10     my: 10   
+
+iter =   0, Function value -0.330579, Residual: 0.728961 
+  ---------- Testing Hessian -------------
+  Run with -tao_test_hessian_view and optionally -tao_test_hessian <threshold> to show difference
+    of hand-coded and finite difference Hessian entries greater than <threshold>.
+  Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
+    O(1.e-8), the hand-coded Hessian is probably correct.
+  ||H - Hfd||_F/||H||_F = 2.97218e-10, ||H - Hfd||_F = 1.31584e-08
+iter =   0, Function value -0.38665, Residual: 0.531327 
+  ---------- Testing Hessian -------------
+  ||H - Hfd||_F/||H||_F = 4.25681e-10, ||H - Hfd||_F = 1.88457e-08
+iter =   1, Function value -0.41616, Residual: 0.171851 
+  ---------- Testing Hessian -------------
+  ||H - Hfd||_F/||H||_F = 3.76808e-10, ||H - Hfd||_F = 1.6682e-08
+iter =   2, Function value -0.427745, Residual: < 1.0e-6 
