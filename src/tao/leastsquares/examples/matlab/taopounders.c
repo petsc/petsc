@@ -57,6 +57,12 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscFunctionReturn(0);
 }
 
+static void TaoPoundersExit()
+{
+  PetscFinalize();
+  return;
+}
+
 static PetscErrorCode TaoPounders(AppCtx *user)
 {
   PetscErrorCode  ierr;
@@ -65,46 +71,19 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   PetscScalar    *x;
   PetscInt        i;
 
-  int argc = 8;
-  char **argv;
-
-  argv = (char **)mxMalloc(argc*sizeof(char *));
-  for (i = 0; i < argc; ++i) {
-    argv[i] = (char *)mxMalloc(256*sizeof(char));
-  }
-  strcpy(argv[0], "taopounders");
-  strcpy(argv[1], "-tao_max_funcs");
-  sprintf(argv[2], "%5d", user->nfmax);
-  strcpy(argv[3], "-tao_pounders_npmax");
-  sprintf(argv[4], "%5d", user->npmax);
-  strcpy(argv[5], "-tao_pounders_delta");
-  sprintf(argv[6], "%5.4e", user->delta);
-  strcpy(argv[7],"-tao_monitor");
-  /*
-  strcpy(argv[8],"-tao_view");
-  strcpy(argv[9],"-pounders_subsolver_tao_monitor");
-  strcpy(argv[10],"-pounders_subsolver_ksp_monitor");
-  strcpy(argv[11],"-pounders_subsolver_tao_view");
-  */
-  mexPrintf("n: %d m: %d\n", user->n, user->m);
-
-  ierr = PetscInitialize(&argc,&argv,NULL,"taopounders help");CHKERRQ(ierr);
-
-  for (i = 0; i < argc; ++i) {
-    mxFree(argv[i]);
-  }
-  mxFree(argv);
-  return 0;
+  /* Initialize PETSc and set the exit routine */
 
   PetscFunctionBegin;
-  /* Initialize PETSc and create TAO pounders instance */
-  /* ierr = PetscPopSignalHandler();CHKERRQ(ierr); */
-  /* ierr = PetscFinalize();CHKERRQ(ierr);*/
-  PetscFunctionReturn(0);
+  ierr = PetscInitializeNoArguments();CHKERRQ(ierr);
+  mexAtExit(TaoPoundersExit);
 
+  /* Set the values for the algorithm options we want to use */
+  ierr = PetscOptionsSetValue(NULL,"-tao_monitor","");
+  ierr = PetscOptionsSetValue(NULL,"-tao_view","");
+
+  /* Create the TAO objects and set the type */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
   /* Create starting point and initialize */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->n,&X);CHKERRQ(ierr);
@@ -120,10 +99,9 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = TaoSetSeparableObjectiveRoutine(tao,F,EvaluateFunction,(void*)user);CHKERRQ(ierr);
 
   /* Solve the problem */
-
   /* ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);*/
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
-  /*ierr = TaoSolve(tao);CHKERRQ(ierr);*/
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Save the solution */
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -133,39 +111,12 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   /* Finish the problem */
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
-  int i;
-  int argc = 1;
-  char **argv;
-
-  argv = (char **)mxMalloc((argc+1)*sizeof(char *));
-  for (i = 0; i <= argc; ++i) {
-    argv[i] = (char *)mxMalloc(256*sizeof(char));
-  }
-  strcpy(argv[0], "taopounders");
-  strcpy(argv[1], "");
-
-  /* PetscInitialize(&argc,&argv,NULL,"taopounders help"); */
-  PetscInitializeNoArguments();
-  /* PetscPopSignalHandler(); */
-  PetscFinalize();
-
-  for (i = 0; i < argc; ++i) {
-    mxFree(argv[i]);
-  }
-  mxFree(argv);
-  return;
-}
-
-#if 0
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   /* 
@@ -218,5 +169,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   TaoPounders(&user);
   return;
 }
-#endif
 
