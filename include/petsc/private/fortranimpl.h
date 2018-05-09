@@ -30,6 +30,9 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 
 
 /* --------------------------------------------------------------------*/
+#ifndef PETSC_FORTRAN_CHARLEN_T
+#  define PETSC_FORTRAN_CHARLEN_T int
+#endif
 /*
     This lets us map the str-len argument either, immediately following
     the char argument (DVF on Win32) or at the end of the argument list
