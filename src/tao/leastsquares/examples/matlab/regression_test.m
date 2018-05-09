@@ -62,8 +62,9 @@ for np = to_solve
     Low = -Inf(1,n);
     Upp = Inf(1,n);
     
-    % [X] = taopounders(n,xs,m,func,nfmax,npmax,delta);
-    
+    [X] = taopounders(n,xs,m,func,nfmax,npmax,delta);
+    return;
+ 
     if length(fvals) < nfmax
         fvals = [fvals;ones(nfmax-length(fvals),1)*fvals(nfev)];
     else

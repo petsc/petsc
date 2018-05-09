@@ -35,9 +35,9 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 
   xp = mxGetPr(rhs[1]);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  printf("%p\n", x);
   for (i = 0; i < user->n; ++i) {
     xp[i] = x[i];
-    /* printf("x[%d] = %5.4e\n", i, xp[i]); */
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -45,9 +45,9 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 
   op = mxGetPr(lhs[0]);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  printf("%p\n", f);
   for (i = 0; i < user->m; ++i) {
     f[i] = op[i];
-    /* printf("f[%d] = %5.4e\n", i, op[i]); */
   }
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
@@ -71,19 +71,19 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   PetscScalar    *x;
   PetscInt        i;
 
-  /* Initialize PETSc and set the exit routine */
-
   PetscFunctionBegin;
+
+  /* Set the values for the algorithm options we want to use */
+  ierr = PetscOptionsSetValue(NULL,"-tao_monitor", NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-tao_view", NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-info", NULL);CHKERRQ(ierr);
+
+  /* Initialize PETSc and set the exit routine */
   ierr = PetscInitializeNoArguments();CHKERRQ(ierr);
   mexAtExit(TaoPoundersExit);
 
-  /* Set the values for the algorithm options we want to use */
-  ierr = PetscOptionsSetValue(NULL,"-tao_monitor","");
-  ierr = PetscOptionsSetValue(NULL,"-tao_view","");
-
   /* Create the TAO objects and set the type */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
 
   /* Create starting point and initialize */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->n,&X);CHKERRQ(ierr);
@@ -100,6 +100,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
 
   /* Solve the problem */
   /* ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);*/
+  ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
