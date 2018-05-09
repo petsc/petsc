@@ -319,13 +319,14 @@ class Configure(script.Script):
     preprocessor.checkSetup()
     return preprocessor.getProcessor()
 
-  def getCompiler(self):
-    self.getHeaders()
-    compiler            = self.framework.getCompilerObject(self.language[-1])
-    compiler.checkSetup()
-    self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
-    self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
-    return compiler.getProcessor()
+  def getCompiler(self, lang=None):
+    with self.Language(lang):
+      self.getHeaders()
+      compiler            = self.framework.getCompilerObject(self.language[-1])
+      compiler.checkSetup()
+      self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
+      self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
+      return compiler.getProcessor()
 
   def getCompilerFlags(self):
     return self.framework.getCompilerObject(self.language[-1]).getFlags()
