@@ -2057,6 +2057,7 @@ int main(int argc,char **args)
       args: -model 4 -jump_magnitude 4 -mx 6 -my 6 -mz 2 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc -stokes_pc_bddc_schur_layers 1
 
    test:
+      requires: !single
       suffix: 3
       args: -stokes_ksp_converged_reason -stokes_pc_type fieldsplit -resolve
 
