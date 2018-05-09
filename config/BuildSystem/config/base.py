@@ -61,6 +61,7 @@ import script
 
 import os
 import time
+import contextlib
 
 class ConfigureSetupError(Exception):
   pass
@@ -297,6 +298,15 @@ class Configure(script.Script):
     self.logPrint('Popping language '+self.language[-1])
     self.language.pop()
     return self.language[-1]
+
+  @contextlib.contextmanager
+  def Language(self, lang):
+    if lang is None:
+      yield
+    else:
+      self.pushLanguage(lang)
+      yield
+      self.popLanguage()
 
   def getHeaders(self):
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
