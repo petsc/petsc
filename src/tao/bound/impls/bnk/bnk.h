@@ -17,11 +17,10 @@ typedef struct {
   /* Allocated vectors */
   Vec W, Xwork, Gwork, Xold, Gold;
   Vec unprojected_gradient, unprojected_gradient_old;
-  Vec Diag_min, Diag_max;
   
   /* Unallocated matrices and vectors */
-  Mat H_inactive, Hpre_inactive, M, M_inactive;
-  Vec Diag, Diag_red, X_inactive, G_inactive, inactive_work, active_work;
+  Mat H_inactive, Hpre_inactive;
+  Vec X_inactive, G_inactive, inactive_work, active_work;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
   
   /* Scalar values for the solution and step */
@@ -30,6 +29,11 @@ typedef struct {
   /* Parameters for active set estimation */
   PetscReal as_tol;
   PetscReal as_step;
+  
+  /* BFGS preconditioner data */
+  PC bfgs_pre;
+  Mat M;
+  Vec Diag_min, Diag_max;
 
   /* Parameters when updating the perturbation added to the Hessian matrix
      according to the following scheme:
@@ -178,8 +182,7 @@ typedef struct {
   PetscInt sgrad;               /*  Scaled gradient directions attempted */
   PetscInt grad;                /*  Gradient directions attempted */
 
-  PetscInt as_type;             /*   Active set estimation method */
-  PetscInt pc_type;             /*  Preconditioner for the code */
+  PetscInt as_type;             /*  Active set estimation method */
   PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /*  Trust-region initialization method */
   PetscInt update_type;         /*  Trust-region update method */
@@ -195,18 +198,10 @@ typedef struct {
   PetscBool is_nash, is_stcg, is_gltr;
 } TAO_BNK;
 
-#endif /* if !defined(__TAO_BNK_H) */
-
 #define BNK_NEWTON              0
 #define BNK_BFGS                1
 #define BNK_SCALED_GRADIENT     2
 #define BNK_GRADIENT            3
-
-#define BNK_PC_NONE     0
-#define BNK_PC_AHESS    1
-#define BNK_PC_BFGS     2
-#define BNK_PC_PETSC    3
-#define BNK_PC_TYPES    4
 
 #define BFGS_SCALE_AHESS        0
 #define BFGS_SCALE_PHESS        1
@@ -242,3 +237,5 @@ PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscIn
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt*, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKAddStepCounts(Tao, PetscInt);
+
+#endif /* if !defined(__TAO_BNK_H) */

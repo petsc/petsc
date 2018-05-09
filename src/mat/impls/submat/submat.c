@@ -108,17 +108,19 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 static PetscErrorCode MatSolve_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
-  Vec            xx  = 0;
+  Vec            lwork, rwork, xx  = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PreScaleLeft(N,x,&xx);CHKERRQ(ierr);
   ierr = VecZeroEntries(Na->lwork);CHKERRQ(ierr);
-  ierr = VecScatterBegin(Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecGetSubVector(Na->lwork, Na->iscol, &lwork);CHKERRQ(ierr);
+  ierr = VecCopy(x, lwork);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(Na->lwork, Na->iscol, &lwork);CHKERRQ(ierr);
   ierr = MatSolve(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
-  ierr = VecScatterBegin(Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecGetSubVector(Na->rwork, Na->isrow, &rwork);CHKERRQ(ierr);
+  ierr = VecCopy(rwork, y);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(Na->rwork, Na->isrow, &rwork);CHKERRQ(ierr);
   ierr = PostScaleRight(N,y);CHKERRQ(ierr);
   ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);

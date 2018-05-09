@@ -76,6 +76,9 @@ PetscErrorCode MatSolve_LBFGS(Mat B, Vec F, Vec dX)
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
+    if (PetscAbsReal(yts) < lmvm->eps) {
+      yts = lmvm->eps;
+    }
     rho[i] = 1.0/yts;
     ierr = VecDotEnd(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
     alpha[i] = rho[i] * stq;
@@ -88,6 +91,9 @@ PetscErrorCode MatSolve_LBFGS(Mat B, Vec F, Vec dX)
     /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
     ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+    if (PetscAbsReal(yty) < lmvm->eps) {
+      yty = lmvm->eps;
+    }
     ierr = VecScale(lmvm->R, sty/yty);CHKERRQ(ierr);
   }
   

@@ -175,7 +175,7 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
   PetscValidHeaderSpecific(V, VEC_CLASSID, 2);
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  if (lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "Matrix must be allocated before setting diagonal scaling");
+  if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "Matrix must be allocated before setting diagonal scaling");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Diagonal scaling is available only for square LMVM matrices");
   VecCheckSameSize(V, 2, lmvm->Fprev, 3);CHKERRQ(ierr);
   ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
@@ -219,7 +219,6 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!J0->assembled) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "J0 is not assembled.");
-  if (!J0->assembled) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "J0pre is not assembled.");
   if (B->symmetric && (!J0->symmetric)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "J0 and J0pre must be symmetric when B is symmetric");
   if (lmvm->allocated) {
     MatCheckSameSize(B, 1, J0, 2);
@@ -550,6 +549,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
     ierr = VecDuplicate(F, &lmvm->Q);CHKERRQ(ierr);
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
+    B->assembled = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -599,6 +599,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
     lmvm->nrejects = 0;
     lmvm->allocated = PETSC_FALSE;
     B->preallocated = PETSC_FALSE;
+    B->assembled = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -735,6 +736,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
     ierr = VecDuplicate(lmvm->Fprev, &lmvm->Q);CHKERRQ(ierr);
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
+    B->assembled = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
