@@ -544,6 +544,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p3_0
     requires: ctetgen
+    timeoutfactor: 2
     args: -dim 3 -potential_petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0

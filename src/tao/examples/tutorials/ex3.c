@@ -414,6 +414,7 @@ int main(int argc, char **argv)
     test:
       suffix: guess_pod
       requires: double triangle
+      timeoutfactor: 2
       args: -laplace_ksp_type cg -laplace_pc_type gamg -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_converged_reason -laplace_ksp_converged_reason -tao_monitor -petscspace_order 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_h0_ksp_guess_type pod
       filter: sed -e "s/-nan/nan/g"
 
