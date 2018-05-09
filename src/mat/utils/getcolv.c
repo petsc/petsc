@@ -9,7 +9,7 @@
    Input Parameters:
 +  A - the matrix
 .  yy - the vector
--  c - the column requested (in global numbering)
+-  col - the column requested (in global numbering)
 
    Level: advanced
 
