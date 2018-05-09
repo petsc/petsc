@@ -805,6 +805,10 @@ class Configure(config.base.Configure):
       self.addDefine('STDCALL', '__stdcall')
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
       self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
+    if config.setCompilers.Configure.isGfortran8plus(self.getCompiler('FC'), self.log):
+      self.addDefine('FORTRAN_CHARLEN_T', 'size_t')
+    else:
+      self.addDefine('FORTRAN_CHARLEN_T', 'int')
     return
 
   def checkFortranNameManglingDouble(self):
