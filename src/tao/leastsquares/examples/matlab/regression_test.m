@@ -35,6 +35,7 @@ factor = 10;
 load dfo.dat
 probtype = 'smooth';
 to_solve = 1:53;
+to_solve = 1:10;
 Results = cell(1,length(to_solve));
 
 
@@ -63,7 +64,6 @@ for np = to_solve
     Upp = Inf(1,n);
     
     [X] = taopounders(n,xs,m,func,nfmax,npmax,delta);
-    return;
  
     if length(fvals) < nfmax
         fvals = [fvals;ones(nfmax-length(fvals),1)*fvals(nfev)];

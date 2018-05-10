@@ -25,17 +25,14 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   mxArray        *lhs[1];
   mxArray        *rhs[2];
   double         *xp, *op;
-  static int      cnt = 0;
 
   PetscFunctionBegin;
 
-  mexPrintf("Function start %d.\n", cnt++);
   rhs[0] = user->mat_handle;
   rhs[1] = mxCreateDoubleMatrix(user->n,1,mxREAL);
 
   xp = mxGetPr(rhs[1]);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  printf("%p\n", x);
   for (i = 0; i < user->n; ++i) {
     xp[i] = x[i];
   }
@@ -45,7 +42,6 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 
   op = mxGetPr(lhs[0]);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  printf("%p\n", f);
   for (i = 0; i < user->m; ++i) {
     f[i] = op[i];
   }
@@ -53,7 +49,6 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 
   mxDestroyArray(rhs[1]);
   mxDestroyArray(lhs[0]);
-  mexPrintf("Function end.\n");
   PetscFunctionReturn(0);
 }
 
@@ -70,15 +65,24 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   Vec             X, F;
   PetscScalar    *x;
   PetscInt        i;
+  char            buf[256];
 
   PetscFunctionBegin;
 
   /* Set the values for the algorithm options we want to use */
-  ierr = PetscOptionsSetValue(NULL,"-tao_monitor", NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-tao_view", NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-info", NULL);CHKERRQ(ierr);
+  sprintf(buf,"%d",user->nfmax);
+  ierr = PetscOptionsSetValue(NULL,"-tao_max_funcs",buf);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue(NULL,"-tao_monitor",NULL);CHKERRQ(ierr);
+  sprintf(buf,"%d",user->npmax);
+  ierr = PetscOptionsSetValue(NULL,"-tao_pounders_npmax",buf);CHKERRQ(ierr);
+  sprintf(buf,"%5.4e",user->delta);
+  ierr = PetscOptionsSetValue(NULL,"-tao_pounders_delta",buf);CHKERRQ(ierr);
 
-  /* Initialize PETSc and set the exit routine */
+  /* -tao_view is broken */
+  /*ierr = PetscOptionsSetValue(NULL,"-pounders_subsolver_tao_monitor",NULL);CHKERRQ(ierr);*/
+  /*ierr = PetscOptionsSetValue(NULL,"-tao_view", NULL);CHKERRQ(ierr);*/
+  /*ierr = PetscOptionsSetValue(NULL,"-info", NULL);CHKERRQ(ierr);*/
+
   ierr = PetscInitializeNoArguments();CHKERRQ(ierr);
   mexAtExit(TaoPoundersExit);
 
@@ -118,7 +122,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   /* 
      The number of input arguments (nrhs) should be 4
@@ -169,5 +173,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   TaoPounders(&user);
   return;
+}
+
+int main(int argc, char **argv)
+{
+  return 0;
 }
 
