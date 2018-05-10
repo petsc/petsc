@@ -80,7 +80,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
 
   /* -tao_view is broken */
   /*ierr = PetscOptionsSetValue(NULL,"-pounders_subsolver_tao_monitor",NULL);CHKERRQ(ierr);*/
-  /*ierr = PetscOptionsSetValue(NULL,"-tao_view", NULL);CHKERRQ(ierr);*/
+  ierr = PetscOptionsSetValue(NULL,"-tao_view", NULL);CHKERRQ(ierr);
   /*ierr = PetscOptionsSetValue(NULL,"-info", NULL);CHKERRQ(ierr);*/
 
   ierr = PetscInitializeNoArguments();CHKERRQ(ierr);
