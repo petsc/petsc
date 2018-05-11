@@ -61,13 +61,6 @@ PetscErrorCode MatSolve_LBFGS(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
-  /* If the user has not defined any form of the inverse Jacobian, 
-     trigger the dot products necessary for gamma scaling */
-  if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
-    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-  }
-  
   /* Copy the function into the work vector for the first loop */
   ierr = VecCopy(F, lmvm->Q);CHKERRQ(ierr);
   
@@ -76,24 +69,26 @@ PetscErrorCode MatSolve_LBFGS(Mat B, Vec F, Vec dX)
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    if (PetscAbsReal(yts) < lmvm->eps) {
-      yts = lmvm->eps;
-    }
     rho[i] = 1.0/yts;
     ierr = VecDotEnd(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
     alpha[i] = rho[i] * stq;
     ierr = VecAXPY(lmvm->Q, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   
+  if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
+    /* If the user has not defined any form of the inverse Jacobian, trigger the dot products 
+       necessary for gamma scaling */
+    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+  }
+  
   /* Invert the initial Jacobian onto Q (or apply scaling) */
   ierr = MatLMVMApplyJ0Inv(B, lmvm->Q, lmvm->R);CHKERRQ(ierr);
+  
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
     /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
     ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    if (PetscAbsReal(yty) < lmvm->eps) {
-      yty = lmvm->eps;
-    }
     ierr = VecScale(lmvm->R, sty/yty);CHKERRQ(ierr);
   }
   

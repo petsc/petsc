@@ -41,6 +41,7 @@ typedef struct {
 
 /* Shared internal functions for LMVM matrices
    NOTE: MATLMVM is not a registered matrix type */
+PETSC_INTERN PetscErrorCode MatGetVecs_LMVM(Mat, Vec*, Vec*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_LMVM(Mat);
 PETSC_INTERN PetscErrorCode MatView_LMVM(Mat, PetscViewer);

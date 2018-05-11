@@ -9,7 +9,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   TAO_LMVM                     *lmP = (TAO_LMVM *)tao->data;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    step = 1.0;
-  PetscReal                    delta;
   PetscErrorCode               ierr;
   PetscInt                     stepType = LMVM_STEP_GRAD, nupdates;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
@@ -31,12 +30,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-
-  /*  Set initial scaling for the function */
-  if (!lmP->H0) {
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-    ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
-  }
 
   /*  Set counter for gradient/reset steps */
   if (!lmP->recycle) {
@@ -68,8 +61,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
          Use steepest descent direction (scaled)
       */
      
-      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-      ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMResetJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = MatSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
@@ -97,8 +89,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       /*  Failed to obtain acceptable iterate with BFGS step */
       /*  Attempt to use the scaled gradient direction */
 
-      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-      ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMResetJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = MatSolve(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);

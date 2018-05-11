@@ -9,6 +9,7 @@ typedef struct {
   Vec  xwork, ywork;
   IS   inactive;
   Mat  B;
+  PetscBool allocated;
 } PC_LMVM;
 
 /*@
@@ -84,7 +85,7 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidHeaderSpecific(pc, IS_CLASSID, 2);
+  PetscValidHeaderSpecific(inactive, IS_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   ierr = PCLMVMClearIS(pc);
@@ -165,13 +166,19 @@ static PetscErrorCode PCSetUp_LMVM(PC pc)
   PC_LMVM        *ctx = (PC_LMVM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       n, N;
+  PetscBool      allocated;
 
   PetscFunctionBegin;
-  ierr = MatCreateVecs(pc->mat, &ctx->xwork, &ctx->ywork);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(ctx->xwork, &n);CHKERRQ(ierr);
-  ierr = VecGetSize(ctx->xwork, &N);CHKERRQ(ierr);
-  ierr = MatSetSizes(ctx->B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatLMVMAllocate(ctx->B, ctx->xwork, ctx->ywork);CHKERRQ(ierr);
+  ierr = MatLMVMIsAllocated(ctx->B, &allocated);CHKERRQ(ierr);
+  if (!allocated) {
+    ierr = MatCreateVecs(pc->mat, &ctx->xwork, &ctx->ywork);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ctx->xwork, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(ctx->xwork, &N);CHKERRQ(ierr);
+    ierr = MatSetSizes(ctx->B, n, n, N, N);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(ctx->B, ctx->xwork, ctx->ywork);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateVecs(ctx->B, &ctx->xwork, &ctx->ywork);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

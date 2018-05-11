@@ -69,7 +69,7 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
   TAO_BLMVM                    *blmP = (TAO_BLMVM *)tao->data;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    f, fold, gdx, gnorm, resnorm;
-  PetscReal                    stepsize = 1.0,delta;
+  PetscReal                    stepsize = 1.0;
   PetscInt                     nDiff, nupdates, stepType = BLMVM_STEP_GRAD;
 
   PetscFunctionBegin;
@@ -95,13 +95,6 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
-  /* Set initial scaling for the function */
-  if (!blmP->H0) {
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-    ierr = MatLMVMSetJ0Scale(blmP->M, delta);CHKERRQ(ierr);
-  }
-  
-
   /* Set counter for gradient/reset steps */
   if (!blmP->recycle) {
     blmP->bfgs = 0;
@@ -119,26 +112,28 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
       ierr = MatLMVMSetJ0(blmP->M, blmP->H0);CHKERRQ(ierr);
       stepType = BLMVM_STEP_BFGS;
     }
-    ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-    ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+    ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
+    ierr = VecCopy(blmP->unprojected_gradient, blmP->red_grad);CHKERRQ(ierr);
+    ierr = VecISSet(blmP->red_grad, blmP->active_idx, 0.0);CHKERRQ(ierr);
+    ierr = MatSolve(blmP->M, blmP->red_grad, tao->stepdirection);CHKERRQ(ierr);
+    ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
+    ierr = TaoBLMVMBoundStep(tao, blmP->as_type, tao->stepdirection);CHKERRQ(ierr);
     ierr = MatLMVMGetUpdateCount(blmP->M, &nupdates);CHKERRQ(ierr);
     if (nupdates > 0) stepType = BLMVM_STEP_BFGS;
 
     /* Check for success (descent direction) */
-    ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
-    if (gdx <= 0 || PetscIsInfOrNanReal(gdx)) {
+    ierr = VecDot(tao->stepdirection, blmP->red_grad, &gdx);CHKERRQ(ierr);
+    if (gdx >= 0 || PetscIsInfOrNanReal(gdx)) {
       /* Step is not descent or solve was not successful
          Use steepest descent direction (scaled) */
-
-      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-      ierr = MatLMVMSetJ0Scale(blmP->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMResetJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
+      ierr = TaoBLMVMBoundStep(tao, blmP->as_type, tao->stepdirection);CHKERRQ(ierr);
       stepType = BLMVM_STEP_GRAD;
     }
-    ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
-    ierr = TaoBLMVMBoundStep(tao, blmP->as_type, tao->stepdirection);CHKERRQ(ierr);
 
     /* Perform the linesearch */
     fold = f;
@@ -154,8 +149,7 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
       ierr = VecCopy(blmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient);CHKERRQ(ierr);
 
-      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-      ierr = MatLMVMSetJ0Scale(blmP->M, delta);CHKERRQ(ierr);
+      ierr = MatLMVMResetJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -214,6 +208,7 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &blmP->W);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &blmP->work);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution, &blmP->red_grad);CHKERRQ(ierr);
 
   if (!tao->stepdirection) {
     ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
@@ -242,18 +237,19 @@ PETSC_INTERN PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = MatDestroy(&blmP->M);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->Gold);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->W);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->work);CHKERRQ(ierr);
+    ierr = VecDestroy(&blmP->red_grad);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&blmP->active_lower);CHKERRQ(ierr);
   ierr = ISDestroy(&blmP->active_upper);CHKERRQ(ierr);
   ierr = ISDestroy(&blmP->active_fixed);CHKERRQ(ierr);
   ierr = ISDestroy(&blmP->active_idx);CHKERRQ(ierr);
   ierr = ISDestroy(&blmP->inactive_idx);CHKERRQ(ierr);
+  ierr = MatDestroy(&blmP->M);CHKERRQ(ierr);
   if (blmP->H0) {
     PetscObjectDereference((PetscObject)blmP->H0);
   }
@@ -275,6 +271,7 @@ PETSC_INTERN PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptio
   ierr = PetscOptionsReal("-tao_blmvm_as_tol", "initial tolerance used when estimating actively bounded variables","",blmP->as_tol,&blmP->as_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_blmvm_as_step", "step length used when estimating actively bounded variables","",blmP->as_step,&blmP->as_step,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -297,6 +294,9 @@ PETSC_INTERN PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)
       recycled_its = lmP->bfgs + lmP->grad;
       ierr = PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %D\n", recycled_its);CHKERRQ(ierr);
     }
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatView(lmP->M, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

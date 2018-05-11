@@ -15,6 +15,7 @@ typedef struct {
   Mat M;
 
   Vec unprojected_gradient;
+  Vec red_grad;
   Vec Xold, Gold;
   Vec W, work;
   

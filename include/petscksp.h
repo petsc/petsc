@@ -711,6 +711,7 @@ PETSC_EXTERN PetscErrorCode MatCreateLMBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLSBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
 PETSC_EXTERN PetscErrorCode MatLMVMAllocate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode MatLMVMResetJ0(Mat);

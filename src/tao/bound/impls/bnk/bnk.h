@@ -203,11 +203,6 @@ typedef struct {
 #define BNK_SCALED_GRADIENT     2
 #define BNK_GRADIENT            3
 
-#define BFGS_SCALE_AHESS        0
-#define BFGS_SCALE_PHESS        1
-#define BFGS_SCALE_BFGS         2
-#define BFGS_SCALE_TYPES        3
-
 #define BNK_INIT_CONSTANT         0
 #define BNK_INIT_DIRECTION        1
 #define BNK_INIT_INTERPOLATION    2

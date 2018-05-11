@@ -485,6 +485,38 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 /*------------------------------------------------------------*/
 
 /*@
+   MatLMVMIsAllocated - Returns a boolean flag that shows whether 
+   the necessary data structures for the underlying matrix is allocated.
+
+   Input Parameters:
+.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+
+   Output Parameter:
+.  flg - PETSC_TRUE if allocated, PETSC_FALSE otherwise
+
+   Level: intermediate
+
+.seealso: MatLMVMAllocate(), MatLMVMReset()
+@*/
+
+PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  *flg = PETSC_FALSE;
+  if (lmvm->allocated && B->preallocated && B->assembled) *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*@
    MatLMVMAllocate - Produces all necessary common memory for 
    LMVM approximations based on the solution and function vectors
    provided. If MatSetSizes() and MatSetUp() have not been called 
@@ -585,6 +617,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   lmvm->k = -1;
   lmvm->prev_set = PETSC_FALSE;
   if (destructive && lmvm->allocated) {
+    B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
     ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->R);CHKERRQ(ierr);
@@ -663,6 +696,25 @@ PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   *nrejects = lmvm->nrejects;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same;
+  MPI_Comm          comm = PetscObjectComm((PetscObject)B);
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  ierr = VecDuplicate(lmvm->Xprev, L);CHKERRQ(ierr);
+  ierr = VecDuplicate(lmvm->Fprev, R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -803,6 +855,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->setfromoptions = MatSetFromOptions_LMVM;
   B->ops->view = MatView_LMVM;
   B->ops->setup = MatSetUp_LMVM;
+  B->ops->getvecs = MatGetVecs_LMVM;
   
   ierr = KSPCreate(PetscObjectComm((PetscObject)B), &lmvm->J0ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lmvm->J0ksp, (PetscObject)B, 1);CHKERRQ(ierr);
