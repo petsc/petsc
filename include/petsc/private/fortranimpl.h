@@ -30,25 +30,28 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 
 
 /* --------------------------------------------------------------------*/
+#ifndef PETSC_FORTRAN_CHARLEN_T
+#  define PETSC_FORTRAN_CHARLEN_T int
+#endif
 /*
     This lets us map the str-len argument either, immediately following
     the char argument (DVF on Win32) or at the end of the argument list
     (general unix compilers)
 */
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_MIXED_LEN(len) ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_END_LEN(len)
-#define PETSC_MIXED_LEN_CALL(len) ,len
+#define PETSC_MIXED_LEN_CALL(len) ,((PETSC_FORTRAN_CHARLEN_T)(len))
 #define PETSC_END_LEN_CALL(len)
-#define PETSC_MIXED_LEN_PROTO ,int
+#define PETSC_MIXED_LEN_PROTO ,PETSC_FORTRAN_CHARLEN_T
 #define PETSC_END_LEN_PROTO
 #else
 #define PETSC_MIXED_LEN(len)
-#define PETSC_END_LEN(len)   ,int len
+#define PETSC_END_LEN(len)   ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_MIXED_LEN_CALL(len)
-#define PETSC_END_LEN_CALL(len)   ,len
+#define PETSC_END_LEN_CALL(len)   ,((PETSC_FORTRAN_CHARLEN_T)(len))
 #define PETSC_MIXED_LEN_PROTO
-#define PETSC_END_LEN_PROTO   ,int
+#define PETSC_END_LEN_PROTO   ,PETSC_FORTRAN_CHARLEN_T
 #endif
 
 /* --------------------------------------------------------------------*/
