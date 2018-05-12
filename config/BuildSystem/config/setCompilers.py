@@ -215,6 +215,23 @@ class Configure(config.base.Configure):
     return 0
   isGfortran47plus = staticmethod(isGfortran47plus)
 
+
+  def isGfortran8plus(compiler, log):
+    '''returns true if the compiler is gfortran-8 or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output +  error
+      import re
+      strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (8,0):
+          return 1
+    except RuntimeError:
+      pass
+    return 0
+  isGfortran8plus = staticmethod(isGfortran8plus)
+
   def isG95(compiler, log):
     '''Returns true if the compiler is g95'''
     try:
