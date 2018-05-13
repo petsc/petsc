@@ -278,7 +278,7 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 
 #define MAXREGFIN 256
 static int PetscRegisterFinalize_Count = 0;
-static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
+static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 
 /*@C
    PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
