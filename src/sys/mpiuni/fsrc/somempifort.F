@@ -3,7 +3,7 @@
 !
       subroutine MPIUNISetCommonBlock()
       implicit none
-#include "mpif.h"
+#include "petsc/mpiuni/mpif.h"
       call MPIUNISetFortranBasePointers(MPI_IN_PLACE)
       return
       end

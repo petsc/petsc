@@ -17,7 +17,11 @@
 
 
 #if !defined(PETSC_AVOID_MPIF_H)
+#if defined(PETSC_HAVE_MPIUNI)
+#include "petsc/mpiuni/mpif.h"
+#else
 #include "mpif.h"
+#endif
 #endif
 
       type tPetscOptions
