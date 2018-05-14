@@ -78,7 +78,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 */
 #define FIXRETURNCHAR(flg,a,n)               \
 if (flg) {                                   \
-  int __i;                                   \
+  PETSC_FORTRAN_CHARLEN_T __i;               \
   for (__i=0; __i<n && a[__i] != 0; __i++) {};  \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
