@@ -258,7 +258,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
   ierr = PCSetReusePreconditioner(pc, PETSC_TRUE);
   
   ierr = MatCreate(PetscObjectComm((PetscObject)pc), &ctx->B);CHKERRQ(ierr);
-  ierr = MatSetType(ctx->B, MATLBFGS);CHKERRQ(ierr);
+  ierr = MatSetType(ctx->B, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->B, (PetscObject)pc, 1);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(ctx->B, "pc_lmvm_");CHKERRQ(ierr);
   PetscFunctionReturn(0);

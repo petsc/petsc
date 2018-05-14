@@ -22,9 +22,6 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscBool         same;
-  PetscInt          i;
-  PetscReal         rhotol, rho, ynorm2;
-  Vec               Stmp, Ytmp;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -38,45 +35,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
     VecCheckMatCompatible(B, X, 2, F, 3);
   }
   if (lmvm->m == 0) PetscFunctionReturn(0);
-  if (lmvm->prev_set) {
-    /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
-    ierr = VecAXPBY(lmvm->Xprev, 1.0, -1.0, X);CHKERRQ(ierr);
-    ierr = VecAXPBY(lmvm->Fprev, 1.0, -1.0, F);CHKERRQ(ierr);
-    /* Test if the updates can be accepted */
-    ierr = VecDotBegin(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
-    rhotol = lmvm->eps * ynorm2;
-    if (rho > rhotol) {
-      /* Update is good, accept it */
-      ++lmvm->nupdates;
-      lmvm->k = PetscMin(lmvm->k+1, lmvm->m-1);
-      if (lmvm->k == lmvm->m-1) {
-        /* We hit the memory limit, so shift all the vectors back one spot 
-           and shift the oldest to the front to receive the latest update. */
-        Stmp = lmvm->S[0];
-        Ytmp = lmvm->Y[0];
-        for (i = 0; i < lmvm->k; ++i) {
-          lmvm->S[i] = lmvm->S[i+1];
-          lmvm->Y[i] = lmvm->Y[i+1];
-        }
-        lmvm->S[lmvm->k] = Stmp;
-        lmvm->Y[lmvm->k] = Ytmp;
-      }
-      /* Put the precomputed update into the last vector */
-      ierr = VecCopy(lmvm->Xprev, lmvm->S[lmvm->k]);CHKERRQ(ierr);
-      ierr = VecCopy(lmvm->Fprev, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
-    } else {
-      /* Update is bad, skip it */
-      ++lmvm->nrejects;
-    }
-  }
-  
-  /* Save the solution and function to be used in the next update */
-  ierr = VecCopy(X, lmvm->Xprev);CHKERRQ(ierr);
-  ierr = VecCopy(F, lmvm->Fprev);CHKERRQ(ierr);
-  lmvm->prev_set = PETSC_TRUE;
+  ierr = lmvm->ops->update(B, X, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -536,9 +495,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
-  PetscBool         same, allocate = PETSC_FALSE;
-  PetscInt          m, n, M, N;
-  VecType           type;
+  PetscBool         same;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -546,43 +503,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  if (B->rmap->N == 0 && B->cmap->N == 0) {
-    /* MatSetSizes() has not been called on this matrix, so we have to sort out the sizing */
-    ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
-    ierr = VecGetSize(X, &N);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(F, &m);CHKERRQ(ierr);
-    ierr = VecGetSize(F, &M);CHKERRQ(ierr);
-    ierr = MatSetSizes(B, m, n, M, N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-    ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
-  } else {
-    /* Mat sizing has been set so check if the vectors are compatible */
-    VecCheckMatCompatible(B, X, 2, F, 3);
-  }
-  if (lmvm->allocated) {
-    ierr = VecGetType(X, &type);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)lmvm->Xprev, type, &same);CHKERRQ(ierr);
-    if (!same) {
-      /* Given X vector has a different type than allocated X-type data structures.
-         We need to destroy all of this and duplicate again out of the given vector. */
-      allocate = PETSC_TRUE;
-      ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
-    }
-  } else {
-    allocate = PETSC_TRUE;
-  }
-  if (allocate) {
-    ierr = VecDuplicateVecs(X, lmvm->m, &lmvm->S);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &lmvm->Xprev);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &lmvm->R);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(F, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
-    ierr = VecDuplicate(F, &lmvm->Fprev);CHKERRQ(ierr);
-    ierr = VecDuplicate(F, &lmvm->Q);CHKERRQ(ierr);
-    lmvm->allocated = PETSC_TRUE;
-    B->preallocated = PETSC_TRUE;
-    B->assembled = PETSC_TRUE;
-  }
+  ierr = lmvm->ops->allocate(B, X, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -614,26 +535,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  lmvm->k = -1;
-  lmvm->prev_set = PETSC_FALSE;
-  if (destructive && lmvm->allocated) {
-    B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->R);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->Q);CHKERRQ(ierr);
-    if (lmvm->allocatedP) {
-      ierr = VecDestroyVecs(lmvm->m, &lmvm->P);CHKERRQ(ierr);
-      lmvm->allocatedP = PETSC_FALSE;
-    }
-    lmvm->nupdates = 0;
-    lmvm->nrejects = 0;
-    lmvm->allocated = PETSC_FALSE;
-    B->preallocated = PETSC_FALSE;
-    B->assembled = PETSC_FALSE;
-  }
+  ierr = lmvm->ops->reset(B, destructive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -701,6 +603,137 @@ PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
 
 /*------------------------------------------------------------*/
 
+PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  lmvm->k = -1;
+  lmvm->prev_set = PETSC_FALSE;
+  if (destructive && lmvm->allocated) {
+    B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->R);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Q);CHKERRQ(ierr);
+    lmvm->nupdates = 0;
+    lmvm->nrejects = 0;
+    lmvm->allocated = PETSC_FALSE;
+    B->preallocated = PETSC_FALSE;
+    B->assembled = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same, allocate = PETSC_FALSE;
+  PetscInt          m, n, M, N;
+  VecType           type;
+
+  PetscFunctionBegin;
+  if (B->rmap->N == 0 && B->cmap->N == 0) {
+    /* MatSetSizes() has not been called on this matrix, so we have to sort out the sizing */
+    ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(F, &m);CHKERRQ(ierr);
+    ierr = VecGetSize(F, &M);CHKERRQ(ierr);
+    ierr = MatSetSizes(B, m, n, M, N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+    ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    /* Mat sizing has been set so check if the vectors are compatible */
+    VecCheckMatCompatible(B, X, 2, F, 3);
+  }
+  if (lmvm->allocated) {
+    ierr = VecGetType(X, &type);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)lmvm->Xprev, type, &same);CHKERRQ(ierr);
+    if (!same) {
+      /* Given X vector has a different type than allocated X-type data structures.
+         We need to destroy all of this and duplicate again out of the given vector. */
+      allocate = PETSC_TRUE;
+      ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
+    }
+  } else {
+    allocate = PETSC_TRUE;
+  }
+  if (allocate) {
+    ierr = VecDuplicateVecs(X, lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &lmvm->Xprev);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &lmvm->R);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(F, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    ierr = VecDuplicate(F, &lmvm->Fprev);CHKERRQ(ierr);
+    ierr = VecDuplicate(F, &lmvm->Q);CHKERRQ(ierr);
+    lmvm->allocated = PETSC_TRUE;
+    B->preallocated = PETSC_TRUE;
+    B->assembled = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+  PetscReal         rhotol, rho, ynorm2;
+  Vec               Stmp, Ytmp;
+
+  PetscFunctionBegin;
+  if (lmvm->prev_set) {
+    /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
+    ierr = VecAXPBY(lmvm->Xprev, 1.0, -1.0, X);CHKERRQ(ierr);
+    ierr = VecAXPBY(lmvm->Fprev, 1.0, -1.0, F);CHKERRQ(ierr);
+    /* Test if the updates can be accepted */
+    ierr = VecDotBegin(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
+    rhotol = lmvm->eps * ynorm2;
+    if (rho > rhotol) {
+      /* Update is good, accept it */
+      ++lmvm->nupdates;
+      lmvm->k = PetscMin(lmvm->k+1, lmvm->m-1);
+      if (lmvm->k == lmvm->m-1) {
+        /* We hit the memory limit, so shift all the vectors back one spot 
+           and shift the oldest to the front to receive the latest update. */
+        Stmp = lmvm->S[0];
+        Ytmp = lmvm->Y[0];
+        for (i = 0; i < lmvm->k; ++i) {
+          lmvm->S[i] = lmvm->S[i+1];
+          lmvm->Y[i] = lmvm->Y[i+1];
+        }
+        lmvm->S[lmvm->k] = Stmp;
+        lmvm->Y[lmvm->k] = Ytmp;
+      }
+      /* Put the precomputed update into the last vector */
+      ierr = VecCopy(lmvm->Xprev, lmvm->S[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecCopy(lmvm->Fprev, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
+    } else {
+      /* Update is bad, skip it */
+      ++lmvm->nrejects;
+    }
+  }
+
+  /* Save the solution and function to be used in the next update */
+  ierr = VecCopy(X, lmvm->Xprev);CHKERRQ(ierr);
+  ierr = VecCopy(F, lmvm->Fprev);CHKERRQ(ierr);
+  lmvm->prev_set = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
@@ -753,7 +786,6 @@ PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat 
   ierr = PetscOptionsInt("-mat_lmvm_num_vecs","number of correction vectors kept in memory for the approximation","",lmvm->m,&lmvm->m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_lmvm_ksp_its","(developer) fixed number of KSP iterations to take when inverting J0","",lmvm->ksp_max_it,&lmvm->ksp_max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_eps","(developer) machine zero definition","",lmvm->eps,&lmvm->eps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_lmvm_phi","(developer) convex combination factor for symmetric Broyden","",lmvm->phi,&lmvm->phi,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(lmvm->J0ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -816,9 +848,6 @@ PetscErrorCode MatDestroy_LMVM(Mat B)
   if (lmvm->J0) {
     ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
   }
-  if (lmvm->allocatedP) {
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->P);CHKERRQ(ierr);
-  }
   ierr = PetscFree(B->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -837,13 +866,11 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   lmvm->k = -1;
   lmvm->nupdates = 0;
   lmvm->nrejects = 0;
-  lmvm->phi = 0.125;
   lmvm->ksp_max_it = 20;
   lmvm->ksp_rtol = 0.0;
   lmvm->ksp_atol = 0.0;
   lmvm->eps = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   lmvm->allocated = PETSC_FALSE;
-  lmvm->allocatedP = PETSC_FALSE;
   lmvm->prev_set = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
   lmvm->user_pc = PETSC_FALSE;
@@ -856,6 +883,10 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->view = MatView_LMVM;
   B->ops->setup = MatSetUp_LMVM;
   B->ops->getvecs = MatGetVecs_LMVM;
+  
+  lmvm->ops->update = MatUpdate_LMVM;
+  lmvm->ops->allocate = MatAllocate_LMVM;
+  lmvm->ops->reset = MatReset_LMVM;
   
   ierr = KSPCreate(PetscObjectComm((PetscObject)B), &lmvm->J0ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lmvm->J0ksp, (PetscObject)B, 1);CHKERRQ(ierr);

@@ -703,12 +703,13 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchurComplementAinvType,MatReuse,Mat*);
 
-PETSC_EXTERN PetscErrorCode MatCreateLDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLSBRDN(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);

@@ -35,7 +35,7 @@
   dX <- -(1 / (1 - tau)) * R
  */
 
-PetscErrorCode MatSolve_LBRDN(Mat B, Vec F, Vec dX)
+PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -73,14 +73,14 @@ PetscErrorCode MatSolve_LBRDN(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LBRDN(Mat B)
+PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLBRDN);CHKERRQ(ierr);
-  B->ops->solve = MatSolve_LBRDN;
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
+  B->ops->solve = MatSolve_LMVMBrdn;
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -89,7 +89,7 @@ PetscErrorCode MatCreate_LBRDN(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLBRDN - Creates a limited-memory "good" Broyden-type approximation
+   MatCreateLMVMBrdn - Creates a limited-memory "good" Broyden-type approximation
    matrix used for a Jacobian. L-Broyden is not guaranteed to be symmetric or 
    positive-definite. This implementation only supports the MatSolve() operation, 
    which is an application of the approximate inverse of the Jacobian. 
@@ -120,16 +120,17 @@ PetscErrorCode MatCreate_LBRDN(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreateLDFP(), MatCreateLBFGS(), MatCreateLSR1(), MatCreateLMBRDN(), MatCreateLSBRDN()
+.seealso: MatCreate(), MATLMVM, MATLMVMBRDN, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
+         MatCreateLMVMBFGS(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLBRDN(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMBRDN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -247,7 +247,7 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
   /* Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-  ierr = MatCreateLBFGS(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
+  ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

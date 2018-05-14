@@ -367,7 +367,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)tao)->comm, &blmP->M);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)blmP->M, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = MatSetType(blmP->M, MATLBFGS);CHKERRQ(ierr);
+  ierr = MatSetType(blmP->M, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(blmP->M, "tao_blmvm_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

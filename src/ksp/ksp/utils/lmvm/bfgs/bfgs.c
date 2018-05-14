@@ -1,23 +1,24 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Limited-memory Symmetric Broyden method for approximating the inverse 
-  of a Jacobian.
+  Limited-memory Broyden-Fletcher-Goldfarb-Shano method for approximating the 
+  inverse of a Jacobian.
   
-  L-SBroyden is a convex combination of L-BFGS and L-DFP such that 
-  SBroyden = (1-phi)*BFGS + phi*DFP. The combination factor phi is typically 
-  restricted to the range [0, 1], where the resulting approximation is 
-  guaranteed to be symmetric positive-definite. However, phi can be set to 
-  values outside of this range, which produces other known quasi-Newton methods 
-  such as L-SR1.
+  BFGS is symmetric positive-definite by construction.
+  
+  The solution method (approximate inverse Jacobian application) is adapted 
+  from Algorithm 7.4 on page 178 of Nocedal and Wright "Numerical Optimization" 
+  2nd edition (https://doi.org/10.1007/978-0-387-40065-5). The initial inverse 
+  Jacobian application falls back onto the gamma scaling recommended in equation 
+  (7.20) if the user has not provided any estimation of the initial Jacobian or 
+  its inverse.
   
   Q <- F
   
   for i = k,k-1,k-2,...,0
     rho[i] = 1 / (Y[i]^T S[i])
-    alpha_bfgs[i] = rho[i] * (S[i]^T Q)
-    alpha_dfp[i] = rho[i] * (Y[i]^T Q)
-    Q <- Q - (1-phi)*(alpha_bfgs[i] * Y[i]) - phi*(alpha_dfp[i] * S[i])
+    alpha[i] = rho[i] * (S[i]^T Q)
+    Q <- Q - (alpha[i] * Y[i])
   end
   
   if J0^{-1} exists
@@ -32,35 +33,29 @@
     end
   else
     R <- Q
+    if k >= 0
+      gamma = (S[k]^T Y[k]) / (Y[k]^T Y[k])
+      R <- gamma * R
+    end
   end
   
   for i = 0,1,2,...,k
-    beta_bfgs = rho[i] * (Y[i]^T R)
-    beta_dfp = rho[i] * (S[i]^T R)
-    R <- R + (1-phi)*((alpha_bfgs[i] - beta_bfgs) * S[i]) + phi*((alpha_dfp[i] - beta_dfp) * Y[i])
+    beta = rho[i] * (Y[i]^T R)
+    R <- R + ((alpha[i] - beta) * S[i])
   end
   
   dX <- R
  */
 
-PetscErrorCode MatSolve_LSBRDN(Mat B, Vec F, Vec dX)
+PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         alpha_bfgs[lmvm->k+1], alpha_dfp[lmvm->k+1], rho[lmvm->k+1];
-  PetscReal         bfgs = 1.0 - lmvm->phi, dfp = lmvm->phi;
-  PetscReal         beta_bfgs, beta_dfp, yts, stq, ytq, ytr, str;
+  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
+  PetscReal         beta, yts, stq, ytr, sty, yty;
   
   PetscFunctionBegin;
-  if (bfgs == 1.0) {
-    ierr = MatSolve_LBFGS(B, F, dX);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } 
-  if (dfp == 1.0) {
-    ierr = MatSolve_LDFP(B, F, dX);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
@@ -73,28 +68,35 @@ PetscErrorCode MatSolve_LSBRDN(Mat B, Vec F, Vec dX)
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->Q, &ytq);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->Q, &ytq);CHKERRQ(ierr);
     rho[i] = 1.0/yts;
-    alpha_bfgs[i] = rho[i] * stq;
-    alpha_dfp[i] = rho[i] * ytq;
-    ierr = VecAXPBYPCZ(lmvm->Q, -alpha_bfgs[i]*bfgs, -alpha_dfp[i]*dfp, 1.0, lmvm->Y[i], lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
+    alpha[i] = rho[i] * stq;
+    ierr = VecAXPY(lmvm->Q, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
+  }
+  
+  if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
+    /* If the user has not defined any form of the inverse Jacobian, trigger the dot products 
+       necessary for gamma scaling */
+    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
   }
   
   /* Invert the initial Jacobian onto Q (or apply scaling) */
   ierr = MatLMVMApplyJ0Inv(B, lmvm->Q, lmvm->R);CHKERRQ(ierr);
   
+  if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
+    /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
+    ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+    ierr = VecScale(lmvm->R, sty/yty);CHKERRQ(ierr);
+  }
+  
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->R, &ytr);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], lmvm->R, &str);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->R, &ytr);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lmvm->R, &str);CHKERRQ(ierr);
-    beta_bfgs = rho[i] * ytr;
-    beta_dfp = rho[i] * str;
-    ierr = VecAXPBYPCZ(lmvm->R, (alpha_bfgs[i]-beta_bfgs)*bfgs, (alpha_dfp[i] - beta_dfp)*dfp, 1.0, lmvm->S[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecDot(lmvm->Y[i], lmvm->R, &ytr);CHKERRQ(ierr);
+    beta = rho[i] * ytr;
+    ierr = VecAXPY(lmvm->R, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
   }
   
   /* R contains the approximate inverse of Jacobian applied to the function,
@@ -105,15 +107,15 @@ PetscErrorCode MatSolve_LSBRDN(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LSBRDN(Mat B)
+PetscErrorCode MatCreate_LMVMBFGS(Mat B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLSBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
-  B->ops->solve = MatSolve_LSBRDN;
+  B->ops->solve = MatSolve_LMVMBFGS;
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -122,15 +124,11 @@ PetscErrorCode MatCreate_LSBRDN(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLSBRDN - Creates a limited-memory Symmetric Broyden-type matrix used 
-   for approximating Jacobians. L-SBroyden is a convex combination of L-DFP and 
-   L-BFGS such that SBroyden = (1-phi)*BFGS + phi*DFP. The combination factor 
-   phi is typically restricted to the range [0, 1], where the L-SBroyden matrix 
-   is guaranteed to be symmetric positive-definite. However, other variants where 
-   phi lies outside of this range is possible, and produces some known LMVM 
-   methods such as L-SR1. This implementation of L-SBroyden only supports the 
-   MatSolve() operation, which is an application of the approximate inverse of 
-   the Jacobian. 
+   MatCreateLMVMBFGS - Creates a limited-memory Broyden-Fletcher-Goldfarb-Shano (BFGS)
+   matrix used for approximating Jacobians. L-BFGS is symmetric positive-definite by 
+   construction, and is commonly used to approximate Hessians in optimization 
+   problems. This implementation only supports the MatSolve() operation, which is 
+   an application of the approximate inverse of the Jacobian. 
    
    The provided local and global sizes must match the solution and function vectors 
    used with MatLMVMUpdate() and MatSolve(). The resulting L-BFGS matrix will have 
@@ -158,16 +156,17 @@ PetscErrorCode MatCreate_LSBRDN(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreateLDFP(), MatCreateLSR1(), MatCreateLBFGS(), MatCreateLBRDN(), MatCreateLMBRDN()
+.seealso: MatCreate(), MATLMVM, MATLMVMBFGS, MatCreateLMVMDFP(), MatCreateLMVMSR1(), 
+          MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLSBRDN(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMBFGS(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLSBRDN);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

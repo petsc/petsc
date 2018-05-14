@@ -39,7 +39,7 @@
   dX <- R
  */
 
-PetscErrorCode MatSolve_LDFP(Mat B, Vec F, Vec dX)
+PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -86,15 +86,15 @@ PetscErrorCode MatSolve_LDFP(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LDFP(Mat B)
+PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLDFP);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDFP);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
-  B->ops->solve = MatSolve_LDFP;
+  B->ops->solve = MatSolve_LMVMDFP;
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -103,7 +103,7 @@ PetscErrorCode MatCreate_LDFP(Mat B)
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix 
+   MatCreateLMVMDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix 
    used for approximating Jacobians. L-DFP is symmetric positive-definite by 
    construction, and is the dual of L-BFGS where Y and S vectors swap roles. This 
    implementation only supports the MatSolve() operation, which is an application 
@@ -135,16 +135,17 @@ PetscErrorCode MatCreate_LDFP(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreateLBFGS(), MatCreateLSR1(), MatCreateLBRDN(), MatCreateLMBRDN(), MatCreateLSBRDN()
+.seealso: MatCreate(), MATLMVM, MATLMVMDFP, MatCreateLMVMBFGS(), MatCreateLMVMSR1(), 
+           MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLDFP);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMDFP);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

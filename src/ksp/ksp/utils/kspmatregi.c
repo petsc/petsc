@@ -22,12 +22,12 @@ PetscErrorCode KSPMatRegisterAll(void)
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegister(MATSCHURCOMPLEMENT, MatCreate_SchurComplement);CHKERRQ(ierr);
-  ierr = MatRegister(MATLDFP,            MatCreate_LDFP);CHKERRQ(ierr);
-  ierr = MatRegister(MATLBFGS,           MatCreate_LBFGS);CHKERRQ(ierr);
-  ierr = MatRegister(MATLSR1,            MatCreate_LSR1);CHKERRQ(ierr);
-  ierr = MatRegister(MATLBRDN,           MatCreate_LBRDN);CHKERRQ(ierr);
-  ierr = MatRegister(MATLMBRDN,          MatCreate_LMBRDN);CHKERRQ(ierr);
-  ierr = MatRegister(MATLSBRDN,          MatCreate_LSBRDN);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCHURCOMPLEMENT,    MatCreate_SchurComplement);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMDFP,            MatCreate_LMVMDFP);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBFGS,           MatCreate_LMVMBFGS);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMSR1,            MatCreate_LMVMSR1);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBRDN,           MatCreate_LMVMBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMBADBRDN,        MatCreate_LMVMBadBrdn);CHKERRQ(ierr);
+  ierr = MatRegister(MATLMVMSYMBRDN,        MatCreate_LMVMSymBrdn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

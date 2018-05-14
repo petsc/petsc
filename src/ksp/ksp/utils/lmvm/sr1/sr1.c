@@ -50,9 +50,15 @@
   dX <- R + Q
  */
 
-PetscErrorCode MatSolve_LSR1(Mat B, Vec F, Vec dX)
+typedef struct {
+  Vec *P;
+  PetscBool allocatedP;
+} Mat_LSR1;
+
+PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscReal         pjTyi, pjTyj, piTf, piTyi;
@@ -63,32 +69,26 @@ PetscErrorCode MatSolve_LSR1(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
-  /* Allocate an array of vectors to preserve data across inner-outer loops */
-  if (!lmvm->allocatedP) {
-    ierr = VecDuplicateVecs(dX, lmvm->m, &lmvm->P);CHKERRQ(ierr);
-    lmvm->allocatedP = PETSC_TRUE;
-  }
-  
   /* Start outer loop */
   ierr = VecSet(lmvm->Q, 0.0);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     /* Invert the initial Jacobian onto Y[i] (or apply scaling) */
-    ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lmvm->P[i]);CHKERRQ(ierr);
+    ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsr1->P[i]);CHKERRQ(ierr);
     /* Start the P[i] computation which involves an inner loop */
-    ierr = VecAXPBY(lmvm->P[i], 1.0, -1.0, lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecAXPBY(lsr1->P[i], 1.0, -1.0, lmvm->S[i]);CHKERRQ(ierr);
     for (j = 0; j <= i-1; ++j) {
-      ierr = VecDotBegin(lmvm->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
-      ierr = VecDotBegin(lmvm->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
-      ierr = VecDotEnd(lmvm->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
-      ierr = VecDotEnd(lmvm->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
-      ierr = VecAXPY(lmvm->P[i], -(pjTyi/pjTyj), lmvm->P[j]);CHKERRQ(ierr);
+      ierr = VecDotBegin(lsr1->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
+      ierr = VecDotBegin(lsr1->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
+      ierr = VecDotEnd(lsr1->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
+      ierr = VecDotEnd(lsr1->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
+      ierr = VecAXPY(lsr1->P[i], -(pjTyi/pjTyj), lsr1->P[j]);CHKERRQ(ierr);
     }
     /* Accumulate the summation term */
-    ierr = VecDotBegin(lmvm->P[i], F, &piTf);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->P[i], F, &piTf);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
-    ierr = VecAXPY(lmvm->Q, (piTf/piTyi), lmvm->P[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsr1->P[i], F, &piTf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], F, &piTf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
+    ierr = VecAXPY(lmvm->Q, (piTf/piTyi), lsr1->P[i]);CHKERRQ(ierr);
   }
   
   /* Invert the initial Jacobian onto F (or apply scaling) */
@@ -101,24 +101,97 @@ PetscErrorCode MatSolve_LSR1(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LSR1(Mat B)
+PETSC_INTERN PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
+  if (lsr1->allocatedP) {
+    ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
+    lsr1->allocatedP = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
+  if (!lsr1->allocatedP) {
+    ierr = VecDuplicateVecs(X, lmvm->m, &lsr1->P);CHKERRQ(ierr);
+    lsr1->allocatedP = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatDestroy_LMVMSR1(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (lsr1->allocatedP) {
+    ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatSetUp_LMVMSR1(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
+  if (!lsr1->allocatedP) {
+    ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->P);CHKERRQ(ierr);
+    lsr1->allocatedP = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatCreate_LMVMSR1(Mat B)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLSR1);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSR1);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
-  B->ops->solve = MatSolve_LSR1;
+  B->ops->solve = MatSolve_LMVMSR1;
+  B->ops->setup = MatSetUp_LMVMSR1;
+  B->ops->destroy = MatDestroy_LMVMSR1;
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
+  lmvm->ops->allocate = MatAllocate_LMVMSR1;
+  lmvm->ops->reset = MatReset_LMVMSR1;
+  Mat_LSR1 *lsr1 = (Mat_LSR1*)B->data;
+  lsr1->allocatedP = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
 /*@
-   MatCreateLSR1 - Creates a limited-memory Symmetric-Rank-1 approximation
+   MatCreateLMVMSR1 - Creates a limited-memory Symmetric-Rank-1 approximation
    matrix used for a Jacobian. L-SR1 is symmetric by construction, but is not 
    guaranteed to be positive-definite. This implementation only supports the 
    MatSolve() operation, which is an application of the approximate inverse of 
@@ -150,16 +223,17 @@ PetscErrorCode MatCreate_LSR1(Mat B)
 
    Level: intermediate
 
-.seealso: MatCreateLDFP(), MatCreateLBFGS(), MatCreateLBRDN(), MatCreateLMBRDN(), MatCreateLSBRDN()
+.seealso: MatCreate(), MATLMVM, MATLMVMSR1, MatCreateLMVMBFGS(), MatCreateLMVMDFP(), 
+          MatCreateLMVMBrdn(), MatCreateLMVMBadBrdn(), MatCreateLMVMSymBrdn()
 @*/
-PetscErrorCode MatCreateLSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm, B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(*B, MATLSR1);CHKERRQ(ierr);
+  ierr = MatSetType(*B, MATLMVMSR1);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

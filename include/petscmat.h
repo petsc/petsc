@@ -89,12 +89,12 @@ typedef const char* MatType;
 #define MATMPISELL         "mpisell"
 #define MATDUMMY           "dummy"
 #define MATLMVM            "lmvm"
-#define MATLDFP            "lmvmldfp"
-#define MATLBFGS           "lmvmlbfgs"
-#define MATLSR1            "lmvmlsr1"
-#define MATLBRDN           "lmvmlbrdn"
-#define MATLMBRDN          "lmvmlmbrdn"
-#define MATLSBRDN          "lmvmlsbrdn"
+#define MATLMVMDFP         "lmvmdfp"
+#define MATLMVMBFGS        "lmvmbfgs"
+#define MATLMVMSR1         "lmvmsr1"
+#define MATLMVMBRDN        "lmvmbrdn"
+#define MATLMVMBADBRDN     "lmvmbadbrdn"
+#define MATLMVMSYMBRDN     "lmvmsymbrdn"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.

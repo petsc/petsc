@@ -107,7 +107,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   if (NTR_PC_BFGS == tr->pc_type && !tr->M) {
     ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
     ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLBFGS(((PetscObject)tao)->comm,n,N,&tr->M);CHKERRQ(ierr);
+    ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,n,N,&tr->M);CHKERRQ(ierr);
     ierr = MatLMVMAllocate(tr->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   }
 

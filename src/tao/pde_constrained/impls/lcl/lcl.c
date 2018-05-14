@@ -184,7 +184,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   lclP->rho = lclP->rho0;
   ierr = VecGetLocalSize(lclP->U,&nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal);CHKERRQ(ierr);
-  ierr = MatCreateLBFGS(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
+  ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(lclP->R,lclP->V,lclP->V);CHKERRQ(ierr);
   lclP->recompute_jacobian_flag = PETSC_TRUE;
 
