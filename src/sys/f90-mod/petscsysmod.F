@@ -1,7 +1,10 @@
 
         module petscsysdefdummy
 #include <petscconf.h>
-#if defined(PETSC_HAVE_MPI_F90MODULE) || defined(PETSC_HAVE_MPIUNI)
+#if defined(PETSC_HAVE_MPIUNI)
+        use mpiuni
+#define PETSC_AVOID_MPIF_H
+#elif defined(PETSC_HAVE_MPI_F90MODULE)
         use mpi
 #define PETSC_AVOID_MPIF_H
 #endif
