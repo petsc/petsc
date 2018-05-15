@@ -3,4 +3,4 @@
 set MACH=knl
 set USR=petsc
 set PETSC_DIR=/home/petsc/${RNAME}-3
-set PETSC_ARCH=arch-linux-gcc-avx2
+set PETSC_ARCH=arch-linux-gcc-cxx-avx2
