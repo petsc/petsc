@@ -6,9 +6,10 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--with-debugging=0',
-    'CFLAGS=-mavx2',
-    'CXXFLAGS=-mavx2',
-    'FFLAGS=-mavx2',
+    '--with-clanguage=cxx',
+    'COPTFLAGS=-mavx2 -g -O',
+    'CXXOPTFLAGS=-mavx2 -g -O',
+    'FOPTFLAGS=-mavx2 -g -O',
     '--with-mpi-dir=/homes/petsc/soft/gcc-avx2/mpich-3.3b1',
     '--with-blaslapack-dir=/homes/petsc/soft/gcc-avx2/fblaslapack-3.4.2',
     '--with-memalign=64',
