@@ -53,7 +53,7 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
-  PetscReal         beta, yts, stq, ytr, sty, yty;
+  PetscReal         beta, yts, stf, ytx, sty, yty;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -62,17 +62,17 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
   /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(F, lmvm->Q);CHKERRQ(ierr);
+  ierr = VecCopy(F, lmvm->Fwork);CHKERRQ(ierr);
   
   /* Start the first loop */
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
     rho[i] = 1.0/yts;
-    ierr = VecDotEnd(lmvm->S[i], lmvm->Q, &stq);CHKERRQ(ierr);
-    alpha[i] = rho[i] * stq;
-    ierr = VecAXPY(lmvm->Q, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    alpha[i] = rho[i] * stf;
+    ierr = VecAXPY(lmvm->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
@@ -83,25 +83,21 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   }
   
   /* Invert the initial Jacobian onto Q (or apply scaling) */
-  ierr = MatLMVMApplyJ0Inv(B, lmvm->Q, lmvm->R);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Inv(B, lmvm->Fwork, dX);CHKERRQ(ierr);
   
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
     /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
     ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecScale(lmvm->R, sty/yty);CHKERRQ(ierr);
+    ierr = VecScale(dX, sty/yty);CHKERRQ(ierr);
   }
   
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
-    ierr = VecDot(lmvm->Y[i], lmvm->R, &ytr);CHKERRQ(ierr);
-    beta = rho[i] * ytr;
-    ierr = VecAXPY(lmvm->R, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecDot(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
+    beta = rho[i] * ytx;
+    ierr = VecAXPY(dX, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
   }
-  
-  /* R contains the approximate inverse of Jacobian applied to the function,
-     so just save it into the output vector */
-  ierr = VecCopy(lmvm->R, dX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

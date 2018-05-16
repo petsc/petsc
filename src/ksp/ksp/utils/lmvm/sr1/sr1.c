@@ -58,7 +58,7 @@ typedef struct {
 PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
   PetscReal         pjTyi, pjTyj, piTf, piTyi;
@@ -70,7 +70,7 @@ PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
   /* Start outer loop */
-  ierr = VecSet(lmvm->Q, 0.0);CHKERRQ(ierr);
+  ierr = VecZeroEntries(lmvm->Fwork);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     /* Invert the initial Jacobian onto Y[i] (or apply scaling) */
     ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsr1->P[i]);CHKERRQ(ierr);
@@ -88,14 +88,14 @@ PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
     ierr = VecDotBegin(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
     ierr = VecDotEnd(lsr1->P[i], F, &piTf);CHKERRQ(ierr);
     ierr = VecDotEnd(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
-    ierr = VecAXPY(lmvm->Q, (piTf/piTyi), lsr1->P[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(lmvm->Fwork, (piTf/piTyi), lsr1->P[i]);CHKERRQ(ierr);
   }
   
   /* Invert the initial Jacobian onto F (or apply scaling) */
-  ierr = MatLMVMApplyJ0Inv(B, F, lmvm->R);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   
   /* Now we have all the components to compute the solution */
-  ierr = VecWAXPY(dX, 1.0, lmvm->R, lmvm->Q);CHKERRQ(ierr);
+  ierr = VecAXPY(dX, 1.0, lmvm->Fwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -104,15 +104,15 @@ PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
 PETSC_INTERN PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
-  if (lsr1->allocatedP) {
+  if (destructive && lsr1->allocatedP && lmvm->m > 0) {
     ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
     lsr1->allocatedP = PETSC_FALSE;
   }
+  ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -121,12 +121,12 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
 PETSC_INTERN PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
-  if (!lsr1->allocatedP) {
+  if (!lsr1->allocatedP && lmvm->m > 0) {
     ierr = VecDuplicateVecs(X, lmvm->m, &lsr1->P);CHKERRQ(ierr);
     lsr1->allocatedP = PETSC_TRUE;
   }
@@ -138,13 +138,15 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
 PETSC_INTERN PetscErrorCode MatDestroy_LMVMSR1(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (lsr1->allocatedP) {
+  if (lsr1->allocatedP && lmvm->m > 0) {
     ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
+    lsr1->allocatedP = PETSC_FALSE;
   }
+  ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -154,12 +156,12 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMSR1(Mat B)
 PETSC_INTERN PetscErrorCode MatSetUp_LMVMSR1(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LSR1          *lsr1 = (Mat_LSR1*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
-  if (!lsr1->allocatedP) {
+  if (!lsr1->allocatedP && lmvm->m > 0) {
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->P);CHKERRQ(ierr);
     lsr1->allocatedP = PETSC_TRUE;
   }
@@ -170,6 +172,7 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMSR1(Mat B)
 
 PetscErrorCode MatCreate_LMVMSR1(Mat B)
 {
+  Mat_LSR1          *lsr1;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -179,11 +182,14 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   B->ops->solve = MatSolve_LMVMSR1;
   B->ops->setup = MatSetUp_LMVMSR1;
   B->ops->destroy = MatDestroy_LMVMSR1;
+  
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMSR1;
   lmvm->ops->reset = MatReset_LMVMSR1;
-  Mat_LSR1 *lsr1 = (Mat_LSR1*)B->data;
+  
+  ierr = PetscNewLog(B, &lsr1);CHKERRQ(ierr);
+  lmvm->ctx = (void*)lsr1;
   lsr1->allocatedP = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

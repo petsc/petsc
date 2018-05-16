@@ -40,7 +40,7 @@ PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         str, sts;
+  PetscReal         stx, sts;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -55,17 +55,17 @@ PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   /* Start the interior loop */
   for (i = 0; i <= lmvm->k-1; ++i) {
     ierr = VecDotBegin(lmvm->S[i], lmvm->S[i], &sts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], dX, &str);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[i], lmvm->S[i], &sts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], dX, &str);CHKERRQ(ierr);
-    ierr = VecAXPY(dX, str/sts, lmvm->S[i+1]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
+    ierr = VecAXPY(dX, stx/sts, lmvm->S[i+1]);CHKERRQ(ierr);
   }
   if (lmvm->k >= 0) {
     ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[lmvm->k], dX, &str);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[lmvm->k], dX, &stx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[lmvm->k], dX, &str);CHKERRQ(ierr);
-    ierr = VecScale(dX, (1.0/(1.0 - str/sts)));CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[lmvm->k], dX, &stx);CHKERRQ(ierr);
+    ierr = VecScale(dX, (1.0/(1.0 - stx/sts)));CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

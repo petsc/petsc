@@ -43,7 +43,7 @@ PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         rho, tau, ytr, yty;
+  PetscReal         rho, tau, ytx, yty;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -58,10 +58,10 @@ PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   /* Start the interior loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->Y[i], &yty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], dX, &ytr);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->Y[i], &yty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], dX, &ytr);CHKERRQ(ierr);
-    rho = 1.0/yty; tau = rho * ytr;
+    ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
+    rho = 1.0/yty; tau = rho * ytx;
     ierr = VecAXPBYPCZ(dX, tau, -tau, rho, lmvm->S[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

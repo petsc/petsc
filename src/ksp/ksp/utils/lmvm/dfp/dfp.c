@@ -6,8 +6,8 @@
   
   L-DFP is symmetric positive-definite by construction.
   
-  The solution method (approximate inverse Jacobian application) is the dual 
-  of the L-BFGS two-loop, where the vectors Y[i] and S[i] swap roles.
+  The solution method (approximate inverse Jacobian application) is matrix-vector 
+  product version of the recursive formula.
   
   Q <- F
   
@@ -39,48 +39,121 @@
   dX <- R
  */
 
+typedef struct {
+  Vec *P;
+  PetscBool allocatedP;
+} Mat_LDFP;
+
 PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          i;
-  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
-  PetscReal         beta, sty, ytq, str;
+  PetscInt          i, j;
+  PetscReal         yts[lmvm->k+1], ytx[lmvm->k+1], ytf, stf, ytp, stp;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
-
   
-  /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(F, lmvm->Q);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   
-  /* Start the first loop */
-  for (i = lmvm->k; i >= 0; --i) {
-    ierr = VecDotBegin(lmvm->S[i], lmvm->Y[i], &sty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->Q, &ytq);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lmvm->Y[i], &sty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->Q, &ytq);CHKERRQ(ierr);
-    rho[i] = 1.0/sty;
-    alpha[i] = rho[i] * ytq;
-    ierr = VecAXPY(lmvm->Q, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
-  }
-  
-  /* Invert the initial Jacobian onto Q (or apply scaling) */
-  ierr = MatLMVMApplyJ0Inv(B, lmvm->Q, lmvm->R);CHKERRQ(ierr);
-  
-  /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
-    ierr = VecDot(lmvm->S[i], lmvm->R, &str);CHKERRQ(ierr);
-    beta = rho[i] * str;
-    ierr = VecAXPY(lmvm->R, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->P[i]);
+    
+    for (j = 0; j <= i-1; ++j) {
+       ierr = VecDotBegin(lmvm->Y[j], ldfp->P[i], &ytp);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->S[j], ldfp->P[i], &stp);CHKERRQ(ierr);
+       
+       ierr = VecDotEnd(lmvm->Y[j], ldfp->P[i], &ytp);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->S[j], ldfp->P[i], &stp);CHKERRQ(ierr);
+       
+       ierr = VecAXPBYPCZ(ldfp->P[i], -ytp/ytx[j], stp/yts[j], 1.0, ldfp->P[j], lmvm->S[j]);CHKERRQ(ierr);
+    }
+    
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], ldfp->P[i], &ytx[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], dX, &ytf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], dX, &stf);CHKERRQ(ierr);
+    
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], ldfp->P[i], &ytx[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], dX, &ytf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], dX, &stf);CHKERRQ(ierr);
+    
+    ierr = VecAXPBYPCZ(dX, -ytf/ytx[i], stf/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  PetscErrorCode    ierr;
   
-  /* R contains the approximate inverse of Jacobian applied to the function,
-     so just save it into the output vector */
-  ierr = VecCopy(lmvm->R, dX);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (destructive && ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
+    ldfp->allocatedP = PETSC_FALSE;
+  }
+  ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
+  if (!ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicateVecs(X, lmvm->m, &ldfp->P);CHKERRQ(ierr);
+    ldfp->allocatedP = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatDestroy_LMVMDFP(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
+    ldfp->allocatedP = PETSC_FALSE;
+  }
+  ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
+  ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatSetUp_LMVMDFP(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
+  if (!ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->P);CHKERRQ(ierr);
+    ldfp->allocatedP = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -88,6 +161,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
+  Mat_LDFP          *ldfp;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -95,8 +169,17 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDFP);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
   B->ops->solve = MatSolve_LMVMDFP;
+  B->ops->setup = MatSetUp_LMVMDFP;
+  B->ops->destroy = MatDestroy_LMVMDFP;
+
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
+  lmvm->ops->allocate = MatAllocate_LMVMDFP;
+  lmvm->ops->reset = MatReset_LMVMDFP;
+
+  ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
+  lmvm->ctx = (void*)ldfp;
+  ldfp->allocatedP = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

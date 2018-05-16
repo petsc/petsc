@@ -613,12 +613,14 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
   lmvm->prev_set = PETSC_FALSE;
   if (destructive && lmvm->allocated) {
     B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    if (lmvm->m > 0) {
+      ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    }
     ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->R);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Xwork);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->Q);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Fwork);CHKERRQ(ierr);
     lmvm->nupdates = 0;
     lmvm->nrejects = 0;
     lmvm->allocated = PETSC_FALSE;
@@ -666,12 +668,14 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
     allocate = PETSC_TRUE;
   }
   if (allocate) {
-    ierr = VecDuplicateVecs(X, lmvm->m, &lmvm->S);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &lmvm->Xprev);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &lmvm->R);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(F, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &lmvm->Xwork);CHKERRQ(ierr);
     ierr = VecDuplicate(F, &lmvm->Fprev);CHKERRQ(ierr);
-    ierr = VecDuplicate(F, &lmvm->Q);CHKERRQ(ierr);
+    ierr = VecDuplicate(F, &lmvm->Fwork);CHKERRQ(ierr);
+    if (lmvm->m > 0) {
+      ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lmvm->S);CHKERRQ(ierr);
+      ierr = VecDuplicateVecs(lmvm->Fprev, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    }
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
     B->assembled = PETSC_TRUE;
@@ -814,10 +818,12 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
       ierr = VecCreateMPI(comm, n, N, &lmvm->Xprev);CHKERRQ(ierr);
       ierr = VecCreateMPI(comm, m, M, &lmvm->Fprev);CHKERRQ(ierr);
     }
-    ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lmvm->S);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Xprev, &lmvm->R);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(lmvm->Fprev, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Fprev, &lmvm->Q);CHKERRQ(ierr);
+    if (lmvm->m > 0) {
+      ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lmvm->S);CHKERRQ(ierr);
+      ierr = VecDuplicateVecs(lmvm->Fprev, lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicate(lmvm->Xprev, &lmvm->Xwork);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Fprev, &lmvm->Fwork);CHKERRQ(ierr);
     lmvm->allocated = PETSC_TRUE;
     B->preallocated = PETSC_TRUE;
     B->assembled = PETSC_TRUE;
@@ -834,12 +840,14 @@ PetscErrorCode MatDestroy_LMVM(Mat B)
 
   PetscFunctionBegin;
   if (lmvm->allocated) {
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    if (lmvm->m > 0) {
+      ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    }
     ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->R);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Xwork);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
-    ierr = VecDestroy(&lmvm->Q);CHKERRQ(ierr);
+    ierr = VecDestroy(&lmvm->Fwork);CHKERRQ(ierr);
   }
   ierr = KSPDestroy(&lmvm->J0ksp);CHKERRQ(ierr);
   if(lmvm->diag_scale) {

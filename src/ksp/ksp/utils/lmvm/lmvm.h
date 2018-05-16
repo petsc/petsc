@@ -16,20 +16,20 @@
   positive-definiteness (MAT_SPD).
 */
 
-typedef struct {
+typedef struct _MatOps_LMVM *MatOps_LMVM;
+struct _MatOps_LMVM {
   PetscErrorCode (*update)(Mat,Vec,Vec);
   PetscErrorCode (*allocate)(Mat,Vec,Vec);
   PetscErrorCode (*reset)(Mat,PetscBool);
-} MatOps_LMVM;
+};
 
 typedef struct {
   /* Core data structures for stored updates */
-  MatOps_LMVM *ops;
+  PETSCHEADER(struct _MatOps_LMVM);
   PetscBool allocated, prev_set;
   PetscInt m, k, nupdates, nrejects;
   Vec *S, *Y;
-  Vec Q, R;
-  Vec Xprev, Fprev;
+  Vec Xwork, Fwork, Xprev, Fprev;
   
   /* User-defined initial Jacobian tools */
   PetscBool user_pc, user_ksp, user_scale, square;
@@ -43,6 +43,7 @@ typedef struct {
   
   /* Miscellenous parameters */
   PetscReal eps; /* (default: PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0)) */
+  void *ctx; /* implementation specific context */
 } Mat_LMVM;
 
 /* Shared internal functions for LMVM matrices
