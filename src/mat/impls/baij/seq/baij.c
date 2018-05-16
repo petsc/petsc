@@ -13,7 +13,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,const MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
 #endif
 
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
