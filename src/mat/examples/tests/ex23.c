@@ -184,6 +184,7 @@ int main(int argc,char **args)
   /* test MatPtAP (A IS and B AIJ) */
   if (m == n) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatPtAP\n");CHKERRQ(ierr);
+    ierr = MatISStoreL2L(A,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&A2);CHKERRQ(ierr);
     ierr = MatPtAP(B,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B2);CHKERRQ(ierr);
     ierr = CheckMat(A2,B2,PETSC_FALSE,"MatPtAP MAT_INITIAL_MATRIX");CHKERRQ(ierr);
@@ -406,6 +407,60 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
 
+  /* test MatISFixLocalEmpty */
+  {
+    PetscInt r[2];
+
+    r[0] = 0;
+    r[1] = PetscMin(m,n)-1;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISFixLocalEmpty\n");CHKERRQ(ierr);
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+    ierr = MatISFixLocalEmpty(A2,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = CheckMat(A2,B,PETSC_FALSE,"MatISFixLocalEmpty (null)");CHKERRQ(ierr);
+
+    ierr = MatZeroRows(A2,2,r,0.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
+    ierr = MatZeroRows(B2,2,r,0.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatISFixLocalEmpty(A2,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+    ierr = CheckMat(A2,B2,PETSC_FALSE,"MatISFixLocalEmpty (rows)");CHKERRQ(ierr);
+    ierr = MatDestroy(&A2);CHKERRQ(ierr);
+
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+    ierr = MatZeroRows(A2,2,r,0.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatTranspose(A2,MAT_INPLACE_MATRIX,&A2);CHKERRQ(ierr);
+    ierr = MatTranspose(B2,MAT_INPLACE_MATRIX,&B2);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+    ierr = MatISFixLocalEmpty(A2,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+    ierr = CheckMat(A2,B2,PETSC_FALSE,"MatISFixLocalEmpty (cols)");CHKERRQ(ierr);
+
+    ierr = MatDestroy(&A2);CHKERRQ(ierr);
+    ierr = MatDestroy(&B2);CHKERRQ(ierr);
+
+    if (squaretest) {
+      ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+      ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
+      ierr = MatZeroRowsColumns(A2,2,r,0.0,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatZeroRowsColumns(B2,2,r,0.0,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+      ierr = MatISFixLocalEmpty(A2,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(A2,NULL,"-fixempty_view");CHKERRQ(ierr);
+      ierr = CheckMat(A2,B2,PETSC_FALSE,"MatISFixLocalEmpty (rows+cols)");CHKERRQ(ierr);
+      ierr = MatDestroy(&A2);CHKERRQ(ierr);
+      ierr = MatDestroy(&B2);CHKERRQ(ierr);
+    }
+
+  }
   /* free testing matrices */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

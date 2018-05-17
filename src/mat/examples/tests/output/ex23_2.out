@@ -98,3 +98,4 @@ Test MatMissingDiagonal
 [2] [4,6) Missing 1, row 4 (diag zero)
 [3] [6,8) Missing 1, row 6 (diag zero)
 Test MatTranspose
+Test MatISFixLocalEmpty

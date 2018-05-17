@@ -37,3 +37,4 @@ Test MatZeroRows (diag zero)
 Test MatMissingDiagonal
 [0] [0,12) Missing 1, row 0 (diag zero)
 Test MatTranspose
+Test MatISFixLocalEmpty
