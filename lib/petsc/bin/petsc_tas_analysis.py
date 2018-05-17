@@ -49,13 +49,16 @@ def main():
     plt.ylabel('Error $\log |x - x^*|$')
     plt.loglog(dofs, errors[0])
     plt.show()
-    
+    plt.savefig('meshConvergence.png')
+    plt.savefig('meshConvergence.png')
+   
     #Least Squares fit plot
     plt.title('Mesh Convergence using Least Squares')
     plt.xlabel('Problem Size $\log N$')
     plt.ylabel('Error $\log |x - x^*|$')
     plt.loglog(dofs, lstSqMeshConv[0]*dofs + lstSqMeshConv[1])
     plt.show()
+    plt.savefig('meshConvergenceLsq.png')
 
 
     plt.title('Static Scaling')
@@ -63,12 +66,14 @@ def main():
     plt.ylabel('Flop Rate (F/s)')
     plt.loglog(times, flops/times)
     plt.show()
+    plt.savefig('staticScaling.png')
 
     plt.title('Efficacy')
     plt.xlabel('Time (s)')
     plt.ylabel('Action (s)')
     plt.loglog(times, errors[0]*times)
     plt.show()
+    plt.savefig('efficacy.png')
 
 
 def leastSquares(x, y):
