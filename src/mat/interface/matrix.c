@@ -4170,7 +4170,7 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
-PetscErrorCode MatSolverTypeRegister(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
@@ -4233,7 +4233,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,const MatType mtype,M
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
-PetscErrorCode MatSolverTypeGet(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeGet(MatSolverType package,MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode                 ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders;

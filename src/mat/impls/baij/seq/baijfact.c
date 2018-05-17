@@ -663,7 +663,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,const MatFactorType ftype,Mat *B)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;

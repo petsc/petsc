@@ -4579,7 +4579,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 @*/
 PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
 {
-  PetscErrorCode ierr,(*r)(Mat,const MatType,MatReuse,Mat*);
+  PetscErrorCode ierr,(*r)(Mat,MatType,MatReuse,Mat*);
   PetscBool      sametype;
 
   PetscFunctionBegin;
