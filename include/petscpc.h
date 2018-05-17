@@ -120,6 +120,12 @@ PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC,MatSolverType);
 PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC,MatSolverType*);
 PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
+PETSC_DEPRECATED("Use PCFactorSetMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorSetMatSolverPackage(PC pc,MatSolverType stype)
+{ return PCFactorSetMatSolverType(pc,stype); }
+PETSC_DEPRECATED("Use PCFactorGetMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorGetMatSolverPackage(PC pc,MatSolverType *stype)
+{ return PCFactorGetMatSolverType(pc,stype); }
+PETSC_DEPRECATED("Use PCFactorSetUpMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+{ return PCFactorSetUpMatSolverType(pc); }
 
 PETSC_EXTERN PetscErrorCode PCFactorSetFill(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetColumnPivot(PC,PetscReal);
