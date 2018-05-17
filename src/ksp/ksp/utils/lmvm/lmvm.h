@@ -66,6 +66,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_LMVMSR1(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMBadBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMSymBrdn(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_LMVMDiagBrdn(Mat);
 
 /* Internal solve routines for derived LMVM types */
 PETSC_INTERN PetscErrorCode MatSolve_LMVMDFP(Mat, Vec, Vec);
@@ -74,5 +75,15 @@ PETSC_INTERN PetscErrorCode MatSolve_LMVMSR1(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_LMVMBrdn(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_LMVMBadBrdn(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_LMVMSymBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatSolve_LMVMDiagBrdn(Mat, Vec, Vec);
+
+/* Internal product routines for derived LMVM types */
+PETSC_INTERN PetscErrorCode MatMult_LMVMDFP(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMBFGS(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMSR1(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMBadBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMSymBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMDiagBrdn(Mat, Vec, Vec);
 
 #endif

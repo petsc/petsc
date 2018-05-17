@@ -288,7 +288,6 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
    Options Database Keys:
 .   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 .   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the inverse
-.   -mat_lmvm_phi_diag - (developer) convex ratio between BFGS and DFP components of the diagonal
 
    Level: intermediate
 
