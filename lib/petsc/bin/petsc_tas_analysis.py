@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 import numpy as np
-import ex13
+import importlib
 import datetime as date
+import matplotlib.pyplot as plt
+import argparse
 
-def main():
+def main(cmdLineArgs):
+    m = importlib.import_module(cmdLineArgs.file[0])
     Nf     = 1
     dofs   = []
     times  = []
@@ -13,11 +16,11 @@ def main():
     level  = 0
     while level >= 0:
       stageName = "ConvEst Refinement Level "+str(level)
-      if stageName in ex13.Stages:
-        dofs.append(ex13.Stages[stageName]["ConvEst Error"][0]["dof"])
-        times.append(ex13.Stages[stageName]["SNESSolve"][0]["time"])
-        flops.append(ex13.Stages[stageName]["SNESSolve"][0]["flop"])
-        for f in range(Nf): errors[f].append(ex13.Stages[stageName]["ConvEst Error"][0]["error"][f])
+      if stageName in m.Stages:
+        dofs.append(m.Stages[stageName]["ConvEst Error"][0]["dof"])
+        times.append(m.Stages[stageName]["SNESSolve"][0]["time"])
+        flops.append(m.Stages[stageName]["SNESSolve"][0]["flop"])
+        for f in range(Nf): errors[f].append(m.Stages[stageName]["ConvEst Error"][0]["error"][f])
         level = level + 1
       else:
         level = -1
@@ -43,14 +46,13 @@ def main():
     print("Mesh Convergence")
     print("y = {}*x + {}".format(lstSqMeshConv[0], lstSqMeshConv[1])) 
 
-    import matplotlib.pyplot as plt
-
+    
     plt.title('Mesh Convergence')
     plt.xlabel('Problem Size $\log N$')
     plt.ylabel('Error $\log |x - x^*|$')
     plt.loglog(dofs, errors[0])
     plt.show()
-    plt.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + 'png')
+    plt.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
    
     #Least Squares fit plot
     plt.title('Mesh Convergence using Least Squares')
@@ -97,4 +99,17 @@ def leastSquares(x, y):
     return m, c
 
 if __name__ == "__main__":
-    main()
+    cmdLine = argparse.ArgumentParser(
+           description = 'This is part of the PETSc toolkit for evaluating solvers using\n\
+                   Time-Accuracy-Size(TAS) spectrum analysis')
+    
+    cmdLine.add_argument('-file', '--file', metavar = '<filename>', nargs = '*', help = 'List of files to import for TAS analysis')
+    
+    cmdLine.add_argument('-version', '--version', action = 'version', version = '%(prog)s 1.0')
+    
+    cmdLineArgs = cmdLine.parse_args()
+    
+    print cmdLineArgs
+
+
+    main(cmdLineArgs)
