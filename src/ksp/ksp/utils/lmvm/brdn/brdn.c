@@ -10,29 +10,17 @@
   "Iterative Methods for Linear and Nonlinear Equations" 
   (https://doi.org/10.1137/1.9781611970944).
   
-  Q <- F
-  
-  if J0^{-1} exists
-    R <- J0^{01} * Q
-  elif J0 exists or user_ksp
-    R <- inv(J0) * Q via KSP
-  elif user_scale
-    if diag_scale exists
-      R <- VecPointwiseMult(Q, diag_scale)
-    else
-      R <- scale * Q
-    end
-  else
-    R <- Q
-  end
+  dX <- J0^{-1} * F
   
   for i=0,1,2,...,k-1
     tau = (S[i]^T R) / (S[i]^T S[i])
-    R <- R + (tau * S[i+1])
+    dX <- dX + (tau * S[i+1])
   end
   
-  tau = (S[k]^T R) / (S[k]^T S[k])
-  dX <- -(1 / (1 - tau)) * R
+  if k >= 0
+    tau = (S[k]^T dX) / (S[k]^T S[k])
+    dX <- -(1 / (1 - tau)) * dX
+  end
  */
 
 PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
@@ -49,10 +37,8 @@ PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
-  /* Invert the initial Jacobian onto q (or apply scaling) */
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   
-  /* Start the interior loop */
   for (i = 0; i <= lmvm->k-1; ++i) {
     ierr = VecDotBegin(lmvm->S[i], lmvm->S[i], &sts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
@@ -60,6 +46,7 @@ PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
     ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecAXPY(dX, stx/sts, lmvm->S[i+1]);CHKERRQ(ierr);
   }
+  
   if (lmvm->k >= 0) {
     ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[lmvm->k], dX, &stx);CHKERRQ(ierr);
@@ -90,14 +77,14 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
 
 /*@
    MatCreateLMVMBrdn - Creates a limited-memory "good" Broyden-type approximation
-   matrix used for a Jacobian. L-Broyden is not guaranteed to be symmetric or 
+   matrix used for a Jacobian. L-Brdn is not guaranteed to be symmetric or 
    positive-definite. This implementation only supports the MatSolve() operation, 
    which is an application of the approximate inverse of the Jacobian. 
    
    The provided local and global sizes must match the solution and function vectors 
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-Broyden matrix will have 
+   used with MatLMVMUpdate() and MatSolve(). The resulting L-Brdn matrix will have 
    storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in 
-   parallel. To use the L-Broyden matrix with other vector types, the matrix must be 
+   parallel. To use the L-Brdn matrix with other vector types, the matrix must be 
    created using MatCreate() and MatSetType(), followed by MatLMVMAllocate(). 
    This ensures that the internal storage and work vectors are duplicated from the 
    correct type of vector.

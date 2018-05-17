@@ -6,37 +6,26 @@
   
   L-DFP is symmetric positive-definite by construction.
   
-  The solution method (approximate inverse Jacobian application) is matrix-vector 
-  product version of the recursive formula.
+  The solution method (approximate inverse Jacobian application) is 
+  matrix-vector product version of the recursive formula given in 
+  Equation (6.15) of Nocedal and Wright "Numerical Optimization" 2nd 
+  edition, pg 139.
   
-  Q <- F
-  
-  for i = k,k-1,k-2,...,0
-    rho[i] = 1 / (S[i]^T Y[i])
-    alpha[i] = rho[i] * (Y[i]^T Q)
-    Q <- Q - (alpha[i] * S[i])
-  end
-  
-  if J0^{-1} exists
-    R <- J0^{01} * Q
-  elif J0 exists or user_ksp
-    R <- inv(J0) * Q via KSP
-  elif user_scale
-    if diag_scale exists
-      R <- VecPointwiseMult(Q, diag_scale)
-    else
-      R <- scale * Q
-    end
-  else
-    R <- Q
-  end
+  dX <- J0^{-1} * F
   
   for i = 0,1,2,...,k
-    beta = rho[i] * (S[i]^T R)
-    R <- R + ((alpha[i] - beta) * Y[i])
+    P[i] <- J0^{-1} & Y[i]
+    
+    for j=0,1,2,...,(i-1)
+      gamma = (S[j]^T P[i]) / (Y[j]^T S[j])
+      zeta = (Y[j]^T P[i]) / (Y[j]^T P[j])
+      P[i] <- P[i] + (gamma * S[j]) - (zeta * P[j])
+    end
+    
+    gamma = (S[i]^T dX) / (Y[i]^T S[i])
+    zeta = (Y[i]^T dX) / (Y[i]^T P[i])
+    dX <- dX + (gamma * S[i]) - (zeta * P[i])
   end
-  
-  dX <- R
  */
 
 typedef struct {
@@ -50,7 +39,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         yts[lmvm->k+1], ytx[lmvm->k+1], ytf, stf, ytp, stp;
+  PetscReal         yts[lmvm->k+1], ytp[lmvm->k+1], ytx, stx, yjtpi, sjtpi;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -58,32 +47,33 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
+  /* Start the outer loop (i) for the recursive formula */
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
-  
   for (i = 0; i <= lmvm->k; ++i) {
+    /* First compute P[i] = (B^{-1})_i * y_i using an inner loop (j) 
+       NOTE: This is essentially the same recipe used for dX, but we don't 
+             recurse because reuse P[i] from previous outer iterations. */
     ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->P[i]);
-    
     for (j = 0; j <= i-1; ++j) {
-       ierr = VecDotBegin(lmvm->Y[j], ldfp->P[i], &ytp);CHKERRQ(ierr);
-       ierr = VecDotBegin(lmvm->S[j], ldfp->P[i], &stp);CHKERRQ(ierr);
-       
-       ierr = VecDotEnd(lmvm->Y[j], ldfp->P[i], &ytp);CHKERRQ(ierr);
-       ierr = VecDotEnd(lmvm->S[j], ldfp->P[i], &stp);CHKERRQ(ierr);
-       
-       ierr = VecAXPBYPCZ(ldfp->P[i], -ytp/ytx[j], stp/yts[j], 1.0, ldfp->P[j], lmvm->S[j]);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->Y[j], ldfp->P[i], &yjtpi);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->S[j], ldfp->P[i], &sjtpi);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->Y[j], ldfp->P[i], &yjtpi);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->S[j], ldfp->P[i], &sjtpi);CHKERRQ(ierr);
+       ierr = VecAXPBYPCZ(ldfp->P[i], -yjtpi/ytp[j], sjtpi/yts[j], 1.0, ldfp->P[j], lmvm->S[j]);CHKERRQ(ierr);
     }
-    
+    /* Get all the dot products we need 
+       NOTE: yTs and yTp are stored so that we can re-use them when computing 
+             P[i] at the next outer iteration */
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], ldfp->P[i], &ytx[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], dX, &ytf);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], dX, &stf);CHKERRQ(ierr);
-    
+    ierr = VecDotBegin(lmvm->Y[i], ldfp->P[i], &ytp[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], ldfp->P[i], &ytx[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], dX, &ytf);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], dX, &stf);CHKERRQ(ierr);
-    
-    ierr = VecAXPBYPCZ(dX, -ytf/ytx[i], stf/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], ldfp->P[i], &ytp[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
+    /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
+    ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stx/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -193,9 +183,9 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
    of the approximate inverse of the Jacobian. 
    
    The provided local and global sizes must match the solution and function vectors 
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-BFGS matrix will have 
+   used with MatLMVMUpdate() and MatSolve(). The resulting L-DFP matrix will have 
    storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in 
-   parallel. To use the L-BFGS matrix with other vector types, the matrix must be 
+   parallel. To use the L-DFP matrix with other vector types, the matrix must be 
    created using MatCreate() and MatSetType(), followed by MatLMVMAllocate(). 
    This ensures that the internal storage and work vectors are duplicated from the 
    correct type of vector.

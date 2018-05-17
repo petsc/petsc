@@ -10,44 +10,19 @@
   "On Solving Large-Scale Limited-Memory Quasi-Newton Equations" 
   (https://arxiv.org/abs/1510.06378).
   
-  Q <- 0 (zero)
+  Fwork <- 0 (zero)
   
   for i = 0,1,2,...,k
-    if J0^{-1} exists
-      P[i] <- J0^{01} * Y[i]
-    elif J0 exists or user_ksp
-      P[i] <- inv(J0) * Y[i] via KSP
-    elif user_scale
-      if diag_scale exists
-        P[i] <- VecPointwiseMult(Y[i], diag_scale)
-      else
-        P[i] <- scale * Y[i]
-      end
-    else
-      P[i] <- Y[i]
-    end
-    P[i] <- S[i] - P[i]
+    P[i] <- S[i] - (J0^{-1} * Y[i])
     for j = 0,1,2,...,i-1
-      P[i] <- P[i] - ((P[j]^T Y[i]) / (P[j]^T Y[j])) * P[j]
+      zeta = (P[j]^T Y[i]) / (P[j]^T Y[j])
+      P[i] <- P[i] - (zeta * P[j])
     end
-    Q <- Q + ((P[i]^T F) / (P[i]^T Y[i])) * P[i]
+    zeta = (P[i]^T F) / (P[i]^T Y[i])
+    Fwork <- Fwork + (zeta * P[i])
   end
   
-  if J0^{-1} exists
-    R <- J0^{01} * F
-  elif J0 exists or user_ksp
-    R <- inv(J0) * F via KSP
-  elif user_scale
-    if diag_scale exists
-      R <- VecPointwiseMult(F, diag_scale)
-    else
-      R <- scale * F
-    end
-  else
-    R <- F
-  end
-  
-  dX <- R + Q
+  dX <- Fwork + (J0^{01} * F)
  */
 
 typedef struct {

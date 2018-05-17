@@ -13,29 +13,13 @@
   Sherman-Morrison-Woodbury formula. The implementation here unrolls the recursion 
   into a loop, with the initial vector carrying the J0 inversion/preconditioning. 
   
-  Q <- F
-  
-  if J0^{-1} exists
-    R <- J0^{01} * Q
-  elif J0 exists or user_ksp
-    R <- inv(J0) * Q via KSP
-  elif user_scale
-    if diag_scale exists
-      R <- VecPointwiseMult(Q, diag_scale)
-    else
-      R <- scale * Q
-    end
-  else
-    R <- Q
-  end
+  dX <- J0^{-1} * F
   
   for i=0,1,2,...,k
     rho = 1 / (Y[i]^T Y[i])
-    tau = rho * (Y[i]^T R)
-    R <- rho * R + tau * (S[i] - Y[i])
+    tau = rho * (Y[i]^T dX)
+    dX <- (rho * dX) + (tau * (S[i] - Y[i]))
   end
-  
-  dX <- R
  */
 
 PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
@@ -52,10 +36,8 @@ PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
-  /* Invert the initial Jacobian onto q (or apply scaling) */
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   
-  /* Start the interior loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->Y[i], &yty);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
@@ -86,14 +68,14 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 
 /*@
    MatCreateLMVMBadBrdn - Creates a limited-memory modified (aka "bad") Broyden-type 
-   approximation matrix used for a Jacobian. L-Broyden is not guaranteed to be 
+   approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be 
    symmetric or positive-definite. This implementation only supports the MatSolve() 
    operation, which is an application of the approximate inverse of the Jacobian. 
    
    The provided local and global sizes must match the solution and function vectors 
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-Broyden matrix will have 
+   used with MatLMVMUpdate() and MatSolve(). The resulting L-BadBrdn matrix will have 
    storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in 
-   parallel. To use the L-Broyden matrix with other vector types, the matrix must be 
+   parallel. To use the L-BadBrdn matrix with other vector types, the matrix must be 
    created using MatCreate() and MatSetType(), followed by MatLMVMAllocate(). 
    This ensures that the internal storage and work vectors are duplicated from the 
    correct type of vector.

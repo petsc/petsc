@@ -13,38 +13,20 @@
   (7.20) if the user has not provided any estimation of the initial Jacobian or 
   its inverse.
   
-  Q <- F
+  Fwork <- F
   
   for i = k,k-1,k-2,...,0
     rho[i] = 1 / (Y[i]^T S[i])
-    alpha[i] = rho[i] * (S[i]^T Q)
-    Q <- Q - (alpha[i] * Y[i])
+    alpha[i] = rho[i] * (S[i]^T Fwork)
+    Fwork <- Fwork - (alpha[i] * Y[i])
   end
   
-  if J0^{-1} exists
-    R <- J0^{01} * Q
-  elif J0 exists or user_ksp
-    R <- inv(J0) * Q via KSP
-  elif user_scale
-    if diag_scale exists
-      R <- VecPointwiseMult(Q, diag_scale)
-    else
-      R <- scale * Q
-    end
-  else
-    R <- Q
-    if k >= 0
-      gamma = (S[k]^T Y[k]) / (Y[k]^T Y[k])
-      R <- gamma * R
-    end
-  end
+  dX <- J0^{-1} * Fwork
   
   for i = 0,1,2,...,k
-    beta = rho[i] * (Y[i]^T R)
-    R <- R + ((alpha[i] - beta) * S[i])
+    beta = rho[i] * (Y[i]^T dX)
+    dX <- dX + ((alpha[i] - beta) * S[i])
   end
-  
-  dX <- R
  */
 
 PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
