@@ -5,27 +5,6 @@
   inverse of a Jacobian.
   
   L-DFP is symmetric positive-definite by construction.
-  
-  The solution method (approximate inverse Jacobian application) is 
-  matrix-vector product version of the recursive formula given in 
-  Equation (6.15) of Nocedal and Wright "Numerical Optimization" 2nd 
-  edition, pg 139.
-  
-  dX <- J0^{-1} * F
-  
-  for i = 0,1,2,...,k
-    P[i] <- J0^{-1} & Y[i]
-    
-    for j=0,1,2,...,(i-1)
-      gamma = (S[j]^T P[i]) / (Y[j]^T S[j])
-      zeta = (Y[j]^T P[i]) / (Y[j]^T P[j])
-      P[i] <- P[i] + (gamma * S[j]) - (zeta * P[j])
-    end
-    
-    gamma = (S[i]^T dX) / (Y[i]^T S[i])
-    zeta = (Y[i]^T dX) / (Y[i]^T P[i])
-    dX <- dX + (gamma * S[i]) - (zeta * P[i])
-  end
  */
 
 typedef struct {
@@ -33,6 +12,30 @@ typedef struct {
   PetscBool allocatedP;
 } Mat_LDFP;
 
+/*------------------------------------------------------------*/
+
+/*
+  The solution method (approximate inverse Jacobian application) is 
+  matrix-vector product version of the recursive formula given in 
+  Equation (6.15) of Nocedal and Wright "Numerical Optimization" 2nd 
+  edition, pg 139.
+
+  dX <- J0^{-1} * F
+
+  for i = 0,1,2,...,k
+    P[i] <- J0^{-1} & Y[i]
+
+    for j=0,1,2,...,(i-1)
+      gamma = (S[j]^T P[i]) / (Y[j]^T S[j])
+      zeta = (Y[j]^T P[i]) / (Y[j]^T P[j])
+      P[i] <- P[i] + (gamma * S[j]) - (zeta * P[j])
+    end
+
+    gamma = (S[i]^T dX) / (Y[i]^T S[i])
+    zeta = (Y[i]^T dX) / (Y[i]^T P[i])
+    dX <- dX + (gamma * S[i]) - (zeta * P[i])
+  end
+*/
 PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
@@ -74,6 +77,72 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
     ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stx/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*
+  The forward product for the approximate Jacobian is the matrix-free 
+  implementation of the recursive formula given in Equation 6.13 of 
+  Nocedal and Wright "Numerical Optimization" 2nd edition, pg 139.
+  
+  Note that this forward product has a two-loop form similar to the 
+  BFGS two-loop formulation for the inverse Jacobian application. 
+  However, the S and Y vectors have interchanged roles.
+
+  Xwork <- X
+
+  for i = k,k-1,k-2,...,0
+    rho[i] = 1 / (Y[i]^T S[i])
+    alpha[i] = rho[i] * (Y[i]^T Fwork)
+    Xwork <- Xwork - (alpha[i] * S[i])
+  end
+
+  Z <- J0 * Xwork
+
+  for i = 0,1,2,...,k
+    beta = rho[i] * (S[i]^T Y)
+    Z <- Z + ((alpha[i] - beta) * Y[i])
+  end
+*/
+PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
+  PetscReal         beta, yts, ytx, stz;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
+  VecCheckSameSize(X, 2, Z, 3);
+  VecCheckMatCompatible(B, X, 3, Z, 2);
+  
+  /* Copy the function into the work vector for the first loop */
+  ierr = VecCopy(X, lmvm->Xwork);CHKERRQ(ierr);
+  
+  /* Start the first loop */
+  for (i = lmvm->k; i >= 0; --i) {
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->Xwork, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->Fwork, &ytx);CHKERRQ(ierr);
+    rho[i] = 1.0/yts;
+    alpha[i] = rho[i] * ytx;
+    ierr = VecAXPY(lmvm->Xwork, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
+  }
+  
+  /* Invert the initial Jacobian onto Q (or apply scaling) */
+  ierr = MatLMVMApplyJ0Fwd(B, lmvm->Xwork, Z);CHKERRQ(ierr);
+  
+  /* Start the second loop */
+  for (i = 0; i <= lmvm->k; ++i) {
+    ierr = VecDot(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
+    beta = rho[i] * stz;
+    ierr = VecAXPY(Z, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -158,6 +227,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDFP);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
+  B->ops->mult = MatMult_LMVMDFP;
   B->ops->solve = MatSolve_LMVMDFP;
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;

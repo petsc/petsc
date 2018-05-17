@@ -386,6 +386,73 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 /*------------------------------------------------------------*/
 
 /*@
+   MatLMVMApplyJ0Fwd - Applies an approximation of the forward 
+   matrix-vector product with the initial Jacobian.
+
+   Input Parameters:
++  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+-  X - vector to "multiply" with J0^{-1}
+
+   Output Parameter:
+.  Y - resulting vector for the operation
+
+   Level: advanced
+
+.seealso: MatLMVMSetJ0(), MatLMVMSetJ0Scale(), MatLMVMSetJ0ScaleDiag(), 
+          MatLMVMSetJ0PC(), MatLMVMSetJ0KSP(), MatLMVMApplyJ0Inv()
+@*/
+PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same, hasMult;
+  MPI_Comm          comm = PetscObjectComm((PetscObject)B);
+  Mat               Amat, Pmat;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  VecCheckMatCompatible(B, X, 2, Y, 3);
+  if (lmvm->user_pc || lmvm->user_ksp) {
+    /* User has defined a PC or KSP for J0^{-1} so let's try to use its operators */
+    if (lmvm->user_pc){
+      ierr = PCGetOperators(lmvm->J0pc, &Amat, &Pmat);CHKERRQ(ierr);
+    } else if (lmvm->user_ksp) {
+      ierr = KSPGetOperators(lmvm->J0pc, &Amat, &Pmat);CHKERRQ(ierr);
+    }
+    ierr = MatHasOperation(Amat, MATOP_MULT, &hasMult);CHKERRQ(ierr);
+    if (hasMult) {
+      /* product is available, use it */
+      ierr = MatMult(Amat, X, Y);CHKERRQ(ierr);
+    } else {
+      /* there's no product, so treat J0 as identity */
+      ierr = VecCopy(X, Y);CHKERRQ(ierr);
+    }
+  } else if (lmvm->user_scale) {
+    if (lmvm->diag_scale) {
+      /* User has defined a diagonal vector for J0^{-1}, so use its reciprocal */
+      ierr = VecReciprocal(lmvm->diag_scale);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(X, lmvm->diag_scale, Y);CHKERRQ(ierr);
+      ierr = VecReciprocal(lmvm->diag_scale);CHKERRQ(ierr);
+    } else {
+      /* User has defined a scalar value for J0^{-1}, so use its inverse */
+      ierr = VecCopy(X, Y);CHKERRQ(ierr);
+      ierr = VecScale(Y, 1.0/lmvm->scale);CHKERRQ(ierr);
+    }
+  } else {
+    /* There is no J0 representation so just apply an identity matrix */
+    ierr = VecCopy(X, Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*@
    MatLMVMApplyJ0Inv - Applies some estimation of the initial Jacobian 
    inverse to the given vector. The specific form of the application 
    depends on whether the user provided a scaling factor, a J0 matrix, 
@@ -403,7 +470,7 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
    Level: advanced
 
 .seealso: MatLMVMSetJ0(), MatLMVMSetJ0Scale(), MatLMVMSetJ0ScaleDiag(), 
-          MatLMVMSetJ0PC(), MatLMVMSetJ0KSP()
+          MatLMVMSetJ0PC(), MatLMVMSetJ0KSP(), MatLMVMApplyJ0Fwd()
 @*/
 PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 {

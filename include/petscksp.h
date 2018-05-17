@@ -721,6 +721,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Scale(Mat, PetscReal);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Diag(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0PC(Mat, PC);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0KSP(Mat, KSP);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Fwd(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
