@@ -38,6 +38,21 @@ class TSRKType(object):
     RK5DP = S_(TSRK5DP)
     RK5BS = S_(TSRK5BS)
 
+class TSARKIMEXType(object):
+    ARKIMEX1BEE   = S_(TSARKIMEX1BEE)
+    ARKIMEXA2     = S_(TSARKIMEXA2)
+    ARKIMEXL2     = S_(TSARKIMEXL2)
+    ARKIMEXARS122 = S_(TSARKIMEXARS122)
+    ARKIMEX2C     = S_(TSARKIMEX2C)
+    ARKIMEX2D     = S_(TSARKIMEX2D)
+    ARKIMEX2E     = S_(TSARKIMEX2E)
+    ARKIMEXPRSSP2 = S_(TSARKIMEXPRSSP2)
+    ARKIMEX3      = S_(TSARKIMEX3)
+    ARKIMEXBPR3   = S_(TSARKIMEXBPR3)
+    ARKIMEXARS443 = S_(TSARKIMEXARS443)
+    ARKIMEX4      = S_(TSARKIMEX4)
+    ARKIMEX5      = S_(TSARKIMEX5)
+
 class TSProblemType(object):
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
@@ -82,6 +97,7 @@ cdef class TS(Object):
 
     Type = TSType
     RKType = TSRKType
+    ARKIMEXType = TSARKIMEXType
     ProblemType = TSProblemType
     EquationType = TSEquationType
     ExactFinalTime = TSExactFinalTime
@@ -121,14 +137,19 @@ cdef class TS(Object):
         return ts
 
     def setType(self, ts_type):
-        cdef const_char *cval = NULL
+        cdef PetscTSType cval = NULL
         ts_type = str2bytes(ts_type, &cval)
         CHKERR( TSSetType(self.ts, cval) )
 
     def setRKType(self, ts_type):
-        cdef const_char *cval = NULL
+        cdef PetscTSRKType cval = NULL
         ts_type = str2bytes(ts_type, &cval)
         CHKERR( TSRKSetType(self.ts, cval) )
+
+    def setARKIMEXType(self, ts_type):
+        cdef PetscTSARKIMEXType cval = NULL
+        ts_type = str2bytes(ts_type, &cval)
+        CHKERR( TSARKIMEXSetType(self.ts, cval) )
 
     def getType(self):
         cdef PetscTSType cval = NULL
@@ -138,6 +159,11 @@ cdef class TS(Object):
     def getRKType(self):
         cdef PetscTSRKType cval = NULL
         CHKERR( TSRKGetType(self.ts, &cval) )
+        return bytes2str(cval)
+
+    def getARKIMEXType(self):
+        cdef PetscTSARKIMEXType cval = NULL
+        CHKERR( TSARKIMEXGetType(self.ts, &cval) )
         return bytes2str(cval)
 
     def setProblemType(self, ptype):
@@ -903,6 +929,7 @@ cdef class TS(Object):
 
 del TSType
 del TSRKType
+del TSARKIMEXType
 del TSProblemType
 del TSEquationType
 del TSExactFinalTime
