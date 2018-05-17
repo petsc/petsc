@@ -8317,6 +8317,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = MatSetOption(coarse_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
     }
     /* set operators */
+    ierr = MatViewFromOptions(coarse_mat,(PetscObject)pc,"-pc_bddc_coarse_mat_view");CHKERRQ(ierr);
     ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerASCIISubtractTab(dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
