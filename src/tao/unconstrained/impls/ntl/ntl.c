@@ -2,16 +2,6 @@
 
 #include <petscksp.h>
 
-#define NTL_PC_NONE     0
-#define NTL_PC_AHESS    1
-#define NTL_PC_BFGS     2
-#define NTL_PC_PETSC    3
-#define NTL_PC_TYPES    4
-
-#define BFGS_SCALE_AHESS        0
-#define BFGS_SCALE_BFGS         1
-#define BFGS_SCALE_TYPES        2
-
 #define NTL_INIT_CONSTANT         0
 #define NTL_INIT_DIRECTION        1
 #define NTL_INIT_INTERPOLATION    2
@@ -20,10 +10,6 @@
 #define NTL_UPDATE_REDUCTION      0
 #define NTL_UPDATE_INTERPOLATION  1
 #define NTL_UPDATE_TYPES          2
-
-static const char *NTL_PC[64] = {"none","ahess","bfgs","petsc"};
-
-static const char *BFGS_SCALE[64] = {"ahess","bfgs"};
 
 static const char *NTL_INIT[64] = {"constant","direction","interpolation"};
 
@@ -39,22 +25,11 @@ static const char *NTL_UPDATE[64] = {"reduction","interpolation"};
 #define NTL_SCALED_GRADIENT     2
 #define NTL_GRADIENT            3
 
-PetscErrorCode TaoNTLPrecondBFGS(PC BFGSpc, Vec X, Vec Y)
-{
-  PetscErrorCode ierr;
-  Mat *M;
-  
-  PetscFunctionBegin;
-  ierr = PCShellGetContext(BFGSpc, (void**)&M);CHKERRQ(ierr);
-  ierr = MatSolve(*M, X, Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TaoSolve_NTL(Tao tao)
 {
   TAO_NTL                      *tl = (TAO_NTL *)tao->data;
   KSPType                      ksp_type;
-  PetscBool                    is_nash,is_stcg,is_gltr;
+  PetscBool                    is_nash,is_stcg,is_gltr,is_bfgs,is_jacobi;
   KSPConvergedReason           ksp_reason;
   PC                           pc;
   TaoLineSearchConvergedReason ls_reason;
@@ -64,7 +39,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    step = 1.0;
 
-  PetscReal                    delta;
   PetscReal                    norm_d = 0.0;
   PetscErrorCode               ierr;
   PetscInt                     stepType;
@@ -97,11 +71,19 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   tao->trust = PetscMax(tao->trust, tl->min_radius);
   tao->trust = PetscMin(tao->trust, tl->max_radius);
 
-  if (NTL_PC_BFGS == tl->pc_type && !tl->M) {
-    ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
-    ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,n,N,&tl->M);CHKERRQ(ierr);
-    ierr = MatLMVMAllocate(tl->M,tao->solution,tao->gradient);CHKERRQ(ierr);
+  /* Allocate the vectors needed for the BFGS approximation */
+  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &is_bfgs);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_jacobi);CHKERRQ(ierr);
+  if (is_bfgs) {
+    tl->bfgs_pre = pc;
+    ierr = PCLMVMGetMatLMVM(tl->bfgs_pre, &tl->M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tao->solution, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
+    ierr = MatSetSizes(tl->M, n, n, N, N);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+  } else if (is_jacobi) {
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* Check convergence criteria */
@@ -115,40 +97,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-
-  /* Create vectors for the limited memory preconditioner */
-  if ((NTL_PC_BFGS == tl->pc_type) && (BFGS_SCALE_BFGS != tl->bfgs_scale_type)) {
-    if (!tl->Diag) {
-      ierr = VecDuplicate(tao->solution, &tl->Diag);CHKERRQ(ierr);
-    }
-  }
-
-  /* Modify the preconditioner to use the bfgs approximation */
-  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
-  switch(tl->pc_type) {
-  case NTL_PC_NONE:
-    ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    break;
-
-  case NTL_PC_AHESS:
-    ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
-    break;
-
-  case NTL_PC_BFGS:
-    ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
-    ierr = PCShellSetContext(pc, tl->M);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc,TaoNTLPrecondBFGS);CHKERRQ(ierr);
-    break;
-
-  default:
-    /* Use the pc method set by pc_type */
-    break;
-  }
 
   /* Initialize trust-region radius */
   switch(tl->init_type) {
@@ -272,19 +220,10 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     break;
   }
 
-  /* Set initial scaling for the BFGS preconditioner
-     This step is done after computing the initial trust-region radius
-     since the function value may have decreased */
-  if (NTL_PC_BFGS == tl->pc_type) {
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-    ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
-  }
-
   /* Set counter for gradient/reset steps */
   tl->ntrust = 0;
   tl->newt = 0;
   tl->bfgs = 0;
-  tl->sgrad = 0;
   tl->grad = 0;
 
   /* Have not converged; continue with Newton method */
@@ -296,15 +235,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
     }
 
-    if (NTL_PC_BFGS == tl->pc_type) {
-      if (BFGS_SCALE_AHESS == tl->bfgs_scale_type) {
-        /* Obtain diagonal for the bfgs preconditioner */
-        ierr = MatGetDiagonal(tao->hessian, tl->Diag);CHKERRQ(ierr);
-        ierr = VecAbs(tl->Diag);CHKERRQ(ierr);
-        ierr = VecReciprocal(tl->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetJ0Diag(tl->M, tl->Diag);CHKERRQ(ierr);
-      }
-
+    if (tl->bfgs_pre) {
       /* Update the limited memory preconditioner */
       ierr = MatLMVMUpdate(tl->M,tao->solution, tao->gradient);CHKERRQ(ierr);
       ++bfgsUpdates;
@@ -348,12 +279,9 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
-    if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && (NTL_PC_BFGS == tl->pc_type) && (bfgsUpdates > 1)) {
+    if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && (tl->bfgs_pre)) {
       /* Preconditioner is numerically indefinite; reset the
          approximate if using BFGS preconditioning. */
-
-      delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-      ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       bfgsUpdates = 1;
@@ -495,7 +423,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       if ((gdx >= 0.0) || PetscIsInfOrNanReal(gdx)) {
         /* Newton step is not descent or direction produced Inf or NaN */
 
-        if (NTL_PC_BFGS != tl->pc_type) {
+        if (!tl->bfgs_pre) {
           /* We don't have the bfgs matrix around and updated
              Must use gradient direction in this case */
           ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -516,21 +444,20 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
                which is guaranteed to be descent */
 
             /* Use steepest descent direction (scaled) */
-            delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-            ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
             ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
             ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
             ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
             ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
             bfgsUpdates = 1;
-            ++tl->sgrad;
-            stepType = NTL_SCALED_GRADIENT;
+            ++tl->grad;
+            stepType = NTL_GRADIENT;
           } else {
+            ierr = MatLMVMGetUpdateCount(tl->M, &bfgsUpdates);CHKERRQ(ierr);
             if (1 == bfgsUpdates) {
               /* The first BFGS direction is always the scaled gradient */
-              ++tl->sgrad;
-              stepType = NTL_SCALED_GRADIENT;
+              ++tl->grad;
+              stepType = NTL_GRADIENT;
             } else {
               ++tl->bfgs;
               stepType = NTL_BFGS;
@@ -562,7 +489,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         case NTL_NEWTON:
           /* Failed to obtain acceptable iterate with Newton step */
 
-          if (NTL_PC_BFGS != tl->pc_type) {
+          if (tl->bfgs_pre) {
             /* We don't have the bfgs matrix around and being updated
                Must use gradient direction in this case */
             ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -579,21 +506,19 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
               /* BFGS direction is not descent or direction produced
                  not a number.  We can assert bfgsUpdates > 1 in this case
                  Use steepest descent direction (scaled) */
-
-              delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-              ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
               ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
               ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
               ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
               bfgsUpdates = 1;
-              ++tl->sgrad;
-              stepType = NTL_SCALED_GRADIENT;
+              ++tl->grad;
+              stepType = NTL_GRADIENT;
             } else {
+              ierr = MatLMVMGetUpdateCount(tl->M, &bfgsUpdates);CHKERRQ(ierr);
               if (1 == bfgsUpdates) {
                 /* The first BFGS direction is always the scaled gradient */
-                ++tl->sgrad;
-                stepType = NTL_SCALED_GRADIENT;
+                ++tl->grad;
+                stepType = NTL_GRADIENT;
               } else {
                 ++tl->bfgs;
                 stepType = NTL_BFGS;
@@ -606,24 +531,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
           /* Can only enter if pc_type == NTL_PC_BFGS
              Failed to obtain acceptable iterate with BFGS step
              Attempt to use the scaled gradient direction */
-
-          delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-          ierr = MatLMVMSetJ0Scale(tl->M, delta);CHKERRQ(ierr);
-          ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-          ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-
-          bfgsUpdates = 1;
-          ++tl->sgrad;
-          stepType = NTL_SCALED_GRADIENT;
-          break;
-
-        case NTL_SCALED_GRADIENT:
-          /* Can only enter if pc_type == NTL_PC_BFGS
-             The scaled gradient step did not produce a new iterate;
-             attemp to use the gradient direction.
-             Need to make sure we are not using a different diagonal scaling */
-          ierr = MatLMVMSetJ0Scale(tl->M, 1.0);CHKERRQ(ierr);
           ierr = MatLMVMReset(tl->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
           ierr = MatSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -711,7 +618,7 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao)
   if (!tl->W) { ierr = VecDuplicate(tao->solution, &tl->W);CHKERRQ(ierr);}
   if (!tl->Xold) { ierr = VecDuplicate(tao->solution, &tl->Xold);CHKERRQ(ierr);}
   if (!tl->Gold) { ierr = VecDuplicate(tao->solution, &tl->Gold);CHKERRQ(ierr);}
-  tl->Diag = 0;
+  tl->bfgs_pre = 0;
   tl->M = 0;
   PetscFunctionReturn(0);
 }
@@ -728,8 +635,6 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
     ierr = VecDestroy(&tl->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&tl->Gold);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&tl->Diag);CHKERRQ(ierr);
-  ierr = MatDestroy(&tl->M);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -742,8 +647,6 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton trust region with line search method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntl_pc_type", "pc type", "", NTL_PC, NTL_PC_TYPES, NTL_PC[tl->pc_type], &tl->pc_type,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntl_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tl->bfgs_scale_type], &tl->bfgs_scale_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntl_init_type", "radius initialization type", "", NTL_INIT, NTL_INIT_TYPES, NTL_INIT[tl->init_type], &tl->init_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntl_update_type", "radius update type", "", NTL_UPDATE, NTL_UPDATE_TYPES, NTL_UPDATE[tl->update_type], &tl->update_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ntl_eta1", "poor steplength; reduce radius", "", tl->eta1, &tl->eta1,NULL);CHKERRQ(ierr);
@@ -791,7 +694,6 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
 static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
-  PetscInt       nrejects;
   PetscBool      isascii;
   PetscErrorCode ierr;
 
@@ -799,14 +701,9 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (NTL_PC_BFGS == tl->pc_type && tl->M) {
-      ierr = MatLMVMGetRejectCount(tl->M, &nrejects);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", nrejects);CHKERRQ(ierr);
-    }
     ierr = PetscViewerASCIIPrintf(viewer, "Trust-region steps: %D\n", tl->ntrust);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Newton search steps: %D\n", tl->newt);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "BFGS search steps: %D\n", tl->bfgs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient search steps: %D\n", tl->sgrad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient search steps: %D\n", tl->grad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
@@ -928,8 +825,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   tl->max_radius = 1.0e10;
   tl->epsilon = 1.0e-6;
 
-  tl->pc_type         = NTL_PC_BFGS;
-  tl->bfgs_scale_type = BFGS_SCALE_AHESS;
   tl->init_type       = NTL_INIT_INTERPOLATION;
   tl->update_type     = NTL_UPDATE_REDUCTION;
 

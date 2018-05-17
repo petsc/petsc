@@ -55,6 +55,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
     ierr = VecScatterDestroy(&lclP->state_scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lclP->design_scatter);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -81,6 +82,7 @@ static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +186,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   lclP->rho = lclP->rho0;
   ierr = VecGetLocalSize(lclP->U,&nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal);CHKERRQ(ierr);
-  ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
+  ierr = MatSetSizes(lclP->R, nlocal, nlocal, lclP->n-lclP->m, lclP->n-lclP->m);
   ierr = MatLMVMAllocate(lclP->R,lclP->V,lclP->V);CHKERRQ(ierr);
   lclP->recompute_jacobian_flag = PETSC_TRUE;
 
@@ -562,7 +564,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -619,6 +620,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
+  
+  ierr = MatCreate(((PetscObject)tao)->comm, &lclP->R);CHKERRQ(ierr);
+  ierr = MatSetType(lclP->R, MATLMVMBFGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

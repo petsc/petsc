@@ -7,14 +7,15 @@ iter =   0, Function value 1.57687, Residual: 0.447462
   iter =   1,   Function value 1.53574,   Residual: 0.222631 
   iter =   2,   Function value 1.51391,   Residual: 0.189627 
   iter =   3,   Function value 1.51031,   Residual: 0.119047 
-iter =   1, Function value 1.50567, Residual: 0.00369492 
-  iter =   0,   Function value 1.50567,   Residual: 0.00371589 
-  iter =   1,   Function value 1.50567,   Residual: 0.00272504 
-  iter =   2,   Function value 1.50567,   Residual: 0.00202831 
-  iter =   3,   Function value 1.50566,   Residual: 0.00194302 
-iter =   2, Function value 1.50566, Residual: 1.20898e-06 
+iter =   1, Function value 1.50567, Residual: 0.00369525 
+  iter =   0,   Function value 1.50567,   Residual: 0.00369525 
+  iter =   1,   Function value 1.50567,   Residual: 0.00272512 
+  iter =   2,   Function value 1.50567,   Residual: 0.0020283 
+  iter =   3,   Function value 1.50566,   Residual: 0.00194306 
+iter =   2, Function value 1.50566, Residual: 1.2077e-06 
 Tao Object: 1 MPI processes
   type: bntr
+    Rejected BFGS updates: 0
     CG steps: 6
     Newton steps: 2
     BFGS steps: 0
@@ -44,7 +45,17 @@ Tao Object: 1 MPI processes
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
-    type: jacobi
+    type: lmvm
+    Mat Object: (pc_lmvm_) 1 MPI processes
+      type: lmvmbfgs
+      rows=48, cols=48
+      package used to perform factorization: petsc
+        LMVM Matrix
+          Approx. type: lmvmbfgs
+          Max. storage: 5
+          Used storage: 2
+          # of updates: 2
+          # of rejects: 0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -52,10 +63,10 @@ Tao Object: 1 MPI processes
       total: nonzeros=190, allocated nonzeros=190
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  total KSP iterations: 33
+  total KSP iterations: 39
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.20898e-06
+  Residual in Function/Gradient:=1.2077e-06
   Objective value=1.50566
   total number of iterations=2,                          (max: 50)
   total number of function/gradient evaluations=24,      (max: 4000)

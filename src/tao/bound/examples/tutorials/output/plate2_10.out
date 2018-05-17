@@ -3,11 +3,12 @@
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   1, Function value 1.50978, Residual: 0.128026 
-iter =   2, Function value 1.5058, Residual: 0.0448659 
-iter =   3, Function value 1.50566, Residual: 0.000115738 
+iter =   2, Function value 1.5058, Residual: 0.0448656 
+iter =   3, Function value 1.50566, Residual: 0.00011583 
 iter =   4, Function value 1.50566, Residual: < 1.0e-6 
 Tao Object: 1 MPI processes
   type: bnls
+    Rejected BFGS updates: 0
     CG steps: 0
     Newton steps: 4
     BFGS steps: 0
@@ -37,7 +38,17 @@ Tao Object: 1 MPI processes
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
-    type: jacobi
+    type: lmvm
+    Mat Object: (pc_lmvm_) 1 MPI processes
+      type: lmvmbfgs
+      rows=48, cols=48
+      package used to perform factorization: petsc
+        LMVM Matrix
+          Approx. type: lmvmbfgs
+          Max. storage: 5
+          Used storage: 3
+          # of updates: 3
+          # of rejects: 0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -45,10 +56,10 @@ Tao Object: 1 MPI processes
       total: nonzeros=190, allocated nonzeros=190
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  total KSP iterations: 72
+  total KSP iterations: 80
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=8.88635e-09
+  Residual in Function/Gradient:=8.94216e-09
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=6,      (max: 4000)

@@ -267,7 +267,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   PetscFunctionBegin;
   ierr = PetscNewLog(B, &lmvm);CHKERRQ(ierr);
   B->data = (void*)lmvm;
-  lmvm->m = 10;
+  lmvm->m = 5;
   lmvm->k = -1;
   lmvm->nupdates = 0;
   lmvm->nrejects = 0;

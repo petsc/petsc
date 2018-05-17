@@ -236,6 +236,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = PetscDSSetDiscretization(prob_mass, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm_mass, &user->mass);CHKERRQ(ierr);
   ierr = DMPlexSNESComputeJacobianFEM(dm_mass, user->data, user->mass, user->mass, NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(user->mass, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMDestroy(&dm_mass);CHKERRQ(ierr);
 
   /* inner(grad(u), grad(v))*dx with homogeneous Dirichlet boundary conditions */
@@ -382,7 +383,7 @@ int main(int argc, char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   if (user.use_riesz) {
-    ierr = TaoLMVMSetH0(tao, user.mass);CHKERRQ(ierr);       /* crucial for mesh independence */
+    ierr = TaoBLMVMSetH0(tao, user.mass);CHKERRQ(ierr);       /* crucial for mesh independence */
     ierr = TaoSetGradientNorm(tao, user.mass);CHKERRQ(ierr);
   }
 
@@ -408,14 +409,18 @@ int main(int argc, char **argv)
 
     test:
       requires: hdf5 double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
-      args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
+      args: -laplace_ksp_type cg -laplace_pc_type hypre -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1e-6 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
       filter: sed -e "s/-nan/nan/g"
 
     test:
       suffix: guess_pod
       requires: double triangle
+<<<<<<< HEAD
       timeoutfactor: 2
       args: -laplace_ksp_type cg -laplace_pc_type gamg -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_converged_reason -laplace_ksp_converged_reason -tao_monitor -petscspace_order 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_h0_ksp_guess_type pod
+=======
+      args: -laplace_ksp_type cg -laplace_ksp_converged_reason -tao_monitor -petscspace_order 1 -tao_converged_reason -dm_refine 3 -laplace_ksp_guess_type pod -tao_gatol 1e-6
+>>>>>>> 7a7ac68102... LMVM matrix changes propaged to TAO algorithms and test outputs updated
       filter: sed -e "s/-nan/nan/g"
 
 TEST*/

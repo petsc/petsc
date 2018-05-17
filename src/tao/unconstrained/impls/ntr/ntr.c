@@ -2,16 +2,6 @@
 
 #include <petscksp.h>
 
-#define NTR_PC_NONE     0
-#define NTR_PC_AHESS    1
-#define NTR_PC_BFGS     2
-#define NTR_PC_PETSC    3
-#define NTR_PC_TYPES    4
-
-#define BFGS_SCALE_AHESS   0
-#define BFGS_SCALE_BFGS    1
-#define BFGS_SCALE_TYPES   2
-
 #define NTR_INIT_CONSTANT         0
 #define NTR_INIT_DIRECTION        1
 #define NTR_INIT_INTERPOLATION    2
@@ -21,24 +11,9 @@
 #define NTR_UPDATE_INTERPOLATION  1
 #define NTR_UPDATE_TYPES          2
 
-static const char *NTR_PC[64] = {"none","ahess","bfgs","petsc"};
-
-static const char *BFGS_SCALE[64] = {"ahess","bfgs"};
-
 static const char *NTR_INIT[64] = {"constant","direction","interpolation"};
 
 static const char *NTR_UPDATE[64] = {"reduction","interpolation"};
-
-PetscErrorCode TaoNTRPreconBFGS(PC BFGSpc, Vec X, Vec Y)
-{
-  PetscErrorCode ierr;
-  Mat *M;
-  
-  PetscFunctionBegin;
-  ierr = PCShellGetContext(BFGSpc, (void**)&M);CHKERRQ(ierr);
-  ierr = MatSolve(*M, X, Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /*
    TaoSolve_NTR - Implements Newton's Method with a trust region approach
@@ -69,14 +44,13 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 {
   TAO_NTR            *tr = (TAO_NTR *)tao->data;
   KSPType            ksp_type;
-  PetscBool          is_nash,is_stcg,is_gltr;
+  PetscBool          is_nash,is_stcg,is_gltr,is_bfgs,is_jacobi;
   KSPConvergedReason ksp_reason;
   PC                 pc;
   PetscReal          fmin, ftrial, prered, actred, kappa, sigma, beta;
   PetscReal          tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal          f, gnorm;
 
-  PetscReal          delta;
   PetscReal          norm_d;
   PetscErrorCode     ierr;
   PetscInt           bfgsUpdates = 0;
@@ -104,12 +78,20 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   tao->trust = PetscMax(tao->trust, tr->min_radius);
   tao->trust = PetscMin(tao->trust, tr->max_radius);
 
-  if (NTR_PC_BFGS == tr->pc_type && !tr->M) {
-    ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
-    ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLMVMBFGS(((PetscObject)tao)->comm,n,N,&tr->M);CHKERRQ(ierr);
-    ierr = MatLMVMAllocate(tr->M,tao->solution,tao->gradient);CHKERRQ(ierr);
-  }
+/* Allocate the vectors needed for the BFGS approximation */
+ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
+ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &is_bfgs);CHKERRQ(ierr);
+ierr = PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_jacobi);CHKERRQ(ierr);
+if (is_bfgs) {
+  tr->bfgs_pre = pc;
+  ierr = PCLMVMGetMatLMVM(tr->bfgs_pre, &tr->M);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(tao->solution, &n);CHKERRQ(ierr);
+  ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
+  ierr = MatSetSizes(tr->M, n, n, N, N);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+} else if (is_jacobi) {
+  ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
+}
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
@@ -122,40 +104,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,1.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-
-  /* Create vectors for the limited memory preconditioner */
-  if ((NTR_PC_BFGS == tr->pc_type) && (BFGS_SCALE_BFGS != tr->bfgs_scale_type)) {
-    if (!tr->Diag) {
-        ierr = VecDuplicate(tao->solution, &tr->Diag);CHKERRQ(ierr);
-    }
-  }
-
-  /*  Modify the preconditioner to use the bfgs approximation */
-  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
-  switch(tr->pc_type) {
-  case NTR_PC_NONE:
-    ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    break;
-
-  case NTR_PC_AHESS:
-    ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
-    break;
-
-  case NTR_PC_BFGS:
-    ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
-    ierr = PCShellSetContext(pc, tr->M);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc, TaoNTRPreconBFGS);CHKERRQ(ierr);
-    break;
-
-  default:
-    /*  Use the pc method set by pc_type */
-    break;
-  }
 
   /*  Initialize trust-region radius */
   switch(tr->init_type) {
@@ -295,14 +243,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     break;
   }
 
-  /* Set initial scaling for the BFGS preconditioner
-     This step is done after computing the initial trust-region radius
-     since the function value may have decreased */
-  if (NTR_PC_BFGS == tr->pc_type) {
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-    ierr = MatLMVMSetJ0Scale(tr->M, delta);CHKERRQ(ierr);
-  }
-
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
@@ -313,15 +253,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       needH = 0;
     }
 
-    if (NTR_PC_BFGS == tr->pc_type) {
-      if (BFGS_SCALE_AHESS == tr->bfgs_scale_type) {
-        /* Obtain diagonal for the bfgs preconditioner */
-        ierr = MatGetDiagonal(tao->hessian, tr->Diag);CHKERRQ(ierr);
-        ierr = VecAbs(tr->Diag);CHKERRQ(ierr);
-        ierr = VecReciprocal(tr->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetJ0Diag(tr->M,tr->Diag);CHKERRQ(ierr);
-      }
-
+    if (tr->bfgs_pre) {
       /* Update the limited memory preconditioner */
       ierr = MatLMVMUpdate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ++bfgsUpdates;
@@ -368,13 +300,9 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       }
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
-      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&
-          (NTR_PC_BFGS == tr->pc_type) && (bfgsUpdates > 1)) {
+      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && (tr->bfgs_pre)) {
         /* Preconditioner is numerically indefinite; reset the
            approximate if using BFGS preconditioning. */
-
-        delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / (gnorm*gnorm);
-        ierr = MatLMVMSetJ0Scale(tr->M, delta);CHKERRQ(ierr);
         ierr = MatLMVMReset(tr->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
         bfgsUpdates = 1;
@@ -563,7 +491,7 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);}
   if (!tr->W) {ierr = VecDuplicate(tao->solution, &tr->W);CHKERRQ(ierr);}
 
-  tr->Diag = 0;
+  tr->bfgs_pre = 0;
   tr->M = 0;
   PetscFunctionReturn(0);
 }
@@ -578,8 +506,6 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
   if (tao->setupcalled) {
     ierr = VecDestroy(&tr->W);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&tr->M);CHKERRQ(ierr);
-  ierr = VecDestroy(&tr->Diag);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -592,8 +518,6 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton trust region method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntr_pc_type", "pc type", "", NTR_PC, NTR_PC_TYPES, NTR_PC[tr->pc_type], &tr->pc_type,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntr_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tr->bfgs_scale_type], &tr->bfgs_scale_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_init_type", "tao->trust initialization type", "", NTR_INIT, NTR_INIT_TYPES, NTR_INIT[tr->init_type], &tr->init_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_update_type", "radius update type", "", NTR_UPDATE, NTR_UPDATE_TYPES, NTR_UPDATE[tr->update_type], &tr->update_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ntr_eta1", "step is unsuccessful if actual reduction < eta1 * predicted reduction", "", tr->eta1, &tr->eta1,NULL);CHKERRQ(ierr);
@@ -624,27 +548,6 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_ntr_epsilon", "tolerance used when computing actual and predicted reduction", "", tr->epsilon, &tr->epsilon,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*------------------------------------------------------------*/
-static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
-{
-  TAO_NTR        *tr = (TAO_NTR *)tao->data;
-  PetscErrorCode ierr;
-  PetscInt       nrejects;
-  PetscBool      isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (NTR_PC_BFGS == tr->pc_type && tr->M) {
-      ierr = MatLMVMGetRejectCount(tr->M, &nrejects);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", nrejects);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -701,7 +604,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 
   tao->ops->setup = TaoSetUp_NTR;
   tao->ops->solve = TaoSolve_NTR;
-  tao->ops->view = TaoView_NTR;
   tao->ops->setfromoptions = TaoSetFromOptions_NTR;
   tao->ops->destroy = TaoDestroy_NTR;
 
@@ -748,8 +650,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   tr->max_radius = 1.0e10;
   tr->epsilon    = 1.0e-6;
 
-  tr->pc_type         = NTR_PC_BFGS;
-  tr->bfgs_scale_type = BFGS_SCALE_AHESS;
   tr->init_type       = NTR_INIT_INTERPOLATION;
   tr->update_type     = NTR_UPDATE_REDUCTION;
 

@@ -35,7 +35,7 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
-  PetscReal         beta, yts, stf, ytx, sty, yty;
+  PetscReal         beta, yts, stf, ytx, yts_k, yty;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -51,17 +51,11 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    rho[i] = 1.0/yts;
     ierr = VecDotEnd(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    if (i == lmvm->k) yts_k = yts; /* save this for later in case we need it for J0 */
+    rho[i] = 1.0/yts;
     alpha[i] = rho[i] * stf;
     ierr = VecAXPY(lmvm->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
-  }
-  
-  if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
-    /* If the user has not defined any form of the inverse Jacobian, trigger the dot products 
-       necessary for gamma scaling */
-    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
   }
   
   /* Invert the initial Jacobian onto Q (or apply scaling) */
@@ -69,9 +63,8 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
     /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
-    ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->Y[lmvm->k], &sty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecScale(dX, sty/yty);CHKERRQ(ierr);
+    ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+    ierr = VecScale(dX, yts_k/yty);CHKERRQ(ierr);
   }
   
   /* Start the second loop */
