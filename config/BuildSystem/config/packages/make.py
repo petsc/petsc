@@ -65,6 +65,11 @@ class Configure(config.package.GNUPackage):
     return self.installDir
 
   def generateGMakeGuesses(self):
+    if 'with-make-exec' in self.argDB:
+      self.log.write('Looking for user provided Make executable '+self.argDB['with-make-exec']+'\n')
+      yield self.argDB['with-make-exec']
+      raise RuntimeError('Error! User provided with-make-exec is not GNU make : '+self.argDB['with-make-exec'])
+
     if os.path.exists('/usr/bin/cygcheck.exe'):
       if os.path.exists('/usr/bin/make'):
         yield '/usr/bin/make'
@@ -74,31 +79,18 @@ class Configure(config.package.GNUPackage):
 *** Please rerun cygwin-setup and select module "make" for install.**************''')
     yield 'gmake'
     yield 'make'
-    return
-
-  def generateMakeGuesses(self):
-    yield 'make'
-    yield 'gmake'
+    raise RuntimeError('Could not locate the GNU make utility (version greater than 3.80) on your system, specify with --with-make-exec=gmake or try --download-make')
     return
 
   def configureMake(self):
-    '''Check for user specified make - or gmake, make'''
-    if 'with-make-exec' in self.argDB:
-      self.log.write('Looking for specified Make executable '+self.argDB['with-make-exec']+'\n')
-      if not self.getExecutable(self.argDB['with-make-exec'], getFullPath=1, resultName='make'):
-        raise RuntimeError('Error! User provided make not found :'+self.argDB['with-make-exec'])
-      self.found = 1
-      return
+    '''Check Guesses for GNU make'''
     for gmake in self.generateGMakeGuesses():
-      if self.getExecutable(gmake,getFullPath = 1,resultName = 'make'):
-        if self.checkGNUMake(self.make):
-          self.found = 1
-          return
-    for make in self.generateMakeGuesses():
-      if self.getExecutable(make,getFullPath = 1,resultName = 'make'):
+      self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(gmake)
+      if self.haveGNUMake:
+        self.getExecutable(gmake,getFullPath = 1,resultName = 'make')
         self.found = 1
         return
-    raise RuntimeError('Could not locate the make utility on your system, try --download-make')
+    raise RuntimeError('Could not locate the GNU make utility (version greater than 3.80) on your system, specify with --with-make-exec=gmake or try --download-make')
 
   def checkGNUMake(self,make):
     '''Check for GNU make'''
@@ -118,29 +110,23 @@ class Configure(config.package.GNUPackage):
       self.log.write('GNUMake check failed: '+str(e)+'\n')
     return haveGNUMake, haveGNUMake4
 
-  def configureCheckGNUMake(self):
+  def setupGNUMake(self):
     '''Setup other GNU make stuff'''
-    # make sure this gets called by --download-make or --with-make-exec etc paths.
-    self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(self.make)
-
     if self.haveGNUMake4 and not self.setCompilers.isDarwin(self.log) and not self.setCompilers.isFreeBSD(self.log):
       self.paroutflg = "--output-sync=recurse"
 
-    if self.haveGNUMake:
-      # Setup make flags
-      self.printdirflag = ' --print-directory'
-      self.noprintdirflag = ' --no-print-directory'
-      self.addMakeMacro('MAKE_IS_GNUMAKE',1)
-      # Use rules which look inside archives
-      self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
-      self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')
-      self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
-    else:
-      self.logPrintBox('Warning: '+self.make+' is not GNUMake (3.81 or higher). Suggest using --download-make')
-      self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
-      self.addMakeRule('libcxx','${OBJSCXX}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCXX}')
-      self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
+    # Setup make flags
+    self.printdirflag = ' --print-directory'
+    self.noprintdirflag = ' --no-print-directory'
+    self.addMakeMacro('MAKE_IS_GNUMAKE',1)
+    # Use rules which look inside archives
+    self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
+    self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')
+    self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
+    self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
+    self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
+    self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return
 
   def compute_make_np(self,i):
@@ -217,11 +203,9 @@ class Configure(config.package.GNUPackage):
     if (self.argDB['download-make']):
       config.package.GNUPackage.configure(self)
       self.getExecutable('make', path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+      self.haveGNUMake, self.haveGNUMake4 = self.checkGNUMake(self.make)
     else:
       self.executeTest(self.configureMake)
-    self.executeTest(self.configureCheckGNUMake)
+    self.executeTest(self.setupGNUMake)
     self.executeTest(self.configureMakeNP)
-    self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
-    self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
-    self.addMakeMacro('MAKE_PAR_OUT_FLG', self.paroutflg)
     return
