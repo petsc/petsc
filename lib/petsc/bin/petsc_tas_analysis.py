@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import ex13
+import datetime as date
 
 def main():
     Nf     = 1
@@ -49,8 +50,7 @@ def main():
     plt.ylabel('Error $\log |x - x^*|$')
     plt.loglog(dofs, errors[0])
     plt.show()
-    plt.savefig('meshConvergence.png')
-    plt.savefig('meshConvergence.png')
+    plt.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + 'png')
    
     #Least Squares fit plot
     plt.title('Mesh Convergence using Least Squares')
@@ -58,7 +58,7 @@ def main():
     plt.ylabel('Error $\log |x - x^*|$')
     plt.loglog(dofs, lstSqMeshConv[0]*dofs + lstSqMeshConv[1])
     plt.show()
-    plt.savefig('meshConvergenceLsq.png')
+    plt.savefig('meshConvergenceLsq'+ date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
 
     plt.title('Static Scaling')
@@ -66,14 +66,14 @@ def main():
     plt.ylabel('Flop Rate (F/s)')
     plt.loglog(times, flops/times)
     plt.show()
-    plt.savefig('staticScaling.png')
+    plt.savefig('staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
     plt.title('Efficacy')
     plt.xlabel('Time (s)')
     plt.ylabel('Action (s)')
     plt.loglog(times, errors[0]*times)
     plt.show()
-    plt.savefig('efficacy.png')
+    plt.savefig('efficacy' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
 
 def leastSquares(x, y):
