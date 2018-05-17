@@ -265,6 +265,24 @@ cdef extern from * nogil:
     int TSRKGetType(PetscTS ts,PetscTSRKType*)
     int TSRKSetType(PetscTS ts,PetscTSRKType)
 
+    ctypedef char* PetscTSARKIMEXType "const char*"
+    PetscTSARKIMEXType TSARKIMEX1BEE
+    PetscTSARKIMEXType TSARKIMEXA2
+    PetscTSARKIMEXType TSARKIMEXL2
+    PetscTSARKIMEXType TSARKIMEXARS122
+    PetscTSARKIMEXType TSARKIMEX2C
+    PetscTSARKIMEXType TSARKIMEX2D
+    PetscTSARKIMEXType TSARKIMEX2E
+    PetscTSARKIMEXType TSARKIMEXPRSSP2
+    PetscTSARKIMEXType TSARKIMEX3
+    PetscTSARKIMEXType TSARKIMEXBPR3
+    PetscTSARKIMEXType TSARKIMEXARS443
+    PetscTSARKIMEXType TSARKIMEX4
+    PetscTSARKIMEXType TSARKIMEX5
+
+    int TSARKIMEXGetType(PetscTS ts,PetscTSRKType*)
+    int TSARKIMEXSetType(PetscTS ts,PetscTSRKType)
+
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
 
