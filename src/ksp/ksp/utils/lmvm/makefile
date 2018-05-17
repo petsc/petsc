@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lmvm.c
+SOURCEC  = lmvmimpl.c lmvmutils.c
 SOURCEF  =
 SOURCEH  = lmvm.h
 LIBBASE  = libpetscksp
