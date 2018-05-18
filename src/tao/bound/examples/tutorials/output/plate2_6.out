@@ -3,33 +3,30 @@
 mx:8, my:12, bmx:4, bmy:10, height:0.1
 iter =   0, Function value 1.58854, Residual: 0.311154 
 iter =   1, Function value 1.5372, Residual: 0.21179 
-iter =   2, Function value 1.51419, Residual: 0.184403 
-iter =   3, Function value 1.50856, Residual: 0.305171 
-iter =   4, Function value 1.50022, Residual: 0.179849 
-iter =   5, Function value 1.49831, Residual: 0.0676728 
-iter =   6, Function value 1.49754, Residual: 0.139206 
-iter =   7, Function value 1.49627, Residual: 0.0556191 
-iter =   8, Function value 1.49545, Residual: 0.0360823 
-iter =   9, Function value 1.49501, Residual: 0.0351544 
-iter =  10, Function value 1.49469, Residual: 0.0674009 
-iter =  11, Function value 1.49427, Residual: 0.0291268 
-iter =  12, Function value 1.49416, Residual: 0.0153863 
-iter =  13, Function value 1.4941, Residual: 0.00942948 
-iter =  14, Function value 1.49408, Residual: 0.00799143 
-iter =  15, Function value 1.49407, Residual: 0.00447963 
-iter =  16, Function value 1.49407, Residual: 0.0022317 
-iter =  17, Function value 1.49406, Residual: 0.00195724 
-iter =  18, Function value 1.49406, Residual: 0.00179424 
-iter =  19, Function value 1.49406, Residual: 0.00154993 
-iter =  20, Function value 1.49406, Residual: 0.000584411 
-iter =  21, Function value 1.49406, Residual: 0.000465712 
-iter =  22, Function value 1.49406, Residual: 0.000442492 
-iter =  23, Function value 1.49406, Residual: 0.000898433 
-iter =  24, Function value 1.49406, Residual: 0.00026596 
-iter =  25, Function value 1.49406, Residual: 0.000201179 
-iter =  26, Function value 1.49406, Residual: 0.000183508 
-iter =  27, Function value 1.49406, Residual: 0.000315108 
-iter =  28, Function value 1.49406, Residual: 7.22164e-05 
+iter =   2, Function value 1.5093, Residual: 0.23033 
+iter =   3, Function value 1.50269, Residual: 0.169227 
+iter =   4, Function value 1.49977, Residual: 0.125367 
+iter =   5, Function value 1.49761, Residual: 0.106026 
+iter =   6, Function value 1.49666, Residual: 0.075332 
+iter =   7, Function value 1.49579, Residual: 0.0655778 
+iter =   8, Function value 1.49514, Residual: 0.0461192 
+iter =   9, Function value 1.49473, Residual: 0.0374513 
+iter =  10, Function value 1.49453, Residual: 0.0238876 
+iter =  11, Function value 1.49446, Residual: 0.0469909 
+iter =  12, Function value 1.49436, Residual: 0.0552519 
+iter =  13, Function value 1.49417, Residual: 0.0322798 
+iter =  14, Function value 1.49409, Residual: 0.0164361 
+iter =  15, Function value 1.49407, Residual: 0.00831507 
+iter =  16, Function value 1.49406, Residual: 0.00361464 
+iter =  17, Function value 1.49406, Residual: 0.00115017 
+iter =  18, Function value 1.49406, Residual: 0.000732474 
+iter =  19, Function value 1.49406, Residual: 0.000728369 
+iter =  20, Function value 1.49406, Residual: 0.000444559 
+iter =  21, Function value 1.49406, Residual: 0.000346982 
+iter =  22, Function value 1.49406, Residual: 0.000276132 
+iter =  23, Function value 1.49406, Residual: 0.000196947 
+iter =  24, Function value 1.49406, Residual: 0.000115232 
+iter =  25, Function value 1.49406, Residual: 7.4641e-05 
 Tao Object: 3 MPI processes
   type: blmvm
     Gradient steps: 2
@@ -41,7 +38,7 @@ Tao Object: 3 MPI processes
         Approx. type: lmvmbfgs
         Max. storage: 5
         Used storage: 5
-        # of updates: 27
+        # of updates: 24
         # of rejects: 0
   TaoLineSearch Object: 3 MPI processes
     type: more-thuente
@@ -49,13 +46,13 @@ Tao Object: 3 MPI processes
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
     total number of function evaluations=0
     total number of gradient evaluations=0
-    total number of function/gradient evaluations=1
+    total number of function/gradient evaluations=2
     using variable bounds
     Termination reason: 1
   Active Set subset type: matrixfree
   convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=7.22164e-05
+  Residual in Function/Gradient:=7.4641e-05
   Objective value=1.49406
-  total number of iterations=28,                          (max: 2000)
-  total number of function/gradient evaluations=29,      (max: 4000)
+  total number of iterations=25,                          (max: 2000)
+  total number of function/gradient evaluations=47,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol

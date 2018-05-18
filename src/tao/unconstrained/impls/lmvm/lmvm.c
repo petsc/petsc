@@ -45,6 +45,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     if (lmP->H0) {
       ierr = MatLMVMSetJ0(lmP->M, lmP->H0);CHKERRQ(ierr);
       stepType = LMVM_STEP_BFGS;
+    } else if (!lmP->no_scale) {
+      ierr = MatLMVMSetJ0(lmP->M, lmP->Mscale);CHKERRQ(ierr);
     }
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
@@ -61,9 +63,9 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
 
          Use steepest descent direction (scaled)
       */
-     
-      ierr = MatLMVMResetJ0(lmP->M);CHKERRQ(ierr);
+    
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = MatSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
 
@@ -90,8 +92,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       /*  Failed to obtain acceptable iterate with BFGS step */
       /*  Attempt to use the scaled gradient direction */
 
-      ierr = MatLMVMResetJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = MatSolve(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
 
@@ -142,6 +144,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
+  PetscBool      is_spd, is_symbrdn;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetUp() */
@@ -156,10 +159,21 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
   ierr = MatSetSizes(lmP->M, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
+  ierr = MatGetOption(lmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
+  ierr = PetscObjectTypeCompare((PetscObject)lmP->M, MATLMVMSYMBRDN, &is_symbrdn);
+  if (is_symbrdn) lmP->no_scale = PETSC_TRUE; /* makes no sense to scale L-SymBrdn with SymBrdn diagonal */
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (lmP->H0) {
     ierr = MatLMVMSetJ0(lmP->M, lmP->H0);CHKERRQ(ierr);
+  } else if (!lmP->no_scale) {
+    if (!lmP->Mscale) {
+      ierr = MatCreateLMVMDiagBrdn(PetscObjectComm((PetscObject)lmP->M), n, N, &lmP->Mscale);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(lmP->Mscale, "tao_lmvm_scale_");CHKERRQ(ierr);
+      ierr = MatLMVMAllocate(lmP->Mscale, tao->solution, tao->gradient);CHKERRQ(ierr);
+    }
+    ierr = MatLMVMSetJ0(lmP->M, lmP->Mscale);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -181,6 +195,9 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
   if (lmP->H0) {
     ierr = PetscObjectDereference((PetscObject)lmP->H0);CHKERRQ(ierr);
   }
+  if (lmP->Mscale) {
+    ierr = MatDestroy(&lmP->Mscale);CHKERRQ(ierr);
+  }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -195,6 +212,7 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_lmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",lm->recycle,&lm->recycle,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lmvm_no_scale","(developer) disable the diagonal Broyden scaling of the BFGS approximation","",lm->no_scale,&lm->no_scale,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetFromOptions(lm->M);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -225,16 +243,18 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 
 /*MC
-     TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton
-     optimization solver for unconstrained minimization. It solves
-     the Newton step
-              Hkdk = - gk
+  TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton
+  optimization solver for unconstrained minimization. It solves
+  the Newton step
+          Hkdk = - gk
 
-     using an approximation Bk in place of Hk, where Bk is composed using
-     the BFGS update formula. A More-Thuente line search is then used
-     to computed the steplength in the dk direction
+  using an approximation Bk in place of Hk, where Bk is composed using
+  the BFGS update formula. A More-Thuente line search is then used
+  to computed the steplength in the dk direction
+     
   Options Database Keys:
-.     -tao_lmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
+.   -tao_lmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
+.   -tao_lmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
 
   Level: beginner
 M*/
@@ -259,6 +279,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->Gold = 0;
   lmP->H0   = NULL;
   lmP->recycle = PETSC_FALSE;
+  lmP->no_scale = PETSC_FALSE;
 
   tao->data = (void*)lmP;
   /* Override default settings (unless already changed) */

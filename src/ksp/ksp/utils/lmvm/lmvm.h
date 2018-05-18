@@ -29,19 +29,20 @@ typedef struct {
   PetscBool allocated, prev_set;
   PetscInt m, k, nupdates, nrejects;
   Vec *S, *Y;
-  Vec Xwork, Fwork, Xprev, Fprev;
+  Vec Xprev, Fprev;
   
   /* User-defined initial Jacobian tools */
-  PetscBool user_pc, user_ksp, user_scale, square;
+  PetscBool user_pc, user_ksp, user_scale;
   PetscReal ksp_rtol, ksp_atol;
-  PetscReal scale;
   PetscInt ksp_max_it;
+  PetscReal J0scalar;
+  Vec J0diag;
   Mat J0;
   PC J0pc;
   KSP J0ksp;
-  Vec diag_scale;
   
   /* Miscellenous parameters */
+  PetscBool square; /* flag for defining the LMVM approximation as a square matrix */
   PetscReal eps; /* (default: PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0)) */
   void *ctx; /* implementation specific context */
 } Mat_LMVM;

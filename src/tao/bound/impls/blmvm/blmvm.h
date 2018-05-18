@@ -12,7 +12,7 @@
  optimization.
 */
 typedef struct {
-  Mat M;
+  Mat M, Mscale;
 
   Vec unprojected_gradient;
   Vec red_grad;
@@ -31,7 +31,7 @@ typedef struct {
   PetscInt grad;
   Mat      H0;
   
-  PetscBool recycle;
+  PetscBool recycle, no_scale;
 } TAO_BLMVM;
 
 #endif  /* if !defined(__TAO_BLMVM_H) */

@@ -1,9 +1,7 @@
 iter =   0, Function value -0.330579, Residual: 0.728961 
 iter =   1, Function value -0.391218, Residual: 0.386209 
-iter =   2, Function value -0.410837, Residual: 0.220052 
-iter =   3, Function value -0.424596, Residual: 0.103483 
-iter =   4, Function value -0.426187, Residual: 0.109496 
-iter =   5, Function value -0.427318, Residual: 0.030335 
-iter =   6, Function value -0.427584, Residual: 0.0357168 
-iter =   7, Function value -0.427669, Residual: 0.028884 
-iter =   8, Function value -0.42773, Residual: 0.00578855 
+iter =   2, Function value -0.416588, Residual: 0.23073 
+iter =   3, Function value -0.42493, Residual: 0.115781 
+iter =   4, Function value -0.426883, Residual: 0.0438588 
+iter =   5, Function value -0.427697, Residual: 0.0143126 
+iter =   6, Function value -0.427738, Residual: 0.00554528 

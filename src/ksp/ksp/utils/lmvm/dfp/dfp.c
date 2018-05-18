@@ -9,6 +9,7 @@
 
 typedef struct {
   Vec *P;
+  Vec work;
   PetscBool allocatedP;
 } Mat_LDFP;
 
@@ -92,15 +93,15 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   BFGS two-loop formulation for the inverse Jacobian application. 
   However, the S and Y vectors have interchanged roles.
 
-  Xwork <- X
+  work <- X
 
   for i = k,k-1,k-2,...,0
     rho[i] = 1 / (Y[i]^T S[i])
-    alpha[i] = rho[i] * (Y[i]^T Fwork)
-    Xwork <- Xwork - (alpha[i] * S[i])
+    alpha[i] = rho[i] * (Y[i]^T work)
+    work <- work - (alpha[i] * S[i])
   end
 
-  Z <- J0 * Xwork
+  Z <- J0 * work
 
   for i = 0,1,2,...,k
     beta = rho[i] * (S[i]^T Y)
@@ -110,6 +111,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
@@ -122,21 +124,21 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   VecCheckMatCompatible(B, X, 3, Z, 2);
   
   /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(X, lmvm->Xwork);CHKERRQ(ierr);
+  ierr = VecCopy(X, ldfp->work);CHKERRQ(ierr);
   
   /* Start the first loop */
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->Xwork, &ytx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], ldfp->work, &ytx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->Fwork, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], ldfp->work, &ytx);CHKERRQ(ierr);
     rho[i] = 1.0/yts;
     alpha[i] = rho[i] * ytx;
-    ierr = VecAXPY(lmvm->Xwork, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(ldfp->work, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   
   /* Apply the forward product with initial Jacobian */
-  ierr = MatLMVMApplyJ0Fwd(B, lmvm->Xwork, Z);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Fwd(B, ldfp->work, Z);CHKERRQ(ierr);
   
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
@@ -157,6 +159,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   
   PetscFunctionBegin;
   if (destructive && ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
     ldfp->allocatedP = PETSC_FALSE;
   }
@@ -175,6 +178,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(X, &ldfp->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(X, lmvm->m, &ldfp->P);CHKERRQ(ierr);
     ldfp->allocatedP = PETSC_TRUE;
   }
@@ -191,6 +195,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 
   PetscFunctionBegin;
   if (ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
     ldfp->allocatedP = PETSC_FALSE;
   }
@@ -210,6 +215,7 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMDFP(Mat B)
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!ldfp->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(lmvm->Xprev, &ldfp->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->P);CHKERRQ(ierr);
     ldfp->allocatedP = PETSC_TRUE;
   }

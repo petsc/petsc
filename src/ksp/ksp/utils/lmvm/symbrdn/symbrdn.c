@@ -53,6 +53,7 @@
 
 typedef struct {
   Vec *P;
+  Vec Xwork, Fwork;
   PetscBool allocatedP;
   PetscReal phi;
 } Mat_SymBrdn;
@@ -82,21 +83,21 @@ PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
   /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(F, lmvm->Fwork);CHKERRQ(ierr);
+  ierr = VecCopy(F, lsb->Fwork);CHKERRQ(ierr);
 
   /* Start the first loop (outside in) for BFGS, but store some useful dot products */
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], lsb->Fwork, &stf);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lsb->Fwork, &stf);CHKERRQ(ierr);
     rho[i] = 1.0/yts[i];
     alpha[i] = rho[i] * stf;
-    ierr = VecAXPY(lmvm->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(lsb->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
 
   /* Apply the initial Jacobian inversion for BFGS only */
-  ierr = MatLMVMApplyJ0Inv(B, lmvm->Fwork, lmvm->Xwork);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Inv(B, lsb->Fwork, lsb->Xwork);CHKERRQ(ierr);
   
   /* Initialize the DFP part of the update with the initial Jacobian */
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
@@ -118,22 +119,22 @@ PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
        NOTE: yTs and yTp are stored so that we can re-use them when computing 
              P[i] at the next outer iteration */
     ierr = VecDotBegin(lmvm->Y[i], lsb->P[i], &ytp[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->Xwork, &ytxwork);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], lsb->Xwork, &ytxwork);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lsb->P[i], &ytp[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->Xwork, &ytxwork);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lsb->Xwork, &ytxwork);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
     /* Compute the DFP part of the update */
     ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stx/yts[i], 1.0, lsb->P[i], lmvm->S[i]);CHKERRQ(ierr);
     /* Now compute the BFGS part of it */
     beta = rho[i] * ytxwork;
-    ierr = VecAXPY(lmvm->Xwork, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(lsb->Xwork, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
   }
   
   /* Assemble the final restricted-class Broyden solution */
-  ierr = VecAXPBY(dX, bfgs, dfp, lmvm->Xwork);CHKERRQ(ierr);
+  ierr = VecAXPBY(dX, bfgs, dfp, lsb->Xwork);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -148,6 +149,8 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
   
   PetscFunctionBegin;
   if (destructive && lsb->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&lsb->Xwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->Fwork);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
     lsb->allocatedP = PETSC_FALSE;
   }
@@ -166,6 +169,8 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lsb->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(X, &lsb->Xwork);CHKERRQ(ierr);
+    ierr = VecDuplicate(F, &lsb->Fwork);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
     lsb->allocatedP = PETSC_TRUE;
   }
@@ -182,6 +187,8 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 
   PetscFunctionBegin;
   if (lsb->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&lsb->Xwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->Fwork);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
     lsb->allocatedP = PETSC_FALSE;
   }
@@ -201,6 +208,8 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lsb->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(lmvm->Xprev, &lsb->Xwork);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Fprev, &lsb->Fwork);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
     lsb->allocatedP = PETSC_TRUE;
   }

@@ -44,7 +44,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 {
   TAO_NTR            *tr = (TAO_NTR *)tao->data;
   KSPType            ksp_type;
-  PetscBool          is_nash,is_stcg,is_gltr,is_bfgs,is_jacobi;
+  PetscBool          is_nash,is_stcg,is_gltr,is_bfgs,is_jacobi,is_symmetric,sym_set;
   KSPConvergedReason ksp_reason;
   PC                 pc;
   PetscReal          fmin, ftrial, prered, actred, kappa, sigma, beta;
@@ -89,6 +89,8 @@ if (is_bfgs) {
   ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
   ierr = MatSetSizes(tr->M, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(tr->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(tr->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
+  if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
 } else if (is_jacobi) {
   ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
 }

@@ -5,13 +5,22 @@
   
   L-SR1 is symmetric by construction, but is not guaranteed to be 
   positive-definite.
-  
+*/
+
+typedef struct {
+  Vec *P;
+  PetscBool allocatedP;
+} Mat_LSR1;
+
+/*------------------------------------------------------------*/
+
+/*
   The solution method is adapted from Algorithm 8 of Erway and Marcia 
   "On Solving Large-Scale Limited-Memory Quasi-Newton Equations" 
   (https://arxiv.org/abs/1510.06378).
-  
-  Fwork <- 0 (zero)
-  
+
+  dX <- J0^{-1} * F
+
   for i = 0,1,2,...,k
     P[i] <- S[i] - (J0^{-1} * Y[i])
     for j = 0,1,2,...,i-1
@@ -19,24 +28,16 @@
       P[i] <- P[i] - (zeta * P[j])
     end
     zeta = (P[i]^T F) / (P[i]^T Y[i])
-    Fwork <- Fwork + (zeta * P[i])
+    dX <- dX + (zeta * P[i])
   end
-  
-  dX <- Fwork + (J0^{01} * F)
- */
-
-typedef struct {
-  Vec *P;
-  PetscBool allocatedP;
-} Mat_LSR1;
-
+*/
 PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         pjTyi, pjTyj, piTf, piTyi;
+  PetscReal         ptf, pty[lmvm->k+1];
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -44,33 +45,83 @@ PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
+  /* Invert the initial Jacobian onto F (or apply scaling) */
+  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
+  
   /* Start outer loop */
-  ierr = VecZeroEntries(lmvm->Fwork);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     /* Invert the initial Jacobian onto Y[i] (or apply scaling) */
     ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsr1->P[i]);CHKERRQ(ierr);
     /* Start the P[i] computation which involves an inner loop */
     ierr = VecAXPBY(lsr1->P[i], 1.0, -1.0, lmvm->S[i]);CHKERRQ(ierr);
     for (j = 0; j <= i-1; ++j) {
-      ierr = VecDotBegin(lsr1->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
-      ierr = VecDotBegin(lsr1->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
-      ierr = VecDotEnd(lsr1->P[j], lmvm->Y[i], &pjTyi);CHKERRQ(ierr);
-      ierr = VecDotEnd(lsr1->P[j], lmvm->Y[j], &pjTyj);CHKERRQ(ierr);
-      ierr = VecAXPY(lsr1->P[i], -(pjTyi/pjTyj), lsr1->P[j]);CHKERRQ(ierr);
+      ierr = VecDot(lsr1->P[j], lmvm->Y[i], &ptf);CHKERRQ(ierr);
+      ierr = VecAXPY(lsr1->P[i], -(ptf/pty[i]), lsr1->P[j]);CHKERRQ(ierr);
     }
     /* Accumulate the summation term */
-    ierr = VecDotBegin(lsr1->P[i], F, &piTf);CHKERRQ(ierr);
-    ierr = VecDotBegin(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
-    ierr = VecDotEnd(lsr1->P[i], F, &piTf);CHKERRQ(ierr);
-    ierr = VecDotEnd(lsr1->P[i], lmvm->Y[i], &piTyi);CHKERRQ(ierr);
-    ierr = VecAXPY(lmvm->Fwork, (piTf/piTyi), lsr1->P[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsr1->P[i], F, &ptf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsr1->P[i], lmvm->Y[i], &pty[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], F, &ptf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], lmvm->Y[i], &pty[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(dX, ptf/pty[i], lsr1->P[i]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*
+  The forward product is the matrix-free implementation of 
+  Equation (6.24) in Nocedal and Wright "Numerical Optimization" 
+  2nd edition, pg 144.
   
-  /* Invert the initial Jacobian onto F (or apply scaling) */
-  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
+  Note that the structure of the forward product is identical to 
+  the solution, with S and Y exchanging roles.
+
+  Z <- J0 * X
+
+  for i = 0,1,2,...,k
+    P[i] <- Y[i] - (J0 * S[i])
+    for j = 0,1,2,...,i-1
+      zeta = (P[j]^T S[i]) / (P[j]^T Y[j])
+      P[i] <- P[i] - (zeta * P[j])
+    end
+    zeta = (P[i]^T X) / (P[i]^T Y[i])
+    Z <- Z + (zeta * P[i])
+  end
+*/
+PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LSR1          *lsr1 = (Mat_LSR1*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  PetscInt          i, j;
+  PetscReal         ptx, pts[lmvm->k+1];
   
-  /* Now we have all the components to compute the solution */
-  ierr = VecAXPY(dX, 1.0, lmvm->Fwork);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
+  VecCheckSameSize(X, 2, Z, 3);
+  VecCheckMatCompatible(B, X, 2, Z, 3);
+  
+  ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
+  
+  for (i = 0; i <= lmvm->k; ++i) {
+    
+    ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lsr1->P[i]);CHKERRQ(ierr);
+    ierr = VecAXPBY(lsr1->P[i], 1.0, -1.0, lmvm->Y[i]);
+    
+    for (j = 0; j <= i-1; ++j) {
+      ierr = VecDot(lsr1->P[j], lmvm->S[i], &ptx);CHKERRQ(ierr);
+      ierr = VecAXPY(lsr1->P[i], ptx/pts[j], lsr1->P[j]);CHKERRQ(ierr);
+    }
+    
+    ierr = VecDotBegin(lsr1->P[i], X, &ptx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsr1->P[i], lmvm->S[i], &pts[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], X, &ptx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsr1->P[i], lmvm->S[i], &pts[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(Z, ptx/pts[i], lsr1->P[i]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -154,6 +205,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSR1);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+  B->ops->mult = MatMult_LMVMSR1;
   B->ops->solve = MatSolve_LMVMSR1;
   B->ops->setup = MatSetUp_LMVMSR1;
   B->ops->destroy = MatDestroy_LMVMSR1;

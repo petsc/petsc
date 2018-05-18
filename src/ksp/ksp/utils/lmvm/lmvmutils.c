@@ -6,8 +6,6 @@
    applied, but the given X and F vectors are stored for use as Xprev and
    Fprev in the next update.
 
-   Collective on MPI_Comm
-
    Input Parameters:
 +  B - An LMVM-type matrix (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
 .  X - Solution vector
@@ -36,13 +34,20 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   }
   if (lmvm->m == 0) PetscFunctionReturn(0);
   ierr = lmvm->ops->update(B, X, F);CHKERRQ(ierr);
+  if (lmvm->J0) {
+    /* If the user provided an LMVM-type matrix as J0, then trigger its update as well */
+    ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
+    if (same) {
+      ierr = MatLMVMUpdate(lmvm->J0, X, F);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
 /*@
-   MatLMVMResetJ0 - Removes all definitions of J0 and reverts to 
+   MatLMVMClearJ0 - Removes all definitions of J0 and reverts to 
    an identity matrix (scale = 1.0).
 
    Input Parameters:
@@ -52,7 +57,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
 
 .seealso: MatLMVMSetJ0()
 @*/
-PetscErrorCode MatLMVMResetJ0(Mat B)
+PetscErrorCode MatLMVMClearJ0(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -66,12 +71,15 @@ PetscErrorCode MatLMVMResetJ0(Mat B)
   lmvm->user_pc = PETSC_FALSE;
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
-  lmvm->scale = 1.0;
-  if (lmvm->diag_scale) {
-    ierr = VecDestroy(&lmvm->diag_scale);CHKERRQ(ierr);
+  lmvm->J0scalar = 1.0;
+  if (lmvm->J0diag) {
+    ierr = VecDestroy(&lmvm->J0diag);CHKERRQ(ierr);
   }
   if (lmvm->J0) {
     ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
+  }
+  if (lmvm->J0pc) {
+    ierr = PCDestroy(&lmvm->J0pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -80,7 +88,7 @@ PetscErrorCode MatLMVMResetJ0(Mat B)
 
 /*@
    MatLMVMSetJ0Scale - Allows the user to define a scalar value
-   mu such that J0^{-1} = mu*I.
+   mu such that J0 = mu*I.
 
    Input Parameters:
 +  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
@@ -102,8 +110,8 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Scaling is available only for square LMVM matrices");
-  ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
-  lmvm->scale = scale;
+  ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
+  lmvm->J0scalar = scale;
   lmvm->user_scale = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -112,7 +120,7 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 
 /*@
    MatLMVMSetJ0Diag - Allows the user to define a vector 
-   V such that J0^{-1} = diag(V).
+   V such that J0 = diag(V).
 
    Input Parameters:
 +  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
@@ -137,11 +145,11 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
   if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "Matrix must be allocated before setting diagonal scaling");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Diagonal scaling is available only for square LMVM matrices");
   VecCheckSameSize(V, 2, lmvm->Fprev, 3);CHKERRQ(ierr);
-  ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
-  if (!lmvm->diag_scale) {
-    ierr = VecDuplicate(V, &lmvm->diag_scale);CHKERRQ(ierr);
+  ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
+  if (!lmvm->J0diag) {
+    ierr = VecDuplicate(V, &lmvm->J0diag);CHKERRQ(ierr);
   }
-  ierr = VecCopy(V, lmvm->diag_scale);CHKERRQ(ierr);
+  ierr = VecCopy(V, lmvm->J0diag);CHKERRQ(ierr);
   lmvm->user_scale = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -155,6 +163,12 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
    using an internal KSP solver, which defaults to GMRES.
    This internal KSP solver has the "mat_lmvm_" option 
    prefix.
+   
+   Note that another LMVM matrix can be used in place of 
+   J0, in which case updating the outer LMVM matrix will 
+   also trigger the update for the inner LMVM matrix. This 
+   is useful in cases where a full-memory diagonal approximation 
+   such as MATLMVMDIAGBRDN is used in place of J0.
 
    Input Parameters:
 +  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
@@ -182,13 +196,14 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
   if (lmvm->allocated) {
     MatCheckSameSize(B, 1, J0, 2);
   }
-  ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
+  ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   if (lmvm->J0) {
     ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
   }
   ierr = PetscObjectReference((PetscObject)J0);CHKERRQ(ierr);
   lmvm->J0 = J0;
-  if (lmvm->square) {
+  ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same && lmvm->square) {
     ierr = KSPSetOperators(lmvm->J0ksp, lmvm->J0, lmvm->J0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -233,7 +248,7 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
   }
   ierr = MatDestroy(&J0);CHKERRQ(ierr);
   ierr = MatDestroy(&J0pre);CHKERRQ(ierr);
-  ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
+  ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   if (lmvm->J0pc) {
     ierr = PCDestroy(&lmvm->J0pc);CHKERRQ(ierr);
   }
@@ -280,7 +295,7 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
     MatCheckSameSize(B, 1, J0, 2);
     MatCheckSameSize(B, 1, J0pre, 3);
   }
-  ierr = MatLMVMResetJ0(B);CHKERRQ(ierr);
+  ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   if (lmvm->J0ksp) {
     ierr = KSPDestroy(&lmvm->J0ksp);CHKERRQ(ierr);
   }
@@ -417,12 +432,14 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   VecCheckMatCompatible(B, X, 2, Y, 3);
-  if (lmvm->user_pc || lmvm->user_ksp) {
-    /* User has defined a PC or KSP for J0^{-1} so let's try to use its operators */
+  if (lmvm->user_pc || lmvm->user_ksp || lmvm->J0) {
+    /* User may have defined a PC or KSP for J0^{-1} so let's try to use its operators. */
     if (lmvm->user_pc){
       ierr = PCGetOperators(lmvm->J0pc, &Amat, &Pmat);CHKERRQ(ierr);
     } else if (lmvm->user_ksp) {
-      ierr = KSPGetOperators(lmvm->J0pc, &Amat, &Pmat);CHKERRQ(ierr);
+      ierr = KSPGetOperators(lmvm->J0ksp, &Amat, &Pmat);CHKERRQ(ierr);
+    } else {
+      Amat = lmvm->J0;
     }
     ierr = MatHasOperation(Amat, MATOP_MULT, &hasMult);CHKERRQ(ierr);
     if (hasMult) {
@@ -433,15 +450,13 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
     }
   } else if (lmvm->user_scale) {
-    if (lmvm->diag_scale) {
-      /* User has defined a diagonal vector for J0^{-1}, so use its reciprocal */
-      ierr = VecReciprocal(lmvm->diag_scale);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(X, lmvm->diag_scale, Y);CHKERRQ(ierr);
-      ierr = VecReciprocal(lmvm->diag_scale);CHKERRQ(ierr);
+    if (lmvm->J0diag) {
+      /* User has defined a diagonal vector for J0 */
+      ierr = VecPointwiseMult(X, lmvm->J0diag, Y);CHKERRQ(ierr);
     } else {
-      /* User has defined a scalar value for J0^{-1}, so use its inverse */
+      /* User has defined a scalar value for J0 */
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
-      ierr = VecScale(Y, 1.0/lmvm->scale);CHKERRQ(ierr);
+      ierr = VecScale(Y, lmvm->J0scalar);CHKERRQ(ierr);
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */
@@ -476,7 +491,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
-  PetscBool         same;
+  PetscBool         same, hasSolve;
   MPI_Comm          comm = PetscObjectComm((PetscObject)B);
 
   PetscFunctionBegin;
@@ -491,15 +506,22 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
   if (lmvm->user_pc) {
     /* User has defined a J0 inverse so we can directly apply it as a preconditioner */
     ierr = PCApply(lmvm->J0pc, X, Y);CHKERRQ(ierr);
-  } else if (lmvm->J0 || lmvm->user_ksp) {
+  } else if (lmvm->user_ksp) {
     /* User has defined a J0 or a custom KSP so just perform a solution */
     ierr = KSPSolve(lmvm->J0ksp, X, Y);CHKERRQ(ierr);
+  } else if (lmvm->J0) {
+    ierr = MatHasOperation(lmvm->J0, MATOP_SOLVE, &hasSolve);CHKERRQ(ierr);
+    if (hasSolve) {
+      ierr = MatSolve(lmvm->J0, X, Y);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolve(lmvm->J0ksp, X, Y);CHKERRQ(ierr);
+    }
   } else if (lmvm->user_scale) {
-    if (lmvm->diag_scale) {
-      ierr = VecPointwiseMult(X, lmvm->diag_scale, Y);CHKERRQ(ierr);
+    if (lmvm->J0diag) {
+      ierr = VecPointwiseDivide(X, Y, lmvm->J0diag);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
-      ierr = VecScale(Y, lmvm->scale);CHKERRQ(ierr);
+      ierr = VecScale(Y, 1.0/lmvm->J0scalar);CHKERRQ(ierr);
     }
   } else {
     /* There is no J0 representation so just apply an identity matrix */
@@ -571,6 +593,12 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   ierr = lmvm->ops->allocate(B, X, F);CHKERRQ(ierr);
+  if (lmvm->J0) {
+    ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
+    if (same) {
+      ierr = MatLMVMAllocate(lmvm->J0, X, F);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -603,6 +631,12 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   ierr = lmvm->ops->reset(B, destructive);CHKERRQ(ierr);
+  if (lmvm->J0) {
+    ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
+    if (same) {
+      ierr = MatLMVMReset(lmvm->J0, destructive);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

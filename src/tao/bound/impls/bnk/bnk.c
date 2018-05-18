@@ -32,7 +32,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   
   PetscReal                    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool                    is_bfgs, is_jacobi;
+  PetscBool                    is_bfgs, is_jacobi, is_symmetric, sym_set;
   PetscInt                     n, N, nDiff;
   PetscInt                     i_max = 5;
   PetscInt                     j_max = 1;
@@ -98,6 +98,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
     ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
     ierr = MatSetSizes(bnk->M, n, n, N, N);CHKERRQ(ierr);
     ierr = MatLMVMAllocate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+    ierr = MatIsSymmetricKnown(bnk->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
+    if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
   } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -542,7 +544,6 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ierr = MatLMVMGetUpdateCount(bnk->M, &bfgsUpdates);CHKERRQ(ierr);
     if ((KSP_DIVERGED_INDEFINITE_PC == *ksp_reason) && (bfgsUpdates > 0)) {
       /* Preconditioner is numerically indefinite; reset the approximation. */
-      ierr = MatLMVMResetJ0(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     }
@@ -616,7 +617,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       bnk->pert = PetscMin(bnk->pmax, PetscMax(bnk->pgfac * bnk->pert, bnk->pmgfac * bnk->gnorm));
     }
 
-    if (bnk->M) {
+    if (!bnk->M) {
       /* We don't have the bfgs matrix around and updated
          Must use gradient direction in this case */
       ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -636,7 +637,6 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
            which is guaranteed to be descent */
 
         /* Use steepest descent direction (scaled) */
-        ierr = MatLMVMResetJ0(bnk->M);CHKERRQ(ierr);
         ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
         ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -734,7 +734,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
         bnk->pert = PetscMin(bnk->pmax, PetscMax(bnk->pgfac * bnk->pert, bnk->pmgfac * bnk->gnorm));
       }
 
-      if (bnk->M) {
+      if (!bnk->M) {
         /* We don't have the bfgs matrix around and being updated
            Must use gradient direction in this case */
         ierr = VecCopy(bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -749,7 +749,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
           /* BFGS direction is not descent or direction produced not a number
              We can assert bfgsUpdates > 1 in this case
              Use steepest descent direction (scaled) */
-          ierr = MatLMVMResetJ0(bnk->M);CHKERRQ(ierr);
           ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
           ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -772,7 +771,6 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
       /* Can only enter if pc_type == BNK_PC_BFGS
          Failed to obtain acceptable iterate with BFGS step
          Attempt to use the scaled gradient direction */
-      ierr = MatLMVMResetJ0(bnk->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);

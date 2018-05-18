@@ -9,6 +9,7 @@
 
 typedef struct {
   Vec *P;
+  Vec work;
   PetscBool allocatedP;
 } Mat_LBFGS;
 
@@ -22,15 +23,15 @@ typedef struct {
    (7.20) if the user has not provided any estimation of the initial Jacobian or 
    its inverse.
 
-   Fwork <- F
+   work <- F
 
    for i = k,k-1,k-2,...,0
      rho[i] = 1 / (Y[i]^T S[i])
-     alpha[i] = rho[i] * (S[i]^T Fwork)
-     Fwork <- Fwork - (alpha[i] * Y[i])
+     alpha[i] = rho[i] * (S[i]^T work)
+     Fwork <- work - (alpha[i] * Y[i])
    end
 
-   dX <- J0^{-1} * Fwork
+   dX <- J0^{-1} * work
 
    for i = 0,1,2,...,k
      beta = rho[i] * (Y[i]^T dX)
@@ -40,6 +41,7 @@ typedef struct {
 PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_LBFGS         *lbfgs = (Mat_LBFGS*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
@@ -52,22 +54,22 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
   /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(F, lmvm->Fwork);CHKERRQ(ierr);
+  ierr = VecCopy(F, lbfgs->work);CHKERRQ(ierr);
   
   /* Start the first loop */
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], lbfgs->work, &stf);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lmvm->Fwork, &stf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lbfgs->work, &stf);CHKERRQ(ierr);
     if (i == lmvm->k) yts_k = yts; /* save this for later in case we need it for J0 */
     rho[i] = 1.0/yts;
     alpha[i] = rho[i] * stf;
-    ierr = VecAXPY(lmvm->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecAXPY(lbfgs->work, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   
   /* Invert the initial Jacobian onto Q (or apply scaling) */
-  ierr = MatLMVMApplyJ0Inv(B, lmvm->Fwork, dX);CHKERRQ(ierr);
+  ierr = MatLMVMApplyJ0Inv(B, lbfgs->work, dX);CHKERRQ(ierr);
   
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
     /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
@@ -166,6 +168,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
   
   PetscFunctionBegin;
   if (destructive && lbfgs->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&lbfgs->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lbfgs->P);CHKERRQ(ierr);
     lbfgs->allocatedP = PETSC_FALSE;
   }
@@ -184,6 +187,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMBFGS(Mat B, Vec X, Vec F)
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lbfgs->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(X, &lbfgs->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(X, lmvm->m, &lbfgs->P);CHKERRQ(ierr);
     lbfgs->allocatedP = PETSC_TRUE;
   }
@@ -200,6 +204,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMBFGS(Mat B)
 
   PetscFunctionBegin;
   if (lbfgs->allocatedP && lmvm->m > 0) {
+    ierr = VecDestroy(&lbfgs->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lbfgs->P);CHKERRQ(ierr);
     lbfgs->allocatedP = PETSC_FALSE;
   }
@@ -219,6 +224,7 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lbfgs->allocatedP && lmvm->m > 0) {
+    ierr = VecDuplicate(lmvm->Xprev, &lbfgs->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lbfgs->P);CHKERRQ(ierr);
     lbfgs->allocatedP = PETSC_TRUE;
   }

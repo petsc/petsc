@@ -111,6 +111,8 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
     if (blmP->H0) {
       ierr = MatLMVMSetJ0(blmP->M, blmP->H0);CHKERRQ(ierr);
       stepType = BLMVM_STEP_BFGS;
+    } else if (!blmP->no_scale) {
+      ierr = MatLMVMSetJ0(blmP->M, blmP->Mscale);CHKERRQ(ierr);
     }
     ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecCopy(blmP->unprojected_gradient, blmP->red_grad);CHKERRQ(ierr);
@@ -126,8 +128,8 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
     if (gdx >= 0 || PetscIsInfOrNanReal(gdx)) {
       /* Step is not descent or solve was not successful
          Use steepest descent direction (scaled) */
-      ierr = MatLMVMResetJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
@@ -149,8 +151,8 @@ PETSC_INTERN PetscErrorCode TaoSolve_BLMVM(Tao tao)
       ierr = VecCopy(blmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient);CHKERRQ(ierr);
 
-      ierr = MatLMVMResetJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(blmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
@@ -200,6 +202,7 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
+  PetscBool      is_spd, is_symbrdn;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetup() */
@@ -221,10 +224,21 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
   ierr = MatSetSizes(blmP->M, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(blmP->M,tao->solution,blmP->unprojected_gradient);CHKERRQ(ierr);
+  ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
+  ierr = PetscObjectTypeCompare((PetscObject)blmP->M, MATLMVMSYMBRDN, &is_symbrdn);
+  if (is_symbrdn) blmP->no_scale = PETSC_TRUE; /* makes no sense to scale L-SymBrdn with SymBrdn diagonal */
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (blmP->H0) {
     ierr = MatLMVMSetJ0(blmP->M, blmP->H0);CHKERRQ(ierr);
+  } else if (!blmP->no_scale) {
+    if (!blmP->Mscale) {
+      ierr = MatCreateLMVMDiagBrdn(PetscObjectComm((PetscObject)blmP->M), n, N, &blmP->Mscale);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(blmP->Mscale, "tao_blmvm_scale_");CHKERRQ(ierr);
+      ierr = MatLMVMAllocate(blmP->Mscale, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
+    }
+    ierr = MatLMVMSetJ0(blmP->M, blmP->Mscale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -253,7 +267,9 @@ PETSC_INTERN PetscErrorCode TaoDestroy_BLMVM(Tao tao)
   if (blmP->H0) {
     PetscObjectDereference((PetscObject)blmP->H0);
   }
-
+  if (blmP->Mscale) {
+    ierr = MatDestroy(&blmP->Mscale);CHKERRQ(ierr);
+  }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -267,6 +283,7 @@ PETSC_INTERN PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptio
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_blmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",blmP->recycle,&blmP->recycle,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_blmvm_no_scale","(developer) disable the diagonal Broyden scaling of the BFGS approximation","",blmP->no_scale,&blmP->no_scale,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_blmvm_as_type","active set estimation method", "", BLMVM_AS_TYPE, BLMVM_AS_SIZE, BLMVM_AS_TYPE[blmP->as_type], &blmP->as_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_blmvm_as_tol", "initial tolerance used when estimating actively bounded variables","",blmP->as_tol,&blmP->as_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_blmvm_as_step", "step length used when estimating actively bounded variables","",blmP->as_step,&blmP->as_step,NULL);CHKERRQ(ierr);
@@ -328,6 +345,13 @@ PETSC_INTERN PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
   TAOBLMVM - Bounded limited memory variable metric is a quasi-Newton method
          for nonlinear minimization with bound constraints. It is an extension
          of TAOLMVM
+         
+  Options Database Keys:
+.   -tao_blmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
+.   -tao_blmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
+.   -tao_blmvm_as_type - (developer) active set estimation method <none,bertsekas>
+.   -tao_blmvm_as_tol - (developer) initial distance tolerance used when estimating the active set
+.   -tao_blmvm_as_step - (developer) trial step length used when estimating the active set
 
   Level: beginner
 M*/
@@ -351,6 +375,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   blmP->as_tol = 0.001;
   blmP->as_type = BLMVM_AS_BERTSEKAS;
   blmP->recycle = PETSC_FALSE;
+  blmP->no_scale = PETSC_FALSE;
   
   tao->data = (void*)blmP;
 
