@@ -64,7 +64,7 @@
             text-align: left;
           }
         </style>
-        <title>Refresco Performance Summary</title>
+        <title>PETSc Performance Summary</title>
         <meta charset="utf-8"/>
         <script  src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script>jQuery.fn.extend({

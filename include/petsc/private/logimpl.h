@@ -116,5 +116,7 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog, int, Pet
 
 PETSC_EXTERN PetscErrorCode PetscEventRegLogGetEvent(PetscEventRegLog, const char [], PetscLogEvent *);
 
+PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
+PETSC_INTERN PetscErrorCode PetscLogNestedEnd(void);
 
 #endif /* PETSC_USE_LOG */
