@@ -135,7 +135,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
     ierr = VecAXPY(lmvm->Xwork, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   
-  /* Invert the initial Jacobian onto Q (or apply scaling) */
+  /* Apply the forward product with initial Jacobian */
   ierr = MatLMVMApplyJ0Fwd(B, lmvm->Xwork, Z);CHKERRQ(ierr);
   
   /* Start the second loop */
