@@ -117,6 +117,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PetscFunctionBegin;
   ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
   ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
+  ierr = PetscLogNestedEnd();CHKERRQ(ierr);
   ierr = PetscLogSet(NULL, NULL);CHKERRQ(ierr);
 
   /* Resetting phase */
@@ -1665,8 +1666,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-PetscErrorCode  PetscLogView_Nested(PetscViewer);
 
 /*@C
   PetscLogView - Prints a summary of the logging.
