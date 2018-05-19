@@ -7,8 +7,8 @@
  *    content: XML to HTML Transformation script for XML-formatted performance       *
  *             reports with nested timers.                                           *
  ***********************************************************************************-->
-<xsl:stylesheet id="rundata_xml2html" 
-  version="1.0" 
+<xsl:stylesheet id="rundata_xml2html"
+  version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="html"/>
 
@@ -28,10 +28,10 @@
           {
             white-space: nowrap;
             border: 1px solid black;
-            padding-left: 10px; 
+            padding-left: 10px;
             padding-right: 10px;
           }
-          
+
           td.timername, th.timername
           {
             white-space: nowrap;
@@ -56,7 +56,7 @@
 
           label {
             cursor: pointer;        /* cursor changes when you mouse over this class */
-          }                         
+          }
 
           ol.tree td, ol.tree th {
             border:none;
@@ -64,7 +64,7 @@
             text-align: left;
           }
         </style>
-        <title>Refresco Performance Summary</title>
+        <title>PETSc Performance Summary</title>
         <meta charset="utf-8"/>
         <script  src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script>jQuery.fn.extend({
@@ -97,7 +97,7 @@
       </body>
     </html>
   </xsl:template>
-  
+
   <xsl:template match="root[position()>1]"/>
 
   <xsl:template match="applicationroot">
@@ -147,7 +147,7 @@
 
   <xsl:template match="timertree">
     <!-- timer tree -->
-    <h2><xsl:value-of select="@desc"/> 
+    <h2><xsl:value-of select="@desc"/>
       <xsl:if test="totaltime">
         (time in % of <xsl:value-of select="format-number(totaltime,'####0.##')"/> s, threshold = <xsl:value-of select="format-number(timethreshold,'##0.##')"/> %)
       </xsl:if>
@@ -236,7 +236,7 @@
       </xsl:element>
     </li>
   </xsl:template>
-  
+
   <xsl:template match="event[not(events)]">
     <!--end-node-->
     <xsl:variable name="tm">
@@ -265,7 +265,7 @@
       </li>
      </xsl:if>
   </xsl:template>
-  
+
   <xsl:template name="treeheader">
     <li>
       <table width="1250">
@@ -355,7 +355,7 @@
       </li>
     </xsl:if>
   </xsl:template>
-  
+
   <xsl:template name="selftreeheader">
     <li>
       <table width="1030">
@@ -498,7 +498,7 @@
       </xsl:choose>
     </xsl:if>
   </xsl:template>
-  
+
   <xsl:template name="toggleTreeLoop">
     <xsl:param name="i"/>
     <xsl:param name="limit"/>

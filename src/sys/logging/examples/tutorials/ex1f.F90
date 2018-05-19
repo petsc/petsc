@@ -57,11 +57,11 @@
       call MPI_Comm_size(PETSC_COMM_WORLD, size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD, rank,ierr)
 
-      if (rank==0) then 
+      if (rank==0) then
          role = TEACHER
       else if (rank<0.4*size) then
          role = GIRL
-      else 
+      else
          role = BOY
       end if
 
@@ -96,6 +96,7 @@
          call PetscLogEventBegin(Lessons,ierr)
          call PetscLogFlops(23000d0,ierr)
          call PetscSleep(1*second, ierr)
+         if (size>1) then
          call MPI_iSend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
      &                        mod(rank+1,size),                                             &
      &                        tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
@@ -104,6 +105,7 @@
      &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
      &        status, ierr)
          call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
+         end if
          call PetscLogEventEnd(Lessons,ierr)
 
          if (role==TEACHER) then
@@ -119,7 +121,7 @@
             call PetscLogEventBegin(SkipRope,ierr)
             call PetscSleep(0.8*second, ierr)
             call PetscLogEventEnd(SkipRope,ierr)
-         else 
+         else
             call PetscLogEventBegin(PlayBall,ierr)
             call PetscSleep(0.9*second, ierr)
             call PetscLogEventEnd(PlayBall,ierr)
@@ -163,7 +165,7 @@
             call PetscLogEventBegin(SkipRope,ierr)
             call PetscSleep(0.7*second, ierr)
             call PetscLogEventEnd(SkipRope,ierr)
-         else 
+         else
             call PetscLogEventBegin(PlayBall,ierr)
             call PetscSleep(0.8*second, ierr)
             call PetscLogEventEnd(PlayBall,ierr)
@@ -187,7 +189,7 @@
          call PetscLogFlops(234700d0,ierr)
          call PetscSleep(1.1*second, ierr)
          call PetscLogEventEnd(CorrectHomework,ierr)
-      else 
+      else
          call PetscLogEventBegin(SkipRope,ierr)
          call PetscSleep(0.7*second, ierr)
          call PetscLogEventEnd(SkipRope,ierr)
@@ -211,6 +213,7 @@
          call PetscLogEventBegin(Lessons,ierr)
          call PetscLogFlops(23000d0,ierr)
          call PetscSleep(1*second, ierr)
+         if (size>1) then
          call MPI_ISend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
      &                        mod(rank+1,size),                                             &
      &                   tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
@@ -219,6 +222,7 @@
      &                  tagMsg+mod(rank-1+size,size), PETSC_COMM_WORLD,                     &
      &                   status, ierr)
          call MPI_Wait(req,MPI_STATUS_IGNORE,ierr)
+         end if
          call PetscLogEventEnd(Lessons,ierr)
 
          if (role==TEACHER) then
@@ -230,7 +234,7 @@
             call PetscLogEventBegin(SkipRope,ierr)
             call PetscSleep(0.8*second, ierr)
             call PetscLogEventEnd(SkipRope,ierr)
-         else 
+         else
             call PetscLogEventBegin(PlayBall,ierr)
             call PetscSleep(0.9*second, ierr)
             call PetscLogEventEnd(PlayBall,ierr)
@@ -248,3 +252,48 @@
       call PetscFinalize(ierr)
 
       end program SchoolDay
+
+!/*TEST
+!
+! testset:
+!   args: -log_view ascii:filename.txt
+!   output_file: output/ex1f.out
+!   test:
+!     suffix: 1
+!     nsize: 1
+!   test:
+!     suffix: 2
+!     nsize: 2
+!   test:
+!     suffix: 3
+!     nsize: 3
+!
+! testset:
+!   suffix: detail
+!   args: -log_view ascii:filename.txt:ascii_info_detail
+!   output_file: output/ex1f.out
+!   test:
+!     suffix: 1
+!     nsize: 1
+!   test:
+!     suffix: 2
+!     nsize: 2
+!   test:
+!     suffix: 3
+!     nsize: 3
+!
+! testset:
+!   suffix: xml
+!   args: -log_view ascii:filename.xml:ascii_xml
+!   output_file: output/ex1f.out
+!   test:
+!     suffix: 1
+!     nsize: 1
+!   test:
+!     suffix: 2
+!     nsize: 2
+!   test:
+!     suffix: 3
+!     nsize: 3
+!
+!TEST*/
