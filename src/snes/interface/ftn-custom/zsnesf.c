@@ -140,6 +140,8 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
                                     void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),
                                     void *ctx,PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLOBJECTDEREFERENCE(A);
+  CHKFORTRANNULLOBJECTDEREFERENCE(B);  
   CHKFORTRANNULLFUNCTION(func);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefault_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefault,ctx);
