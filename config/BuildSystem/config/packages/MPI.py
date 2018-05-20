@@ -324,11 +324,6 @@ class Configure(config.package.Package):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
     self.addMakeMacro('MPI_IS_MPIUNI', 1)
-    #
-    #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
-    #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
-    #  use MPI-Uni can find them.
-    self.include = [os.path.abspath(os.path.join('include', 'petsc','mpiuni'))]
     self.framework.packages.append(self)
     self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')

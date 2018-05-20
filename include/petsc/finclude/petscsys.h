@@ -11,7 +11,7 @@
 #define __PETSCSYSDEF_H
 #include "petscconf.h"
 #if defined (PETSC_HAVE_MPIUNI)
-#include "mpiunifdef.h"
+#include "petsc/mpiuni/mpiunifdef.h"
 #endif
 #include "petscversion.h"
 #include "petsc/finclude/petscviewer.h"

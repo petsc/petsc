@@ -13,7 +13,6 @@
 T*/
 
 #include <petsctao.h>
-#include <mpi.h>
 
 
 /*
