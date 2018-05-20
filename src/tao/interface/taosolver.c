@@ -383,7 +383,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 PetscErrorCode TaoSetFromOptions(Tao tao)
 {
   PetscErrorCode ierr;
-  const TaoType  default_type = TAOLMVM;
+  TaoType        default_type = TAOLMVM;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
   PetscBool      flg;
@@ -569,7 +569,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 {
   PetscErrorCode      ierr;
   PetscBool           isascii,isstring;
-  const TaoType type;
+  TaoType             type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
@@ -2069,7 +2069,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 .seealso: TaoCreate(), TaoGetType(), TaoType
 
 @*/
-PetscErrorCode TaoSetType(Tao tao, const TaoType type)
+PetscErrorCode TaoSetType(Tao tao, TaoType type)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*create_xxx)(Tao);
@@ -2471,7 +2471,7 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
    Level: intermediate
 
 @*/
-PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
+PetscErrorCode TaoGetType(Tao tao,TaoType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);

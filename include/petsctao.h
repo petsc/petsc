@@ -41,7 +41,7 @@ typedef struct _p_Tao*   Tao;
        Level: beginner
 
 J*/
-#define TaoType char*
+typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"
 #define TAONTR      "ntr"
@@ -111,8 +111,8 @@ PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
-PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
-PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
+PETSC_EXTERN PetscErrorCode TaoSetType(Tao,TaoType);
+PETSC_EXTERN PetscErrorCode TaoGetType(Tao,TaoType *);
 PETSC_EXTERN PetscErrorCode TaoSetApplicationContext(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoGetApplicationContext(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
