@@ -2,9 +2,8 @@
 
 static char help[] = "Test VTK Rectilinear grid (.vtr) viewer support\n\n";
 
-#include <mpi.h>
 #include <petscdm.h>
-#include "petscdmda.h"
+#include <petscdmda.h>
 
 /*
   Write 3D DMDA vector with coordinates in VTK VTR format
