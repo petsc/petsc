@@ -217,6 +217,8 @@ PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *ts,PetscReal *t,Vec *X,Mat *
 }
 PETSC_EXTERN void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLOBJECTDEREFERENCE(A);
+  CHKFORTRANNULLOBJECTDEREFERENCE(B);
   CHKFORTRANNULLFUNCTION(f);
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,TSComputeRHSJacobianConstant,fP);
@@ -232,6 +234,8 @@ PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts,PetscReal *t,Vec *X,Vec *Xd
 }
 PETSC_EXTERN void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLOBJECTDEREFERENCE(A);
+  CHKFORTRANNULLOBJECTDEREFERENCE(B);
   CHKFORTRANNULLFUNCTION(f);
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeijacobianconstant_) {
     *ierr = TSSetIJacobian(*ts,*A,*B,TSComputeIJacobianConstant,fP);
