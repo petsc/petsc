@@ -3664,7 +3664,7 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
 /*
   DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
 
@@ -3795,7 +3795,7 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultGlobalSection = section;
-#ifdef PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
   if (section) {ierr = DMDefaultSectionCheckConsistency_Internal(dm, dm->defaultSection, section);CHKERRQ(ierr);}
 #endif
   PetscFunctionReturn(0);
