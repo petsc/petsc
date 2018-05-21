@@ -68,11 +68,11 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     ierr = VecAXPY(lbfgs->work, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   
-  /* Invert the initial Jacobian onto Q (or apply scaling) */
+  /* Invert the initial Jacobian onto the work vector (or apply scaling) */
   ierr = MatLMVMApplyJ0Inv(B, lbfgs->work, dX);CHKERRQ(ierr);
   
   if ((lmvm->k >= 0) && (!lmvm->user_scale) && (!lmvm->user_pc) && (!lmvm->user_ksp) && (!lmvm->J0)) {
-    /* Since there is no J0 definition, finish the dot products then apply the gamma scaling */
+    /* Since there is no J0 definition, apply the gamma scaling */
     ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
     ierr = VecScale(dX, yts_k/yty);CHKERRQ(ierr);
   }
@@ -103,14 +103,14 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     P[i] <- J0 & S[i]
 
     for j=0,1,2,...,(i-1)
-      gamma = (Y[j]^T P[i]) / (Y[j]^T S[j])
+      gamma = (Y[j]^T S[i]) / (Y[j]^T S[j])
       zeta = (S[j]^T P[i]) / (S[j]^T P[j])
-      P[i] <- P[i] + (gamma * Y[j]) - (zeta * P[j])
+      P[i] <- P[i] - (zeta * P[j]) + (gamma * Y[j])
     end
 
-    gamma = (Y[i]^T dX) / (Y[i]^T S[i])
-    zeta = (S[i]^T dX) / (S[i]^T P[i])
-    Z <- Z + (gamma * Y[i]) - (zeta * P[i])
+    gamma = (Y[i]^T X) / (Y[i]^T S[i])
+    zeta = (S[i]^T Z) / (S[i]^T P[i])
+    Z <- Z - (zeta * P[i]) + (gamma * Y[i])
   end
 */
 PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
@@ -119,7 +119,7 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
   Mat_LBFGS         *lbfgs = (Mat_LBFGS*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         yts[lmvm->k+1], stp[lmvm->k+1], ytz, stz, yjtpi, sjtpi;
+  PetscReal         yts[lmvm->k+1], stp[lmvm->k+1], ytx, stz, yjtsi, sjtpi;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
@@ -136,10 +136,10 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
     ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbfgs->P[i]);
     for (j = 0; j <= i-1; ++j) {
        ierr = VecDotBegin(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
-       ierr = VecDotBegin(lmvm->Y[j], lbfgs->P[i], &yjtpi);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
        ierr = VecDotEnd(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
-       ierr = VecDotEnd(lmvm->Y[j], lbfgs->P[i], &yjtpi);CHKERRQ(ierr);
-       ierr = VecAXPBYPCZ(lbfgs->P[i], -sjtpi/stp[j], yjtpi/yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+       ierr = VecAXPBYPCZ(lbfgs->P[i], -sjtpi/stp[j], yjtsi/yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
     }
     /* Get all the dot products we need 
        NOTE: yTs and sTp are stored so that we can re-use them when computing 
@@ -147,13 +147,13 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], lbfgs->P[i], &stp[i]);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], Z, &ytz);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[i], lbfgs->P[i], &stp[i]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], Z, &ytz);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
     /* Update Z_{i+1} = B_{i+1} * X */
-    ierr = VecAXPBYPCZ(Z, -stz/stp[i], ytz/yts[i], 1.0, lbfgs->P[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(Z, -stz/stp[i], ytx/yts[i], 1.0, lbfgs->P[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

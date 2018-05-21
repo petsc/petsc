@@ -27,12 +27,12 @@ typedef struct {
     P[i] <- J0^{-1} & Y[i]
 
     for j=0,1,2,...,(i-1)
-      gamma = (S[j]^T P[i]) / (Y[j]^T S[j])
+      gamma = (S[j]^T Y[i]) / (Y[j]^T S[j])
       zeta = (Y[j]^T P[i]) / (Y[j]^T P[j])
       P[i] <- P[i] + (gamma * S[j]) - (zeta * P[j])
     end
 
-    gamma = (S[i]^T dX) / (Y[i]^T S[i])
+    gamma = (S[i]^T F) / (Y[i]^T S[i])
     zeta = (Y[i]^T dX) / (Y[i]^T P[i])
     dX <- dX + (gamma * S[i]) - (zeta * P[i])
   end
@@ -43,7 +43,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         yts[lmvm->k+1], ytp[lmvm->k+1], ytx, stx, yjtpi, sjtpi;
+  PetscReal         yts[lmvm->k+1], ytp[lmvm->k+1], ytx, stf, yjtpi, sjtyi;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -60,10 +60,10 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->P[i]);
     for (j = 0; j <= i-1; ++j) {
        ierr = VecDotBegin(lmvm->Y[j], ldfp->P[i], &yjtpi);CHKERRQ(ierr);
-       ierr = VecDotBegin(lmvm->S[j], ldfp->P[i], &sjtpi);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
        ierr = VecDotEnd(lmvm->Y[j], ldfp->P[i], &yjtpi);CHKERRQ(ierr);
-       ierr = VecDotEnd(lmvm->S[j], ldfp->P[i], &sjtpi);CHKERRQ(ierr);
-       ierr = VecAXPBYPCZ(ldfp->P[i], -yjtpi/ytp[j], sjtpi/yts[j], 1.0, ldfp->P[j], lmvm->S[j]);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
+       ierr = VecAXPBYPCZ(ldfp->P[i], -yjtpi/ytp[j], sjtyi/yts[j], 1.0, ldfp->P[j], lmvm->S[j]);CHKERRQ(ierr);
     }
     /* Get all the dot products we need 
        NOTE: yTs and yTp are stored so that we can re-use them when computing 
@@ -71,13 +71,13 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], ldfp->P[i], &ytp[i]);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], F, &stf);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], ldfp->P[i], &ytp[i]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], F, &stf);CHKERRQ(ierr);
     /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
-    ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stx/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stf/yts[i], 1.0, ldfp->P[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

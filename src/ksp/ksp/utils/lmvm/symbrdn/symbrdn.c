@@ -8,134 +8,266 @@
   SymBroyden = (1-phi)*BFGS + phi*DFP. The combination factor phi is restricted 
   to the range [0, 1] where the resulting approximation is guaranteed to be 
   symmetric positive-definite.
-  
-  The solution method below is the BFGS two-loop where the second loop (inside out) 
-  has the DFP solution embedded in it. At the end, the BFGS and DFP components are 
-  combined using the convex ratio. For the stand-alone algorithms for BFGS and DFP, 
-  see the MATLMVMBFGS and MATLMVMDFP implementations.
-  
-  if (phi == 1.0)
-    MatSolve_LMVMBFGS(F, dX)
-  elif (phi == 0.0)
-    MatSolve_LMVMDFP(F, dX)
-  end
-  
-  Fwork <- F
+*/
 
-  for i = k,k-1,k-2,...,0
-    rho[i] = 1 / (Y[i]^T S[i])
-    alpha[i] = rho[i] * (S[i]^T Fwork)
-    Fwork <- Fwork - (alpha[i] * Y[i])
-  end
-
-  Xwork <- J0^{-1} * Fwork
-  dX <- J0^{-1} * F
-
-  for i = 0,1,2,...,k
-    P[i] <- J0^{-1} & Y[i]
-
-    for j=0,1,2,...,(i-1)
-      gamma = (S[j]^T P[i]) / (Y[j]^T S[j])
-      zeta = (Y[j]^T P[i]) / (Y[j]^T P[j])
-      P[i] <- P[i] + (gamma * S[j]) - (zeta * P[j])
-    end
-
-    gamma = (S[i]^T dX) / (Y[i]^T S[i])
-    zeta = (Y[i]^T dX) / (Y[i]^T P[i])
-    dX <- dX + (gamma * S[i]) - (zeta * P[i])
-    
-    beta = rho[i] * (Y[i]^T Xwork)
-    Xwork <- Xwork + ((alpha[i] - beta) * S[i])
-  end
-  
-  dX <- ((1 - phi) * dX) + (phi * Xwork)
- */
 
 typedef struct {
   Vec *P;
-  Vec Xwork, Fwork;
-  PetscBool allocatedP;
+  Vec work;
+  Vec *Q;
+  Vec V, W;
+  PetscBool allocated;
   PetscReal phi;
 } Mat_SymBrdn;
 
+/*------------------------------------------------------------*/
+
+/*
+  The solution method below is the matrix-free implementation of Equation 3 in 
+  Erway and Marcia "On Solving Large-Scale Limited-Memory Quasi-Newton Equations" 
+  (https://arxiv.org/pdf/1510.06378.pdf). The required forward product is computed 
+  using an embedded matrix-free implementation of Equation 2 that re-uses as much 
+  information as possible from the outer iterations.
+  
+  dX <- J0^{-1} * F
+  
+  for i=0,1,2,...,k
+    P[i] <- J0^{-1} * Y[i]
+    Q[i] <- J0 * S[i]
+    
+    for j=0,1,2,...,i-1
+      rho = 1.0 / (Y[j]^T S[j])
+      alpha = rho * (S[j]^T Y[i])
+      zeta = 1.0 / (Y[j]^T P[j])
+      gamma = zeta * (Y[j]^T P[i])
+      
+      P[i] <- P[i] - (gamma * P[j]) + (alpha * Y[j])
+      V <- (rho * S[j]) - (zeta * P[j])
+      psi = ((1-phi)*(Y[j]^T S[j])^2) / (1-phi)*(Y[j]^T S[j])^2 - phi*(Y[j]^T P[j])*(S[j]^T Q[j]))
+      P[i] <- P[i] + (psi * (Y[j]^T P[j]) * (V^T F) * V)
+      
+      sigma = rho * (Y[j]^T S[i])
+      nu = 1.0 / (S[j]^T Q[j])
+      beta = nu * (S[j]^T Q[i])
+      
+      Q[i] <- Q[i] - (beta * Q[j]) + (sigma * S[j])
+      W <- (rho * Y[j]) - (nu * Q[j])
+      Q[i] <- Q[i] + (phi * (S[j]^T Q[j]) * (W^T S[i]) * W)
+    end
+    
+    rho = 1.0 / (Y[i]^T S[i])
+    alpha = rho * (S[i]^T F)
+    zeta = 1.0 / (Y[i]^T P[i])
+    gamma = zeta * (Y[i]^T dX)
+    
+    dX <- dX - (gamma * P[i]) + (alpha * Y[i])
+    V <- (rho * S[i]) - (zeta * P[i])
+    psi = ((1-phi)*(Y[i]^T S[i])^2) / (1-phi)*(Y[i]^T S[i])^2 - phi*(Y[i]^T P[i])*(S[i]^T Q[i]))
+    dX <- dX + (psi * (Y[i]^T P[i]) * (V^T F) * V)
+  end
+*/
 PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1], yts[lmvm->k+1], ytp[lmvm->k+1];
-  PetscReal         beta, stf, stx, sjtpi, ytxwork, ytx, yjtpi;
-  PetscReal         bfgs = 1.0 - lsb->phi, dfp = lsb->phi;
+  PetscReal         yts[lmvm->k+1], ytp[lmvm->k+1], stq[lmvm->k+1];
+  PetscReal         stf, ytx, vtf, yjtpi, sjtyi, vtyi, psi, sjtqi, yjtsi, wtsi; 
   
   PetscFunctionBegin;
-  if (bfgs == 1.0) {
-    ierr = MatSolve_LMVMBFGS(B, F, dX);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } 
-  if (dfp == 1.0) {
+  if (lsb->phi == 1.0) {
     ierr = MatSolve_LMVMDFP(B, F, dX);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  if (lsb->phi == 0.0) {
+    ierr = MatSolve_LMVMBFGS(B, F, dX);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
-  
-  /* Copy the function into the work vector for the first loop */
-  ierr = VecCopy(F, lsb->Fwork);CHKERRQ(ierr);
 
-  /* Start the first loop (outside in) for BFGS, but store some useful dot products */
-  for (i = lmvm->k; i >= 0; --i) {
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], lsb->Fwork, &stf);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], lsb->Fwork, &stf);CHKERRQ(ierr);
-    rho[i] = 1.0/yts[i];
-    alpha[i] = rho[i] * stf;
-    ierr = VecAXPY(lsb->Fwork, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
-  }
-
-  /* Apply the initial Jacobian inversion for BFGS only */
-  ierr = MatLMVMApplyJ0Inv(B, lsb->Fwork, lsb->Xwork);CHKERRQ(ierr);
-  
-  /* Initialize the DFP part of the update with the initial Jacobian */
-  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
-  
   /* Start the outer loop (i) for the recursive formula */
+  ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
     /* First compute P[i] = (B^{-1})_i * y_i using an inner loop (j) 
        NOTE: This is essentially the same recipe used for dX, but we don't 
              recurse because reuse P[i] from previous outer iterations. */
     ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsb->P[i]);
+    ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lsb->Q[i]);
     for (j = 0; j <= i-1; ++j) {
-       ierr = VecDotBegin(lmvm->Y[j], lsb->P[i], &yjtpi);CHKERRQ(ierr);
-       ierr = VecDotBegin(lmvm->S[j], lsb->P[i], &sjtpi);CHKERRQ(ierr);
-       ierr = VecDotEnd(lmvm->Y[j], lsb->P[i], &yjtpi);CHKERRQ(ierr);
-       ierr = VecDotEnd(lmvm->S[j], lsb->P[i], &sjtpi);CHKERRQ(ierr);
-       ierr = VecAXPBYPCZ(lsb->P[i], -yjtpi/ytp[j], sjtpi/yts[j], 1.0, lsb->P[j], lmvm->S[j]);CHKERRQ(ierr);
+      /* This is the pure DFP component of restricted Broyden */
+      ierr = VecDotBegin(lmvm->Y[j], lsb->P[i], &yjtpi);CHKERRQ(ierr);
+      ierr = VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->Y[j], lsb->P[i], &yjtpi);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(lsb->P[i], -yjtpi/ytp[j], sjtyi/yts[j], 1.0, lsb->P[j], lmvm->S[j]);CHKERRQ(ierr);
+      /* Now we tack on the extra stuff scaled with the convex factor psi */
+      ierr = VecAXPBYPCZ(lsb->V, 1.0/yts[j], -1.0/ytp[j], 0.0, lmvm->S[j], lsb->P[j]);CHKERRQ(ierr);
+      ierr = VecDot(lsb->V, lmvm->Y[i], &vtyi);CHKERRQ(ierr);
+      psi = ((1-lsb->phi)*yts[j]*yts[j]) / (((1-lsb->phi)*yts[j]*yts[j]) + (lsb->phi*ytp[j]*stq[j]));
+      ierr = VecAXPY(lsb->P[i], psi*ytp[j]*vtyi, lsb->V);CHKERRQ(ierr);
+      /* We need to also compute B_i * s_i for the next outer iteration's convex factor */
+      ierr = VecDotBegin(lmvm->S[j], lsb->Q[i], &sjtqi);CHKERRQ(ierr);
+      ierr = VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->S[j], lsb->Q[i], &sjtqi);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(lsb->Q[i], -sjtqi/stq[j], yjtsi/yts[j], 1.0, lsb->Q[j], lmvm->Y[i]);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(lsb->W, 1.0/yts[j], -1.0/stq[j], 0.0, lmvm->Y[j], lsb->Q[j]);CHKERRQ(ierr);
+      ierr = VecDot(lsb->W, lmvm->S[i], &wtsi);CHKERRQ(ierr);
+      ierr = VecAXPY(lsb->Q[i], lsb->phi*stq[j]*wtsi, lsb->W);CHKERRQ(ierr);
     }
     /* Get all the dot products we need 
        NOTE: yTs and yTp are stored so that we can re-use them when computing 
-             P[i] at the next outer iteration */
+             P[i] and Q[i] at the next outer iteration */
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], lsb->P[i], &ytp[i]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], lsb->Xwork, &ytxwork);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], F, &stf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], lsb->P[i], &ytp[i]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lsb->Xwork, &ytxwork);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[i], dX, &stx);CHKERRQ(ierr);
-    /* Compute the DFP part of the update */
-    ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stx/yts[i], 1.0, lsb->P[i], lmvm->S[i]);CHKERRQ(ierr);
-    /* Now compute the BFGS part of it */
-    beta = rho[i] * ytxwork;
-    ierr = VecAXPY(lsb->Xwork, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], F, &stf);CHKERRQ(ierr);
+    /* This is the pure DFP component of restricted Broyden */
+    ierr = VecAXPBYPCZ(dX, -ytx/ytp[i], stf/yts[i], 1.0, lsb->P[i], lmvm->S[i]);CHKERRQ(ierr);
+    /* Now we takc on the extra stuff with the scaled convex factor psi */
+    ierr = VecAXPBYPCZ(lsb->V, 1.0/yts[i], -1.0/ytp[i], 0.0, lmvm->S[i], lsb->P[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], lsb->Q[i], &stq[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lsb->V, F, &vtf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lsb->Q[i], &stq[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lsb->V, F, &vtf);CHKERRQ(ierr);
+    psi = ((1-lsb->phi)*yts[i]*yts[i]) / (((1-lsb->phi)*yts[i]*yts[i]) + (lsb->phi*ytp[i]*stq[i]));
+    ierr = VecAXPY(dX, psi*ytp[i]*vtf, lsb->V);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*
+  Symmetric/Restricted Broyden is defined as the convex combination of 
+  BFGS and DFP such that S-Brdn = (1-phi)*BFGS + phi*DFP. The implementation 
+  of the matrix-free product here combines the DFP double-loop with the BFGS 
+  nested-loop, where the BFGS component is embedded into the 2nd loop (inside-out) 
+  for the DFP product.
+  
+  if (phi == 0.0)
+    MatMult_LMVMBFGS(X, Z)
+  elif (phi == 1.0)
+    MatSolve_LMVMDFP(X, Z)
+  end
+
+  V <- X
+
+  for i = k,k-1,k-2,...,0
+    rho[i] = 1 / (Y[i]^T S[i])
+    alpha[i] = rho[i] * (Y[i]^T V)
+    V <- V - (alpha[i] * S[i])
+  end
+
+  W <- J0 * V
+  Z <- J0 * X
+
+  for i = 0,1,2,...,k
+    P[i] <- J0 & S[i]
+
+    for j=0,1,2,...,(i-1)
+      zeta = (S[j]^T P[i]) / (S[j]^T P[j])
+      gamma = (Y[j]^T S[i]) / (Y[j]^T S[j])
+      P[i] <- P[i] - (zeta * P[j]) + (gamma * Y[j])
+    end
+
+    zeta = (S[i]^T Z) / (Y[i]^T P[i])
+    gamma = (Y[i]^T X) / (Y[i]^T S[i])
+    dX <- dX - (zeta * P[i]) + (gamma * Y[i])
+
+    beta = rho[i] * (S[i]^T W)
+    W <- W + ((alpha[i] - beta) * Y[i])
+  end
+
+  Z <- ((1 - phi) * Z) + (phi * W)
+*/
+PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  PetscInt          i, j;
+  PetscReal         yts[lmvm->k+1], stp[lmvm->k+1], alpha[lmvm->k+1], rho[lmvm->k+1];
+  PetscReal         stz, ytx, sjtpi, yjtsi, beta;
+  
+  
+  PetscFunctionBegin;
+  if (lsb->phi == 1.0) {
+    ierr = MatMult_LMVMDFP(B, X, Z);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } 
+  if (lsb->phi == 0.0) {
+    ierr = MatMult_LMVMBFGS(B, X, Z);CHKERRQ(ierr);
   }
   
-  /* Assemble the final restricted-class Broyden solution */
-  ierr = VecAXPBY(dX, bfgs, dfp, lsb->Xwork);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
+  VecCheckSameSize(X, 2, Z, 3);
+  VecCheckMatCompatible(B, X, 2, Z, 3);
 
+  /* Copy the function into the work vector for the first loop */
+  ierr = VecCopy(X, lsb->V);CHKERRQ(ierr);
+
+  /* Start the first loop for the DFP component only */
+  for (i = lmvm->k; i >= 0; --i) {
+    /* Compute all the dot products we need
+       NOTE: yTs is stored for re-use in the second iteration (inside-out) */
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], lsb->V, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lsb->V, &ytx);CHKERRQ(ierr);
+    rho[i] = 1.0/yts[i];
+    alpha[i] = rho[i] * ytx;
+    ierr = VecAXPY(lsb->V, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
+  }
+
+  /* Apply the forward product with initial Jacobian */
+  ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
+  if (lmvm->k >= 0) {
+    ierr = MatLMVMApplyJ0Fwd(B, lsb->V, lsb->W);CHKERRQ(ierr);
+  }
+
+  /* Start the second loop for both DFP and BFGS components*/
+  for (i = 0; i <= lmvm->k; ++i) {
+    /* First compute P[i] = B_i * s_i using an inner loop (j) 
+       NOTE: This is essentially the same recipe used for dX in BFGS, but we don't 
+             recurse because reuse P[i] from previous outer iterations. */
+    ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lsb->P[i]);
+    for (j = 0; j <= i-1; ++j) {
+       ierr = VecDotBegin(lmvm->S[j], lsb->P[i], &sjtpi);CHKERRQ(ierr);
+       ierr = VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->S[j], lsb->P[i], &sjtpi);CHKERRQ(ierr);
+       ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+       ierr = VecAXPBYPCZ(lsb->P[i], -sjtpi/stp[j], yjtsi/yts[j], 1.0, lsb->P[j], lmvm->Y[j]);CHKERRQ(ierr);
+    }
+    /* Get all the dot products we need 
+       NOTE: sTp is stored so that we can re-use it when computing P[i] at the next outer iteration */
+    ierr = VecDotBegin(lmvm->S[i], lsb->P[i], &stp[i]);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], lsb->P[i], &stp[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
+    /* Update the BFGS component */
+    ierr = VecAXPBYPCZ(Z, -stz/stp[i], ytx/yts[i], 1.0, lsb->P[i], lmvm->Y[i]);CHKERRQ(ierr);
+    /* Update the DFP component */
+    beta = rho[i] * stz;
+    ierr = VecAXPY(lsb->W, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
+  }
+  
+  /* Compute convex combination of BFGS and DFP */
+  ierr = VecAXPBY(Z, lsb->phi, (1.0 - lsb->phi), lsb->W);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -148,11 +280,13 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  if (destructive && lsb->allocatedP && lmvm->m > 0) {
-    ierr = VecDestroy(&lsb->Xwork);CHKERRQ(ierr);
-    ierr = VecDestroy(&lsb->Fwork);CHKERRQ(ierr);
+  if (destructive && lsb->allocated && lmvm->m > 0) {
+    ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->V);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->W);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
-    lsb->allocatedP = PETSC_FALSE;
+    ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
+    lsb->allocated = PETSC_FALSE;
   }
   ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -168,11 +302,13 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
-  if (!lsb->allocatedP && lmvm->m > 0) {
-    ierr = VecDuplicate(X, &lsb->Xwork);CHKERRQ(ierr);
-    ierr = VecDuplicate(F, &lsb->Fwork);CHKERRQ(ierr);
+  if (!lsb->allocated && lmvm->m > 0) {
+    ierr = VecDuplicate(X, &lsb->work);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &lsb->V);CHKERRQ(ierr);
+    ierr = VecDuplicate(F, &lsb->W);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
-    lsb->allocatedP = PETSC_TRUE;
+    ierr = VecDuplicateVecs(X, lmvm->m, &lsb->Q);CHKERRQ(ierr);
+    lsb->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -186,11 +322,13 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (lsb->allocatedP && lmvm->m > 0) {
-    ierr = VecDestroy(&lsb->Xwork);CHKERRQ(ierr);
-    ierr = VecDestroy(&lsb->Fwork);CHKERRQ(ierr);
+  if (lsb->allocated && lmvm->m > 0) {
+    ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->V);CHKERRQ(ierr);
+    ierr = VecDestroy(&lsb->W);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
-    lsb->allocatedP = PETSC_FALSE;
+    ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
+    lsb->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
@@ -207,11 +345,13 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
-  if (!lsb->allocatedP && lmvm->m > 0) {
-    ierr = VecDuplicate(lmvm->Xprev, &lsb->Xwork);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Fprev, &lsb->Fwork);CHKERRQ(ierr);
+  if (!lsb->allocated && lmvm->m > 0) {
+    ierr = VecDuplicate(lmvm->Xprev, &lsb->work);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Xprev, &lsb->V);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Fprev, &lsb->W);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
-    lsb->allocatedP = PETSC_TRUE;
+    ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->Q);CHKERRQ(ierr);
+    lsb->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -257,7 +397,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;
-  lsb->allocatedP = PETSC_FALSE;
+  lsb->allocated = PETSC_FALSE;
   lsb->phi = 0.125;
   PetscFunctionReturn(0);
 }
