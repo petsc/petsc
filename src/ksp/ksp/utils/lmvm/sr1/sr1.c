@@ -1,10 +1,8 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Limited-memory Symmetric-Rank-1 approximation matrix for a Jacobian.
-  
-  L-SR1 is symmetric by construction, but is not guaranteed to be 
-  positive-definite.
+  Limited-memory Symmetric-Rank-1 method for approximating both 
+  the forward product and inverse application of a Jacobian.
 */
 
 typedef struct {
@@ -226,9 +224,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
 /*@
    MatCreateLMVMSR1 - Creates a limited-memory Symmetric-Rank-1 approximation
    matrix used for a Jacobian. L-SR1 is symmetric by construction, but is not 
-   guaranteed to be positive-definite. This implementation only supports the 
-   MatSolve() operation, which is an application of the approximate inverse of 
-   the Jacobian. 
+   guaranteed to be positive-definite.
    
    The provided local and global sizes must match the solution and function vectors 
    used with MatLMVMUpdate() and MatSolve(). The resulting L-SR1 matrix will have 

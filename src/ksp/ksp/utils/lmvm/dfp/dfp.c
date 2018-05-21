@@ -1,10 +1,8 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Limited-memory Davidon-Fletcher-Powell method for approximating the 
-  inverse of a Jacobian.
-  
-  L-DFP is symmetric positive-definite by construction.
+  Limited-memory Davidon-Fletcher-Powell method for approximating both 
+  the forward product and inverse application of a Jacobian.
  */
 
 typedef struct {
@@ -254,9 +252,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
 /*@
    MatCreateLMVMDFP - Creates a limited-memory Davidon-Fletcher-Powell (DFP) matrix 
    used for approximating Jacobians. L-DFP is symmetric positive-definite by 
-   construction, and is the dual of L-BFGS where Y and S vectors swap roles. This 
-   implementation only supports the MatSolve() operation, which is an application 
-   of the approximate inverse of the Jacobian. 
+   construction, and is the dual of L-BFGS where Y and S vectors swap roles.
    
    The provided local and global sizes must match the solution and function vectors 
    used with MatLMVMUpdate() and MatSolve(). The resulting L-DFP matrix will have 

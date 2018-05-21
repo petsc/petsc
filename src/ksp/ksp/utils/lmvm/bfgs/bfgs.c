@@ -1,10 +1,8 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Limited-memory Broyden-Fletcher-Goldfarb-Shano method for approximating the 
-  inverse of a Jacobian.
-  
-  BFGS is symmetric positive-definite by construction.
+  Limited-memory Broyden-Fletcher-Goldfarb-Shano method for approximating both 
+  the forward product and inverse application of a Jacobian.
 */
 
 typedef struct {
@@ -264,8 +262,7 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
    MatCreateLMVMBFGS - Creates a limited-memory Broyden-Fletcher-Goldfarb-Shano (BFGS)
    matrix used for approximating Jacobians. L-BFGS is symmetric positive-definite by 
    construction, and is commonly used to approximate Hessians in optimization 
-   problems. This implementation only supports the MatSolve() operation, which is 
-   an application of the approximate inverse of the Jacobian. 
+   problems.
    
    The provided local and global sizes must match the solution and function vectors 
    used with MatLMVMUpdate() and MatSolve(). The resulting L-BFGS matrix will have 

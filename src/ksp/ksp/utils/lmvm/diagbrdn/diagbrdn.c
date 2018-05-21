@@ -1,8 +1,8 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Zero-memory Symmetric Broyden method for approximating only the diagonal of a 
-  Hessian.
+  Zero-memory Symmetric Broyden method for explicitly approximating 
+  the diagonal of a Jacobian.
 */
 
 typedef struct {
