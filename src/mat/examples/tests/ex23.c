@@ -153,7 +153,6 @@ int main(int argc,char **args)
   ierr = CheckMat(B,A2,PETSC_TRUE,"MatConvert_IS_XAIJ MAT_INPLACE_MATRIX");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
-
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_XAIJ_IS\n");CHKERRQ(ierr);
   ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
   ierr = MatConvert(B2,MATIS,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
@@ -164,6 +163,58 @@ int main(int argc,char **args)
   ierr = CheckMat(A,B2,PETSC_TRUE,"MatConvert_XAIJ_IS MAT_INPLACE_MATRIX");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
+  if (size == 1) { /* tests special code paths in MatConvert_IS_XAIJ */
+    PetscInt ri, ci, rr[3] = {0,1,0}, cr[4] = {1,2,0,1}, rk[3] = {0,2,1}, ck[4] = {1,0,3,2};
+
+    for (ri = 0; ri < 2; ri++) {
+      PetscInt *r;
+
+      r = (PetscInt*)(ri == 0 ? rr : rk);
+      for (ci = 0; ci < 2; ci++) {
+        PetscInt *c,rb,cb;
+
+        c = (PetscInt*)(ci == 0 ? cr : ck);
+        for (rb = 1; rb < 4; rb++) {
+          ierr = ISCreateBlock(PETSC_COMM_SELF,rb,3,r,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
+          for (cb = 1; cb < 4; cb++) {
+            Mat  T,lT,T2;
+            char testname[256];
+
+            ierr = PetscSNPrintf(testname,sizeof(testname),"MatConvert_IS_XAIJ special case (%d %d, bs %d %d)",ri,ci,rb,cb);
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %s\n",testname);CHKERRQ(ierr);
+
+            ierr = ISCreateBlock(PETSC_COMM_SELF,cb,4,c,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
+
+            ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
+            ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,rb*3,cb*4);CHKERRQ(ierr);
+            ierr = MatSetType(T,MATIS);CHKERRQ(ierr);
+            ierr = MatSetLocalToGlobalMapping(T,rmap,cmap);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
+            ierr = MatISGetLocalMat(T,&lT);CHKERRQ(ierr);
+            ierr = MatSeqAIJSetPreallocation(lT,cb*4,NULL);CHKERRQ(ierr);
+            ierr = MatSetRandom(lT,NULL);CHKERRQ(ierr);
+            ierr = MatISRestoreLocalMat(T,&lT);CHKERRQ(ierr);
+            ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+            ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+            ierr = MatConvert(T,MATAIJ,MAT_INITIAL_MATRIX,&T2);CHKERRQ(ierr);
+            ierr = CheckMat(T,T2,PETSC_TRUE,"MAT_INITIAL_MATRIX");CHKERRQ(ierr);
+            ierr = MatConvert(T,MATAIJ,MAT_REUSE_MATRIX,&T2);CHKERRQ(ierr);
+            ierr = CheckMat(T,T2,PETSC_TRUE,"MAT_REUSE_MATRIX");CHKERRQ(ierr);
+            ierr = MatDestroy(&T2);CHKERRQ(ierr);
+            ierr = MatDuplicate(T,MAT_COPY_VALUES,&T2);CHKERRQ(ierr);
+            ierr = MatConvert(T2,MATAIJ,MAT_INPLACE_MATRIX,&T2);CHKERRQ(ierr);
+            ierr = CheckMat(T,T2,PETSC_TRUE,"MAT_INPLACE_MATRIX");CHKERRQ(ierr);
+            ierr = MatDestroy(&T);CHKERRQ(ierr);
+            ierr = MatDestroy(&T2);CHKERRQ(ierr);
+          }
+          ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
 
   /* test MatDiagonalScale */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatDiagonalScale\n");CHKERRQ(ierr);
@@ -297,12 +348,12 @@ int main(int argc,char **args)
   ierr = MatConvert(B2,MATAIJ,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
   ierr = MatConvert(A2,MATIS,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = CheckMat(B2,T,testT,"MatConvert_Nest_IS MAT_INITIAL_MATRIX");CHKERRQ(ierr);
+  ierr = CheckMat(B2,T,PETSC_TRUE,"MatConvert_Nest_IS MAT_INITIAL_MATRIX");CHKERRQ(ierr);
   ierr = MatConvert(A2,MATIS,MAT_REUSE_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = CheckMat(B2,T,testT,"MatConvert_Nest_IS MAT_REUSE_MATRIX");CHKERRQ(ierr);
+  ierr = CheckMat(B2,T,PETSC_TRUE,"MatConvert_Nest_IS MAT_REUSE_MATRIX");CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
   ierr = MatConvert(A2,MATIS,MAT_INPLACE_MATRIX,&A2);CHKERRQ(ierr);
-  ierr = CheckMat(A2,T,testT,"MatConvert_Nest_IS MAT_INPLACE_MATRIX");CHKERRQ(ierr);
+  ierr = CheckMat(A2,T,PETSC_TRUE,"MatConvert_Nest_IS MAT_INPLACE_MATRIX");CHKERRQ(ierr);
   ierr = MatDestroy(&T);CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
 
@@ -511,30 +562,11 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     }
     ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
   } else {
-    Vec       rv,rv2,lv,lv2;
-    PetscReal error1,error2;
+    PetscBool ok,okt;
 
-    ierr = MatCreateVecs(A,&rv,&lv);CHKERRQ(ierr);
-    ierr = MatCreateVecs(B,&rv2,&lv2);CHKERRQ(ierr);
-
-    ierr = VecSetRandom(rv,NULL);CHKERRQ(ierr);
-    ierr = MatMult(A,rv,lv);CHKERRQ(ierr);
-    ierr = MatMult(B,rv,lv2);CHKERRQ(ierr);
-    ierr = VecAXPY(lv,-1.,lv2);CHKERRQ(ierr);
-    ierr = VecNorm(lv,NORM_INFINITY,&error1);CHKERRQ(ierr);
-
-    ierr = VecSetRandom(lv,NULL);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,lv,rv);CHKERRQ(ierr);
-    ierr = MatMultTranspose(B,lv,rv2);CHKERRQ(ierr);
-    ierr = VecAXPY(rv,-1.,rv2);CHKERRQ(ierr);
-    ierr = VecNorm(rv,NORM_INFINITY,&error2);CHKERRQ(ierr);
-
-    ierr = VecDestroy(&lv);CHKERRQ(ierr);
-    ierr = VecDestroy(&lv2);CHKERRQ(ierr);
-    ierr = VecDestroy(&rv);CHKERRQ(ierr);
-    ierr = VecDestroy(&rv2);CHKERRQ(ierr);
-
-    if (error1 > PETSC_SQRT_MACHINE_EPSILON || error2 > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: (mult) %g, (multt) %g",func,error1,error2);
+    ierr = MatMultEqual(A,B,3,&ok);CHKERRQ(ierr);
+    ierr = MatMultTransposeEqual(A,B,3,&okt);CHKERRQ(ierr);
+    if (!ok || !okt) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
   }
   PetscFunctionReturn(0);
 }
