@@ -7,7 +7,7 @@
 
 typedef struct {
   Vec D, ssT, HyyTH, wwT, Xwork, Fwork;
-  PetscBool allocatedD;
+  PetscBool allocated;
   PetscReal phi;
 } Mat_DiagBrdn;
 
@@ -125,14 +125,14 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMDiagBrdn(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  if (destructive && ldb->allocatedD) {
+  if (destructive && ldb->allocated) {
     ierr = VecDestroy(&ldb->D);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->ssT);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->HyyTH);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->wwT);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->Xwork);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->Fwork);CHKERRQ(ierr);
-    ldb->allocatedD = PETSC_FALSE;
+    ldb->allocated = PETSC_FALSE;
   } else {
     ierr = VecSet(ldb->D, 1.0);CHKERRQ(ierr);
   }
@@ -151,14 +151,14 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
   PetscFunctionBegin;
   lmvm->m = 0;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
-  if (!ldb->allocatedD) {
+  if (!ldb->allocated) {
     ierr = VecDuplicate(X, &ldb->D);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &ldb->ssT);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &ldb->HyyTH);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &ldb->wwT);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &ldb->Xwork);CHKERRQ(ierr);
     ierr = VecDuplicate(F, &ldb->Fwork);CHKERRQ(ierr);
-    ldb->allocatedD = PETSC_TRUE;
+    ldb->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -172,14 +172,14 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMDiagBrdn(Mat B)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (ldb->allocatedD) {
+  if (ldb->allocated) {
     ierr = VecDestroy(&ldb->D);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->ssT);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->HyyTH);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->wwT);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->Xwork);CHKERRQ(ierr);
     ierr = VecDestroy(&ldb->Fwork);CHKERRQ(ierr);
-    ldb->allocatedD = PETSC_FALSE;
+    ldb->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
@@ -197,14 +197,14 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMDiagBrdn(Mat B)
   PetscFunctionBegin;
   lmvm->m = 0;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
-  if (!ldb->allocatedD) {
+  if (!ldb->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &ldb->D);CHKERRQ(ierr);
     ierr = VecDuplicate(lmvm->Xprev, &ldb->ssT);CHKERRQ(ierr);
     ierr = VecDuplicate(lmvm->Xprev, &ldb->HyyTH);CHKERRQ(ierr);
     ierr = VecDuplicate(lmvm->Xprev, &ldb->wwT);CHKERRQ(ierr);
     ierr = VecDuplicate(lmvm->Xprev, &ldb->Xwork);CHKERRQ(ierr);
     ierr = VecDuplicate(lmvm->Fprev, &ldb->Fwork);CHKERRQ(ierr);
-    ldb->allocatedD = PETSC_TRUE;
+    ldb->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -253,7 +253,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   
   ierr = PetscNewLog(B, &ldb);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldb;
-  ldb->allocatedD = PETSC_FALSE;
+  ldb->allocated = PETSC_FALSE;
   ldb->phi = 0.125;
   PetscFunctionReturn(0);
 }

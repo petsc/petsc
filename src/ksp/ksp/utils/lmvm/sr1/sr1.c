@@ -7,7 +7,7 @@
 
 typedef struct {
   Vec *P;
-  PetscBool allocatedP;
+  PetscBool allocated;
 } Mat_LSR1;
 
 /*------------------------------------------------------------*/
@@ -132,9 +132,9 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  if (destructive && lsr1->allocatedP && lmvm->m > 0) {
+  if (destructive && lsr1->allocated && lmvm->m > 0) {
     ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
-    lsr1->allocatedP = PETSC_FALSE;
+    lsr1->allocated = PETSC_FALSE;
   }
   ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -150,9 +150,9 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
   
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
-  if (!lsr1->allocatedP && lmvm->m > 0) {
+  if (!lsr1->allocated && lmvm->m > 0) {
     ierr = VecDuplicateVecs(X, lmvm->m, &lsr1->P);CHKERRQ(ierr);
-    lsr1->allocatedP = PETSC_TRUE;
+    lsr1->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -166,9 +166,9 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMSR1(Mat B)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (lsr1->allocatedP && lmvm->m > 0) {
+  if (lsr1->allocated && lmvm->m > 0) {
     ierr = VecDestroyVecs(lmvm->m, &lsr1->P);CHKERRQ(ierr);
-    lsr1->allocatedP = PETSC_FALSE;
+    lsr1->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
@@ -185,9 +185,9 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMSR1(Mat B)
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
-  if (!lsr1->allocatedP && lmvm->m > 0) {
+  if (!lsr1->allocated && lmvm->m > 0) {
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsr1->P);CHKERRQ(ierr);
-    lsr1->allocatedP = PETSC_TRUE;
+    lsr1->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -215,7 +215,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   
   ierr = PetscNewLog(B, &lsr1);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsr1;
-  lsr1->allocatedP = PETSC_FALSE;
+  lsr1->allocated = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

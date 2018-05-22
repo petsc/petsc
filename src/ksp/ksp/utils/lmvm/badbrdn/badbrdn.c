@@ -1,33 +1,44 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*
-  Limited-memory modified (aka "bad") Broyden's method for approximating 
-  the inverse of a Jacobian.
-  
-  Broyden's method is not guaranteed to be symmetric or positive definite.
-  
-  The solution method is constructed from equation (6) on page 307 of 
-  Griewank "Broyden Updating, The Good and The Bad!" 
-  (http://www.emis.ams.org/journals/DMJDMV/vol-ismp/45_griewank-andreas-broyden.pdf). 
-  The given equation is the recursive inverse-Jacobian application via the 
-  Sherman-Morrison-Woodbury formula. The implementation here unrolls the recursion 
-  into a loop, with the initial vector carrying the J0 inversion/preconditioning. 
+  Limited-memory "good" Broyden's method for approximating the inverse of 
+  a Jacobian.
+*/
+
+typedef struct {
+  Vec *P;
+  PetscBool allocated;
+} Mat_BadBrdn;
+
+/*------------------------------------------------------------*/
+
+/*
+  The solution method is the matrix-free implementation of the inverse Hessian in
+  Equation 6 on page 312 of Griewank "Broyden Updating, The Good and The Bad!" 
+  (http://www.emis.ams.org/journals/DMJDMV/vol-ismp/45_griewank-andreas-broyden.pdf).
   
   dX <- J0^{-1} * F
   
   for i=0,1,2,...,k
-    rho = 1 / (Y[i]^T Y[i])
-    tau = rho * (Y[i]^T dX)
-    dX <- (rho * dX) + (tau * (S[i] - Y[i]))
+    P[i] <- J0^{-1} * Y[i]
+    
+    for j=0,1,2,...,(i-1)
+      tau = (Y[j]^T Y[i]) / (Y[j]^T Y[j])
+      P[i] <- P[i] + (tau * (S[j] - P[j]))
+    end
+    
+    tau = (Y[i]^T F) / (Y[i]^T Y[i])
+    dX <- dX + (tau * (S[i] - P[i]))
   end
  */
 
 PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          i;
-  PetscReal         rho, tau, ytx, yty;
+  PetscInt          i, j;
+  PetscReal         yty[lmvm->k+1], ytf;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -37,14 +48,139 @@ PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
   ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
+  for (i = 0; i <= lmvm->k-1; ++i) {
+    ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lbb->P[i]);CHKERRQ(ierr);
+    for (j = 0; j <= i-1; ++j) {
+      ierr = VecDot(lmvm->Y[j], lmvm->Y[i], &ytf);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(lbb->P[i], ytf/yty[j], -ytf/yty[j], 1.0, lmvm->S[j], lbb->P[j]);CHKERRQ(ierr);
+    }
+    ierr = VecDotBegin(lmvm->Y[i], F, &ytf);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->Y[i], &yty[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], F, &ytf);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->Y[i], &yty[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(dX, ytf/yty[i], -ytf/yty[i], 1.0, lmvm->S[i], lbb->P[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*
+  The forward product is the matrix-free implementation of the direct update in 
+  Equation 6 on page 302 of Griewank "Broyden Updating, The Good and The Bad!"
+  (http://www.emis.ams.org/journals/DMJDMV/vol-ismp/45_griewank-andreas-broyden.pdf).
   
-  for (i = 0; i <= lmvm->k; ++i) {
-    ierr = VecDotBegin(lmvm->Y[i], lmvm->Y[i], &yty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], lmvm->Y[i], &yty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    rho = 1.0/yty; tau = rho * ytx;
-    ierr = VecAXPBYPCZ(dX, tau, -tau, rho, lmvm->S[i], lmvm->Y[i]);CHKERRQ(ierr);
+  Z <- J0 * X
+  
+  for i=0,1,2,...,k
+    P[i] <- J0 * S[i]
+    
+    for j=0,1,2,...,(i-1)
+      tau = (Y[j]^T S[i]) / (Y[j]^T S[j])
+      P[i] <- P[i] + (tau * (Y[j] - P[j]))
+    end
+    
+    tau = (Y[i]^T X) / (Y[i]^T S[i])
+    dX <- dX + (tau * (Y[i] - P[i]))
+  end
+ */
+
+PetscErrorCode MatMult_LMVMBadBrdn(Mat B, Vec X, Vec Z)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  PetscInt          i, j;
+  PetscReal         yts[lmvm->k+1], ytx;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
+  VecCheckSameSize(X, 2, Z, 3);
+  VecCheckMatCompatible(B, X, 2, Z, 3);
+  
+  ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
+  for (i = 0; i <= lmvm->k-1; ++i) {
+    ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbb->P[i]);CHKERRQ(ierr);
+    for (j = 0; j <= i-1; ++j) {
+      ierr = VecDot(lmvm->Y[j], lmvm->S[i], &ytx);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(lbb->P[i], ytx/yts[j], -ytx/yts[j], 1.0, lmvm->Y[j], lbb->P[j]);CHKERRQ(ierr);
+    }
+    ierr = VecDotBegin(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[i], lmvm->S[i], &yts[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(Z, ytx/yts[i], -ytx/yts[i], 1.0, lmvm->Y[i], lbb->P[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatReset_LMVMBadBrdn(Mat B, PetscBool destructive)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  if (destructive && lbb->allocated && lmvm->m > 0) {
+    ierr = VecDestroyVecs(lmvm->m, &lbb->P);CHKERRQ(ierr);
+    lbb->allocated = PETSC_FALSE;
+  }
+  ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatAllocate_LMVMBadBrdn(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn          *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
+  if (!lbb->allocated && lmvm->m > 0) {
+    ierr = VecDuplicateVecs(X, lmvm->m, &lbb->P);CHKERRQ(ierr);
+    lbb->allocated = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatDestroy_LMVMBadBrdn(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (lbb->allocated && lmvm->m > 0) {
+    ierr = VecDestroyVecs(lmvm->m, &lbb->P);CHKERRQ(ierr);
+    lbb->allocated = PETSC_FALSE;
+  }
+  ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
+  ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode MatSetUp_LMVMBadBrdn(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_BadBrdn       *lbb = (Mat_BadBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
+  if (!lbb->allocated && lmvm->m > 0) {
+    ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lbb->P);CHKERRQ(ierr);
+    lbb->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -53,14 +189,25 @@ PetscErrorCode MatSolve_LMVMBadBrdn(Mat B, Vec F, Vec dX)
 
 PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 {
+  Mat_BadBrdn       *lbb;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBADBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
+  B->ops->mult = MatMult_LMVMBadBrdn;
   B->ops->solve = MatSolve_LMVMBadBrdn;
+  B->ops->setup = MatSetUp_LMVMBadBrdn;
+  B->ops->destroy = MatDestroy_LMVMBadBrdn;
+
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
+  lmvm->ops->allocate = MatAllocate_LMVMBadBrdn;
+  lmvm->ops->reset = MatReset_LMVMBadBrdn;
+
+  ierr = PetscNewLog(B, &lbb);CHKERRQ(ierr);
+  lmvm->ctx = (void*)lbb;
+  lbb->allocated = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -69,8 +216,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 /*@
    MatCreateLMVMBadBrdn - Creates a limited-memory modified (aka "bad") Broyden-type 
    approximation matrix used for a Jacobian. L-BadBrdn is not guaranteed to be 
-   symmetric or positive-definite. This implementation only supports the MatSolve() 
-   operation, which is an application of the approximate inverse of the Jacobian. 
+   symmetric or positive-definite.
    
    The provided local and global sizes must match the solution and function vectors 
    used with MatLMVMUpdate() and MatSolve(). The resulting L-BadBrdn matrix will have 

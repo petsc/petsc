@@ -8,7 +8,7 @@
 typedef struct {
   Vec *P;
   Vec work;
-  PetscBool allocatedP;
+  PetscBool allocated;
 } Mat_LDFP;
 
 /*------------------------------------------------------------*/
@@ -156,10 +156,10 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  if (destructive && ldfp->allocatedP && lmvm->m > 0) {
+  if (destructive && ldfp->allocated && lmvm->m > 0) {
     ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
-    ldfp->allocatedP = PETSC_FALSE;
+    ldfp->allocated = PETSC_FALSE;
   }
   ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -175,10 +175,10 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
   
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
-  if (!ldfp->allocatedP && lmvm->m > 0) {
+  if (!ldfp->allocated && lmvm->m > 0) {
     ierr = VecDuplicate(X, &ldfp->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(X, lmvm->m, &ldfp->P);CHKERRQ(ierr);
-    ldfp->allocatedP = PETSC_TRUE;
+    ldfp->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -192,10 +192,10 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (ldfp->allocatedP && lmvm->m > 0) {
+  if (ldfp->allocated && lmvm->m > 0) {
     ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &ldfp->P);CHKERRQ(ierr);
-    ldfp->allocatedP = PETSC_FALSE;
+    ldfp->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
@@ -212,10 +212,10 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMDFP(Mat B)
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
-  if (!ldfp->allocatedP && lmvm->m > 0) {
+  if (!ldfp->allocated && lmvm->m > 0) {
     ierr = VecDuplicate(lmvm->Xprev, &ldfp->work);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->P);CHKERRQ(ierr);
-    ldfp->allocatedP = PETSC_TRUE;
+    ldfp->allocated = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -243,7 +243,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
 
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldfp;
-  ldfp->allocatedP = PETSC_FALSE;
+  ldfp->allocated = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
