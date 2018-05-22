@@ -190,10 +190,9 @@ class Installer(script.Script):
   def copyExamples(self, src, dst):
     """copy the examples directories
     """
-    top=os.path.relpath(src,os.path.abspath(os.curdir))
-    for root, dirs, files in os.walk(top, topdown=False):
-        if not os.path.basename(root) == "examples": continue
-        self.copies.extend(self.copytree(root, os.path.join(dst,root)))
+    for root, dirs, files in os.walk(src, topdown=False):
+      if not os.path.basename(root) == "examples": continue
+      self.copies.extend(self.copytree(root, root.replace(src,dst)))
     return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= ['.DSYM','.o','.pyc'], recurse = 1):
