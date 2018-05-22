@@ -10886,3 +10886,43 @@ PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscBool *has)
   }
   PetscFunctionReturn(0);
 }
+
+/*@
+    MatHasCongruentLayouts - Determines whether the rows and columns layouts
+    of the matrix are congruent
+
+   Collective on mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  cong - either PETSC_TRUE or PETSC_FALSE
+
+   Level: beginner
+
+   Notes:
+
+.keywords: matrix, has
+
+.seealso: MatCreate(), MatSetSizes()
+@*/
+PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(cong,2);
+  if (!mat->rmap || !mat->cmap) {
+    *cong = mat->rmap == mat->cmap ? PETSC_TRUE : PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  if (mat->congruentlayouts == PETSC_DECIDE) { /* first time we compare rows and cols layouts */
+    ierr = PetscLayoutCompare(mat->rmap,mat->cmap,cong);CHKERRQ(ierr);
+    if (*cong) mat->congruentlayouts = 1;
+    else       mat->congruentlayouts = 0;
+  } else *cong = mat->congruentlayouts ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}

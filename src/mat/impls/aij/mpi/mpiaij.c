@@ -122,9 +122,11 @@ PetscErrorCode  MatDiagonalSet_MPIAIJ(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*) Y->data;
+  PetscBool         cong;
 
   PetscFunctionBegin;
-  if (Y->assembled && Y->rmap->rstart == Y->cmap->rstart && Y->rmap->rend == Y->cmap->rend) {
+  ierr = MatHasCongruentLayouts(Y,&cong);CHKERRQ(ierr);
+  if (Y->assembled && cong) {
     ierr = MatDiagonalSet(aij->A,D,is);CHKERRQ(ierr);
   } else {
     ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
@@ -774,6 +776,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
   PetscInt      *lrows;
   PetscInt       r, len;
+  PetscBool      cong;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -792,13 +795,8 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   }
   /* Must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
-  if (A->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
-    PetscBool cong;
-    ierr = PetscLayoutCompare(A->rmap,A->cmap,&cong);CHKERRQ(ierr);
-    if (cong) A->congruentlayouts = 1;
-    else      A->congruentlayouts = 0;
-  }
-  if ((diag != 0.0) && A->congruentlayouts) {
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
+  if ((diag != 0.0) && cong) {
     ierr = MatZeroRows(mat->A, len, lrows, diag, NULL, NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
@@ -4322,7 +4320,7 @@ PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[]
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscBool      flg;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
