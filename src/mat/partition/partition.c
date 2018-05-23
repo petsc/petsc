@@ -206,6 +206,53 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 }
 
 /*@
+   MatPartitioningApplyND - Gets a nested dissection partitioning for a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
+.  matp - the matrix partitioning object
+
+   Output Parameters:
+.   partitioning - the partitioning. For each local node, a positive value indicates the processor
+                   number the node has been assigned to. Negative x values indicate the separator level -(x+1).
+
+   Level: beginner
+
+   The user can define additional partitionings; see MatPartitioningRegister().
+
+.keywords: matrix, get, partitioning
+
+.seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
+           MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
+           ISPartitioningCount()
+@*/
+PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
+{
+  PetscErrorCode ierr;
+  PetscBool      flag = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
+  PetscValidPointer(partitioning,2);
+  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!matp->ops->applynd) SETERRQ1(PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
+  ierr = PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
+  ierr = (*matp->ops->applynd)(matp,partitioning);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,((PetscObject)matp)->prefix,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
+  if (flag) {
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
+    ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
+    ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
    Collective on Mat
