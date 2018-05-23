@@ -666,34 +666,21 @@ class generateExamples(Petsc):
     if 'SKIP' not in testDict:
       testDict['SKIP'] = []
     # MPI requirements
-    nsize=testDict.get('nsize',1)
-    # nsize could have for loops at this point
-    if not isinstance(nsize,int):
-      try: 
-        nsize=int(nsize)
-      except:
-        pass
-    if isinstance(nsize, int):
-      if nsize>1 and 'MPI_IS_MPIUNI' in self.conf:
-          if debug: print(indent+"Cannot run parallel tests")
-          testDict['SKIP'].append("Parallel test with serial build")
- 
-    # The requirements for the test are the sum of all the run subtests
-    if 'subtests' in testDict:
-      if 'requires' not in testDict: testDict['requires']=""
-      for stest in testDict['subtests']:
-        if 'requires' in testDict[stest]:
-          testDict['requires']+=" "+testDict[stest]['requires']
-        nsize=testDict[stest].get('nsize',1)
-        if not isinstance(nsize,int):
-          try: 
-            nsize=int(nsize)
-          except:
-            pass
-        if isinstance(nsize, int):
-          if nsize>1 and 'MPI_IS_MPIUNI' in self.conf:
-            testDict['SKIP'].append("Parallel test with serial build")
+    if 'MPI_IS_MPIUNI' in self.conf:
+      nsize=testDict.get('nsize','1')
+      if str(nsize) != '1':
+        testDict['SKIP'].append("Parallel test with serial build")
 
+      # The requirements for the test are the sum of all the run subtests
+      if 'subtests' in testDict:
+        if 'requires' not in testDict: testDict['requires']=""
+        for stest in testDict['subtests']:
+          if 'requires' in testDict[stest]:
+            testDict['requires']+=" "+testDict[stest]['requires']
+          nsize=testDict[stest].get('nsize','1')
+          if str(nsize) != '1':
+            testDict['SKIP'].append("Parallel test with serial build")
+            break
 
     # Now go through all requirements
     if 'requires' in testDict:
@@ -775,7 +762,6 @@ class generateExamples(Petsc):
     indent="   "
     fhname=os.path.join(self.testroot_dir,'GenPetscTests_summarize.txt')
     fh=open(fhname,"w")
-    #print("See ", fhname)
     for root in dataDict:
       relroot=self.srcrelpath(root)
       pkg=relroot.split("/")[1]
@@ -843,7 +829,6 @@ class generateExamples(Petsc):
     """
     Walk a directory tree, starting from 'top'
     """
-    #print("action", action)
     # Goal of action is to fill this dictionary
     dataDict={}
     for root, dirs, files in os.walk(top, topdown=True):
