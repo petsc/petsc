@@ -1930,7 +1930,8 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     Vec x
     Vec, pointer :: y(:)
@@ -1971,7 +1972,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2030,7 +2032,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2067,7 +2070,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2102,7 +2106,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
