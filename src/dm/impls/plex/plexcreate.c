@@ -1,5 +1,6 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
+#include <petsc/private/hashseti.h>          /*I   "petscdmplex.h"   I*/
 #include <petscsf.h>
 
 /*@
@@ -2310,11 +2311,10 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
 {
   PetscSF         sfPoint;
   PetscLayout     vLayout;
-  PetscHashI      vhash;
+  PetscHSetI      vhash;
   PetscSFNode    *remoteVerticesAdj, *vertexLocal, *vertexOwner, *remoteVertex;
   const PetscInt *vrange;
-  PetscInt        numVerticesAdj, off, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
-  PETSC_UNUSED PetscHashIIter ret, iter;
+  PetscInt        numVerticesAdj, off = 0, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
   PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
@@ -2328,15 +2328,16 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
   ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(vLayout, &vrange);CHKERRQ(ierr);
   /* Count vertices and map them to procs */
-  PetscHashICreate(vhash);
+  ierr = PetscHSetICreate(&vhash);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
     for (p = 0; p < numCorners; ++p) {
-      PetscHashIPut(vhash, cells[c*numCorners+p], ret, iter);
+      ierr = PetscHSetIAdd(vhash, cells[c*numCorners+p]);CHKERRQ(ierr);
     }
   }
-  PetscHashISize(vhash, numVerticesAdj);
+  ierr = PetscHSetIGetSize(vhash, &numVerticesAdj);CHKERRQ(ierr);
   ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
-  off = 0; ierr = PetscHashIGetKeys(vhash, &off, verticesAdj);CHKERRQ(ierr);
+  ierr = PetscHSetIGetElems(vhash, &off, verticesAdj);CHKERRQ(ierr);
+  ierr = PetscHSetIDestroy(&vhash);CHKERRQ(ierr);
   if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
   ierr = PetscSortInt(numVerticesAdj, verticesAdj);CHKERRQ(ierr);
   ierr = PetscMalloc1(numVerticesAdj, &remoteVerticesAdj);CHKERRQ(ierr);
@@ -2399,7 +2400,6 @@ PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM dm, PetscInt spaceDi
   ierr = PetscObjectSetName((PetscObject) sfPoint, "point SF");CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sfPoint, numCells+numVerticesAdj, numVerticesGhost, localVertex, PETSC_OWN_POINTER, remoteVertex, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
-  PetscHashIDestroy(vhash);
   /* Fill in the rest of the topology structure */
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
