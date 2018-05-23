@@ -410,7 +410,9 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       example_problem_num = 0
       for line in open(logfile_examples_full):
         examples_summary_file.write(line)
-        if re.search(r'not ok', line) or re.search(r'[Pp]ossible [Pp]roblem', line) or re.search(r'error: ld returned', line) or re.search(r'warning:', line) or re.search(r': warning ', line) or re.search(r': error:', line):
+        if re.search(r'not ok', line) or re.search(r'[Pp]ossible [Pp]roblem', line) or re.search(r'error: ld returned', line) \
+           or re.search(r'warning:', line) or re.search(r': warning ', line) or re.search(r': error:', line) \
+           or re.search(r'^Error: ',line):
           example_problem_num += 1
 
       if example_problem_num < 1:

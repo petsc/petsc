@@ -21,7 +21,7 @@
 
       ! Settings:
       integer, parameter        :: verbose=0               ! 0: silent, >=1 : increasing amount of debugging output
-      integer, parameter        :: msgLen = 30             ! number of reals which is sent with MPI_iSend
+      integer, parameter        :: msgLen = 30             ! number of reals which is sent with MPI_Isend
       PetscReal, parameter      :: second=0.1;             ! time is sped up by a factor 10
 
       ! Codes
@@ -97,7 +97,7 @@
          call PetscLogFlops(23000d0,ierr)
          call PetscSleep(1*second, ierr)
          if (size>1) then
-         call MPI_iSend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
+         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
      &                        mod(rank+1,size),                                             &
      &                        tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
          call  MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                             &
@@ -214,7 +214,7 @@
          call PetscLogFlops(23000d0,ierr)
          call PetscSleep(1*second, ierr)
          if (size>1) then
-         call MPI_ISend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
+         call MPI_Isend( message, msgLen, MPI_DOUBLE_PRECISION,                             &
      &                        mod(rank+1,size),                                             &
      &                   tagMsg+rank, PETSC_COMM_WORLD, req, ierr)
          call MPI_Recv( message, msgLen, MPI_DOUBLE_PRECISION,                              &
