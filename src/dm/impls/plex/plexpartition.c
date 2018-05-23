@@ -1882,7 +1882,7 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, PetscInt rank, PetscInt point, PetscBool up, PetscBool down)
+static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHashI ht, PetscInt point, PetscBool up, PetscBool down)
 {
   PetscErrorCode ierr;
 
@@ -1897,9 +1897,10 @@ static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, Pet
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       for (i = 0; i < closureSize; i++) {
         PetscInt cpoint = closure[2*i];
+        PETSC_UNUSED PetscHashIIter iter, ret;
 
-        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
-        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+        PetscHashIPut(ht, cpoint, ret, iter);
+        ierr = DMPlexAddClosure_Tree(dm,ht,cpoint,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     }
@@ -1914,9 +1915,10 @@ static PetscErrorCode DMPlexPartitionLabelClosure_Tree(DM dm, DMLabel label, Pet
 
       for (i = 0; i < numChildren; i++) {
         PetscInt cpoint = children[i];
+        PETSC_UNUSED PetscHashIIter iter, ret;
 
-        ierr = DMLabelSetValue(label,cpoint,rank);CHKERRQ(ierr);
-        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,cpoint,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
+        PetscHashIPut(ht, cpoint, ret, iter);
+        ierr = DMPlexAddClosure_Tree(dm,ht,cpoint,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
   }
@@ -1940,29 +1942,46 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
   const PetscInt *ranks,   *points;
   PetscInt        numRanks, numPoints, r, p, c, closureSize;
   PetscInt       *closure = NULL;
+  DM_Plex        *mesh    = (DM_Plex *)dm->data;
+  PetscBool       hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMLabelGetValueIS(label, &rankIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
   ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+
   for (r = 0; r < numRanks; ++r) {
     const PetscInt rank = ranks[r];
+    PetscHashI     ht;
+    PETSC_UNUSED   PetscHashIIter iter, ret;
+    PetscInt       nkeys, *keys, off = 0;
 
     ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    PetscHashICreate(ht);
+    PetscHashIResize(ht, numPoints*16);
     for (p = 0; p < numPoints; ++p) {
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
-        ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);
-        ierr = DMPlexPartitionLabelClosure_Tree(dm,label,rank,closure[c],PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
+        PetscHashIPut(ht, closure[c], ret, iter);
+        if (hasTree) {ierr = DMPlexAddClosure_Tree(dm, ht, closure[c], PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);}
       }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    PetscHashISize(ht, nkeys);
+    ierr = PetscMalloc1(nkeys, &keys);CHKERRQ(ierr);
+    PetscHashIGetKeys(ht, &off, keys);
+    PetscHashIDestroy(ht);
+    ierr = PetscSortInt(nkeys, keys);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, nkeys, keys, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);
+    ierr = DMLabelSetStratumIS(label, rank, pointIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
-  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);}
+
+  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, NULL, &closure);CHKERRQ(ierr);}
   ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
   ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
