@@ -452,4 +452,8 @@ int main(int argc,char **argv)
       suffix: 2
       args: -sa_method tlm -ts_type cn -pc_type lu
 
+   test:
+      suffix: 3
+      args: -sa_method adj -ts_type rk -ts_rk_type 2a -ts_adapt_type dsp
+
 TEST*/
