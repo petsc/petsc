@@ -35,7 +35,7 @@ typedef struct {
     dX <- dX + (gamma * S[i]) - (zeta * P[i])
   end
 */
-PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -106,7 +106,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     Z <- Z + ((alpha[i] - beta) * Y[i])
   end
 */
-PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
+static PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -116,11 +116,6 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   PetscReal         beta, yts, ytx, stz;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
-  VecCheckSameSize(X, 2, Z, 3);
-  VecCheckMatCompatible(B, X, 3, Z, 2);
-  
   /* Copy the function into the work vector for the first loop */
   ierr = VecCopy(X, ldfp->work);CHKERRQ(ierr);
   
@@ -149,7 +144,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
+static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -181,7 +176,7 @@ PETSC_INTERN PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
+static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -199,7 +194,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
+static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -217,7 +212,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatDestroy_LMVMDFP(Mat B)
+static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -236,7 +231,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetUp_LMVMDFP(Mat B)
+static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
@@ -263,7 +258,6 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDFP);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
-  B->ops->mult = MatMult_LMVMDFP;
   B->ops->solve = MatSolve_LMVMDFP;
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;
@@ -273,6 +267,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   lmvm->ops->allocate = MatAllocate_LMVMDFP;
   lmvm->ops->reset = MatReset_LMVMDFP;
   lmvm->ops->update = MatUpdate_LMVMDFP;
+  lmvm->ops->mult = MatMult_LMVMDFP;
 
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldfp;

@@ -20,6 +20,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscBool         same;
+  PetscReal         yty, yts;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -40,6 +41,14 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
     if (same) {
       ierr = MatLMVMUpdate(lmvm->J0, X, F);CHKERRQ(ierr);
     }
+  }
+  /* Update the J0 default scale */
+  if (lmvm->k >= 0) {
+    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
+    lmvm->J0default = yty/yts;
   }
   PetscFunctionReturn(0);
 }
@@ -448,6 +457,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
     } else {
       /* there's no product, so treat J0 as identity */
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
+      ierr = VecScale(Y, lmvm->J0default);CHKERRQ(ierr);
     }
   } else if (lmvm->user_scale) {
     if (lmvm->J0diag) {
@@ -461,6 +471,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
   } else {
     /* There is no J0 representation so just apply an identity matrix */
     ierr = VecCopy(X, Y);CHKERRQ(ierr);
+    ierr = VecScale(Y, lmvm->J0default);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -526,6 +537,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
   } else {
     /* There is no J0 representation so just apply an identity matrix */
     ierr = VecCopy(X, Y);CHKERRQ(ierr);
+    ierr = VecScale(Y, 1.0/lmvm->J0default);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -45,7 +45,7 @@ typedef struct {
     dX <- dX + ((1 - phi) * (Y[i]^T P[i]) * (W^T F) * W)
   end
 */
-PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -141,7 +141,7 @@ PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
     dX <- dX + ((1 - phi) * (S[i]^T P[i]) * (W^T F) * W)
   end
 */
-PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
+static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -161,12 +161,6 @@ PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
     ierr = MatMult_LMVMDFP(B, X, Z);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  
-  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
-  VecCheckSameSize(X, 2, Z, 3);
-  VecCheckMatCompatible(B, X, 2, Z, 3);
-  
   /* Start the outer iterations for (B * X) */
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
@@ -206,7 +200,7 @@ PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -238,7 +232,7 @@ PETSC_INTERN PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
+static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -256,7 +250,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -274,7 +268,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
+static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -293,7 +287,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
+static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -311,7 +305,7 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -348,6 +342,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   lmvm->ops->allocate = MatAllocate_LMVMSymBrdn;
   lmvm->ops->reset = MatReset_LMVMSymBrdn;
   lmvm->ops->update = MatUpdate_LMVMSymBrdn;
+  lmvm->ops->mult = MatMult_LMVMSymBrdn;
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;

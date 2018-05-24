@@ -13,7 +13,7 @@ typedef struct {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSolve_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatSolve_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -30,17 +30,13 @@ PetscErrorCode MatSolve_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatMult_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatMult_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
-  VecCheckSameSize(F, 2, dX, 3);
-  VecCheckMatCompatible(B, dX, 3, F, 2);
   ierr = VecPointwiseMult(dX, ldb->D, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -57,7 +53,7 @@ PetscErrorCode MatMult_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
   are directly applied to the diagonal instead of being stored 
   for later use.
 */
-PetscErrorCode MatUpdate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
+static PetscErrorCode MatUpdate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -118,7 +114,7 @@ PetscErrorCode MatUpdate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatReset_LMVMDiagBrdn(Mat B, PetscBool destructive)
+static PetscErrorCode MatReset_LMVMDiagBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -142,7 +138,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMDiagBrdn(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatAllocate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
+static PetscErrorCode MatAllocate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -165,7 +161,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatDestroy_LMVMDiagBrdn(Mat B)
+static PetscErrorCode MatDestroy_LMVMDiagBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -188,7 +184,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMDiagBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetUp_LMVMDiagBrdn(Mat B)
+static PetscErrorCode MatSetUp_LMVMDiagBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -211,7 +207,7 @@ PETSC_INTERN PetscErrorCode MatSetUp_LMVMDiagBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMDiagBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMDiagBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -238,7 +234,6 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBRDN);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
   
-  B->ops->mult = MatMult_LMVMDiagBrdn;
   B->ops->solve = MatSolve_LMVMDiagBrdn;
   B->ops->setfromoptions = MatSetFromOptions_LMVMDiagBrdn;
   B->ops->setup = MatSetUp_LMVMDiagBrdn;
@@ -250,6 +245,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   lmvm->ops->update = MatUpdate_LMVMDiagBrdn;
   lmvm->ops->allocate = MatAllocate_LMVMDiagBrdn;
   lmvm->ops->reset = MatReset_LMVMDiagBrdn;
+  lmvm->ops->mult = MatMult_LMVMDiagBrdn;
   
   ierr = PetscNewLog(B, &ldb);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldb;

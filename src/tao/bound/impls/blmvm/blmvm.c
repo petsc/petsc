@@ -279,6 +279,7 @@ PETSC_INTERN PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptio
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscErrorCode ierr;
+  PetscBool      is_lmvm, is_spd;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
@@ -287,12 +288,15 @@ PETSC_INTERN PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptio
   ierr = PetscOptionsEList("-tao_blmvm_as_type","active set estimation method", "", BLMVM_AS_TYPE, BLMVM_AS_SIZE, BLMVM_AS_TYPE[blmP->as_type], &blmP->as_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_blmvm_as_tol", "initial tolerance used when estimating actively bounded variables","",blmP->as_tol,&blmP->as_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_blmvm_as_step", "step length used when estimating actively bounded variables","",blmP->as_step,&blmP->as_step,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)blmP->M, MATLMVM, &is_lmvm);CHKERRQ(ierr);
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
+  ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
   PetscFunctionReturn(0);
 }
-
 
 /*------------------------------------------------------------*/
 PETSC_INTERN PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)

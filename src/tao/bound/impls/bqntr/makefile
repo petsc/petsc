@@ -1,8 +1,13 @@
 ALL: lib
 
-DIRS     = blmvm tron bncg bnk bqntr
-
-LOCDIR   = src/tao/bound/impls/
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = bqntr.c
+SOURCEF  = 
+SOURCEH  = 
+LIBBASE  = libpetsctao
+MANSEC   = Tao
+LOCDIR   = src/tao/bound/impls/bqntr/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

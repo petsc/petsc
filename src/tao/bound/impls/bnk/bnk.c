@@ -1371,7 +1371,7 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->M               = 0;
   bnk->bfgs_pre        = 0;
   bnk->init_type       = BNK_INIT_INTERPOLATION;
-  bnk->update_type     = BNK_UPDATE_INTERPOLATION;
+  bnk->update_type     = BNK_UPDATE_REDUCTION;
   bnk->as_type         = BNK_AS_BERTSEKAS;
   
   /* Create the embedded BNCG solver */

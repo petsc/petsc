@@ -21,6 +21,7 @@ struct _MatOps_LMVM {
   PetscErrorCode (*update)(Mat,Vec,Vec);
   PetscErrorCode (*allocate)(Mat,Vec,Vec);
   PetscErrorCode (*reset)(Mat,PetscBool);
+  PetscErrorCode (*mult)(Mat,Vec,Vec);
 };
 
 typedef struct {
@@ -35,11 +36,14 @@ typedef struct {
   PetscBool user_pc, user_ksp, user_scale;
   PetscReal ksp_rtol, ksp_atol;
   PetscInt ksp_max_it;
-  PetscReal J0scalar;
+  PetscReal J0scalar, J0default;
   Vec J0diag;
   Mat J0;
   PC J0pc;
   KSP J0ksp;
+  
+  /* Data structures to support common Mat functions */
+  PetscReal shift;
   
   /* Miscellenous parameters */
   PetscBool square; /* flag for defining the LMVM approximation as a square matrix */
@@ -47,12 +51,13 @@ typedef struct {
   void *ctx; /* implementation specific context */
 } Mat_LMVM;
 
-/* Shared internal functions for LMVM matrices
-   NOTE: MATLMVM is not a registered matrix type */
+/* Shared internal functions for LMVM matrices */
 PETSC_INTERN PetscErrorCode MatUpdateKernel_LMVM(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatUpdate_LMVM(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatAllocate_LMVM(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatReset_LMVM(Mat, PetscBool);
+
+/* LMVM implementations of core Mat functionality */
 PETSC_INTERN PetscErrorCode MatGetVecs_LMVM(Mat, Vec*, Vec*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_LMVM(Mat);
@@ -69,23 +74,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_LMVMBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMBadBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMSymBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMDiagBrdn(Mat);
-
-/* Internal solve routines for derived LMVM types */
-PETSC_INTERN PetscErrorCode MatSolve_LMVMDFP(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMBFGS(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMSR1(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMBadBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMSymBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_LMVMDiagBrdn(Mat, Vec, Vec);
-
-/* Internal product routines for derived LMVM types */
-PETSC_INTERN PetscErrorCode MatMult_LMVMDFP(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMBFGS(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMSR1(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMBadBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMSymBrdn(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatMult_LMVMDiagBrdn(Mat, Vec, Vec);
 
 #endif

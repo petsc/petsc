@@ -32,7 +32,7 @@ typedef struct {
   end
  */
 
-PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -85,7 +85,7 @@ PetscErrorCode MatSolve_LMVMBrdn(Mat B, Vec F, Vec dX)
   end
  */
 
-PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
+static PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -94,12 +94,6 @@ PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
   PetscReal         sts[lmvm->k+1], stx;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
-  VecCheckSameSize(X, 2, Z, 3);
-  VecCheckMatCompatible(B, X, 2, Z, 3);
-  
   ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k-1; ++i) {
     ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbrdn->P[i]);CHKERRQ(ierr);
@@ -118,7 +112,7 @@ PetscErrorCode MatMult_LMVMBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
+static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -135,7 +129,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
+static PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -152,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVMBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
+static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -170,7 +164,7 @@ PETSC_INTERN PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
+static PetscErrorCode MatSetUp_LMVMBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
@@ -195,7 +189,6 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
-  B->ops->mult = MatMult_LMVMBrdn;
   B->ops->solve = MatSolve_LMVMBrdn;
   B->ops->setup = MatSetUp_LMVMBrdn;
   B->ops->destroy = MatDestroy_LMVMBrdn;
@@ -204,6 +197,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMBrdn;
   lmvm->ops->reset = MatReset_LMVMBrdn;
+  lmvm->ops->mult = MatMult_LMVMBrdn;
 
   ierr = PetscNewLog(B, &lbrdn);CHKERRQ(ierr);
   lmvm->ctx = (void*)lbrdn;
