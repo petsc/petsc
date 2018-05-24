@@ -1,4 +1,3 @@
-np
 nprob = dfo(np,1);
 n = dfo(np,2);
 m = dfo(np,3);
@@ -20,3 +19,5 @@ npmax = 2*n+1;
 Low = -Inf(1,n);
 Upp = Inf(1,n);
  
+X = xs;
+
