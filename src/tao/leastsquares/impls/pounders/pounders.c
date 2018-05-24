@@ -1018,8 +1018,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   mfqP->npmax = PetscMin((mfqP->n+1)*(mfqP->n+2)/2,mfqP->npmax);
   mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n+2);
 
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Xhist);CHKERRQ(ierr);
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Xhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fhist);CHKERRQ(ierr);
   for (i=0;i<mfqP->n+1;i++) {
     ierr = VecDuplicate(tao->solution,&mfqP->Xhist[i]);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[i]);CHKERRQ(ierr);
@@ -1028,7 +1028,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   ierr = VecDuplicate(tao->sep_objective,&mfqP->workfvec);CHKERRQ(ierr);
   mfqP->nHist = 0;
 
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fres);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fres);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->npmax*mfqP->m,&mfqP->RES);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work2);CHKERRQ(ierr);

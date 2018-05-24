@@ -7,7 +7,7 @@ else
 end
 SolverNumber = SolverNumber + 1;
     
-Results{SolverNumber,np}.alg = 'MATLAB Pounders';
+Results{SolverNumber,np}.alg = 'TAO Pounders';
 Results{SolverNumber,np}.problem = ['problem ' num2str(np) ' from More/Wild'];
 Results{SolverNumber,np}.H = fvals;
 Results{SolverNumber,np}.X = X_hist;

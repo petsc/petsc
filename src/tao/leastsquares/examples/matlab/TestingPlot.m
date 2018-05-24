@@ -1,11 +1,5 @@
-% callpounders.m    Modified 04/9/2010. Copyright 2010
-% Stefan Wild and Jorge More', Argonne National Laboratory.
-%
-% Sample calling syntax for testing taopounders
-
 global fvals fvecs nfev X_hist 
 addpath('more_wild_probs/')
-
 
 % gtol    [dbl] Tolerance for the 2-norm of the model gradient (1e-4)
 gtol = 1e-13;
@@ -35,7 +29,18 @@ factor = 10;
 load dfo.dat
 probtype = 'smooth';
 to_solve = 1:53;
-Results = cell(1,length(to_solve));
+nf_const = 10;
 
-nf_const = 50;
+SolverNumber = 2;
+
+load results Results;
+H = inf(nf_const*(max(dfo(to_solve))+1),length(to_solve),SolverNumber);
+for np = to_solve
+    for s = 1:SolverNumber
+        H(1:length(Results{s,np}.H),np,s) = Results{s,np}.H;     
+    end
+end
+h = perf_profile(H,1e-3,0);
+legend(h,{Results{1,1}.alg, Results{2,1}.alg});
+saveas(gca,'perf.png');
 
