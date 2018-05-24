@@ -206,6 +206,38 @@ PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
+PETSC_INTERN PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscReal         curvature;
+
+  PetscFunctionBegin;
+  if (lmvm->m == 0) PetscFunctionReturn(0);
+  if (lmvm->prev_set) {
+    /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
+    ierr = VecAXPBY(lmvm->Xprev, 1.0, -1.0, X);CHKERRQ(ierr);
+    ierr = VecAXPBY(lmvm->Fprev, 1.0, -1.0, F);CHKERRQ(ierr);
+    /* Test if the updates can be accepted */
+    ierr = VecDot(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
+    if (curvature > -lmvm->eps) {
+      /* Update is good, accept it */
+      ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
+    } else {
+      /* Update is bad, skip it */
+      ++lmvm->nrejects;
+    }
+  }
+
+  /* Save the solution and function to be used in the next update */
+  ierr = VecCopy(X, lmvm->Xprev);CHKERRQ(ierr);
+  ierr = VecCopy(F, lmvm->Fprev);CHKERRQ(ierr);
+  lmvm->prev_set = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
@@ -315,6 +347,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMSymBrdn;
   lmvm->ops->reset = MatReset_LMVMSymBrdn;
+  lmvm->ops->update = MatUpdate_LMVMSymBrdn;
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;

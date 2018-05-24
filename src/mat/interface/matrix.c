@@ -3263,7 +3263,6 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscCheckSameComm(mat,1,b,2);
   PetscCheckSameComm(mat,1,x,3);
   if (x == b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_IDN,"x and b must be different vectors");
-  if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
   if (mat->cmap->N != x->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
   if (mat->rmap->N != b->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap->N,b->map->N);
   if (mat->rmap->n != b->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap->n,b->map->n);

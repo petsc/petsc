@@ -135,7 +135,7 @@ typedef const char* MatSolverType;
 
 .seealso: MatSolverType, MatGetFactor()
 E*/
-typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT,MAT_FACTOR_LMVM} MatFactorType;
+typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT} MatFactorType;
 PETSC_EXTERN const char *const MatFactorTypes[];
 
 PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);

@@ -9,19 +9,6 @@ static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoBNKPreconBFGS(PC BFGSpc, Vec X, Vec Y)
-{
-  PetscErrorCode ierr;
-  Mat *M;
-  
-  PetscFunctionBegin;
-  ierr = PCShellGetContext(BFGSpc, (void**)&M);CHKERRQ(ierr);
-  ierr = MatSolve(*M, X, Y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*------------------------------------------------------------*/
-
 /* Routine for initializing the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)

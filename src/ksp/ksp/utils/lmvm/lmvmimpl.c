@@ -79,48 +79,49 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F)
+PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         rhotol, rho, ynorm2;
   Vec               Stmp, Ytmp;
 
   PetscFunctionBegin;
+  lmvm->k = PetscMin(lmvm->k+1, lmvm->m-1);
+  if (lmvm->k == lmvm->m-1) {
+    /* We hit the memory limit, so shift all the vectors back one spot 
+       and shift the oldest to the front to receive the latest update. */
+    Stmp = lmvm->S[0];
+    Ytmp = lmvm->Y[0];
+    for (i = 0; i < lmvm->k; ++i) {
+      lmvm->S[i] = lmvm->S[i+1];
+      lmvm->Y[i] = lmvm->Y[i+1];
+    }
+    lmvm->S[lmvm->k] = Stmp;
+    lmvm->Y[lmvm->k] = Ytmp;
+  }
+  /* Put the precomputed update into the last vector */
+  ierr = VecCopy(S, lmvm->S[lmvm->k]);CHKERRQ(ierr);
+  ierr = VecCopy(Y, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
+  ++lmvm->nupdates;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (lmvm->m == 0) PetscFunctionReturn(0);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     ierr = VecAXPBY(lmvm->Xprev, 1.0, -1.0, X);CHKERRQ(ierr);
     ierr = VecAXPBY(lmvm->Fprev, 1.0, -1.0, F);CHKERRQ(ierr);
-    /* Test if the updates can be accepted */
-    ierr = VecDotBegin(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Fprev, lmvm->Xprev, &rho);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ynorm2);CHKERRQ(ierr);
-    rhotol = lmvm->eps * ynorm2;
-    if (rho > rhotol) {
-      /* Update is good, accept it */
-      ++lmvm->nupdates;
-      lmvm->k = PetscMin(lmvm->k+1, lmvm->m-1);
-      if (lmvm->k == lmvm->m-1) {
-        /* We hit the memory limit, so shift all the vectors back one spot 
-           and shift the oldest to the front to receive the latest update. */
-        Stmp = lmvm->S[0];
-        Ytmp = lmvm->Y[0];
-        for (i = 0; i < lmvm->k; ++i) {
-          lmvm->S[i] = lmvm->S[i+1];
-          lmvm->Y[i] = lmvm->Y[i+1];
-        }
-        lmvm->S[lmvm->k] = Stmp;
-        lmvm->Y[lmvm->k] = Ytmp;
-      }
-      /* Put the precomputed update into the last vector */
-      ierr = VecCopy(lmvm->Xprev, lmvm->S[lmvm->k]);CHKERRQ(ierr);
-      ierr = VecCopy(lmvm->Fprev, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
-    } else {
-      /* Update is bad, skip it */
-      ++lmvm->nrejects;
-    }
+    /* Update S and Y */
+    ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
   }
 
   /* Save the solution and function to be used in the next update */
@@ -270,7 +271,6 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->square = PETSC_FALSE;
   
-  B->factortype = MAT_FACTOR_LMVM;
   B->ops->destroy = MatDestroy_LMVM;
   B->ops->setfromoptions = MatSetFromOptions_LMVM;
   B->ops->view = MatView_LMVM;

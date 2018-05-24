@@ -31,7 +31,6 @@ Tao Object: 2 MPI processes
   Mat Object: (tao_blmvm_) 2 MPI processes
     type: lmvmbfgs
     rows=64, cols=64
-    package used to perform factorization: petsc
       LMVM Matrix
         Approx. type: lmvmbfgs
         Max. storage: 5
