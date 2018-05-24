@@ -844,7 +844,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
   sparse_matrix_t     csrA, csrP, csrC;
   PetscBool           set, flag;
   sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
-  struct matrix_descr descr_type_gen;
+  struct matrix_descr descr_type_sym;
   PetscObjectState    state;
   PetscErrorCode      ierr;
 
@@ -869,10 +869,12 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
   csrA = a->csrA;
   csrP = p->csrA;
   csrC = c->csrA;
-  descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
+  descr_type_sym.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
+  descr_type_sym.mode = SPARSE_FILL_MODE_LOWER;
+  descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FINALIZE_MULT);
+  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FINALIZE_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to finalize mkl_sparse_sypr");
 
   /* Have to update the PETSc AIJ representation for matrix C from contents of MKL handle. */
@@ -889,7 +891,7 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
   sparse_matrix_t     csrA, csrP, csrC;
   PetscBool           set, flag;
   sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
-  struct matrix_descr descr_type_gen;
+  struct matrix_descr descr_type_sym;
   PetscObjectState    state;
   PetscErrorCode      ierr;
 
@@ -917,10 +919,12 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
   }
   csrA = a->csrA;
   csrP = p->csrA;
-  descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
+  descr_type_sym.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
+  descr_type_sym.mode = SPARSE_FILL_MODE_LOWER;
+  descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FULL_MULT);
+  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FULL_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete full mkl_sparse_sypr");
 
   ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
