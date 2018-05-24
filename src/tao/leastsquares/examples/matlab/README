@@ -1,0 +1,8 @@
+
+Here is the list of problems where we have issues:
+
+  24 - fails on destroy with an object in an invalid state
+  38 - fails due to memory corruption related to Fhist
+
+  33, 34, 35, 40, 42, 49 - fails due to inf or nan -- the matlab function evaluation is not causing it.
+
