@@ -1110,7 +1110,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
     ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)mfqP, 1);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)tao, 1);CHKERRQ(ierr);
     ierr = TaoSetType(mfqP->subtao,TAOBNTR);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
     ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);

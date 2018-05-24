@@ -35,7 +35,7 @@ factor = 10;
 load dfo.dat
 probtype = 'smooth';
 to_solve = 1:53;
-to_solve = 1:10;
+to_solve = 1:1;
 Results = cell(1,length(to_solve));
 
 
