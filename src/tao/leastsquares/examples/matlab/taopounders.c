@@ -96,7 +96,8 @@ int main(int argc, char **argv)
     ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"delta");CHKERRQ(ierr);
     user.delta = (double)tmp;
 
-    TaoPounders(&user);
+    /* Ignore return code for now -- do not stop testing on inf or nan errors */
+    ierr = TaoPounders(&user);
 
     ierr = PetscMatlabEngineEvaluate(user.mengine,"ProblemFinalize");CHKERRQ(ierr);
   }
