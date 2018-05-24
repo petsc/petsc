@@ -46,9 +46,9 @@ class Configure(config.package.Package):
 
       output      = ''
       try:
-        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.log)
-      except:
-        self.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
+        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nodisplay -r "display([\'Version \' version]); exit"', log = self.log)
+      except  RuntimeError as e:
+        self.log.write('WARNING: Found Matlab at '+matlab+' but unable to run'+str(e)+'\n')
         continue
 
       match  = versionPattern.search(output)
