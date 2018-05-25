@@ -37,5 +37,5 @@ probtype = 'smooth';
 to_solve = 1:53;
 Results = cell(1,length(to_solve));
 
-nf_const = 50;
+nf_const = 10;
 
