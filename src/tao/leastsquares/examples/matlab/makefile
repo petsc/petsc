@@ -1,5 +1,5 @@
 
-# This directory contains eaccess to matlab test problems for the derivative free
+# This directory contains access to matlab test problems for the derivative free
 # least squares solvers.
 
 ALL:
