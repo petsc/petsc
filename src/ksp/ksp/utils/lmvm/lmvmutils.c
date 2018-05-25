@@ -617,6 +617,32 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 /*------------------------------------------------------------*/
 
 /*@
+   MatLMVMResetShift - Zero the shift factor.
+
+   Input Parameters:
+.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+
+   Level: intermediate
+
+.seealso: MatLMVMAllocate(), MatLMVMUpdate()
+@*/
+PetscErrorCode MatLMVMResetShift(Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscBool         same;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
+  if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  lmvm->shift = 0.0;
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+/*@
    MatLMVMReset - Flushes all of the accumulated updates out of 
    the LMVM approximation. In practice, this will not actually 
    destroy the data associated with the updates. It simply resets 

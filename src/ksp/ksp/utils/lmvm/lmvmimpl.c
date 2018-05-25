@@ -39,21 +39,8 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
   VecType           type;
 
   PetscFunctionBegin;
-  if (B->rmap->N == 0 && B->cmap->N == 0) {
-    /* MatSetSizes() has not been called on this matrix, so we have to sort out the sizing */
-    ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
-    ierr = VecGetSize(X, &N);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(F, &m);CHKERRQ(ierr);
-    ierr = VecGetSize(F, &M);CHKERRQ(ierr);
-    ierr = MatSetSizes(B, m, n, M, N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-    ierr = MatLMVMReset(B, PETSC_TRUE);CHKERRQ(ierr);
-  } else {
-    /* Mat sizing has been set so check if the vectors are compatible */
-    VecCheckMatCompatible(B, X, 2, F, 3);
-  }
   if (lmvm->allocated) {
+    VecCheckMatCompatible(B, X, 2, F, 3);
     ierr = VecGetType(X, &type);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)lmvm->Xprev, type, &same);CHKERRQ(ierr);
     if (!same) {
@@ -66,6 +53,13 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
     allocate = PETSC_TRUE;
   }
   if (allocate) {
+    ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(X, &N);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(F, &m);CHKERRQ(ierr);
+    ierr = VecGetSize(F, &M);CHKERRQ(ierr);
+    ierr = MatSetSizes(B, m, n, M, N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
     ierr = VecDuplicate(X, &lmvm->Xprev);CHKERRQ(ierr);
     ierr = VecDuplicate(F, &lmvm->Fprev);CHKERRQ(ierr);
     if (lmvm->m > 0) {
@@ -147,6 +141,57 @@ PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
   ierr = lmvm->ops->mult(B, X, Y);CHKERRQ(ierr);
   if (lmvm->shift != 0.0) {
     ierr = VecAXPY(Y, lmvm->shift, X);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
+{
+  Mat_LMVM          *bctx = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+  MatType           lmvmType;
+  Mat               A;
+
+  PetscFunctionBegin;
+  ierr = MatGetType(B, &lmvmType);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)B), mat);CHKERRQ(ierr);
+  ierr = MatSetType(*mat, lmvmType);
+  
+  A = *mat;
+  Mat_LMVM *mctx = (Mat_LMVM*)A->data;
+  mctx->m = bctx->m;
+  mctx->ksp_max_it = bctx->ksp_max_it;
+  mctx->ksp_rtol = bctx->ksp_rtol;
+  mctx->ksp_atol = bctx->ksp_atol;
+  ierr = KSPSetTolerances(mctx->J0ksp, mctx->ksp_rtol, mctx->ksp_atol, PETSC_DEFAULT, mctx->ksp_max_it);CHKERRQ(ierr);
+  
+  ierr = MatLMVMAllocate(*mat, bctx->Xprev, bctx->Fprev);CHKERRQ(ierr);
+  if (op == MAT_COPY_VALUES) {
+    if (bctx->user_pc) {
+      ierr = MatLMVMSetJ0PC(*mat, bctx->J0pc);CHKERRQ(ierr);
+    } else if (bctx->user_ksp) {
+      ierr = MatLMVMSetJ0KSP(*mat, bctx->J0ksp);CHKERRQ(ierr);
+    } else if (bctx->J0) {
+      ierr = MatLMVMSetJ0(*mat, bctx->J0);CHKERRQ(ierr);
+    } else if (bctx->user_scale) {
+      if (bctx->J0diag) {
+        ierr = MatLMVMSetJ0Diag(*mat, bctx->J0diag);CHKERRQ(ierr);
+      } else {
+        ierr = MatLMVMSetJ0Scale(*mat, bctx->J0scalar);CHKERRQ(ierr);
+      }
+    }
+    mctx->nupdates = bctx->nupdates;
+    mctx->nrejects = bctx->nrejects;
+    mctx->k = bctx->k;
+    for (i=0; i<=bctx->k; ++i) {
+      ierr = VecCopy(bctx->S[i], mctx->S[i]);CHKERRQ(ierr);
+      ierr = VecCopy(bctx->Y[i], mctx->Y[i]);CHKERRQ(ierr);
+      ierr = VecCopy(bctx->Xprev, mctx->Xprev);CHKERRQ(ierr);
+      ierr = VecCopy(bctx->Fprev, mctx->Fprev);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -310,6 +355,8 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->setup = MatSetUp_LMVM;
   B->ops->getvecs = MatGetVecs_LMVM;
   B->ops->shift = MatShift_LMVM;
+  B->ops->duplicate = MatDuplicate_LMVM;
+  B->ops->mult = MatMult_LMVM;
   
   lmvm->ops->update = MatUpdate_LMVM;
   lmvm->ops->allocate = MatAllocate_LMVM;

@@ -105,7 +105,7 @@
  end
 */
 
-static PetscErrorCode TaoSolve_BNTL(Tao tao)
+PetscErrorCode TaoSolve_BNTL(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
@@ -134,12 +134,12 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
+      ierr = bnk->computehessian(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
+    ierr = bnk->computestep(tao, shift, &ksp_reason);CHKERRQ(ierr);
     stepType = BNK_NEWTON;
 
     /* Store current solution before it changes */
@@ -228,20 +228,21 @@ static PetscErrorCode TaoSolve_BNTL(Tao tao)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode TaoSetUp_BNTL(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BNTL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
+  ierr = TaoSetFromOptions_BNK(PetscOptionsObject, tao);CHKERRQ(ierr);
+  if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
   if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PETSC_COMM_SELF,1,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;
@@ -249,7 +250,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
   tao->ops->solve=TaoSolve_BNTL;
-  tao->ops->setup=TaoSetUp_BNTL;
+  tao->ops->setfromoptions=TaoSetFromOptions_BNTL;
   
   bnk = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */

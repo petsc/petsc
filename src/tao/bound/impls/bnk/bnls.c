@@ -88,7 +88,7 @@
  end
 */
 
-static PetscErrorCode TaoSolve_BNLS(Tao tao)
+PetscErrorCode TaoSolve_BNLS(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
@@ -117,12 +117,12 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      ierr = TaoBNKComputeHessian(tao);CHKERRQ(ierr);
+      ierr = bnk->computehessian(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
-    ierr = TaoBNKComputeStep(tao, shift, &ksp_reason);CHKERRQ(ierr);
+    ierr = bnk->computestep(tao, shift, &ksp_reason);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
@@ -172,7 +172,7 @@ static PetscErrorCode TaoSolve_BNLS(Tao tao)
 
 /*------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
 {
   TAO_BNK        *bnk;
   PetscErrorCode ierr;

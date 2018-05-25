@@ -8,6 +8,13 @@ Context for bounded Newton-Krylov type optimization algorithms
 #include <../src/tao/bound/impls/bncg/bncg.h>
 
 typedef struct {
+  /* Function pointer for hessian evaluation 
+     NOTE: This is necessary so that quasi-Newton-Krylov methods can "evaluate" 
+     a quasi-Newton approximation while full Newton-Krylov methods call-back to 
+     the application's Hessian */
+  PetscErrorCode (*computehessian)(Tao);
+  PetscErrorCode (*computestep)(Tao, PetscBool, KSPConvergedReason*);
+  
   /* Embedded TAOBNCG */
   Tao bncg;
   TAO_BNCG *bncg_ctx;
@@ -196,6 +203,9 @@ typedef struct {
   PetscInt ksp_iter;
   PetscInt ksp_othr;
   PetscBool is_nash, is_stcg, is_gltr;
+  
+  /* Implementation specific context */
+  void* ctx;
 } TAO_BNK;
 
 #define BNK_NEWTON              0
@@ -219,6 +229,13 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
+PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems*, Tao);
+PETSC_INTERN PetscErrorCode TaoDestroy_BNK(Tao);
+PETSC_INTERN PetscErrorCode TaoView_BNK(Tao, PetscViewer);
+
+PETSC_INTERN PetscErrorCode TaoSolve_BNLS(Tao);
+PETSC_INTERN PetscErrorCode TaoSolve_BNTR(Tao);
+PETSC_INTERN PetscErrorCode TaoSolve_BNTL(Tao);
 
 PETSC_INTERN PetscErrorCode TaoBNKPreconBFGS(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);

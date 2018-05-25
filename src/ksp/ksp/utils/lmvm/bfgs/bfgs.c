@@ -36,7 +36,7 @@ typedef struct {
      dX <- dX + ((alpha[i] - beta) * S[i])
    end
 */
-static PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
+PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LBFGS         *lbfgs = (Mat_LBFGS*)lmvm->ctx;
@@ -105,7 +105,7 @@ static PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     Z <- Z - (zeta * P[i]) + (gamma * Y[i])
   end
 */
-static PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
+PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_LBFGS         *lbfgs = (Mat_LBFGS*)lmvm->ctx;

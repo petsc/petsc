@@ -71,6 +71,16 @@ static PetscErrorCode PostScaleRight(Mat N,Vec x)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatShift_SubMatrix(Mat N,PetscScalar shift)
+{
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShift(Na->A,shift);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 {
   Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
@@ -308,6 +318,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   N->ops->multtransposeadd = MatMultTransposeAdd_SubMatrix;
   N->ops->scale            = MatScale_SubMatrix;
   N->ops->diagonalscale    = MatDiagonalScale_SubMatrix;
+  if (A->ops->shift) N->ops->shift = MatShift_SubMatrix;
 
   ierr = MatSetBlockSizesFromMats(N,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);

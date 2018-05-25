@@ -715,6 +715,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
 PETSC_EXTERN PetscErrorCode MatLMVMAllocate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatLMVMResetShift(Mat);
 PETSC_EXTERN PetscErrorCode MatLMVMClearJ0(Mat);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Scale(Mat, PetscReal);

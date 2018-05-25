@@ -58,6 +58,7 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVM(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatReset_LMVM(Mat, PetscBool);
 
 /* LMVM implementations of core Mat functionality */
+PETSC_INTERN PetscErrorCode MatDuplicate_LMVM(Mat, MatDuplicateOption, Mat*);
 PETSC_INTERN PetscErrorCode MatGetVecs_LMVM(Mat, Vec*, Vec*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_LMVM(Mat);
@@ -74,5 +75,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_LMVMBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMBadBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMSymBrdn(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_LMVMDiagBrdn(Mat);
+
+/* Solve functions for derived LMVM types (necessary only for DFP and BFGS for re-use under SymBrdn) */
+PETSC_INTERN PetscErrorCode MatSolve_LMVMDFP(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatSolve_LMVMBFGS(Mat, Vec, Vec);
+
+/* Mult functions for derived LMVM types (necessary only for DFP and BFGS for re-use under SymBrdn) */
+PETSC_INTERN PetscErrorCode MatMult_LMVMDFP(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatMult_LMVMBFGS(Mat, Vec, Vec);
 
 #endif
