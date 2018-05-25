@@ -228,6 +228,19 @@ typedef struct {
   VECSCATTER_IMPL_HEADER
 } VecScatter_Common;
 
+/* A plan to optimize expensive pack/unpack in VecScatter with contiguous memory operations, e.g., memcpy.
+   For simplicity, we call it memcpy. In reality, it also applies to ADD_VALUES etc.
+ */
+typedef struct {
+  PetscInt  n;                /* number of processors */
+  PetscBool *made_of_copies;  /* [n] is scatter to procs[i] made of copies? If yes, we will use memcpy */
+  PetscInt  *copy_offsets;    /* [n+1] we number all copies. Scatter to procs[i] is made of copies in [copy_offsets[i],copy_offsets[i+1]) */
+  PetscInt  *copy_starts;     /* [*] j-th copy starts at index copy_starts[j] of the vector */
+  PetscInt  *copy_lengths;    /* [*] with length copy_lengths[j] in bytes */
+  PetscBool same_copy_starts; /* used only by VecScatterMemcpyPlanCreate_SGToSG(). If true, to's copy_starts[] values
+                                 are as same as from's. Used to quickly test if we are doing a self-copy */
+} VecScatterMemcpyPlan;
+
 /*
    These scatters are for the purely local case.
 */
@@ -244,11 +257,7 @@ typedef struct {
   PetscBool      nonmatching_computed;
   PetscInt       n_nonmatching;        /* number of "from"s  != "to"s */
   PetscInt       *slots_nonmatching;   /* locations of "from"s  != "to"s */
-  PetscBool      made_of_copies;       /* if local scatter is made of copies */
-  PetscInt       n_copies;             /* number of copies */
-  PetscInt       *copy_starts;         /* i-th copy starts at copy_starts[i] */
-  PetscInt       *copy_lengths;        /* with length copy_lengths[i] */
-  PetscBool      same_copy_starts;     /* to's copy_starts[] values are as same as from's. Used to quickly test if we are doing a self-copy */
+  VecScatterMemcpyPlan memcpy_plan;    /* a plan to optimize pack/unpack with memcpy */
 } VecScatter_Seq_General;
 
 typedef struct {
@@ -278,6 +287,7 @@ typedef struct {
   PetscInt               *starts;  /* starting point in indices and values for each proc*/
   PetscInt               *indices; /* list of all components sent or received */
   PetscMPIInt            *procs;   /* processors we are communicating with in scatter */
+  VecScatterMemcpyPlan   memcpy_plan; /* a plan to optimize pack/unpack with memcpy */
   MPI_Request            *requests,*rev_requests;
   PetscScalar            *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
@@ -312,6 +322,96 @@ typedef struct {
 #endif
 } VecScatter_MPI_General;
 
+/* Routines to create, copy, destroy or execute a memcpy plan */
+
+/* Create a memcpy plan based on a list of indices */
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt,const PetscInt*,const PetscInt*,PetscInt,VecScatterMemcpyPlan*);
+/* Create a memcpy plan for a SG (sequential general vector) to SG scatter */
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt,VecScatter_Seq_General*,VecScatter_Seq_General*);
+/* Create a memcpy plan for a P (parallel vector) to P scatter */
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_PtoP(PetscInt,VecScatter_MPI_General*,VecScatter_MPI_General*);
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCopy(const VecScatterMemcpyPlan*,VecScatterMemcpyPlan*);
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanDestroy(VecScatterMemcpyPlan*);
+
+/* Pack data from piece-wise contiguous x to y according to the i-th memcpy plan in xplan */
+PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,const PetscScalar *PETSC_RESTRICT x,const VecScatterMemcpyPlan *xplan,PetscScalar *PETSC_RESTRICT y,InsertMode addv)
+{
+  PetscErrorCode    ierr;
+  PetscInt          j,k,len;
+  const PetscScalar *xv;
+
+  PetscFunctionBegin;
+  if (addv == INSERT_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      len  = xplan->copy_lengths[j];
+      ierr = PetscMemcpy(y,x+xplan->copy_starts[j],len);CHKERRQ(ierr);
+      y    = (PetscScalar*)((PetscChar*)y + len);
+    }
+  } else if (addv == ADD_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      xv   = x+xplan->copy_starts[j];
+      for (k=0; k<len; k++) y[k] += xv[k];
+      y   += len;
+    }
+  } else {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Unpack data from contiguous x to piece-wise contiguous y according to the i-th memcpy plan in yplan */
+PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i,const PetscScalar *PETSC_RESTRICT x,PetscScalar *PETSC_RESTRICT y,const VecScatterMemcpyPlan *yplan,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  PetscInt       j,k,len;
+  PetscScalar    *yv;
+
+  PetscFunctionBegin;
+  if (addv == INSERT_VALUES) {
+    for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
+      len  = yplan->copy_lengths[j];
+      ierr = PetscMemcpy(y+yplan->copy_starts[j],x,len);CHKERRQ(ierr);
+      x    = (PetscScalar*)((PetscChar*)x + len);
+    }
+  } else if (addv == ADD_VALUES) {
+    for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
+      len  = yplan->copy_lengths[j]/sizeof(PetscScalar);
+      yv   = y+yplan->copy_starts[j];
+      for (k=0; k<len; k++) yv[k] += x[k];
+      x   += len;
+    }
+  } else {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Scatter data from piece-wise contiguous x to (conforming) piece-wise contiguous y according to the i-th memcpy plan in xplan and yplan respectively */
+PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt i,const PetscScalar *PETSC_RESTRICT x,const VecScatterMemcpyPlan *xplan,PetscScalar *PETSC_RESTRICT y,const VecScatterMemcpyPlan *yplan,InsertMode addv)
+{
+  PetscErrorCode    ierr;
+  PetscInt          j,k,len;
+  const PetscScalar *xv;
+  PetscScalar       *yv;
+
+  PetscFunctionBegin;
+  if (addv == INSERT_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      ierr = PetscMemcpy(y+yplan->copy_starts[j],x+xplan->copy_starts[j],xplan->copy_lengths[j]);CHKERRQ(ierr);
+    }
+  } else if (addv == ADD_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      len = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      xv  = x+xplan->copy_starts[j];
+      yv  = y+yplan->copy_starts[j];
+      for (k=0; k<len; k++) yv[k] += xv[k];
+    }
+  } else {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
+  }
+  PetscFunctionReturn(0);
+}
 
 PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterFormat*,VecScatterFormat*);
 PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
@@ -347,8 +447,6 @@ PETSC_INTERN PetscErrorCode VecScatterCreate_Seq(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter,VecScatter_Seq_General*,VecScatter_Seq_General*,PetscInt);
-
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
