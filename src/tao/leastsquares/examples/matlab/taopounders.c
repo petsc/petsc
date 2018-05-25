@@ -1,4 +1,12 @@
-static char help[] = "TAO/Pounders Matlab Testing";
+static char help[] = "TAO/Pounders Matlab Testing on the More'-Wild Benchmark Problems\n\
+The interface calls:\n\
+    TestingInitialize.m to initialize the problem set\n\
+    ProblemInitialize.m to initialize each instance\n\
+    ProblemFinalize.m to store the performance data for the instance solved\n\
+    TestingFinalize.m to store the entire set of performance data\n\
+\n\
+TestingPlot.m is called outside of TAO/Pounders to produce a performance profile\n\
+of the results compared to the Matlab fminsearch algorithm.\n";
 
 #include <petsctao.h>
 #include <petscmatlab.h>
@@ -50,7 +58,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
 
   /* Create starting point and initialize */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->n,&X);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)X,"X");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)X,"X0");CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)X);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,X);CHKERRQ(ierr);
 
@@ -83,8 +91,8 @@ int main(int argc, char **argv)
   ierr = PetscMatlabEngineEvaluate(user.mengine,"TestingInitialize");CHKERRQ(ierr);
 
   for (i = 1; i <= 53; ++i) {
-    printf("%d\n", i);
-    ierr = PetscMatlabEngineEvaluate(user.mengine,"np = %d; ProblemInitialize", i);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",i);
+    ierr = PetscMatlabEngineEvaluate(user.mengine,"np = %d; ProblemInitialize",i);CHKERRQ(ierr);
     ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"n");CHKERRQ(ierr);
     user.n = (int)tmp;
     ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"m");CHKERRQ(ierr);
