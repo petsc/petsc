@@ -1978,6 +1978,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", mesh->printTol, &mesh->printTol, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMView", 0, &mesh->printL2, NULL);CHKERRQ(ierr);
   /* Point Location */
   ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
   /* Generation and remeshing */

@@ -597,7 +597,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 @*/
 PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec localX, PetscReal *diff)
 {
-  const PetscInt   debug = 0;
+  const PetscInt   debug = ((DM_Plex *) dm->data)->printL2;
   PetscSection     section;
   PetscQuadrature  quad;
   PetscScalar     *funcVal, *interpolant;
@@ -697,7 +697,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
 
 PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
-  const PetscInt   debug = 0;
+  const PetscInt   debug = ((DM_Plex *) dm->data)->printL2;
   PetscSection     section;
   PetscQuadrature  quad;
   Vec              localX;
@@ -788,7 +788,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
 
 PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
-  const PetscInt   debug = 0;
+  const PetscInt   debug = ((DM_Plex *) dm->data)->printL2;
   PetscSection     section;
   PetscQuadrature  quad;
   Vec              localX;
