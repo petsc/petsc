@@ -50,7 +50,8 @@ def main(cmdLineArgs):
     plt.title('Mesh Convergence')
     plt.xlabel('Problem Size $\log N$')
     plt.ylabel('Error $\log |x - x^*|$')
-    plt.loglog(dofs, errors[0])
+    plt.loglog(dofs, errors[0], label = m.__name__)
+    plt.legend()
     plt.show()
     plt.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
    
@@ -58,7 +59,8 @@ def main(cmdLineArgs):
     plt.title('Mesh Convergence using Least Squares')
     plt.xlabel('Problem Size $\log N$')
     plt.ylabel('Error $\log |x - x^*|$')
-    plt.loglog(dofs, lstSqMeshConv[0]*dofs + lstSqMeshConv[1])
+    plt.loglog(dofs, lstSqMeshConv[0]*dofs + lstSqMeshConv[1], label = m.__name__)
+    plt.legend()
     plt.show()
     plt.savefig('meshConvergenceLsq'+ date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
@@ -66,14 +68,16 @@ def main(cmdLineArgs):
     plt.title('Static Scaling')
     plt.xlabel('Time (s)')
     plt.ylabel('Flop Rate (F/s)')
-    plt.loglog(times, flops/times)
+    plt.loglog(times, flops/times, label = m.__name__)
+    plt.legend()
     plt.show()
     plt.savefig('staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
     plt.title('Efficacy')
     plt.xlabel('Time (s)')
     plt.ylabel('Action (s)')
-    plt.loglog(times, errors[0]*times)
+    plt.loglog(times, errors[0]*times, label = m.__name__)
+    plt.legend()
     plt.show()
     plt.savefig('efficacy' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
