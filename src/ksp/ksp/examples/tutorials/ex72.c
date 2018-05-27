@@ -274,8 +274,10 @@ int main(int argc,char **args)
   num_numfac = 1;
   ierr       = PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
   while (num_numfac--) {
-    PetscBool lsqr;
+    PC        pc;
+    PetscBool lsqr,isbddc,ismatis;
     char      str[32];
+
     ierr = PetscOptionsGetString(NULL,NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
     if (lsqr) {
       ierr = PetscStrcmp("lsqr",str,&lsqr);CHKERRQ(ierr);
@@ -290,14 +292,26 @@ int main(int argc,char **args)
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
+    /* if we test BDDC, make sure pmat is of type MATIS */
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
+    if (isbddc && !ismatis) {
+      Mat J;
+
+      ierr = MatConvert(A,MATIS,MAT_INITIAL_MATRIX,&J);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,J);CHKERRQ(ierr);
+      ierr = MatDestroy(&J);CHKERRQ(ierr);
+    }
+
     /*
      Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
      enable more precise profiling of setting up the preconditioner.
      These calls are optional, since both will be called within
      KSPSolve() if they haven't been called already.
     */
-    ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Solve system
@@ -796,4 +810,26 @@ int main(int argc,char **args)
          #nsize: 3
          #args: -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason
          #TODO: Need to determine if deprecated
+
+   testset:
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type fgmres
+      test:
+         suffix: bddc_seq
+         nsize: 1
+         args: -pc_type bddc
+      test:
+         suffix: bddc_par
+         nsize: 2
+         args: -pc_type bddc
+      test:
+         requires: parmetis
+         suffix: bddc_par_nd_parmetis
+         nsize: 4
+         args: -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type parmetis
+      test:
+         requires: ptscotch define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+         suffix: bddc_par_nd_ptscotch
+         nsize: 4
+         args: -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
 TEST*/
