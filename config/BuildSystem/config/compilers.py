@@ -103,37 +103,37 @@ class Configure(config.base.Configure):
     return
 
   # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
-  # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
+  # checkCInline & checkCxxInline are pretty much the same code right now.
   # but they could be different (later) - and they also check/set different flags - hence
   # code duplication.
-  def checkCStaticInline(self):
-    '''Check for C keyword: static inline'''
-    self.cStaticInlineKeyword = 'static'
+  def checkCInline(self):
+    '''Check for C inline keyword'''
+    self.cInlineKeyword = ' '
     self.pushLanguage('C')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cStaticInlineKeyword = kw
-        self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cInlineKeyword = kw
+        self.logPrint('Set C Inline keyword to '+self.cInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cStaticInlineKeyword == 'static':
-      self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
+    if self.cInlineKeyword == ' ':
+      self.logPrint('No C Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('C_INLINE', self.cInlineKeyword)
     return
 
-  def checkCxxStaticInline(self):
-    '''Check for C++ keyword: static inline'''
-    self.cxxStaticInlineKeyword = 'static'
+  def checkCxxInline(self):
+    '''Check for C++ inline keyword'''
+    self.cxxInlineKeyword = ' '
     self.pushLanguage('C++')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cxxStaticInlineKeyword = kw
-        self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cxxInlineKeyword = kw
+        self.logPrint('Set Cxx Inline keyword to '+self.cxxInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cxxStaticInlineKeyword == 'static':
-      self.logPrint('No Cxx StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
+    if self.cxxInlineKeyword == ' ':
+      self.logPrint('No Cxx Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('CXX_INLINE', self.cxxInlineKeyword)
     return
 
   def checkRestrict(self,language):
@@ -1657,7 +1657,7 @@ class Configure(config.base.Configure):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
-      self.executeTest(self.checkCStaticInline)
+      self.executeTest(self.checkCInline)
       self.executeTest(self.checkDynamicLoadFlag)
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
@@ -1670,7 +1670,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkRestrict,['Cxx'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
-      self.executeTest(self.checkCxxStaticInline)
+      self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       self.executeTest(self.checkCxx11)

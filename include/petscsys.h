@@ -60,10 +60,12 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #endif
 
 #if defined(__cplusplus)
-#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#  define PETSC_INLINE PETSC_CXX_INLINE
 #else
-#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#  define PETSC_INLINE PETSC_C_INLINE
 #endif
+
+#define PETSC_STATIC_INLINE static PETSC_INLINE
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
