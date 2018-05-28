@@ -280,7 +280,6 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
@@ -292,13 +291,8 @@ PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->applynd)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,((PetscObject)matp)->prefix,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
-    ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-    ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
-  }
+  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +328,6 @@ $    -mat_partitioning_view
 PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
@@ -346,13 +339,8 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,((PetscObject)matp)->prefix,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
-    ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-    ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
-  }
+  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

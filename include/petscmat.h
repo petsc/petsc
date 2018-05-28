@@ -1351,6 +1351,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode 
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
