@@ -78,14 +78,14 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscCalloc3(tlength,&remoterows,tlength,&rrow_ranks,tlength,&rrow_isids);CHKERRQ(ierr);
   ierr = PetscCalloc3(size,&toranks,2*size,&tosizes,size,&tosizes_temp);CHKERRQ(ierr);
   nrrows = 0;
-  for (i=0; i<nidx; i++){
-    length_i     = length[i];
-    indices_i    = indices[i];
-    for (j=0; j<length_i; j++){
+  for (i=0; i<nidx; i++) {
+    length_i  = length[i];
+    indices_i = indices[i];
+    for (j=0; j<length_i; j++) {
       owner = -1;
       ierr = PetscLayoutFindOwner(rmap,indices_i[j],&owner);CHKERRQ(ierr);
       /* remote processors */
-      if (owner != rank){
+      if (owner != rank) {
         tosizes_temp[owner]++; /* number of rows to owner */
         rrow_ranks[nrrows]  = owner; /* processor */
         rrow_isids[nrrows]   = i; /* is id */
@@ -103,7 +103,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   /* we do not have any messages
    * It usually corresponds to overlap 1
    * */
-  if (!reducednrrows){
+  if (!reducednrrows) {
     ierr = PetscFree3(toranks,tosizes,tosizes_temp);CHKERRQ(ierr);
     ierr = PetscFree3(remoterows,rrow_ranks,rrow_isids);CHKERRQ(ierr);
     ierr = MatIncreaseOverlap_MPIAIJ_Local_Scalable(mat,nidx,is);CHKERRQ(ierr);
@@ -111,15 +111,15 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   }
   nto = 0;
   /* send sizes and ranks for building a two-sided communcation */
-  for (i=0; i<size; i++){
-   if (tosizes_temp[i]){
-     tosizes[nto*2]  = tosizes_temp[i]*2; /* size */
-     tosizes_temp[i] = nto; /* a map from processor to index */
-     toranks[nto++]  = i; /* processor */
-   }
+  for (i=0; i<size; i++) {
+    if (tosizes_temp[i]) {
+      tosizes[nto*2]  = tosizes_temp[i]*2; /* size */
+      tosizes_temp[i] = nto; /* a map from processor to index */
+      toranks[nto++]  = i; /* processor */
+    }
   }
   ierr = PetscCalloc1(nto+1,&toffsets);CHKERRQ(ierr);
-  for (i=0; i<nto; i++){
+  for (i=0; i<nto; i++) {
     toffsets[i+1]  = toffsets[i]+tosizes[2*i]; /* offsets */
     tosizes[2*i+1] = toffsets[i]; /* offsets to send */
   }
@@ -129,8 +129,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   for (i=0; i<nfrom; i++) nrecvrows += fromsizes[2*i];
   ierr = PetscMalloc1(nrecvrows,&remote);CHKERRQ(ierr);
   nrecvrows = 0;
-  for (i=0; i<nfrom; i++){
-    for (j=0; j<fromsizes[2*i]; j++){
+  for (i=0; i<nfrom; i++) {
+    for (j=0; j<fromsizes[2*i]; j++) {
       remote[nrecvrows].rank    = fromranks[i];
       remote[nrecvrows++].index = fromsizes[2*i+1]+j;
     }
@@ -142,7 +142,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
   /* message pair <no of is, row>  */
   ierr = PetscCalloc2(2*nrrows,&todata,nrecvrows,&fromdata);CHKERRQ(ierr);
-  for (i=0; i<nrrows; i++){
+  for (i=0; i<nrrows; i++) {
     owner = rrow_ranks[i]; /* processor */
     j     = tosizes_temp[owner]; /* index */
     todata[toffsets[j]++] = rrow_isids[i];
@@ -165,8 +165,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   ierr = PetscCalloc1(nrecvrows,&todata);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrecvrows,&remote);CHKERRQ(ierr);
   nrecvrows = 0;
-  for (i=0; i<nto; i++){
-    for (j=0; j<tosizes[2*i]; j++){
+  for (i=0; i<nto; i++) {
+    for (j=0; j<tosizes[2*i]; j++) {
       remote[nrecvrows].rank    = toranks[i];
       remote[nrecvrows++].index = tosizes[2*i+1]+j;
     }
