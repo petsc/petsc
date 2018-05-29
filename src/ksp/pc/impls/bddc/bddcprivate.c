@@ -454,62 +454,14 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
 
   /* Count neighs per dof */
-  ierr = PetscCalloc1(ne,&ecount);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ne,&eneighs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  for (i=1,cum=0;i<n_neigh;i++) {
-    cum += n_shared[i];
-    for (j=0;j<n_shared[i];j++) {
-      ecount[shared[i][j]]++;
-    }
-  }
-  if (ne) {
-    ierr = PetscMalloc1(cum,&eneighs[0]);CHKERRQ(ierr);
-  }
-  for (i=1;i<ne;i++) eneighs[i] = eneighs[i-1] + ecount[i-1];
-  ierr = PetscMemzero(ecount,ne*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=1;i<n_neigh;i++) {
-    for (j=0;j<n_shared[i];j++) {
-      PetscInt k = shared[i][j];
-      eneighs[k][ecount[k]] = neigh[i];
-      ecount[k]++;
-    }
-  }
-  for (i=0;i<ne;i++) {
-    ierr = PetscSortRemoveDupsInt(&ecount[i],eneighs[i]);CHKERRQ(ierr);
-  }
-  ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nv,&vcount);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nv,&vneighs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  for (i=1,cum=0;i<n_neigh;i++) {
-    cum += n_shared[i];
-    for (j=0;j<n_shared[i];j++) {
-      vcount[shared[i][j]]++;
-    }
-  }
-  if (nv) {
-    ierr = PetscMalloc1(cum,&vneighs[0]);CHKERRQ(ierr);
-  }
-  for (i=1;i<nv;i++) vneighs[i] = vneighs[i-1] + vcount[i-1];
-  ierr = PetscMemzero(vcount,nv*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=1;i<n_neigh;i++) {
-    for (j=0;j<n_shared[i];j++) {
-      PetscInt k = shared[i][j];
-      vneighs[k][vcount[k]] = neigh[i];
-      vcount[k]++;
-    }
-  }
-  for (i=0;i<nv;i++) {
-    ierr = PetscSortRemoveDupsInt(&vcount[i],vneighs[i]);CHKERRQ(ierr);
-  }
-  ierr = ISLocalToGlobalMappingRestoreInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetNodeInfo(el2g,NULL,&ecount,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetNodeInfo(vl2g,NULL,&vcount,&vneighs);CHKERRQ(ierr);
 
   /* need to remove coarse faces' dofs and coarse edges' dirichlet dofs
      for proper detection of coarse edges' endpoints */
   ierr = PetscBTCreate(ne,&btee);CHKERRQ(ierr);
   for (i=0;i<ne;i++) {
-    if ((ecount[i] > 1 && !PetscBTLookup(btbd,i)) || (ecount[i] == 1 && PetscBTLookup(btb,i))) {
+    if ((ecount[i] > 2 && !PetscBTLookup(btbd,i)) || (ecount[i] == 2 && PetscBTLookup(btb,i))) {
       ierr = PetscBTSet(btee,i);CHKERRQ(ierr);
     }
   }
@@ -629,16 +581,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
     }
   }
-  ierr = PetscFree(ecount);CHKERRQ(ierr);
-  ierr = PetscFree(vcount);CHKERRQ(ierr);
-  if (ne) {
-    ierr = PetscFree(eneighs[0]);CHKERRQ(ierr);
-  }
-  if (nv) {
-    ierr = PetscFree(vneighs[0]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(eneighs);CHKERRQ(ierr);
-  ierr = PetscFree(vneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreNodeInfo(el2g,NULL,&ecount,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreNodeInfo(vl2g,NULL,&vcount,&vneighs);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&btbd);CHKERRQ(ierr);
 
   /* a candidate is valid if it is connected to another candidate via a non-primal edge dof */
