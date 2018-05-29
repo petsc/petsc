@@ -86,7 +86,6 @@ static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = TaoView_BNK(tao, viewer);CHKERRQ(ierr);
-  PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
@@ -103,6 +102,7 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bqnk->B);CHKERRQ(ierr);
   ierr = PetscFree(bnk->ctx);CHKERRQ(ierr);
   ierr = TaoDestroy_BNK(tao);CHKERRQ(ierr);

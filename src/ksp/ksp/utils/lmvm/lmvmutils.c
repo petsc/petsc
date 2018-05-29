@@ -20,7 +20,6 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscBool         same;
-  PetscReal         yty, yts;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -41,14 +40,6 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
     if (same) {
       ierr = MatLMVMUpdate(lmvm->J0, X, F);CHKERRQ(ierr);
     }
-  }
-  /* Update the J0 default scale */
-  if (lmvm->k >= 0) {
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    lmvm->J0default = yty/yts;
   }
   PetscFunctionReturn(0);
 }
@@ -80,6 +71,7 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
   lmvm->user_pc = PETSC_FALSE;
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
+  lmvm->J0default = 1.0;
   lmvm->J0scalar = 1.0;
   if (lmvm->J0diag) {
     ierr = VecDestroy(&lmvm->J0diag);CHKERRQ(ierr);

@@ -10,6 +10,8 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
   PetscFunctionBegin;
   lmvm->k = -1;
   lmvm->prev_set = PETSC_FALSE;
+  lmvm->shift = 0.0;
+  lmvm->J0default = 1.0;
   if (destructive && lmvm->allocated) {
     ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
     B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
@@ -83,7 +85,6 @@ PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y)
   Vec               Stmp, Ytmp;
 
   PetscFunctionBegin;
-  lmvm->k = PetscMin(lmvm->k+1, lmvm->m-1);
   if (lmvm->k == lmvm->m-1) {
     /* We hit the memory limit, so shift all the vectors back one spot 
        and shift the oldest to the front to receive the latest update. */
@@ -95,6 +96,8 @@ PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y)
     }
     lmvm->S[lmvm->k] = Stmp;
     lmvm->Y[lmvm->k] = Ytmp;
+  } else {
+    ++lmvm->k;
   }
   /* Put the precomputed update into the last vector */
   ierr = VecCopy(S, lmvm->S[lmvm->k]);CHKERRQ(ierr);
@@ -129,7 +132,19 @@ PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
+static PetscErrorCode MatMultAdd_LMVM(Mat B, Vec X, Vec Y, Vec Z)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMult(B, X, Z);CHKERRQ(ierr);
+  ierr = VecAXPY(Z, 1.0, Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -147,11 +162,56 @@ PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
+static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM          *bctx = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
   PetscInt          i;
+  PetscBool         allocatedM;
+
+  PetscFunctionBegin;
+  if (str == DIFFERENT_NONZERO_PATTERN) {
+    ierr = MatLMVMReset(M, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(M, bctx->Xprev, bctx->Fprev);CHKERRQ(ierr);
+  } else {
+    ierr = MatLMVMIsAllocated(M, &allocatedM);CHKERRQ(ierr);
+    if (!allocatedM) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
+    MatCheckSameSize(B, 1, M, 2);
+  }
+  
+  Mat_LMVM *mctx = (Mat_LMVM*)M->data;
+  if (bctx->user_pc) {
+    ierr = MatLMVMSetJ0PC(M, bctx->J0pc);CHKERRQ(ierr);
+  } else if (bctx->user_ksp) {
+    ierr = MatLMVMSetJ0KSP(M, bctx->J0ksp);CHKERRQ(ierr);
+  } else if (bctx->J0) {
+    ierr = MatLMVMSetJ0(M, bctx->J0);CHKERRQ(ierr);
+  } else if (bctx->user_scale) {
+    if (bctx->J0diag) {
+      ierr = MatLMVMSetJ0Diag(M, bctx->J0diag);CHKERRQ(ierr);
+    } else {
+      ierr = MatLMVMSetJ0Scale(M, bctx->J0scalar);CHKERRQ(ierr);
+    }
+  }
+  mctx->J0default = bctx->J0default;
+  mctx->nupdates = bctx->nupdates;
+  mctx->nrejects = bctx->nrejects;
+  mctx->k = bctx->k;
+  for (i=0; i<=bctx->k; ++i) {
+    ierr = VecCopy(bctx->S[i], mctx->S[i]);CHKERRQ(ierr);
+    ierr = VecCopy(bctx->Y[i], mctx->Y[i]);CHKERRQ(ierr);
+    ierr = VecCopy(bctx->Xprev, mctx->Xprev);CHKERRQ(ierr);
+    ierr = VecCopy(bctx->Fprev, mctx->Fprev);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
+{
+  Mat_LMVM          *bctx = (Mat_LMVM*)B->data;
+  PetscErrorCode    ierr;
   MatType           lmvmType;
   Mat               A;
 
@@ -170,35 +230,14 @@ PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
   
   ierr = MatLMVMAllocate(*mat, bctx->Xprev, bctx->Fprev);CHKERRQ(ierr);
   if (op == MAT_COPY_VALUES) {
-    if (bctx->user_pc) {
-      ierr = MatLMVMSetJ0PC(*mat, bctx->J0pc);CHKERRQ(ierr);
-    } else if (bctx->user_ksp) {
-      ierr = MatLMVMSetJ0KSP(*mat, bctx->J0ksp);CHKERRQ(ierr);
-    } else if (bctx->J0) {
-      ierr = MatLMVMSetJ0(*mat, bctx->J0);CHKERRQ(ierr);
-    } else if (bctx->user_scale) {
-      if (bctx->J0diag) {
-        ierr = MatLMVMSetJ0Diag(*mat, bctx->J0diag);CHKERRQ(ierr);
-      } else {
-        ierr = MatLMVMSetJ0Scale(*mat, bctx->J0scalar);CHKERRQ(ierr);
-      }
-    }
-    mctx->nupdates = bctx->nupdates;
-    mctx->nrejects = bctx->nrejects;
-    mctx->k = bctx->k;
-    for (i=0; i<=bctx->k; ++i) {
-      ierr = VecCopy(bctx->S[i], mctx->S[i]);CHKERRQ(ierr);
-      ierr = VecCopy(bctx->Y[i], mctx->Y[i]);CHKERRQ(ierr);
-      ierr = VecCopy(bctx->Xprev, mctx->Xprev);CHKERRQ(ierr);
-      ierr = VecCopy(bctx->Fprev, mctx->Fprev);CHKERRQ(ierr);
-    }
+    ierr = MatCopy(B, *mat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
+static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   
@@ -210,7 +249,7 @@ PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
+static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   PetscErrorCode    ierr;
@@ -357,6 +396,8 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   B->ops->shift = MatShift_LMVM;
   B->ops->duplicate = MatDuplicate_LMVM;
   B->ops->mult = MatMult_LMVM;
+  B->ops->multadd = MatMultAdd_LMVM;
+  B->ops->copy = MatCopy_LMVM;
   
   lmvm->ops->update = MatUpdate_LMVM;
   lmvm->ops->allocate = MatAllocate_LMVM;

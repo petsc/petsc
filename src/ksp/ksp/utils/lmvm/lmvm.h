@@ -58,8 +58,6 @@ PETSC_INTERN PetscErrorCode MatAllocate_LMVM(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatReset_LMVM(Mat, PetscBool);
 
 /* LMVM implementations of core Mat functionality */
-PETSC_INTERN PetscErrorCode MatDuplicate_LMVM(Mat, MatDuplicateOption, Mat*);
-PETSC_INTERN PetscErrorCode MatGetVecs_LMVM(Mat, Vec*, Vec*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject, Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_LMVM(Mat);
 PETSC_INTERN PetscErrorCode MatView_LMVM(Mat, PetscViewer);
