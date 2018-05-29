@@ -5045,7 +5045,10 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  if (!col) { /* attach global id of condensed columns */
+    ierr = PetscObjectCompose((PetscObject)aloc[0],"_petsc_GetLocalMatCondensed_iscol",(PetscObject)iscola);CHKERRQ(ierr);
+  }
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
