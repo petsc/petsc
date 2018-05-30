@@ -80,48 +80,44 @@ PetscErrorCode PostStepFunction(TS ts)
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
+static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
   PetscScalar       *f,Pmax;
-  const PetscScalar *u,*udot;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   Pmax = ctx->Pmax;
-  f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
-  f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
+  f[0] = ctx->omega_b*(u[1] - ctx->omega_s);
+  f[1] = ctx->omega_s/(2.0*ctx->H)*(ctx->Pm - Pmax*PetscSinScalar(u[0]) - ctx->D*(u[1] - ctx->omega_s));
 
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
+     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetRHSJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
+static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
   PetscInt          rowcol[] = {0,1};
   PetscScalar       J[2][2],Pmax;
-  const PetscScalar *u,*udot;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  Pmax = ctx->Pmax;
-
-  J[0][0] = a;                       J[0][1] = -ctx->omega_b;
-  J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
-
+  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  Pmax    = ctx->Pmax;
+  J[0][0] = 0;
+  J[0][1] = ctx->omega_b;
+  J[1][0] = -ctx->omega_s/(2.0*ctx->H)*Pmax*PetscCosScalar(u[0]);
+  J[1][1] = -ctx->omega_s/(2.0*ctx->H)*ctx->D;
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -135,14 +131,14 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
 {
   PetscErrorCode ierr;
-  PetscInt       row[] = {0,1},col[]={0};
+  PetscInt       row[] = {0,1},col[] = {0};
   PetscScalar    *x,J[2][1];
+  AppCtx         *ctx = (AppCtx*)ctx0;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = 0;
-  J[1][0] = 1.;
+  J[1][0] = ctx->omega_s/(2.0*ctx->H);
   ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -311,8 +307,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,(TSRHSFunction) RHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,(TSRHSJacobian)RHSJacobian,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -455,5 +451,9 @@ int main(int argc,char **argv)
    test:
       suffix: 2
       args: -sa_method tlm -ts_type cn -pc_type lu
+
+   test:
+      suffix: 3
+      args: -sa_method adj -ts_type rk -ts_rk_type 2a -ts_adapt_type dsp
 
 TEST*/
