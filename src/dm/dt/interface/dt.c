@@ -1,9 +1,5 @@
 /* Discretization tools */
 
-#if defined(PETSC_HAVE_MPFR)
-#include <mpfr.h>
-#endif
-
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
 #include <petsc/private/petscimpl.h>
@@ -11,6 +7,10 @@
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
+
+#if defined(PETSC_HAVE_MPFR)
+#include <mpfr.h>
+#endif
 
 static PetscBool GaussCite       = PETSC_FALSE;
 const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
