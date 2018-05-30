@@ -4,18 +4,12 @@ program newnonzero
  implicit none
 
  Mat :: A
- PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2
+ PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2,one,i
  PetscScalar :: v(1)
  PetscErrorCode :: ierr
 
- integer :: nproc,iproc,i
-
  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
- call MPI_COMM_SIZE(PETSC_COMM_WORLD, nproc,ierr)
-
- call MPI_Comm_rank( PETSC_COMM_WORLD, iproc, ierr )
-
+ one = 1
  n=3
  m=n
  call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,1,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,A,ierr)
@@ -26,7 +20,7 @@ program newnonzero
    idxn(1)=i
    idxm(1)=i
    v(1)=1d0
-   call MatSetValues(A,1,idxn,1,idxm, v,INSERT_VALUES,ierr)
+   call MatSetValues(A,one,idxn,one,idxm, v,INSERT_VALUES,ierr)
  end do
  call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
  call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
@@ -38,13 +32,13 @@ program newnonzero
  idxm(1)=n-1
  if ((idxn(1).ge.nl1).and.(idxn(1).le.nl2-1)) then
    v(1)=2.0
-   call MatSetValues(A,1,idxn,1,idxm, v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+   call MatSetValues(A,one,idxn,one,idxm, v,INSERT_VALUES,ierr);CHKERRQ(ierr)
  end if
  call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
  call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
  if ((idxn(1).ge.nl1).and.(idxn(1).le.nl2-1)) then
-   call MatGetValues(A,1,idxn,1,idxm, v,ierr)
+   call MatGetValues(A,one,idxn,one,idxm, v,ierr)
    write(6,*) v
  end if
 
