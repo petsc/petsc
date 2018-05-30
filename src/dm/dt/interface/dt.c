@@ -1,9 +1,5 @@
 /* Discretization tools */
 
-#include <petscconf.h>
-#if defined(PETSC_HAVE_MATHIMF_H)
-#include <mathimf.h>           /* this needs to be included before math.h */
-#endif
 #if defined(PETSC_HAVE_MPFR)
 #include <mpfr.h>
 #endif

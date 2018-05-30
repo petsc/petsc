@@ -5,7 +5,7 @@
 #
 ALL: all
 LOCDIR	 = ./
-DIRS	 = src include tutorials interfaces
+DIRS	 = src include tutorials interfaces share/petsc/matlab
 CFLAGS	 =
 FFLAGS	 =
 CPPFLAGS =
@@ -305,7 +305,7 @@ SCRIPTS    = lib/petsc/bin/maint/builddist  lib/petsc/bin/maint/wwwman lib/petsc
 
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf alldoc1 alldoc2 alldoc3 docsetdate
+alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -342,14 +342,6 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
-#
-# Builds HTML versions of Matlab scripts
-alldoc3: chk_loc
-	if  [ "${MATLAB_COMMAND}" != "" ]; then\
-          export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/share/petsc/matlab; \
-          cd ${PETSC_DIR}/share/petsc/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
-        fi
-
 #
 # Makes links for all manual pages in $LOC/docs/manualpages/all
 allman:

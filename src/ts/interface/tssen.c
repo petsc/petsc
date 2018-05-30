@@ -85,8 +85,8 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 .   numcost - number of gradients to be computed, this is the number of cost functions
 .   costintegral - vector that stores the integral values
 .   rf - routine for evaluating the integrand function
-.   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
-.   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
+.   drdyf - function that computes the gradients of the r's with respect to y
+.   drdpf - function that computes the gradients of the r's with respect to p, can be NULL if parametric sensitivity is not desired (mu=NULL)
 .   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 

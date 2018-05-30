@@ -4588,6 +4588,8 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 
    Level: advanced
 
+    Notes: The vector r DOES NOT, in general contain the current value of the SNES nonlinear function
+
 .keywords: SNES, nonlinear, get, function
 
 .seealso: SNESSetFunction(), SNESGetSolution(), SNESFunction
