@@ -485,29 +485,6 @@ static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, co
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
-{
-  const char    *defaultType;
-  char           name[256];
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
-  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
-
-  ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, 256, &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPartitionerSetType(part, name);CHKERRQ(ierr);
-  } else if (!((PetscObject) part)->type_name) {
-    ierr = PetscPartitionerSetType(part, defaultType);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@
   PetscPartitionerSetFromOptions - sets parameters in a PetscPartitioner from the options database
 
@@ -522,14 +499,25 @@ PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part
 @*/
 PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
 {
+  const char    *defaultType;
+  char           name[256];
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr = PetscPartitionerSetTypeFromOptions_Internal(part);CHKERRQ(ierr);
-
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
-  if (part->ops->setfromoptions) {ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);}
+  ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, sizeof(name), &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPartitionerSetType(part, name);CHKERRQ(ierr);
+  } else if (!((PetscObject) part)->type_name) {
+    ierr = PetscPartitionerSetType(part, defaultType);CHKERRQ(ierr);
+  }
+  if (part->ops->setfromoptions) {
+    ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
+  }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -755,7 +743,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscOptionItems *Pet
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitionerShell Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Shell Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &p->random, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1699,7 +1687,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscOptionItems *
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitionerPTScotch Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner PTScotch Options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-petscpartitioner_ptscotch_strategy","Partitioning strategy","",slist,nlist,slist[p->strategy],&p->strategy,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-petscpartitioner_ptscotch_imbalance","Load imbalance ratio","",p->imbalance,&p->imbalance,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
