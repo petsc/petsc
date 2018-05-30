@@ -10615,6 +10615,9 @@ PetscErrorCode MatSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (op == MATOP_VIEW && !mat->ops->viewnative) {
+    mat->ops->viewnative = mat->ops->view;
+  }
   (((void(**)(void))mat->ops)[op]) = f;
   PetscFunctionReturn(0);
 }
