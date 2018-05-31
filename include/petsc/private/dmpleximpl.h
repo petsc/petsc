@@ -35,7 +35,6 @@ PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
-PETSC_INTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
 typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_1D,
@@ -70,7 +69,7 @@ typedef struct {
 } PetscPartitioner_Chaco;
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt ptype;
 } PetscPartitioner_ParMetis;
 
 typedef struct {
