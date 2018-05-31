@@ -1,6 +1,5 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
-#include <petscdmda.h>
 #include <petscsf.h>
 
 /*@

@@ -327,7 +327,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   ierr = DMIsForest(adaptor->idm, &isForest);CHKERRQ(ierr);
   if (adaptor->adaptCriterion == DM_ADAPTATION_NONE) {
     if (isForest) {adaptor->adaptCriterion = DM_ADAPTATION_LABEL;}
-#ifdef PETSC_HAVE_PRAGMATIC
+#if defined(PETSC_HAVE_PRAGMATIC)
     else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
 #else
     else          {adaptor->adaptCriterion = DM_ADAPTATION_REFINE;}

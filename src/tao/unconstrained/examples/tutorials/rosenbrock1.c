@@ -225,20 +225,44 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type nls
+      args: -tao_smonitor -tao_type nls -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 2
-      args: -tao_smonitor -tao_type lmvm -tao_gttol 1.e-2
+      args: -tao_smonitor -tao_type lmvm -tao_gatol 1.e-3
 
    test:
       suffix: 3
-      args: -tao_smonitor -tao_type ntr
+      args: -tao_smonitor -tao_type ntr -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none
+      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gatol 1.e-4
+      
+   test:
+      suffix: 5
+      args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4
+      
+   test:
+      suffix: 6
+      args: -tao_smonitor -tao_type bntl -tao_gatol 1.e-4
+   
+   test:
+      suffix: 7
+      args: -tao_smonitor -tao_type bnls -tao_gatol 1.e-4
+   
+   test:
+      suffix: 8
+      args: -tao_smonitor -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+   
+   test:
+      suffix: 9
+      args: -tao_smonitor -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+   
+   test:
+      suffix: 10
+      args: -tao_smonitor -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
 
 TEST*/

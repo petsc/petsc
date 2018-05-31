@@ -6,10 +6,11 @@ iter =   0, Function value 1.46076, Residual: 0.207785
 iter =   0, Function value 1.43581, Residual: 0.187715 
 iter =   1, Function value 1.41867, Residual: 0.0159523 
 iter =   2, Function value 1.41847, Residual: 0.000149091 
+iter =   3, Function value 1.41847, Residual: < 1.0e-6 
 Tao Object: 2 MPI processes
   type: nls
     Rejected matrix updates: 0
-    Newton steps: 2
+    Newton steps: 3
     BFGS steps: 0
     Scaled gradient steps: 0
     Gradient steps: 0
@@ -36,11 +37,11 @@ Tao Object: 2 MPI processes
       rows=100, cols=100
       total: nonzeros=784, allocated nonzeros=784
       total number of mallocs used during MatSetValues calls =0
-  total KSP iterations: 30
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
-  Residual in Function/Gradient:=0.000149091
+  total KSP iterations: 45
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.7336e-08
   Objective value=1.41847
-  total number of iterations=2,                          (max: 50)
-  total number of function/gradient evaluations=9,      (max: 4000)
-  total number of Hessian evaluations=3
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  total number of iterations=3,                          (max: 50)
+  total number of function/gradient evaluations=10,      (max: 4000)
+  total number of Hessian evaluations=4
+  Solution converged:    ||g(X)|| <= gatol

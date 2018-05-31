@@ -10,30 +10,6 @@ MANSEC          = DM
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
-	${RM} -f ex1.o
-
-ex1f90: ex1f90.o  chkopts
-	-${FLINKER} -o ex1f90 ex1f90.o  ${PETSC_DM_LIB}
-	${RM} -f ex1f90.o
-
-ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
-	${RM} -f ex2.o
-
-ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o ${PETSC_DM_LIB}
-	${RM} -f ex5.o
-
-ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o ${PETSC_DM_LIB}
-	${RM} -f ex6.o
-
-ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_DM_LIB}
-	${RM} -f ex7.o
-
 #--------------------------------------------------------------------------
 
 runex1:

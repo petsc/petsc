@@ -54,18 +54,16 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 /* u = x */
 PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = coords[d];
+  for (d = 0; d < dim; ++d) u[d] = coords[d];
   return 0;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d, e;
-  for (d = 0; d < user->dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     u[d] = 0.0;
-    for (e = 0; e < user->dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+    for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
   return 0;
 }
@@ -756,6 +754,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
   ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-projection_view");CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
   ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
   ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
@@ -1184,6 +1183,24 @@ int main(int argc, char **argv)
     suffix: p3_2d_6
     requires: triangle pragmatic
     args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+
+  # 2D Q_3 on a quadrilaterial
+  test:
+    suffix: q3_2d_0
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -convergence
+  test:
+    suffix: q3_2d_1
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 1
+  test:
+    suffix: q3_2d_2
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 2
+  test:
+    suffix: q3_2d_3
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
   test:

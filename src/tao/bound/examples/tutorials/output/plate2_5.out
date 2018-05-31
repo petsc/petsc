@@ -34,10 +34,10 @@ Tao Object: 3 MPI processes
           rows=96, cols=96
   total KSP iterations: 95
   Active Set subset type: matrixfree
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
+  convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=4.11358e-08
   Objective value=1.49406
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=15,      (max: 4000)
   total number of Hessian evaluations=3
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  Solution converged:    ||g(X)|| <= gatol

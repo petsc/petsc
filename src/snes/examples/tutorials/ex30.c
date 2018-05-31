@@ -120,7 +120,6 @@ extern PetscErrorCode ViscosityField(DM,Vec,Vec);
 extern PetscErrorCode StressField(DM);
 extern PetscErrorCode SNESConverged_Interactive(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason*, void*);
 extern PetscErrorCode InteractiveHandler(int, void*);
-extern PetscBool  OptionsHasName(const char pre[],const char name[]);
 
 /*-----------------------------------------------------------------------*/
 int main(int argc,char **argv)
@@ -1253,18 +1252,6 @@ PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *u
   (*PetscErrorPrintf)("erf() not available on this machine\n");
   MPI_Abort(PETSC_COMM_SELF,1);
 #endif
-}
-
-
-/* ------------------------------------------------------------------- */
-/*  utility function */
-PetscBool  OptionsHasName(const char pre[],const char name[])
-/* ------------------------------------------------------------------- */
-{
-  PetscBool      retval;
-  PetscErrorCode ierr;
-  ierr = PetscOptionsHasName(NULL,pre,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
-  return retval;
 }
 
 /*=====================================================================

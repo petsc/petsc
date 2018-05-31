@@ -56,7 +56,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
-    self.framework.argDB['search-dirs'].append(os.path.join(self.dir, 'lib','petsc','bin', 'win32fe'))
+    self.framework.argDB['with-executables-search-path'].append(os.path.join(self.dir, 'lib','petsc','bin', 'win32fe'))
 
     return
 

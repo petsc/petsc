@@ -46,7 +46,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->defaultSection) {
@@ -104,7 +104,7 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->defaultSection) {
@@ -288,7 +288,7 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->defaultSection) {
@@ -346,7 +346,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
   if (da->defaultSection) {

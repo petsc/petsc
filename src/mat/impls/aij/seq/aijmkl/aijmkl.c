@@ -17,7 +17,7 @@ typedef struct {
   PetscBool eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
   PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
   PetscObjectState state;
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
 #endif
@@ -31,7 +31,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B       = *newmat;
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   Mat_SeqAIJMKL  *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
 #endif
 
@@ -58,10 +58,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if(!aijmkl->no_SpMV2) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
    * spptr pointer. */
   if (aijmkl) {
     /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     if (aijmkl->sparse_optimized) {
       sparse_status_t stat = SPARSE_STATUS_SUCCESS;
       stat = mkl_sparse_destroy(aijmkl->csrA);
@@ -127,7 +127,7 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
  * an unoptimized matrix handle here. */
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 {
-#ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   /* If the MKL library does not have mkl_sparse_optimize(), then this routine 
    * does nothing. We make it callable anyway in this case because it cuts 
    * down on littering the code with #ifdefs. */
@@ -171,8 +171,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
     if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set mv_hint");
     stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
     if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set memory_hint");
-    stat = mkl_sparse_optimize(aijmkl->csrA);
-    if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
+    if (!aijmkl->no_SpMV2) {
+      stat = mkl_sparse_optimize(aijmkl->csrA);
+      if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
+    }
     aijmkl->sparse_optimized = PETSC_TRUE;
     ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
   }
@@ -186,7 +188,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
  * matrix handle.
  * Note: This routine simply destroys and replaces the original matrix if MAT_REUSE_MATRIX has been specified, as
  * there is no good alternative. */
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,MatReuse reuse,Mat *mat)
 {
   PetscErrorCode      ierr;
@@ -231,8 +233,10 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set mv_hint");
   stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set memory_hint");
-  stat = mkl_sparse_optimize(aijmkl->csrA);
-  if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
+  if (!aijmkl->no_SpMV2) {
+    stat = mkl_sparse_optimize(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
+  }
   aijmkl->sparse_optimized = PETSC_TRUE;
   ierr = PetscObjectStateGet((PetscObject)A,&(aijmkl->state));CHKERRQ(ierr);
 
@@ -244,7 +248,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
 /* MatSeqAIJMKL_update_from_mkl_handle() updates the matrix values array from the contents of the associated MKL sparse matrix handle.
  * This is needed after mkl_sparse_sp2m() with SPARSE_STAGE_FINALIZE_MULT has been used to compute new values of the matrix in 
  * MatMatMultNumeric(). */
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
 {
   PetscInt            i;
@@ -327,6 +331,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -362,8 +367,9 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -410,6 +416,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -444,8 +451,9 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -492,6 +500,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -540,8 +549,9 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -603,6 +613,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -651,8 +662,9 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -714,7 +726,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 /* Note that this code currently doesn't actually get used when MatMatMult() is called with MAT_REUSE_MATRIX, because 
  * the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
  * For releases of MKL prior to version 18, update 2:
@@ -753,7 +765,7 @@ PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,P
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 {
   Mat_SeqAIJMKL       *a, *b, *c;
@@ -793,7 +805,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,Mat C)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M */
 
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
 {
   Mat_SeqAIJMKL    *a, *b;
@@ -825,14 +837,14 @@ PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReus
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 {
   Mat_SeqAIJMKL       *a, *p, *c;
   sparse_matrix_t     csrA, csrP, csrC;
   PetscBool           set, flag;
   sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
-  struct matrix_descr descr_type_gen;
+  struct matrix_descr descr_type_sym;
   PetscObjectState    state;
   PetscErrorCode      ierr;
 
@@ -857,10 +869,12 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
   csrA = a->csrA;
   csrP = p->csrA;
   csrC = c->csrA;
-  descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
+  descr_type_sym.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
+  descr_type_sym.mode = SPARSE_FILL_MODE_LOWER;
+  descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FINALIZE_MULT);
+  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FINALIZE_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to finalize mkl_sparse_sypr");
 
   /* Have to update the PETSc AIJ representation for matrix C from contents of MKL handle. */
@@ -870,14 +884,14 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,Mat C)
 }
 #endif
 
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
 PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   Mat_SeqAIJMKL       *a, *p;
   sparse_matrix_t     csrA, csrP, csrC;
   PetscBool           set, flag;
   sparse_status_t     stat = SPARSE_STATUS_SUCCESS;
-  struct matrix_descr descr_type_gen;
+  struct matrix_descr descr_type_sym;
   PetscObjectState    state;
   PetscErrorCode      ierr;
 
@@ -905,10 +919,12 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
   }
   csrA = a->csrA;
   csrP = p->csrA;
-  descr_type_gen.type = SPARSE_MATRIX_TYPE_GENERAL;
+  descr_type_sym.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
+  descr_type_sym.mode = SPARSE_FILL_MODE_LOWER;
+  descr_type_sym.diag = SPARSE_DIAG_NON_UNIT;
 
   /* Note that the call below won't work for complex matrices. (We protect this when pointers are assigned in MatConvert.) */
-  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_gen,&csrC,SPARSE_STAGE_FULL_MULT);
+  stat = mkl_sparse_sypr(SPARSE_OPERATION_TRANSPOSE,csrP,csrA,descr_type_sym,&csrC,SPARSE_STAGE_FULL_MULT);
   if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete full mkl_sparse_sypr");
 
   ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
@@ -948,7 +964,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
 
   aijmkl->sparse_optimized = PETSC_FALSE;
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines if our MKL supports them. */
 #else
   aijmkl->no_SpMV2 = PETSC_TRUE;
@@ -960,44 +976,51 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_aijmkl_eager_inspection","Eager Inspection","None",(PetscBool)aijmkl->eager_inspection,(PetscBool*)&aijmkl->eager_inspection,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-#ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if(!aijmkl->no_SpMV2) {
     ierr = PetscInfo(B,"User requested use of MKL SpMV2 routines, but MKL version does not support mkl_sparse_optimize();  defaulting to non-SpMV2 routines.\n");
     aijmkl->no_SpMV2 = PETSC_TRUE;
   }
 #endif
 
-  if(!aijmkl->no_SpMV2) {
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-    B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
-    B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2;
-    B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
-    B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
-    B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
-    B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
-#ifndef PETSC_USE_COMPLEX
-    B->ops->ptap             = MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2;
-    B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
-#endif
-#endif
-    B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
-#endif
-  } else {
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+  B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
+  B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2;
+  B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
+  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
+  B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
+# if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+  B->ops->matmultnumeric   = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
+#   if !defined(PETSC_USE_COMPLEX)
+  B->ops->ptap             = MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2;
+  B->ops->ptapnumeric      = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2;
+#   endif
+# endif
+  B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+  /* In the same release in which MKL introduced mkl_sparse_sp2m() (version 18, update 2), the old sparse BLAS interfaces were
+   * marked as deprecated. If "no_SpMV2" has been specified by the user and MKL 18u2 or later is being used, we use the new
+   * _SpMV2 routines (set above), but do not call mkl_sparse_optimize(), which results in the old numerical kernels (without the
+   * inspector-executor model) being used. For versions in which the older interface has not been deprecated, we use the old
+   * interface. */
+  if (aijmkl->no_SpMV2) {
     B->ops->mult             = MatMult_SeqAIJMKL;
     B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
     B->ops->multadd          = MatMultAdd_SeqAIJMKL;
     B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
   }
+#endif
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   if(!aijmkl->no_SpMV2) {
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MKL_SPARSE_SP2M
+#if defined(PETSC_HAVE_MKL_SPARSE_SP2M)
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijmkl_seqaijmkl_C",MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);

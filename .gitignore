@@ -25,12 +25,11 @@ RDict.db
 RDict.log
 TAGS*
 bmake/*/*
-conf/petscvariables
+lib/petsc/conf/petscvariables
 configure.log*
 externalpackages/*
 ftn-auto
 ftn-auto-interfaces
-lib/*
 make_log_*
 test_log_*
 src/python/*

@@ -36,7 +36,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 {
   PetscErrorCode          ierr;
   PetscBool               isascii, isstring;
-  const TaoLineSearchType type;
+  TaoLineSearchType       type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -418,7 +418,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 
 @*/
 
-PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType type)
+PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*r)(TaoLineSearch);
@@ -532,7 +532,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   Level: developer
 
 @*/
-PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, const TaoLineSearchType *type)
+PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, TaoLineSearchType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);

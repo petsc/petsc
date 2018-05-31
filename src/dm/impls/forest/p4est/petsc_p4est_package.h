@@ -3,7 +3,7 @@
 #include <petscsys.h>
 #include <p4est_base.h>
 
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_ERRORCHECKING)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
 #include <setjmp.h>
 PETSC_INTERN jmp_buf PetscScJumpBuf;
 

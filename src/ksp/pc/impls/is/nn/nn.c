@@ -22,7 +22,7 @@ static PetscErrorCode PCSetUp_NN(PC pc)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
-    ierr = PCISSetUp(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
     /* Create the coarse matrix. */
     ierr = PCNNCreateCoarseMatrix(pc);CHKERRQ(ierr);
   }

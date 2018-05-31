@@ -33,14 +33,6 @@ iter =  28, Function value 1.49406, Residual: 0.000161589
 iter =  29, Function value 1.49406, Residual: 0.000154728 
 iter =  30, Function value 1.49406, Residual: 0.000120383 
 iter =  31, Function value 1.49406, Residual: 4.48211e-05 
-iter =  32, Function value 1.49406, Residual: 3.6635e-05 
-iter =  33, Function value 1.49406, Residual: 2.94187e-05 
-iter =  34, Function value 1.49406, Residual: 2.23549e-05 
-iter =  35, Function value 1.49406, Residual: 1.00507e-05 
-iter =  36, Function value 1.49406, Residual: 7.32074e-06 
-iter =  37, Function value 1.49406, Residual: 8.39813e-06 
-iter =  38, Function value 1.49406, Residual: 5.16668e-06 
-iter =  39, Function value 1.49406, Residual: 2.9402e-06 
 Tao Object: 3 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -54,9 +46,9 @@ Tao Object: 3 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: matrixfree
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
-  Residual in Function/Gradient:=2.9402e-06
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=4.48211e-05
   Objective value=1.49406
-  total number of iterations=39,                          (max: 2000)
-  total number of function/gradient evaluations=44,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  total number of iterations=31,                          (max: 2000)
+  total number of function/gradient evaluations=35,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

@@ -20,9 +20,11 @@ iter =  14, Function value 1.41776, Residual: 0.00222456
 iter =  15, Function value 1.41776, Residual: 0.00294923 
 iter =  16, Function value 1.41776, Residual: 0.00261023 
 iter =  17, Function value 1.41776, Residual: 0.00187318 
+iter =  18, Function value 1.41775, Residual: 0.0026684 
+iter =  19, Function value 1.41775, Residual: 0.000966665 
 Tao Object: 1 MPI processes
   type: lmvm
-    BFGS steps: 16
+    BFGS steps: 18
     Scaled gradient steps: 1
     Gradient steps: 0
   TaoLineSearch Object: 1 MPI processes
@@ -33,9 +35,9 @@ Tao Object: 1 MPI processes
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     Termination reason: 1
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
-  Residual in Function/Gradient:=0.00187318
-  Objective value=1.41776
-  total number of iterations=17,                          (max: 2000)
-  total number of function/gradient evaluations=20,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=0.000966665
+  Objective value=1.41775
+  total number of iterations=19,                          (max: 2000)
+  total number of function/gradient evaluations=22,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

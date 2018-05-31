@@ -12,6 +12,7 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     help.addArgument('MATLAB', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
+    help.addArgument('MATLAB', '-with-matlab-socket=<bool>',  nargs.ArgBool(None, 1, 'Build socket code for Matlab'))
     help.addArgument('MATLAB', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     help.addArgument('MATLAB', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
     return
@@ -45,9 +46,9 @@ class Configure(config.package.Package):
 
       output      = ''
       try:
-        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.log)
-      except:
-        self.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
+        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nodisplay -r "display([\'Version \' version]); exit"', log = self.log)
+      except  RuntimeError as e:
+        self.log.write('WARNING: Found Matlab at '+matlab+' but unable to run'+str(e)+'\n')
         continue
 
       match  = versionPattern.search(output)
@@ -82,6 +83,9 @@ class Configure(config.package.Package):
           self.addMakeMacro('MATLAB_COMMAND',self.command)
           self.addDefine('MATLAB_COMMAND','"'+self.command+'"')
           self.found = 1
+          if not 'with-matlab-socket' in self.argDB or self.argDB['with-matlab-socket']:
+            self.addDefine('USE_MATLAB_SOCKET','1')
+            self.addMakeMacro('MATLAB_SOCKET','yes')
           return
         else:
           self.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
