@@ -820,13 +820,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
    Options Database Key:
 +  -dm_view - Calls DMView() at the conclusion of DMDACreate2d()
-.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
-.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
 .  -da_processors_x <nx> - number of processors in x direction
 .  -da_processors_y <ny> - number of processors in y direction
 .  -da_refine_x <rx> - refinement ratio in x direction
 .  -da_refine_y <ry> - refinement ratio in y direction
--  -da_refine <n> - refine the DMDA n times before creating, if M or N < 0
+-  -da_refine <n> - refine the DMDA n times before creating
 
 
    Level: beginner

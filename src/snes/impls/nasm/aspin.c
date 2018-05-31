@@ -75,7 +75,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 
     Notes:
     This routine sets up an instance of NETWONLS with nonlinear left preconditioning.  It differs from other
-    similar functionality in SNES as it creates a linear shell matrix that corresponds to the product:
+    similar functionality in SNES as it creates a linear shell matrix that corresponds to the product
 
     \sum_{i=0}^{N_b}J_b({X^b_{converged}})^{-1}J(X + \sum_{i=0}^{N_b}(X^b_{converged} - X^b))
 
@@ -83,7 +83,8 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     nonlinear solves per linear iteration, but this is far more efficient when subdomain sparse-direct preconditioner
     factorizations are reused on each application of J_b^{-1}.
 
-   Level: intermediate
+   Level:
+   intermediate
 
    References:
 +  1. - X. C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact Newton algorithms",  SIAM J. Sci. Comput., 24, 2002.

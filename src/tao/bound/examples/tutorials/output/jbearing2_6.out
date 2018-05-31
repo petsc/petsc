@@ -2,44 +2,21 @@
 ---- Journal Bearing Problem SHB-----
 mx: 8,  my: 12,  ecc: 0.1 
 
-  0 TAO,  Function value: 0.,  Residual: 0.558092 
-  1 TAO,  Function value: -0.148934,  Residual: 0.330607 
-  2 TAO,  Function value: -0.174832,  Residual: 0.241391 
-  3 TAO,  Function value: -0.181479,  Residual: 0.118699 
-  4 TAO,  Function value: -0.182954,  Residual: 0.0417343 
-  5 TAO,  Function value: -0.183212,  Residual: 0.0309143 
-  6 TAO,  Function value: -0.183344,  Residual: 0.0230972 
-  7 TAO,  Function value: -0.183406,  Residual: 0.011293 
-  8 TAO,  Function value: -0.183428,  Residual: 0.00750362 
-  9 TAO,  Function value: -0.183433,  Residual: 0.00392572 
- 10 TAO,  Function value: -0.183436,  Residual: 0.00234273 
- 11 TAO,  Function value: -0.183437,  Residual: 0.00156726 
- 12 TAO,  Function value: -0.183437,  Residual: 0.000850351 
- 13 TAO,  Function value: -0.183437,  Residual: 0.00050347 
- 14 TAO,  Function value: -0.183437,  Residual: 0.000295378 
- 15 TAO,  Function value: -0.183437,  Residual: 0.000179228 
- 16 TAO,  Function value: -0.183437,  Residual: 0.000118208 
- 17 TAO,  Function value: -0.183437,  Residual: 8.25378e-05 
-Tao Object: 1 MPI processes
-  type: bncg
-    CG Type: dy
-    Resets: 0
-      Broken ortho: 0
-      Not a descent dir.: 0
-    Line search fails: 0
-  TaoLineSearch Object: 1 MPI processes
-    type: more-thuente
-    maximum function evaluations=30
-    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
-    total number of function evaluations=0
-    total number of gradient evaluations=0
-    total number of function/gradient evaluations=2
-    using variable bounds
-    Termination reason: 1
-  Active Set subset type: subvec
-  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=8.25378e-05
-  Objective value=-0.183437
-  total number of iterations=17,                          (max: 2000)
-  total number of function/gradient evaluations=34,      (max: 4000)
-  Solution converged:    ||g(X)|| <= gatol
+iter =   0, Function value 0., Residual: 0.558092 
+iter =   1, Function value -0.148934, Residual: 0.469316 
+iter =   2, Function value -0.174832, Residual: 0.372048 
+iter =   3, Function value -0.181479, Residual: 0.131947 
+iter =   4, Function value -0.182954, Residual: 0.0395938 
+iter =   5, Function value -0.183212, Residual: 0.0305263 
+iter =   6, Function value -0.183344, Residual: 0.0230708 
+iter =   7, Function value -0.183406, Residual: 0.0115322 
+iter =   8, Function value -0.183428, Residual: 0.00751191 
+iter =   9, Function value -0.183433, Residual: 0.00392683 
+iter =  10, Function value -0.183436, Residual: 0.00234277 
+iter =  11, Function value -0.183437, Residual: 0.00156841 
+iter =  12, Function value -0.183437, Residual: 0.000850748 
+iter =  13, Function value -0.183437, Residual: 0.000503633 
+iter =  14, Function value -0.183437, Residual: 0.000295436 
+iter =  15, Function value -0.183437, Residual: 0.000179275 
+iter =  16, Function value -0.183437, Residual: 0.000118226 
+iter =  17, Function value -0.183437, Residual: 8.25438e-05 

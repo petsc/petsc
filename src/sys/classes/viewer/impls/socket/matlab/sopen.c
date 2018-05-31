@@ -176,3 +176,9 @@ PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *p
   *mxGetPr(plhs[0]) = t;
   return;
 }
+
+int main(int argc, char **argv)
+{
+  return 0;
+}
+

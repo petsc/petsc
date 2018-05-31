@@ -433,25 +433,25 @@ PetscErrorCode InitializeData(AppCtx *user)
        requires: !complex
 
      test:
-       args:  -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05
+       args:  -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -tao_gatol 1.e-5
        requires: !single
        TODO: produces different output for many different systems
 
      test:
        suffix: 2
-       args: -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders -tao_pounders_delta 0.05
+       args: -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders -tao_pounders_delta 0.05 -tao_gatol 1.e-5
        requires: !single
        TODO: produces different output for many different systems
 
      test:
        suffix: 3
-       args: -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders -tao_pounders_delta 0.05
+       args: -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders -tao_pounders_delta 0.05 -tao_gatol 1.e-5
        requires: !single
        TODO: produces different output for many different systems
 
      test:
        suffix: 4
-       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -pounders_subsolver_tao_type blmvm
+       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -pounders_subsolver_tao_type blmvm -tao_gatol 1.e-5
        requires: !single
        TODO: produces different output for many different systems
 

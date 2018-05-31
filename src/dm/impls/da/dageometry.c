@@ -473,7 +473,7 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidScalarPointer(values, 4);
   PetscValidPointer(values, 5);
   if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}

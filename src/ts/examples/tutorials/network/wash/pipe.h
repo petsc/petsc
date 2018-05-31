@@ -36,7 +36,8 @@ struct _p_Pipe
   PetscReal    rad;     
   PetscScalar  H0,QL;    /* left and right boundary conditions for H and Q */
   PipeBoundary boundary; /* boundary conditions for H and Q */
-};
+  Mat          *jacobian;
+} PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 typedef struct _p_Pipe *Pipe;
 
 extern PetscErrorCode PipeCreate(MPI_Comm,Pipe*);

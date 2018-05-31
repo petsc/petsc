@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=el6
-set USR=petsc
-set PETSC_DIR=/sandbox/petsc/${RNAME}-4
-set PETSC_ARCH=arch-linux-pkgs-valgrind

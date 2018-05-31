@@ -448,7 +448,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   dsfield = (DMField_DS *) field->data;
   ierr = DMGetCoordinateDim(field->dm, &dimC);CHKERRQ(ierr);
   ierr = DMGetDimension(field->dm, &dim);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(pointIS, &numPoints);
+  ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetMinMax(pointIS,&imin,NULL);CHKERRQ(ierr);
   for (h = 0; h < dsfield->height; h++) {
     PetscInt hEnd;

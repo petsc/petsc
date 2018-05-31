@@ -254,7 +254,14 @@ PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,Pets
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
-PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
+PETSC_EXTERN PetscLogEvent SNES_Solve;
+PETSC_EXTERN PetscLogEvent SNES_LineSearch;
+PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
+PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
+PETSC_EXTERN PetscLogEvent SNES_NGSEval;
+PETSC_EXTERN PetscLogEvent SNES_NGSFuncEval;
+PETSC_EXTERN PetscLogEvent SNES_NPCSolve;
+PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 
 extern PetscBool SNEScite;
 extern const char SNESCitation[];

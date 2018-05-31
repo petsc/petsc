@@ -1663,17 +1663,18 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   DM             vel_cda;
   Vec            vel_coords;
   PetscInt       p;
-  Vec            f,X;
+  Vec            f,X,X1;
   DMDACoor3d     ***_vel_coords;
   PetscInt       its;
   KSP            ksp_S;
   PetscInt       model_definition = 0;
   PetscInt       ei,ej,ek,sex,sey,sez,Imx,Jmy,Kmz;
   CellProperties cell_properties;
-  PetscBool      write_output = PETSC_FALSE;
+  PetscBool      write_output = PETSC_FALSE,resolve= PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-resolve",&resolve,NULL);CHKERRQ(ierr);
   /* Generate the da for velocity and pressure */
   /* Num nodes in each direction is mx+1, my+1, mz+1 */
   u_dof         = U_DOFS; /* Vx, Vy - velocities */
@@ -1952,7 +1953,21 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
       ierr = KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL);CHKERRQ(ierr);
     }
   }
+
+  if (resolve) {
+    /* Test changing matrix data structure and resolve */
+    ierr = VecDuplicate(X,&X1);CHKERRQ(ierr);
+  }
+
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
+  if (resolve) {
+    Mat C;
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp_S,C,C);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp_S,f,X1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-write_pvts",&write_output,NULL);CHKERRQ(ierr);
   if (write_output) {ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);}
@@ -2041,5 +2056,9 @@ int main(int argc,char **args)
       nsize: 9
       args: -model 4 -jump_magnitude 4 -mx 6 -my 6 -mz 2 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc -stokes_pc_bddc_schur_layers 1
 
+   test:
+      requires: !single
+      suffix: 3
+      args: -stokes_ksp_converged_reason -stokes_pc_type fieldsplit -resolve
 
 TEST*/

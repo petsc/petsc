@@ -203,7 +203,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   flag = 0;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);

@@ -105,8 +105,8 @@ Framework:
   --ignoreWarnings      : Ignore compiler and linker warnings                             current: 0
   --doCleanup           : Delete any configure generated files (turn off for debugging)   current: 1
   --with-alternatives   : Provide a choice among alternative package installations        current: 0
-  --search-dirs         : A list of directories used to search for executables            current: []
-  --package-dirs        : A list of directories used to search for packages               current: []
+  --with-executables-search-path : A list of directories used to search for executables            current: []
+  --with-packages-search-path    : A list of directories used to search for packages               current: []
   --with-batch          : Machine uses a batch system to submit jobs                      current: 0
 </computeroutput>
 </screen>
@@ -129,8 +129,8 @@ Framework:
   --ignoreWarnings                 : Ignore compiler and linker warnings                                   current: 0
   --doCleanup                      : Delete any configure generated files (turn off for debugging)         current: 1
   --with-alternatives              : Provide a choice among alternative package installations              current: 0
-  --search-dirs                    : A list of directories used to search for executables                  current: []
-  --package-dirs                   : A list of directories used to search for packages                     current: []
+  --with-executables-search-path   : A list of directories used to search for executables                  current: []
+  --with-packages-search-path      : A list of directories used to search for packages                     current: []
   --with-batch                     : Machine uses a batch system to submit jobs                            current: 0
 Compilers:
   --with-cpp=&lt;prog&gt;                : Specify the C preprocessor

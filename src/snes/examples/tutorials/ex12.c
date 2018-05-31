@@ -1351,6 +1351,13 @@ int main(int argc, char **argv)
     nsize: 2
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
 
+  # This test uses a loose tolerance to trigger the PtAP operations for MATIS
+  test:
+    suffix: gmg_bddc
+    requires: triangle !single
+    nsize: 3
+    args: -interpolate -run_type full -petscspace_order 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_levels_pc_type jacobi -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2
+
   # Restarting
   testset:
     suffix: restart

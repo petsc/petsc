@@ -355,7 +355,7 @@ static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A,MatSolverTyp
 
   Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
 
-  Use -pc_type lu -pc_factor_mat_solver_type cholmod to use this direct solver
+  Use -pc_type cholesky -pc_factor_mat_solver_type cholmod to use this direct solver
 
   Consult CHOLMOD documentation for more information about the Common parameters
   which correspond to the options database keys below.

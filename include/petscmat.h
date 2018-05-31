@@ -134,8 +134,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,MatSolverType,MatFactorType,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat,MatSolverType*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType,const MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
-PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType,const MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType,MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType,MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
+typedef MatSolverType MatSolverPackage PETSC_DEPRECATED("Use MatSolverType");
+PETSC_DEPRECATED("Use MatSolverTypeRegister()") PETSC_STATIC_INLINE PetscErrorCode MatSolverPackageRegister(MatSolverType stype,MatType mtype,MatFactorType ftype,PetscErrorCode(*f)(Mat,MatFactorType,Mat*))
+{ return MatSolverTypeRegister(stype,mtype,ftype,f); }
+PETSC_DEPRECATED("Use MatSolverTypeGet()") PETSC_STATIC_INLINE PetscErrorCode MatSolverPackageGet(MatSolverType stype,MatType mtype,MatFactorType ftype,PetscBool *foundmtype,PetscBool *foundstype,PetscErrorCode(**f)(Mat,MatFactorType,Mat*))
+{ return MatSolverTypeGet(stype,mtype,ftype,foundmtype,foundstype,f); }
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -1031,8 +1036,6 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
-PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetLDA(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatDenseGetLocalMatrix(Mat,Mat*);
 
@@ -1245,6 +1248,7 @@ PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeig
 PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
 PETSC_EXTERN PetscErrorCode MatColoringTest(MatColoring,ISColoring);
+PETSC_DEPRECATED("Use MatColoringTest()") PETSC_STATIC_INLINE PetscErrorCode MatColoringTestValid(MatColoring matcoloring,ISColoring iscoloring) {return MatColoringTest(matcoloring,iscoloring);}
 PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat,ISColoring);
 
 /*S
@@ -1570,6 +1574,10 @@ PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
+
+PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
+PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
@@ -1732,8 +1740,10 @@ typedef enum {MAT_STRUMPACK_NATURAL=0,
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetReordering(Mat,MatSTRUMPACKReordering);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetColPerm(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat,PetscReal);
+PETSC_DEPRECATED ("Use MatSTRUMPACKSetHSSRelTol()") PETSC_STATIC_INLINE PetscErrorCode MatSTRUMPACKSetHSSRelCompTol(Mat mat,PetscReal rtol) {return MatSTRUMPACKSetHSSRelTol(mat,rtol);}
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat,PetscInt);
+PETSC_DEPRECATED ("Use MatSTRUMPACKSetHSSMinSepSize()") PETSC_STATIC_INLINE PetscErrorCode MatSTRUMPACKSetHSSMinSize(Mat mat,PetscInt hssminsize) {return MatSTRUMPACKSetHSSMinSepSize(mat,hssminsize);}
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 #endif

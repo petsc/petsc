@@ -407,7 +407,7 @@ PetscSF Object: 2 MPI processes
   [0]    34 <- 46
   [0]    35 <- 47
   [1] Roots referenced by my leaves, by rank
-DM Object: 2 MPI processes
+DM Object: (new_) 2 MPI processes
   type: plex
 DM_0x84000004_0 in 2 dimensions:
 Supports:
@@ -790,6 +790,6 @@ Process 0:
   (  92) dim  2 offset  64 -1.51932 0.000651568
   (  93) dim  2 offset  66 -2. -0.333333
 Process 1:
-PetscSF Object: 2 MPI processes
+PetscSF Object: (new_) 2 MPI processes
   type not yet set
   PetscSFSetGraph() has not been called yet

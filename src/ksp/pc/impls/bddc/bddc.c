@@ -1479,13 +1479,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
   if (pcbddc->switch_static) {
     PetscBool ismatis;
+
     ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
     if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
   }
@@ -1493,16 +1494,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* activate all connected components if the netflux has been requested */
   if (pcbddc->compute_nonetflux) {
     pcbddc->use_vertices = PETSC_TRUE;
-    pcbddc->use_edges = PETSC_TRUE;
-    pcbddc->use_faces = PETSC_TRUE;
+    pcbddc->use_edges    = PETSC_TRUE;
+    pcbddc->use_faces    = PETSC_TRUE;
   }
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
       pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
-      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
@@ -1564,7 +1565,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
-    ierr = PCISSetUp(pc,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
   }
@@ -1736,6 +1737,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

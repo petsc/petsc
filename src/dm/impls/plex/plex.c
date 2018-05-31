@@ -6596,7 +6596,7 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   PetscInt       m, n;
   void          *ctx;
   DM             cdm;
-  PetscBool      regular;
+  PetscBool      regular, ismatis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6605,9 +6605,10 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
 
+  ierr = PetscStrcmp(dmCoarse->mattype, MATIS, &ismatis);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
+  ierr = MatSetType(*interpolation, ismatis ? MATAIJ : dmCoarse->mattype);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
 
   ierr = DMGetCoarseDM(dmFine, &cdm);CHKERRQ(ierr);

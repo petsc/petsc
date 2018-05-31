@@ -69,6 +69,7 @@ SOURCED    = ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEH}
 
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
+CXXLINKER = ${CXX_LINKER} ${CXX_LINKER_FLAGS} ${CXXFLAGS}
 #
 # Defines all libraries needed for using linear and nonlinear solvers,
 # and all lower level PETSc components (such as vectors and matrices).

@@ -111,6 +111,17 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       if (faceSize) *faceSize         = 3;
       break;
     case 8:
+      /*  7--------6
+         /|       /|
+        / |      / |
+       4--------5  |
+       |  |     |  |
+       |  |     |  |
+       |  1--------2
+       | /      | /
+       |/       |/
+       0--------3
+       */
       if (faces) {
         facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[3]; /* Bottom */
         facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[6]; facesTmp[7]  = cone[7]; /* Top */

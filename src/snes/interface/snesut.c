@@ -554,6 +554,8 @@ PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
   This is because the later digits are meaningless and are often
   different on different machines; by using this routine different
   machines will usually generate the same output.
+
+  Deprecated: Intentionally has no manual page
 */
 PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -593,7 +595,7 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
   Level: intermediate
 
 .keywords: SNES, nonlinear, field, monitor, norm
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorDefaultShort()
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
 PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {

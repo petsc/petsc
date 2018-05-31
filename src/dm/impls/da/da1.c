@@ -321,21 +321,22 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 +  comm - MPI communicator
 .  bx - type of ghost cells at the boundary the array should have, if any. Use
           DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, or DM_BOUNDARY_PERIODIC.
-.  M - global dimension of the array
+.  M - global dimension of the array (that is the number of grid points)
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx - array containing number of nodes in the X direction on each processor,
         or NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
+        The sum of these entries must equal M
 
    Output Parameter:
 .  da - the resulting distributed array object
 
    Options Database Key:
 +  -dm_view - Calls DMView() at the conclusion of DMDACreate1d()
-.  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
+.  -da_grid_x <nx> - number of grid points in x direction
 .  -da_refine_x <rx> - refinement factor
--  -da_refine <n> - refine the DMDA n times before creating it, if M < 0
+-  -da_refine <n> - refine the DMDA n times before creating it
 
    Level: beginner
 

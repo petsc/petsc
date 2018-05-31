@@ -11,6 +11,7 @@ row 0: (0, 2.)  (1, -2.)
 row 1: (0, -4.)  (1, 4.) 
 Test MatISGetMPIXAIJ
 Test MatDiagonalScale
+Test MatPtAP
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
 Test MatCreateSubMatrix

@@ -17,7 +17,7 @@ static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno
 }
 
 /* p4est tries to abort: if possible, use setjmp to enable at least a little unwinding */
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_ERRORCHECKING)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
 #include <setjmp.h>
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
 PETSC_INTERN void PetscScAbort_longjmp(void)

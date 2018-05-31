@@ -4,7 +4,7 @@
 %
 %   DO NOT DEFINE ANY ABREVIATIONS TO USE IN ENTRIES BELOW: Always write out the names of journels etc
 @article{dunning2017jump,
-  title={JuMP: A modeling language for mathematical optimization},
+  title={{JuMP}: a modeling language for mathematical optimization},
   author={Dunning, Iain and Huchette, Joey and Lubin, Miles},
   journal={SIAM Review},
   volume={59},
@@ -12,6 +12,19 @@
   pages={295--320},
   year={2017},
   publisher={SIAM}
+}
+@inproceedings{PrudencioSchulz2011,
+  title     = {The parallel {C++} statistical library {QUESO}: Quantification of Uncertainty for Estimation, Simulation and Optimization},
+  author    = {Ernesto E Prudencio and Karl W Schulz},
+  booktitle = {European Conference on Parallel Processing},
+  pages     = {398--407},
+  year      = {2011},
+}
+@Misc{rol-website,
+  key          = {ROL},
+  title        = {{Rapid Optimization Library} Website},
+  howpublished = {\url{https://trilinos.org/packages/rol}},
+  year         = {2018}
 }
 @article{more1994line,
   title={Line search algorithms with guaranteed sufficient decrease},
@@ -131,6 +144,16 @@ archivePrefix = "arXiv",
   Publisher                = {Springer}
 }
 
+@article{GottliebKetchesonShu2009,
+  author  = {Sigal Gottlieb and David I. Ketcheson and Chi Wang Shu},
+  title   = {{High order strong stability preserving time discretizations}},
+  journal = {Journal of Scientific Computing},
+  volume  = {38},
+  number  = {3},
+  pages   = {251--289},
+  doi     = {10.1007/s10915-008-9239-z},
+  year    = {2009}
+}
 @Article{Ketcheson_2008,
   Title                    = {Highly Efficient Strong Stability-Preserving {R}unge--{K}utta Methods with Low-Storage Implementations},
   Author                   = {D.I. Ketcheson},
@@ -4185,8 +4208,8 @@ publisher = {ACM Press}
 
 @article{lidemmel03,
      AUTHOR = {Xiaoye S. Li and James W. Demmel},
-     TITLE = {{SuperLU\_DIST}: A Scalable Distributed-Memory Sparse Direct
-              Solver for Unsymmetric Linear Systems},
+     TITLE = {{SuperLU\_DIST}: a scalable distributed-memory sparse direct
+              solver for unsymmetric linear systems},
      JOURNAL = {ACM Transactions on Mathematical Software},
      YEAR = 2003,
      MONTH = {June},
@@ -4515,6 +4538,14 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
   author =	 {B. F. {Smith et al.}},
   howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
 }
+
+@misc{petsc-dm:webpage,
+   author =	 {B. F. {Smith et al.}},
+   title = "{PETSc DM Webpage}",
+   howpublished  = "\url{http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/DM}",
+   year = 2018
+}
+
 
 @misc{unic-ref,
   author = "Giuseppe Palmiotti",
@@ -5465,7 +5496,7 @@ It begins with a general introduction to bundles, including such topics as diffe
 }
 
 @Book{TrefethenBau97,
-  editor =       "Lloyd N. Trefethen and David {Bau, III}",
+  author =       "Lloyd N. Trefethen and David {Bau, III}",
   title =        "Numerical Linear Algebra",
   publisher =    "Society for Industrial and Applied Mathematics",
   address =      "Philadelphia, PA",
@@ -5479,6 +5510,14 @@ It begins with a general introduction to bundles, including such topics as diffe
   MRreviewer =   "Moody T. Chu",
   bibdate =      "Wed Jan 07 15:23:19 1998",
   bibsource =    "ftp://ftp.math.utah.edu/pub/bibnet/authors/t/trefethen-lloyd-n.bib",
+}
+
+@article{LiptonReagan2014,
+  title   = {Quantum Algorithms via Linear Algebra: A Primer},
+  author  = {Richard J Lipton and Kenneth W Regan},
+  pages   = {206},
+  ISBN    = {978-0-26202-839-4},
+  year    = {2014}
 }
 
 @inproceedings{Rhea08,
@@ -5759,7 +5798,7 @@ note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
      author = {{FE}ni{CS}},
      title = {{FE}ni{CS} Project},
      howpublished = {\url{http://www.fenics.org/}},
-     year = {2010},
+     year = {2018},
 }
 
 @inproceedings{zwart08,
@@ -5899,10 +5938,11 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
 }
 
 @article{BraessSarazin1997,
-  author  = {D. Braess and R. Sarazin},
+  author  = {Dietrich Braess and Regina Sarazin},
   title   = {An efficient smoother for the {Stokes} problem},
   journal = {Applied Numerical Mathematics},
   volume  = {23},
+  number  = {1},
   year    = {1997},
   pages   = {3--19},
   doi     = {10.1016/S0168-9274(96)00059-1}
@@ -5932,6 +5972,12 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
   year=2011
 }
 
+@book{Trefethen1996,
+  title  = {Finite difference and spectral methods for ordinary and partial differential equations},
+  author = {Lloyd Nicholas Trefethen},
+  year   = {1996},
+  publisher = {Cornell University-Department of Computer Science and Center for Applied Mathematics}
+}
 @book{trefethen2005spectra,
   title={Spectra and pseudospectra: the behavior of nonnormal matrices and operators},
   author={Trefethen, L.N. and Embree, M.},
@@ -5961,8 +6007,8 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
 }
 @Misc{fastmath:project,
   author = {Lori {Diachin (PI)}},
-  title  = {{SciDAC-3 Frameworks, Algorithms, and Scalable Technologies for Mathematics (FASTMath) Institute}},
-  howpublished = {\url{http://www.fastmath-scidac.org/}}
+  title  = {{SciDAC Frameworks, Algorithms, and Scalable Technologies for Mathematics (FASTMath) Institute}},
+  howpublished = {\url{https://fastmath-scidac.llnl.gov}}
 }
 
 @Misc{exascale-software:proposal,
@@ -6964,6 +7010,12 @@ title = {{SharpClaw software}},
 year = {2011}
 }
 
+@book{Leveque2002,
+  title  = {Finite volume methods for hyperbolic problems},
+  author = {Randall J LeVeque},
+  volume = {31},
+  year   = {2002},
+}
 @misc{clawpack45,
 note = {\url{http://www.clawpack.org}},
 author = {LeVeque, R. J. and Berger, M. J.},
@@ -8731,10 +8783,10 @@ year = {2009}
 }
 
 @misc{atpesc:website,
-   author = "P. {Messina et al.}",
-   title = "{Argonne Training Program for Extreme-Scale Computing}",
+   key = "{Argonne Training Program for Extreme-Scale Computing}",
+   title = "{Argonne Training Program for Extreme-Scale Computing (ATPESC)}",
    howpublished  = "\url{http://extremecomputingtraining.anl.gov}",
-   year = 2015
+   year = 2018
 }
 @article{BarraultMadayNguyenPatera2004,
   author  = "Maxime Barrault and Yvon Maday and Ngoc Cuong Nguyen and Anthony T. Patera",
@@ -9283,7 +9335,7 @@ year = {2009}
 }
 
 @article{Ptak1975,
-  title   = {The rate of convergence of Newton's process},
+  title   = {The rate of convergence of {Newton's} process},
   author  = {Vlastimil Pt{\'a}k},
   journal = {Numerische Mathematik},
   volume  = {25},
@@ -9315,7 +9367,7 @@ year = {2009}
 }
 
 @article{PotraPtak1980,
-  title   = {Sharp error bounds for Newton's process},
+  title   = {Sharp error bounds for {Newton's} process},
   author  = {Florian A Potra and Vlastimil Pt{\'a}k},
   journal = {Numerische Mathematik},
   volume  = {34},
@@ -9483,21 +9535,23 @@ year = {2009}
 }
 
 @misc{SIAMCSEPrize,
-  author = {SIAM},
   title  = {{SIAM/ACM} {P}rize in {C}omputational {S}cience and {E}ngineering},
-  key    = {SIAM},
+  key    = {{SIAM/ACM} {P}rize in {C}omputational {S}cience and {E}ngineering},
   url    = {https://www.siam.org/prizes/sponsored/cse.php},
   howpublished = {\url{https://www.siam.org/prizes/sponsored/cse.php}},
   year   = {2015}
 }
 
-@article{Rathgeber2015,
+@article{Rathgeber2017,
   title   = {Firedrake: automating the finite element method by composing abstractions},
   author  = {Rathgeber, Florian and Ham, David A and Mitchell, Lawrence and Lange, Michael and Luporini, Fabio and McRae, Andrew TT and Bercea, Gheorghe-Teodor and Markall, Graham R and Kelly, Paul HJ},
   archiveprefix = {arXiv},
-  journal = {Submitted to ACM Transaction on Mathematical Software},
+  journal = {ACM Transaction on Mathematical Software},
   eprint  = {1501.01809},
-  year    = {2015},
+  volume  = 43,
+  issue   = 3,
+  number  = 24,
+  year    = {2017},
   url     = {http://arxiv.org/abs/1501.01809}
 }
 
@@ -9766,7 +9820,7 @@ year = {2009}
   publisher = {ACM}
 }
 @article{Sterck2013,
-  title   = {Steepest descent preconditioning for nonlinear GMRES optimization},
+  title   = {Steepest descent preconditioning for nonlinear {GMRES} optimization},
   author  = {Hans De Sterck},
   journal = {Numerical Linear Algebra with Applications},
   volume  = {20},
@@ -9775,7 +9829,7 @@ year = {2009}
   year    = {2013},
 }
 @article{SterckWinlaw2015,
-  title   = {A nonlinearly preconditioned conjugate gradient algorithm for rank-R canonical tensor approximation},
+  title   = {A nonlinearly preconditioned conjugate gradient algorithm for {rank-R} canonical tensor approximation},
   author  = {Hans De Sterck and Manda Winlaw},
   journal = {Numerical Linear Algebra with Applications},
   volume  = {22},
@@ -9784,7 +9838,7 @@ year = {2009}
   year    = {2015},
 }
 @article{SterckHowse2015,
-  title   = {Nonlinearly preconditioned optimization on Grassman manifolds for computing approximate Tucker tensor decompositions},
+  title   = {Nonlinearly preconditioned optimization on {Grassman} manifolds for computing approximate {Tucker} tensor decompositions},
   author  = {Hans De Sterck and Alexander Howse},
   journal = {SIAM Journal on Scientific Computing},
   note    = {submitted},
@@ -10137,14 +10191,6 @@ year = {2009}
   number  = {6},
   pages   = {4379--4404},
   year    = {2015}
-}
-@article{SharplesMoresiVelicJadamecMay2016,
-  title   = {Simulating faults and plate boundaries with a transversely isotropic plasticity model},
-  author  = {Wendy Sharples and Louis N Moresi and Mirko Velic and Margarete A Jadamec and Dave A May},
-  journal = {Physics of the Earth and Planetary Interiors},
-  volume  = {252},
-  pages   = {77--90},
-  year    = {2016}
 }
 @article{HaynieJadamec2017,
   title   = {Tectonic drivers of the {Wrangell}-block forearc sliver: Insights from 3D geodynamic models},
@@ -10806,12 +10852,290 @@ year = {2009}
   year    = {1986}
 }
 
-@article{BraessSarazin1997,
-  title   = {An efficient smoother for the Stokes problem},
-  author  = {Dietrich Braess and Regina Sarazin},
-  journal = {Applied Numerical Mathematics},
-  volume  = {23},
+@article{BartelGunther2018,
+  author  = {Andreas Bartel and Michael G\"unther},
+  title   = {{PDAEs} in Refined Electrical Network Modeling},
+  journal = {SIAM Review},
+  volume  = {60},
   number  = {1},
-  pages   = {3--19},
-  year    = {1997},
+  pages   = {56--91},
+  doi     = {10.1137/17M1113643},
+  year    = {2018}
+}
+
+@Article{MATPOWER,
+  author    = {R. D. Zimmerman and C. E. Murillo-S{\'a}nchez and R. J. Thomas},
+  title     = {{MATPOWER}: Steady-State Operations, Planning and Analysis Tools for Power Systems Research and Education},
+  journal   = {Power Systems, IEEE Transactions on,},
+  volume    = {26},
+  number    = {1},
+  pages     = {12--19},
+  year      = {2011},
+  doi       = {10.1109/TPWRS.2010.2051168}
+}
+
+@article{BetrieYan2018,
+  author  = {G. Betrie and E. Yan},
+  title   = {Development and Verification of Thermoelectric Power Plant Model for Assessing Energy  and Water Nexus},
+  journal = {Applied Energy, Submitted},
+  volume  = {},
+  number  = {},
+  pages   = {},
+  doi     = {},
+  year    = {2018}
+}
+
+@article{Faeth2012,
+  author  = {P. Faeth},
+  title   = {{U.S.} Energy Security and Water: The Challenges We Face},
+  journal = {Environment: Science and Policy for Sustainable Development},
+  volume  = {54(1)},
+  number  = {1},
+  pages   = {4--19},
+  year    = {2012},
+  doi     = {10.1080/00139157.2012.639595}
+}
+
+@Inproceedings{Hagberg2008,
+   title={Exploring network structure, dynamics, and function using {NetworkX}},
+   author = {Hagberg, Aric A. and Schult, Daniel A. and Swart, Pieter J.},
+   booktitle={Proceedings of the 7th Python in Science Conference (SciPy2008), Ga\"{e}l Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA)},
+   year={2008},
+pages={11--15}
+}
+
+@misc{simulink-web-page,
+author = {Mathworks},
+title  = {{SIMULINK} web page},
+note   = {\url{https://www.mathworks.com/products/simulink.html}},
+year   = {2017}
+}
+
+@misc{labview-web-page,
+author = {National Instruments},
+title  = {{LabVIEW} web page},
+note   = {\url{http://www.ni.com/labview/}},
+key    = {labview},
+year   = {2017}
+}
+
+@misc{modelica-web-page,
+author = {Modelica Association},
+title  = {Modelica web page},
+note   = {\url{https://www.modelica.org/}},
+year   = {2017}
+}
+
+@inproceedings{YangSC16,
+	Author = {C. Yang and W. Xue and H. Fu and H. You and X. Wang and Y. Ao and F. Liu and L. Gan and P. Xu and L. Wang and G. Yang and W. Zheng},
+	Booktitle = {{SC '16}: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+	Title = {{10M-Core} Scalable Fully-Implicit Solver for Nonhydrostatic Atmospheric Dynamics},
+	Note = {Gordon Bell Award},
+	Year = {2016}
+}
+
+@inproceedings{BekasSC15,
+	Author = {C. Bekas and A. Curioni and O. Ghattas and M. Gurnis and Y. Ineichen and T. Isaac and C. Malossi and J. Rudi and G. Stadler and P.W.J. Staar},
+	Booktitle = {{SC '15}: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+	Title = {An Extreme-Scale Implicit Solver for Complex {PDEs}: Highly Heterogeneous Flow in Earth's Mantle},
+	Note = {Gordon Bell Award},
+	Year = {2015}
+}
+
+@misc{improving-software-whitepaper2017,
+  author = {M. Heroux and L.C. McInnes},
+  title = {Improving and accelerating scientific discovery through better software}, 
+  note = {whitepaper for 2017 ASCR Applied Mathematics PI Meeting, accessible via \url{https://doi.org/10.6084/m9.figshare.5339692}},
+  year = 2017
+}
+
+@Misc{DOE:40thAnniversaryCollection,
+  title = {{DOE Office of Science} 40th anniversary collection of 40 major papers that have changed the face of science},
+  key = {Department of Energy, Office of Science},
+  howpublished = "\url{https://science.energy.gov/news/doe-science-at-40}",
+  year = 2017
+}
+
+@Misc{SIAM:FellowsProgram,
+  title = {{Society for Industrial and Applied Mathematics, Fellows Program}},
+  key = {SIAM},
+  howpublished = "\url{http://www.siam.org/prizes/fellows}",
+}
+
+@Misc{R-and-D100:Awards2009,
+  title = {{R\&D100 Award Winners 2009}},
+  key = {{R\&D100 Award Winners 2009}},
+  howpublished = "\url{https://www.rdmag.com/2009/08/2009-r-d-100-award-winners}"
+}
+
+@Misc{xsdk:website,
+  title ="{xSDK: Extreme-scale Scientific Software Development Kit}",
+  key ="xSDK: Extreme-scale Scientific Software Development Kit",
+  howpublished="\url{https://xsdk.info}"
+}
+
+@misc{xSDK-community-installation-policies2017,
+  title  = {{xSDK} Community Installation Policies: {GNU Autoconf} and {CMake} Options},
+  author = {R. Bartlett and J. Sarich and B. Smith and T. Gamblin and {xSDK developers}},
+  note   = {version 0.3, November 7, 2017, \url{https://dx.doi.org/10.6084/m9.figshare.4495133}},
+  year   = 2017
+}  
+
+@misc{xSDK-community-package-policies2017,
+  title  = {{xSDK} Community Package Policies},
+  author = {B. Smith and R. Bartlett and {xSDK developers}},
+  note   = {version 0.3, November 7, 2017, 
+           \url{https://dx.doi.org/10.6084/m9.figshare.4495136}},
+  year   = 2017
+}  
+
+@misc{ideas-what-are-interoperable-libraries,
+  title  = {What Are Interoperable Software Libraries: Introducing the {xSDK}},
+  author = {Lois Curfman McInnes and Michael A. Heroux and Xiaoye Li and Barry Smith and Ulrike Yang and {all xSDK developers}},
+  note   = {IDEAS {\em WhatIs} document, version 0.2, April 25, 2016,
+            available via \url{https://ideas-productivity.org/resources/howtos/}},
+  year   = 2016
+}
+
+@Misc{ideas-productivity:website,
+  title ="{IDEAS Scientific Software Productivity Project}",
+  key ="IDEAS Scientific Software Productivity Project",
+  howpublished="\url{https://ideas-productivity.org}"
+}
+
+@misc{ECP:website,
+  key = {{U.S. DOE Exascale Computing Project (ECP)}},
+  title = {{U.S. DOE Exascale Computing Project (ECP)}},
+  note = {\url{https://exascaleproject.org}},
+  year = 2018
+}
+
+@misc{SIAM-CSE-Jan2018,
+  author = {Ulrich R\"{u}de and Karen Willcox and Lois Curfman McInnes and Hans {De Sterck} and 
+           George Biros and Hans Bungartz and James Corones and Evin Cramer
+           and James Crowley and Omar Ghattas and Max Gunzburger and Michael Hanke and
+           Robert Harrison and Michael Heroux and Jan Hesthaven and Peter Jimack and
+           Chris Johnson and Kirk E. Jordan and David E. Keyes and Rolf Krause and Vipin Kumar and
+           Stefan Mayer and Juan Meza and Knut Martin M{\o}rken and J. Tinsley Oden and
+           Linda Petzold and Padma Raghavan and Suzanne M. Shontz and Anne Trefethen and
+           Peter Turner and Vladimir Voevodin and Barbara Wohlmuth and Carol S. Woodward},
+  title = {Research and Education in Computational Science and Engineering},
+  note = {available via \url{https://arxiv.org/abs/1610.02608}, to appear in {\em SIAM Review}},
+  year = {2018}
+}
+
+@misc{DOE-AppliedMathPIMeeting2017,
+  author = {Jeff Hittinger and Lois Curfman McInnes and Abani Patra and Nathan Baker and
+           Miranda Holmes-Cerfon and Barney Maccabe and Esmong Ng and Pieter Swart and Karen Willcox
+           and Steven Lee},
+  title = {{Report on the 2017 ASCR Applied Mathematics Principal Investigators Meeting}},
+  note = {\url{http://www.orau.gov/ascr-appliedmath-pi2017}},
+  year = {2017}
+}
+
+@misc{DOE-FusionIntegratedSimulationsWorkshopReport2015,
+  author = {P. Bonoli and L. C. {McInnes (Chairs)}},
+  title = {{Report on the DOE Workshop on Integrated Simulations for Magnetic Fusion Energy Sciences}},
+  note = {available via \url{http://science.energy.gov/~/media/fes/pdf/workshop-reports/2016/ISFusionWorkshopReport_11-12-2015.pdf}},
+  year = {2015}
+}
+
+@misc{SISC-SpecialIssueIntro,
+  title = {Introduction to {SISC} Special section associated with {CSE15} on {'CSE Software'} and {'Big Data in CSE'}},
+  author = {H. {De Sterck} and C. Johnson and L.C. McInnes}, 
+  month = {November},
+  year = 2016,
+  journal = "SIAM J. Sci. Comput.",
+  note = {available via \url{http://epubs.siam.org/doi/abs/10.1137/16N974188}}
+}
+
+@article{xsdk-foundations2017,
+  title = {{xSDK} Foundations: Toward an Extreme-scale Scientific Software Development Kit},
+  author = {R. Bartlett and I. Demeshko and T. Gamblin and G. Hammond and M. Heroux and
+            J. Johnson and A. Klinvex and X. Li and L.C. McInnes and J.D. Moulton and
+            D. Osei-Kuffuor and J. Sarich and B. Smith and J. Willenbring and U.M. Yang},
+  journal = {Supercomputing Frontiers and Innovations}, 
+  month = {February},
+  year = 2017,
+  note = {available via \url{https://arxiv.org/abs/1702.08425}}
+}
+
+@misc{deal.II:website,
+  title = "{{deal.II}: An open-source finite element library}",
+  author = "Wolfgang Bangerth and others",
+  howpublished="\url{http://www.dealii.org}",
+  year = 2018
+}
+
+@misc{fission-gas-scidac:website,
+  title = "{Simulation of Fission Gas in Uranium Oxide Nuclear Fuel}",
+  author = "A. David {Andersson (PI)}",
+  howpublished="SciDAC project, \url{https://collab.cels.anl.gov/display/FissionGasSciDAC2}",
+  year = 2018
+}
+
+@misc{tokamak-disruption-scidac:project,
+  title = "{Tokamak Disruption Simulation}",
+  author = "Xianzhu {Tang (PI)}",
+  howpublished="SciDAC project",
+  year = 2018
+}
+@inproceedings{duplyakin2018memory,
+    author      = "Dmitry Duplyakin and Jed Brown and Donna Calhoun",
+    title       = "Evaluating Active Learning with Cost and Memory Awareness",
+    booktitle   = "Accepted to IPDPS",
+    year        = {2018 (accepted)}
+}
+@InProceedings{duplyakin2016active,
+    author      = "Dmitry Duplyakin and Jed Brown and Robert Ricci",
+    title       = "Active Learning in Performance Analysis",
+    booktitle   = "Proceedings of the IEEE Cluster Conference",
+    year        = 2016,
+    month       = Sep,
+    url         = "http://www.flux.utah.edu/paper/duplyakin-cluster16",
+    pdf         = {https://jedbrown.org/files/DuplyakinBrownRicci-ActiveLearningPerformanceAnalysis-2016.pdf}
+}
+
+@misc{XGC1:website,
+  title = "{XGC1 project website}",
+  author = "C. S. Chang and others",
+  howpublished="\url{https://epsi.pppl.gov/computing/xgc-1}",
+  year = 2018
+}
+
+@misc{WDMApp-Bhattacharjee-ECP:website,
+  title = "{WDMApp: High-Fidelity Whole Device Modeling of Magnetically Confined Fusion Plasmas}",
+  author = "A. Bhattacharjee and others",
+  note = "ECP application project",
+  howpublished = "\url{https://www.exascaleproject.org/activity/energy-applications}",
+  year = 2018
+}
+
+@misc{subsurface-Steefel-ECP:website,
+  title = "{Subsurface: Exascale Subsurface Simulator of Coupled Flow, Transport, Reactions, and Mechanics}",
+  note = "ECP application project",
+  author = "C. Steefel and others",
+  howpublished="\url{https://www.exascaleproject.org/activity/earth-space-science-applications}",
+  year = 2018
+}
+
+@article{Chombo-Crunch:2014,
+ title = "High-Resolution Simulation of Pore-Scale Reactive Transport Processes Associated with Carbon Sequestration",
+ author = "D. Trebotich and M. F. Adams and S. Molins and C. Steefel and C. Shen",
+ journal = "Computing in Science and Engineering",
+ volume = 16,
+ issue = 6,
+ year = 2014,
+ pages = "22--31",
+ doi = "10.1109/MCSE.2014.77"
+}
+@article{CourantFriedrichsLewy1967,
+  title   = {On the partial difference equations of mathematical physics},
+  author  = {Richard Courant and Kurt Friedrichs and Hans Lewy},
+  journal = {IBM journal of Research and Development},
+  volume  = {11},
+  number  = {2},
+  pages   = {215--234},
+  year    = {1967},
+  publisher = {IBM}
 }
