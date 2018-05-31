@@ -143,6 +143,14 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->time2         = 0.0;
   eventInfo->timeTmp       = 0.0;
   eventInfo->dof           = -1.0;
+  eventInfo->errors[0]     = -1.0;
+  eventInfo->errors[1]     = -1.0;
+  eventInfo->errors[2]     = -1.0;
+  eventInfo->errors[3]     = -1.0;
+  eventInfo->errors[4]     = -1.0;
+  eventInfo->errors[5]     = -1.0;
+  eventInfo->errors[6]     = -1.0;
+  eventInfo->errors[7]     = -1.0;
   eventInfo->numMessages   = 0.0;
   eventInfo->messageLength = 0.0;
   eventInfo->numReductions = 0.0;
