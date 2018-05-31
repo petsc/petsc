@@ -39,7 +39,7 @@ program newnonzero
 
  if ((idxn(1).ge.nl1).and.(idxn(1).le.nl2-1)) then
    call MatGetValues(A,one,idxn,one,idxm, v,ierr)
-   write(6,*) v
+   write(6,*) PetscRealPart(v)
  end if
 
  call MatDestroy(A,ierr)
