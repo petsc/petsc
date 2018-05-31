@@ -203,6 +203,9 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(bctx->Xprev, mctx->Xprev);CHKERRQ(ierr);
     ierr = VecCopy(bctx->Fprev, mctx->Fprev);CHKERRQ(ierr);
   }
+  if (bctx->ops->copy) {
+    ierr = bctx->ops->copy(B, M, str);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

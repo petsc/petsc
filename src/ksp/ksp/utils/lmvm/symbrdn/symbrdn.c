@@ -261,6 +261,30 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
+static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
+{
+  Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
+  Mat_SymBrdn       *bctx = (Mat_SymBrdn*)bdata->ctx;
+  Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
+  Mat_SymBrdn       *mctx = (Mat_SymBrdn*)mdata->ctx;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  mctx->phi = bctx->phi;
+  for (i=0; i<=bdata->k; ++i) {
+    mctx->stp[i] = bctx->stp[i];
+    mctx->ytq[i] = bctx->ytq[i];
+    mctx->yts[i] = bctx->yts[i];
+    mctx->psi[i] = bctx->psi[i];
+    ierr = VecCopy(bctx->P[i], mctx->P[i]);CHKERRQ(ierr);
+    ierr = VecCopy(bctx->Q[i], mctx->Q[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
@@ -407,6 +431,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   lmvm->ops->reset = MatReset_LMVMSymBrdn;
   lmvm->ops->update = MatUpdate_LMVMSymBrdn;
   lmvm->ops->mult = MatMult_LMVMSymBrdn;
+  lmvm->ops->copy = MatCopy_LMVMSymBrdn;
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;

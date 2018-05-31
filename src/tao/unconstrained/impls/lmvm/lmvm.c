@@ -304,7 +304,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
-  const TaoType  type;
+  TaoType        type;
   PetscBool      is_lmvm, is_blmvm;
   PetscErrorCode ierr;
 
@@ -328,7 +328,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
-  const TaoType  type;
+  TaoType        type;
   PetscBool      is_lmvm, is_blmvm;
   Mat            M;
 
@@ -353,7 +353,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
-  const TaoType  type;
+  TaoType        type;
   PetscBool      is_lmvm, is_blmvm;
   Mat            M;
   PetscErrorCode ierr;

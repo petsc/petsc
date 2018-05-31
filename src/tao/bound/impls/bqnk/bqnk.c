@@ -1,8 +1,6 @@
 #include <../src/tao/bound/impls/bqnk/bqnk.h>
 #include <petscksp.h>
 
-/* Routine for computing the approximate quasi-Newton Hessian */
-
 static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -25,14 +23,21 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   ierr = MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = MatLMVMResetShift(tao->hessian);CHKERRQ(ierr);
   /* Prepare the reduced sub-matrices for the inactive set */
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   if (bnk->active_idx) {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
     ierr = MatCreateSubMatrixVirtual(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, &bnk->H_inactive);CHKERRQ(ierr);
+    if (bqnk->pc) {
+      ierr = PCLMVMSetIS(bqnk->pc, bnk->inactive_idx);CHKERRQ(ierr);
+    }
   } else {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)tao->hessian);CHKERRQ(ierr);
     bnk->H_inactive = tao->hessian;
+    if (bqnk->pc) {
+      ierr = PCLMVMClearIS(bqnk->pc);CHKERRQ(ierr);
+    }
   }
+  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)bnk->H_inactive);CHKERRQ(ierr);
   bnk->Hpre_inactive = bnk->H_inactive;
   PetscFunctionReturn(0);
 }
@@ -52,28 +57,58 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TaoSetUp_BQNK(Tao tao)
+{
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
+  PetscErrorCode ierr;
+  PetscInt       n, N;
+  PetscBool      is_lmvm, is_sym, is_sr1;
+
+  PetscFunctionBegin;
+  ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
+  ierr = MatSetSizes(bqnk->B, n, n, N, N);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(bqnk->B,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm);CHKERRQ(ierr);
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
+  ierr = MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym);CHKERRQ(ierr);
+  if (!is_sym) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
+  ierr = PetscObjectTypeCompare((PetscObject)bqnk->B, MATLMVMSR1, &is_sr1);CHKERRQ(ierr);
+  ierr = KSPGetPC(tao->ksp, &bqnk->pc);CHKERRQ(ierr);
+  if (is_sr1) {
+    ierr = PCSetType(bqnk->pc, PCNONE);CHKERRQ(ierr);
+    bqnk->pc = NULL;
+    bqnk->no_scale = PETSC_TRUE;
+  } else {
+    ierr = PCSetType(bqnk->pc, PCLMVM);CHKERRQ(ierr);
+    ierr = PCLMVMSetMatLMVM(bqnk->pc, bqnk->B);CHKERRQ(ierr);
+  }
+  if (!bqnk->no_scale) {
+    if (!bqnk->Bscale) {
+      ierr = MatCreateLMVMDiagBrdn(PetscObjectComm((PetscObject)bqnk->B), n, N, &bqnk->Bscale);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(bqnk->Bscale, "tao_bqnk_scale_");CHKERRQ(ierr);
+      ierr = MatLMVMAllocate(bqnk->Bscale, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
+    }
+    ierr = MatLMVMSetJ0(bqnk->B, bqnk->Bscale);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObject, Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK*)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
-  PC             pc;
-  PetscBool      is_lmvm, is_sym;
   
   PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"Quasi-Newton-Krylov method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_bqnk_no_scale","(developer) disable the diagonal Broyden scaling of the BFGS approximation","",bqnk->no_scale,&bqnk->no_scale,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions_BNK(PetscOptionsObject, tao);CHKERRQ(ierr);
-  /* Make sure the interpolation method is disabled for trust region initialization */
   if (bnk->init_type == BNK_INIT_INTERPOLATION) bnk->init_type = BNK_INIT_DIRECTION;
-  /* Make sure the KSP solver is a CG method and the preconditioner is disabled */
-  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PETSC_COMM_SELF,1,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
-  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-  /* Read mat options and check type and properties */
   ierr = MatSetFromOptions(bqnk->B);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm);CHKERRQ(ierr);
-  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
-  ierr = MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym);CHKERRQ(ierr);
-  if (!is_sym) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
   PetscFunctionReturn(0);
 }
 
@@ -102,8 +137,12 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bqnk->B);CHKERRQ(ierr);
+  if (!bqnk->no_scale) {
+    ierr = MatDestroy(&bqnk->Bscale);CHKERRQ(ierr);
+  }
   ierr = PetscFree(bnk->ctx);CHKERRQ(ierr);
   ierr = TaoDestroy_BNK(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -120,6 +159,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BQNK;
   tao->ops->destroy = TaoDestroy_BQNK;
   tao->ops->view = TaoView_BQNK;
+  tao->ops->setup = TaoSetUp_BQNK;
   
   bnk = (TAO_BNK *)tao->data;
   bnk->computehessian = TaoBQNKComputeHessian;
@@ -128,6 +168,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   
   ierr = PetscNewLog(tao,&bqnk);CHKERRQ(ierr);
   bnk->ctx = (void*)bqnk;
+  bqnk->no_scale = PETSC_FALSE;
   
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1);CHKERRQ(ierr);

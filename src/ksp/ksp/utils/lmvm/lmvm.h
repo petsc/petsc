@@ -22,6 +22,7 @@ struct _MatOps_LMVM {
   PetscErrorCode (*allocate)(Mat,Vec,Vec);
   PetscErrorCode (*reset)(Mat,PetscBool);
   PetscErrorCode (*mult)(Mat,Vec,Vec);
+  PetscErrorCode (*copy)(Mat,Mat,MatStructure);
 };
 
 typedef struct {

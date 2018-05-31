@@ -8,7 +8,9 @@ Context for bounded quasi-Newton-Krylov type optimization algorithms
 #include <../src/tao/bound/impls/bnk/bnk.h>
 
 typedef struct {
-  Mat B;
+  Mat B, Bscale;
+  PC pc;
+  PetscBool no_scale;
 } TAO_BQNK;
 
 PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao);

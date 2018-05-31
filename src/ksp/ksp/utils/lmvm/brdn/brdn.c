@@ -159,6 +159,27 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
+static PetscErrorCode MatCopy_LMVMBrdn(Mat B, Mat M, MatStructure str)
+{
+  Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
+  Mat_Brdn          *bctx = (Mat_Brdn*)bdata->ctx;
+  Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
+  Mat_Brdn          *mctx = (Mat_Brdn*)mdata->ctx;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  for (i=0; i<=bdata->k; ++i) {
+    mctx->sts[i] = bctx->sts[i];
+    mctx->stq[i] = bctx->stq[i];
+    ierr = VecCopy(bctx->P[i], mctx->P[i]);CHKERRQ(ierr);
+    ierr = VecCopy(bctx->Q[i], mctx->Q[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
@@ -262,6 +283,7 @@ PetscErrorCode MatCreate_LMVMBrdn(Mat B)
   lmvm->ops->reset = MatReset_LMVMBrdn;
   lmvm->ops->mult = MatMult_LMVMBrdn;
   lmvm->ops->update = MatUpdate_LMVMBrdn;
+  lmvm->ops->copy = MatCopy_LMVMBrdn;
 
   ierr = PetscNewLog(B, &lbrdn);CHKERRQ(ierr);
   lmvm->ctx = (void*)lbrdn;

@@ -202,7 +202,7 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
-  PetscBool      is_spd, is_symbrdn;
+  PetscBool      is_spd;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetup() */
@@ -226,8 +226,6 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   ierr = MatLMVMAllocate(blmP->M,tao->solution,blmP->unprojected_gradient);CHKERRQ(ierr);
   ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
   if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
-  ierr = PetscObjectTypeCompare((PetscObject)blmP->M, MATLMVMSYMBRDN, &is_symbrdn);
-  if (is_symbrdn) blmP->no_scale = PETSC_TRUE; /* makes no sense to scale L-SymBrdn with SymBrdn diagonal */
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (blmP->H0) {
