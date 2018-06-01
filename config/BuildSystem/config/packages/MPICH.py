@@ -29,7 +29,10 @@ class Configure(config.package.GNUPackage):
 
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
-      if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
+        if self.argDB['with-shared-libraries']:
+          raise RuntimeError('Sorry, --download-mpich does not work with shared-libraries. Suggest installing OpenMPI via cygwin or use --with-shared-libraries=0')
+      else:
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
     if self.argDB['download-'+self.downloadname.lower()]:
       return self.getInstallDir()
