@@ -32,7 +32,7 @@ program newnonzero
  idxm(1)=n-1
  if ((idxn(1).ge.nl1).and.(idxn(1).le.nl2-1)) then
    v(1)=2.0
-   call MatSetValues(A,one,idxn,one,idxm, v,INSERT_VALUES,ierr);CHKERRQ(ierr)
+   call MatSetValues(A,one,idxn,one,idxm, v,INSERT_VALUES,ierr);CHKERRA(ierr)
  end if
  call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
  call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
