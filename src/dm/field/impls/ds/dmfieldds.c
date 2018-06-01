@@ -826,7 +826,9 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     ierr = PetscDualSpaceGetDM(dsp, &K); CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(K,0,&coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(K,0,&coneK);CHKERRQ(ierr);
-    ierr = PetscMalloc4(numFaces,&co,dE*Nq,&cellPoints,coneSize,&counts,Nq,&dummyWeights);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numFaces, &co, coneSize, &counts);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dE*Nq, &cellPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nq, &dummyWeights);CHKERRQ(ierr);
     ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)field), &cellQuad);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, dummyWeights);CHKERRQ(ierr);
     minOrient = PETSC_MAX_INT;
@@ -869,7 +871,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     ierr = DMPlexGetCone(K,0,&coneK);CHKERRQ(ierr);
     /* count all (face,orientation) doubles that appear */
     ierr = PetscCalloc2(numOrient,&orients,numOrient,&orientPoints);CHKERRQ(ierr);
-    for (f = 0; f < coneSize; f++) {ierr = PetscCalloc1(numOrient, &counts[f]);CHKERRQ(ierr);}
+    for (f = 0; f < coneSize; f++) {ierr = PetscCalloc1(numOrient+1, &counts[f]);CHKERRQ(ierr);}
     for (p = 0; p < numFaces; p++) {
       for (s = 0; s < 2; s++) {
         if (co[p][s][0] >= 0) {
@@ -1020,7 +1022,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     }
     ierr = PetscFree2(orients,orientPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
-    ierr = PetscFree4(co,cellPoints,counts,dummyWeights);CHKERRQ(ierr);
+    ierr = PetscFree2(co,counts);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
