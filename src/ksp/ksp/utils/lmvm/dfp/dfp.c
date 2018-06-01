@@ -1,16 +1,9 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
 
 /*
   Limited-memory Davidon-Fletcher-Powell method for approximating both 
   the forward product and inverse application of a Jacobian.
  */
-
-typedef struct {
-  Vec *P, *Q;
-  Vec work;
-  PetscBool allocated;
-  PetscReal *stp, *ytq, *yts;
-} Mat_LDFP;
 
 /*------------------------------------------------------------*/
 
@@ -36,7 +29,7 @@ typedef struct {
 PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         ytx, stf;
@@ -90,7 +83,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
 PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         alpha[lmvm->k+1];
@@ -124,10 +117,10 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
 static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         curvature, yjtqi, sjtyi, yty;
+  PetscReal         curvature, sig_new, yjtqi, sjtyi;
   Vec               Qtmp;
 
   PetscFunctionBegin;
@@ -149,13 +142,19 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
           ldfp->Q[i] = ldfp->Q[i+1];
           ldfp->ytq[i] = ldfp->ytq[i+1];
           ldfp->yts[i] = ldfp->yts[i+1];
+          ldfp->yty[i] = ldfp->yty[i+1];
+          ldfp->sts[i] = ldfp->sts[i+1];
         }
         ldfp->Q[lmvm->k] = Qtmp;
       }
       /* Update default J0 scaling */
       ldfp->yts[lmvm->k] = curvature;
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-      lmvm->J0default = yty/curvature;
+      ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ldfp->yty[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ldfp->sts[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ldfp->yty[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ldfp->sts[lmvm->k]);CHKERRQ(ierr);
+      ierr = MatSymBrdnComputeJ0Scalar(B, &sig_new);CHKERRQ(ierr);
+      lmvm->J0default = (1.0 - ldfp->rho)*lmvm->J0default + ldfp->rho*sig_new;
       /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]);CHKERRQ(ierr);
@@ -188,9 +187,9 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
 static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
-  Mat_LDFP          *bctx = (Mat_LDFP*)bdata->ctx;
+  Mat_SymBrdn       *bctx = (Mat_SymBrdn*)bdata->ctx;
   Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
-  Mat_LDFP          *mctx = (Mat_LDFP*)mdata->ctx;
+  Mat_SymBrdn       *mctx = (Mat_SymBrdn*)mdata->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
 
@@ -208,13 +207,13 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
 static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   if (destructive && ldfp->allocated) {
     ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
-    ierr = PetscFree2(ldfp->ytq, ldfp->yts);CHKERRQ(ierr);
+    ierr = PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
     }
@@ -229,14 +228,14 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
 static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!ldfp->allocated) {
     ierr = VecDuplicate(X, &ldfp->work);CHKERRQ(ierr);
-    ierr = PetscMalloc2(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts);CHKERRQ(ierr);
+    ierr = PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(X, lmvm->m, &ldfp->Q);CHKERRQ(ierr);
     }
@@ -250,13 +249,13 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
 static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (ldfp->allocated) {
     ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
-    ierr = PetscFree2(ldfp->ytq, ldfp->yts);CHKERRQ(ierr);
+    ierr = PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
     }
@@ -272,14 +271,14 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
 static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!ldfp->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &ldfp->work);CHKERRQ(ierr);
-    ierr = PetscMalloc2(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts);CHKERRQ(ierr);
+    ierr = PetscMalloc4(lmvm->m, &ldfp->ytq, lmvm->m, &ldfp->yts, lmvm->m, &ldfp->yty, lmvm->m, &ldfp->sts);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &ldfp->Q);CHKERRQ(ierr);
     }
@@ -292,7 +291,7 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
-  Mat_LDFP          *ldfp;
+  Mat_SymBrdn       *ldfp;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -302,6 +301,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   B->ops->solve = MatSolve_LMVMDFP;
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;
+  B->ops->setfromoptions = MatSetFromOptions_LMVMSymBrdn;
 
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
@@ -314,6 +314,10 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldfp;
   ldfp->allocated = PETSC_FALSE;
+  ldfp->phi = 0.0;
+  ldfp->alpha = 1.0;
+  ldfp->rho = 1.0;
+  ldfp->sigma_hist = 1;
   PetscFunctionReturn(0);
 }
 

@@ -1,17 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
-
-/*
-  Limited-memory Symmetric Broyden method for approximating both 
-  the forward product and inverse application of a Jacobian.
-*/
-
-typedef struct {
-  Vec *P, *Q;
-  Vec work;
-  PetscBool allocated;
-  PetscReal *stp, *ytq, *yts;
-  PetscReal phi, *psi;
-} Mat_SymBrdn;
+#include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
 
 /*------------------------------------------------------------*/
 
@@ -154,7 +141,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         curvature, yty, sjtpi, yjtsi, wtsi, yjtqi, sjtyi, wtyi, numer;
+  PetscReal         curvature, sig_new, sjtpi, yjtsi, wtsi, yjtqi, sjtyi, wtyi, numer;
   Vec               Ptmp, Qtmp;
 
   PetscFunctionBegin;
@@ -175,6 +162,8 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
         Ptmp = lsb->P[0];
         for (i = 0; i <= lmvm->k-1; ++i) {
           lsb->yts[i] = lsb->yts[i+1];
+          lsb->yty[i] = lsb->yty[i+1];
+          lsb->sts[i] = lsb->sts[i+1];
           lsb->Q[i] = lsb->Q[i+1];
           lsb->ytq[i] = lsb->ytq[i+1];
           lsb->P[i] = lsb->P[i+1];
@@ -185,8 +174,12 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
       }
       /* Update default J0 scaling */
       lsb->yts[lmvm->k] = curvature;
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-      lmvm->J0default = yty/curvature;
+      ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &lsb->yty[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lsb->sts[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &lsb->yty[lmvm->k]);CHKERRQ(ierr);
+      ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lsb->sts[lmvm->k]);CHKERRQ(ierr);
+      ierr = MatSymBrdnComputeJ0Scalar(B, &sig_new);CHKERRQ(ierr);
+      lmvm->J0default = (1.0 - lsb->rho)*lmvm->J0default + lsb->rho*sig_new;
       /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsb->Q[i]);CHKERRQ(ierr);
@@ -280,7 +273,7 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
   ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
   if (destructive && lsb->allocated) {
     ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
-    ierr = PetscFree4(lsb->stp, lsb->ytq, lsb->yts, lsb->psi);CHKERRQ(ierr);
+    ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
@@ -303,7 +296,7 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(X, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc3(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts);CHKERRQ(ierr);
+    ierr = PetscMalloc5(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts);CHKERRQ(ierr);
     ierr = PetscCalloc1(lmvm->m, &lsb->psi);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(X, lmvm->m, &lsb->P);CHKERRQ(ierr);
@@ -325,7 +318,7 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   PetscFunctionBegin;
   if (lsb->allocated) {
     ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
-    ierr = PetscFree4(lsb->stp, lsb->ytq, lsb->yts, lsb->psi);CHKERRQ(ierr);
+    ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
       ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
@@ -349,7 +342,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!lsb->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &lsb->work);CHKERRQ(ierr);
-    ierr = PetscMalloc3(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts);CHKERRQ(ierr);
+    ierr = PetscMalloc5(lmvm->m, &lsb->stp, lmvm->m, &lsb->ytq, lmvm->m, &lsb->yts, lmvm->m, &lsb->yty, lmvm->m, &lsb->sts);CHKERRQ(ierr);
     ierr = PetscCalloc1(lmvm->m, &lsb->psi);CHKERRQ(ierr);
     if (lmvm->m > 0) {
       ierr = VecDuplicateVecs(lmvm->Xprev, lmvm->m, &lsb->P);CHKERRQ(ierr);
@@ -362,7 +355,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -370,8 +363,11 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptio
 
   PetscFunctionBegin;
   ierr = MatSetFromOptions_LMVM(PetscOptionsObject, B);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory Variable Metric matrix for approximating Jacobians");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Restricted (aka Symmetric) Broyden method for approximating Jacobians");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_phi","(developer) convex ratio between BFGS and DFP components in the Broyden update","",lsb->phi,&lsb->phi,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) convex ratio between old J0 scalar and new J0 scalar","",lsb->rho,&lsb->rho,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio between BFGS and DFP components in the J0 scalar calculation","",lsb->alpha,&lsb->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of updates to use when calculating the J0 scalar","",lsb->sigma_hist,&lsb->sigma_hist,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((lsb->phi < 0.0) || (lsb->phi > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio cannot be outside the range of [0, 1]");
   PetscFunctionReturn(0);
@@ -406,6 +402,9 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   lmvm->ctx = (void*)lsb;
   lsb->allocated = PETSC_FALSE;
   lsb->phi = 0.125;
+  lsb->alpha = 1.0;
+  lsb->rho = 1.0;
+  lsb->sigma_hist = 1;
   PetscFunctionReturn(0);
 }
 
@@ -457,5 +456,54 @@ PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   ierr = MatSetSizes(*B, n, n, N, N);CHKERRQ(ierr);
   ierr = MatSetType(*B, MATLMVMSYMBRDN);CHKERRQ(ierr);
   ierr = MatSetUp(*B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B, PetscReal *sigma)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  PetscInt          i, start;
+  PetscReal         a, b, c, sig1, sig2;
+  
+  PetscFunctionBegin;
+  start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
+  *sigma = 0.0;
+  if (lsb->alpha == 1.0 || lsb->alpha == 0.5) {
+    for (i = start; i <= lmvm->k; ++i) {
+      *sigma += lsb->yty[i]/lsb->yts[i];
+    }
+    if (lsb->alpha == 0.5) {
+      *sigma = PetscSqrtReal(*sigma);
+    }
+  } else if (lsb->alpha == 0.0) {
+    for (i = start; i <= lmvm->k; ++i) {
+      *sigma += lsb->yty[i]/lsb->sts[i];
+    }
+  } else {
+    /* compute coefficients of the quadratic */
+    a = b = c = 0.0; 
+    for (i = start; i <= lmvm->k; ++i) {
+      a += lsb->yty[i];
+      b += lsb->yts[i];
+      c += lsb->sts[i];
+    }
+    a *= lsb->alpha;
+    b *= -(2.0*lsb->alpha - 1.0);
+    c *= lsb->alpha - 1.0;
+    /* use quadratic formula to find roots */
+    sig1 = (-b + PetscSqrtReal(b*b - 4.0*a*c))/(2.0*a);
+    sig2 = (-b - PetscSqrtReal(b*b - 4.0*a*c))/(2.0*a);
+    /* accept the positive root as the scalar */
+    if (sig1 > 0.0) {
+      *sigma = sig1;
+    } else if (sig2 > 0.0) {
+      *sigma = sig2;
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_CONV_FAILED, "Cannot find positive scalar");
+    }
+  }
   PetscFunctionReturn(0);
 }
