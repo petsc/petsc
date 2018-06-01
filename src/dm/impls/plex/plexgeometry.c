@@ -1713,6 +1713,7 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(detJ, 7);
   if (dm->coordinateDM) {
     PetscClassId id;
     PetscInt     numFields;

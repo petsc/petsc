@@ -964,12 +964,12 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     for (f = 0; f < coneSize; f++) {
       PetscInt face = coneK[f];
       PetscReal v0[3];
-      PetscReal J[9];
+      PetscReal J[9], detJ;
       PetscInt numCells, offset;
       PetscInt *cells;
       IS suppIS;
 
-      ierr = DMPlexComputeCellGeometryFEM(K, face, NULL, v0, J, NULL, NULL);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(K, face, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
       for (o = 0; o <= numOrient; o++) {
         PetscFEGeom *cellGeom;
 
