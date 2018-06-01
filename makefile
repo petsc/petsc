@@ -161,11 +161,6 @@ test_install: test
 check: test
 test:
 	-+@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
-	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          printf "=========================================\n"; \
-          printf "Now to evaluate the computer systems you plan use - do:\n"; \
-          printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams\n"; \
-        fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/testx.log
 test_build:
