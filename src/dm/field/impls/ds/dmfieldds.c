@@ -699,7 +699,7 @@ static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, Petsc
 
 static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointIS, PetscQuadrature *quad)
 {
-  PetscInt       h, dim, imax, imin;
+  PetscInt       h, dim, imax, imin, cellHeight;
   DM             dm;
   DMField_DS     *dsfield;
   PetscObject    disc;
@@ -719,6 +719,8 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
     ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
     if (imin >= hStart && imax < hEnd) break;
   }
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  h -= cellHeight;
   *quad = NULL;
   if (h < dsfield->height) {
     ierr = DMFieldDSGetHeightDisc(field,h,&disc);CHKERRQ(ierr);
@@ -1073,7 +1075,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
   }
   if (!disc || isContainer) {
     MPI_Comm        comm = PetscObjectComm((PetscObject) dm);
-    PetscInt        cStart, cEnd, dim;
+    PetscInt        cStart, cEnd, dim, cellHeight;
     PetscInt        localConeSize = 0, coneSize;
     PetscFE         fe;
     PetscDualSpace  Q;
@@ -1082,7 +1084,8 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     PetscQuadrature quad, fquad;
     PetscBool       isSimplex;
 
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     if (cEnd > cStart) {
       ierr = DMPlexGetConeSize(dm, cStart, &localConeSize);CHKERRQ(ierr);
