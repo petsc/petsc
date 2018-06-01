@@ -253,10 +253,13 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
+	-@echo "running streams in src/benchmarks/streams"
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
 
 stream:
-	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+	-@echo "running stream in src/benchmarks/streams"
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
