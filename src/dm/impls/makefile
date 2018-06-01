@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da sliced composite redundant plex shell patch moab network forest swarm
+DIRS     = da sliced composite redundant plex shell patch moab network forest swarm product
 LOCDIR   = src/dm/impls/
 MANSEC   = DM
 
