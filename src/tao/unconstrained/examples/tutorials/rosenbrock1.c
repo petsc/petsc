@@ -47,9 +47,14 @@ int main(int argc,char **argv)
   Vec                x;                     /* solution vector */
   Mat                H;
   Tao                tao;                   /* Tao solver context */
-  PetscBool          flg;
+  PetscBool          flg, test_lmvm = PETSC_FALSE;
   PetscMPIInt        size,rank;                  /* number of processes running */
   AppCtx             user;                  /* user-defined application context */
+  KSP                ksp;
+  PC                 pc;
+  Mat                M;
+  Vec                in, out, out2;
+  PetscReal          mult_solve_dist;
 
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -63,6 +68,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg);CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);
@@ -81,12 +87,37 @@ int main(int argc,char **argv)
   /* Set routines for function, gradient, hessian evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
+  
+  /* Test the LMVM matrix */
+  if (test_lmvm) {
+    ierr = PetscOptionsSetValue(NULL, "-tao_type", "bntr");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL, "-tao_bnk_pc_type", "lmvm");CHKERRQ(ierr);
+  }
 
   /* Check for TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
+  
+  /* Test the LMVM matrix */
+  if (test_lmvm) {
+    ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PCLMVMGetMatLMVM(pc, &M);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &in);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &out);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &out2);CHKERRQ(ierr);
+    ierr = VecSet(in, 1.0);CHKERRQ(ierr);
+    ierr = MatMult(M, in, out);CHKERRQ(ierr);
+    ierr = MatSolve(M, out, out2);CHKERRQ(ierr);
+    ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
+    ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+    ierr = VecDestroy(&in);CHKERRQ(ierr);
+    ierr = VecDestroy(&out);CHKERRQ(ierr);
+    ierr = VecDestroy(&out2);CHKERRQ(ierr);
+  }
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -264,5 +295,9 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
    test:
       suffix: 10
       args: -tao_smonitor -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4
+      
+   test:
+      suffix: 11
+      args: -test_lmvm -tao_gatol 1.e-4
 
 TEST*/

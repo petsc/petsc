@@ -93,7 +93,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   Mat_LDFP          *ldfp = (Mat_LDFP*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
+  PetscReal         alpha[lmvm->k+1];
   PetscReal         beta, ytx, stz;
   
   PetscFunctionBegin;
@@ -103,8 +103,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   /* Start the first loop */
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDot(lmvm->Y[i], ldfp->work, &ytx);CHKERRQ(ierr);
-    rho[i] = 1.0/ldfp->yts[i];
-    alpha[i] = rho[i] * ytx;
+    alpha[i] = ytx/ldfp->yts[i];
     ierr = VecAXPY(ldfp->work, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   
@@ -114,7 +113,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
-    beta = rho[i] * stz;
+    beta = stz/ldfp->yts[i];
     ierr = VecAXPY(Z, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -149,12 +148,14 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         for (i = 0; i <= lmvm->k-1; ++i) {
           ldfp->Q[i] = ldfp->Q[i+1];
           ldfp->ytq[i] = ldfp->ytq[i+1];
-          ldfp->yts[i] = ldfp->ytq[i+1];
+          ldfp->yts[i] = ldfp->yts[i+1];
         }
         ldfp->Q[lmvm->k] = Qtmp;
       }
-      /* Store the curvature information */
+      /* Update default J0 scaling */
       ldfp->yts[lmvm->k] = curvature;
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+      lmvm->J0default = yty/curvature;
       /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]);CHKERRQ(ierr);
@@ -169,9 +170,6 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         }
         ierr = VecDot(lmvm->Y[i], ldfp->Q[i], &ldfp->ytq[i]);CHKERRQ(ierr);
       }
-      /* Update default J0 scaling */
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-      lmvm->J0default = yty/curvature;
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;

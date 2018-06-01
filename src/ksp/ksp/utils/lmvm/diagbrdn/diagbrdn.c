@@ -6,7 +6,7 @@
 */
 
 typedef struct {
-  Vec D, BssTB, yyT, wwT;
+  Vec D, y2, Ds2, w2;
   PetscBool allocated;
   PetscReal phi;
 } Mat_DiagBrdn;
@@ -23,21 +23,33 @@ static PetscErrorCode MatSolve_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
-  VecCheckMatCompatible(B, dX, 3, F, 2);
+  if (!lmvm->allocated) {
+    ierr = MatLMVMAllocate(B, dX, F);CHKERRQ(ierr);
+  } else {
+    VecCheckMatCompatible(B, dX, 3, F, 2);
+  }
   ierr = VecPointwiseDivide(dX, F, ldb->D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatMult_LMVMDiagBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatMult_LMVMDiagBrdn(Mat B, Vec X, Vec Z)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
-  ierr = VecPointwiseMult(dX, ldb->D, F);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Z, VEC_CLASSID, 3);
+  VecCheckSameSize(X, 2, Z, 3);
+  if (!lmvm->allocated) {
+    ierr = MatLMVMAllocate(B, X, Z);CHKERRQ(ierr);
+  } else {
+    VecCheckMatCompatible(B, X, 2, Z, 3);
+  }
+  ierr = VecPointwiseMult(Z, X, ldb->D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +70,7 @@ static PetscErrorCode MatUpdate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscReal         yts, stbs;
+  PetscReal         yts, stDs;
 
   PetscFunctionBegin;
   if (lmvm->prev_set) {
@@ -70,27 +82,28 @@ static PetscErrorCode MatUpdate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
     if (yts > -lmvm->eps) {
       /* Update is good, accept it */
       ++lmvm->nupdates;
-      /* Compute B_k * s_k once here because we need it for dot products */
-      ierr = VecPointwiseMult(ldb->wwT, ldb->D, lmvm->Xprev);CHKERRQ(ierr);
-      /* Compute W = y_k/yTs - B_k*s_k/stBs */
-      ierr = VecDot(lmvm->Xprev, ldb->wwT, &stbs);CHKERRQ(ierr);
-      ierr = VecAXPBY(ldb->wwT, 1.0/yts, -1.0/stbs, lmvm->Fprev);CHKERRQ(ierr);
-      /* Now compute diagonal of W*W^T */
-      ierr = VecPow(ldb->wwT, 2.0);CHKERRQ(ierr);
-      /* Compute S*S^T diagonal */
-      ierr = VecPointwiseMult(ldb->BssTB, lmvm->Xprev, lmvm->Xprev);CHKERRQ(ierr);
-      /* Hit it with B_k on both sides */
-      ierr = VecPointwiseMult(ldb->BssTB, ldb->BssTB, ldb->D);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(ldb->BssTB, ldb->D, ldb->BssTB);CHKERRQ(ierr);
-      /* Compute Y*Y^T */
-      ierr = VecPointwiseMult(ldb->yyT, lmvm->Fprev, lmvm->Fprev);CHKERRQ(ierr);
-      /* Update the diagonal */
-      ierr = VecAXPBYPCZ(ldb->D, -1.0/stbs, 1.0/yts, 1.0, ldb->BssTB, ldb->yyT);CHKERRQ(ierr);
-      ierr = VecAXPY(ldb->D, ldb->phi*stbs, ldb->wwT);CHKERRQ(ierr);
+      /* Compute D * s once here because we need it for dot products */
+      ierr = VecPointwiseMult(ldb->Ds2, ldb->D, lmvm->Xprev);CHKERRQ(ierr);
+      /* Compute dot product s^T Ds for later */
+      ierr = VecDot(lmvm->Xprev, ldb->Ds2, &stDs);CHKERRQ(ierr);
+      /* Compute W = y/(y^T s) - Ds/(s^T Ds) */
+      ierr = VecAXPBYPCZ(ldb->w2, 1.0/yts, -1.0/stDs, 0.0, lmvm->Fprev, ldb->Ds2);CHKERRQ(ierr);
+      /* Compute W*W^T diagonal (Hadamard product) */
+      ierr = VecPow(ldb->w2, 2.0);CHKERRQ(ierr);
+      /* Compute (Ds)*(Ds)^T diagonal (Hadamard product) */
+      ierr = VecPow(ldb->Ds2, 2.0);CHKERRQ(ierr);
+      /* Compute Y*Y^T diagonal (Hadamard product) */
+      ierr = VecPointwiseMult(ldb->y2, lmvm->Fprev, lmvm->Fprev);CHKERRQ(ierr);
+      /* Apply the BFGS part of the update */
+      ierr = VecAXPBYPCZ(ldb->D, -1.0/stDs, 1.0/yts, 1.0, ldb->Ds2, ldb->y2);CHKERRQ(ierr);
+      /* Now apply the convexly scaled DFP component */ 
+      ierr = VecAXPY(ldb->D, ldb->phi*stDs, ldb->w2);CHKERRQ(ierr);
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
     }
+  } else {
+    ierr = VecSet(ldb->D, 1.0);CHKERRQ(ierr);
   }
   /* Save the solution and function to be used in the next update */
   ierr = VecCopy(X, lmvm->Xprev);CHKERRQ(ierr);
@@ -108,7 +121,6 @@ static PetscErrorCode MatCopy_LMVMDiagBrdn(Mat B, Mat M, MatStructure str)
   Mat_LMVM          *mdata = (Mat_LMVM*)M->data;
   Mat_DiagBrdn      *mctx = (Mat_DiagBrdn*)mdata->ctx;
   PetscErrorCode    ierr;
-  PetscInt          i;
 
   PetscFunctionBegin;
   mctx->phi = bctx->phi;
@@ -127,9 +139,9 @@ static PetscErrorCode MatReset_LMVMDiagBrdn(Mat B, PetscBool destructive)
   PetscFunctionBegin;
   if (destructive && ldb->allocated) {
     ierr = VecDestroy(&ldb->D);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->BssTB);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->yyT);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->wwT);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->y2);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->Ds2);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->w2);CHKERRQ(ierr);
     ldb->allocated = PETSC_FALSE;
   } else {
     ierr = VecSet(ldb->D, 1.0);CHKERRQ(ierr);
@@ -151,11 +163,12 @@ static PetscErrorCode MatAllocate_LMVMDiagBrdn(Mat B, Vec X, Vec F)
   ierr = MatAllocate_LMVM(B, X, F);CHKERRQ(ierr);
   if (!ldb->allocated) {
     ierr = VecDuplicate(X, &ldb->D);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &ldb->BssTB);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &ldb->yyT);CHKERRQ(ierr);
-    ierr = VecDuplicate(X, &ldb->wwT);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &ldb->y2);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &ldb->Ds2);CHKERRQ(ierr);
+    ierr = VecDuplicate(X, &ldb->w2);CHKERRQ(ierr);
     ldb->allocated = PETSC_TRUE;
   }
+  ierr = VecSet(ldb->D, 1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,9 +183,9 @@ static PetscErrorCode MatDestroy_LMVMDiagBrdn(Mat B)
   PetscFunctionBegin;
   if (ldb->allocated) {
     ierr = VecDestroy(&ldb->D);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->BssTB);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->yyT);CHKERRQ(ierr);
-    ierr = VecDestroy(&ldb->wwT);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->y2);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->Ds2);CHKERRQ(ierr);
+    ierr = VecDestroy(&ldb->w2);CHKERRQ(ierr);
     ldb->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
@@ -193,11 +206,12 @@ static PetscErrorCode MatSetUp_LMVMDiagBrdn(Mat B)
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
   if (!ldb->allocated) {
     ierr = VecDuplicate(lmvm->Xprev, &ldb->D);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Xprev, &ldb->BssTB);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Xprev, &ldb->yyT);CHKERRQ(ierr);
-    ierr = VecDuplicate(lmvm->Xprev, &ldb->wwT);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Xprev, &ldb->y2);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Xprev, &ldb->Ds2);CHKERRQ(ierr);
+    ierr = VecDuplicate(lmvm->Xprev, &ldb->w2);CHKERRQ(ierr);
     ldb->allocated = PETSC_TRUE;
   }
+  ierr = VecSet(ldb->D, 1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +241,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDIAGBRDN);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
   
   B->ops->solve = MatSolve_LMVMDiagBrdn;
@@ -236,7 +250,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   B->ops->destroy = MatDestroy_LMVMDiagBrdn;
   
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
-  lmvm->m = 0;
+  lmvm->m = -1;
   lmvm->square = PETSC_TRUE;
   lmvm->ops->update = MatUpdate_LMVMDiagBrdn;
   lmvm->ops->allocate = MatAllocate_LMVMDiagBrdn;

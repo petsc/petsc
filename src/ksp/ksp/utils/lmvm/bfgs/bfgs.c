@@ -85,16 +85,16 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   Note that this forward product has the same structure as the 
   inverse Jacobian application in the DFP formulation, except with S 
   and Y exchanging roles.
-  
-  P[i] = (B_i)*S[i] terms are computed ahead of time whenever 
-  the matrix is updated with a new (S[i], Y[i]) pair. This allows 
-  repeated calls of MatMult inside KSP solvers without unnecessarily 
-  recomputing P[i] terms in expensive nested-loops.
 
   Z <- J0 * X
 
   for i = 0,1,2,...,k
-    # P[i] = B_i * S[i]
+    P[i] <- J0 * S[i]
+    for j = 0,1,2,...,(i-1)
+      gamma = (Y[j]^T S[i]) / (Y[j]^T S[j])
+      zeta = (S[j]^ P[i]) / (S[j]^T P[j])
+      P[i] <- P[i] - (zeta * P[j]) + (gamma * Y[j])
+    end
     gamma = (Y[i]^T X) / (Y[i]^T S[i])
     zeta = (S[i]^T Z) / (S[i]^T P[i])
     Z <- Z - (zeta * P[i]) + (gamma * Y[i])
@@ -157,7 +157,10 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
         lbfgs->P[lmvm->k] = Ptmp;
       }
       lbfgs->yts[lmvm->k] = curvature;
-      /* Start the loops for (P[i] = (B_i) * S[i]) */
+      /* Update default J0 scaling */
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+      lmvm->J0default = yty/curvature;
+      /* Pre-compute (P[i] = B_i * S[i]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbfgs->P[i]);CHKERRQ(ierr);
         for (j = 0; j <= i-1; ++j) {
@@ -171,9 +174,6 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
         }
         ierr = VecDot(lmvm->S[i], lbfgs->P[i], &lbfgs->stp[i]);CHKERRQ(ierr);
       }
-      /* Update default J0 scaling */
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-      lmvm->J0default = yty/curvature;
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;

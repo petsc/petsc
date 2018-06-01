@@ -27,6 +27,7 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
     B->preallocated = PETSC_FALSE;
     B->assembled = PETSC_FALSE;
   }
+  ++lmvm->nresets;
   PetscFunctionReturn(0);
 }
 
@@ -283,6 +284,7 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
     ierr = PetscViewerASCIIPrintf(pv,"  Used storage: %D\n",lmvm->k+1);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"  # of updates: %D\n",lmvm->nupdates);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"  # of rejects: %D\n",lmvm->nrejects);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"  # of resets : %D\n",lmvm->nresets);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -375,6 +377,7 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   lmvm->k = -1;
   lmvm->nupdates = 0;
   lmvm->nrejects = 0;
+  lmvm->nresets = 0;
   
   lmvm->ksp_max_it = 20;
   lmvm->ksp_rtol = 0.0;
