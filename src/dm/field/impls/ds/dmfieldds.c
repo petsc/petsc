@@ -711,7 +711,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   PetscFunctionBegin;
   dm = field->dm;
   dsfield = (DMField_DS *) field->data;
-  ierr = ISGetMinMax(pointIS,&imax,&imin);CHKERRQ(ierr);
+  ierr = ISGetMinMax(pointIS,&imin,&imax);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   for (h = 0; h <= dim; h++) {
     PetscInt hStart, hEnd;
@@ -855,7 +855,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
         co[p][s][1] = orient[f];
         co[p][s][2] = cell;
         minOrient = PetscMin(minOrient, orient[f]);
-        maxOrient = PetscMin(maxOrient, orient[f]);
+        maxOrient = PetscMax(maxOrient, orient[f]);
       }
       for (; s < 2; s++) {
         co[p][s][0] = -1;
