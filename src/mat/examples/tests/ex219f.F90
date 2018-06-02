@@ -19,7 +19,7 @@ program newnonzero
  do i=nl1,nl2-1
    idxn(1)=i
    idxm(1)=i
-   v(1)=1d0
+   v(1)=1.0
    call MatSetValues(A,one,idxn,one,idxm, v,INSERT_VALUES,ierr)
  end do
  call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
