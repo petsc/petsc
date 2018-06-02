@@ -55,7 +55,7 @@ echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b 
 echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
 (git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
-rm -rf ./${nPETSC_ARCH}
+rm -rf ./${nPETSC_ARCH} ./arch-*
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& build.log
 
@@ -161,6 +161,9 @@ if ( "${GCOV}" != "" ) then
   rm -f gcov.log
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
+
+#cleanup some generated files to reduce disk usage
+find ${nPETSC_ARCH} -type f \( -name "*.pdb" -o -name "*.ilk" \) -exec rm {} \;
 
 echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
