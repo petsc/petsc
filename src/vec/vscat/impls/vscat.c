@@ -616,6 +616,9 @@ PetscErrorCode VecScatterView_SSToSG(VecScatter in,PetscViewer viewer)
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->first + in_from->step*i,in_to->vslots[i]);CHKERRQ(ierr);
     }
+    if (in_to->memcpy_plan.made_of_copies[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"This stride1 to general scatter is made of %D copies\n",in_to->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -736,6 +739,9 @@ PetscErrorCode VecScatterView_SGToSG(VecScatter in,PetscViewer viewer)
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->vslots[i]);CHKERRQ(ierr);
     }
+    if (in_from->memcpy_plan.made_of_copies[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"This general to general scatter is made of %D copies\n",in_from->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -788,6 +794,9 @@ PetscErrorCode VecScatterView_SGToSS(VecScatter in,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Sequential general scatter to stride\n");CHKERRQ(ierr);
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->first + in_to->step*i);CHKERRQ(ierr);
+    }
+    if (in_from->memcpy_plan.made_of_copies[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"This general to stride1 scatter is made of %D copies\n",in_from->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
