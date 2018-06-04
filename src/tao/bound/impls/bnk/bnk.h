@@ -8,35 +8,35 @@ Context for bounded Newton-Krylov type optimization algorithms
 #include <../src/tao/bound/impls/bncg/bncg.h>
 
 typedef struct {
-  /* Function pointer for hessian evaluation 
-     NOTE: This is necessary so that quasi-Newton-Krylov methods can "evaluate" 
-     a quasi-Newton approximation while full Newton-Krylov methods call-back to 
+  /* Function pointer for hessian evaluation
+     NOTE: This is necessary so that quasi-Newton-Krylov methods can "evaluate"
+     a quasi-Newton approximation while full Newton-Krylov methods call-back to
      the application's Hessian */
   PetscErrorCode (*computehessian)(Tao);
   PetscErrorCode (*computestep)(Tao, PetscBool, KSPConvergedReason*);
-  
+
   /* Embedded TAOBNCG */
   Tao bncg;
   TAO_BNCG *bncg_ctx;
   PetscInt max_cg_its, tot_cg_its;
   Vec bncg_sol;
-  
+
   /* Allocated vectors */
   Vec W, Xwork, Gwork, Xold, Gold;
   Vec unprojected_gradient, unprojected_gradient_old;
-  
+
   /* Unallocated matrices and vectors */
   Mat H_inactive, Hpre_inactive;
   Vec X_inactive, G_inactive, inactive_work, active_work;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
-  
+
   /* Scalar values for the solution and step */
   PetscReal fold, f, gnorm, dnorm;
-  
+
   /* Parameters for active set estimation */
   PetscReal as_tol;
   PetscReal as_step;
-  
+
   /* BFGS preconditioner data */
   PC bfgs_pre;
   Mat M;
@@ -203,7 +203,7 @@ typedef struct {
   PetscInt ksp_iter;
   PetscInt ksp_othr;
   PetscBool is_nash, is_stcg, is_gltr;
-  
+
   /* Implementation specific context */
   void* ctx;
 } TAO_BNK;

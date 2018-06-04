@@ -5,6 +5,9 @@
    The first time the function is called for an LMVM matrix, no update is 
    applied, but the given X and F vectors are stored for use as Xprev and
    Fprev in the next update.
+   
+   If the user has provided another LMVM matrix in place of J0, the J0 
+   matrix is also updated recursively.
 
    Input Parameters:
 +  B - An LMVM-type matrix (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
@@ -640,6 +643,9 @@ PetscErrorCode MatLMVMResetShift(Mat B)
    counters, which leads to existing data being overwritten, and 
    MatSolve() being applied as if there are no updates. A boolean 
    flag is available to force destruction of the update vectors.
+   
+   If the user has provided another LMVM matrix as J0, the J0 
+   matrix is also reset in this function.
 
    Input Parameters:
 +  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)

@@ -120,7 +120,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         curvature, sig_new, yjtqi, sjtyi;
+  PetscReal         curvature, sigma, yjtqi, sjtyi;
   Vec               Qtmp;
 
   PetscFunctionBegin;
@@ -153,8 +153,8 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
       ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ldfp->sts[lmvm->k]);CHKERRQ(ierr);
       ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ldfp->yty[lmvm->k]);CHKERRQ(ierr);
       ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ldfp->sts[lmvm->k]);CHKERRQ(ierr);
-      ierr = MatSymBrdnComputeJ0Scalar(B, &sig_new);CHKERRQ(ierr);
-      lmvm->J0default = (1.0 - ldfp->rho)*lmvm->J0default + ldfp->rho*sig_new;
+      ierr = MatSymBrdnComputeJ0Scalar(B, &sigma);CHKERRQ(ierr);
+      lmvm->J0default = 1.0 / ((1.0 - ldfp->rho)*(1.0/lmvm->J0default) + ldfp->rho*sigma);
       /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]);CHKERRQ(ierr);
@@ -289,6 +289,27 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
 
 /*------------------------------------------------------------*/
 
+static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsObject, Mat B)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetFromOptions_LMVM(PetscOptionsObject, B);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Davidon-Fletcher-Powell (DFP) method for approximating SPD Jacobian actions (MATLMVMDFP)");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) convex ratio between the old and new default J0 scalars","",ldfp->rho,&ldfp->rho,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio between BFGS and DFP components in the default J0 scalar","",ldfp->alpha,&ldfp->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of past updates to use in the default J0 scalar","",ldfp->sigma_hist,&ldfp->sigma_hist,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if ((ldfp->alpha < 0.0) || (ldfp->alpha > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the default J0 scale cannot be outside the range of [0, 1]");
+  if ((ldfp->rho < 0.0) || (ldfp->rho > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the J0 scale combination cannot be outside the range of [0, 1]");
+  if (ldfp->sigma_hist < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
   Mat_SymBrdn       *ldfp;
@@ -301,7 +322,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   B->ops->solve = MatSolve_LMVMDFP;
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;
-  B->ops->setfromoptions = MatSetFromOptions_LMVMSymBrdn;
+  B->ops->setfromoptions = MatSetFromOptions_LMVMDFP;
 
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;

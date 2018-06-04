@@ -16,7 +16,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   PC                           pc;
-  
+
   PetscReal                    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscBool                    is_bfgs, is_jacobi, is_symmetric, sym_set;
@@ -24,7 +24,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   PetscInt                     i_max = 5;
   PetscInt                     j_max = 1;
   PetscInt                     i, j;
-  
+
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);

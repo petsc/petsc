@@ -141,7 +141,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         curvature, sig_new, sjtpi, yjtsi, wtsi, yjtqi, sjtyi, wtyi, numer;
+  PetscReal         curvature, sigma, sjtpi, yjtsi, wtsi, yjtqi, sjtyi, wtyi, numer;
   Vec               Ptmp, Qtmp;
 
   PetscFunctionBegin;
@@ -178,8 +178,8 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
       ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lsb->sts[lmvm->k]);CHKERRQ(ierr);
       ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &lsb->yty[lmvm->k]);CHKERRQ(ierr);
       ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lsb->sts[lmvm->k]);CHKERRQ(ierr);
-      ierr = MatSymBrdnComputeJ0Scalar(B, &sig_new);CHKERRQ(ierr);
-      lmvm->J0default = (1.0 - lsb->rho)*lmvm->J0default + lsb->rho*sig_new;
+      ierr = MatSymBrdnComputeJ0Scalar(B, &sigma);CHKERRQ(ierr);
+      lmvm->J0default = 1.0 / ((1.0 - lsb->rho)*(1.0/lmvm->J0default) + lsb->rho*sigma);
       /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
       for (i = 0; i <= lmvm->k; ++i) {
         ierr = MatLMVMApplyJ0Inv(B, lmvm->Y[i], lsb->Q[i]);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -363,13 +363,16 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = MatSetFromOptions_LMVM(PetscOptionsObject, B);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"Restricted (aka Symmetric) Broyden method for approximating Jacobians");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_lmvm_phi","(developer) convex ratio between BFGS and DFP components in the Broyden update","",lsb->phi,&lsb->phi,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) convex ratio between old J0 scalar and new J0 scalar","",lsb->rho,&lsb->rho,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio between BFGS and DFP components in the J0 scalar calculation","",lsb->alpha,&lsb->alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of updates to use when calculating the J0 scalar","",lsb->sigma_hist,&lsb->sigma_hist,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Restricted Broyden method for approximating SPD Jacobian actions (MATLMVMSYMBRDN)");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_phi","(developer) convex ratio between BFGS and DFP components of the update","",lsb->phi,&lsb->phi,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) convex ratio between the old and new default J0 scalars","",lsb->rho,&lsb->rho,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio between BFGS and DFP components in the default J0 scalar","",lsb->alpha,&lsb->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of past updates to use in the default J0 scalar","",lsb->sigma_hist,&lsb->sigma_hist,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if ((lsb->phi < 0.0) || (lsb->phi > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio cannot be outside the range of [0, 1]");
+  if ((lsb->phi < 0.0) || (lsb->phi > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the update formula cannot be outside the range of [0, 1]");
+  if ((lsb->alpha < 0.0) || (lsb->alpha > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the default J0 scale cannot be outside the range of [0, 1]");
+  if ((lsb->rho < 0.0) || (lsb->rho > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the J0 scale combination cannot be outside the range of [0, 1]");
+  if (lsb->sigma_hist < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
   PetscFunctionReturn(0);
 }
 
@@ -439,8 +442,10 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
    paradigm instead of this routine directly.
 
    Options Database Keys:
-.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
-.   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the inverse
+.   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
+.   -mat_lmvm_rho - (developer) convex ratio between the old and new default J0 scalars
+.   -mat_lmvm_alpha - (developer) convex ratio between BFGS and DFP components in the default J0 scalar
+.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in the default J0 scalar
 
    Level: intermediate
 
@@ -469,18 +474,24 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B, PetscReal *sigma)
   PetscReal         a, b, c, sig1, sig2;
   
   PetscFunctionBegin;
+  if (lsb->sigma_hist == 0) {
+    *sigma = 1.0;
+    PetscFunctionReturn(0);
+  }
   start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
   *sigma = 0.0;
   if (lsb->alpha == 1.0 || lsb->alpha == 0.5) {
     for (i = start; i <= lmvm->k; ++i) {
-      *sigma += lsb->yty[i]/lsb->yts[i];
+      *sigma += lsb->yts[i]/lsb->yty[i];
     }
-    if (lsb->alpha == 0.5) {
-      *sigma = PetscSqrtReal(*sigma);
+  } else if (lsb->alpha == 0.5) {
+    for (i = start; i <= lmvm->k; ++i) {
+      *sigma += lsb->sts[i]/lsb->yty[i];
     }
+    *sigma = PetscSqrtReal(*sigma);
   } else if (lsb->alpha == 0.0) {
     for (i = start; i <= lmvm->k; ++i) {
-      *sigma += lsb->yty[i]/lsb->sts[i];
+      *sigma += lsb->sts[i]/lsb->yts[i];
     }
   } else {
     /* compute coefficients of the quadratic */

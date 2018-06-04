@@ -202,7 +202,6 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
-  PetscBool      is_spd;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetup() */
@@ -224,16 +223,16 @@ PETSC_INTERN PetscErrorCode TaoSetup_BLMVM(Tao tao)
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
   ierr = MatSetSizes(blmP->M, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(blmP->M,tao->solution,blmP->unprojected_gradient);CHKERRQ(ierr);
-  ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
-  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (blmP->H0) {
     ierr = MatLMVMSetJ0(blmP->M, blmP->H0);CHKERRQ(ierr);
   } else if (!blmP->no_scale) {
     if (!blmP->Mscale) {
-      ierr = MatCreateLMVMDiagBrdn(PetscObjectComm((PetscObject)blmP->M), n, N, &blmP->Mscale);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)blmP->M), &blmP->Mscale);CHKERRQ(ierr);
+      ierr = MatSetType(blmP->Mscale, MATLMVMDIAGBRDN);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(blmP->Mscale, "tao_blmvm_scale_");CHKERRQ(ierr);
+      ierr = MatSetFromOptions(blmP->Mscale);CHKERRQ(ierr);
       ierr = MatLMVMAllocate(blmP->Mscale, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
     }
     ierr = MatLMVMSetJ0(blmP->M, blmP->Mscale);CHKERRQ(ierr);
@@ -289,6 +288,8 @@ PETSC_INTERN PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptio
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
+  if (!blmP->no_scale) {
+  }
   ierr = PetscObjectBaseTypeCompare((PetscObject)blmP->M, MATLMVM, &is_lmvm);CHKERRQ(ierr);
   if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
   ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
