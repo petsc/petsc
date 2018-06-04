@@ -117,7 +117,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
     if (to->local.memcpy_plan.made_of_copies[0] && addv == INSERT_VALUES) {
       /* do copy when it is not a self-to-self copy */
       if (!(xv == yv && to->local.memcpy_plan.same_copy_starts)) { ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&to->local.memcpy_plan,yv,&from->local.memcpy_plan,addv);CHKERRQ(ierr); }
-    } else if (to->local.memcpy_plan.made_of_copies[0] && addv == ADD_VALUES) {
+    } else if (to->local.memcpy_plan.made_of_copies[0]) {
       ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&to->local.memcpy_plan,yv,&from->local.memcpy_plan,addv);CHKERRQ(ierr);
     } else {
       if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
@@ -186,7 +186,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
         ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
-      if ((addv == INSERT_VALUES || addv == ADD_VALUES) && from->memcpy_plan.made_of_copies[imdex]) {
+      if (from->memcpy_plan.made_of_copies[imdex]) {
         ierr = VecScatterMemcpyPlanExecute_Unpack(imdex,rvalues+bs*rstarts[imdex],yv,&from->memcpy_plan,addv);CHKERRQ(ierr);
       } else {
         ierr = PETSCMAP1(UnPack_MPI1)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);

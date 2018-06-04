@@ -348,15 +348,13 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   fslots = gen_from->vslots;
   tslots = gen_to->vslots;
 
-  if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]]  = xv[fslots[i]];
-  } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]] += xv[fslots[i]];
+  if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&gen_from->memcpy_plan,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr); }
+  else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[tslots[i]]  = xv[fslots[i]]; }
+  else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]] += xv[fslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
-  } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);
+  else if (addv == MAX_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]]  = PetscMax(yv[tslots[i]],xv[fslots[i]]); }
 #endif
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -395,26 +393,22 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     xv += first;
-    if (addv == INSERT_VALUES || addv == ADD_VALUES) {
-      if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_from->memcpy_plan,addv);CHKERRQ(ierr); }
-      else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[fslots[i]] = xv[i]; }
-      else { for (i=0; i<n; i++) yv[fslots[i]] += xv[i]; }
+    if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_from->memcpy_plan,addv);CHKERRQ(ierr); }
+    else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[fslots[i]]  = xv[i]; }
+    else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[fslots[i]] += xv[i]; }
 #if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);
+    else if (addv == MAX_VALUES)    { for (i=0; i<n; i++) yv[fslots[i]]  = PetscMax(yv[fslots[i]],xv[i]); }
 #endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   } else {
     yv += first;
-    if (addv == INSERT_VALUES || addv == ADD_VALUES) {
-      if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_from->memcpy_plan,yv,addv);CHKERRQ(ierr); }
-      else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[i] = xv[fslots[i]]; }
-      else if (addv == ADD_VALUES) { for (i=0; i<n; i++) yv[i] += xv[fslots[i]]; }
+    if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_from->memcpy_plan,yv,addv);CHKERRQ(ierr); }
+    else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[i]  = xv[fslots[i]]; }
+    else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[i] += xv[fslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[i] = PetscMax(yv[i],xv[fslots[i]]);
+    else if (addv == MAX_VALUES)    { for (i=0; i<n; i++) yv[i]  = PetscMax(yv[i],xv[fslots[i]]); }
 #endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
   ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -511,34 +505,22 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     yv += first;
-    if (addv == INSERT_VALUES) {
-      if (gen_to->memcpy_plan.made_of_copies[0]) {
-        ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_to->memcpy_plan,yv,addv);CHKERRQ(ierr);
-      } else {
-        for (i=0; i<n; i++) yv[i] = xv[tslots[i]];
-      }
-    } else  if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[i] += xv[tslots[i]];
+    if (gen_to->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_to->memcpy_plan,yv,addv);CHKERRQ(ierr); }
+    else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[i]  = xv[tslots[i]]; }
+    else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[i] += xv[tslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
-    } else  if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[i] = PetscMax(yv[i],xv[tslots[i]]);
+    else if (addv == MAX_VALUES)    { for (i=0; i<n; i++) yv[i]  = PetscMax(yv[i],xv[tslots[i]]); }
 #endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   } else {
     xv += first;
-    if (addv == INSERT_VALUES) {
-      if (gen_to->memcpy_plan.made_of_copies[0]) {
-        ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr);
-      } else {
-        for (i=0; i<n; i++) yv[tslots[i]] = xv[i];
-      }
-    } else  if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] += xv[i];
+    if (gen_to->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr); }
+    else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[tslots[i]]  = xv[i]; }
+    else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]] += xv[i]; }
 #if !defined(PETSC_USE_COMPLEX)
-    } else  if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[i]);
+    else if (addv == MAX_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]]  = PetscMax(yv[tslots[i]],xv[i]); }
 #endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
   ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

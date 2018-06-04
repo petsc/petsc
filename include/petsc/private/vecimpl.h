@@ -354,7 +354,18 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
       for (k=0; k<len; k++) y[k] += xv[k];
       y   += len;
     }
-  } else {
+  }
+#if !defined(PETSC_USE_COMPLEX)
+  else if (addv == MAX_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      xv   = x+xplan->copy_starts[j];
+      for (k=0; k<len; k++) y[k] = PetscMax(y[k],xv[k]);
+      y   += len;
+    }
+  }
+#endif
+  else {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
   }
   PetscFunctionReturn(0);
@@ -381,7 +392,18 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Unpack(PetscInt i
       for (k=0; k<len; k++) yv[k] += x[k];
       x   += len;
     }
-  } else {
+  }
+#if !defined(PETSC_USE_COMPLEX)
+  else if (addv == MAX_VALUES) {
+    for (j=yplan->copy_offsets[i]; j<yplan->copy_offsets[i+1]; j++) {
+      len  = yplan->copy_lengths[j]/sizeof(PetscScalar);
+      yv   = y+yplan->copy_starts[j];
+      for (k=0; k<len; k++) yv[k] = PetscMax(yv[k],x[k]);
+      x   += len;
+    }
+  }
+#endif
+  else {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
   }
   PetscFunctionReturn(0);
@@ -407,7 +429,18 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Scatter(PetscInt 
       yv  = y+yplan->copy_starts[j];
       for (k=0; k<len; k++) yv[k] += xv[k];
     }
-  } else {
+  }
+#if !defined(PETSC_USE_COMPLEX)
+  else if (addv == MAX_VALUES) {
+    for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
+      len = xplan->copy_lengths[j]/sizeof(PetscScalar);
+      xv  = x+xplan->copy_starts[j];
+      yv  = y+yplan->copy_starts[j];
+      for (k=0; k<len; k++) yv[k] = PetscMax(yv[k],xv[k]);
+    }
+  }
+#endif
+  else {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d",addv);
   }
   PetscFunctionReturn(0);
