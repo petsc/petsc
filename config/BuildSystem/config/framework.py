@@ -455,7 +455,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterLinkOutput(self, output):
-    if self.argDB['ignoreLinkOutput']:
+    if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
+    elif self.argDB['ignoreLinkOutput']:
       output = ''
     elif output:
       hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
