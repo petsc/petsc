@@ -13,7 +13,7 @@ typedef struct {
      a quasi-Newton approximation while full Newton-Krylov methods call-back to
      the application's Hessian */
   PetscErrorCode (*computehessian)(Tao);
-  PetscErrorCode (*computestep)(Tao, PetscBool, KSPConvergedReason*);
+  PetscErrorCode (*computestep)(Tao, PetscBool, KSPConvergedReason*, PetscInt*);
 
   /* Embedded TAOBNCG */
   Tao bncg;
@@ -227,6 +227,10 @@ typedef struct {
 #define BNK_AS_BERTSEKAS   1
 #define BNK_AS_TYPES       2
 
+static const char *BNK_INIT[64] = {"constant", "direction", "interpolation"};
+static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
+static const char *BNK_AS[64] = {"none", "bertsekas"};
+
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems*, Tao);
@@ -243,7 +247,7 @@ PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, PetscInt, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);
-PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
+PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt*, PetscReal*, TaoLineSearchConvergedReason*);

@@ -122,7 +122,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the safeguarded Newton step (for inactive variables only) */
-    ierr = bnk->computestep(tao, shift, &ksp_reason);CHKERRQ(ierr);
+    ierr = bnk->computestep(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
     ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */

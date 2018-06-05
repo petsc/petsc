@@ -35,7 +35,6 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   } else {
     VecCheckMatCompatible(B, X, 2, F, 3);
   }
-  ierr = lmvm->ops->update(B, X, F);CHKERRQ(ierr);
   if (lmvm->J0) {
     /* If the user provided an LMVM-type matrix as J0, then trigger its update as well */
     ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
@@ -43,6 +42,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
       ierr = MatLMVMUpdate(lmvm->J0, X, F);CHKERRQ(ierr);
     }
   }
+  ierr = lmvm->ops->update(B, X, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

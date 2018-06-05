@@ -139,8 +139,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = bnk->computestep(tao, shift, &ksp_reason);CHKERRQ(ierr);
-    stepType = BNK_NEWTON;
+    ierr = bnk->computestep(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;

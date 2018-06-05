@@ -51,6 +51,7 @@ typedef const char *TaoType;
 #define TAOOWLQN    "owlqn"
 #define TAOBMRM     "bmrm"
 #define TAOBLMVM    "blmvm"
+#define TAOBQNLS    "bqnls"
 #define TAOBNCG     "bncg"
 #define TAOBNLS     "bnls"
 #define TAOBNTR     "bntr"

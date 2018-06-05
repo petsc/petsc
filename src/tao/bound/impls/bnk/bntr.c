@@ -96,7 +96,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 
   PetscReal                    oldTrust, prered, actred, steplen, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_FALSE;
-  PetscInt                     stepType = BNK_NEWTON, nDiff;
+  PetscInt                     stepType, nDiff;
   
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
@@ -132,7 +132,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       tao->ksp_its=0;
       
       /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-      ierr = bnk->computestep(tao, shift, &ksp_reason);CHKERRQ(ierr);
+      ierr = bnk->computestep(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
       /* Temporarily accept the step and project it into the bounds */
       ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);

@@ -278,13 +278,17 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
   ierr = PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MatGetType(B, &type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  Approx. type: %s\n",type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  Max. storage: %D\n",lmvm->m);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  Used storage: %D\n",lmvm->k+1);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  # of updates: %D\n",lmvm->nupdates);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  # of rejects: %D\n",lmvm->nrejects);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"  # of resets : %D\n",lmvm->nresets);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Max. storage: %D\n",lmvm->m);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Used storage: %D\n",lmvm->k+1);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"# of updates: %D\n",lmvm->nupdates);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"# of rejects: %D\n",lmvm->nrejects);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"# of resets: %D\n",lmvm->nresets);CHKERRQ(ierr);
+    if (lmvm->J0) {
+      ierr = PetscViewerASCIIPrintf(pv,"J0 Matrix:\n");CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(pv, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = MatView(lmvm->J0, pv);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(pv);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   AppCtx             user;                  /* user-defined application context */
   KSP                ksp;
   PC                 pc;
-  Mat                M;
+  Mat                M, J0;
   Vec                in, out, out2;
   PetscReal          mult_solve_dist;
 
@@ -90,8 +90,7 @@ int main(int argc,char **argv)
   
   /* Test the LMVM matrix */
   if (test_lmvm) {
-    ierr = PetscOptionsSetValue(NULL, "-tao_type", "bntr");CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue(NULL, "-tao_bnk_pc_type", "lmvm");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL, "-tao_type", "bqnktr");CHKERRQ(ierr);
   }
 
   /* Check for TAO command line options */
@@ -105,6 +104,7 @@ int main(int argc,char **argv)
     ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = PCLMVMGetMatLMVM(pc, &M);CHKERRQ(ierr);
+    ierr = MatLMVMGetJ0(M, &J0);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &in);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &out);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &out2);CHKERRQ(ierr);
@@ -113,7 +113,12 @@ int main(int argc,char **argv)
     ierr = MatSolve(M, out, out2);CHKERRQ(ierr);
     ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
     ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+    ierr = MatMult(J0, in, out);CHKERRQ(ierr);
+    ierr = MatSolve(J0, out, out2);CHKERRQ(ierr);
+    ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
+    ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between J0 MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
     ierr = VecDestroy(&in);CHKERRQ(ierr);
     ierr = VecDestroy(&out);CHKERRQ(ierr);
     ierr = VecDestroy(&out2);CHKERRQ(ierr);
