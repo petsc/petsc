@@ -54,6 +54,7 @@ int main(int argc,char **argv)
   PC                 pc;
   Mat                M, J0;
   Vec                in, out, out2;
+  PetscBool          lmvmJ0;
   PetscReal          mult_solve_dist;
 
   /* Initialize TAO and PETSc */
@@ -104,7 +105,6 @@ int main(int argc,char **argv)
     ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = PCLMVMGetMatLMVM(pc, &M);CHKERRQ(ierr);
-    ierr = MatLMVMGetJ0(M, &J0);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &in);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &out);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &out2);CHKERRQ(ierr);
@@ -114,11 +114,17 @@ int main(int argc,char **argv)
     ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
     ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
-    ierr = MatMult(J0, in, out);CHKERRQ(ierr);
-    ierr = MatSolve(J0, out, out2);CHKERRQ(ierr);
-    ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
-    ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between J0 MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+    ierr = MatLMVMGetJ0(M, &J0);CHKERRQ(ierr);
+    if (J0) {
+      ierr = PetscObjectBaseTypeCompare((PetscObject)J0, MATLMVM, &lmvmJ0);CHKERRQ(ierr);
+      if (lmvmJ0) {
+        ierr = MatMult(J0, in, out);CHKERRQ(ierr);
+        ierr = MatSolve(J0, out, out2);CHKERRQ(ierr);
+        ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
+        ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between J0 MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+      }
+    }
     ierr = VecDestroy(&in);CHKERRQ(ierr);
     ierr = VecDestroy(&out);CHKERRQ(ierr);
     ierr = VecDestroy(&out2);CHKERRQ(ierr);

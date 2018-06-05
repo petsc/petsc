@@ -48,7 +48,6 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
   ierr = TaoBNKComputeStep(tao, shift, ksp_reason, step_type);CHKERRQ(ierr);
   if (*ksp_reason < 0) {
     /* Krylov solver failed to converge so reset the LMVM matrix */
-    ierr = PetscPrintf(PETSC_COMM_SELF, "LMVM reset\n");
     ierr = MatLMVMReset(bqnk->B, PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   }
