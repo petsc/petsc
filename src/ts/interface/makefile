@@ -3,9 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c dlregists.c tseig.c tssen.c
+SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c dlregists.c tseig.c
 SOURCEF  =
 SOURCEH  =
+DIRS     = sensitivity
 LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/interface/
