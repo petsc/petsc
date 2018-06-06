@@ -1043,32 +1043,7 @@ int main(int argc, char **argv)
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
-  #   This shows checkerboarding
-  test:
-    suffix: 2d_quad_q1_p0_vanka_mult_conv
-    requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
-      -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
-      -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu
   # Vanka solver
-  test:
-    suffix: 2d_quad_q1_p0_vanka_mult
-    requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
-      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
-      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu
-  test:
-    suffix: 2d_quad_q1_p0_vanka_mult_unity
-    requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
-      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
-      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q1_p0_vanka_add
     requires: !single
@@ -1084,22 +1059,6 @@ int main(int argc, char **argv)
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
-        -sub_ksp_type preonly -sub_pc_type lu
-  test:
-    suffix: 2d_quad_q2_q1_vanka_mult
-    requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
-      -snes_rtol 1.0e-4 -snes_error_if_not_converged_no -snes_view -snes_monitor -snes_converged_reason \
-      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged_no -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka -pc_patch_vanka_dim 0 \
-        -sub_ksp_type preonly -sub_pc_type lu
-  test:
-    suffix: 2d_quad_q2_q1_vanka_mult_unity
-    requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
-      -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
-      -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
-      -pc_type patch -pc_patch_multiplicative -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
         -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_quad_q2_q1_vanka_add
@@ -1119,14 +1078,14 @@ int main(int argc, char **argv)
         -sub_ksp_type preonly -sub_pc_type lu
   # Vanka smoother
   test:
-    suffix: 2d_quad_q1_p0_gmg_vanka_mult
+    suffix: 2d_quad_q1_p0_gmg_vanka_add
     requires: !single
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine_hierarchy 3 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
       -pc_type mg -pc_mg_levels 3 \
         -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 30 -mg_levels_ksp_monitor_true_residual_no \
-        -mg_levels_pc_type patch -mg_levels_pc_patch_multiplicative -mg_levels_pc_patch_partition_of_unity 0 -mg_levels_pc_patch_construct_codim 0 -mg_levels_pc_patch_construct_type vanka \
+        -mg_levels_pc_type patch -mg_levels_pc_patch_partition_of_unity 0 -mg_levels_pc_patch_construct_codim 0 -mg_levels_pc_patch_construct_type vanka \
           -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu
 
   test:

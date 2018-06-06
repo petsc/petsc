@@ -1,16 +1,27 @@
   0 SNES Function norm 1.222863172776e+01 
-    0 KSP preconditioned resid norm 2.846098707302e+01 true resid norm 1.222863172776e+01 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP preconditioned resid norm 1.206138891023e+00 true resid norm 3.922060269345e-02 ||r(i)||/||b|| 3.207276461226e-03
-    2 KSP preconditioned resid norm 6.540272708501e-03 true resid norm 8.119697294691e-04 ||r(i)||/||b|| 6.639906635063e-05
-    3 KSP preconditioned resid norm 1.298333085969e-04 true resid norm 7.403631480020e-04 ||r(i)||/||b|| 6.054341683388e-05
-  1 SNES Function norm 7.403631480018e-04 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+    0 KSP preconditioned resid norm 2.363347371151e+01 true resid norm 1.222863172776e+01 ||r(i)||/||b|| 1.000000000000e+00
+    1 KSP preconditioned resid norm 9.903900350023e+00 true resid norm 3.815279529503e+00 ||r(i)||/||b|| 3.119956193334e-01
+    2 KSP preconditioned resid norm 9.515178853779e-01 true resid norm 2.014014853947e-01 ||r(i)||/||b|| 1.646966642535e-02
+    3 KSP preconditioned resid norm 1.579361817304e-02 true resid norm 8.984009157936e-03 ||r(i)||/||b|| 7.346700234287e-04
+    4 KSP preconditioned resid norm 7.377035149044e-03 true resid norm 9.145491681724e-03 ||r(i)||/||b|| 7.478753048848e-04
+    5 KSP preconditioned resid norm 3.411499703732e-03 true resid norm 9.037901252405e-03 ||r(i)||/||b|| 7.390770654975e-04
+    6 KSP preconditioned resid norm 4.024784701226e-04 true resid norm 9.055521674043e-03 ||r(i)||/||b|| 7.405179807225e-04
+    7 KSP preconditioned resid norm 6.811973907255e-05 true resid norm 9.072872381841e-03 ||r(i)||/||b|| 7.419368400181e-04
+  1 SNES Function norm 9.072872381840e-03 
+    0 KSP preconditioned resid norm 1.089981005143e+00 true resid norm 9.072872381840e-03 ||r(i)||/||b|| 1.000000000000e+00
+    1 KSP preconditioned resid norm 7.850416250640e-03 true resid norm 6.129581270809e-05 ||r(i)||/||b|| 6.755943446397e-03
+    2 KSP preconditioned resid norm 2.896234289056e-03 true resid norm 2.228651244216e-05 ||r(i)||/||b|| 2.456389939615e-03
+    3 KSP preconditioned resid norm 3.788666599069e-04 true resid norm 1.768318791308e-05 ||r(i)||/||b|| 1.949017595406e-03
+    4 KSP preconditioned resid norm 3.641436788109e-05 true resid norm 1.577760580983e-05 ||r(i)||/||b|| 1.738986855079e-03
+    5 KSP preconditioned resid norm 8.458112998966e-06 true resid norm 1.571332573084e-05 ||r(i)||/||b|| 1.731901989748e-03
+  2 SNES Function norm 1.571332573107e-05 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=3
-  total number of function evaluations=2
+  total number of linear solver iterations=12
+  total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -73,7 +84,7 @@ SNES Object: 1 MPI processes
       PC Object: (mg_levels_1_) 1 MPI processes
         type: patch
           Subspace Correction preconditioner with 144 patches
-          Schwarz type: multiplicative
+          Schwarz type: additive
           Not weighting by partition of unity
           Not symmetrising sweep
           Saving patch operators (rebuilt every PCSetUp)
@@ -124,7 +135,7 @@ SNES Object: 1 MPI processes
     PC Object: (mg_levels_2_) 1 MPI processes
       type: patch
         Subspace Correction preconditioner with 576 patches
-        Schwarz type: multiplicative
+        Schwarz type: additive
         Not weighting by partition of unity
         Not symmetrising sweep
         Saving patch operators (rebuilt every PCSetUp)
@@ -172,4 +183,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 1105 nodes, limit used is 5
-L_2 Error: 0.705892 [0.000812661, 0.705891]
+L_2 Error: 0.0174331 [0.000818331, 0.0174139]

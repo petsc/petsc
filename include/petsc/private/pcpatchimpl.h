@@ -38,7 +38,6 @@ typedef struct {
   IS                   gtol;
   PetscSection         bcCounts;
   IS                  *bcs;
-  IS                  *multBcs;            /* Only used for multiplicative smoothing to recalculate residual */
   PetscInt            *bs;                 /* [field] block size per field (can come from global operators?) */
   PetscInt            *nodesPerCell;       /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
   PetscInt             totalDofsPerCell;   /* Dofs per cell counting all fields */
@@ -55,13 +54,11 @@ typedef struct {
   /* Patch solves */
   KSP                 *ksp;                /* Solvers for each patch TODO Do we need a new KSP for each patch? */
   Mat                 *mat;                /* System matrix for each patch */
-  Mat                 *multMat;            /* Operators for multiplicative residual calculation for each patch */
   MatType              sub_mat_type;       /* Matrix type for patch systems */
   Vec                 *patchX, *patchY;    /* RHS and solution for each patch */
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
   Vec                  localX, localY;     /* ??? */
   Vec                  dof_weights;        /* In how many patches does each dof lie? */
-  PetscBool            multiplicative;     /* Gauss-Seidel or Jacobi? */
   PetscBool            symmetrise_sweep;   /* Should we sweep forwards->backwards, backwards->forwards? */
   PetscBool            optionsSet;         /* SetFromOptions was called on this PC */
   IS                   iterationSet;       /* Index set specifying how we iterate over patches */
