@@ -36,8 +36,6 @@ typedef struct {
   IS                   ghostBcNodes;       /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
   PetscSection         gtolCounts;         /* ?? Indices to extract from local to patch vectors */
   IS                   gtol;
-  PetscSection         bcCounts;
-  IS                  *bcs;
   PetscInt            *bs;                 /* [field] block size per field (can come from global operators?) */
   PetscInt            *nodesPerCell;       /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
   PetscInt             totalDofsPerCell;   /* Dofs per cell counting all fields */
