@@ -200,6 +200,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_bqnk_");CHKERRQ(ierr);
   tao->ops->setfromoptions = TaoSetFromOptions_BQNK;
   tao->ops->destroy = TaoDestroy_BQNK;
   tao->ops->view = TaoView_BQNK;
