@@ -686,7 +686,10 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
   return 0;
 }
 
+/*TEST
 
+    test:
+      args: -snes_type vinewtonrsls -ts_type glee -mymonitor -ts_max_steps 10 -nox
+      requires: !single
 
-
-
+TEST*/
