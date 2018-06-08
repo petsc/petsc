@@ -59,6 +59,22 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
 
+  /* Test MatTranspose() */
+  ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
+  ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
+  ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+
   /* Test MatMatMult() */
   if (Test_MatMatMult) { 
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -133,6 +149,11 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
+      output_file: output/ex104.out
+
+    test:
+      suffix: 2
+      nsize: 2
       output_file: output/ex104.out
 
 TEST*/

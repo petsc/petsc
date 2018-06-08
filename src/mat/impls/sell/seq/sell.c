@@ -226,8 +226,8 @@ PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,M
   }
 
   for (i=0; i<A->rmap->n; i++) {
-    PetscInt    nz,*cols;
-    PetscScalar *vals;
+    PetscInt    nz = 0,*cols = NULL;
+    PetscScalar *vals = NULL;
 
     ierr = MatGetRow_SeqSELL(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
     ierr = MatSetValues(B,1,&i,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);

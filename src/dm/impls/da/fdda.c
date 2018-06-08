@@ -646,7 +646,9 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)Anatural,prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Anatural,((PetscObject)A)->name);CHKERRQ(ierr);
+  ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_TRUE;
   ierr = MatView(Anatural,viewer);CHKERRQ(ierr);
+  ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

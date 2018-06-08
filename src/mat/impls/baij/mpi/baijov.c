@@ -66,7 +66,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2,*d_p;
   PetscMPIInt    *onodes1,*olengths1,*onodes2,*olengths2;
   PetscBT        *table;
-  MPI_Comm       comm;
+  MPI_Comm       comm,*iscomms;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status     *s_status,*recv_status;
   char           *t_p;
@@ -214,7 +214,9 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   }
   ierr = PetscFree2(*(PetscInt***)&idx,n);CHKERRQ(ierr);
 
+  ierr = PetscMalloc1(imax,&iscomms);CHKERRQ(ierr);
   for (i=0; i<imax; ++i) {
+    ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)is[i]),&iscomms[i],NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
 
@@ -300,10 +302,11 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   }
 
   for (i=0; i<imax; ++i) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz[i],data[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(iscomms[i],isz[i],data[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
+    ierr = PetscCommDestroy(&iscomms[i]);CHKERRQ(ierr);
   }
 
-
+  ierr = PetscFree(iscomms);CHKERRQ(ierr);
   ierr = PetscFree(onodes2);CHKERRQ(ierr);
   ierr = PetscFree(olengths2);CHKERRQ(ierr);
 

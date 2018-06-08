@@ -128,8 +128,8 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
     /* Construct the difference table */
     for (i=0; i<nf; i++) tab[i][0] = fval[i];
 
-    for (j=0; j<6; j++) {
-      for (i=0; i<nf-j; i++) {
+    for (j=0; j<nf-1; j++) {
+      for (i=0; i<nf-j-1; i++) {
         tab[i][j+1] = tab[i+1][j] - tab[i][j];
       }
     }

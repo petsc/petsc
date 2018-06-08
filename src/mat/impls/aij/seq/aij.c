@@ -2030,8 +2030,6 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array = a->a;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX && m != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = PetscCalloc1(1+A->cmap->n,&col);CHKERRQ(ierr);
 

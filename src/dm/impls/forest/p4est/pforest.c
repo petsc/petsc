@@ -722,7 +722,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscMPIInt          size;
       p4est_connectivity_t *conn = NULL;
       DMFTopology_pforest  *topo;
-      PetscInt             *tree_face_to_uniq;
+      PetscInt             *tree_face_to_uniq = NULL;
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);

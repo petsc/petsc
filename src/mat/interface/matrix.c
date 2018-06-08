@@ -4004,7 +4004,6 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
-  ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetString(((PetscObject)mat)->options,((PetscObject)mat)->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -10678,6 +10677,9 @@ PetscErrorCode MatSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (op == MATOP_VIEW && !mat->ops->viewnative) {
+    mat->ops->viewnative = mat->ops->view;
+  }
   (((void(**)(void))mat->ops)[op]) = f;
   PetscFunctionReturn(0);
 }

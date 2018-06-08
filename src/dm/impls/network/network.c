@@ -554,13 +554,11 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       offsetd;
+  PetscInt       offsetd = 0;
 
   PetscFunctionBegin;
-
   ierr = DMNetworkGetComponentKeyOffset(dm,p,compnum,key,&offsetd);CHKERRQ(ierr);
   *component = network->componentdataarray+offsetd;
-
   PetscFunctionReturn(0);
 }
 
