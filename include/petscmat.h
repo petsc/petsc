@@ -660,7 +660,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -680,10 +680,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
+  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ncols = (ncols),__rstart,__start,__end; \
   _4_ierr = PetscCalloc2((size_t)__nrows,&dnz,(size_t)__nrows,&onz);CHKERRQ(_4_ierr); \
   __start = 0; __end = __start;                                         \
-  _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
+  _4_ierr = MPI_Scan(&__ncols,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ncols;\
   _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
 /*MC
@@ -704,7 +704,7 @@ M*/
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -715,7 +715,7 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
 M*/
 #define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
@@ -746,7 +746,7 @@ M*/
 .  ncols - the number of columns in the matrix   (this value will be changed if duplicate columns are found)
 .  cols - the columns indicated (these values are mapped to the global values, they are then sorted and duplicates removed)
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -757,7 +757,7 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
@@ -789,7 +789,7 @@ M*/
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -800,7 +800,7 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
@@ -830,7 +830,7 @@ M*/
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -841,7 +841,7 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateInitialize(),
+.seealso: MatPreallocateFinalize(), MatPreallocateSet()
           MatPreallocateInitialize(),  MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz) 0;\
@@ -870,7 +870,7 @@ M*/
 
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -883,7 +883,7 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock()
           MatPreallocateInitialize(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
@@ -892,7 +892,7 @@ M*/
   if (row >= __rstart+__nrows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__nrows-1);\
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
-    else dnz[row - __rstart]++;\
+    else if (dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;\
   }\
 }
 
@@ -912,7 +912,7 @@ M*/
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -926,18 +926,18 @@ M*/
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(),  MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
+          MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSymmetricSetBlock(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
   for (__i=0; __i<nc; __i++) {\
     if (cols[__i] >= __end) onz[row - __rstart]++; \
-    else if (cols[__i] >= row) dnz[row - __rstart]++;\
+    else if (cols[__i] >= row && dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;\
   }\
 }
 
 /*MC
-   MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
+   MatPreallocateLocation -  An alternative to MatPreallocateSet() that puts the nonzero locations into the matrix if it exists
 
    Synopsis:
    #include <petscmat.h>
@@ -951,7 +951,7 @@ M*/
 .  ncols - number of columns
 .  cols - columns with nonzeros
 .  dnz - the array that will be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
@@ -982,7 +982,7 @@ M*/
 
    Input Parameters:
 +  dnz - the array that was be passed to the matrix preallocation routines
--  ozn - the other array passed to the matrix preallocation routines
+-  onz - the other array passed to the matrix preallocation routines
 
    Level: intermediate
 
