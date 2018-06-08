@@ -1086,7 +1086,8 @@ int main(int argc, char **argv)
       -pc_type mg -pc_mg_levels 3 \
         -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 30 -mg_levels_ksp_monitor_true_residual_no \
         -mg_levels_pc_type patch -mg_levels_pc_patch_partition_of_unity 0 -mg_levels_pc_patch_construct_codim 0 -mg_levels_pc_patch_construct_type vanka \
-          -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu
+          -mg_levels_sub_ksp_type preonly -mg_levels_sub_pc_type lu \
+        -mg_coarse_pc_type svd
 
   test:
     requires: !single
