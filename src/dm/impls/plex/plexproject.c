@@ -212,11 +212,12 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     if (funcs[f]) {
       PetscQuadrature fAllPoints;
-      PetscInt        fNumPoints, q;
+      PetscInt        qdim, fNumPoints, q;
       const PetscReal *fPoints;
 
       ierr = PetscDualSpaceGetAllPoints(sp[f],&fAllPoints);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(fAllPoints, NULL, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(fAllPoints, &qdim, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
+      if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
       for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];
       numPoints += fNumPoints;
     }
@@ -336,7 +337,11 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscInt         numPoints;
 
     if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
-    ierr = PetscDualSpaceGetAllPointsUnion(Nf,cellsp,dim,funcs,&allPoints);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (!effectiveHeight) {sp[f] = cellsp[f];}
+      else                  {ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);}
+    }
+    ierr = PetscDualSpaceGetAllPointsUnion(Nf,sp,dim-effectiveHeight,funcs,&allPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,NULL,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc4(Nf, &basisTab, Nf, &basisDerTab, NfAux, &basisTabAux, NfAux, &basisDerTabAux);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
