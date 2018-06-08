@@ -34,4 +34,7 @@ typedef struct {
   PetscBool recycle, no_scale;
 } TAO_BLMVM;
 
+#define BLMVM_STEP_GRAD 0
+#define BLMVM_STEP_QN   1
+
 #endif  /* if !defined(__TAO_BLMVM_H) */
