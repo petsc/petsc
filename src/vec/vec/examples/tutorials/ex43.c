@@ -7,12 +7,3 @@ void fillupvector(Vec *v,PetscErrorCode *ierr)
   return;
 }
 
-/*TEST
-
-   build:
-     depends: ex43f.F
-     requires: fortran
-
-   test:
-
-TEST*/

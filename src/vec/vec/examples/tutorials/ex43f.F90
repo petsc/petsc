@@ -21,10 +21,12 @@
 !  This routine demonstates how to call a C function from Fortran
        Vec            v
        PetscErrorCode ierr
+       PetscInt five
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        call VecCreate(PETSC_COMM_WORLD,v,ierr);CHKERRA(ierr)
-       call VecSetSizes(v,PETSC_DECIDE,5,ierr);CHKERRA(ierr)
+       five = 5
+       call VecSetSizes(v,PETSC_DECIDE,five,ierr);CHKERRA(ierr)
        call VecSetFromOptions(v,ierr);CHKERRA(ierr)
 !
 !  Now Call a Petsc Routine from Fortran
@@ -34,7 +36,14 @@
        call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
        call VecDestroy(v,ierr);CHKERRA(ierr)
        call PetscFinalize(ierr)
-       return
        end
 
 
+!/*TEST
+!
+!   build:
+!     depends: ex43.c
+!
+!   test:
+!
+!TEST*/
