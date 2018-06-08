@@ -1471,25 +1471,48 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 @*/
 PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF)
 {
-  PetscMPIInt        rank;
+  DM_Plex           *mesh = (DM_Plex *) dm->data;
+  PetscMPIInt        rank, size;
   PetscInt           p, nroots, nleaves, idx, npointLeaves;
   PetscInt          *pointLocal;
   const PetscInt    *leaves;
   const PetscSFNode *roots;
   PetscSFNode       *rootNodes, *leafNodes, *pointRemote;
+  Vec                shifts;
+  const PetscInt     numShifts = 37; /* TODO Use larger prime */
+  const PetscScalar *shift = NULL;
+  const PetscBool    shiftDebug = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
 
   ierr = PetscSFGetGraph(migrationSF, &nroots, &nleaves, &leaves, &roots);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &rootNodes, nleaves, &leafNodes);CHKERRQ(ierr);
   if (ownership) {
-    /* Point ownership vote: Process with highest rank ownes shared points */
+    /* If balancing, we compute a random cyclic shift of the rank for each remote point. That way, the max will evenly distribute among ranks. */
+    if (mesh->partitionBalance) {
+      PetscRandom r;
+
+      ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
+      ierr = PetscRandomSetInterval(r, 0, 17*size);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_SELF, &shifts);CHKERRQ(ierr);
+      ierr = VecSetSizes(shifts, numShifts, numShifts);CHKERRQ(ierr);
+      ierr = VecSetType(shifts, VECSTANDARD);CHKERRQ(ierr);
+      ierr = VecSetRandom(shifts, r);CHKERRQ(ierr);
+      ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(shifts, &shift);CHKERRQ(ierr);
+    }
+
+    /* Point ownership vote: Process with highest rank owns shared points */
     for (p = 0; p < nleaves; ++p) {
+      if (shiftDebug) {
+        ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %D RemotePoint %D Shift %D MyRank %D\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]), (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size);CHKERRQ(ierr);
+      }
       /* Either put in a bid or we know we own it */
-      leafNodes[p].rank  = rank;
+      leafNodes[p].rank  = (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size;
       leafNodes[p].index = p;
     }
     for (p = 0; p < nroots; p++) {
@@ -1514,16 +1537,26 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscSFBcastBegin(migrationSF, MPIU_2INT, rootNodes, leafNodes);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes);CHKERRQ(ierr);
 
-  for (npointLeaves = 0, p = 0; p < nleaves; p++) {if (leafNodes[p].rank != rank) npointLeaves++;}
+  for (npointLeaves = 0, p = 0; p < nleaves; p++) {
+    if (shiftDebug) {
+      ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Root %D, Rank %D MyRank %D\n", rank, roots[p].index, leafNodes[p].rank, (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size);CHKERRQ(ierr);
+    }
+    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) npointLeaves++;
+  }
   ierr = PetscMalloc1(npointLeaves, &pointLocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
-    if (leafNodes[p].rank != rank) {
+    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) {
       pointLocal[idx] = p;
       pointRemote[idx] = leafNodes[p];
       idx++;
     }
   }
+  if (shift) {
+    ierr = VecRestoreArrayRead(shifts, &shift);CHKERRQ(ierr);
+    ierr = VecDestroy(&shifts);CHKERRQ(ierr);
+  }
+  if (shiftDebug) {ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject) dm), PETSC_STDOUT);CHKERRQ(ierr);}
   ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), pointSF);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*pointSF);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*pointSF, nleaves, npointLeaves, pointLocal, PETSC_OWN_POINTER, pointRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
