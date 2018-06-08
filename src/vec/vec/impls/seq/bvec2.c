@@ -4,7 +4,7 @@
 */
 
 #include <../src/vec/vec/impls/dvecimpl.h>          /*I "petscvec.h" I*/
-#include <../src/vec/vec/impls/mpi/pvecimpl.h> /* For VecView_MPI_HDF5 */
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>      /* For VecView_MPI_HDF5 */
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
 #include <petscblaslapack.h>
@@ -629,6 +629,9 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   PetscBool      ishdf5;
 #endif
   PetscBool      isglvis;
+#if defined(PETSC_HAVE_ADIOS)
+  PetscBool      isadios;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
@@ -645,6 +648,9 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
+#endif
 
   if (isdraw) {
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
@@ -659,6 +665,10 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
+#endif
+#if defined(PETSC_HAVE_ADIOS)
+  } else if (isadios) {
+    ierr = VecView_MPI_ADIOS(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_ADIOS ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {

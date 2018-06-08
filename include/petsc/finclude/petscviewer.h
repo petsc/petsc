@@ -26,5 +26,6 @@
 #define PETSCVIEWERMATLAB 'matlab'
 #define PETSCVIEWERSAWS 'saws'
 #define PETSCVIEWERGLVIS 'glvis'
+#define PETSCVIEWERADIOS 'adios'
 
 #endif

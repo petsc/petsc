@@ -31,6 +31,7 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERSAWS         "saws"
 #define PETSCVIEWERGLVIS        "glvis"
+#define PETSCVIEWERADIOS        "adios"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);

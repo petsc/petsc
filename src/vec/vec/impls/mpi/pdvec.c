@@ -631,6 +631,14 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 }
 #endif
 
+#if defined(PETSC_HAVE_ADIOS)
+PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+#endif
+
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {

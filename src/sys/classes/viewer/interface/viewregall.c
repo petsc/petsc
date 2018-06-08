@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer);
 
 PetscBool PetscViewerRegisterAllCalled;
 
@@ -55,6 +56,9 @@ PetscErrorCode  PetscViewerRegisterAll(void)
 #endif
   ierr = PetscViewerRegister(PETSCVIEWERVTK,        PetscViewerCreate_VTK);CHKERRQ(ierr);
   ierr = PetscViewerRegister(PETSCVIEWERGLVIS,      PetscViewerCreate_GLVis);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = PetscViewerRegister(PETSCVIEWERADIOS,      PetscViewerCreate_ADIOS);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
