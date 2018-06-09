@@ -1,7 +1,7 @@
 !
 !
 
-    module mymodule
+    module mymoduleex43f
 #include <petsc/finclude/petscvec.h>
       use iso_c_binding
       interface
@@ -15,7 +15,7 @@
 
 #include <petsc/finclude/petscvec.h>
         use petscvec
-        use mymodule
+        use mymoduleex43f
        implicit none
 !
 !  This routine demonstates how to call a C function from Fortran
