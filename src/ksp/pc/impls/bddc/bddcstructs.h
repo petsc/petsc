@@ -137,6 +137,8 @@ struct _PCBDDCSubSchurs {
   PetscBool change_with_qr;
   /* prefix */
   char      *prefix;
+  /* debug */
+  PetscBool debug;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
