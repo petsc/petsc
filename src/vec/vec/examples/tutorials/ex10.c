@@ -16,18 +16,28 @@ int main(int argc,char **args)
   PetscScalar       v;
   Vec               u;
   PetscViewer       viewer;
-  PetscBool         vstage2,vstage3,mpiio_use,isbinary,ishdf5;
+  PetscBool         vstage2,vstage3,mpiio_use,isbinary = PETSC_FALSE;
+#if defined(PETSC_HAVE_HDF5)
+  PetscBool         ishdf5 = PETSC_FALSE;
+#endif
+#if defined(PETSC_HAVE_ADIOS)
+  PetscBool         isadios = PETSC_FALSE;
+#endif
   PetscScalar const *values;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscOptionsGetBool(NULL,NULL,"-hdf5",&ishdf5,NULL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-adios",&isadios,NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscOptionsGetBool(NULL,NULL,"-mpiio",&mpiio_use,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-type_set",&vstage3,NULL);CHKERRQ(ierr);
@@ -49,7 +59,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v       = (PetscScalar)(i + 100*rank);
+    v       = (PetscScalar)(i + low);
     ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
@@ -64,7 +74,12 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
+#if defined(PETSC_HAVE_ADIOS)
+  } else if (isadios) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+#endif
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 -adios option\n");
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -89,6 +104,11 @@ int main(int argc,char **args)
   } else if (ishdf5) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ADIOS)
+  } else if (isadios) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in adios from vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 #endif
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
@@ -121,8 +141,10 @@ int main(int argc,char **args)
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(u,&values);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(u,&low,NULL);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
-    if (values[i] != (PetscScalar)(i + 100*rank)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
+    if (values[i] != (PetscScalar)(i + low)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
   }
   ierr = VecRestoreArrayRead(u,&values);CHKERRQ(ierr);
 
@@ -132,3 +154,36 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+     test:
+       nsize: 2
+       args: -binary
+
+     test:
+       suffix: 2
+       nsize: 3
+       args: -binary
+
+     test:
+       suffix: 3
+       nsize: 5
+       args: -binary
+
+     test:
+       suffix: 4
+       nsize: 2
+       args: -hdf5
+
+     test:
+       suffix: 5
+       nsize: 4
+       args: -binary -sizes_set
+
+     test:
+       suffix: 6
+       nsize: 4
+       args: -hdf5 -sizes_set
+
+
+TEST*/

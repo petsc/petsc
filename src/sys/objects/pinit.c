@@ -87,11 +87,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
    Level: advanced
 
     Notes:
-    this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
+    this is called only by the PETSc Julia interface. Even though it might start MPI it sets the flag to
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
-     be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
+     be called multiple times from Julia without the problem of trying to initialize MPI more than once.
 
-     Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
+     Developer Note: Turns off PETSc signal handling to allow Julia to manage signals
 
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
 */
@@ -109,7 +109,7 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
 }
 
 /*
-      Used by MATLAB and Julia interface to get communicator
+      Used by Julia interface to get communicator
 */
 PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 {
@@ -605,6 +605,11 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 }
 #endif
 
+#if defined(PETSC_HAVE_ADIOS)
+#include <adios.h>
+extern int64_t Petsc_adios_group;
+#endif
+
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI.
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -998,6 +1003,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",0);CHKERRQ(ierr);
+  ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);  
+#endif
+
   /*
       Once we are completedly initialized then we can set this variables
   */
@@ -1093,7 +1104,9 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = adios_finalize(rank);CHKERRQ(ierr);
+#endif
   ierr = PetscOptionsHasName(NULL,NULL,"-citations",&flg);CHKERRQ(ierr);
   if (flg) {
     char  *cits, filename[PETSC_MAX_PATH_LEN];

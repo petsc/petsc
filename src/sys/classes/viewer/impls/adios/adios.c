@@ -1,6 +1,8 @@
 #include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <adios.h>
 
+int64_t Petsc_adios_group;
+
 typedef struct GroupList {
   const char       *name;
   struct GroupList *next;
@@ -11,6 +13,7 @@ typedef struct {
   PetscFileMode btype;
   PetscInt      timestep;
   GroupList     *groups;
+  int64_t       adios_handle;
 } PetscViewer_ADIOS;
 
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
@@ -66,7 +69,25 @@ PetscErrorCode  PetscViewerFileSetMode_ADIOS(PetscViewer viewer, PetscFileMode t
 
 PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name[])
 {
+  PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
+  PetscErrorCode    ierr;
+
   PetscFunctionBegin;
+  if (adios->filename) {ierr = PetscFree(adios->filename);CHKERRQ(ierr);}
+  ierr = PetscStrallocpy(name, &adios->filename);CHKERRQ(ierr);
+  /* Create or open the file collectively */
+  switch (adios->btype) {
+    adios_open(&adios->adios_handle,"PETSc",adios->filename,"r",PetscObjectComm((PetscObject)viewer));
+  case FILE_MODE_READ:
+    break;
+  case FILE_MODE_APPEND:
+    break;
+  case FILE_MODE_WRITE:
+    adios_open(&adios->adios_handle,"PETSc",adios->filename,"w",PetscObjectComm((PetscObject)viewer));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -138,8 +159,8 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Concepts: ADIOS files
    Concepts: PetscViewerADIOS^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerADIOSSetBaseDimension2(),
-          PetscViewerADIOSSetSPOutput(), PetscViewerADIOSGetBaseDimension2(), VecView(), MatView(), VecLoad(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5Open(),
+          VecView(), MatView(), VecLoad(), PetscViewerSetType(), PetscViewerFileSetMode(), PetscViewerFileSetName()
           MatLoad(), PetscFileMode, PetscViewer
 @*/
 PetscErrorCode  PetscViewerADIOSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *adiosv)
@@ -226,3 +247,4 @@ PetscErrorCode PetscADIOSDataTypeToPetscDataType(enum ADIOS_DATATYPES htype, Pet
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported ADIOS datatype");
   PetscFunctionReturn(0);
 }
+
