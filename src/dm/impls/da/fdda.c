@@ -171,7 +171,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
            dof-by-dof matrix with 1 entries representing coupling and 0 entries
            for missing coupling.  The sparse representation is a 1 dimensional
            array of length nz + dof + 1, where nz is the number of non-zeros in
-           the matrix.  The first dof entries in the array give the 
+           the matrix.  The first dof entries in the array give the
            starting array indices of each row's items in the rest of the array,
            the dof+1st item indicates the total number of nonzeros,
            and the remaining nz items give the column indices of each of
@@ -804,7 +804,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
    we think of DMDA has higher level than matrices.
 
      We could switch based on Atype (or mtype), but we do not since the
-   specialized setting routines depend only the particular preallocation
+   specialized setting routines depend only on the particular preallocation
    details of the matrix, not the type itself.
   */
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
@@ -895,6 +895,8 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 }
 
 /* ---------------------------------------------------------------------------------*/
+PETSC_EXTERN PetscErrorCode MatISSetPreallocation_IS(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+
 PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
 {
   DM_DA                  *da = (DM_DA*)dm->data;
@@ -902,7 +904,8 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   ISLocalToGlobalMapping ltog;
   IS                     is_loc_filt, is_glob;
   const PetscInt         *e_loc,*idx;
-  PetscInt               i,nel,nen,dnz,nv,dof,dim,*gidx,nb;
+  PetscInt               nel,nen,nv,dof,dim,*gidx,nb;
+  PetscBool              flg;
   PetscErrorCode         ierr;
 
   /* The l2g map of DMDA has all ghosted nodes, and e_loc is a subset of all the local nodes (including the ghosted)
@@ -951,22 +954,30 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   ierr = PetscFree(gidx);CHKERRQ(ierr);
 
-  /* Preallocation (not exact) */
-  switch (da->elementtype) {
-  case DMDA_ELEMENT_P1:
-  case DMDA_ELEMENT_Q1:
-    dnz = 1;
-    for (i=0; i<dim; i++) dnz *= 3;
-    dnz *= dof;
+  /* Preallocation (not exact): we reuse the preallocation routines of the assembled version  */
+  flg = dm->prealloc_only;
+  dm->prealloc_only = PETSC_TRUE;
+  switch (dim) {
+  case 1:
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_1d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+    break;
+  case 2:
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_2d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+    break;
+  case 3:
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_DA_3d_MPIAIJ(dm,J);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled element type %d",da->elementtype);
+    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dimension %d",dim);
     break;
   }
-  ierr = MatSeqAIJSetPreallocation(lJ,dnz,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(lJ,dof,dnz/dof,NULL);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(lJ,dof,dnz/dof,NULL);CHKERRQ(ierr);
-  ierr = MatISRestoreLocalMat(J,&lJ);CHKERRQ(ierr);
+  dm->prealloc_only = flg;
   PetscFunctionReturn(0);
 }
 
@@ -1190,7 +1201,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   MPI_Comm               comm;
   PetscScalar            *values;
   DMBoundaryType         bx,by;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,mltog;
   DMDAStencilType        st;
   PetscBool              removedups = PETSC_FALSE;
 
@@ -1251,8 +1262,10 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-
-  ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(J,&mltog,NULL);CHKERRQ(ierr);
+  if (!mltog) {
+    ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  }
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1437,7 +1450,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   MPI_Comm               comm;
   PetscScalar            *values;
   DMBoundaryType         bx,by,bz;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,mltog;
   DMDAStencilType        st;
   PetscBool              removedups = PETSC_FALSE;
 
@@ -1505,7 +1518,10 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(J,&mltog,NULL);CHKERRQ(ierr);
+  if (!mltog) {
+    ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  }
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1719,7 +1735,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   PetscInt               istart,iend;
   PetscScalar            *values;
   DMBoundaryType         bx;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,mltog;
 
   PetscFunctionBegin;
   /*
@@ -1738,7 +1754,10 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   ierr = MatMPIAIJSetPreallocation(J,col*nc,0,col*nc,0);CHKERRQ(ierr);
 
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(J,&mltog,NULL);CHKERRQ(ierr);
+  if (!mltog) {
+    ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+  }
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
