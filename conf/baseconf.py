@@ -544,7 +544,7 @@ PETSC_ARCH = %(PETSC_ARCH)s
         for ext in self.extensions:
             fullname = self.get_ext_fullname(ext.name)
             filename = self.get_ext_filename(fullname)
-            if isinstance(ext, Extension):
+            if isinstance(ext, Extension) and self.petsc_arch:
                 head, tail = os.path.split(filename)
                 for arch in self.petsc_arch:
                     outfile = os.path.join(self.build_lib,
