@@ -1715,7 +1715,7 @@ boundary:
         ierr = MatISGetLocalMat(pc->pmat,&lA);CHKERRQ(ierr);
         ierr = MatGetLocalToGlobalMapping(lA,&l2l,NULL);CHKERRQ(ierr);
         ierr = MatISRestoreLocalMat(pc->pmat,&lA);CHKERRQ(ierr);
-        if (l2l) {
+        if (l2l && corners) {
           const PetscInt *idx;
           PetscInt       bs,*idxout,n;
 
@@ -1730,7 +1730,7 @@ boundary:
           ierr = PCBDDCAddPrimalVerticesLocalIS(pc,corners);CHKERRQ(ierr);
           ierr = ISDestroy(&corners);CHKERRQ(ierr);
           pcbddc->corner_selected = PETSC_TRUE;
-        } else { /* not from DMDA */
+        } else if (corners) { /* not from DMDA */
           ierr = DMDARestoreSubdomainCornersIS(dm,&corners);CHKERRQ(ierr);
         }
       }
