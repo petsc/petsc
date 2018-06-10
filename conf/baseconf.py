@@ -200,42 +200,39 @@ class PetscConfig:
 
     def configure_compiler(self, compiler):
         if compiler.compiler_type != 'unix': return
+        getenv = os.environ.get
         # distutils C/C++ compiler
         (cc, cflags, ccshared, cxx) = get_config_vars(
             'CC', 'CFLAGS',  'CCSHARED', 'CXX')
-        cflags = cflags or ''
+        ccshared = getenv('CCSHARED', ccshared or '')
+        cflags = getenv('CFLAGS', cflags or '')
         cflags = cflags.replace('-Wstrict-prototypes', '')
-        ccshared = ccshared or ''
         # distutils linker
         (ldflags, ldshared, so_ext) = get_config_vars(
             'LDFLAGS', 'LDSHARED', 'SO')
         ld = cc
-        ldflags = ldflags or ''
+        ldshared = getenv('LDSHARED', ldshared)
+        ldflags = getenv('LDFLAGS', cflags + ' ' + (ldflags or ''))
         ldcmd = split_quoted(ld) + split_quoted(ldflags)
         ldshared = [flg for flg in split_quoted(ldshared) if flg not in ldcmd]
         ldshared = str.join(' ', ldshared)
         #
-        getenv = os.environ.get
         def get_flags(cmd):
             try: return ' '.join(split_quoted(cmd)[1:])
             except: return ''
-        # C compiler
+        # PETSc C compiler
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
         PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
         PCC = getenv('PCC', PCC) + ' ' +  getenv('PCCFLAGS', PCC_FLAGS)
-        ccshared = getenv('CCSHARED', ccshared)
-        cflags   = getenv('CFLAGS',   cflags)
         PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
-        # C++ compiler
+        # PETSc C++ compiler
         PCXX = PCC if self.language == 'c++' else self.get('CXX', cxx)
-        # linker
+        # PETSc linker
         PLD = self['PCC_LINKER']
         PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
         PLD_FLAGS = PLD_FLAGS.replace('-fvisibility=hidden', '')
         PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
-        ldshared = getenv('LDSHARED', ldshared)
-        ldflags  = getenv('LDFLAGS',  cflags + ' ' + ldflags)
         PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))
         #
         compiler.set_executables(
