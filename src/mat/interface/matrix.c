@@ -4405,6 +4405,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   Mat            B;
   PetscInt       i;
   DM             dm;
+  void           (*viewf)(void);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4419,6 +4420,9 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
   B    = *M;
+
+  ierr = MatGetOperation(mat,MATOP_VIEW,&viewf);CHKERRQ(ierr);
+  ierr = MatSetOperation(B,MATOP_VIEW,viewf);CHKERRQ(ierr);
 
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
