@@ -76,16 +76,6 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   ierr = KSPGetPC(tao->ksp, &bqnk->pc);CHKERRQ(ierr);
   ierr = PCSetType(bqnk->pc, PCLMVM);CHKERRQ(ierr);
   ierr = PCLMVMSetMatLMVM(bqnk->pc, bqnk->B);CHKERRQ(ierr);
-  if (!bqnk->no_scale && is_spd) {
-    if (!bqnk->Bscale) {
-      ierr = MatCreate(PetscObjectComm((PetscObject)bqnk->B), &bqnk->Bscale);CHKERRQ(ierr);
-      ierr = MatSetType(bqnk->Bscale, MATLMVMDIAGBRDN);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(bqnk->Bscale, "tao_bqnk_scale_");CHKERRQ(ierr);
-      ierr = MatSetFromOptions(bqnk->Bscale);CHKERRQ(ierr);
-      ierr = MatLMVMAllocate(bqnk->Bscale, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-    }
-    ierr = MatLMVMSetJ0(bqnk->B, bqnk->Bscale);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -142,7 +132,6 @@ static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsReal("-tao_bqnk_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bqnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bqnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_bqnk_no_scale","(developer) disable the diagonal Broyden scaling of the BFGS approximation","",bqnk->no_scale,&bqnk->no_scale,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -184,9 +173,6 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   ierr = MatDestroy(&bqnk->B);CHKERRQ(ierr);
-  if (!bqnk->no_scale) {
-    ierr = MatDestroy(&bqnk->Bscale);CHKERRQ(ierr);
-  }
   ierr = PetscFree(bnk->ctx);CHKERRQ(ierr);
   ierr = TaoDestroy_BNK(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -213,7 +199,6 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   
   ierr = PetscNewLog(tao,&bqnk);CHKERRQ(ierr);
   bnk->ctx = (void*)bqnk;
-  bqnk->no_scale = PETSC_FALSE;
   
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1);CHKERRQ(ierr);

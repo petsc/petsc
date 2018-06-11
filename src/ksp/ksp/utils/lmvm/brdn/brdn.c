@@ -100,7 +100,7 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
   Mat_Brdn          *lbrdn = (Mat_Brdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         yty, yts, sjtsi, sjtqi;
+  PetscReal         sjtsi, sjtqi;
   Vec               Ptmp, Qtmp;
 
   PetscFunctionBegin;
@@ -124,14 +124,7 @@ static PetscErrorCode MatUpdate_LMVMBrdn(Mat B, Vec X, Vec F)
       lbrdn->P[lmvm->k] = Ptmp;
       lbrdn->Q[lmvm->k] = Qtmp;
     }
-    /* Accumulate the latest sTs and update default J0 scaling */
-    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lbrdn->sts[lmvm->k]);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lbrdn->sts[lmvm->k]);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    lmvm->J0default = yty/yts;
+    ierr = VecDot(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &lbrdn->sts[lmvm->k]);CHKERRQ(ierr);
     /* Pre-compute (P[i] = (B_i) * S[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
       ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbrdn->P[i]);CHKERRQ(ierr);

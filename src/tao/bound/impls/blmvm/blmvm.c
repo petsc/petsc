@@ -8,7 +8,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   PetscErrorCode               ierr;
   TAO_BLMVM                    *blmP = (TAO_BLMVM *)tao->data;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                    f, fold, gdx, gnorm;
+  PetscReal                    f, fold, gdx, gnorm, gnorm2;
   PetscReal                    stepsize = 1.0,delta;
   PetscInt                     stepType = BLMVM_STEP_GRAD;
 
@@ -16,9 +16,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   /*  Project initial point onto bounds */
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
-  if (tao->bounded) {
-    ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
-  }
+  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient);CHKERRQ(ierr);
@@ -34,14 +32,14 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Set initial scaling for the function */
-  if (blmP->Mscale) {
-    if (f != 0.0) {
-      delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
-    } else {
-      delta = 2.0 / (gnorm*gnorm);
-    }
-    ierr = MatLMVMSetJ0Scale(blmP->Mscale, 1.0/delta);CHKERRQ(ierr);
+  gnorm2 = gnorm*gnorm;
+  if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+  if (f != 0.0) {
+    delta = 2.0*PetscAbsScalar(f) / gnorm2;
+  } else {
+    delta = 2.0 / gnorm2;
   }
+  ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
   ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
 
   /* Set counter for gradient/reset steps */
@@ -61,15 +59,15 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
       /* Step is not descent or solve was not successful
          Use steepest descent direction (scaled) */
       stepType = BLMVM_STEP_GRAD;
-
-      if (blmP->Mscale) {
-        if (f != 0.0) {
-          delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
-        } else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetJ0Scale(blmP->Mscale, 1.0/delta);CHKERRQ(ierr);
+      
+      gnorm2 = gnorm*gnorm;
+      if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+      if (f != 0.0) {
+        delta = 2.0*PetscAbsScalar(f) / gnorm2;
+      } else {
+        delta = 2.0 / gnorm2;
       }
+      ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M,blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -90,15 +88,15 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
       f = fold;
       ierr = VecCopy(blmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient);CHKERRQ(ierr);
-
-      if (blmP->Mscale) {
-        if (f != 0.0) {
-          delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
-        } else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetJ0Scale(blmP->Mscale, 1.0/delta);CHKERRQ(ierr);
+      
+      gnorm2 = gnorm*gnorm;
+      if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+      if (f != 0.0) {
+        delta = 2.0*PetscAbsScalar(f) / gnorm2;
+      } else {
+        delta = 2.0 / gnorm2;
       }
+      ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
       ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -133,7 +131,6 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 static PetscErrorCode TaoSetup_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
-  const char     *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -158,15 +155,6 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (blmP->H0) {
     ierr = MatLMVMSetJ0(blmP->M, blmP->H0);CHKERRQ(ierr);
-  } else if (!blmP->no_scale) {
-    ierr = MatCreate(((PetscObject)tao)->comm, &blmP->Mscale);CHKERRQ(ierr);
-    ierr = MatSetType(blmP->Mscale, MATLMVMDIAGBRDN);CHKERRQ(ierr);
-    ierr = TaoGetOptionsPrefix(tao, &prefix);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(blmP->Mscale, prefix);CHKERRQ(ierr);
-    ierr = MatAppendOptionsPrefix(blmP->Mscale, "tao_blmvm_scale_");CHKERRQ(ierr);
-    ierr = MatSetFromOptions(blmP->Mscale);CHKERRQ(ierr);
-    ierr = MatLMVMAllocate(blmP->Mscale, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
-    ierr = MatLMVMSetJ0(blmP->M, blmP->Mscale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -180,9 +168,6 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
   PetscFunctionBegin;
   if (tao->setupcalled) {
     ierr = MatDestroy(&blmP->M);CHKERRQ(ierr);
-    if (blmP->Mscale) {
-      ierr = MatDestroy(&blmP->Mscale);CHKERRQ(ierr);
-    }
     ierr = VecDestroy(&blmP->unprojected_gradient);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&blmP->Gold);CHKERRQ(ierr);
@@ -201,13 +186,15 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscErrorCode ierr;
+  PetscBool      is_lmvm, is_spd;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_blmvm_no_scale","(developer) disable the diagonal Broyden scaling of the QN approximation","",blmP->no_scale,&blmP->no_scale,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare(blmP->M, MATLMVM, &is_lmvm);CHKERRQ(ierr);
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "matrix must be an LMVM-type");
+  ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be a symmetric positive-definite approximation (DFP, BFGS or SymBrdn)");
   PetscFunctionReturn(0);
 }
 

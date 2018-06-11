@@ -709,7 +709,6 @@ PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
@@ -729,6 +728,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
 PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatSymBrdnSetDelta(Mat, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

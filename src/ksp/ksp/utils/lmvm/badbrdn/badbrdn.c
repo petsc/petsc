@@ -130,8 +130,6 @@ static PetscErrorCode MatUpdate_LMVMBadBrdn(Mat B, Vec X, Vec F)
     ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &lbb->yts[lmvm->k]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &lbb->yty[lmvm->k]);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &lbb->yts[lmvm->k]);CHKERRQ(ierr);
-    /* Update default J0 scaling */
-    lmvm->J0default = lbb->yty[lmvm->k]/lbb->yts[lmvm->k];
     /* Pre-compute (P[i] = (B_i) * S[i]) */
     for (i = 0; i <= lmvm->k; ++i) {
       ierr = MatLMVMApplyJ0Fwd(B, lmvm->S[i], lbb->P[i]);CHKERRQ(ierr);

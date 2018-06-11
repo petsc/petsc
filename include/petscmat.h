@@ -95,7 +95,6 @@ typedef const char* MatType;
 #define MATLMVMBRDN        "lmvmbrdn"
 #define MATLMVMBADBRDN     "lmvmbadbrdn"
 #define MATLMVMSYMBRDN     "lmvmsymbrdn"
-#define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.

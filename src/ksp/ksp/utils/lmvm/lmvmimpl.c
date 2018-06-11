@@ -11,7 +11,6 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
   lmvm->k = -1;
   lmvm->prev_set = PETSC_FALSE;
   lmvm->shift = 0.0;
-  lmvm->J0default = 1.0;
   if (destructive && lmvm->allocated) {
     ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
     B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
@@ -194,7 +193,6 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
       ierr = MatLMVMSetJ0Scale(M, bctx->J0scalar);CHKERRQ(ierr);
     }
   }
-  mctx->J0default = bctx->J0default;
   mctx->nupdates = bctx->nupdates;
   mctx->nrejects = bctx->nrejects;
   mctx->k = bctx->k;
@@ -386,7 +384,6 @@ PetscErrorCode MatCreate_LMVM(Mat B)
   lmvm->ksp_max_it = 20;
   lmvm->ksp_rtol = 0.0;
   lmvm->ksp_atol = 0.0;
-  lmvm->J0default = 1.0;
   
   lmvm->shift = 0.0;
   

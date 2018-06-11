@@ -37,7 +37,7 @@ typedef struct {
   PetscBool user_pc, user_ksp, user_scale;
   PetscReal ksp_rtol, ksp_atol;
   PetscInt ksp_max_it;
-  PetscReal J0scalar, J0default;
+  PetscReal J0scalar;
   Vec J0diag;
   Mat J0;
   PC J0pc;

@@ -5,8 +5,17 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
+  PetscReal      gnorm2, delta;
   
   PetscFunctionBegin;
+  gnorm2 = bnk->gnorm*bnk->gnorm;
+  if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
+  if (bnk->f != 0.0) {
+    delta = 2.0*PetscAbsScalar(bnk->f) / gnorm2;
+  } else {
+    delta = 2.0 / gnorm2;
+  }
+  ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);
   ierr = MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -26,22 +35,6 @@ static PetscErrorCode TaoBQNLSComputeStep(Tao tao, PetscBool shift, KSPConverged
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_BQNLS(Tao tao) 
-{
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = TaoSetUp_BQNK(tao);CHKERRQ(ierr);
-  if (!bqnk->no_scale) {
-    ierr = MatSetOptionsPrefix(bqnk->Bscale, "tao_bqnls_scale_");CHKERRQ(ierr);
-    ierr = MatSetFromOptions(bqnk->Bscale);CHKERRQ(ierr);
-    ierr = MatSetType(bqnk->Bscale, MATLMVMDIAGBRDN);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
@@ -57,7 +50,6 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   ierr = PetscOptionsReal("-tao_bqnls_as_tol", "(developer) initial tolerance used when estimating actively bounded variables", "", bnk->as_tol, &bnk->as_tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_bqnls_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bqnls_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_bqnls_no_scale","(developer) disable the diagonal Broyden scaling of the BFGS approximation","",bqnk->no_scale,&bqnk->no_scale,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -80,7 +72,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQNLS(Tao tao)
   ierr = TaoCreate_BQNK(tao);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, "unused");CHKERRQ(ierr);
   tao->ops->solve = TaoSolve_BNLS;
-  tao->ops->setup = TaoSetUp_BQNLS;
   tao->ops->setfromoptions = TaoSetFromOptions_BQNLS;
   
   bnk = (TAO_BNK*)tao->data;

@@ -12,7 +12,7 @@
  optimization.
 */
 typedef struct {
-  Mat M, Mscale;
+  Mat M;
 
   Vec unprojected_gradient;
   Vec red_grad;

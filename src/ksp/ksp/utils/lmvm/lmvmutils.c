@@ -73,7 +73,6 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
   lmvm->user_pc = PETSC_FALSE;
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
-  lmvm->J0default = 1.0;
   lmvm->J0scalar = 1.0;
   if (lmvm->J0diag) {
     ierr = VecDestroy(&lmvm->J0diag);CHKERRQ(ierr);
@@ -451,7 +450,6 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
     } else {
       /* there's no product, so treat J0 as identity */
       ierr = VecCopy(X, Y);CHKERRQ(ierr);
-      ierr = VecScale(Y, lmvm->J0default);CHKERRQ(ierr);
     }
   } else if (lmvm->user_scale) {
     if (lmvm->J0diag) {
@@ -465,7 +463,6 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
   } else {
     /* There is no J0 representation so just apply an identity matrix */
     ierr = VecCopy(X, Y);CHKERRQ(ierr);
-    ierr = VecScale(Y, lmvm->J0default);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -531,7 +528,6 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
   } else {
     /* There is no J0 representation so just apply an identity matrix */
     ierr = VecCopy(X, Y);CHKERRQ(ierr);
-    ierr = VecScale(Y, 1.0/lmvm->J0default);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

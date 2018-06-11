@@ -677,9 +677,9 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 
   for (i=0; i<n; ++i){
     gpval = gptr[i]; xval = xptr[i];
-    if ((xlptr[i]!=PETSC_NINFINITY) && (gpval>0.0 && xval<=xlptr[i])){
+    if (gpval>0.0 && xval<=xlptr[i]){
       gpval = 0.0;
-    } else if ((xuptr[i]!=PETSC_INFINITY) && (gpval<0.0 && xval>=xuptr[i])){
+    } else if (gpval<0.0 && xval>=xuptr[i]){
       gpval = 0.0;
     }
     gpptr[i] = gpval;

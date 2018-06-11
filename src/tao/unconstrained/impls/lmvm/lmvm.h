@@ -8,7 +8,7 @@
 #include <petsc/private/taoimpl.h>
 
 typedef struct {
-  Mat M, Mscale;
+  Mat M;
 
   Vec X;
   Vec G;
@@ -22,7 +22,7 @@ typedef struct {
   PetscInt grad;
   Mat      H0;
   
-  PetscBool recycle, no_scale;
+  PetscBool recycle;
 } TAO_LMVM;
 
 #endif /* ifndef __TAO_LMVM_H */
