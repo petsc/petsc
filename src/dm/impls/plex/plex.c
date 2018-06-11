@@ -1016,7 +1016,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   } else if (isglvis) {
     ierr = DMPlexView_GLVis(dm, viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex reading", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlex writing", ((PetscObject)viewer)->type_name);
   }
   /* Optionally view the partition */
   ierr = PetscOptionsHasName(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_partition_view", &flg);CHKERRQ(ierr);
