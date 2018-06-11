@@ -38,13 +38,18 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(fd,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions(fd);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(fd,FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(fd,file);CHKERRQ(ierr);
 
   /*
     Load the matrix; then destroy the viewer.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"a_");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) A,"A");CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
@@ -72,6 +77,12 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij
 
    test:
+      suffix: mpiaij_hdf5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type mpiaij -viewer_type hdf5
+
+   test:
       suffix: mpidense
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
@@ -81,6 +92,11 @@ int main(int argc,char **args)
       suffix: seqaij
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij
+
+   test:
+      suffix: seqaij_hdf5
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type seqaij -viewer_type hdf5
 
    test:
       suffix: seqdense
