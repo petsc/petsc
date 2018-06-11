@@ -4276,8 +4276,12 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   PetscMPIInt    size;
   MPI_Comm       comm;
   PetscInt       bs = newMat->rmap->bs;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ2(PetscObjectComm((PetscObject)newMat),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)newMat)->type_name);
+
   /* force binary viewer to load .info file if it has not yet done so */
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
