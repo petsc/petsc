@@ -203,7 +203,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[5] = kappan;
     insums[6] = rnormin;
 
-    ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
       ierr = MPIU_Allreduce(insums,outsums,7,MPI_LONG_DOUBLE,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
@@ -217,7 +217,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       ierr = MPIU_Allreduce(insums,outsums,6,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
     }
 #endif
-    ierr   = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr   = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
     phin   = outsums[0];
     pin    = outsums[1];
     gamman = outsums[2];
@@ -259,9 +259,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its) {
-      ierr  = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr  = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
       ierr  = MPIU_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-      ierr  = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr  = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
       rnorm = PetscSqrtReal(rnorm);
     }
 

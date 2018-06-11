@@ -7,12 +7,12 @@
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
-PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
+PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
 PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
-PetscLogEvent VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
-PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
-PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
+PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load;
+PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
+PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;

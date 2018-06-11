@@ -6828,7 +6828,7 @@ Phase summary info:
    Time and Flop/sec: Max - maximum over all processors
                        Ratio - ratio of maximum to minimum over all processors
    Mess: number of messages sent
-   Avg. len: average message length
+   AvgLen: average message length
    Reduct: number of global reductions
    Global: entire computation
    Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
@@ -6837,8 +6837,8 @@ Phase summary info:
       %R - percent reductions in this phase
    Total Mflop/s: 10^6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flop/sec                           --- Global ---  --- Stage ---   Total
-                            Max    Ratio      Max    Ratio  Mess  Avg len  Reduct %T %F %M %L %R  %T %F %M %L %R Mflop/s
+Phase              Count      Time (sec)       Flop/sec                          --- Global ---  --- Stage ----  Total
+                            Max    Ratio      Max    Ratio  Mess AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 ...
 

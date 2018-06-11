@@ -657,7 +657,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
    See Users-Manual: ch_profiling for details.
 +  -info <optional filename> - Prints verbose information to the screen
 .  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
-.  -log_sync - Log the synchronization in scatters, inner products and norms
+.  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
+        however it slows things down and gives a distorted view of the overall runtime.
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().

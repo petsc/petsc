@@ -262,10 +262,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatCUSPARSECopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatViennaCLCopyTo",MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch1",MAT_CLASSID,&MAT_SetValuesBatchI);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch2",MAT_CLASSID,&MAT_SetValuesBatchII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&MATCOLORING_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&MATCOLORING_Comm);CHKERRQ(ierr);
@@ -274,8 +270,15 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&MATCOLORING_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&MATCOLORING_Weights);CHKERRQ(ierr);
 
+  /* Mark non-collective events */
+  ierr = PetscLogEventSetCollective(MAT_SetValues,      PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(MAT_SetValuesBatch, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(MAT_GetRow,         PETSC_FALSE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
-  ierr = PetscLogEventSetActiveAll(MAT_SetValues,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(MAT_GetValues, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(MAT_GetRow,    PETSC_FALSE);CHKERRQ(ierr);
+
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
@@ -288,6 +291,7 @@ PetscErrorCode  MatInitializePackage(void)
     if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
     if (pkg) {ierr = PetscInfoDeactivateClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
   }
+
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
