@@ -632,9 +632,35 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 #endif
 
 #if defined(PETSC_HAVE_ADIOS)
+#include <adios.h>
+#include <petsc/private/vieweradiosimpl.h>
+#include <petsc/private/viewerimpl.h>
+
 PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
 {
+  PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
+  PetscErrorCode    ierr;
+  const char        *vecname;
+  int64_t           id;
+  PetscInt          n;
+  const PetscScalar *array;
+  size_t            len;
+  char              *nname;
+
   PetscFunctionBegin;
+  ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
+  ierr = PetscStrlen(vecname,&len);CHKERRQ(ierr);
+  ierr = PetscMalloc(len+2,&nname);CHKERRQ(ierr);
+  ierr = PetscStrcpy(nname,vecname);CHKERRQ(ierr);
+  ierr = PetscStrcat(nname,"_n");CHKERRQ(ierr);
+  id   = adios_define_var(Petsc_adios_group,nname,"",adios_integer,"","","");CHKERRQ(ierr);
+  ierr = adios_write_byid(adios->adios_handle,id,&n);CHKERRQ(ierr);
+  id   = adios_define_var(Petsc_adios_group,vecname,"value",adios_integer,nname,"","");CHKERRQ(ierr);
+  ierr = PetscFree(nname);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
+  ierr = adios_write_byid(adios->adios_handle,id,array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

@@ -3,22 +3,11 @@
 
 int64_t Petsc_adios_group;
 
-typedef struct GroupList {
-  const char       *name;
-  struct GroupList *next;
-} GroupList;
-
-typedef struct {
-  char          *filename;
-  PetscFileMode btype;
-  PetscInt      timestep;
-  GroupList     *groups;
-  int64_t       adios_handle;
-} PetscViewer_ADIOS;
+#include <petsc/private/vieweradiosimpl.h>
 
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"ADIOS PetscViewer Options");CHKERRQ(ierr);
@@ -29,9 +18,10 @@ static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOpt
 static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = adios_close(adios->adios_handle);CHKERRQ(ierr);
   ierr = PetscFree(adios->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -39,17 +29,10 @@ static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
 PetscErrorCode PetscViewerDestroy_ADIOS(PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*) viewer->data;
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerFileClose_ADIOS(viewer);CHKERRQ(ierr);
-  while (adios->groups) {
-    GroupList *tmp = adios->groups->next;
-
-    ierr         = PetscFree(adios->groups->name);CHKERRQ(ierr);
-    ierr         = PetscFree(adios->groups);CHKERRQ(ierr);
-    adios->groups = tmp;
-  }
   ierr = PetscFree(adios);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",NULL);CHKERRQ(ierr);
@@ -77,8 +60,8 @@ PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name
   ierr = PetscStrallocpy(name, &adios->filename);CHKERRQ(ierr);
   /* Create or open the file collectively */
   switch (adios->btype) {
-    adios_open(&adios->adios_handle,"PETSc",adios->filename,"r",PetscObjectComm((PetscObject)viewer));
   case FILE_MODE_READ:
+    adios_open(&adios->adios_handle,"PETSc",adios->filename,"r",PetscObjectComm((PetscObject)viewer));
     break;
   case FILE_MODE_APPEND:
     break;
@@ -115,7 +98,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
 {
   PetscViewer_ADIOS *adios;
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(v,&adios);CHKERRQ(ierr);
@@ -127,7 +110,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   adios->btype            = (PetscFileMode) -1;
   adios->filename         = 0;
   adios->timestep         = -1;
-  adios->groups           = NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_ADIOS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_ADIOS);CHKERRQ(ierr);
