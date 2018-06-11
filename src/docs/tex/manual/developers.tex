@@ -2113,7 +2113,7 @@ Note that the exact syntax of all input and output in this section is subject to
 \item Run the full test suite on the development machine, using the branch of PETSc you want to base your changes on (usually \trl{master}).
 \begin{bashlisting}
 git checkout master
-make -f gmakefile.test test
+make -f gmakefile test
 \end{bashlisting}
 Confirm that all of the tests pass.
 \item Create a new branch and make your changes.
@@ -2123,7 +2123,7 @@ git checkout -b myname/my-feature
 \end{bashlisting}
 \item Run the full test suite on your branch \footnote{For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein.}.
 \begin{bashlisting}
-make -f gmakefile.test test
+make -f gmakefile test
 \end{bashlisting}
 \item Examine the output for any failed tests, for example
 \begin{outputlisting}
