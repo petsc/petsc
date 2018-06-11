@@ -154,9 +154,13 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
    The Jacobian is estimated with the differencing approximation
 .vb
        F'(u)_{:,i} = [F(u+h*dx_{i}) - F(u)]/h where
-       h = error_rel*u[i]                 if  abs(u[i]) > umin
-         = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
-       dx_{i} = (0, ... 1, .... 0)
+       htype = 'ds':
+         h = error_rel*u[i]                 if  abs(u[i]) > umin
+           = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
+         dx_{i} = (0, ... 1, .... 0)
+
+       htype = 'wp':
+         h = error_rel * sqrt(1 + ||u||)
 .ve
 
    Input Parameters:
@@ -289,7 +293,8 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
 
    Level: advanced
 
-   Notes: This function is usually used automatically by SNES (when one uses SNESSetJacobian() with the argument
+   Notes:
+    This function is usually used automatically by SNES (when one uses SNESSetJacobian() with the argument
      SNESComputeJacobianDefaultColor()) and only needs to be used by someone computing a matrix via coloring directly by
      calling MatFDColoringApply()
 

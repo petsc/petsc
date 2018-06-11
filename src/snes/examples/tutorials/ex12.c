@@ -729,16 +729,18 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE        fe;
   PetscDS        prob, probAux = NULL, probCh = NULL;
   PetscBool      simplex = user->simplex;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
   if (user->variableCoefficient == COEFF_FIELD) {
     PetscQuadrature q;
 
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
@@ -746,14 +748,14 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   } else if (user->fieldBC) {
     PetscQuadrature q;
 
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
   }
   if (user->check) {
-    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(comm, dim, 1, simplex, "ch_", -1, &feCh);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probCh);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
   }
@@ -1082,14 +1084,15 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
   } else {
     Vec       r;
-    PetscReal res = 0.0;
+    PetscReal res = 0.0, tol = 1.0e-11;
 
     /* Check discretization error */
     ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     if (!user.quiet) {ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
+    if (error < tol) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < %2.1e\n", tol);CHKERRQ(ierr);}
+    else             {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     /* Check residual */
     ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
@@ -1347,6 +1350,13 @@ int main(int argc, char **argv)
     requires: triangle !single
     nsize: 2
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
+
+  # This test uses a loose tolerance to trigger the PtAP operations for MATIS
+  test:
+    suffix: gmg_bddc
+    requires: triangle !single
+    nsize: 3
+    args: -interpolate -run_type full -petscspace_order 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_levels_pc_type jacobi -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2
 
   # Restarting
   testset:

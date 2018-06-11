@@ -36,7 +36,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 {
   PetscErrorCode          ierr;
   PetscBool               isascii, isstring;
-  const TaoLineSearchType type;
+  TaoLineSearchType       type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -418,7 +418,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 
 @*/
 
-PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType type)
+PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*r)(TaoLineSearch);
@@ -532,7 +532,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   Level: developer
 
 @*/
-PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, const TaoLineSearchType *type)
+PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, TaoLineSearchType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -810,7 +810,8 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
   Output Parameter:
 . f - Objective value at X
 
-  Notes: TaoLineSearchComputeObjective() is typically used within line searches
+  Notes:
+    TaoLineSearchComputeObjective() is typically used within line searches
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -863,7 +864,8 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
 + f - Objective value at X
 - g - Gradient vector at X
 
-  Notes: TaoLineSearchComputeObjectiveAndGradient() is typically used within line searches
+  Notes:
+    TaoLineSearchComputeObjectiveAndGradient() is typically used within line searches
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -915,7 +917,8 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
   Output Parameter:
 . g - gradient vector
 
-  Notes: TaoComputeGradient() is typically used within line searches
+  Notes:
+    TaoComputeGradient() is typically used within line searches
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -964,7 +967,8 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
 + f - Objective value at X
 - gts - inner product of gradient and step direction at X
 
-  Notes: TaoLineSearchComputeObjectiveAndGTS() is typically used within line searches
+  Notes:
+    TaoLineSearchComputeObjectiveAndGTS() is typically used within line searches
   so most users would not generally call this routine themselves.
 
   Level: developer
@@ -1283,7 +1287,8 @@ PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch ls, const char p[]
   Output Parameters:
 . prefix - pointer to the prefix string used is returned
 
-  Notes: On the fortran side, the user should pass in a string 'prefix' of
+  Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
   sufficient length to hold the prefix.
 
   Level: advanced

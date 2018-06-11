@@ -770,7 +770,8 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 +  viewer - file to load values from
 -  bag - the bag of values
 
-   Notes: You must have created and registered all the fields in the bag before loading into it.
+   Notes:
+    You must have created and registered all the fields in the bag before loading into it.
 
    Notes:
    Level: beginner

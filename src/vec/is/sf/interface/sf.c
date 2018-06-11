@@ -293,7 +293,8 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 
    Level: intermediate
 
-   Notes: In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
+   Notes:
+    In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
 
    Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not

@@ -526,6 +526,6 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
 
    test:
       suffix: 2
-      args: -viewer_binary_skip_info -Pm 1.1 -ts_adapt_type none -tao_type test -tao_test_gradient -tao_test_display -tao_monitor
+      args: -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason -tao_test_gradient
 
 TEST*/

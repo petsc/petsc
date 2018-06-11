@@ -17,7 +17,8 @@
    Options Database Keys:
 . -mat_type sell - sets the matrix type to "sell" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATSELLCUSP, MATSELLCUSPARSE, MATSELLPERM, MATSELLCRL, and also automatically switches over to use inodes when
+  Developer Notes:
+    Subclasses include MATSELLCUSP, MATSELLCUSPARSE, MATSELLPERM, MATSELLCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner

@@ -722,7 +722,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscMPIInt          size;
       p4est_connectivity_t *conn = NULL;
       DMFTopology_pforest  *topo;
-      PetscInt             *tree_face_to_uniq;
+      PetscInt             *tree_face_to_uniq = NULL;
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
@@ -792,7 +792,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
+        PetscBool  isDepth, isGhost, isVTK, isDim;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -801,6 +801,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(base, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
+        ierr = PetscStrcmp(name,"dim",&isDim);CHKERRQ(ierr);
+        if (isDim) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);

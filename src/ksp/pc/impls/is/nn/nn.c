@@ -22,7 +22,7 @@ static PetscErrorCode PCSetUp_NN(PC pc)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
-    ierr = PCISSetUp(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
     /* Create the coarse matrix. */
     ierr = PCNNCreateCoarseMatrix(pc);CHKERRQ(ierr);
   }
@@ -148,7 +148,8 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Level: intermediate
 
-   Notes: The matrix used with this preconditioner must be of type MATIS
+   Notes:
+    The matrix used with this preconditioner must be of type MATIS
 
           Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
           degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers

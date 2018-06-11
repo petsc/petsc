@@ -4356,7 +4356,8 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 
    Level: advanced
 
-   Notes: This routine returns some internal storage information
+   Notes:
+    This routine returns some internal storage information
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.

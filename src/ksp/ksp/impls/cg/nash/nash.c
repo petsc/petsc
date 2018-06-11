@@ -585,7 +585,8 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(PetscOptionItems *PetscOptionsObj
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
 
-   Notes: This is rarely used directly
+   Notes:
+    This is rarely used directly
 
    Level: developer
 

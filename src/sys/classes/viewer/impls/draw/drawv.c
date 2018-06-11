@@ -444,7 +444,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscFunctionBegin;
   if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
-  if (*sviewer) *sviewer = NULL;
+  if (sviewer) *sviewer = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
@@ -799,7 +799,8 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 
     Level: intermediate
 
-    Notes: this determines the colors used in 2d contour plots generated with VecView() for DMDA in 2d. Any values in the vector below or above the
+    Notes:
+    this determines the colors used in 2d contour plots generated with VecView() for DMDA in 2d. Any values in the vector below or above the
       bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
       this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 

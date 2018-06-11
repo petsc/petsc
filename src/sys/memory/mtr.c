@@ -624,7 +624,8 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
    The calling sequence in Fortran is PetscMallocDump(integer ierr)
    The fp defaults to stdout.
 
-   Notes: uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
+   Notes:
+    uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
           has been freed.
 
    Concepts: memory usage

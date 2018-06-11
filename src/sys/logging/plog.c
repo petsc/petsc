@@ -31,7 +31,8 @@ PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 
    Level: developer
 
-   Developer Notes: Currently we do not always do a good job of associating all memory allocations with an object. 
+   Developer Notes:
+    Currently we do not always do a good job of associating all memory allocations with an object. 
 
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
@@ -117,6 +118,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PetscFunctionBegin;
   ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
   ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
+  ierr = PetscLogNestedEnd();CHKERRQ(ierr);
   ierr = PetscLogSet(NULL, NULL);CHKERRQ(ierr);
 
   /* Resetting phase */
@@ -1429,7 +1431,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
       if (TotalFlops    != 0.0) fracFlops      = flops/TotalFlops;       else fracFlops      = 0.0;
       /* Talk to Barry if (stageTime     != 0.0) flops          = (size*flops)/stageTime; else flops          = 0.0; */
       if (numMessages   != 0.0) fracMessages   = mess/numMessages;       else fracMessages   = 0.0;
-      if (numMessages   != 0.0) avgMessLen     = messLen/numMessages;    else avgMessLen     = 0.0;
+      if (mess          != 0.0) avgMessLen     = messLen/mess;           else avgMessLen     = 0.0;
       if (messageLength != 0.0) fracLength     = messLen/messageLength;  else fracLength     = 0.0;
       if (numReductions != 0.0) fracReductions = red/numReductions;      else fracReductions = 0.0;
       ierr = PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%% \n",
@@ -1666,8 +1668,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscLogView_Nested(PetscViewer);
-
 /*@C
   PetscLogView - Prints a summary of the logging.
 
@@ -1872,7 +1872,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: Only works in C/C++, not Fortran
+   Notes:
+    Only works in C/C++, not Fortran
 
      Flags available within the macro.
 +    PetscPreLoadingUsed - true if we are or have done preloading
@@ -1912,7 +1913,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: only works in C/C++ not fortran
+   Notes:
+    only works in C/C++ not fortran
 
    Level: intermediate
 
@@ -1939,7 +1941,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
-   Notes: only works in C/C++ not fortran
+   Notes:
+    only works in C/C++ not fortran
 
    Level: intermediate
 

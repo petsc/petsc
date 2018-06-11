@@ -1126,6 +1126,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatResetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatReorderForNonzeroDiagonal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2029,8 +2030,6 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array = a->a;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX && m != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = PetscCalloc1(1+A->cmap->n,&col);CHKERRQ(ierr);
 
@@ -3708,7 +3707,7 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 
 .keywords: matrix, aij, compressed row, sparse, sequential
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), SeqAIJ
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), MATSEQAIJ
 @*/
 PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
 {
@@ -3877,7 +3876,8 @@ M*/
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes:
+    Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -3918,6 +3918,7 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /*@C
    MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
@@ -4062,6 +4063,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaij_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaij_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetTypeFromOptions(B);CHKERRQ(ierr);  /* this allows changing the matrix subtype to say MATSEQAIJPERM */
@@ -4575,7 +4577,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 @*/
 PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
 {
-  PetscErrorCode ierr,(*r)(Mat,const MatType,MatReuse,Mat*);
+  PetscErrorCode ierr,(*r)(Mat,MatType,MatReuse,Mat*);
   PetscBool      sametype;
 
   PetscFunctionBegin;

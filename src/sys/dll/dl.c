@@ -220,7 +220,8 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 
    Level: developer
 
-   Notes: Symbol can be of the form
+   Notes:
+    Symbol can be of the form
         [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional
 
         Will attempt to (retrieve and) open the library if it is not yet been opened.
@@ -326,7 +327,8 @@ done:;
 
      Level: developer
 
-     Notes: if library is already in path will not add it.
+     Notes:
+    if library is already in path will not add it.
 
   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
       when the library is opened.
@@ -412,7 +414,8 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
 
      Level: developer
 
-     Notes: If library is already in path will remove old reference.
+     Notes:
+    If library is already in path will remove old reference.
 
 @*/
 PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])

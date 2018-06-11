@@ -530,7 +530,8 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **
 
    Level: developer
 
-   Notes: This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global jacobian
+   Notes:
+    This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global jacobian
    is needed at each linear iteration.
 
 .keywords: SNES, NASM, ASPIN
@@ -569,7 +570,8 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool f
 
    Level: intermediate
 
-   Notes: The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
+   Notes:
+    The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
 
 .keywords: SNES, NASM, damping
 

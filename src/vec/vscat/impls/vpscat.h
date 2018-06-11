@@ -119,9 +119,15 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.is_copy && addv == INSERT_VALUES) {
-      if (yv != xv || from->local.copy_start !=  to->local.copy_start) {
-        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+    if (to->local.made_of_copies && addv == INSERT_VALUES) {
+      /* do copy when it is not a self-to-self copy */
+      if (!(yv == xv && to->local.same_copy_starts)) {
+        for (i=0; i<to->local.n_copies; i++) {
+          /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
+             so I just leave it and let PetscMemcpy detect this bug.
+           */
+          ierr = PetscMemcpy(yv + from->local.copy_starts[i],xv + to->local.copy_starts[i],to->local.copy_lengths[i]);CHKERRQ(ierr);
+        }
       }
     } else {
       if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
@@ -296,9 +302,15 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI3Node)(VecScatter ctx,Vec xin,Vec yin
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.is_copy && addv == INSERT_VALUES) {
-      if (yv != xv || from->local.copy_start !=  to->local.copy_start) {
-        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+    if (to->local.made_of_copies && addv == INSERT_VALUES) {
+      /* do copy when it is not a self-to-self copy */
+      if (!(yv == xv && to->local.same_copy_starts)) {
+        for (i=0; i<to->local.n_copies; i++) {
+          /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
+             so I just leave it and let PetscMemcpy detect this bug.
+           */
+          ierr = PetscMemcpy(yv + from->local.copy_starts[i],xv + to->local.copy_starts[i],to->local.copy_lengths[i]);CHKERRQ(ierr);
+        }
       }
     } else {
       if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
@@ -395,7 +407,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
       PetscInt notdone = to->notdone;
       vnode = (Vec_Node*)yin->data;
       if (!vnode->win) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"vector y must have type VECNODE with shared memory");
-      if (ctx->is_duplicate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Duplicate index %D is not supported");
+      if (ctx->is_duplicate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Duplicate index is not supported");
       ierr  = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
 
       i = 0;
@@ -412,10 +424,9 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               if (PetscRealPart(sharedspace[-1] - yv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,yv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%d] statecnt %g > [%d] my_statecnt %g",i,PetscRealPart(sharedspace[-1]),msrank,PetscRealPart(yv[-1]));
               }
               /* i-the core has not reached the current object statecnt yet, wait ... */
-              /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],yv[-1]); */
               continue;
             }
 
@@ -456,10 +467,9 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
               if (PetscRealPart(sharedspace[-1] - xv[-1]) > 0.0) {
                 PetscMPIInt msrank;
                 ierr = MPI_Comm_rank(mscomm,&msrank);CHKERRQ(ierr);
-                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%D] statecnt %g > [%D] my_statecnt %g",i,sharedspace[-1],msrank,xv[-1]);
+                SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"[%d] statecnt %g > [%d] my_statecnt %g",i,PetscRealPart(sharedspace[-1]),msrank,PetscRealPart(xv[-1]));
               }
               /* i-the core has not reached the current object state cnt yet, wait ... */
-              /* printf("%D-core statecnt %g < my_statecnt %g\n",i,sharedspace[-1],xv[-1]); */
               continue;
             }
 

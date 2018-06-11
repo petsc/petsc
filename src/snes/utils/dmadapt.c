@@ -327,7 +327,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   ierr = DMIsForest(adaptor->idm, &isForest);CHKERRQ(ierr);
   if (adaptor->adaptCriterion == DM_ADAPTATION_NONE) {
     if (isForest) {adaptor->adaptCriterion = DM_ADAPTATION_LABEL;}
-#ifdef PETSC_HAVE_PRAGMATIC
+#if defined(PETSC_HAVE_PRAGMATIC)
     else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
 #else
     else          {adaptor->adaptCriterion = DM_ADAPTATION_REFINE;}
@@ -801,9 +801,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscQuadratureGetOrder(q, &qorder);CHKERRQ(ierr);
         ierr = PetscObjectGetOptionsPrefix((PetscObject) fe, &prefix);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmGrad, dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmGrad), dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probGrad, f, (PetscObject) feGrad);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmHess, dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmHess), dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probHess, f, (PetscObject) feHess);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feGrad);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feHess);CHKERRQ(ierr);

@@ -1,0 +1,3 @@
+VecScatter(bs=1) has sent out 80 messages, total 1280 bytes, with average length 16 bytes
+VecScatter(bs=4) has sent out 80 messages, total 5120 bytes, with average length 64 bytes
+Program finished

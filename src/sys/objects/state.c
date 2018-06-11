@@ -18,7 +18,8 @@
    Output Parameter:
 .  state - the object state
 
-   Notes: object state is an integer which gets increased every time
+   Notes:
+    object state is an integer which gets increased every time
    the object is changed. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
@@ -51,7 +52,8 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
          PetscObjectStateSet((PetscObject)mat,state);
 -  state - the object state
 
-   Notes: This function should be used with extreme caution. There is
+   Notes:
+    This function should be used with extreme caution. There is
    essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
    which increases the state, but does not alter the data, then this
    routine can be used to reset the state.  Such a reset must be collective.
@@ -83,7 +85,8 @@ PetscInt PetscObjectComposedDataMax = 10;
 
    Level: developer
 
-   Notes: You must keep this value (for example in a global variable) in order to attach the data to an object or 
+   Notes:
+    You must keep this value (for example in a global variable) in order to attach the data to an object or 
           access in an object.
 
    seealso: PetscObjectComposedDataSetInt()

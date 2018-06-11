@@ -192,7 +192,7 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(ts,time_total_max);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   /* Set lower and upper bound on the solution vector for each time step */
-  ierr = TSVISetVariableBounds(ts,xl,xu);
+  ierr = TSVISetVariableBounds(ts,xl,xu);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,7 +308,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *appctx)
 {
   PetscErrorCode    ierr;
-  const PetscScalar *l,*u;
+  PetscScalar       *l,*u;
   PetscMPIInt       rank,size;
   PetscInt          localsize;
 
@@ -316,8 +316,8 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
   ierr = VecSet(xl,ul);CHKERRQ(ierr);
   ierr = VecSet(xu,uh);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xl,&localsize);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xl,&l);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xu,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
@@ -329,8 +329,8 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
     l[localsize-1] = -PETSC_INFINITY;
     u[localsize-1] = PETSC_INFINITY;
   }
-  ierr = VecRestoreArrayRead(xl,&l);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xu,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -686,7 +686,10 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
   return 0;
 }
 
+/*TEST
 
+    test:
+      args: -snes_type vinewtonrsls -ts_type glee -mymonitor -ts_max_steps 10 -nox
+      requires: !single
 
-
-
+TEST*/

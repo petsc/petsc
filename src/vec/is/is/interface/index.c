@@ -384,7 +384,8 @@ PetscErrorCode  ISDestroy(IS *is)
 
    Level: intermediate
 
-   Notes: For parallel index sets this does the complete parallel permutation, but the
+   Notes:
+    For parallel index sets this does the complete parallel permutation, but the
     code is not efficient for huge index sets (10,000,000 indices).
 
    Concepts: inverse permutation
@@ -535,7 +536,8 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 
    Level: intermediate
 
-   Notes: Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
+   Notes:
+    Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
 
    Concepts: index sets^getting indices
    Concepts: indices of index set
@@ -691,7 +693,8 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
 
    Level: intermediate
 
-   Notes: this is potentially nonscalable, but depends on the size of the total index set
+   Notes:
+    this is potentially nonscalable, but depends on the size of the total index set
      and the size of the communicator. This may be feasible for index sets defined on
      subcommunicators, such that the set size does not grow with PETSC_WORLD_COMM.
      Note also that there is no way to tell where the local part of the indices starts
@@ -769,7 +772,8 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-   Notes: restore the indices using ISRestoreNonlocalIndices().
+   Notes:
+    restore the indices using ISRestoreNonlocalIndices().
           The same scalability considerations as those for ISGetTotalIndices
           apply here.
 
@@ -841,7 +845,8 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 
    Level: intermediate
 
-   Notes: complement represents the result of ISGetNonlocalIndices as an IS.
+   Notes:
+    complement represents the result of ISGetNonlocalIndices as an IS.
           Therefore scalability issues similar to ISGetNonlocalIndices apply.
           The resulting IS must be restored using ISRestoreNonlocalIS().
 
@@ -1059,7 +1064,8 @@ PetscErrorCode  ISToGeneral(IS is)
 .  flg - output flag, either PETSC_TRUE if the index set is sorted,
          or PETSC_FALSE otherwise.
 
-   Notes: For parallel IS objects this only indicates if the local part of the IS
+   Notes:
+    For parallel IS objects this only indicates if the local part of the IS
           is sorted. So some processors may return PETSC_TRUE while others may
           return PETSC_FALSE.
 

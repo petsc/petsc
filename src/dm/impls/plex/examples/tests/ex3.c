@@ -54,18 +54,16 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 /* u = x */
 PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = coords[d];
+  for (d = 0; d < dim; ++d) u[d] = coords[d];
   return 0;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d, e;
-  for (d = 0; d < user->dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     u[d] = 0.0;
-    for (e = 0; e < user->dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+    for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
   return 0;
 }
@@ -756,6 +754,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
   ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-projection_view");CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
   ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
   ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
@@ -973,7 +972,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
   if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
@@ -1132,13 +1131,13 @@ int main(int argc, char **argv)
     args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
 
   # 2D Q_2 on a quadrilaterial
   test:
@@ -1184,6 +1183,24 @@ int main(int argc, char **argv)
     suffix: p3_2d_6
     requires: triangle pragmatic
     args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+
+  # 2D Q_3 on a quadrilaterial
+  test:
+    suffix: q3_2d_0
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -convergence
+  test:
+    suffix: q3_2d_1
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 1
+  test:
+    suffix: q3_2d_2
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 2
+  test:
+    suffix: q3_2d_3
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
   test:
@@ -1329,13 +1346,13 @@ TEST*/
     args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6

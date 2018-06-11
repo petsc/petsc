@@ -1,5 +1,4 @@
-static char help[] =
-  "Example of extracting an array of MPI submatrices from a given MPI matrix.\n"
+static char help[] = "Example of extracting an array of MPI submatrices from a given MPI matrix.\n"
   "This test can only be run in parallel.\n"
   "\n";
 

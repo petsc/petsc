@@ -138,7 +138,8 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
     Level: advanced
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: matrix, shell, get, context
@@ -338,9 +339,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscFunctionBegin;
   if (shell->ops->getdiagonal) {
     ierr = (*shell->ops->getdiagonal)(A,v);CHKERRQ(ierr);
-  } else {
-    ierr = VecSet(v,0.0);CHKERRQ(ierr);
-  }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Must provide shell matrix with routine to return diagonal using\nMatShellSetOperation(S,MATOP_GET_DIAGONAL,...)");
   ierr = VecScale(v,shell->vscale);CHKERRQ(ierr);
   if (shell->dshift) {
     ierr = VecAXPY(v,1.0,shell->dshift);CHKERRQ(ierr);
@@ -504,7 +503,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                 /*15*/ 0,
                                        0,
-                                       MatGetDiagonal_Shell,
+                                       0,
                                        MatDiagonalScale_Shell,
                                        0,
                                 /*20*/ 0,
@@ -695,7 +694,8 @@ $    MatDestroy(mat);
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
-   Fortran Notes: To use this from Fortran with a ctx you must write an interface definition for this
+   Fortran Notes:
+    To use this from Fortran with a ctx you must write an interface definition for this
     function and for MatShellGetContext() that tells Fortran the Fortran derived data type you are passing
     in as the ctx argument.
 
@@ -732,7 +732,8 @@ $
 
     For rectangular matrices do all the scalings and shifts make sense?
 
-    Developers Notes: Regarding shifting and scaling. The general form is
+    Developers Notes:
+    Regarding shifting and scaling. The general form is
 
           diag(left)(vscale*A + diag(dshift) + vshift I)diag(right)
 
@@ -770,7 +771,8 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
    Level: advanced
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
@@ -842,7 +844,8 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 
    Level: advanced
 
-   Fortran Notes: Not supported from Fortran
+   Fortran Notes:
+    Not supported from Fortran
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose()
 @*/
@@ -907,7 +910,8 @@ PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec 
 
    Level: advanced
 
-   Fortran Notes: Not supported from Fortran
+   Fortran Notes:
+    Not supported from Fortran
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMult()
 @*/
@@ -996,7 +1000,8 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().
 
-    Fortran Notes: For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
+    Fortran Notes:
+    For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
        generate a matrix. See src/mat/examples/tests/ex120f.F
 
     Use MatSetOperation() to set an operation for any matrix type

@@ -84,7 +84,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObj
 .  min - lower end of interval
 -  max - upper end of interval
 
-   Notes: Values outside the interval [min,max] are clipped.
+   Notes:
+    Values outside the interval [min,max] are clipped.
 
    Level: intermediate
 

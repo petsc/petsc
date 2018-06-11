@@ -25,6 +25,7 @@ struct _DMOps {
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
+  PetscErrorCode (*createcoordinatefield)(DM,DMField*);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, Mat*);
@@ -212,6 +213,7 @@ struct _p_DM {
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
   PetscBool               periodic;             /* Is the DM periodic? */
+  DMField                 coordinateField;      /* Coordinates as an abstract field */
   PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   DMBoundaryType         *bdtype;               /* Indicates type of topological boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
@@ -228,7 +230,14 @@ struct _p_DM {
   PetscObject             dmksp,dmsnes,dmts;
 };
 
-PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
+PETSC_EXTERN PetscLogEvent DM_Convert;
+PETSC_EXTERN PetscLogEvent DM_GlobalToLocal;
+PETSC_EXTERN PetscLogEvent DM_LocalToGlobal;
+PETSC_EXTERN PetscLogEvent DM_LocatePoints;
+PETSC_EXTERN PetscLogEvent DM_Coarsen;
+PETSC_EXTERN PetscLogEvent DM_Refine;
+PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
+PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

@@ -327,7 +327,10 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
 
-  ((Mat_SeqSBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
+  if (Bbaij->nonew >= 0) { /* Inherit insertion error options (if positive). */
+    ((Mat_SeqSBAIJ*)Bnew->data)->nonew = Bbaij->nonew;
+  }
+
   /*
    Ensure that B's nonzerostate is monotonically increasing.
    Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?

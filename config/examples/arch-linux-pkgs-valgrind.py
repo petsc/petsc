@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-make-test-np=1',
   '--download-mpich=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',

@@ -1,4 +1,4 @@
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 /* string helpers */
 PetscErrorCode DMSwarmDataFieldStringInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscBool *val)
@@ -357,7 +357,7 @@ PetscErrorCode DMSwarmDataFieldAccessPoint(const DMSwarmDataField gfield,const P
 {
   PetscFunctionBegin;
   *ctx_p = NULL;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* debug mode */
   /* check point is valid */
   if (pid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
@@ -371,7 +371,7 @@ PetscErrorCode DMSwarmDataFieldAccessPoint(const DMSwarmDataField gfield,const P
 PetscErrorCode DMSwarmDataFieldAccessPointOffset(const DMSwarmDataField gfield,const size_t offset,const PetscInt pid,void **ctx_p)
 {
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* debug mode */
   /* check point is valid */
   /* if( offset < 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"offset must be >= 0");*/
@@ -397,7 +397,7 @@ PetscErrorCode DMSwarmDataFieldRestoreAccess(DMSwarmDataField gfield)
 PetscErrorCode DMSwarmDataFieldVerifyAccess(const DMSwarmDataField gfield,const size_t size)
 {
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   if (gfield->atomic_size != size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.",gfield->name, gfield->atomic_size, size );
 #endif
   PetscFunctionReturn(0);
@@ -477,7 +477,7 @@ PetscErrorCode DMSwarmDataFieldInsertPoint(const DMSwarmDataField field,const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* check point is valid */
   if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
   if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);
@@ -494,7 +494,7 @@ PetscErrorCode DMSwarmDataBucketRemovePointAtIndex(const DMSwarmDataBucket db,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* check point is valid */
   if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
   if (index >= db->allocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->L+db->buffer);
@@ -526,7 +526,7 @@ PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataF
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* check point is valid */
   if (pid_x < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be >= 0");
   if (pid_x >= field_x->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"(IN) index must be < %D",field_x->L);
@@ -545,7 +545,7 @@ PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField field,const Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+#if defined(DMSWARM_DATAFIELD_POINT_ACCESS_GUARD)
   /* check point is valid */
   if (index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be >= 0");
   if (index >= field->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",field->L);

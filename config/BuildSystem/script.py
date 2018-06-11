@@ -68,7 +68,7 @@ class Script(logger.Logger):
 
     if not self.showHelp:
       return 0
-    if nargs.Arg.findArgument('with-packages-dir', self.clArgs) is None:
+    if nargs.Arg.findArgument('with-packages-download-dir', self.clArgs) is None:
       return 0
     return 1
 
@@ -91,9 +91,9 @@ class Script(logger.Logger):
     '''This method should be overidden to provide help for arguments'''
     import nargs
 
-    help.addArgument('Script', '-help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
-    help.addArgument('Script', '-with-packages-dir', nargs.ArgDir(None,None, 'Directory to store downloaded external package tarballs', isTemporary = 1), ignoreDuplicates = 1)
     help.addArgument('Script', '-h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
+    help.addArgument('Script', '-help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
+    help.addArgument('Script', '-with-packages-download-dir=<dir>', nargs.ArgDir(None,None, 'Skip network download of package tarballs and locate them in specified dir. If not found in dir, print package URL - so it can be obtained manually.', isTemporary = 1), ignoreDuplicates = 1)
     return help
 
   def setup(self):

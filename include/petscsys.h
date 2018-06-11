@@ -124,7 +124,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
-#include <mpi.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#  include <petsc/mpiuni/mpi.h>
+#else
+#  include <mpi.h>
+#endif
 
 /*
    Perform various sanity checks that the correct mpi.h is being included at compile time.
@@ -1196,7 +1200,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc2()
+   Notes:
+    Memory must have been obtained with PetscMalloc2()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree()
 
@@ -1221,7 +1226,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc3()
+   Notes:
+    Memory must have been obtained with PetscMalloc3()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3()
 
@@ -1247,7 +1253,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc4()
+   Notes:
+    Memory must have been obtained with PetscMalloc4()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4()
 
@@ -1274,7 +1281,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc5()
+   Notes:
+    Memory must have been obtained with PetscMalloc5()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5()
 
@@ -1303,7 +1311,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc6()
+   Notes:
+    Memory must have been obtained with PetscMalloc6()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6()
 
@@ -1333,7 +1342,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc7()
+   Notes:
+    Memory must have been obtained with PetscMalloc7()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(),
           PetscMalloc7()
@@ -1830,10 +1840,14 @@ PETSC_EXTERN PetscErrorCode PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscPrintf(MPI_Comm,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintf(char*,size_t,const char [],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
+PETSC_EXTERN PetscErrorCode PetscFormatRealArray(char[],size_t,const char*,PetscInt,const PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+
+PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char*,size_t*);
+PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char*,char *);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
@@ -2159,7 +2173,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
+.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PetscRealPart(), PetscImaginaryPart()
 M*/
 
 /*MC
@@ -2932,6 +2946,10 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrint
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted*);
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted,const char*,const char*,PetscBool*);
 
+#include <stdarg.h>
+PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
+PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list);
+
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
 /*@C
@@ -3029,6 +3047,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 /*
     Returned from PETSc functions that are called from MPI, such as related to attributes
 */
-PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
 
 #endif

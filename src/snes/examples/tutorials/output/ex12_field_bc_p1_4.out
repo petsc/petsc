@@ -25,7 +25,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 L_2 Residual: 0.
 Jacobian:
@@ -43,6 +43,6 @@ Vec Object: 1 MPI processes
 0.
 0.
 Au - b = Au + F(0)
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 Linear L_2 Residual: 0.

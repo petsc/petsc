@@ -84,7 +84,6 @@ class Configure(config.base.Configure):
     self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
@@ -144,7 +143,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes','immintrin','zmmintrin'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
@@ -270,6 +269,9 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      cxx_linker = self.setCompilers.getLinker()
+      self.addMakeMacro('CXX_LINKER',cxx_linker)
+      self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
 
     # C preprocessor values

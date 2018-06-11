@@ -396,7 +396,8 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 
    Level: beginner
 
-   Notes: See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
+   Notes:
+    See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
 
 .keywords: Partitioning, create, context
 

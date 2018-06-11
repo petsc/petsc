@@ -1000,7 +1000,8 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
     Level: beginner
 
-    Notes: You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+    Notes:
+    You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
 
 .keywords: TS, timestep, set, right-hand-side, function
 
@@ -1556,7 +1557,8 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 . jac - The function to compute the Jacobian matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
-  Notes: You can pass in NULL for any return argument you do not need.
+  Notes:
+    You can pass in NULL for any return argument you do not need.
 
   Level: advanced
 
@@ -2025,7 +2027,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 +  ts - the TS context obtained from TSCreate()
 -  usrP - optional user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
@@ -2054,7 +2057,8 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
     Output Parameter:
 .   usrP - user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
     Level: intermediate
@@ -3352,7 +3356,8 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
    This routine adds an additional monitor to the list of monitors that
    already has been loaded.
 
-   Fortran notes: Only a single monitor function can be set for each TS object
+   Fortran Notes:
+    Only a single monitor function can be set for each TS object
 
    Level: intermediate
 
@@ -4099,7 +4104,8 @@ PetscErrorCode  TSAppendOptionsPrefix(TS ts,const char prefix[])
    Output Parameter:
 .  prefix - A pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prifix' of
    sufficient length to hold the prefix.
 
    Level: intermediate
@@ -4133,7 +4139,8 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 .  func - Function to compute the Jacobian of the RHS  (or NULL)
 -  ctx - User-defined context for Jacobian evaluation routine  (or NULL)
 
-   Notes: You can pass in NULL for any return argument you do not need.
+   Notes:
+    You can pass in NULL for any return argument you do not need.
 
    Level: intermediate
 
@@ -4172,7 +4179,8 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 .  f   - The function to compute the matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
-   Notes: You can pass in NULL for any return argument you do not need.
+   Notes:
+    You can pass in NULL for any return argument you do not need.
 
    Level: advanced
 
@@ -4212,7 +4220,8 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **c
    Options Database:
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
 
-   Notes: the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   Notes:
+    the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
        will look bad
 
    Level: intermediate
@@ -6394,7 +6403,8 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
    Level: intermediate
 
-   Notes: Each process in a parallel run displays its component solutions in a separate window
+   Notes:
+    Each process in a parallel run displays its component solutions in a separate window
 
 .keywords: TS,  vector, monitor, view
 
@@ -6502,7 +6512,8 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
    Level: intermediate
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
 .keywords: TS,  vector, monitor, view
 
@@ -6561,7 +6572,8 @@ PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * c
 
    Level: intermediate
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
 .keywords: TS,  vector, monitor, view
 
@@ -6637,7 +6649,8 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 +  ts - the TS context
 .  displaynames - the names of the components, final string must be NULL
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -6671,7 +6684,8 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 .  destroy - function to destroy the optional context
 -  ctx - optional context used by transform function
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -6734,7 +6748,8 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
    Level: intermediate
 
-   Notes: Each process in a parallel run displays its component errors in a separate window
+   Notes:
+    Each process in a parallel run displays its component errors in a separate window
 
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
@@ -6963,7 +6978,8 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 
    Level: intermediate
 
-   Notes: after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
+   Notes:
+    after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
 
 .keywords: TS,  vector, monitor, view
 
@@ -6999,7 +7015,8 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
 +  max - the maximum values
 -  min - the minimum values
 
-   Notes: If the TS does not have a TSMonitorEnvelopeCtx associated with it then this function is ignored
+   Notes:
+    If the TS does not have a TSMonitorEnvelopeCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -7396,7 +7413,8 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void* ctx,Vec x,Vec y
 
    Level: advanced
 
-   Notes: This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+   Notes:
+    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose(), TSRHSJacobianTestTranspose()
 @*/
@@ -7428,7 +7446,8 @@ PetscErrorCode  TSRHSJacobianTest(TS ts,PetscBool *flg)
    Options Database:
 .   -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - run the test at each timestep of the integrator
 
-   Notes: This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+   Notes:
+    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
 
    Level: advanced
 

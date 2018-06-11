@@ -937,7 +937,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   pEnd += user->numSplitFaces;
   ierr  = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
   ierr  = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr  = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr  = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
@@ -1018,6 +1017,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
+  ierr = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -1038,11 +1038,13 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for (l = 0; l < numLabels; ++l) {
     const char *lname;
-    PetscBool  isDepth;
+    PetscBool  isDepth, isDim;
 
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = PetscStrcmp(lname, "dim", &isDim);CHKERRQ(ierr);
+    if (isDim) continue;
     ierr = DMCreateLabel(sdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
@@ -1430,6 +1432,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
         p = buffer;
       }
       ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]);CHKERRQ(ierr);
+      countused--;
       countused += p - buffer;
       if (countused > ftablealloc-ftableused-1) { /* reallocate */
         char *ftablenew;

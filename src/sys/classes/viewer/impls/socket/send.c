@@ -86,7 +86,8 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
     Output Paramater:
 .    t - the socket number
 
-    Notes: Use close() to close the socket connection
+    Notes:
+    Use close() to close the socket connection
 
     Use read() or PetscHTTPRequest() to read from the socket
 
@@ -287,7 +288,8 @@ $    -viewer_socket_port <port>
      Currently the only socket client available is MATLAB. See
      src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
 
-   Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
+   Notes:
+    The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
           use PetscViewerBinaryRead(), PetscViewerBinaryWrite(), PetscViewerBinarWriteStringArray(), PetscViewerBinaryGetDescriptor().
 
      Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for writing output to a

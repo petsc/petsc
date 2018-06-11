@@ -166,7 +166,8 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
 /*
     PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
 
-    Notes: this isn't really practical, it is just to demonstrate the principle
+    Notes:
+    this isn't really practical, it is just to demonstrate the principle
 
     A carriage return indicates no change from the default; but this like -ksp_monitor <stdout>  the default is actually not stdout the default
     is to do nothing so to get it to use stdout you need to type stdout. This is kind of bug?
@@ -176,7 +177,8 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
 .    Internal strings have arbitrary length and string copies are not checked that they fit into string space
 -    Only works for PetscInt == int, PetscReal == double etc
 
-    Developer Notes: Normally the GUI that presents the options the user and retrieves the values would be running in a different
+    Developer Notes:
+    Normally the GUI that presents the options the user and retrieves the values would be running in a different
      address space and communicating with the PETSc program
 
 */
@@ -660,7 +662,8 @@ $                 if (flg) {
 
    Concepts: options database
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           list is usually something like PCASMTypes or some other predefined list of enum names
 
@@ -783,7 +786,8 @@ $                 if (flg) {
 +  value - the integer value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
-   Notes: If the user does not supply the option at all value is NOT changed. Thus
+   Notes:
+    If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
           The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
@@ -792,7 +796,8 @@ $                 if (flg) {
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -846,7 +851,8 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Even if the user provided no string (for example -optionname -someotheroption) the flag is set to PETSC_TRUE (and the string is fulled with nulls).
 
@@ -901,7 +907,8 @@ $                 if (flg) {
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
-   Notes:  If the user does not supply the option at all value is NOT changed. Thus
+   Notes:
+    If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
           The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
@@ -910,7 +917,8 @@ $                 if (flg) {
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -959,7 +967,8 @@ $                 if (flg) {
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
-   Notes: If the user does not supply the option at all value is NOT changed. Thus
+   Notes:
+    If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
           The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
@@ -968,7 +977,8 @@ $                 if (flg) {
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1009,7 +1019,8 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject,
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1059,7 +1070,8 @@ $                 if (flg) {
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
@@ -1123,7 +1135,8 @@ $                 if (flg) {
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
          If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
@@ -1180,7 +1193,8 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must be followed by 0 or more PetscOptionsBoolGroup()s and PetscOptionsBoolGroupEnd()
 
@@ -1230,7 +1244,8 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOption
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must follow a PetscOptionsBoolGroupBegin() and preceded a PetscOptionsBoolGroupEnd()
 
@@ -1279,7 +1294,8 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObje
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Must follow a PetscOptionsBoolGroupBegin()
 
@@ -1341,7 +1357,8 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
 
    Concepts: options database^logical
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1697,7 +1714,8 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 
    Concepts: options database^has int
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    See PetscOptionsGetViewer() for the format of the supplied viewer and its options
 
@@ -1740,7 +1758,8 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
 
    Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:
+    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
           Can be followed by a call to PetscOptionsTail() in the same function.
 

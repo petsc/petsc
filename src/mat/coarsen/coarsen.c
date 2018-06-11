@@ -87,7 +87,8 @@ $    -mat_coarsen_view
 
    Level: advanced
 
-   Notes: Use MatCoarsenGetData() to access the results of the coarsening
+   Notes:
+    Use MatCoarsenGetData() to access the results of the coarsening
 
    The user can define additional coarsens; see MatCoarsenRegister().
 

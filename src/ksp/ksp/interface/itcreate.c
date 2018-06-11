@@ -533,7 +533,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 
     Level: intermediate
 
-   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
+   Notes:
+    DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
@@ -750,6 +751,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -767,6 +769,8 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   }
   /* Reinitialize function pointers in KSPOps structure */
   ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
   ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);

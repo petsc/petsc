@@ -548,7 +548,8 @@ $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
 
-   Notes: If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
+   Notes:
+    If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
    no installed partitioners it uses current which means no repartioning.
 
    Level: beginner

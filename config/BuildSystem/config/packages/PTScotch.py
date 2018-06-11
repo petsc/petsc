@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit       = '6.0.4-p1'
+    self.gitcommit       = '6.0.4-p2'
     self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch']
@@ -69,9 +69,10 @@ class Configure(config.package.Package):
       self.cflags = self.cflags + ' -DINTSIZE64'
     else:
       self.cflags = self.cflags + ' -DINTSIZE32'
-    self.setCompilers.popLanguage()
 
     g.write('CFLAGS	= '+self.cflags+'\n')
+    if self.argDB['with-batch']:
+      g.write('CCDFLAGS = '+self.checkNoOptFlag()+'\n')
     g.write('LDFLAGS	= '+ldflags+'\n')
     g.write('CP         = '+self.programs.cp+'\n')
     g.write('LEX	= '+self.programs.flex+'\n')
@@ -81,6 +82,8 @@ class Configure(config.package.Package):
     g.write('RANLIB	= '+self.setCompilers.RANLIB+'\n')
     g.write('YACC	= '+self.programs.bison+' -y\n')
     g.close()
+
+    self.setCompilers.popLanguage()
 
     if self.installNeeded(os.path.join('src','Makefile.inc')):
       try:

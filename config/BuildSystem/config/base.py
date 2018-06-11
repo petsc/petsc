@@ -61,6 +61,7 @@ import script
 
 import os
 import time
+import contextlib
 
 class ConfigureSetupError(Exception):
   pass
@@ -255,7 +256,7 @@ class Configure(script.Script):
             break
         if found: break
     if not found:
-      dirs = self.argDB['search-dirs']
+      dirs = self.argDB['with-executables-search-path']
       if not isinstance(dirs, list): dirs = [dirs]
       for d in dirs:
         for name in names:
@@ -298,6 +299,15 @@ class Configure(script.Script):
     self.language.pop()
     return self.language[-1]
 
+  @contextlib.contextmanager
+  def Language(self, lang):
+    if lang is None:
+      yield
+    else:
+      self.pushLanguage(lang)
+      yield
+      self.popLanguage()
+
   def getHeaders(self):
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
     self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
@@ -309,13 +319,14 @@ class Configure(script.Script):
     preprocessor.checkSetup()
     return preprocessor.getProcessor()
 
-  def getCompiler(self):
-    self.getHeaders()
-    compiler            = self.framework.getCompilerObject(self.language[-1])
-    compiler.checkSetup()
-    self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
-    self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
-    return compiler.getProcessor()
+  def getCompiler(self, lang=None):
+    with self.Language(lang):
+      self.getHeaders()
+      compiler            = self.framework.getCompilerObject(self.language[-1])
+      compiler.checkSetup()
+      self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
+      self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
+      return compiler.getProcessor()
 
   def getCompilerFlags(self):
     return self.framework.getCompilerObject(self.language[-1]).getFlags()

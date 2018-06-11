@@ -217,7 +217,8 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 -   -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the
         diagonal.
 
-   Notes: Not all options work for all matrix formats
+   Notes:
+    Not all options work for all matrix formats
           Run with -help to see additional options for particular matrix formats or factorization
           algorithms
 
@@ -225,7 +226,8 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
    Concepts: LU factorization, direct solver
 
-   Notes: Usually this will compute an "exact" solution in one iteration and does
+   Notes:
+    Usually this will compute an "exact" solution in one iteration and does
           not need a Krylov method (i.e. you can use -ksp_type preonly, or
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 

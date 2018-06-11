@@ -170,10 +170,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     if (it < l) {
       /* SpMV and Prec */
       ierr = MatMult(A,Z[l-it],u);CHKERRQ(ierr);
+      ierr = VecAXPY(u,-sigma(it),up);CHKERRQ(ierr);
       ierr = KSP_PCApply(ksp,u,Z[l-it-1]);CHKERRQ(ierr);
       /* Apply shift */
-      ierr = VecAXPY(Z[l-it-1],-sigma(it),Z[l-it]);CHKERRQ(ierr);
-      ierr = VecAXPY(u,-sigma(it),Z[l-it]);CHKERRQ(ierr);
     } else {
       /* Shift the Z vector pointers */
       if (l == 1) {
@@ -419,7 +418,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   PetscInt       max_it=ksp->max_it,l=plcg->l;
   PetscInt       i=0,outer_it=0,curr_guess_zero=0;
   PetscReal      lmin=plcg->lmin,lmax=plcg->lmax;
-  PetscBool      diagonalscale=PETSC_FALSE,ispcnone=PETSC_FALSE;
+  PetscBool      diagonalscale=PETSC_FALSE;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -440,15 +439,9 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   ierr = PetscCalloc1(max_it+1,&plcg->req);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&A,&Pmat);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&ispcnone);CHKERRQ(ierr);
-  if (ispcnone) {
-    for (i = 0; i < l; ++i) {
-      sigma(i) = (0.5*(lmin+lmax) + (0.5*(lmax-lmin) * PetscCosReal(PETSC_PI*(2.0*i+1.0)/(2.0*l))));
-    }
-  } else {
-    for (i = 0; i < l; ++i) {
-      sigma(i) = 0.0;
-    }
+
+  for (i = 0; i < l; ++i) {
+    sigma(i) = (0.5*(lmin+lmax) + (0.5*(lmax-lmin) * PetscCosReal(PETSC_PI*(2.0*i+1.0)/(2.0*l))));
   }
 
   ksp->its = 0;

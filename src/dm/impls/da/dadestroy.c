@@ -5,9 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/* Logging support */
-PetscLogEvent DMDA_LocalADFunction;
-
 /*
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
 

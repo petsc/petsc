@@ -4,12 +4,37 @@
 */
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscdmfield.h>
 
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DMDAGetReducedDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
+{
+  PetscReal      gmin[3], gmax[3];
+  PetscScalar    corners[24];
+  PetscInt       dim;
+  PetscInt       i, j;
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  /* TODO: this is wrong if coordinates are not rectilinear */
+  ierr = DMDAGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
+  for (i = 0; i < (1 << dim); i++) {
+    for (j = 0; j < dim; j++) {
+      corners[i*dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
+    }
+  }
+  ierr = DMClone(dm,&cdm);CHKERRQ(ierr);
+  ierr = DMFieldCreateDA(cdm,dim,corners,field);CHKERRQ(ierr);
+  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -25,7 +50,8 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
         number of degrees of freedom per node within the DMDA
 -  names - the name of the field (component)
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -39,7 +65,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
@@ -84,7 +110,8 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 +  dm - the DMDA object
 -  names - the names of the components, final string must be NULL, must have the same number of entries as the dof used in creating the DMDA
 
-   Notes: It must be called after having called DMSetUp().
+   Notes:
+    It must be called after having called DMSetUp().
 
    Level: intermediate
 
@@ -125,7 +152,8 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
    Output Parameter:
 .  names - the name of the field (component)
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -138,7 +166,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
@@ -156,7 +184,8 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 .  nf - coordinate number for the DMDA (0, 1, ... dim-1),
 -  name - the name of the coordinate
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -172,7 +201,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
   DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
@@ -192,7 +221,8 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
    Output Parameter:
 .  names - the name of the coordinate direction
 
-  Notes: It must be called after having called DMSetUp().
+  Notes:
+    It must be called after having called DMSetUp().
 
   Level: intermediate
 
@@ -207,7 +237,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   DM_DA *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
@@ -249,7 +279,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
@@ -293,7 +323,7 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
   PetscInt          N,Ni;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   dim  = dm->dim;
   ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
   if (coords) {
@@ -356,7 +386,21 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 }
 
 /*@
-   DMDAGetReducedDMDA - Gets the DMDA with the same layout but with fewer or more fields
+   DMDAGetReducedDMDA - Deprecated; use DMDACreateCompatibleDMDA()
+
+   Level: deprecated
+@*/
+PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDACreateCompatibleDMDA(da,nfields,nda);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   DMDACreateCompatibleDMDA - Creates a DMDA with the same layout but with fewer or more fields
 
    Collective on DMDA
 
@@ -373,7 +417,7 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 
 .seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
-PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
+PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
   PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;

@@ -37,7 +37,8 @@ struct _p_PetscDrawBar {
    Output Parameters:
 .  bar - The bar graph context
 
-   Notes: Call PetscDrawBarSetData() to provide the bins to be plotted and then PetscDrawBarDraw() to display the new plot
+   Notes:
+    Call PetscDrawBarSetData() to provide the bins to be plotted and then PetscDrawBarDraw() to display the new plot
 
   The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
@@ -94,7 +95,8 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 
    Level: intermediate
 
-   Notes: Call PetscDrawBarDraw() after this call to display the new plot
+   Notes:
+    Call PetscDrawBarDraw() after this call to display the new plot
 
 .seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarDraw()
 

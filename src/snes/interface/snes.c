@@ -1031,7 +1031,8 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
    Level: intermediate
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
 .keywords: SNES, nonlinear, set, application, context
@@ -1063,7 +1064,8 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
    Output Parameter:
 .  usrP - user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
@@ -1314,7 +1316,8 @@ PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 
    Level: intermediate
 
-   Notes: Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
+   Notes:
+    Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
@@ -1377,7 +1380,8 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
    Options Database Keys:
 . -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
 
-   Notes: By default this is 0; that is SNES returns on the first failed linear solve
+   Notes:
+    By default this is 0; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
@@ -1406,7 +1410,8 @@ PetscErrorCode  SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
 
    Level: intermediate
 
-   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+   Notes:
+    By default this is 1; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
@@ -1541,7 +1546,8 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 
    Level: beginner
 
-   Developer Notes: SNES always creates a KSP object even though many SNES methods do not use it. This is
+   Developer Notes:
+    SNES always creates a KSP object even though many SNES methods do not use it. This is
                     unfortunate and should be fixed at some point. The flag snes->usesksp indicates if the
                     particular method does use KSP and regulates if the information about the KSP is printed
                     in SNESView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
@@ -2284,23 +2290,25 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 
 PetscErrorCode SNESTestJacobian(SNES snes)
 {
-  Mat            A = snes->jacobian,B,C;
-  Vec            x = snes->vec_sol,f = snes->vec_func;
-  PetscErrorCode ierr;
-  PetscReal      nrm,gnorm;
-  PetscReal      threshold = 1.e-5;
-  PetscInt       m,n,M,N;
-  void           *functx;
-  PetscBool      complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE;
-  PetscViewer    viewer;
-  MPI_Comm       comm;
-  PetscInt       tabs;
+  Mat               A,B,C,D,jacobian;
+  Vec               x = snes->vec_sol,f = snes->vec_func;
+  PetscErrorCode    ierr;
+  PetscReal         nrm,gnorm;
+  PetscReal         threshold = 1.e-5;
+  PetscInt          m,n,M,N;
+  void              *functx;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscViewer       viewer,mviewer;
+  MPI_Comm          comm;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)snes);
-  ierr = PetscOptionsBool("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",test,&test,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_test_jacobian_display","Display difference between hand-coded and finite difference Jacobians","None",complete_print,&complete_print,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -2308,88 +2316,110 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
-  if (!complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_display to show difference\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_display_threshold to show difference\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries great than threshold.\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian -------------\n");CHKERRQ(ierr);
+  if (!complete_print && !directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -snes_test_jacobian_view and optionally -snes_test_jacobian <threshold> to show difference\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference Jacobian entries greater than <threshold>.\n");CHKERRQ(ierr);
+  }
+  if (!directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
+    directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
   }
 
-  /* evaluate the function at this point because SNESComputeJacobianDefaultColor() assumes that the function has been evaluated and put into snes->vec_func */
+  /* evaluate the function at this point because SNESComputeJacobianDefault() assumes that the function has been evaluated and put into snes->vec_func */
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
-  A    = snes->jacobian_pre;
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)snes->jacobian,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) jacobian = snes->jacobian;
+  else jacobian = snes->jacobian_pre;
 
-  ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
-  if (complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-  }
-  /* compare */
-  ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
-  if (complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Hand-coded Jacobian\n");CHKERRQ(ierr);
-    ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-    ierr = MatView(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-  }
-
-  if (threshold_print) {
-    PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
-    PetscScalar       *cvals;
-    const PetscInt    *bcols;
-    const PetscScalar *bvals;
-
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
-    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSetUp(C);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
-
-    for (row = Istart; row < Iend; row++) {
-      ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-      ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
-      for (j = 0, cncols = 0; j < bncols; j++) {
-        if (PetscAbsScalar(bvals[j]) > threshold) {
-          ccols[cncols] = bcols[j];
-          cvals[cncols] = bvals[j];
-          cncols += 1;
-        }
-      }
-      if(cncols) {
-        ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
-      ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+  while (jacobian) {
+    ierr = PetscObjectTypeCompareAny((PetscObject)jacobian,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+    if (flg) {
+      A    = jacobian;
+      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    } else {
+      ierr = MatComputeExplicitOperator(jacobian,&A);CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Entries where difference is over threshold\n");CHKERRQ(ierr);
-    ierr = MatView(C,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
+    ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
+    ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
+
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
+    ierr = MatAYPX(D,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(D,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
+    ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    if (!gnorm) gnorm = 1; /* just in case */
+    ierr = PetscViewerASCIIPrintf(viewer,"  ||J - Jfd||_F/||J||_F = %g, ||J - Jfd||_F = %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
+
+    if (complete_print) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded Jacobian ----------\n");CHKERRQ(ierr);
+      ierr = MatView(jacobian,mviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference Jacobian ----------\n");CHKERRQ(ierr);
+      ierr = MatView(B,mviewer);CHKERRQ(ierr);
+    }
+
+    if (complete_print) {
+      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
+      PetscScalar       *cvals;
+      const PetscInt    *bcols;
+      const PetscScalar *bvals;
+
+      ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+      ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = MatSetUp(C);CHKERRQ(ierr);
+      ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
+
+      for (row = Istart; row < Iend; row++) {
+        ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
+        for (j = 0, cncols = 0; j < bncols; j++) {
+          if (PetscAbsScalar(bvals[j]) > threshold) {
+            ccols[cncols] = bcols[j];
+            cvals[cncols] = bvals[j];
+            cncols += 1;
+          }
+        }
+        if (cncols) {
+          ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+      }
+      ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian with tolerance %g ----------\n",(double)threshold);CHKERRQ(ierr);
+      ierr = MatView(C,mviewer);CHKERRQ(ierr);
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+    if (jacobian != snes->jacobian_pre) {
+      jacobian = snes->jacobian_pre;
+      ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Jacobian for preconditioner -------------\n");CHKERRQ(ierr);
+    }
+    else jacobian = NULL;
   }
-
-  if (!gnorm) gnorm = 1; /* just in case */
-  ierr = PetscViewerASCIIPrintf(viewer,"||J - Jfd||_F/||J||_F %g, ||J - Jfd||_F %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2430,7 +2460,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
 
-   Developer Notes: This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used 
+   Developer Notes:
+    This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine SNESTestJacobian() use to used 
       for with the SNESType of test that has been removed.
 
    Level: developer
@@ -2937,7 +2968,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
    Level: intermediate
 
-   Notes: Also calls the application context destroy routine set with SNESSetComputeApplicationContext()
+   Notes:
+    Also calls the application context destroy routine set with SNESSetComputeApplicationContext()
 
 .keywords: SNES, destroy
 
@@ -3252,7 +3284,8 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
 
-   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
+   Notes:
+    This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
    several solves, and for implicit time-stepping, where Jacobian lagging in the inner nonlinear solve over several
    timesteps may present huge efficiency gains.
 
@@ -3284,7 +3317,8 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
 
-   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
+   Notes:
+    This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
    by several solves, and for implicit time-stepping, where preconditioner lagging in the inner nonlinear solve over
    several timesteps may present huge efficiency gains.
 
@@ -3714,7 +3748,8 @@ M*/
    SNESMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNES object
+   Fortran Notes:
+    Only a single monitor function can be set for each SNES object
 
    Level: intermediate
 
@@ -3850,7 +3885,8 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 
    Level: intermediate
 
-   Notes: Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
+   Notes:
+    Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
 
 .keywords: SNES, nonlinear, set, convergence, test
 
@@ -4398,7 +4434,8 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   and the user's application is taking responsibility for choosing the
   appropriate method.
 
-    Developer Notes: SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
+    Developer Notes:
+    SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
     the constructor in that list and calls it to create the spexific object.
 
   Level: intermediate
@@ -4565,6 +4602,8 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
 
    Level: advanced
 
+    Notes: The vector r DOES NOT, in general contain the current value of the SNES nonlinear function
+
 .keywords: SNES, nonlinear, get, function
 
 .seealso: SNESSetFunction(), SNESGetSolution(), SNESFunction
@@ -4706,7 +4745,8 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -5249,7 +5289,8 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   Output Parameter:
 . pc - preconditioner context
 
-  Notes: If a SNES was previously set with SNESSetNPC() then that SNES is returned.
+  Notes:
+    If a SNES was previously set with SNESSetNPC() then that SNES is returned.
 
   Level: developer
 
@@ -5319,7 +5360,8 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
     Options Database Keys:
 .   -snes_pc_side <right,left>
 
-    Notes: SNESNRICHARDSON and SNESNCG only support left preconditioning.
+    Notes:
+    SNESNRICHARDSON and SNESNCG only support left preconditioning.
 
     Level: intermediate
 

@@ -134,6 +134,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (nopreconditioner) {
     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
+    /* this is an application of the preconditioner for the normal equations; not the operator, see the manual page */
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
     ierr = VecDotRealPart(V,Z,&alpha);CHKERRQ(ierr);
     if (alpha <= 0.0) {
@@ -436,7 +437,8 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
      The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. It appears the implementation with preconditioner
      track the true norm of the residual and uses that in the convergence test.
 
-   Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
+   Developer Notes:
+    How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
 
@@ -448,6 +450,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
+  void           *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -461,11 +464,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;
   ksp->ops->destroy        = KSPDestroy_LSQR;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_LSQR;
   ksp->ops->view           = KSPView_LSQR;
-  ksp->converged           = KSPLSQRDefaultConverged;
+
+  ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,KSPLSQRDefaultConverged,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

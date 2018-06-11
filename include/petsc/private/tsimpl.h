@@ -354,7 +354,12 @@ PETSC_EXTERN PetscErrorCode TSEventDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSEventHandler(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointEventHandler(TS);
 
-PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval, TS_ForwardStep;
+PETSC_EXTERN PetscLogEvent TS_AdjointStep;
+PETSC_EXTERN PetscLogEvent TS_Step;
+PETSC_EXTERN PetscLogEvent TS_PseudoComputeTimeStep;
+PETSC_EXTERN PetscLogEvent TS_FunctionEval;
+PETSC_EXTERN PetscLogEvent TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_ForwardStep;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
@@ -396,7 +401,10 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
+PETSC_EXTERN PetscLogEvent TSTrajectory_DiskWrite;
+PETSC_EXTERN PetscLogEvent TSTrajectory_DiskRead;
 
 struct _n_TSMonitorDrawCtx {
   PetscViewer   viewer;

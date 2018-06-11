@@ -1270,11 +1270,11 @@ PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
 
    test:
       requires: !single
-      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl
+      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl -tao_gatol 1.e-5
 
    test:
       suffix: guess_pod
       requires: !single
-      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl -ksp_guess_type pod
+      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl -ksp_guess_type pod -tao_gatol 1.e-5
 
 TEST*/

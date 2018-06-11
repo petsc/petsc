@@ -209,6 +209,12 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
         ierr = PetscObjectQuery(disc, "pmat", &pmat);CHKERRQ(ierr);
         if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", pmat);CHKERRQ(ierr);}
       }
+      ierr = PetscDSCopyConstants(dm->prob, (*subdm)->prob);CHKERRQ(ierr);
+      ierr = PetscDSCopyBoundary(dm->prob, (*subdm)->prob);CHKERRQ(ierr);
+      ierr = PetscDSSelectEquations(dm->prob, numFields, fields, (*subdm)->prob);CHKERRQ(ierr);
+    }
+    if (dm->coarseMesh) {
+      ierr = DMCreateSubDM(dm->coarseMesh, numFields, fields, NULL, &(*subdm)->coarseMesh);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

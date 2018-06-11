@@ -1,13 +1,5 @@
 /* Discretization tools */
 
-#include <petscconf.h>
-#if defined(PETSC_HAVE_MATHIMF_H)
-#include <mathimf.h>           /* this needs to be included before math.h */
-#endif
-#ifdef PETSC_HAVE_MPFR
-#include <mpfr.h>
-#endif
-
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
 #include <petsc/private/petscimpl.h>
@@ -15,6 +7,10 @@
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
+
+#if defined(PETSC_HAVE_MPFR)
+#include <mpfr.h>
+#endif
 
 static PetscBool GaussCite       = PETSC_FALSE;
 const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
@@ -230,14 +226,15 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Output Parameters:
 + dim - The spatial dimension
-, Nc - The number of components
+. Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
 
   Level: intermediate
 
-  Fortran Notes: From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
+  Fortran Notes:
+    From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
 
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
@@ -602,7 +599,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -819,7 +816,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, 2*npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -944,7 +941,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_MPFR
+#if defined(PETSC_HAVE_MPFR)
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */

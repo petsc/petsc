@@ -234,7 +234,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 +   -snes_linesearch_type <l2,cp,basic> Line search type.
 -   -snes_linesearch_damping<1.0> Damping for the line search.
 
-  Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
+  Notes:
+    If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
             an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetNPC()) then the inner
             solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}

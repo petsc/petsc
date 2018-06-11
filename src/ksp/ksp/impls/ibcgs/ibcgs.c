@@ -297,7 +297,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Supports left and right preconditioning
+   Notes:
+    Supports left and right preconditioning
 
           See KSPBCGSL for additional stabilization
 

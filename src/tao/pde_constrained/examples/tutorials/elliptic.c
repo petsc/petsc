@@ -1321,7 +1321,7 @@ PetscErrorCode EllipticMonitor(Tao tao, void *ptr)
 
    test:
       suffix: 2
-      args: -tao_cmonitor -tao_type lcl -tao_max_it 10 -use_ptap -use_lrc -ns 1 -tao_gttol 1.e-5
+      args: -tao_cmonitor -tao_type lcl -tao_max_it 11 -use_ptap -use_lrc -ns 1 -tao_gatol 1.e-3
       requires: !single
 
 TEST*/

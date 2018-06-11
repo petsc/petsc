@@ -9,6 +9,7 @@
 #include <petscfe.h>
 #include <petscfv.h>
 #include <petscsftypes.h>
+#include <petscdmfield.h>
 
 PETSC_EXTERN PetscClassId PETSCPARTITIONER_CLASSID;
 
@@ -199,6 +200,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateHybridMesh(DM, DMLabel, DMLabel *, DM *)
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetSubpoint(DM, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
@@ -261,7 +263,6 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSubdomainSection(DM, PetscSection*);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFEM(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesToReference(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexReferenceToCoordinates(DM, PetscInt, PetscInt, const PetscReal [], PetscReal[]);
 
@@ -323,6 +324,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM, Vec, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeBdResidualSingle(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, Vec, Vec, Vec);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeBoundary(DM, PetscReal, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM, PetscReal, Vec, Vec, void *);

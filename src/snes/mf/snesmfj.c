@@ -157,10 +157,12 @@ static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
 -   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
           not SNESComputeFunction()
 
-    Notes: Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
+    Notes:
+    Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
            with that provided to SNESSetFunction(), call it F_SNES(). That is, (F_MF(u + h*d) - F_SNES(u))/h has to approximate the derivative
 
-    Developer Notes: This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
+    Developer Notes:
+    This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
                      to contacts while the function provided to MatMFFDSetFunction() cannot. Except for the possibility of changing the configuration
                      both functions compute the same mathematical function so the differencing makes sense.
 
@@ -199,10 +201,12 @@ static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
 .   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
           not SNESComputeFunction()
 
-    Notes: Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
+    Notes:
+    Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
            with that provided to SNESSetFunction(), call it F_SNES(). That is, (F_MF(u + h*d) - F_SNES(u))/h has to approximate the derivative
 
-    Developer Notes: This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
+    Developer Notes:
+    This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
                      to contacts while the function provided to MatMFFDSetFunction() cannot. Except for the possibility of changing the configuration
                      both functions compute the same mathematical function so the differencing makes sense.
 

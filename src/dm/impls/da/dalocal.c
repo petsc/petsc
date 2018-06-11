@@ -94,7 +94,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   if (numCellsX) {
     PetscValidIntPointer(numCellsX,2);
     *numCellsX = mx;
@@ -135,7 +135,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidIntPointer(point,5);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   if (dim > 0) {if ((i < info.gxs) || (i >= info.gxs+info.gxm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);}
@@ -406,7 +406,7 @@ PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidPointer(s, 4);
   ierr    = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr    = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
@@ -1140,7 +1140,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   if (dim > 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
   h[0] = (xu - xl)/M;
@@ -1195,7 +1195,8 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, Nc, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, Nc, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscFEGeom    *geom;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1211,13 +1212,9 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, NULL, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGeomCreate(q,1,dimEmbed,PETSC_FALSE,&geom);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscFECellGeom geom;
-
-    ierr          = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
-    geom.dim      = dim;
-    geom.dimEmbed = dimEmbed;
+    ierr          = DMDAComputeCellGeometryFEM(dm, c, q, geom->v, geom->J, NULL, geom->detJ);CHKERRQ(ierr);
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
@@ -1226,11 +1223,12 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, time, &geom, Nc, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceApply(sp, d, time, geom, Nc, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
       }
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
+  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1442,7 +1440,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   DM_DA          *dd    = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (ghosted) {
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedin[i]) {
@@ -1561,7 +1559,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool ghosted,void *vptr)
   DM_DA    *dd    = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (ghosted) {
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedout[i] == *iptr) {

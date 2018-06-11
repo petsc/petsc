@@ -496,7 +496,8 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
 
    Level: beginner
 
-   Notes: This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
+   Notes:
+    This method uses a parallel Luby-style coloring with weights to choose an independent set of processor
    boundary vertices at each stage that may be assigned colors independently.
 
    References:

@@ -594,14 +594,18 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type lmvm -tao_gttol 1.e-2
+      args: -tao_smonitor -tao_type lmvm -tao_gatol 1.e-3
 
    test:
       suffix: 2
-      args: -tao_smonitor -tao_type ntl -tao_gttol 1.e-2
+      args: -tao_smonitor -tao_type ntl -tao_gatol 1.e-4
 
    test:
       suffix: 3
-      args: -tao_smonitor -tao_type ntr -tao_gttol 1.e-2
+      args: -tao_smonitor -tao_type ntr -tao_gatol 1.e-4
+
+   test:
+      suffix: 4
+      args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
 
 TEST*/

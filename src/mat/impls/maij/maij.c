@@ -32,7 +32,8 @@
 
    Level: advanced
 
-   Notes: The reference count on the AIJ matrix is not increased so you should not destroy it.
+   Notes:
+    The reference count on the AIJ matrix is not increased so you should not destroy it.
 
 .seealso: MatCreateMAIJ()
 @*/

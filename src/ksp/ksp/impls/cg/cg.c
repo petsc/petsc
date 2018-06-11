@@ -20,7 +20,7 @@
         KSPSetUp_XXX()
         KSPView_XXX()            - Prints details of solver being used.
 
-    Detailed notes:
+    Detailed Notes:
     By default, this code implements the CG (Conjugate Gradient) method,
     which is valid for real symmetric (and complex Hermitian) positive
     definite matrices. Note that for the complex Hermitian case, the
@@ -524,7 +524,8 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 
    Level: beginner
 
-   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.  
+   Notes:
+    The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.  
    
    Only left preconditioning is supported; there are several ways to motivate preconditioned CG, but they all produce the same algorithm. 
    One can interpret preconditioning A with B to mean any of the following\:
@@ -537,7 +538,8 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    For complex numbers there are two different CG methods, one for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use
    KSPCGSetType() to indicate which type you are using.
 
-   Developer Notes: KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to
+   Developer Notes:
+    KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to
    indicate it to the KSP object.
 
    References:

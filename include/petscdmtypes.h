@@ -8,7 +8,8 @@
 
   Concepts: grids, grid refinement
 
-   Notes: The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
+   Notes:
+    The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
 
 .seealso:  DMCompositeCreate(), DMDACreate(), DMSetType(), DMType
 S*/
@@ -30,7 +31,8 @@ typedef struct _p_DM* DM;
 
   Note: If the physical grid points have values  0 1 2 3 with DM_BOUNDARY_MIRROR then the local vector with ghost points has the values 1 0 1 2 3 2
 
-  Developer notes: Should DM_BOUNDARY_MIRROR have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
+  Developer Notes:
+    Should DM_BOUNDARY_MIRROR have the same meaning with DMDA_Q0, that is a staggered grid? In that case should the ghost point have the same value
   as the 0th grid point where the physical boundary serves as the mirror?
 
   References: http://scicomp.stackexchange.com/questions/5355/writing-the-poisson-equation-finite-difference-matrix-with-neumann-boundary-cond
@@ -38,7 +40,6 @@ typedef struct _p_DM* DM;
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
 typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
-
 /*E
   DMBoundaryConditionType - indicates what type of boundary condition is to be imposed
 
@@ -126,5 +127,12 @@ typedef struct _p_PetscPartitioner *PetscPartitioner;
 .seealso: DMPlexGetScale(), DMPlexSetScale()
 E*/
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
+
+/*S
+    DMField - PETSc object for defining a field on a mesh topology
+
+    Level: intermediate
+S*/
+typedef struct _p_DMField* DMField;
 
 #endif

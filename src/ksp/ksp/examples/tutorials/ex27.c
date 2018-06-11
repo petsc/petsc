@@ -21,14 +21,16 @@ int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
   Mat            A,N;                /* matrix */
-  Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
+  Vec            x,b,r,Ab;          /* approx solution, RHS, residual */
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
+  KSPType        ksptype;
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
+  PetscBool      solve_normal=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*
@@ -37,6 +39,11 @@ int main(int argc,char **args)
   */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f_x0",file_x0,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  /*
+     Decide whether to solve the original system (-solve_normal 0)
+     or the normal equation (-solve_normal 1).
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -100,7 +107,6 @@ int main(int argc,char **args)
     nonzero_guess=PETSC_FALSE;
   }
 
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -120,7 +126,15 @@ int main(int argc,char **args)
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  if (solve_normal) {
+    ierr = KSPSetOperators(ksp,N,N);CHKERRQ(ierr);
+  } else {
+    PC pc;
+    ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  }
   ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -145,7 +159,11 @@ int main(int argc,char **args)
   /*
      Solve linear system
   */
-  ierr = KSPSolve(ksp,Ab,x);CHKERRQ(ierr);
+  if (solve_normal) {
+    ierr = KSPSolve(ksp,Ab,x);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  }
 
   /*
       Conclude profiling this stage
@@ -159,10 +177,13 @@ int main(int argc,char **args)
   /*
      Check error
   */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
+  ierr = MatMult(A,x,r);CHKERRQ(ierr);
+  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPGetType(ksp,&ksptype);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP type: %s\n",ksptype);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
 
@@ -172,7 +193,7 @@ int main(int argc,char **args)
   */
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&N);CHKERRQ(ierr); ierr = VecDestroy(&Ab);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   PetscPreLoadEnd();
   /* -----------------------------------------------------------
@@ -220,5 +241,29 @@ int main(int argc,char **args)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0  # this file includes all A, b and x0
       args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
 
+   # Test least-square algorithms
+   test:
+      suffix: 4
+      nsize: {{1 2 4}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -solve_normal 1 -ksp_type cg
+   test:
+      suffix: 4a
+      nsize: {{1 2 4}}
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
+
+   # Test for correct cgls convergence reason
+   test:
+      suffix: 5
+      nsize: 1
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
+      args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
+      args: -solve_normal 0 -ksp_type cgls
 
 TEST*/

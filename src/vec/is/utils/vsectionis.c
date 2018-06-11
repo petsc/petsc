@@ -83,9 +83,10 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 @*/
 PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 {
-  IS             perm;
-  PetscInt       numFields, f, pStart, pEnd, p;
-  PetscErrorCode ierr;
+  PetscSectionSym sym;
+  IS              perm;
+  PetscInt        numFields, f, pStart, pEnd, p;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
@@ -100,11 +101,15 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
     ierr = PetscSectionSetFieldName(newSection, f, name);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(section, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(newSection, f, numComp);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldSym(section, f, &sym);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldSym(newSection, f, sym);CHKERRQ(ierr);
   }
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetPermutation(section, &perm);CHKERRQ(ierr);
   ierr = PetscSectionSetPermutation(newSection, perm);CHKERRQ(ierr);
+  ierr = PetscSectionGetSym(section, &sym);CHKERRQ(ierr);
+  ierr = PetscSectionSetSym(newSection, sym);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof, fcdof = 0;
 
@@ -212,8 +217,8 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscSectionGetChart(s1, &pStart, &pEnd);
-  ierr = PetscSectionGetChart(s2, &n1, &n2);
+  ierr = PetscSectionGetChart(s1, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s2, &n1, &n2);CHKERRQ(ierr);
   if (pStart != n1 || pEnd != n2) goto not_congruent;
 
   ierr = PetscSectionGetPermutation(s1, &perm1);CHKERRQ(ierr);
@@ -238,7 +243,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
     ierr = PetscSectionGetConstraintIndices(s1, p, &idx1);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintIndices(s2, p, &idx2);CHKERRQ(ierr);
-    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);
+    ierr = PetscMemcmp(idx1, idx2, ncdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
     if (!(*congruent)) goto not_congruent;
   }
 
@@ -266,7 +271,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
       ierr = PetscSectionGetFieldConstraintIndices(s1, p, f, &idx1);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldConstraintIndices(s2, p, f, &idx2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);
+      ierr = PetscMemcmp(idx1, idx2, nfcdof*sizeof(PetscInt), congruent);CHKERRQ(ierr);
       if (!(*congruent)) goto not_congruent;
     }
   }
@@ -407,7 +412,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 
   Level: intermediate
 
-.seealso: PetscSectionSetNumFieldComponents(), PetscSectionGetNumFields()
+.seealso: PetscSectionSetFieldComponents(), PetscSectionGetNumFields()
 @*/
 PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
 {
@@ -2708,10 +2713,12 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
-  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
-  PetscCheckSameComm(section,1,sym,2);
-  ierr = PetscObjectReference((PetscObject)sym);CHKERRQ(ierr);
   ierr = PetscSectionSymDestroy(&(section->sym));CHKERRQ(ierr);
+  if (sym) {
+    PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,2);
+    PetscCheckSameComm(section,1,sym,2);
+    ierr = PetscObjectReference((PetscObject) sym);CHKERRQ(ierr);
+  }
   section->sym = sym;
   PetscFunctionReturn(0);
 }

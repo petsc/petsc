@@ -28,11 +28,13 @@
 
    Level: intermediate
 
-   Notes: this may be called before PetscInitialize() or after PetscFinalize()
+   Notes:
+    this may be called before PetscInitialize() or after PetscFinalize()
 
    Not for use in Fortran
 
-   Developer Notes: Using raw malloc() and does not call error handlers since this may be used before PETSc is initialized. Used
+   Developer Notes:
+    Using raw malloc() and does not call error handlers since this may be used before PETSc is initialized. Used
      to generate argc, args arguments passed to MPI_Init()
 
 .seealso: PetscStrToArrayDestroy(), PetscToken, PetscTokenCreate()
@@ -109,7 +111,8 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
 
    Concepts: command line arguments
 
-   Notes: This may be called before PetscInitialize() or after PetscFinalize()
+   Notes:
+    This may be called before PetscInitialize() or after PetscFinalize()
 
    Not for use in Fortran
 
@@ -241,7 +244,8 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 
    Concepts: command line arguments
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscStrArrayallocpy()
 
@@ -307,7 +311,8 @@ PetscErrorCode  PetscStrNArrayallocpy(PetscInt n,const char *const *list,char **
 
    Level: intermediate
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscStrArrayallocpy()
 
@@ -411,7 +416,8 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 
    Level: intermediate
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
   Concepts: string copy
 
@@ -492,7 +498,8 @@ void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
 
@@ -621,7 +628,8 @@ PetscErrorCode  PetscStrcasecmp(const char a[],const char b[],PetscBool  *t)
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
@@ -651,7 +659,8 @@ PetscErrorCode  PetscStrncmp(const char a[],const char b[],size_t n,PetscBool  *
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 @*/
 PetscErrorCode  PetscStrchr(const char a[],char b,char *c[])
@@ -676,7 +685,8 @@ PetscErrorCode  PetscStrchr(const char a[],char b,char *c[])
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 @*/
 PetscErrorCode  PetscStrrchr(const char a[],char b,char *tmp[])
@@ -698,7 +708,8 @@ PetscErrorCode  PetscStrrchr(const char a[],char b,char *tmp[])
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 @*/
 PetscErrorCode  PetscStrtolower(char a[])
@@ -721,7 +732,8 @@ PetscErrorCode  PetscStrtolower(char a[])
 
    Level: intermediate
 
-   Notes:    Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 @*/
 PetscErrorCode  PetscStrtoupper(char a[])
@@ -746,7 +758,8 @@ PetscErrorCode  PetscStrtoupper(char a[])
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
 
-   Notes:     Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
    Level: intermediate
 
@@ -780,7 +793,8 @@ PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
 
-   Notes:     Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
    Level: intermediate
 
@@ -813,7 +827,8 @@ PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)
    Output Parameter:
 .  cnt - the index of the string it ends with or 1+the last possible index
 
-   Notes:     Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
    Level: intermediate
 
@@ -845,7 +860,8 @@ PetscErrorCode  PetscStrendswithwhich(const char a[],const char *const *bs,Petsc
    Output Parameter:
 .  tmp - location of occurance
 
-   Notes:     Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
    Level: intermediate
 
@@ -875,7 +891,8 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Output Parameter:
 .  tmp - location of occurance, is a NULL if the string is not found
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
    Level: intermediate
 
@@ -991,7 +1008,8 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
 
    Level: intermediate
 
-   Notes:     Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
@@ -1021,7 +1039,8 @@ PetscErrorCode  PetscTokenDestroy(PetscToken *a)
 
    Level: intermediate
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 .seealso: PetscTokenCreate(), PetscTokenFind(), PetscStrcmp()
 @*/
@@ -1054,7 +1073,8 @@ PetscErrorCode PetscStrInList(const char str[],const char list[],char sep,PetscB
 
    Level: developer
 
-   Notes: Not for use in Fortran
+   Notes:
+    Not for use in Fortran
 
 @*/
 PetscErrorCode  PetscGetPetscDir(const char *dir[])

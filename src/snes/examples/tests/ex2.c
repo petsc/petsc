@@ -264,7 +264,7 @@ int main(int argc, char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
   ierr = VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Setup Discretization */
-  ierr = PetscFECreateDefault(dm, ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), ctx.dim, Nc, ctx.cellSimplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);

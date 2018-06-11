@@ -159,7 +159,7 @@ $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
 $(testexe.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
-	$(call quiet,CXX) -o $@ $^ $(PETSC_TEST_LIB)
+	$(call quiet,CXXLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)

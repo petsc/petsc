@@ -1493,7 +1493,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
       ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 
       if (nsplits == 2) {
-        ierr = DMDAGetReducedDMDA(da_Stokes,2,&da_U);CHKERRQ(ierr);
+        ierr = DMDACreateCompatibleDMDA(da_Stokes,2,&da_U);CHKERRQ(ierr);
 
         ierr = KSPSetDM(ksp_U,da_U);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_U,PETSC_FALSE);CHKERRQ(ierr);

@@ -13,7 +13,8 @@
          PetscObjectSetName((PetscObject)mat,name);
 -  name - the name to give obj
 
-   Notes: If this routine is not called then the object may end up being name by PetscObjectName().
+   Notes:
+    If this routine is not called then the object may end up being name by PetscObjectName().
    Level: advanced
 
    Concepts: object name^setting
@@ -40,7 +41,8 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Level: developer
 
-   Notes: If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
+   Notes:
+    If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
           so that MATLAB will treat it as a comment.
 
           If the viewer format is PETSC_VIEWER_ASCII_VTK*, PETSC_VIEWER_ASCII_LATEX, or
@@ -105,7 +107,8 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
    Concepts: object name^setting default
 
-   Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
+   Notes:
+    This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
           Use PetscObjectSetName() to set the name of an object to what you want. The SAWs viewer requires that no two published objects
           share the same name.
 

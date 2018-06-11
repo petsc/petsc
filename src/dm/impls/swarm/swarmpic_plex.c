@@ -1,7 +1,7 @@
 #include <petscdm.h>
 #include <petscdmplex.h>
 #include <petscdmswarm.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*xi);
@@ -26,7 +26,7 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
   ierr = PetscSpaceSetOrder(P,1);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);

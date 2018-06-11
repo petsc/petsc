@@ -917,25 +917,6 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  size_t         left,count;
-  char           *p;
-
-  PetscFunctionBegin;
-  for (i=0,p=buf,left=len; i<n; i++) {
-    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
-    if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
-    left -= count;
-    p    += count;
-    *p++  = ' ';
-  }
-  p[i ? 0 : -1] = 0;
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
 {
   TS_GLEE        *glee   = (TS_GLEE*)ts->data;

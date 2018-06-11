@@ -346,6 +346,7 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscI
 static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt       depth = 0, d, pStart, pEnd, p;
+  DMLabel        depthLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -355,9 +356,19 @@ static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   pEnd = DMPlexShiftPoint_Internal(pEnd,depth,depthShift);
   ierr = DMPlexSetChart(dmNew, pStart, pEnd);CHKERRQ(ierr);
+  ierr = DMCreateLabel(dmNew,"depth");CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dmNew,&depthLabel);CHKERRQ(ierr);
   /* Step 2: Set cone and support sizes */
   for (d = 0; d <= depth; ++d) {
+    PetscInt pStartNew, pEndNew;
+    IS pIS;
+
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    pStartNew = DMPlexShiftPoint_Internal(pStart, depth, depthShift);
+    pEndNew = DMPlexShiftPoint_Internal(pEnd, depth, depthShift);
+    ierr = ISCreateStride(PETSC_COMM_SELF, pEndNew - pStartNew, pStartNew, 1, &pIS);CHKERRQ(ierr);
+    ierr = DMLabelSetStratumIS(depthLabel, d, pIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&pIS);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt newp = DMPlexShiftPoint_Internal(p, depth, depthShift);
       PetscInt size;
@@ -540,7 +551,7 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label, newlabel;
     const char     *lname;
-    PetscBool       isDepth;
+    PetscBool       isDepth, isDim;
     IS              valueIS;
     const PetscInt *values;
     PetscInt        numValues, val;
@@ -548,6 +559,8 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = PetscStrcmp(lname, "dim", &isDim);CHKERRQ(ierr);
+    if (isDim) continue;
     ierr = DMCreateLabel(dmNew, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(dmNew, lname, &newlabel);CHKERRQ(ierr);
@@ -791,8 +804,6 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   }
   ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
   ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-  /* Step 7: Stratify */
-  ierr = DMPlexStratify(gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftCoordinates_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
@@ -1416,9 +1427,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pIS);CHKERRQ(ierr);
   }
-  /* Step 7: Stratify */
-  ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
-  /* Step 8: Coordinates */
+  /* Step 7: Coordinates */
   ierr = DMPlexShiftCoordinates_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(sdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(sdm, &coordinates);CHKERRQ(ierr);
@@ -1434,9 +1443,9 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     for (d = 0; d < dof; ++d) coords[soff+d] = coords[off+d];
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  /* Step 9: SF, if I can figure this out we can split the mesh in parallel */
+  /* Step 8: SF, if I can figure this out we can split the mesh in parallel */
   ierr = DMPlexShiftSF_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
-  /* Step 10: Labels */
+  /* Step 9: Labels */
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   ierr = DMGetNumLabels(sdm, &numLabels);CHKERRQ(ierr);
   for (dep = 0; dep <= depth; ++dep) {
@@ -3567,6 +3576,47 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
     ierr = DMRestoreWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
     if (off != pEnd) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetSubpoint - Return the subpoint corresponding to a point in the original mesh. If the DM
+                      is not a submesh, just return the input point.
+
+  Note collective
+
+  Input Parameters:
++ dm - The submesh DM
+- p  - The point in the original, from which the submesh was created
+
+  Output Parameter:
+. subp - The point in the submesh
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexGetSubpoint(DM dm, PetscInt p, PetscInt *subp)
+{
+  DMLabel        spmap;
+  PetscErrorCode ierr;
+
+  *subp = p;
+  ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+  if (spmap) {
+    IS              subpointIS;
+    const PetscInt *subpoints;
+    PetscInt        numSubpoints;
+
+    /* TODO Cache the IS, making it look like an index */
+    ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    ierr = PetscFindInt(p, numSubpoints, subpoints, subp);CHKERRQ(ierr);
+    if (*subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
+    ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -271,7 +271,8 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 
    Level: advanced
 
-   Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
+   Notes:
+    The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
           If global is true, the rows of G should be given in global ordering for the whole dofs;
           if false, the ordering should be global for the Nedelec field.
@@ -328,7 +329,8 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 
    Level: advanced
 
-   Notes: This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+   Notes:
+    This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
           If vl2l is NULL, the local ordering for velocities in divudotp should match that of the preconditioning matrix
 
 .seealso: PCBDDC
@@ -1010,7 +1012,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 
    Level: intermediate
 
-   Notes: A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
+   Notes:
+    A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
 .seealso: PCBDDC,PetscCopyMode
 @*/
@@ -1476,13 +1479,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
   if (pcbddc->switch_static) {
     PetscBool ismatis;
+
     ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
     if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
   }
@@ -1490,16 +1494,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* activate all connected components if the netflux has been requested */
   if (pcbddc->compute_nonetflux) {
     pcbddc->use_vertices = PETSC_TRUE;
-    pcbddc->use_edges = PETSC_TRUE;
-    pcbddc->use_faces = PETSC_TRUE;
+    pcbddc->use_edges    = PETSC_TRUE;
+    pcbddc->use_faces    = PETSC_TRUE;
   }
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
       pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
-      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
@@ -1561,7 +1565,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
-    ierr = PCISSetUp(pc,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
   }
@@ -1733,6 +1737,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2574,7 +2579,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Developer notes:
+   Developer Notes:
 
    Contributed by Stefano Zampini
 

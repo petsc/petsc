@@ -48,7 +48,9 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode  KSPDGMRESComputeDeflationData(KSP,PetscInt*);
 
-PETSC_EXTERN PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
+PETSC_EXTERN PetscLogEvent KSP_DGMRESComputeDeflationData;
+PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
+
 #define HH(a,b)  (dgmres->hh_origin + (b)*(dgmres->max_k+2)+(a))
 #define HES(a,b) (dgmres->hes_origin + (b)*(dgmres->max_k+1)+(a))
 #define CC(a)    (dgmres->cc_origin + (a))

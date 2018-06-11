@@ -41,18 +41,20 @@ typedef struct _p_Tao*   Tao;
        Level: beginner
 
 J*/
-#define TaoType char*
+typedef const char *TaoType;
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"
 #define TAONTR      "ntr"
 #define TAONTL      "ntl"
 #define TAOCG       "cg"
-#define TAOPGD      "pgd"
 #define TAOTRON     "tron"
 #define TAOOWLQN    "owlqn"
 #define TAOBMRM     "bmrm"
 #define TAOBLMVM    "blmvm"
 #define TAOBNCG     "bncg"
+#define TAOBNLS     "bnls"
+#define TAOBNTR     "bntr"
+#define TAOBNTL     "bntl"
 #define TAOBQPIP    "bqpip"
 #define TAOGPCG     "gpcg"
 #define TAONM       "nm"
@@ -63,7 +65,6 @@ J*/
 #define TAOASILS    "asils"
 #define TAOASFLS    "asfls"
 #define TAOIPM      "ipm"
-#define TAOTEST     "test"
 
 PETSC_EXTERN PetscClassId TAO_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoList;
@@ -78,7 +79,8 @@ $   1) an incorrectly coded or computed gradient or Hessian
 $   2) failure or lack of convergence in the linear system (in this case we recommend
 $      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
 
-   Developer Notes: this must match petsc/finclude/petsctao.h
+   Developer Notes:
+    this must match petsc/finclude/petsctao.h
 
        The string versions of these are in TAOConvergedReasons, if you change any value here you must
      also adjust that array.
@@ -109,8 +111,8 @@ PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
-PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
-PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
+PETSC_EXTERN PetscErrorCode TaoSetType(Tao,TaoType);
+PETSC_EXTERN PetscErrorCode TaoGetType(Tao,TaoType *);
 PETSC_EXTERN PetscErrorCode TaoSetApplicationContext(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoGetApplicationContext(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
@@ -154,6 +156,7 @@ PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(Tao, IS, IS);
 
 PETSC_EXTERN PetscErrorCode TaoComputeObjective(Tao, Vec, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoComputeSeparableObjective(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoTestGradient(Tao,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeGradient(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeObjectiveAndGradient(Tao, Vec, PetscReal*, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeConstraints(Tao, Vec, Vec);
@@ -164,6 +167,7 @@ PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao,PetscBool*);
 
+PETSC_EXTERN PetscErrorCode TaoTestHessian(Tao);
 PETSC_EXTERN PetscErrorCode TaoComputeHessian(Tao, Vec, Mat, Mat);
 PETSC_EXTERN PetscErrorCode TaoComputeJacobian(Tao, Vec, Mat, Mat);
 PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(Tao, Vec, Mat, Mat, Mat);
@@ -220,6 +224,8 @@ PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
 PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void*);
+PETSC_DEPRECATED ("Use TaoMonitorDefault()") PETSC_STATIC_INLINE PetscErrorCode TaoDefaultMonitor(Tao tao, void*ctx) {return TaoMonitorDefault(tao,ctx);}
+PETSC_EXTERN PetscErrorCode TaoDefaultGMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(Tao, void*);

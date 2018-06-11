@@ -694,14 +694,14 @@ PetscErrorCode VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
   out_to->format               = in_to->format;
   out_to->nonmatching_computed = PETSC_FALSE;
   out_to->slots_nonmatching    = 0;
-  out_to->is_copy              = PETSC_FALSE;
+  out_to->made_of_copies       = PETSC_FALSE;
   ierr = PetscMemcpy(out_to->vslots,in_to->vslots,(out_to->n)*sizeof(PetscInt));CHKERRQ(ierr);
 
   out_from->n                    = in_from->n;
   out_from->format               = in_from->format;
   out_from->nonmatching_computed = PETSC_FALSE;
   out_from->slots_nonmatching    = 0;
-  out_from->is_copy              = PETSC_FALSE;
+  out_from->made_of_copies       = PETSC_FALSE;
   ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
 
   out->todata   = (void*)out_to;
@@ -754,7 +754,7 @@ PetscErrorCode VecScatterCopy_SGToSS(VecScatter in,VecScatter out)
   out_from->format               = in_from->format;
   out_from->nonmatching_computed = PETSC_FALSE;
   out_from->slots_nonmatching    = 0;
-  out_from->is_copy              = PETSC_FALSE;
+  out_from->made_of_copies       = PETSC_FALSE;
   ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
 
   out->todata   = (void*)out_to;
@@ -828,7 +828,6 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 extern PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
@@ -1930,64 +1929,79 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
    Collective on VecScatter
 
    Input Parameters:
-+  scat - vector scatter context
-.  from - remapping for "from" indices (may be NULL)
--  to   - remapping for "to" indices (may be NULL)
++  scat    - vector scatter context
+.  tomap   - remapping plan for "to" indices (may be NULL).
+-  frommap - remapping plan for "from" indices (may be NULL)
 
    Level: developer
 
-   Notes: In the parallel case the todata is actually the indices
-          from which the data is TAKEN! The from stuff is where the
-          data is finally put. This is VERY VERY confusing!
+   Notes:
+     In the parallel case the todata contains indices from where the data is taken
+     (and then sent to others)! The fromdata contains indices from where the received
+     data is finally put locally.
 
-          In the sequential case the todata is the indices where the
-          data is put and the fromdata is where it is taken from.
-          This is backwards from the paralllel case! CRY! CRY! CRY!
+     In the sequential case the todata contains indices from where the data is put
+     and the fromdata contains indices from where the data is taken from.
+     This is backwards from the paralllel case!
 
 @*/
-PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
+PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *frommap)
 {
-  VecScatter_Seq_General *to,*from;
-  VecScatter_MPI_General *mto;
-  PetscInt               i;
+  VecScatter_MPI_General *to,*from;
+  VecScatter_Seq_General *sgfrom;
+  PetscInt               i,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(scat,VEC_SCATTER_CLASSID,1);
-  if (rto)   PetscValidIntPointer(rto,2);
-  if (rfrom) PetscValidIntPointer(rfrom,3);
+  if (tomap)   PetscValidIntPointer(tomap,2);
+  if (frommap) PetscValidIntPointer(frommap,3);
 
-  from = (VecScatter_Seq_General*)scat->fromdata;
-  mto  = (VecScatter_MPI_General*)scat->todata;
+  to     = (VecScatter_MPI_General*)scat->todata;
+  from   = (VecScatter_MPI_General*)scat->fromdata;
+  sgfrom = (VecScatter_Seq_General*)scat->fromdata;
 
-  if (mto->format == VEC_SCATTER_MPI_TOALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
-
-  if (rto) {
-    if (mto->format == VEC_SCATTER_MPI_GENERAL) {
+  /* remap indices from where we take/read data */
+  if (tomap) {
+    if (to->format == VEC_SCATTER_MPI_TOALL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not for to all scatter");
+    } else if (to->format == VEC_SCATTER_MPI_GENERAL) {
       /* handle off processor parts */
-      for (i=0; i<mto->starts[mto->n]; i++) mto->indices[i] = rto[mto->indices[i]];
+      for (i=0; i<to->starts[to->n]; i++) to->indices[i] = tomap[to->indices[i]];
 
       /* handle local part */
-      to = &mto->local;
-      for (i=0; i<to->n; i++) to->vslots[i] = rto[to->vslots[i]];
-    } else if (from->format == VEC_SCATTER_SEQ_GENERAL) {
-      for (i=0; i<from->n; i++) from->vslots[i] = rto[from->vslots[i]];
-    } else if (from->format == VEC_SCATTER_SEQ_STRIDE) {
-      VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride*)from;
+      for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
+
+      /* test if the local part is made of copies and try to optimize it.
+         Before the remapping, the context may or may not contain optimized local copies.
+         After the remapping, old optimizations (if exist) may become invalid and new
+         optimization oppertunities may appear. So we free old stuff and try to re-optimize.
+       */
+      if (to->local.made_of_copies) {
+        ierr = PetscFree2(to->local.copy_starts,to->local.copy_lengths);CHKERRQ(ierr);
+        ierr = PetscFree2(from->local.copy_starts,from->local.copy_lengths);CHKERRQ(ierr);
+      }
+
+      to->local.made_of_copies = from->local.made_of_copies = PETSC_FALSE;
+      VecScatterLocalOptimizeCopy_Private(scat,&to->local,&from->local,to->bs);
+    } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
+      for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
+    } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
+      VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
 
       /* if the remapping is the identity and stride is identity then skip remap */
-      if (sto->step == 1 && sto->first == 0) {
-        for (i=0; i<sto->n; i++) {
-          if (rto[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
+      if (ssto->step == 1 && ssto->first == 0) {
+        for (i=0; i<ssto->n; i++) {
+          if (tomap[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
         }
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Unable to remap such scatters");
   }
 
-  if (rfrom) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
+  if (frommap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
 
   /*
-     Mark then vector lengths as unknown because we do not know the
-   lengths of the remapped vectors
+    Mark then vector lengths as unknown because we do not know the
+    lengths of the remapped vectors
   */
   scat->from_n = -1;
   scat->to_n   = -1;
