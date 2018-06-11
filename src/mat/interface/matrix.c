@@ -1155,13 +1155,11 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isbinary,flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newmat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   if (!((PetscObject)newmat)->type_name) {
     ierr = MatSetType(newmat,MATAIJ);CHKERRQ(ierr);
