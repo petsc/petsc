@@ -1685,14 +1685,15 @@ boundary:
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   /* detect local disconnected subdomains if requested (use matis->A) */
   if (pcbddc->detect_disconnected) {
-    IS       primalv = NULL;
-    PetscInt i;
+    IS        primalv = NULL;
+    PetscInt  i;
+    PetscBool filter = pcbddc->detect_disconnected_filter;
 
     for (i=0;i<pcbddc->n_local_subs;i++) {
       ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-    ierr = PCBDDCDetectDisconnectedComponents(pc,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
+    ierr = PCBDDCDetectDisconnectedComponents(pc,filter,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
     ierr = PCBDDCAddPrimalVerticesLocalIS(pc,primalv);CHKERRQ(ierr);
     ierr = ISDestroy(&primalv);CHKERRQ(ierr);
   }
@@ -2109,7 +2110,7 @@ PetscErrorCode MatSeqAIJCompress(Mat A, Mat *B)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[], IS* primalv)
+PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, PetscInt *ncc, IS* cc[], IS* primalv)
 {
   Mat                    B = NULL;
   DM                     dm;
@@ -2134,6 +2135,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
   if (dm) {
     ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isplex);CHKERRQ(ierr);
   }
+  if (filter) isplex = PETSC_FALSE;
+
   if (isplex) { /* this code has been modified from plexpartition.c */
     PetscInt       p, pStart, pEnd, a, adjSize, idx, size, nroots;
     PetscInt      *adj = NULL;
@@ -2196,7 +2199,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
     graph->adjncy = adjncy;
   } else {
     Mat       A;
-    PetscBool filter = PETSC_FALSE, isseqaij, flg_row;
+    PetscBool isseqaij, flg_row;
 
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     if (!A->rmap->N || !A->cmap->N) {
