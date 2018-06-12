@@ -18,6 +18,9 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscHSetICreate(&table);CHKERRQ(ierr);
 
+  /* The following line silences warnings from Clang Static Analyzer */
+  ierr = PetscHSetIResize(table,0);CHKERRQ(ierr);
+
   ierr = PetscTimeSubtract(&t_add);CHKERRQ(ierr);
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
