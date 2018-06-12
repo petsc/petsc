@@ -171,7 +171,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     PetscStackCallHDF5Return(group,H5Gopen2,(file_id, groupName, H5P_DEFAULT));
 #else
-    PetscStackCallHDF5Return(group,H5Gopen,file_id, groupName));
+    PetscStackCallHDF5Return(group,H5Gopen,(file_id, groupName));
 #endif
   } else group = file_id;
 
