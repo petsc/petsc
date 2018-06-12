@@ -4,7 +4,7 @@
 #include <petscdmlabel.h>
 #include <petscbt.h>
 #include <petscistypes.h>
-#include <petsc/private/hash.h>
+#include <petsc/private/hashseti.h>
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -24,7 +24,7 @@ struct _n_DMLabel {
   PetscInt   *stratumSizes;   /* Size of each stratum */
   IS         *points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
-  PetscHashI *ht;             /* Hash table for fast insertion */
+  PetscHSetI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */
   PetscInt    pStart, pEnd;   /* Bounds for index lookup */
   PetscBT     bt;             /* A bit-wise index */

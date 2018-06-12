@@ -1,6 +1,6 @@
 
 #include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
-#include <petsc/private/hash.h>
+#include <petsc/private/hashmapi.h>
 #include <petscsf.h>
 #include <petscviewer.h>
 
@@ -8,11 +8,11 @@ PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
 typedef struct {
-  PetscInt    *globals;
+  PetscInt *globals;
 } ISLocalToGlobalMapping_Basic;
 
 typedef struct {
-  PetscHashI globalht;
+  PetscHMapI globalht;
 } ISLocalToGlobalMapping_Hash;
 
 
@@ -82,10 +82,10 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping ma
 
   PetscFunctionBegin;
   ierr = PetscNew(&map);CHKERRQ(ierr);
-  PetscHashICreate(map->globalht);
+  ierr = PetscHMapICreate(&map->globalht);CHKERRQ(ierr);
   for (i=0; i<n; i++ ) {
     if (idx[i] < 0) continue;
-    PetscHashIAdd(map->globalht, idx[i], i);
+    ierr = PetscHMapISet(map->globalht,idx[i],i);CHKERRQ(ierr);
   }
   mapping->data = (void*)map;
   ierr = PetscLogObjectMemory((PetscObject)mapping,2*n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -111,7 +111,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
   PetscFunctionBegin;
   if (!map) PetscFunctionReturn(0);
-  PetscHashIDestroy(map->globalht);
+  ierr = PetscHMapIDestroy(&map->globalht);CHKERRQ(ierr);
   ierr = PetscFree(mapping->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -137,17 +137,17 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 #define GTOLTYPE _Hash
 #define GTOLNAME _Hash
 #define GTOLBS mapping->bs
-#define GTOL(g, local) do {                  \
-    PetscHashIMap(map->globalht,g/bs,local); \
-    local = bs*local + (g % bs);             \
+#define GTOL(g, local) do {                         \
+    (void)PetscHMapIGet(map->globalht,g/bs,&local); \
+    local = bs*local + (g % bs);                    \
    } while (0)
 #include <../src/vec/is/utils/isltog.h>
 
 #define GTOLTYPE _Hash
 #define GTOLNAME Block_Hash
 #define GTOLBS 1
-#define GTOL(g, local) do {                  \
-    PetscHashIMap(map->globalht,g,local);    \
+#define GTOL(g, local) do {                         \
+    (void)PetscHMapIGet(map->globalht,g,&local);    \
   } while (0)
 #include <../src/vec/is/utils/isltog.h>
 
