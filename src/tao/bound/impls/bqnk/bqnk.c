@@ -6,6 +6,7 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
+  PetscReal      gnorm2, delta;
 
   PetscFunctionBegin;
   /* Alias the LMVM matrix into the TAO hessian */
@@ -20,6 +21,9 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   ierr = PetscObjectReference((PetscObject)bqnk->B);CHKERRQ(ierr);
   tao->hessian_pre = bqnk->B;
   /* Update the Hessian with the latest solution */
+  gnorm2 = bnk->gnorm*bnk->gnorm;
+  delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
+  ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);
   ierr = MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = MatLMVMResetShift(tao->hessian);CHKERRQ(ierr);
   /* Prepare the reduced sub-matrices for the inactive set */

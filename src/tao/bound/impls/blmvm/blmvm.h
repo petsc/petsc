@@ -20,7 +20,7 @@ typedef struct {
   Vec W, work;
   
   PetscInt  as_type;
-  PetscReal as_step, as_tol;
+  PetscReal as_step, as_tol, eps;
   IS active_lower, active_upper, active_fixed;
   IS inactive_idx, active_idx;
 

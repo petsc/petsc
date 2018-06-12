@@ -7,7 +7,7 @@
 
 typedef struct {
   Vec *P, *Q;                               /* storage vectors for (B_i)*S[i] and (B_i)^{-1}*Y[i] */
-  Vec invDnew, invD, BFGS, DFP, U, V, W;         /* work vectors for diagonal scaling */
+  Vec invDnew, invD, BFGS, DFP, U, V, W;    /* work vectors for diagonal scaling */
   Vec work;
   PetscBool allocated;
   PetscReal *stp, *ytq, *yts, *yty, *sts;   /* scalar arrays for recycling dot products */
@@ -16,6 +16,7 @@ typedef struct {
   PetscReal delta, delta_min, delta_max, sigma;
   PetscInt sigma_hist;                      /* length of update history to be used for scaling */
   PetscInt scale_type;
+  PetscInt watchdog, max_seq_resets;        /* tracker to reset after a certain # of consecutive rejects */
 } Mat_SymBrdn;
 
 #define SYMBRDN_SCALE_NONE      0
@@ -24,6 +25,8 @@ typedef struct {
 #define SYMBRDN_SCALE_SIZE      3
 
 static const char *Scale_Table[64] = {"none","scalar","diagonal"};
+
+PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
 
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Inv(Mat, Vec, Vec);

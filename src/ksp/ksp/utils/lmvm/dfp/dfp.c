@@ -120,7 +120,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, j;
-  PetscReal         curvature, ytytmp, rhotol;
+  PetscReal         curvature, ytytmp, ststmp, curvtol;
   PetscReal         yjtqi, sjtyi;
   Vec               Qtmp;
 
@@ -128,14 +128,23 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   if (lmvm->m == 0) PetscFunctionReturn(0);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
-    ierr = VecAXPBY(lmvm->Xprev, 1.0, -1.0, X);CHKERRQ(ierr);
-    ierr = VecAXPBY(lmvm->Fprev, 1.0, -1.0, F);CHKERRQ(ierr);
+    ierr = VecAYPX(lmvm->Xprev, -1.0, X);CHKERRQ(ierr);
+    ierr = VecAYPX(lmvm->Fprev, -1.0, F);CHKERRQ(ierr);
     /* Test if the updates can be accepted */
-    ierr = VecDot(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
-    ierr = VecDot(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
-    rhotol = lmvm->eps * ytytmp;
-    if (curvature > rhotol) {
+    ierr = VecDotBegin(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
+    if (PetscMin(ststmp, ytytmp) < lmvm->eps) {
+      curvtol = 0.0;
+    } else {
+      curvtol = lmvm->eps;
+    }
+    if (curvature > curvtol) {
       /* Update is good, accept it */
+      ldfp->watchdog = 0;
       old_k = lmvm->k;
       ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
       /* If we hit the memory limit, shift the P and Q vectors */
@@ -151,9 +160,9 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         ldfp->Q[lmvm->k] = Qtmp;
       }
       /* Update history of useful scalars */
-      ldfp->yty[lmvm->k] = ytytmp;
       ldfp->yts[lmvm->k] = curvature;
-      ierr = VecDot(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &ldfp->sts[lmvm->k]);CHKERRQ(ierr);
+      ldfp->yty[lmvm->k] = ytytmp;
+      ldfp->sts[lmvm->k] = ststmp;
       /* Update the scaling */
       switch (ldfp->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
@@ -183,7 +192,12 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     } else {
       /* Update is bad, skip it */
       ++lmvm->nrejects;
+      ++ldfp->watchdog;
     }
+  }
+  
+  if (ldfp->watchdog > ldfp->max_seq_resets) {
+    ierr = MatLMVMReset(B, PETSC_FALSE);CHKERRQ(ierr);
   }
 
   /* Save the solution and function to be used in the next update */
@@ -215,6 +229,8 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   mctx->beta = bctx->beta;
   mctx->rho = bctx->rho;
   mctx->sigma_hist = bctx->sigma_hist;
+  mctx->watchdog = bctx->watchdog;
+  mctx->max_seq_resets = bctx->max_seq_resets;
   switch (bctx->scale_type) {
   case SYMBRDN_SCALE_SCALAR:
     mctx->sigma = bctx->sigma;
@@ -238,6 +254,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
+  ldfp->watchdog = 0;
   if (ldfp->allocated) {
     if (destructive) {
       ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
@@ -265,7 +282,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
         ldfp->sigma = 1.0;
         break;
       case SYMBRDN_SCALE_DIAG:
-        ierr = VecSet(ldfp->invD, 1.0);CHKERRQ(ierr);
+        ierr = VecSet(ldfp->invD, ldfp->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
       default:
@@ -407,25 +424,42 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsOb
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
+  Mat_SymBrdn       *ldfp;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate_LMVMSymBrdn(B);CHKERRQ(ierr);
+  ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDFP);CHKERRQ(ierr);
+  ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
+  B->ops->view = MatView_LMVMSymBrdn;
   B->ops->solve = MatSolve_LMVMDFP;
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;
   B->ops->setfromoptions = MatSetFromOptions_LMVMDFP;
 
   Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
+  lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMDFP;
   lmvm->ops->reset = MatReset_LMVMDFP;
   lmvm->ops->update = MatUpdate_LMVMDFP;
   lmvm->ops->mult = MatMult_LMVMDFP;
   lmvm->ops->copy = MatCopy_LMVMDFP;
-  
-  Mat_SymBrdn *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
-  lbfgs->phi = 1.0;
+
+  ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
+  lmvm->ctx = (void*)ldfp;
+  ldfp->allocated = PETSC_FALSE;
+  ldfp->phi = 1.0;
+  ldfp->alpha = 1.0;
+  ldfp->rho = 1.0;
+  ldfp->beta = 0.5;
+  ldfp->sigma = 1.0;
+  ldfp->delta = 1.0;
+  ldfp->delta_min = 1e-7;
+  ldfp->delta_max = 100.0;
+  ldfp->sigma_hist = 1;
+  ldfp->scale_type = SYMBRDN_SCALE_DIAG;
+  ldfp->watchdog = 0;
+  ldfp->max_seq_resets = lmvm->m/2;
   PetscFunctionReturn(0);
 }
 

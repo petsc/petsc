@@ -9,12 +9,7 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
   
   PetscFunctionBegin;
   gnorm2 = bnk->gnorm*bnk->gnorm;
-  if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-  if (bnk->f != 0.0) {
-    delta = 2.0*PetscAbsScalar(bnk->f) / gnorm2;
-  } else {
-    delta = 2.0 / gnorm2;
-  }
+  delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
   ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);
   ierr = MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -25,13 +20,19 @@ static PetscErrorCode TaoBQNLSComputeStep(Tao tao, PetscBool shift, KSPConverged
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
+  PetscInt       nupdates;
 
   PetscFunctionBegin;
   ierr = MatSolve(bqnk->B, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
   *ksp_reason = KSP_CONVERGED_ATOL;
-  *step_type = BNK_BFGS;
+  ierr = MatLMVMGetUpdateCount(bqnk->B, &nupdates);CHKERRQ(ierr);
+  if (nupdates == 0) {
+    *step_type = BNK_SCALED_GRADIENT;
+  } else {
+    *step_type = BNK_BFGS;
+  }
   PetscFunctionReturn(0);
 }
 

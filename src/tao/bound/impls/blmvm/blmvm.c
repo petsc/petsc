@@ -30,47 +30,32 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,stepsize);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-
-  /* Set initial scaling for the function */
-  gnorm2 = gnorm*gnorm;
-  if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-  if (f != 0.0) {
-    delta = 2.0*PetscAbsScalar(f) / gnorm2;
-  } else {
-    delta = 2.0 / gnorm2;
-  }
-  ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
-  ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
-
+  
   /* Set counter for gradient/reset steps */
   blmP->grad = 0;
   blmP->bfgs = 0;
+  ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Compute direction */
-    ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-    ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+    gnorm2 = gnorm*gnorm;
+    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
+    ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
+    ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
+    ierr = MatSolve(blmP->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
 
     /* Check for success (descent direction) */
-    ierr = VecDot(blmP->unprojected_gradient, tao->gradient, &gdx);CHKERRQ(ierr);
+    ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
     if (gdx <= 0) {
       /* Step is not descent or solve was not successful
          Use steepest descent direction (scaled) */
       stepType = BLMVM_STEP_GRAD;
-      
-      gnorm2 = gnorm*gnorm;
-      if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-      if (f != 0.0) {
-        delta = 2.0*PetscAbsScalar(f) / gnorm2;
-      } else {
-        delta = 2.0 / gnorm2;
-      }
-      ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatSolve(blmP->M,blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(blmP->M,tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
     }
     ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
 
@@ -82,24 +67,16 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, blmP->unprojected_gradient, tao->stepdirection, &stepsize, &ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
-    if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER && stepType != BLMVM_STEP_GRAD) {
+    if ((stepType != BLMVM_STEP_GRAD && ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER)) {
       /* Linesearch failed
          Reset factors and use scaled (projected) gradient step */
       f = fold;
       ierr = VecCopy(blmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient);CHKERRQ(ierr);
-      
-      gnorm2 = gnorm*gnorm;
-      if (gnorm2 == 0.0) gnorm2 = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
-      if (f != 0.0) {
-        delta = 2.0*PetscAbsScalar(f) / gnorm2;
-      } else {
-        delta = 2.0 / gnorm2;
-      }
-      ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(blmP->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       /* This may be incorrect; linesearch has values for stepmax and stepmin
@@ -191,7 +168,7 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
   PetscFunctionBegin;
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare(blmP->M, MATLMVM, &is_lmvm);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)blmP->M, MATLMVM, &is_lmvm);CHKERRQ(ierr);
   if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "matrix must be an LMVM-type");
   ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
   if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be a symmetric positive-definite approximation (DFP, BFGS or SymBrdn)");
@@ -210,6 +187,9 @@ static int TaoView_BLMVM(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lmP->grad);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatView(lmP->M, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -279,6 +259,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = PetscNewLog(tao,&blmP);CHKERRQ(ierr);
   blmP->H0 = NULL;
   blmP->no_scale = PETSC_FALSE;
+  blmP->eps = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0);
   tao->data = (void*)blmP;
 
   /* Override default settings (unless already changed) */
