@@ -563,7 +563,23 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
   ierr    = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscBools[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscBools[options.IterRefine == SLU_DOUBLE]);CHKERRQ(ierr);
   ierr    = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
-  ierr    = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL" : "LargeDiag");CHKERRQ(ierr);
+
+  switch (options.RowPerm) {
+  case NOROWPERM:
+    ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation NOROWPERM\n");CHKERRQ(ierr);
+    break;
+  case LargeDiag_MC64:
+    ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_MC64\n");CHKERRQ(ierr);
+    break;
+  case LargeDiag_AWPM:
+    ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation LargeDiag_AWPM\n");CHKERRQ(ierr);
+    break;
+  case MY_PERMR:
+    ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation MY_PERMR\n");CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
+  }
 
   switch (options.ColPerm) {
   case NATURAL:
@@ -626,7 +642,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   superlu_dist_options_t options;
   PetscBool              flg;
   const char             *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
-  const char             *rowperm[]     = {"LargeDiag","NATURAL"};
+  const char             *rowperm[]     = {"NOROWPERM","LargeDiag_MC64","LargeDiag_AWPM","MY_PERMR"};
   const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm","DOFACT"};
   PetscBool              set;
 
@@ -660,7 +676,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
      options.Equil             = YES;
      options.ParSymbFact       = NO;
      options.ColPerm           = METIS_AT_PLUS_A;
-     options.RowPerm           = LargeDiag;
+     options.RowPerm           = LargeDiag_MC64;
      options.ReplaceTinyPivot  = YES;
      options.IterRefine        = DOUBLE;
      options.Trans             = NOTRANS;
@@ -694,15 +710,23 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && !flg) options.Equil = NO;
 
-  ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,4,rowperm[1],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
-      options.RowPerm = LargeDiag;
-      break;
-    case 1:
       options.RowPerm = NOROWPERM;
       break;
+    case 1:
+      options.RowPerm = LargeDiag_MC64;
+      break;
+    case 2:
+      options.RowPerm = LargeDiag_AWPM;
+      break;
+    case 3:
+      options.RowPerm = MY_PERMR;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown row permutation");
     }
   }
 
@@ -815,7 +839,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
 . -mat_superlu_dist_c <n> - number of columns in processor partition
 . -mat_superlu_dist_matinput <0,1> - matrix input mode; 0=global, 1=distributed
 . -mat_superlu_dist_equil - equilibrate the matrix
-. -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
+. -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR> - row permutation
 . -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
 . -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm DOFACT
