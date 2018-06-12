@@ -456,6 +456,42 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
+{
+  hid_t          file_id, group;
+  htri_t         found;
+  const char     *groupName = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
+  /* Open group */
+  if (groupName) {
+    PetscBool root;
+
+    ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
+    PetscStackCall("H5Lexists",found = H5Lexists(file_id, groupName, H5P_DEFAULT));
+    if (!root && (found <= 0)) {
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+      PetscStackCallHDF5Return(group,H5Gcreate2,(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT));
+#else /* deprecated HDF5 1.6 API */
+      PetscStackCallHDF5Return(group,H5Gcreate,(file_id, groupName, 0));
+#endif
+      PetscStackCallHDF5(H5Gclose,(group));
+    }
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+    PetscStackCallHDF5Return(group,H5Gopen2,(file_id, groupName, H5P_DEFAULT));
+#else
+    PetscStackCallHDF5Return(group,H5Gopen,(file_id, groupName));
+#endif
+  } else group = file_id;
+
+  *fileId  = file_id;
+  *groupId = group;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
 
