@@ -1314,13 +1314,14 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* compute initial vector in benign space if needed
      and remove non-benign solution from the rhs */
   benign_correction_computed = PETSC_FALSE;
-  if (rhs && pcbddc->benign_compute_correction && pcbddc->benign_have_null) {
+  if (rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
     /* compute u^*_h using ideas similar to those in Xuemin Tu's PhD thesis (see Section 4.8.1)
        Recursively apply BDDC in the multilevel case */
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
-    pcbddc->benign_apply_coarse_only = PETSC_TRUE;
+    /* keep applying coarse solver unless we no longer have benign subdomains */
+    pcbddc->benign_apply_coarse_only = pcbddc->benign_have_null ? PETSC_TRUE : PETSC_FALSE;
     if (!pcbddc->benign_skip_correction) {
       ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
       benign_correction_computed = PETSC_TRUE;
@@ -1345,11 +1346,17 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* dbg output */
   if (pcbddc->dbg_flag && benign_correction_computed) {
     Vec v;
+
     ierr = VecDuplicate(pcis->vec1_global,&v);CHKERRQ(ierr);
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
+    if (pcbddc->ChangeOfBasisMatrix) {
+      ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(rhs,v);CHKERRQ(ierr);
+    }
     ierr = PCBDDCBenignGetOrSetP0(pc,v,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"LEVEL %D: is the correction benign?\n",pcbddc->current_level);CHKERRQ(ierr);
-    ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));CHKERRQ(ierr);
+    ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
   }
 
