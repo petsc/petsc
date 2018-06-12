@@ -161,7 +161,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     if (PetscMin(ststmp, ytytmp) < lmvm->eps) {
       curvtol = 0.0;
     } else {
-      curvtol = lmvm->eps;
+      curvtol = lmvm->eps * ststmp;
     }
     if (curvature > curvtol) {
       /* Update is good, accept it */
@@ -250,7 +250,19 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
       ++lsb->watchdog;
     }
   } else {
-    ierr = VecSet(lsb->invD, lsb->delta);CHKERRQ(ierr);
+    switch (lsb->scale_type) {
+    case SYMBRDN_SCALE_DIAG:
+      ierr = VecSet(lsb->invD, lsb->delta);CHKERRQ(ierr);
+      break;
+    case SYMBRDN_SCALE_SCALAR:
+      lsb->sigma = lsb->delta;
+      break;
+    case SYMBRDN_SCALE_NONE:
+      lsb->sigma = 1.0;
+      break;
+    default:
+      break;
+    }
   }
   
   if (lsb->watchdog > lsb->max_seq_resets) {
@@ -301,6 +313,8 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(blsb->invD, mlsb->invD);CHKERRQ(ierr);
     break;
   case SYMBRDN_SCALE_NONE:
+    mlsb->sigma = 1.0;
+    break;
   default:
     break;
   }
@@ -343,12 +357,14 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
       ierr = PetscMemzero(lsb->psi, lmvm->m);CHKERRQ(ierr);
       switch (lsb->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
-        lsb->sigma = 1.0;
+        lsb->sigma = lsb->delta;
         break;
       case SYMBRDN_SCALE_DIAG:
         ierr = VecSet(lsb->invD, lsb->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
+        lsb->sigma = 1.0;
+        break;
       default:
         break;
       }

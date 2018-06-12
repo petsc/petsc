@@ -75,9 +75,12 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   implementation of Equation (6.19) in Nocedal and Wright "Numerical 
   Optimization" 2nd Edition, pg 140.
   
-  Note that this forward product has the same structure as the 
-  inverse Jacobian application in the DFP formulation, except with S 
-  and Y exchanging roles.
+  This forward product has the same structure as the inverse Jacobian 
+  application in the DFP formulation, except with S and Y exchanging 
+  roles.
+  
+  Note: The P[i] calculations are shown in the pseudocode algorithm 
+  here but are actually pre-computed during the update call.
 
   Z <- J0 * X
 
@@ -199,7 +202,19 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
       ++lbfgs->watchdog;
     }
   } else {
-    ierr = VecSet(lbfgs->invD, lbfgs->delta);CHKERRQ(ierr);
+    switch (lbfgs->scale_type) {
+    case SYMBRDN_SCALE_DIAG:
+      ierr = VecSet(lbfgs->invD, lbfgs->delta);CHKERRQ(ierr);
+      break;
+    case SYMBRDN_SCALE_SCALAR:
+      lbfgs->sigma = lbfgs->delta;
+      break;
+    case SYMBRDN_SCALE_NONE:
+      lbfgs->sigma = 1.0;
+      break;
+    default:
+      break;
+    }
   }
   
   if (lbfgs->watchdog > lbfgs->max_seq_resets) {
@@ -246,6 +261,8 @@ static PetscErrorCode MatCopy_LMVMBFGS(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(bctx->invD, mctx->invD);CHKERRQ(ierr);
     break;
   case SYMBRDN_SCALE_NONE:
+    mctx->sigma = 1.0;
+    break;
   default:
     break;
   }
@@ -286,12 +303,14 @@ static PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
     } else {
       switch (lbfgs->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
-        lbfgs->sigma = 1.0;
+        lbfgs->sigma = lbfgs->delta;
         break;
       case SYMBRDN_SCALE_DIAG:
         ierr = VecSet(lbfgs->invD, lbfgs->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
+        lbfgs->sigma = 1.0;
+        break;
       default:
         break;
       }

@@ -13,7 +13,7 @@
   Equation (6.15) of Nocedal and Wright "Numerical Optimization" 2nd 
   edition, pg 139.
   
-  Q[i] = (B_i)^{-1}*S[i] terms are computed ahead of time whenever 
+  Note: Q[i] = (B_i)^{-1}*S[i] terms are computed ahead of time whenever 
   the matrix is updated with a new (S[i], Y[i]) pair. This allows 
   repeated calls of MatSolve without incurring redundant computation.
 
@@ -61,9 +61,9 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   implementation of the recursive formula given in Equation 6.13 of 
   Nocedal and Wright "Numerical Optimization" 2nd edition, pg 139.
   
-  Note that this forward product has a two-loop form similar to the 
-  BFGS two-loop formulation for the inverse Jacobian application. 
-  However, the S and Y vectors have interchanged roles.
+  This forward product has a two-loop form similar to the BFGS two-loop 
+  formulation for the inverse Jacobian application. However, the S and 
+  Y vectors have interchanged roles.
 
   work <- X
 
@@ -140,7 +140,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     if (PetscMin(ststmp, ytytmp) < lmvm->eps) {
       curvtol = 0.0;
     } else {
-      curvtol = lmvm->eps;
+      curvtol = lmvm->eps * ststmp;
     }
     if (curvature > curvtol) {
       /* Update is good, accept it */
@@ -194,6 +194,20 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
       ++lmvm->nrejects;
       ++ldfp->watchdog;
     }
+  } else {
+    switch (ldfp->scale_type) {
+    case SYMBRDN_SCALE_DIAG:
+      ierr = VecSet(ldfp->invD, ldfp->delta);CHKERRQ(ierr);
+      break;
+    case SYMBRDN_SCALE_SCALAR:
+      ldfp->sigma = ldfp->delta;
+      break;
+    case SYMBRDN_SCALE_NONE:
+      ldfp->sigma = 1.0;
+      break;
+    default:
+      break;
+    }
   }
   
   if (ldfp->watchdog > ldfp->max_seq_resets) {
@@ -239,6 +253,8 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(bctx->invD, mctx->invD);CHKERRQ(ierr);
     break;
   case SYMBRDN_SCALE_NONE:
+    mctx->sigma = 1.0;
+    break;
   default:
     break;
   }
@@ -279,12 +295,14 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
     } else {
       switch (ldfp->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
-        ldfp->sigma = 1.0;
+        ldfp->sigma = ldfp->delta;
         break;
       case SYMBRDN_SCALE_DIAG:
         ierr = VecSet(ldfp->invD, ldfp->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
+        ldfp->sigma = 1.0;
+        break;
       default:
         break;
       }

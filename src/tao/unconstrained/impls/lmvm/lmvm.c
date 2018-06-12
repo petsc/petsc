@@ -1,6 +1,5 @@
 #include <petsctaolinesearch.h>
 #include <../src/tao/unconstrained/impls/lmvm/lmvm.h>
-#include <../src/tao/bound/impls/blmvm/blmvm.h>
 
 #define LMVM_STEP_BFGS     0
 #define LMVM_STEP_GRAD     1
@@ -286,73 +285,45 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
 
 PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
-  TAO_LMVM       *lmP;
-  TAO_BLMVM      *blmP;
+  TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   TaoType        type;
-  PetscBool      is_lmvm, is_blmvm;
+  PetscBool      is_lmvm;
   PetscErrorCode ierr;
 
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
-
-  if (is_lmvm) {
-    lmP = (TAO_LMVM *)tao->data;
-    ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
-    lmP->H0 = H0;
-  } else if (is_blmvm) {
-    blmP = (TAO_BLMVM *)tao->data;
-    ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
-    blmP->H0 = H0;
-  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM only.");
+  ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
+  lmP->H0 = H0;
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
-  TAO_LMVM       *lmP;
-  TAO_BLMVM      *blmP;
+  TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   TaoType        type;
-  PetscBool      is_lmvm, is_blmvm;
-  Mat            M;
+  PetscBool      is_lmvm;
+  Mat            M = lmP->M;
 
   PetscErrorCode ierr;
-
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
-
-  if (is_lmvm) {
-    lmP = (TAO_LMVM *)tao->data;
-    M = lmP->M;
-  } else if (is_blmvm) {
-    blmP = (TAO_BLMVM *)tao->data;
-    M = blmP->M;
-  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM only.");
   ierr = MatLMVMGetJ0(M, H0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {
-  TAO_LMVM       *lmP;
-  TAO_BLMVM      *blmP;
+  TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   TaoType        type;
-  PetscBool      is_lmvm, is_blmvm;
-  Mat            M;
+  PetscBool      is_lmvm;
+  Mat            M = lmP->M;
+  
   PetscErrorCode ierr;
-
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
-
-  if (is_lmvm) {
-    lmP = (TAO_LMVM *)tao->data;
-    M = lmP->M;
-  } else if (is_blmvm) {
-    blmP = (TAO_BLMVM *)tao->data;
-    M = blmP->M;
-  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  if (!is_lmvm) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM only.");
   ierr = MatLMVMGetJ0KSP(M, ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
