@@ -382,7 +382,7 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 {
@@ -411,7 +411,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5GetGroup()
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 {
@@ -430,7 +430,8 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 }
 
 /*@C
-  PetscViewerHDF5GetGroup - Get the current HDF5 group for output. If none has been assigned, returns NULL.
+  PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with PetscViewerHDF5PushGroup()/PetscViewerHDF5PopGroup().
+  If none has been assigned, returns NULL.
 
   Not collective
 
@@ -442,7 +443,7 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup()
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 {
@@ -456,6 +457,24 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by PetscViewerHDF5GetGroup(),
+  and return this group's ID and file ID.
+  If PetscViewerHDF5GetGroup() yields NULL, then group ID is file ID.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
++ fileId - The HDF5 file ID
+- groupId - The HDF5 group ID
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open(),PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
+@*/
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
