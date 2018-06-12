@@ -1717,13 +1717,25 @@ boundary:
         ierr = MatISRestoreLocalMat(pc->pmat,&lA);CHKERRQ(ierr);
         if (l2l && corners) {
           const PetscInt *idx;
-          PetscInt       bs,*idxout,n;
+          PetscInt       dof,bs,*idxout,n;
 
+          ierr = DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingGetBlockSize(l2l,&bs);CHKERRQ(ierr);
           ierr = ISGetLocalSize(corners,&n);CHKERRQ(ierr);
           ierr = ISGetIndices(corners,&idx);CHKERRQ(ierr);
-          ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
-          ierr = ISLocalToGlobalMappingApplyBlock(l2l,n,idx,idxout);CHKERRQ(ierr);
+          if (bs == dof) {
+            ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingApplyBlock(l2l,n,idx,idxout);CHKERRQ(ierr);
+          } else { /* the original DMDA local-to-local map have been modified */
+            PetscInt i,d;
+
+            ierr = PetscMalloc1(dof*n,&idxout);CHKERRQ(ierr);
+            for (i=0;i<n;i++) for (d=0;d<dof;d++) idxout[dof*i+d] = dof*idx[i]+d;
+            ierr = ISLocalToGlobalMappingApply(l2l,dof*n,idxout,idxout);CHKERRQ(ierr);
+
+            bs = 1;
+            n *= dof;
+          }
           ierr = ISRestoreIndices(corners,&idx);CHKERRQ(ierr);
           ierr = DMDARestoreSubdomainCornersIS(dm,&corners);CHKERRQ(ierr);
           ierr = ISCreateBlock(PetscObjectComm((PetscObject)pc),bs,n,idxout,PETSC_OWN_POINTER,&corners);CHKERRQ(ierr);

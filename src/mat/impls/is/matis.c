@@ -2756,17 +2756,50 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
       ierr = ISCreateStride(PetscObjectComm((PetscObject)is->A),nr,0,1,&is1);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_MASK,is1,&is2);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+      if (is->A->rmap->mapping) { /* the matrix has a local-to-local map already attached (probably DMDA generated) */
+        const PetscInt *idxs1,*idxs2;
+        PetscInt       j,i,nl,*tidxs;
+
+        ierr = ISLocalToGlobalMappingGetSize(is->A->rmap->mapping,&nl);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetIndices(is->A->rmap->mapping,&idxs1);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nl,&tidxs);CHKERRQ(ierr);
+        ierr = ISGetIndices(is2,&idxs2);CHKERRQ(ierr);
+        for (i=0,j=0;i<nl;i++) tidxs[i] = idxs1[i] < 0 ? -1 : idxs2[j++];
+        if (j != nr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected count %D != %D",j,nr);
+        ierr = ISLocalToGlobalMappingRestoreIndices(is->A->rmap->mapping,&idxs1);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(is2,&idxs2);CHKERRQ(ierr);
+        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is->A->rmap->mapping),nl,tidxs,PETSC_OWN_POINTER,&is2);CHKERRQ(ierr);
+      }
       ierr = ISLocalToGlobalMappingCreateIS(is2,&rl2g);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
+
       ierr = ISLocalToGlobalMappingCreateIS(nzc,&l2g);CHKERRQ(ierr);
       ierr = ISCreateStride(PetscObjectComm((PetscObject)is->A),nc,0,1,&is1);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_MASK,is1,&is2);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+      if (is->A->cmap->mapping) { /* the matrix has a local-to-local map already attached (probably DMDA generated) */
+        const PetscInt *idxs1,*idxs2;
+        PetscInt       j,i,nl,*tidxs;
+
+        ierr = ISLocalToGlobalMappingGetSize(is->A->cmap->mapping,&nl);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetIndices(is->A->cmap->mapping,&idxs1);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nl,&tidxs);CHKERRQ(ierr);
+        ierr = ISGetIndices(is2,&idxs2);CHKERRQ(ierr);
+        for (i=0,j=0;i<nl;i++) tidxs[i] = idxs1[i] < 0 ? -1 : idxs2[j++];
+        if (j != nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected count %D != %D",j,nc);
+        ierr = ISLocalToGlobalMappingRestoreIndices(is->A->cmap->mapping,&idxs1);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(is2,&idxs2);CHKERRQ(ierr);
+        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is->A->cmap->mapping),nl,tidxs,PETSC_OWN_POINTER,&is2);CHKERRQ(ierr);
+      }
       ierr = ISLocalToGlobalMappingCreateIS(is2,&cl2g);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
+
       ierr = MatSetLocalToGlobalMapping(newlA,rl2g,cl2g);CHKERRQ(ierr);
+
       ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
     } else { /* local matrix fully populated */
