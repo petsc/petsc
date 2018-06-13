@@ -1,27 +1,24 @@
   0 SNES Function norm 1.222863172776e+01 
-    0 KSP preconditioned resid norm 2.363347371151e+01 true resid norm 1.222863172776e+01 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP preconditioned resid norm 9.903900350023e+00 true resid norm 3.815279529503e+00 ||r(i)||/||b|| 3.119956193334e-01
-    2 KSP preconditioned resid norm 9.515178853779e-01 true resid norm 2.014014853947e-01 ||r(i)||/||b|| 1.646966642535e-02
-    3 KSP preconditioned resid norm 1.579361817304e-02 true resid norm 8.984009157936e-03 ||r(i)||/||b|| 7.346700234287e-04
-    4 KSP preconditioned resid norm 7.377035149044e-03 true resid norm 9.145491681724e-03 ||r(i)||/||b|| 7.478753048848e-04
-    5 KSP preconditioned resid norm 3.411499703732e-03 true resid norm 9.037901252405e-03 ||r(i)||/||b|| 7.390770654975e-04
-    6 KSP preconditioned resid norm 4.024784701226e-04 true resid norm 9.055521674043e-03 ||r(i)||/||b|| 7.405179807225e-04
-    7 KSP preconditioned resid norm 6.811973907255e-05 true resid norm 9.072872381841e-03 ||r(i)||/||b|| 7.419368400181e-04
-  1 SNES Function norm 9.072872381840e-03 
-    0 KSP preconditioned resid norm 1.089981005143e+00 true resid norm 9.072872381840e-03 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP preconditioned resid norm 7.850416250640e-03 true resid norm 6.129581270809e-05 ||r(i)||/||b|| 6.755943446397e-03
-    2 KSP preconditioned resid norm 2.896234289056e-03 true resid norm 2.228651244216e-05 ||r(i)||/||b|| 2.456389939615e-03
-    3 KSP preconditioned resid norm 3.788666599069e-04 true resid norm 1.768318791308e-05 ||r(i)||/||b|| 1.949017595406e-03
-    4 KSP preconditioned resid norm 3.641436788109e-05 true resid norm 1.577760580983e-05 ||r(i)||/||b|| 1.738986855079e-03
-    5 KSP preconditioned resid norm 8.458112998966e-06 true resid norm 1.571332573084e-05 ||r(i)||/||b|| 1.731901989748e-03
-  2 SNES Function norm 1.571332573107e-05 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    0 KSP preconditioned resid norm 2.407235931360e+01 true resid norm 1.222863172776e+01 ||r(i)||/||b|| 1.000000000000e+00
+    1 KSP preconditioned resid norm 1.866212631536e+00 true resid norm 2.711202370526e-01 ||r(i)||/||b|| 2.217093809744e-02
+    2 KSP preconditioned resid norm 7.731721899972e-01 true resid norm 1.106390745298e-01 ||r(i)||/||b|| 9.047543256910e-03
+    3 KSP preconditioned resid norm 3.970327187886e-01 true resid norm 2.980612291329e-02 ||r(i)||/||b|| 2.437404574513e-03
+    4 KSP preconditioned resid norm 5.772752761856e-02 true resid norm 1.349822746240e-03 ||r(i)||/||b|| 1.103821569158e-04
+    5 KSP preconditioned resid norm 9.942623538590e-03 true resid norm 7.088328734291e-04 ||r(i)||/||b|| 5.796501924413e-05
+    6 KSP preconditioned resid norm 1.036454582221e-03 true resid norm 7.146468544210e-04 ||r(i)||/||b|| 5.844045927056e-05
+    7 KSP preconditioned resid norm 9.943598663980e-04 true resid norm 7.147884028829e-04 ||r(i)||/||b|| 5.845203443817e-05
+    8 KSP preconditioned resid norm 9.943416915915e-04 true resid norm 7.147830104921e-04 ||r(i)||/||b|| 5.845159347381e-05
+    9 KSP preconditioned resid norm 9.936457110425e-04 true resid norm 7.142716462714e-04 ||r(i)||/||b|| 5.840977651243e-05
+   10 KSP preconditioned resid norm 6.791410691679e-04 true resid norm 6.462921546179e-04 ||r(i)||/||b|| 5.285073334498e-05
+   11 KSP preconditioned resid norm 6.143015055579e-05 true resid norm 5.956131061993e-04 ||r(i)||/||b|| 4.870643907340e-05
+  1 SNES Function norm 5.956131061988e-04 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=12
-  total number of function evaluations=3
+  total number of linear solver iterations=11
+  total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -51,20 +48,9 @@ SNES Object: 1 MPI processes
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (mg_coarse_) 1 MPI processes
-          type: lu
-            out-of-place factorization
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
-            matrix ordering: nd
-            factor fill ratio given 5., needed 1.40288
-              Factored matrix follows:
-                Mat Object: 1 MPI processes
-                  type: seqaij
-                  rows=86, cols=86
-                  package used to perform factorization: petsc
-                  total: nonzeros=1560, allocated nonzeros=1560
-                  total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 61 nodes, limit used is 5
+          type: svd
+            All singular values smaller than 1e-12 treated as zero
+            Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
           linear system matrix = precond matrix:
           Mat Object: 1 MPI processes
             type: seqaij
@@ -105,15 +91,15 @@ SNES Object: 1 MPI processes
               Factored matrix follows:
                 Mat Object: 1 MPI processes
                   type: seqdense
-                  rows=22, cols=22
+                  rows=3, cols=3
                   package used to perform factorization: petsc
-                  total: nonzeros=484, allocated nonzeros=484
+                  total: nonzeros=9, allocated nonzeros=9
                   total number of mallocs used during MatSetValues calls =0
           linear system matrix = precond matrix:
           Mat Object: (mg_levels_1_pc_patch_sub_) 1 MPI processes
             type: seqdense
-            rows=22, cols=22
-            total: nonzeros=484, allocated nonzeros=484
+            rows=3, cols=3
+            total: nonzeros=9, allocated nonzeros=9
             total number of mallocs used during MatSetValues calls =0
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
@@ -156,15 +142,15 @@ SNES Object: 1 MPI processes
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqdense
-                rows=22, cols=22
+                rows=3, cols=3
                 package used to perform factorization: petsc
-                total: nonzeros=484, allocated nonzeros=484
+                total: nonzeros=9, allocated nonzeros=9
                 total number of mallocs used during MatSetValues calls =0
         linear system matrix = precond matrix:
         Mat Object: (mg_levels_2_pc_patch_sub_) 1 MPI processes
           type: seqdense
-          rows=22, cols=22
-          total: nonzeros=484, allocated nonzeros=484
+          rows=3, cols=3
+          total: nonzeros=9, allocated nonzeros=9
           total number of mallocs used during MatSetValues calls =0
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
@@ -183,4 +169,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 1105 nodes, limit used is 5
-L_2 Error: 0.0174331 [0.000818331, 0.0174139]
+L_2 Error: 0.280424 [0.000814457, 0.280423]
