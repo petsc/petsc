@@ -1297,6 +1297,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,work,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
             if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
           }
+          ierr = PetscLogFlops(1.0*subset_size*subset_size*subset_size);CHKERRQ(ierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           ierr = MatSetValues(sub_schurs->sum_S_Ej_inv_all,subset_size,dummy_idx,subset_size,dummy_idx,work,INSERT_VALUES);CHKERRQ(ierr);
         }
@@ -1434,6 +1435,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
             if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
           }
+          ierr = PetscLogFlops(1.0*size_schur*size_schur*size_schur);CHKERRQ(ierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           ierr = MatDenseRestoreArray(S_all_inv,&S_data);CHKERRQ(ierr);
         }
@@ -1649,6 +1651,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         }
+        ierr = PetscLogFlops(1.0*subset_size*subset_size*subset_size);CHKERRQ(ierr);
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         cum += subset_size*subset_size;
       }

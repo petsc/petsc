@@ -54,6 +54,7 @@ PetscErrorCode  PCInitializePackage(void)
   PCPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
   ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
+  ierr = PCBDDCInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Preconditioner",&PC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */

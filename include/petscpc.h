@@ -298,6 +298,8 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const Petsc
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,PetscBool,const char*,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCBDDCInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);

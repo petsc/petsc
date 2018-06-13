@@ -252,6 +252,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscLogEventBegin(PC_BDDC_Scaling[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   /* create work vector for the operator */
   ierr = VecDestroy(&pcbddc->work_scaling);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcbddc->work_scaling);CHKERRQ(ierr);
@@ -348,6 +349,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
     ierr = VecDestroy(&B0_Bv);CHKERRQ(ierr);
     ierr = VecDestroy(&B0_Bv2);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_Scaling[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

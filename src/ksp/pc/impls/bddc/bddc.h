@@ -8,6 +8,16 @@
 #define PETSC_PCBDDC_MAXLEVELS 8
 #endif
 
+PETSC_EXTERN PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_LocalSolvers[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_LocalWork[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CorrectionSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CoarseSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_Scaling[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_Schurs[PETSC_PCBDDC_MAXLEVELS];
+
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */

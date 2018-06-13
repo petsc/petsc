@@ -23,6 +23,8 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
+static PetscBool PCBDDCPackageInitialized = PETSC_FALSE;
+
 static PetscBool  cited = PETSC_FALSE;
 static const char citation[] =
 "@article{ZampiniPCBDDC,\n"
@@ -38,7 +40,16 @@ static const char citation[] =
 "eprint = {http://dx.doi.org/10.1137/15M1025785}\n"
 "}\n";
 
-/* temporarily declare it */
+PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_LocalSolvers[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_LocalWork[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_CorrectionSetUp[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_CoarseSetUp[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_Scaling[PETSC_PCBDDC_MAXLEVELS];
+PetscLogEvent PC_BDDC_Schurs[PETSC_PCBDDC_MAXLEVELS];
+
 PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 
 PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
@@ -1521,6 +1532,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* process topology information */
+  ierr = PetscLogEventBegin(PC_BDDC_Topology[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   if (pcbddc->recompute_topography) {
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
     if (pcbddc->discretegradient) {
@@ -1602,6 +1614,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       }
     }
   }
+  ierr = PetscLogEventEnd(PC_BDDC_Topology[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   /* check existence of a divergence free extension, i.e.
      b(v_I,p_0) = 0 for all v_I (raise error if not).
@@ -1673,6 +1686,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* Setup constraints and related work vectors */
   /* reset primal space flags */
+  ierr = PetscLogEventBegin(PC_BDDC_LocalWork[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
   pcbddc->new_primal_space = PETSC_FALSE;
   pcbddc->new_primal_space_local = PETSC_FALSE;
   if (computeconstraintsmatrix || new_nearnullspace_provided) {
@@ -1734,6 +1748,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = MatDestroy(&Bt_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&Bt_BB);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(PC_BDDC_LocalWork[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
 
   /* SetUp coarse and local Neumann solvers */
   ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
@@ -2673,5 +2688,76 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_BDDC);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ PCBDDCInitializePackage - This function initializes everything in the PCBDDC package. It is called
+    from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate_BDDC()
+    when using static libraries.
+
+ Level: developer
+
+ .keywords: PC, PCBDDC, initialize, package
+ .seealso: PetscInitialize()
+@*/
+PetscErrorCode PCBDDCInitializePackage(void)
+{
+  PetscErrorCode ierr;
+  int            i;
+
+  PetscFunctionBegin;
+  if (PCBDDCPackageInitialized) PetscFunctionReturn(0);
+  PCBDDCPackageInitialized = PETSC_TRUE;
+  ierr = PetscRegisterFinalize(PCBDDCFinalizePackage);CHKERRQ(ierr);
+
+  /* general events */
+  ierr = PetscLogEventRegister("PCBDDCTopo",PC_CLASSID,&PC_BDDC_Topology[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCLKSP",PC_CLASSID,&PC_BDDC_LocalSolvers[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCLWor",PC_CLASSID,&PC_BDDC_LocalWork[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCCorr",PC_CLASSID,&PC_BDDC_CorrectionSetUp[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCCSet",PC_CLASSID,&PC_BDDC_CoarseSetUp[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCCKSP",PC_CLASSID,&PC_BDDC_CoarseSolver[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCAdap",PC_CLASSID,&PC_BDDC_AdaptiveSetUp[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCScal",PC_CLASSID,&PC_BDDC_Scaling[0]);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCBDDCSchr",PC_CLASSID,&PC_BDDC_Schurs[0]);CHKERRQ(ierr);
+  for (i=1;i<PETSC_PCBDDC_MAXLEVELS;i++) {
+    char ename[32];
+
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCTopo l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Topology[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCLKSP l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_LocalSolvers[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCLWor l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_LocalWork[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCorr l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_CorrectionSetUp[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCSet l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_CoarseSetUp[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCCKSP l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_CoarseSolver[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCAdap l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_AdaptiveSetUp[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCScal l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Scaling[i]);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ename,sizeof(ename),"PCBDDCSchr l%02d",i);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(ename,PC_CLASSID,&PC_BDDC_Schurs[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ PCBDDCFinalizePackage - This function frees everything from the PCBDDC package. It is
+    called from PetscFinalize() automatically.
+
+ Level: developer
+
+ .keywords: Petsc, destroy, package
+ .seealso: PetscFinalize()
+@*/
+PetscErrorCode PCBDDCFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PCBDDCPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
