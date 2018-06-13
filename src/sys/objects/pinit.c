@@ -1008,7 +1008,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",0);CHKERRQ(ierr);
   ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);
-  ierr = adios_read_init_method(ADIOS_READ_METHOD_BP_AGGREGATE,PETSC_COMM_WORLD,"verbose=4");CHKERRQ(ierr);
+  ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
 #endif
 
   /*

@@ -391,8 +391,8 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
   PetscErrorCode    ierr;
   PetscScalar       *x;
-  PetscInt          Nfile,N;
-  uint64_t          zero = 0,N_t;
+  PetscInt          Nfile,N,rstart,n;
+  uint64_t          N_t,rstart_t;
   const char        *vecname;
   char              *nname,*vname;
   ADIOS_VARINFO     *v;
@@ -417,13 +417,16 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   }
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
   if (N != Nfile) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", Nfile, N);
   
   v    = adios_inq_var(adios->adios_fp, vname);
   if (v->ndim != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%D)", v->ndim);
+  ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
+  rstart_t = rstart;
+  N_t  = rstart + n;
+  sel  = adios_selection_boundingbox (v->ndim, &rstart_t, &N_t);
   ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
-  N_t  = Nfile;
-  sel  = adios_selection_boundingbox (v->ndim, &zero, &N_t);
   adios_schedule_read(adios->adios_fp, sel, vname, 0, 1, x);
   adios_perform_reads (adios->adios_fp, 1);
   ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);

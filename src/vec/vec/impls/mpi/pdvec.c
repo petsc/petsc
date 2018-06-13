@@ -643,10 +643,10 @@ PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
   PetscErrorCode    ierr;
   const char        *vecname;
   int64_t           id;
-  PetscInt          n;
+  PetscInt          n,N;
   const PetscScalar *array;
   size_t            len;
-  char              *vname,*nname;
+  char              *vname,*nname,nlocalname[16];
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
@@ -659,11 +659,12 @@ PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
   ierr = PetscStrcat(vname,"_value");CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
   id   = adios_define_var(Petsc_adios_group,nname,"",adios_integer,"","","");CHKERRQ(ierr);
-  ierr = adios_write_byid(adios->adios_handle,id,&n);CHKERRQ(ierr);
+  ierr = adios_write_byid(adios->adios_handle,id,&N);CHKERRQ(ierr);
 
-  /* only works for sequential vectors since offset is set to 0 */
-  id   = adios_define_var(Petsc_adios_group,vname,"",adios_double,nname,nname,"0");CHKERRQ(ierr);
+  sprintf(nlocalname,"%d",(int)n);
+  id   = adios_define_var(Petsc_adios_group,vname,"",adios_double,nlocalname,nname,"0");CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = adios_write_byid(adios->adios_handle,id,array);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
