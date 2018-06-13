@@ -471,7 +471,7 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   ierr = VecCopy(ts->vec_costintegral,rk->VecCostIntegral0);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,rk->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -490,7 +490,7 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
   PetscFunctionBegin;
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,ts->ptime-ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,ts->ptime+ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
