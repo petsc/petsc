@@ -2397,7 +2397,6 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   ierr = MatZeroEntries(JP);CHKERRQ(ierr);
   for (chunk = 0; chunk < numChunks; ++chunk, offCell += chunkSize) {
     const PetscInt   Ncell = PetscMin(chunkSize, numCells - offCell);
-    PetscFEGeom     *chunkGeom = NULL;
     PetscInt         c;
 
     /* Extract values */
@@ -2426,11 +2425,10 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
     for (fieldI = 0; fieldI < Nf; ++fieldI) {
       PetscFE fe;
       ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGeomGetChunk(cgeomFEM,0,Ncell,&chunkGeom);CHKERRQ(ierr);
       for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
-        if (hasJac)  {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN,     fieldI, fieldJ, Ncell, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);}
-        if (hasPrec) {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_PRE, fieldI, fieldJ, Ncell, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMatP);CHKERRQ(ierr);}
-        if (hasDyn)  {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Ncell, chunkGeom, u, u_t, probAux, a, t, X_tShift, elemMatD);CHKERRQ(ierr);}
+        if (hasJac)  {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN,     fieldI, fieldJ, Ncell, cgeomFEM, u, u_t, probAux, a, t, X_tShift, elemMat);CHKERRQ(ierr);}
+        if (hasPrec) {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_PRE, fieldI, fieldJ, Ncell, cgeomFEM, u, u_t, probAux, a, t, X_tShift, elemMatP);CHKERRQ(ierr);}
+        if (hasDyn)  {ierr = PetscFEIntegrateJacobian(fe, prob, PETSCFE_JACOBIAN_DYN, fieldI, fieldJ, Ncell, cgeomFEM, u, u_t, probAux, a, t, X_tShift, elemMatD);CHKERRQ(ierr);}
       }
       /* For finite volume, add the identity */
       if (!isFE[fieldI]) {
