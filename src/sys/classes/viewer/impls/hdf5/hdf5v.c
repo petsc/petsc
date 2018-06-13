@@ -851,17 +851,17 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(obj,H5Oopen,(h5, parent, H5P_DEFAULT));
   PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
-  PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
   if (datatype == PETSC_STRING) {
     size_t len;
-
+    PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
     PetscStackCallHDF5Return(len,H5Tget_size,(atype));
     PetscStackCallHDF5(H5Tclose,(atype));
     ierr = PetscMalloc((len+1) * sizeof(char *), &value);CHKERRQ(ierr);
   }
   PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
   PetscStackCallHDF5(H5Aclose,(attribute));
-  PetscStackCallHDF5(H5Dclose,(obj));
+  /* H5Oclose can be used to close groups, datasets, or committed datatypes */
+  PetscStackCallHDF5(H5Oclose,(obj));
   PetscFunctionReturn(0);
 }
 
