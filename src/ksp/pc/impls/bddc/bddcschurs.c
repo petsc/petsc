@@ -1571,16 +1571,28 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = MatDestroy(&A_BB);CHKERRQ(ierr);
   ierr = MatDestroy(&A_IB);CHKERRQ(ierr);
   ierr = MatDestroy(&A_BI);CHKERRQ(ierr);
+
+  /* speed up matrix assembly */
+  ierr = PetscMalloc1(sub_schurs->n_subs,&nnz);CHKERRQ(ierr);
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = ISGetLocalSize(sub_schurs->is_subs[i],&nnz[i]);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,sub_schurs->n_subs,nnz,PETSC_OWN_POINTER,&is_I_layer);CHKERRQ(ierr);
+  ierr = MatSetVariableBlockSizes(sub_schurs->S_Ej_all,sub_schurs->n_subs,nnz);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (compute_Stilda) {
+    ierr = MatSetVariableBlockSizes(sub_schurs->sum_S_Ej_tilda_all,sub_schurs->n_subs,nnz);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(sub_schurs->sum_S_Ej_tilda_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(sub_schurs->sum_S_Ej_tilda_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (deluxe) {
+      ierr = MatSetVariableBlockSizes(sub_schurs->sum_S_Ej_inv_all,sub_schurs->n_subs,nnz);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(sub_schurs->sum_S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(sub_schurs->sum_S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
   }
+  ierr = ISDestroy(&is_I_layer);CHKERRQ(ierr);
+
   /* Global matrix of all assembled Schur on subsets */
   ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(work_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
