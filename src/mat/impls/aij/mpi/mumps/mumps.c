@@ -813,6 +813,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecScatterBegin(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
+  ierr = PetscLogFlops(2.0*mumps->id.RINFO(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1010,6 +1011,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     ierr = VecScatterDestroy(&scat_rhs);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&scat_sol);CHKERRQ(ierr);
   }
+  ierr = PetscLogFlops(2.0*nrhs*mumps->id.RINFO(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1123,6 +1125,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     mumps->id.sol_loc = (MumpsScalar*)sol_loc;
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
   }
+  ierr = PetscLogFlops(mumps->id.RINFO(2));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
