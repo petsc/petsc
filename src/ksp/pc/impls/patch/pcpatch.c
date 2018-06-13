@@ -462,18 +462,17 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
   Note:
   The callback has signature:
 +  usercomputeop(pc, mat, ncell, cells, n, u, ctx)
-+  pc    - The PC
-+  mat   - The patch matrix
-+  ncell - The number of cells to integrate over
-+  cells - An array of the cell numbers
-+  n     - The size of g2l
-+  g2l   - The global to local dof translation table
-+  ctx   - The user context
++  pc     - The PC
++  mat    - The patch matrix
++  cellIS - An array of the cell numbers
++  n      - The size of g2l
++  g2l    - The global to local dof translation table
++  ctx    - The user context
   and can assume that the matrix entries have been set to zero before the call.
 
 .seealso: PCPatchGetComputeOperator(), PCPatchSetDiscretisationInfo()
 @*/
-PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Mat, PetscInt, const PetscInt [], PetscInt, const PetscInt *, void *), void *ctx)
+PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, PetscInt, Mat, IS, PetscInt, const PetscInt *, void *), void *ctx)
 {
   PC_PATCH *patch = (PC_PATCH *) pc->data;
 
@@ -1218,7 +1217,7 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Mat J, PetscInt ncell, const PetscInt cells[], PetscInt n, const PetscInt *l2p, void *ctx)
+static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patchNum, Mat J, IS cellIS, PetscInt n, const PetscInt *l2p, void *ctx)
 {
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   DM              dm;
@@ -1250,7 +1249,7 @@ static PetscErrorCode PCPatchComputeOperator_DMPlex_Private(PC pc, PetscInt patc
   ierr = ISRestoreIndices(patch->offs,   &oarray);CHKERRQ(ierr);
   if (patch->viewSection) {ierr = ObjectView((PetscObject) patch->patchSection, patch->viewerSection, patch->formatSection);CHKERRQ(ierr);}
   /* TODO Shut off MatViewFromOptions() in MatAssemblyEnd() here */
-  ierr = DMPlexComputeJacobian_Patch_Internal(pc->dm, patch->patchSection, patch->patchSection, 0, ncell, cells, 0.0, 0.0, NULL, NULL, J, J, ctx);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobian_Patch_Internal(pc->dm, patch->patchSection, patch->patchSection, cellIS, 0.0, 0.0, NULL, NULL, J, J, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1279,7 +1278,8 @@ static PetscErrorCode PCPatchComputeOperator_Private(PC pc, Mat mat, PetscInt po
     PetscFunctionReturn(0);
   }
   PetscStackPush("PCPatch user callback");
-  ierr = patch->usercomputeop(pc, point, mat, ncell, cellsArray + offset, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputectx);CHKERRQ(ierr);
+  ierr = ISGeneralSetIndices(patch->cellIS, ncell, cellsArray + offset, PETSC_USE_POINTER);CHKERRQ(ierr);
+  ierr = patch->usercomputeop(pc, point, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputectx);CHKERRQ(ierr);
   PetscStackPop;
   ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
@@ -1649,6 +1649,7 @@ static PetscErrorCode PCDestroy_PATCH(PC pc)
     for (i = 0; i < patch->npatch; ++i) {ierr = KSPDestroy(&patch->ksp[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->ksp);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1791,6 +1792,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->optionsSet         = PETSC_FALSE;
   patch->iterationSet       = NULL;
   patch->user_patches       = PETSC_FALSE;
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_OWN_POINTER, &patch->cellIS);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATDENSE, (char **) &patch->sub_mat_type);CHKERRQ(ierr);
   patch->viewPatches        = PETSC_FALSE;
   patch->viewCells          = PETSC_FALSE;
