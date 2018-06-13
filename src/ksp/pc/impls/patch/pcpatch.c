@@ -1278,12 +1278,20 @@ static PetscErrorCode PCPatchComputeOperator_Private(PC pc, Mat mat, PetscInt po
     PetscFunctionReturn(0);
   }
   PetscStackPush("PCPatch user callback");
-  ierr = ISGeneralSetIndices(patch->cellIS, ncell, cellsArray + offset, PETSC_USE_POINTER);CHKERRQ(ierr);
+  /* Cannot reuse the same IS because the geometry info is being cached in it */
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS);CHKERRQ(ierr);
   ierr = patch->usercomputeop(pc, point, mat, patch->cellIS, ncell*patch->totalDofsPerCell, dofsArray + offset*patch->totalDofsPerCell, patch->usercomputectx);CHKERRQ(ierr);
   PetscStackPop;
+  ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(patch->cells, &cellsArray);CHKERRQ(ierr);
-  if (patch->viewMatrix) {ierr = ObjectView((PetscObject) mat, patch->viewerMatrix, patch->formatMatrix);CHKERRQ(ierr);}
+  if (patch->viewMatrix) {
+    char name[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "Patch matrix for Point %D", point);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) mat, name);CHKERRQ(ierr);
+    ierr = ObjectView((PetscObject) mat, patch->viewerMatrix, patch->formatMatrix);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(PC_Patch_ComputeOp, pc, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1649,7 +1657,6 @@ static PetscErrorCode PCDestroy_PATCH(PC pc)
     for (i = 0; i < patch->npatch; ++i) {ierr = KSPDestroy(&patch->ksp[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->ksp);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&patch->cellIS);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1686,7 +1693,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_cells_view",   &patch->viewerCells,   &patch->formatCells,   &patch->viewCells);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_points_view",  &patch->viewerPoints,  &patch->formatPoints,  &patch->viewPoints);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_section_view", &patch->viewerSection, &patch->formatSection, &patch->viewSection);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_sub_mat_view", &patch->viewerMatrix,  &patch->formatMatrix,  &patch->viewMatrix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_mat_view",     &patch->viewerMatrix,  &patch->formatMatrix,  &patch->viewMatrix);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   patch->optionsSet = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1792,7 +1799,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->optionsSet         = PETSC_FALSE;
   patch->iterationSet       = NULL;
   patch->user_patches       = PETSC_FALSE;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_OWN_POINTER, &patch->cellIS);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATDENSE, (char **) &patch->sub_mat_type);CHKERRQ(ierr);
   patch->viewPatches        = PETSC_FALSE;
   patch->viewCells          = PETSC_FALSE;
