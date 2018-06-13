@@ -1,5 +1,6 @@
 #include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <adios.h>
+#include <adios_read.h>
 
 int64_t Petsc_adios_group;
 
@@ -21,7 +22,18 @@ static PetscErrorCode PetscViewerFileClose_ADIOS(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = adios_close(adios->adios_handle);CHKERRQ(ierr);
+  switch (adios->btype) {
+  case FILE_MODE_READ:
+    ierr = adios_read_close(adios->adios_fp);CHKERRQ(ierr);
+    break;
+  case FILE_MODE_APPEND:
+    break;
+  case FILE_MODE_WRITE:
+     ierr = adios_close(adios->adios_handle);CHKERRQ(ierr);
+    break;
+  default:
+    break;
+  }
   ierr = PetscFree(adios->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -61,7 +73,7 @@ PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name
   /* Create or open the file collectively */
   switch (adios->btype) {
   case FILE_MODE_READ:
-    adios_open(&adios->adios_handle,"PETSc",adios->filename,"r",PetscObjectComm((PetscObject)viewer));
+    adios->adios_fp = adios_read_open_file(adios->filename,ADIOS_READ_METHOD_BP,PetscObjectComm((PetscObject)viewer));
     break;
   case FILE_MODE_APPEND:
     break;

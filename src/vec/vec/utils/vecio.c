@@ -381,13 +381,36 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #endif
 
 #if defined(PETSC_HAVE_ADIOS)
+#include <adios.h>
+#include <adios_read.h>
+#include <petsc/private/vieweradiosimpl.h>
+#include <petsc/private/viewerimpl.h>
+
 PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 {
+  PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
   PetscErrorCode    ierr;
   PetscScalar       *x;
-  PetscInt          Nfile = 1,N;
+  PetscInt          Nfile,N;
+  uint64_t          zero = 0,N_t;
+  const char        *vecname;
+  char              *nname,*vname;
+  ADIOS_VARINFO     *v;
+  ADIOS_SELECTION   *sel;
+  size_t            len;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
+  ierr = PetscStrlen(vecname,&len);CHKERRQ(ierr);
+  ierr = PetscMalloc(len+2,&nname);CHKERRQ(ierr);
+  ierr = PetscStrcpy(nname,vecname);CHKERRQ(ierr);
+  ierr = PetscStrcat(nname,"_n");CHKERRQ(ierr);
+  ierr = PetscMalloc(len+6,&vname);CHKERRQ(ierr);
+  ierr = PetscStrcpy(vname,vecname);CHKERRQ(ierr);
+  ierr = PetscStrcat(vname,"_value");CHKERRQ(ierr);
+
+  v = adios_inq_var(adios->adios_fp, nname);
+  Nfile = *(PetscInt*)v->value;
   /* Set Vec sizes,blocksize,and type if not already set */
   if ((xin)->map->n < 0 && (xin)->map->N < 0) {
     ierr = VecSetSizes(xin, PETSC_DECIDE, Nfile);CHKERRQ(ierr);
@@ -395,10 +418,19 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   if (N != Nfile) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", Nfile, N);
+  
+  v    = adios_inq_var(adios->adios_fp, vname);
+  if (v->ndim != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%D)", v->ndim);
   ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
+  N_t  = Nfile;
+  sel  = adios_selection_boundingbox (v->ndim, &zero, &N_t);
+  adios_schedule_read(adios->adios_fp, sel, vname, 0, 1, x);
+  adios_perform_reads (adios->adios_fp, 1);
   ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(xin);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(xin);CHKERRQ(ierr);
+  adios_selection_delete(sel);
+
+  ierr = PetscFree(nname);CHKERRQ(ierr);
+  ierr = PetscFree(vname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
