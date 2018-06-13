@@ -1486,6 +1486,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
 
   ierr = PetscSFGetGraph(migrationSF, &nroots, &nleaves, &leaves, &roots);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &rootNodes, nleaves, &leafNodes);CHKERRQ(ierr);
@@ -1494,7 +1495,6 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     if (mesh->partitionBalance) {
       PetscRandom r;
 
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
       ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
       ierr = PetscRandomSetInterval(r, 0, 17*size);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_SELF, &shifts);CHKERRQ(ierr);
