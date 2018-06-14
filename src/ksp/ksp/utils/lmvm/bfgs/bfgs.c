@@ -40,8 +40,6 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   PetscReal         beta, stf, ytx;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
   
@@ -79,8 +77,10 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   application in the DFP formulation, except with S and Y exchanging 
   roles.
   
-  Note: The P[i] calculations are shown in the pseudocode algorithm 
-  here but are actually pre-computed during the update call.
+  Note: P[i] = (B_i)*S[i] terms are computed ahead of time whenever 
+  the matrix is updated with a new (S[i], Y[i]) pair. This allows 
+  repeated calls of MatMult inside KSP solvers without unnecessarily 
+  recomputing P[i] terms in expensive nested-loops.
 
   Z <- J0 * X
 
@@ -101,10 +101,31 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          i;
-  PetscReal         ytx, stz;
+  PetscInt          i, j;
+  PetscReal         sjtpi, yjtsi, ytx, stz;
   
   PetscFunctionBegin;
+  VecCheckSameSize(X, 2, Z, 3);
+  VecCheckMatCompatible(B, X, 2, Z, 3);
+  
+  if (lbfgs->needP) {
+    /* Pre-compute (P[i] = B_i * S[i]) */
+    for (i = 0; i <= lmvm->k; ++i) {
+      ierr = MatSymBrdnApplyJ0Fwd(B, lmvm->S[i], lbfgs->P[i]);CHKERRQ(ierr);
+      for (j = 0; j <= i-1; ++j) {
+        /* Compute the necessary dot products */
+        ierr = VecDotBegin(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
+        ierr = VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+        ierr = VecDotEnd(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
+        ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
+        /* Compute the pure BFGS component of the forward product */
+        ierr = VecAXPBYPCZ(lbfgs->P[i], -sjtpi/lbfgs->stp[j], yjtsi/lbfgs->yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
+      }
+      ierr = VecDot(lmvm->S[i], lbfgs->P[i], &lbfgs->stp[i]);CHKERRQ(ierr);
+    }
+    lbfgs->needP = PETSC_FALSE;
+  }
+  
   /* Start the outer loop (i) for the recursive formula */
   ierr = MatSymBrdnApplyJ0Fwd(B, X, Z);CHKERRQ(ierr);
   for (i = 0; i <= lmvm->k; ++i) {
@@ -126,10 +147,8 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          old_k, i, j;
+  PetscInt          old_k, i;
   PetscReal         curvature, ytytmp, ststmp, curvtol;
-  PetscReal         sjtpi, yjtsi;
-  Vec               Ptmp;
 
   PetscFunctionBegin;
   if (lmvm->m == 0) PetscFunctionReturn(0);
@@ -152,19 +171,16 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
     if (curvature > curvtol) {
       /* Update is good, accept it */
       lbfgs->watchdog = 0;
+      lbfgs->needP = PETSC_TRUE;
       old_k = lmvm->k;
       ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
-      /* If we hit the memory limit, shift the P and Q vectors */
+      /* If we hit the memory limit, shift the yts, yty and sts arrays */
       if (old_k == lmvm->k) {
-        Ptmp = lbfgs->P[0];
         for (i = 0; i <= lmvm->k-1; ++i) {
-          lbfgs->P[i] = lbfgs->P[i+1];
-          lbfgs->stp[i] = lbfgs->stp[i+1];
           lbfgs->yts[i] = lbfgs->yts[i+1];
           lbfgs->yty[i] = lbfgs->yty[i+1];
           lbfgs->sts[i] = lbfgs->sts[i+1];
         }
-        lbfgs->P[lmvm->k] = Ptmp;
       }
       /* Update history of useful scalars */
       lbfgs->yts[lmvm->k] = curvature;
@@ -181,20 +197,6 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
       case SYMBRDN_SCALE_NONE:
       default:
         break;
-      }
-      /* Pre-compute (P[i] = B_i * S[i]) */
-      for (i = 0; i <= lmvm->k; ++i) {
-        ierr = MatSymBrdnApplyJ0Fwd(B, lmvm->S[i], lbfgs->P[i]);CHKERRQ(ierr);
-        for (j = 0; j <= i-1; ++j) {
-          /* Compute the necessary dot products */
-          ierr = VecDotBegin(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
-          ierr = VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
-          ierr = VecDotEnd(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
-          ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
-          /* Compute the pure BFGS component of the forward product */
-          ierr = VecAXPBYPCZ(lbfgs->P[i], -sjtpi/lbfgs->stp[j], yjtsi/lbfgs->yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
-        }
-        ierr = VecDot(lmvm->S[i], lbfgs->P[i], &lbfgs->stp[i]);CHKERRQ(ierr);
       }
     } else {
       /* Update is bad, skip it */
@@ -240,6 +242,7 @@ static PetscErrorCode MatCopy_LMVMBFGS(Mat B, Mat M, MatStructure str)
   PetscInt          i;
 
   PetscFunctionBegin;
+  mctx->needP = bctx->needP;
   for (i=0; i<=bdata->k; ++i) {
     mctx->stp[i] = bctx->stp[i];
     mctx->yts[i] = bctx->yts[i];
@@ -279,6 +282,7 @@ static PetscErrorCode MatReset_LMVMBFGS(Mat B, PetscBool destructive)
   
   PetscFunctionBegin;
   lbfgs->watchdog = 0;
+  lbfgs->needP = PETSC_TRUE;
   if (lbfgs->allocated) {
     if (destructive) {
       ierr = VecDestroy(&lbfgs->work);CHKERRQ(ierr);
@@ -474,6 +478,7 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   ierr = PetscNewLog(B, &lbfgs);CHKERRQ(ierr);
   lmvm->ctx = (void*)lbfgs;
   lbfgs->allocated = PETSC_FALSE;
+  lbfgs->needP = PETSC_TRUE;
   lbfgs->phi = 0.125;
   lbfgs->alpha = 1.0;
   lbfgs->rho = 1.0;

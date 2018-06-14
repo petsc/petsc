@@ -9,7 +9,7 @@ typedef struct {
   Vec *P, *Q;                               /* storage vectors for (B_i)*S[i] and (B_i)^{-1}*Y[i] */
   Vec invDnew, invD, BFGS, DFP, U, V, W;    /* work vectors for diagonal scaling */
   Vec work;
-  PetscBool allocated;
+  PetscBool allocated, needP, needQ;
   PetscReal *stp, *ytq, *yts, *yty, *sts;   /* scalar arrays for recycling dot products */
   PetscReal phi, *psi;                      /* convex combination factors between DFP and BFGS */
   PetscReal rho, alpha, beta;               /* convex combination factors for the scalar or diagonal scaling */

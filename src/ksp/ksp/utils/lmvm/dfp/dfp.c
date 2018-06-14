@@ -31,14 +31,32 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          i;
-  PetscReal         ytx, stf;
+  PetscInt          i, j;
+  PetscReal         yjtqi, sjtyi, ytx, stf;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(dX, VEC_CLASSID, 3);
   VecCheckSameSize(F, 2, dX, 3);
   VecCheckMatCompatible(B, dX, 3, F, 2);
+  
+  if (ldfp->needQ) {
+    /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
+    for (i = 0; i <= lmvm->k; ++i) {
+      ierr = MatSymBrdnApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]);CHKERRQ(ierr);
+      for (j = 0; j <= i-1; ++j) {
+        /* Compute the necessary dot products */
+        ierr = VecDotBegin(lmvm->Y[j], ldfp->Q[i], &yjtqi);CHKERRQ(ierr);
+        ierr = VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
+        ierr = VecDotEnd(lmvm->Y[j], ldfp->Q[i], &yjtqi);CHKERRQ(ierr);
+        ierr = VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
+        /* Compute the pure DFP component of the inverse application*/
+        ierr = VecAXPBYPCZ(ldfp->Q[i], -yjtqi/ldfp->ytq[j], sjtyi/ldfp->yts[j], 1.0, ldfp->Q[j], lmvm->S[j]);CHKERRQ(ierr);
+      }
+      ierr = VecDot(lmvm->Y[i], ldfp->Q[i], &ldfp->ytq[i]);CHKERRQ(ierr);
+    }
+    ldfp->needQ = PETSC_FALSE;
+  }
   
   /* Start the outer loop (i) for the recursive formula */
   ierr = MatSymBrdnApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
@@ -119,10 +137,8 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscInt          old_k, i, j;
+  PetscInt          old_k, i;
   PetscReal         curvature, ytytmp, ststmp, curvtol;
-  PetscReal         yjtqi, sjtyi;
-  Vec               Qtmp;
 
   PetscFunctionBegin;
   if (lmvm->m == 0) PetscFunctionReturn(0);
@@ -145,19 +161,16 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     if (curvature > curvtol) {
       /* Update is good, accept it */
       ldfp->watchdog = 0;
+      ldfp->needQ = PETSC_TRUE;
       old_k = lmvm->k;
       ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
-      /* If we hit the memory limit, shift the P and Q vectors */
+      /* If we hit the memory limit, shift the yts, yty and sts arrays */
       if (old_k == lmvm->k) {
-        Qtmp = ldfp->Q[0];
         for (i = 0; i <= lmvm->k-1; ++i) {
-          ldfp->Q[i] = ldfp->Q[i+1];
-          ldfp->ytq[i] = ldfp->ytq[i+1];
           ldfp->yts[i] = ldfp->yts[i+1];
           ldfp->yty[i] = ldfp->yty[i+1];
           ldfp->sts[i] = ldfp->sts[i+1];
         }
-        ldfp->Q[lmvm->k] = Qtmp;
       }
       /* Update history of useful scalars */
       ldfp->yts[lmvm->k] = curvature;
@@ -174,20 +187,6 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
       case SYMBRDN_SCALE_NONE:
       default:
         break;
-      }
-      /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
-      for (i = 0; i <= lmvm->k; ++i) {
-        ierr = MatSymBrdnApplyJ0Inv(B, lmvm->Y[i], ldfp->Q[i]);CHKERRQ(ierr);
-        for (j = 0; j <= i-1; ++j) {
-          /* Compute the necessary dot products */
-          ierr = VecDotBegin(lmvm->Y[j], ldfp->Q[i], &yjtqi);CHKERRQ(ierr);
-          ierr = VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
-          ierr = VecDotEnd(lmvm->Y[j], ldfp->Q[i], &yjtqi);CHKERRQ(ierr);
-          ierr = VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
-          /* Compute the pure DFP component of the inverse application*/
-          ierr = VecAXPBYPCZ(ldfp->Q[i], -yjtqi/ldfp->ytq[j], sjtyi/ldfp->yts[j], 1.0, ldfp->Q[j], lmvm->S[j]);CHKERRQ(ierr);
-        }
-        ierr = VecDot(lmvm->Y[i], ldfp->Q[i], &ldfp->ytq[i]);CHKERRQ(ierr);
       }
     } else {
       /* Update is bad, skip it */
@@ -233,6 +232,7 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   PetscInt          i;
 
   PetscFunctionBegin;
+  mctx->needQ = bctx->needQ;
   for (i=0; i<=bdata->k; ++i) {
     mctx->ytq[i] = bctx->ytq[i];
     mctx->yts[i] = bctx->yts[i];
@@ -271,6 +271,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
   
   PetscFunctionBegin;
   ldfp->watchdog = 0;
+  ldfp->needQ = PETSC_TRUE;
   if (ldfp->allocated) {
     if (destructive) {
       ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
@@ -466,6 +467,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldfp;
   ldfp->allocated = PETSC_FALSE;
+  ldfp->needQ = PETSC_TRUE;
   ldfp->phi = 1.0;
   ldfp->alpha = 1.0;
   ldfp->rho = 1.0;
