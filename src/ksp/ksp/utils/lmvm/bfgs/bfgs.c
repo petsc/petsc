@@ -439,11 +439,13 @@ static PetscErrorCode MatSetFromOptions_LMVMBFGS(PetscOptionItems *PetscOptionsO
   ierr = MatSetFromOptions_LMVM(PetscOptionsObject, B);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"Restricted Broyden method for approximating SPD Jacobian actions (MATLMVMSYMBRDN)");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_lmvm_scale_type", "(developer) scaling type applied to J0", "", Scale_Table, SYMBRDN_SCALE_SIZE, Scale_Table[lbfgs->scale_type], &lbfgs->scale_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_theta","(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling","",lbfgs->theta,&lbfgs->theta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) update limiter in the J0 scaling","",lbfgs->rho,&lbfgs->rho,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio in the J0 scaling","",lbfgs->alpha,&lbfgs->alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_beta","(developer) exponential factor in the diagonal J0 scaling","",lbfgs->alpha,&lbfgs->alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of past updates to use in the default J0 scalar","",lbfgs->sigma_hist,&lbfgs->sigma_hist,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if ((lbfgs->theta < 0.0) || (lbfgs->theta > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the diagonal J0 scale cannot be outside the range of [0, 1]");
   if ((lbfgs->alpha < 0.0) || (lbfgs->alpha > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio in the J0 scaling cannot be outside the range of [0, 1]");
   if ((lbfgs->rho < 0.0) || (lbfgs->rho > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "update limiter in the J0 scaling cannot be outside the range of [0, 1]");
   if (lbfgs->sigma_hist < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
@@ -479,7 +481,8 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   lmvm->ctx = (void*)lbfgs;
   lbfgs->allocated = PETSC_FALSE;
   lbfgs->needP = PETSC_TRUE;
-  lbfgs->phi = 0.125;
+  lbfgs->phi = 0.0;
+  lbfgs->theta = 0.125;
   lbfgs->alpha = 1.0;
   lbfgs->rho = 1.0;
   lbfgs->beta = 0.5;
