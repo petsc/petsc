@@ -22,9 +22,9 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject)mat,&mat_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetAIJNames(viewer,&i_name,&j_name,&a_name,&c_name);CHKERRQ(ierr);
 
-  ierr = PetscViewerHDF5GetFileId(viewer,&file_id);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer,mat_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer,&file_id,&group_matrix_id);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5ReadAttribute(viewer,mat_name,c_name,PETSC_INT,&M);
   N = M;
@@ -107,16 +107,17 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   i[0] = 0;
 
   /* create matrix */
-  ierr = MatCreateMPIAIJWithArrays(comm,m,PETSC_DETERMINE,M,N,i,j,a,&mat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m,PETSC_DETERMINE,M,N);CHKERRQ(ierr);
+  /* ierr = MatSetBlockSizes(mat,bs,cbs);CHKERRQ(ierr); */
+  if (!((PetscObject)mat)->type_name) {
+    ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatSeqAIJSetPreallocationCSR(mat,i,j,a);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocationCSR(mat,i,j,a);CHKERRQ(ierr);
 
   ierr = PetscFree(i);CHKERRQ(ierr);
-  if (j) {
-    ierr = PetscFree(j);CHKERRQ(ierr);
-  } if (a) {
-    ierr = PetscFree(a);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(j);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
