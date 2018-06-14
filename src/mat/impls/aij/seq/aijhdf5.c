@@ -14,6 +14,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
   int             rdim;
   PetscInt        p,m,M,N;
+  PetscInt        bs = mat->rmap->bs;
+  PetscBool       flg;
 
   PetscErrorCode  ierr;
   MPI_Comm        comm;
@@ -22,6 +24,13 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)mat,&mat_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetAIJNames(viewer,&i_name,&j_name,&a_name,&c_name);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(comm,NULL,"Options for loading matrix from HDF5","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSetBlockSize(mat, bs);CHKERRQ(ierr);
+  }
 
   ierr = PetscViewerHDF5PushGroup(viewer,mat_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer,&file_id,&group_matrix_id);CHKERRQ(ierr);
@@ -37,7 +46,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscStackCallHDF5(H5Dclose,(dset_id));
 
   m = PETSC_DECIDE;
-  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnershipBlock(comm,bs,&m,&M);CHKERRQ(ierr);
   ierr = MPI_Scan(&m,&offset_i_end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   if (m > 0) {
@@ -116,12 +125,16 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   /* create matrix */
   ierr = MatSetSizes(mat,m,PETSC_DETERMINE,M,N);CHKERRQ(ierr);
-  /* ierr = MatSetBlockSizes(mat,bs,cbs);CHKERRQ(ierr); */
+  ierr = MatSetBlockSize(mat,bs);CHKERRQ(ierr);
   if (!((PetscObject)mat)->type_name) {
     ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocationCSR(mat,i,j,a);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocationCSR(mat,i,j,a);CHKERRQ(ierr);
+  /*
+  ierr = MatSeqBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
+  */
 
   ierr = PetscFree(i);CHKERRQ(ierr);
   ierr = PetscFree(j);CHKERRQ(ierr);
