@@ -137,6 +137,8 @@ struct _PCBDDCSubSchurs {
   PetscBool change_with_qr;
   /* prefix */
   char      *prefix;
+  /* */
+  PetscBool restrict_comm;
   /* debug */
   PetscBool debug;
 };
