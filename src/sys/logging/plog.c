@@ -1588,6 +1588,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         }
       }
     } else {
+      if (!localStageVisible[stage]) continue;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage);CHKERRQ(ierr);
     }
   }
