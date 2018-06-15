@@ -341,8 +341,10 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
   case PC_PATCH_PYTHON:
     patch->user_patches            = PETSC_TRUE;
     patch->patchconstructop        = PCPatchConstruct_User;
-    patch->userpatchconstructionop = func;
-    patch->userpatchconstructctx   = ctx;
+    if (func) {
+      patch->userpatchconstructionop = func;
+      patch->userpatchconstructctx   = ctx;
+    }
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) pc), PETSC_ERR_USER, "Unknown patch construction type %D", (PetscInt) patch->ctype);
@@ -461,8 +463,9 @@ PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscInt *node
 
   Note:
   The callback has signature:
-+  usercomputeop(pc, mat, ncell, cells, n, u, ctx)
++  usercomputeop(pc, point, mat, cellIS, n, u, ctx)
 +  pc     - The PC
++  point  - The point
 +  mat    - The patch matrix
 +  cellIS - An array of the cell numbers
 +  n      - The size of g2l
@@ -1110,8 +1113,14 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     ierr = PetscSectionGetDof(patch->dofSection[0], p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(patch->patchSection, p, dof);CHKERRQ(ierr);
     for (f = 0; f < patch->nsubspaces; ++f) {
-      ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);
+      if (ierr == 0) {
+        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
+      }
+      else {
+        /* assume only one field */
+        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, dof);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscSectionSetUp(patch->patchSection);CHKERRQ(ierr);
