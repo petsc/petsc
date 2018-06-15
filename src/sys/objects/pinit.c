@@ -664,7 +664,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
 .  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
-.  -log_exclude: <vec,mat,pc.ksp,snes> - excludes subset of object classes from logging
+.  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
