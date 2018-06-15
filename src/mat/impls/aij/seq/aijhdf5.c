@@ -6,12 +6,13 @@
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
   hid_t           file_id,group_matrix_id,dset_id,dspace_id,mspace_id,dtype;
-  hsize_t         h5_count_i,h5_offset_i,h5_count_data,h5_offset_data;
+  hsize_t         h5_count_i,h5_offset_i,h5_count_data,h5_offset_data,h5_dims[4];
 
   PetscInt        count_i,offset_i,count_data,offset_data,offset_i_end;
   PetscInt        *i = NULL,*j = NULL;
   PetscReal       *a = NULL;
   const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
+  int             rdim;
   PetscInt        p,m,M,N;
 
   PetscErrorCode  ierr;
@@ -26,8 +27,15 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscViewerHDF5OpenGroup(viewer,&file_id,&group_matrix_id);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerHDF5ReadAttribute(viewer,mat_name,c_name,PETSC_INT,&M);
-  N = M;
+  ierr = PetscViewerHDF5ReadAttribute(viewer,mat_name,c_name,PETSC_INT,&N);CHKERRQ(ierr);
+
+  PetscStackCallHDF5Return(dset_id,H5Dopen,(group_matrix_id,i_name,H5P_DEFAULT));
+  PetscStackCallHDF5Return(dspace_id,H5Dget_space,(dset_id));
+  PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(dspace_id,h5_dims,NULL));
+  M = (PetscInt) h5_dims[rdim-1] - 1;
+  PetscStackCallHDF5(H5Sclose,(dspace_id));
+  PetscStackCallHDF5(H5Dclose,(dset_id));
+
   m = PETSC_DECIDE;
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
   ierr = MPI_Scan(&m,&offset_i_end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
