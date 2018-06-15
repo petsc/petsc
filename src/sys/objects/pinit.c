@@ -7,7 +7,8 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode PetscLogInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -1354,7 +1355,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogDestroy();CHKERRQ(ierr);
+  ierr = PetscLogFinalize();CHKERRQ(ierr);
 #endif
 
   /*

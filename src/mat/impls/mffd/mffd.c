@@ -64,7 +64,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("matmffd",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatMFFDFinalizePackage);CHKERRQ(ierr);
