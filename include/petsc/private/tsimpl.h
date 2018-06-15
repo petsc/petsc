@@ -22,6 +22,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSPRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
@@ -267,6 +268,10 @@ struct _p_TS {
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
+
+ /* multirate support */
+  IS  iss;
+  IS  isf;
 };
 
 struct _TSAdaptOps {
@@ -307,7 +312,9 @@ struct _p_TSAdapt {
 typedef struct _p_DMTS *DMTS;
 typedef struct _DMTSOps *DMTSOps;
 struct _DMTSOps {
-  TSRHSFunction rhsfunction;
+  TSRHSFunction     rhsfunction;
+  TSRHSFunctionslow rhsfunctionslow;
+  TSRHSFunctionfast rhsfunctionfast;
   TSRHSJacobian rhsjacobian;
 
   TSIFunction ifunction;
@@ -331,6 +338,8 @@ struct _DMTSOps {
 struct _p_DMTS {
   PETSCHEADER(struct _DMTSOps);
   void *rhsfunctionctx;
+  void *rhsfunctionslowctx;
+  void *rhsfunctionfastctx;
   void *rhsjacobianctx;
 
   void *ifunctionctx;

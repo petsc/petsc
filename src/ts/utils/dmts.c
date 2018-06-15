@@ -524,6 +524,70 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 }
 
 /*@C
+   DMTSSetRHSFunctionslow - set TS explicit residual evaluation function for slow part
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  func - RHS function evaluation function for slow parts, see TSSetRHSFunctionslow() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetRSHFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetRHSFunctionslow(DM dm,TSRHSFunctionslow func,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (func) tsdm->ops->rhsfunctionslow = func;
+  if (ctx)  tsdm->rhsfunctionslowctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSSetRHSFunctionfast - set TS explicit residual evaluation function for fast parts
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  func - RHS function evaluation function for fast parts, see TSSetRHSFunctionfast() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetRSHFunctionfast() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetRHSFunctionfast(DM dm,TSRHSFunctionfast func,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (func) tsdm->ops->rhsfunctionfast = func;
+  if (ctx)  tsdm->rhsfunctionfastctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMTSGetSolutionFunction - gets the TS solution evaluation function
 
    Not Collective
@@ -681,6 +745,72 @@ PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   if (func) *func = tsdm->ops->rhsfunction;
   if (ctx)  *ctx = tsdm->rhsfunctionctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSGetRHSFunctionslow - get TS explicit residual evaluation function for slow parts
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  func - residual evaluation function, see TSSetRHSFunctionslow() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSGetFunctionslow() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMTSSetContext(), DMTSSetFunction(), TSSetFunction()
+@*/
+PetscErrorCode DMTSGetRHSFunctionslow(DM dm,TSRHSFunctionslow *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (func) *func = tsdm->ops->rhsfunctionslow;
+  if (ctx)  *ctx = tsdm->rhsfunctionslowctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSGetRHSFunctionfast - get TS explicit residual evaluation function for fast part
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  func - residual evaluation function, see TSSetRHSFunctionfast() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSGetFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMTSSetContext(), DMTSSetFunction(), TSSetFunction()
+@*/
+PetscErrorCode DMTSGetRHSFunctionfast(DM dm,TSRHSFunctionfast *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (func) *func = tsdm->ops->rhsfunctionfast;
+  if (ctx)  *ctx = tsdm->rhsfunctionfastctx;
   PetscFunctionReturn(0);
 }
 

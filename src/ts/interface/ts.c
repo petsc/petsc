@@ -700,6 +700,101 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
 }
 
 /*@
+   TSComputeRHSFunctionslow - Evaluates the right-hand-side function for slow parts.
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+-  U - state vector
+
+   Output Parameter:
+.  y - right hand side for slow parts
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetRHSFunctionslow(), TSComputeIFunctionslow()
+@*/
+PetscErrorCode TSComputeRHSFunctionslow(TS ts,PetscReal t,Vec U,Vec y)
+{
+  PetscErrorCode     ierr;
+  TSRHSFunctionslow  rhsfunctionslow;
+  void               *ctx;
+  DM                 dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,4);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunctionslow(dm,&rhsfunctionslow,&ctx);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+  if (rhsfunctionslow) {
+    PetscStackPush("TS user right-hand-side function for slow parts");
+    ierr = (*rhsfunctionslow)(ts,t,U,y,ctx);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+   TSComputeRHSFunctionfast - Evaluates the right-hand-side function for fast parts.
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+-  U - state vector
+
+   Output Parameter:
+.  y - right hand side for fast parts
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetRHSFunctionfast()
+@*/
+PetscErrorCode TSComputeRHSFunctionfast(TS ts,PetscReal t,Vec U,Vec y)
+{
+  PetscErrorCode     ierr;
+  TSRHSFunctionfast  rhsfunctionfast;
+  void               *ctx;
+  DM                 dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,4);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunctionfast(dm,&rhsfunctionfast,&ctx);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+  if (rhsfunctionfast) {
+    PetscStackPush("TS user right-hand-side function for fast parts");
+    ierr = (*rhsfunctionfast)(ts,t,U,y,ctx);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+/*@
    TSComputeSolutionFunction - Evaluates the solution function.
 
    Collective on TS and Vec
@@ -1110,6 +1205,113 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 }
 
 /*@C
+    TSSetRHSFunctionslow - Sets the routine for evaluating the function,
+    where Us_t = G(t,u) for slow parts.
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   r - vector to put the computed right hand side (or NULL to have it created)
+.   f - routine for evaluating the right-hand-side function
+-   ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be NULL)
+
+    Calling sequence of func:
+$     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
+
++   t - current timestep
+.   u - input vector
+.   F - function vector
+-   ctx - [optional] user-defined function context
+
+    Level: beginner
+
+    Notes:
+    You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+
+.keywords: TS, timestep, set, right-hand-side, function
+
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
+@*/
+PetscErrorCode  TSSetRHSFunctionslow(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  Vec            ralloc = NULL;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetRHSFunctionslow(dm,f,ctx);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r = ralloc;
+  }
+  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+    TSSetRHSFunctionfast - Sets the routine for evaluating the function for fast parts,
+    where Uf_t = G(t,u).
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   r - vector to put the computed right hand side (or NULL to have it created)
+.   f - routine for evaluating the right-hand-side function
+-   ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be NULL)
+
+    Calling sequence of func:
+$     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
+
++   t - current timestep
+.   u - input vector
+.   F - function vector
+-   ctx - [optional] user-defined function context
+
+    Level: beginner
+
+    Notes:
+    You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+
+.keywords: TS, timestep, set, right-hand-side, function
+
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
+@*/
+PetscErrorCode  TSSetRHSFunctionfast(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  Vec            ralloc = NULL;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetRHSFunctionfast(dm,f,ctx);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r = ralloc;
+  }
+  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     TSSetSolutionFunction - Provide a function that computes the solution of the ODE or DAE
 
     Logically Collective on TS
@@ -1396,6 +1598,76 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
   ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   TSGetRHSFunctionslow - Returns the vector where the right hand side for slow parts is stored and the function/context to compute it.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
++  r - vector to hold computed right hand side (or NULL)
+.  func - the function to compute right hand side (or NULL)
+-  ctx - the function context (or NULL)
+
+   Level: advanced
+
+.keywords: TS, nonlinear, get, function
+
+.seealso: TSSetRHSFunctionslow(), SNESGetFunction()
+@*/
+PetscErrorCode TSGetRHSFunctionslow(TS ts,Vec *r,TSRHSFunctionslow *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunctionslow(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+   TSGetRHSFunctionfast - Returns the vector where the right hand side for fast parts is stored and the function/context to compute it.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
++  r - vector to hold computed right hand side (or NULL)
+.  func - the function to compute right hand side (or NULL)
+-  ctx - the function context (or NULL)
+
+   Level: advanced
+
+.keywords: TS, nonlinear, get, function
+
+.seealso: TSSetRHSFunctionfast(), SNESGetFunction()
+@*/
+PetscErrorCode TSGetRHSFunctionfast(TS ts,Vec *r,TSRHSFunctionfast *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunctionfast(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2704,6 +2976,9 @@ PetscErrorCode  TSReset(TS ts)
     ilink = next;
   }
   ts->num_rhs_splits = 0;
+  ierr = ISDestroy(&ts->iss);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->isf);CHKERRQ(ierr);
+
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -7694,5 +7969,34 @@ PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
   ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
   ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
   ierr = MatShellTestMultTranspose(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+PetscErrorCode TSSetIS(TS ts, IS iss, IS isf)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(iss,IS_CLASSID,2);
+  PetscValidHeaderSpecific(isf,IS_CLASSID,3);
+  ierr = PetscObjectReference((PetscObject)iss);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)isf);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->iss);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->isf);CHKERRQ(ierr);
+  ts->iss = iss;
+  ts->isf = isf;
+  PetscFunctionReturn(0);
+}
+
+
+PetscErrorCode TSGetIS(TS ts, IS *iss, IS *isf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(iss,2);
+  PetscValidPointer(isf,3);
+  *iss = ts->iss;
+  *isf = ts->isf;
   PetscFunctionReturn(0);
 }

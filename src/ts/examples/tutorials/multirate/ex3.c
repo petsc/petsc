@@ -38,10 +38,40 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-
   f[0] = -2.0*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])+0.05*(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-PetscSinScalar(t)/(2.0*u[0]);
   f[1] = 0.05*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])-(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-5.0*PetscSinScalar(5.0*t)/(2.0*u[1]);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
+static PetscErrorCode RHSFunctionslow(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
+  PetscScalar       *f;
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  f[0] = -2.0*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])+0.05*(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-PetscSinScalar(t)/(2.0*u[0]);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
+  PetscScalar       *f;
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  f[0] = 0.05*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])-(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-5.0*PetscSinScalar(5.0*t)/(2.0*u[1]);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -58,10 +88,8 @@ static PetscErrorCode sol_true(PetscReal t, Vec U)
   PetscFunctionBegin;
   /* The next allow us to access the entries of the vector directly */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-
   u[0] = PetscSqrtScalar(1.0+PetscCosScalar(t));
   u[1] = PetscSqrtScalar(2.0+PetscCosScalar(5.0*t));
-
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -76,8 +104,12 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   AppCtx         ctx;
   PetscScalar    *u;
+  IS             iss;
+  IS             isf;
+  PetscInt       *indicess;
+  PetscInt       *indicesf;
   PetscInt       n=2;
-  PetscReal      error;
+  PetscReal      error,tt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -86,6 +118,15 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
+   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    Create index for slow part and fast part
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = PetscMalloc1(1,&indicess);CHKERRQ(ierr);
+  indicess[0]=0;
+  ierr = PetscMalloc1(1,&indicesf);CHKERRQ(ierr);
+  indicesf[0]=1;
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicess,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necesary vector
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -108,9 +149,16 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
-  /*ierr = TSSetType(ts,TSMULTIRATEEULER);CHKERRQ(ierr);*/
+  /*ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);*/
+  ierr = TSSetType(ts,TSPRK);CHKERRQ(ierr);
+
   ierr = TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunctionslow(ts,NULL,(TSRHSFunctionslow)RHSFunctionslow,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunctionfast(ts,NULL,(TSRHSFunctionfast)RHSFunctionfast,&ctx);CHKERRQ(ierr);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    pass indices of fast and slow parts to ts
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetIS(ts,iss,isf);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -122,7 +170,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
   {
-    ctx.Tf = 5.0;
+    ctx.Tf = 0.3;
     ctx.dt = 0.01;
     ierr   = PetscOptionsScalar("-Tf","","",ctx.Tf,&ctx.Tf,NULL);CHKERRQ(ierr);
     ierr   = PetscOptionsScalar("-dt","","",ctx.dt,&ctx.dt,NULL);CHKERRQ(ierr);
@@ -131,7 +179,7 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(ts,ctx.Tf);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,ctx.dt);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);       
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve linear system
@@ -142,7 +190,8 @@ int main(int argc,char **argv)
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check the error of the Petsc solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = sol_true(ctx.Tf,Utrue);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&tt);CHKERRQ(ierr);
+  ierr = sol_true(tt,Utrue);CHKERRQ(ierr);
   ierr = VecAXPY(Utrue,-1.0,U);CHKERRQ(ierr);
   ierr = VecNorm(Utrue,NORM_2,&error);
 
@@ -157,6 +206,10 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&Utrue);CHKERRQ(ierr);
+  ierr = ISDestroy(&iss);CHKERRQ(ierr);
+  ierr = ISDestroy(&isf);CHKERRQ(ierr);
+  ierr = PetscFree(indicess);CHKERRQ(ierr);
+  ierr = PetscFree(indicesf);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

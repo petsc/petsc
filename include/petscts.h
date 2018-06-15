@@ -45,6 +45,7 @@ typedef const char* TSType;
 #define TSMIMEX           "mimex"
 #define TSBDF             "bdf"
 #define TSRADAU5          "radau5"
+#define TSPRK             "prk"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -243,6 +244,9 @@ PETSC_EXTERN PetscErrorCode TSReset(TS);
 PETSC_EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
+PETSC_EXTERN PetscErrorCode TSSetIS(TS,IS,IS);
+PETSC_EXTERN PetscErrorCode TSGetIS(TS,IS*,IS*);
+
 PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
 
@@ -406,9 +410,15 @@ PETSC_EXTERN PetscErrorCode TSGetStepNumber(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS,PetscInt);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunctionslow)(TS,PetscReal,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunctionfast)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
+PETSC_EXTERN PetscErrorCode TSSetRHSFunctionslow(TS,Vec,TSRHSFunctionslow,void*);
+PETSC_EXTERN PetscErrorCode TSGetRHSFunctionslow(TS,Vec*,TSRHSFunctionslow*,void**);
+PETSC_EXTERN PetscErrorCode TSSetRHSFunctionfast(TS,Vec,TSRHSFunctionfast,void*);
+PETSC_EXTERN PetscErrorCode TSGetRHSFunctionfast(TS,Vec*,TSRHSFunctionfast*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
 PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS,PetscBool);
@@ -483,6 +493,8 @@ PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 PETSC_EXTERN PetscErrorCode TSPythonSetType(TS,const char[]);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionslow(TS,PetscReal,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionfast(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat,Mat);
 PETSC_EXTERN PetscErrorCode TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,PetscBool);
@@ -495,6 +507,10 @@ PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMTSSetBoundaryLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSFunction(DM,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetRHSFunction(DM,TSRHSFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSFunctionslow(DM,TSRHSFunctionslow,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSFunctionslow(DM,TSRHSFunctionslow*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSFunctionfast(DM,TSRHSFunctionfast,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSFunctionfast(DM,TSRHSFunctionfast*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSJacobian(DM,TSRHSJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetRHSJacobian(DM,TSRHSJacobian*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetIFunction(DM,TSIFunction,void*);
@@ -780,6 +796,37 @@ PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscR
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
+
+/*J
+   TSPRKType - String with the name of a Partitioned Runge-Kutta method
+
+   Level: beginner
+
+.seealso: TSPRKSetType(), TS, TSPRK, TSPRKRegister()
+J*/
+typedef const char* TSPRKType;
+#define TSPRKM2        "pm2"
+#define TSPRKM3        "pm3"
+#define TSPRKRFSMR2    "p2"
+#define TSPRKRFSMR3    "p3"
+
+/*J
+   TSPRKMultirateType - String with the name of a Partitioned Runge-Kutta method.
+
+   Level: beginner
+
+.seealso: TSPRKSetMultirateType(), TS, TSPRK
+J*/
+typedef enum {PRKM_COMBINED=0,PRKM_PARTITIONED=1} TSPRKMultirateType;
+PETSC_EXTERN const char* const TSPRKMultirateTypes[];
+
+PETSC_EXTERN PetscErrorCode TSPRKGetType(TS ts,TSPRKType*);
+PETSC_EXTERN PetscErrorCode TSPRKSetType(TS ts,TSPRKType);
+PETSC_EXTERN PetscErrorCode TSPRKSetMultirateType(TS ts,TSPRKMultirateType);
+PETSC_EXTERN PetscErrorCode TSPRKRegister(TSPRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSPRKInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSPRKFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSPRKRegisterDestroy(void);
 
 /*J
     TSGLEEType - String with the name of a General Linear with Error Estimation method.
