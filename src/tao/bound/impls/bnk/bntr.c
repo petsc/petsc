@@ -167,7 +167,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
         ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
         ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
         ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-        ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+        ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
       } else {
         /* Step is bad, revert old solution and re-solve with new radius*/
         steplen = 0.0;

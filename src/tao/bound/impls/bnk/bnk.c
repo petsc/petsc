@@ -37,7 +37,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
   ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
   ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-  ierr = VecNorm(tao->gradient,NORM_2,&bnk->gnorm);CHKERRQ(ierr);
+  ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
 
   /* Test the initial point for convergence */
   ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
           ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
           /* Compute gradient at the new iterate and flip switch to compute the Hessian later */
-          ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+          ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
           *needH = PETSC_TRUE;
           /* Test the new step for convergence */
           ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
@@ -271,25 +271,29 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   }
   /* Prepare the reduced sub-matrices for the inactive set */
-  if (bnk->active_idx) {
+  if (bnk->Hpre_inactive) {
+    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  }
+  if (bnk->H_inactive) {
     ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
+  }
+  if (bnk->active_idx) {
     ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
+      ierr = PetscObjectReference((PetscObject)bnk->H_inactive);CHKERRQ(ierr);
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
     if (bnk->bfgs_pre) {
       ierr = PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx);CHKERRQ(ierr);
     }
   } else {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
     ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
+      ierr = PetscObjectReference((PetscObject)bnk->H_inactive);CHKERRQ(ierr);
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
       ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);CHKERRQ(ierr);
     }
     if (bnk->bfgs_pre) {
@@ -324,8 +328,12 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
       ierr = MatSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
-      ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
-      ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+      if (tao->hessian) {
+        ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
+        ierr = MatHasOperation(tao->hessian, MATOP_GET_DIAGONAL, &diagExists);CHKERRQ(ierr);
+      } else {
+        hessComputed = diagExists = PETSC_FALSE;
+      }
       if (hessComputed && diagExists) {
         /* BFGS preconditioner doesn't exist so let's invert the absolute diagonal of the Hessian instead onto the gradient */
         ierr = MatGetDiagonal(tao->hessian, bnk->Xwork);CHKERRQ(ierr);
@@ -1117,12 +1125,8 @@ PetscErrorCode TaoDestroy_BNK(Tao tao)
   ierr = ISDestroy(&bnk->active_fixed);CHKERRQ(ierr);
   ierr = ISDestroy(&bnk->active_idx);CHKERRQ(ierr);
   ierr = ISDestroy(&bnk->inactive_idx);CHKERRQ(ierr);
-  if (bnk->Hpre_inactive != tao->hessian_pre && bnk->Hpre_inactive != bnk->H_inactive) {
-    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
-  }
-  if (bnk->H_inactive != tao->hessian) {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   ierr = TaoDestroy(&bnk->bncg);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

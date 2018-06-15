@@ -136,10 +136,6 @@ PetscErrorCode main(int argc,char **argv)
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
     ierr = TaoSetHessianRoutine(tao,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
-
-    /* Set null preconditioner.  Alternatively, set user-provided
-       preconditioner or explicitly form preconditioning matrix */
-    ierr = PetscOptionsSetValue(NULL,"-pc_type","none");CHKERRQ(ierr);
   } else {
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,NULL,&H);CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -639,5 +635,21 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
    test:
       suffix: 4
       args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
+      
+   test:
+     suffix: 5
+     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnls
+     
+   test:
+     suffix: 6
+     args: -tao_smonitor -tao_gatol 1e-4 -tao_type blmvm
+
+   test:
+     suffix: 7
+     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnkls
+     
+   test:
+     suffix: 8
+     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
 
 TEST*/

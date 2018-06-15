@@ -12,7 +12,7 @@ iter =   0, Function value -0.330579, Residual: 0.728961
 iter =   0, Function value -0.38665, Residual: 0.531327 
   ---------- Testing Hessian -------------
   ||H - Hfd||_F/||H||_F = 4.25681e-10, ||H - Hfd||_F = 1.88457e-08
-iter =   1, Function value -0.41616, Residual: 0.171851 
+iter =   1, Function value -0.414887, Residual: 0.204719 
   ---------- Testing Hessian -------------
-  ||H - Hfd||_F/||H||_F = 3.76808e-10, ||H - Hfd||_F = 1.6682e-08
+  ||H - Hfd||_F/||H||_F = 1.94063e-10, ||H - Hfd||_F = 8.59156e-09
 iter =   2, Function value -0.427745, Residual: < 1.0e-6 

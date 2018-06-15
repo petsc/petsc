@@ -2,54 +2,54 @@
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:8, bmx:2, bmy:5, height:0.3
 iter =   0, Function value 1.83917, Residual: 0.44807 
-iter =   1, Function value 1.75482, Residual: 0.412031 
-iter =   2, Function value 1.66089, Residual: 0.272217 
-iter =   3, Function value 1.6306, Residual: 0.309523 
-iter =   4, Function value 1.61475, Residual: 0.170757 
-iter =   5, Function value 1.60848, Residual: 0.106678 
-iter =   6, Function value 1.60678, Residual: 0.073768 
-iter =   7, Function value 1.60616, Residual: 0.148095 
-iter =   8, Function value 1.60404, Residual: 0.113652 
-iter =   9, Function value 1.60292, Residual: 0.0978201 
-iter =  10, Function value 1.60229, Residual: 0.0840991 
-iter =  11, Function value 1.60193, Residual: 0.0718767 
-iter =  12, Function value 1.60136, Residual: 0.0325487 
-iter =  13, Function value 1.60118, Residual: 0.0133686 
-iter =  14, Function value 1.60116, Residual: 0.0068547 
-iter =  15, Function value 1.60116, Residual: 0.0042546 
-iter =  16, Function value 1.60115, Residual: 0.00244241 
-iter =  17, Function value 1.60115, Residual: 0.00174891 
-iter =  18, Function value 1.60115, Residual: 0.00127015 
-iter =  19, Function value 1.60115, Residual: 0.000735042 
-iter =  20, Function value 1.60115, Residual: 0.000484535 
-iter =  21, Function value 1.60115, Residual: 0.000283029 
-iter =  22, Function value 1.60115, Residual: 0.000118203 
-iter =  23, Function value 1.60115, Residual: 9.27699e-05 
+iter =   1, Function value 1.79522, Residual: 0.58077 
+iter =   2, Function value 1.68487, Residual: 0.329701 
+iter =   3, Function value 1.67222, Residual: 0.584567 
+iter =   4, Function value 1.62354, Residual: 0.294488 
+iter =   5, Function value 1.62037, Residual: 0.306819 
+iter =   6, Function value 1.60926, Residual: 0.190471 
+iter =   7, Function value 1.60541, Residual: 0.127142 
+iter =   8, Function value 1.60294, Residual: 0.0510716 
+iter =   9, Function value 1.60232, Residual: 0.0320926 
+iter =  10, Function value 1.60168, Residual: 0.0250855 
+iter =  11, Function value 1.60121, Residual: 0.0144601 
+iter =  12, Function value 1.60117, Residual: 0.00707737 
+iter =  13, Function value 1.60115, Residual: 0.00349105 
+iter =  14, Function value 1.60115, Residual: 0.0018669 
+iter =  15, Function value 1.60115, Residual: 0.0022511 
+iter =  16, Function value 1.60115, Residual: 0.000928065 
+iter =  17, Function value 1.60115, Residual: 0.000606832 
+iter =  18, Function value 1.60115, Residual: 0.000382406 
+iter =  19, Function value 1.60115, Residual: 0.000222602 
+iter =  20, Function value 1.60115, Residual: 6.66131e-05 
 Tao Object: 2 MPI processes
   type: blmvm
-    Gradient steps: 2
+  Gradient steps: 0
   Mat Object: (tao_blmvm_) 2 MPI processes
     type: lmvmbfgs
     rows=64, cols=64
-      LMVM Matrix
-        Approx. type: lmvmbfgs
-        Max. storage: 5
-        Used storage: 5
-        # of updates: 22
-        # of rejects: 0
+      Scale type: diagonal
+      Scale history: 1
+      Scale params: alpha=1., beta=0.5, rho=1.
+      Convex factors: phi=0., theta=0.125
+      Max. storage: 5
+      Used storage: 5
+      # of updates: 19
+      # of rejects: 0
+      # of resets: 1
   TaoLineSearch Object: 2 MPI processes
     type: more-thuente
     maximum function evaluations=30
     tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
     total number of function evaluations=0
     total number of gradient evaluations=0
-    total number of function/gradient evaluations=2
+    total number of function/gradient evaluations=1
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.27699e-05
+  Residual in Function/Gradient:=6.66131e-05
   Objective value=1.60115
-  total number of iterations=23,                          (max: 2000)
-  total number of function/gradient evaluations=38,      (max: 4000)
+  total number of iterations=20,                          (max: 2000)
+  total number of function/gradient evaluations=23,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol

@@ -1,0 +1,33 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 16     my: 16   
+
+iter =   0, Function value -0.33218, Residual: 0.623913 
+iter =   1, Function value -0.378168, Residual: 0.374058 
+iter =   2, Function value -0.400663, Residual: 0.227662 
+iter =   3, Function value -0.419041, Residual: 0.166123 
+iter =   4, Function value -0.426096, Residual: 0.135302 
+iter =   5, Function value -0.43064, Residual: 0.0871167 
+iter =   6, Function value -0.432385, Residual: 0.0593717 
+iter =   7, Function value -0.433214, Residual: 0.0409546 
+iter =   8, Function value -0.433752, Residual: 0.0384151 
+iter =   9, Function value -0.434165, Residual: 0.0295069 
+iter =  10, Function value -0.434305, Residual: 0.0297945 
+iter =  11, Function value -0.434382, Residual: 0.0110164 
+iter =  12, Function value -0.434393, Residual: 0.0102755 
+iter =  13, Function value -0.434404, Residual: 0.00329932 
+iter =  14, Function value -0.434407, Residual: 0.00212601 
+iter =  15, Function value -0.434408, Residual: 0.00102398 
+iter =  16, Function value -0.434408, Residual: 0.00057444 
+iter =  17, Function value -0.434408, Residual: 0.000497992 
+iter =  18, Function value -0.434408, Residual: 0.000540461 
+iter =  19, Function value -0.434408, Residual: 0.000603742 
+iter =  20, Function value -0.434409, Residual: 0.000768149 
+iter =  21, Function value -0.434409, Residual: 0.000759228 
+iter =  22, Function value -0.434409, Residual: 0.000655349 
+iter =  23, Function value -0.434409, Residual: 0.000700752 
+iter =  24, Function value -0.434409, Residual: 0.000526374 
+iter =  25, Function value -0.434409, Residual: 0.000568912 
+iter =  26, Function value -0.434409, Residual: 0.000583363 
+iter =  27, Function value -0.434409, Residual: 0.000176975 
+iter =  28, Function value -0.434409, Residual: 8.60248e-05 

@@ -3,9 +3,9 @@
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   1, Function value 1.52046, Residual: 0.21897 
-iter =   2, Function value 1.50585, Residual: 0.025155 
-iter =   3, Function value 1.50566, Residual: 0.000621338 
+iter =   1, Function value 1.52089, Residual: 0.221654 
+iter =   2, Function value 1.50587, Residual: 0.0267211 
+iter =   3, Function value 1.50566, Residual: 0.000673421 
 iter =   4, Function value 1.50566, Residual: < 1.0e-6 
 Tao Object: 1 MPI processes
   type: bntl
@@ -32,23 +32,26 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=0
     using variable bounds
     Termination reason: 0
-  KSP Object: 1 MPI processes
+  KSP Object: (tao_bnk_) 1 MPI processes
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
+  PC Object: (tao_bnk_) 1 MPI processes
     type: lmvm
     Mat Object: (pc_lmvm_) 1 MPI processes
       type: lmvmbfgs
       rows=48, cols=48
-        LMVM Matrix
-          Approx. type: lmvmbfgs
-          Max. storage: 5
-          Used storage: 4
-          # of updates: 4
-          # of rejects: 0
+        Scale type: diagonal
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 4
+        # of updates: 4
+        # of rejects: 0
+        # of resets: 0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -59,7 +62,7 @@ Tao Object: 1 MPI processes
   total KSP iterations: 61
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=6.9097e-07
+  Residual in Function/Gradient:=7.94744e-07
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=15,      (max: 4000)

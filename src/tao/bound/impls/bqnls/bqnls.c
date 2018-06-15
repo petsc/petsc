@@ -8,6 +8,7 @@ static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
   PetscReal      gnorm2, delta;
   
   PetscFunctionBegin;
+  /* Compute the initial scaling and update the approximation */
   gnorm2 = bnk->gnorm*bnk->gnorm;
   delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
   ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);

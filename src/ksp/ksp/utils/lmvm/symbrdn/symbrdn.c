@@ -528,9 +528,9 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
   ierr = PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(pv,"Scale type: %s\n",Scale_Table[lsb->scale_type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"Scale history: %D\n",lsb->sigma_hist);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"Scale params: alpha=%d, beta=%d, rho=%d\n",(double)lsb->alpha, (double)lsb->beta, (double)lsb->rho);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"Convex factor: %d\n",(double)lsb->phi);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Scale history: %d\n",lsb->sigma_hist);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Scale params: alpha=%g, beta=%g, rho=%g\n",(double)lsb->alpha, (double)lsb->beta, (double)lsb->rho);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Convex factors: phi=%g, theta=%g\n",(double)lsb->phi, (double)lsb->theta);CHKERRQ(ierr);
   }
   ierr = MatView_LMVM(B, pv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -669,10 +669,14 @@ PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)
    paradigm instead of this routine directly.
 
    Options Database Keys:
+.   -mat_lmvm_num_vecs - maximum number of correction vectors (i.e.: updates) stored
 .   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
-.   -mat_lmvm_rho - (developer) convex ratio between the old and new default J0 scalars
-.   -mat_lmvm_alpha - (developer) convex ratio between BFGS and DFP components in the default J0 scalar
-.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in the default J0 scalar
+.   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
+.   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+.   -mat_lmvm_rho - (developer) update limiter for the J0 scaling
+.   -mat_lmvm_alpha - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+.   -mat_lmvm_beta - (developer) exponential factor for the diagonal J0 scaling
+.   -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
 
    Level: intermediate
 

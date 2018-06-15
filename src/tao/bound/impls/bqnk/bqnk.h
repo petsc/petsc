@@ -10,6 +10,7 @@ Context for bounded quasi-Newton-Krylov type optimization algorithms
 typedef struct {
   Mat B;
   PC pc;
+  PetscBool is_spd;
 } TAO_BQNK;
 
 #define BQNK_INIT_CONSTANT         0

@@ -180,7 +180,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
       ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
       ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-      ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+      ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
     } else {
       /* Trust-region rejected the step. Revert the solution. */
       bnk->f = bnk->fold;
@@ -205,7 +205,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
         ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
         ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
         ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-        ierr = VecNorm(tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+        ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
         /* Line search succeeded so we should update the trust radius based on the LS step length */
         tao->trust = oldTrust;
         ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);

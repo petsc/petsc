@@ -1509,12 +1509,12 @@ inverse applications based on a fixed number of stored update vectors.
 \begin{tabular}{llll}
 {\bf Method}                                       & {\bf PETSc Type}                & {\bf Name}          & {\bf Property} \\
 \hline
-``Good'' Broyden \cite{griewank2012broyden}        & \lstinline|MATLMVMBrdn|         & \trl{lmvmbrdn}      & Square \\
-``Bad''  Broyden \cite{griewank2012broyden}        & \lstinline|MATLMVMBadBrdn|      & \trl{lmvmbadbrdn}   & Square  \\
-Symmetric Rank-1 \cite{NW99}                       & \lstinline|MATLMVMSR1|          & \trl{lmvmsr1}       & Symmetric \\
-Davidon-Fletcher-Powell \cite{NW99}                & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
-Broyden-Fletcher-Goldfarb-Shanno \cite{NW99}       & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
-Restricted Broyden Family \cite{erway2017solving}  & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+``Good'' Broyden \cite{griewank2012broyden}             & \lstinline|MATLMVMBrdn|         & \trl{lmvmbrdn}      & Square \\
+``Bad'' Broyden \cite{griewank2012broyden}              & \lstinline|MATLMVMBadBrdn|      & \trl{lmvmbadbrdn}   & Square  \\
+Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|          & \trl{lmvmsr1}       & Symmetric \\
+Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
+Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
 \hline
 \end{tabular}
 \end{center}
@@ -1527,7 +1527,10 @@ the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a n
 We will review the most important ones below:
 \begin{itemize}
   \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store 
-  nonlinear updates and compute forward/inverse applications.
+  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while 
+  the \lstinline{F} defines the function space for the history of updates.
+  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such 
+  that $s_k = x_k - x_{k-1}$ and $y_k = f(x_k) - f(x_{k-1})$, where $k$ is the index for the update.
   \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets 
   the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data 
   structures and necessitates another allocation call before the matrix can be updated and used for products and solves.
@@ -1537,7 +1540,9 @@ We will review the most important ones below:
 
 LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
 in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
-\lstinline{MatCopy()} operations.
+\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
+\lstinline{-mat_lmvm_num_vecs} option. Restricted Broyden Family, DFP and BFGS methods additionally implement scalar 
+and diagonal scaling of the initial Jacobian which can be selected via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}.
 
 \subsection{Dense Matrices}
 \label{sec_matdense}

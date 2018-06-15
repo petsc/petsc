@@ -10,7 +10,7 @@
    matrix is also updated recursively.
 
    Input Parameters:
-+  B - An LMVM-type matrix (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
++  B - An LMVM-type matrix
 .  X - Solution vector
 -  F - Function vector
 
@@ -53,7 +53,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
    an identity matrix (scale = 1.0).
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Level: advanced
 
@@ -93,8 +93,8 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
    mu such that J0 = mu*I.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
--  scale - Scalar value mu that defines the initial inverse Jacobian
++  B - An LMVM-type matrix
+-  scale - Scalar value mu that defines the initial Jacobian
 
    Level: advanced
 
@@ -125,8 +125,8 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
    V such that J0 = diag(V).
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
--  V - Vector that defines the diagonal scaling
++  B - An LMVM-type matrix
+-  V - Vector that defines the diagonal of the initial Jacobian
 
    Level: advanced
 
@@ -173,9 +173,8 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
    such as MATLMVMDIAGBRDN is used in place of J0.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
-.  J0 - The initial Jacobian matrix
--  J0pre - Preconditioner matrix to the initial Jacobian (can be same J0)
++  B - An LMVM-type matrix
+-  J0 - The initial Jacobian matrix
 
    Level: advanced
 
@@ -221,8 +220,8 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
    options.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
--  J0pc - The initial inverse-Jacobian matrix
++  B - An LMVM-type matrix
+-  J0pc - PC object where PCApply defines an inverse application for J0
 
    Level: advanced
 
@@ -270,7 +269,7 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
    calls KSPSolve() without changing any other options.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
++  B - An LMVM-type matrix
 -  J0ksp - KSP solver for the initial inverse-Jacobian application
 
    Level: advanced
@@ -313,7 +312,7 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
    MatLMVMGetJ0 - Returns a pointer to the internal J0 matrix.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  J0 - Mat object for defining the initial Jacobian
@@ -343,7 +342,7 @@ PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
    associated with the initial Jacobian.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  J0pc - PC object for defining the initial inverse-Jacobian
@@ -377,7 +376,7 @@ PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
    associated with the initial Jacobian.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  J0ksp - KSP solver for defining the initial inverse-Jacobian
@@ -407,8 +406,8 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
    matrix-vector product with the initial Jacobian.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
--  X - vector to "multiply" with J0^{-1}
++  B - An LMVM-type matrix
+-  X - vector to multiply with J0
 
    Output Parameter:
 .  Y - resulting vector for the operation
@@ -478,7 +477,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
    (vector copy).
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
++  B - An LMVM-type matrix
 -  X - vector to "multiply" with J0^{-1}
 
    Output Parameter:
@@ -539,7 +538,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
    the necessary data structures for the underlying matrix is allocated.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  flg - PETSC_TRUE if allocated, PETSC_FALSE otherwise
@@ -574,7 +573,7 @@ PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
    the provided vectors and update the matrix.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
++  B - An LMVM-type matrix
 .  X - Solution vector
 -  F - Function vector
 
@@ -610,7 +609,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
    MatLMVMResetShift - Zero the shift factor.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Level: intermediate
 
@@ -644,7 +643,7 @@ PetscErrorCode MatLMVMResetShift(Mat B)
    matrix is also reset in this function.
 
    Input Parameters:
-+  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
++  B - An LMVM-type matrix
 -  destructive - flag for enabling destruction of data structures
 
    Level: intermediate
@@ -680,7 +679,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
    is called.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  nupdates - number of accepted updates
@@ -710,7 +709,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
    The counters are reset when MatLMVMReset() is called.
 
    Input Parameters:
-.  B - An LMVM matrix type (LDFP LBFGS, LSR1, LBRDN, LMBRDN, LSBRDN)
+.  B - An LMVM-type matrix
 
    Output Parameter:
 .  nrejects - number of rejected updates

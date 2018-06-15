@@ -383,7 +383,7 @@ int main(int argc, char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   if (user.use_riesz) {
-    ierr = TaoBLMVMSetH0(tao, user.mass);CHKERRQ(ierr);       /* crucial for mesh independence */
+    ierr = TaoLMVMSetH0(tao, user.mass);CHKERRQ(ierr);       /* crucial for mesh independence */
     ierr = TaoSetGradientNorm(tao, user.mass);CHKERRQ(ierr);
   }
 
