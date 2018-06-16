@@ -978,7 +978,7 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B)
   } else {
     start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
     signew = 0.0;
-    if (lsb->alpha == 1.0 || lsb->alpha == 0.5) {
+    if (lsb->alpha == 1.0) {
       for (i = start; i <= lmvm->k; ++i) {
         signew += lsb->yts[i]/lsb->yty[i];
       }
