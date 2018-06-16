@@ -24,9 +24,9 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   PetscFunctionBegin;
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
-    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,coloring,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,coloring,0,0,0);CHKERRQ(ierr);
   } else {
     coloring->fset = PETSC_FALSE;
   }

@@ -210,7 +210,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 
   PetscFunctionBegin;
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
-  ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -239,7 +239,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   }
   sr->state     = STATE_END;
   sr->numopsend = 0;
-  ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

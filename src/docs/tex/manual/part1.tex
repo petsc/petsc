@@ -799,8 +799,8 @@ demonstrate the ease of extracting performance information.
 $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
 ...
 ------------------------------------------------------------------------------------------------------------------------
-Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total
-                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
+Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ----  Total
+                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 
 --- Event Stage 0: Main Stage
