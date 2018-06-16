@@ -332,15 +332,17 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
   patch->ctype = ctype;
   switch (ctype) {
   case PC_PATCH_STAR:
+    patch->user_patches     = PETSC_FALSE;
     patch->patchconstructop = PCPatchConstruct_Star;
     break;
   case PC_PATCH_VANKA:
+    patch->user_patches     = PETSC_FALSE;
     patch->patchconstructop = PCPatchConstruct_Vanka;
     break;
   case PC_PATCH_USER:
   case PC_PATCH_PYTHON:
-    patch->user_patches            = PETSC_TRUE;
-    patch->patchconstructop        = PCPatchConstruct_User;
+    patch->user_patches     = PETSC_TRUE;
+    patch->patchconstructop = PCPatchConstruct_User;
     if (func) {
       patch->userpatchconstructionop = func;
       patch->userpatchconstructctx   = ctx;
