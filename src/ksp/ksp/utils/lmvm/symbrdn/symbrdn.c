@@ -368,10 +368,8 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
     if (destructive) {
       ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
       ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
-      if (lmvm->m > 0) {
-        ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
-        ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
-      }
+      ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
       switch (lsb->scale_type) {
       case SYMBRDN_SCALE_DIAG:
         ierr = VecDestroy(&lsb->invDnew);CHKERRQ(ierr);
@@ -455,10 +453,8 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   if (lsb->allocated) {
     ierr = VecDestroy(&lsb->work);CHKERRQ(ierr);
     ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_DIAG:
       ierr = VecDestroy(&lsb->invDnew);CHKERRQ(ierr);

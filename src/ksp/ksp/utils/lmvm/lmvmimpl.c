@@ -14,10 +14,8 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
   if (destructive && lmvm->allocated) {
     ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
     B->rmap->n = B->rmap->N = B->cmap->n = B->cmap->N = 0;
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
     lmvm->nupdates = 0;
@@ -278,9 +276,9 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
     ierr = MatGetType(B, &type);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"Max. storage: %D\n",lmvm->m);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"Used storage: %D\n",lmvm->k+1);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"# of updates: %D\n",lmvm->nupdates);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"# of rejects: %D\n",lmvm->nrejects);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"# of resets: %D\n",lmvm->nresets);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Number of updates: %D\n",lmvm->nupdates);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Number of rejects: %D\n",lmvm->nrejects);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Number of resets: %D\n",lmvm->nresets);CHKERRQ(ierr);
     if (lmvm->J0) {
       ierr = PetscViewerASCIIPrintf(pv,"J0 Matrix:\n");CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(pv, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
@@ -351,10 +349,8 @@ PetscErrorCode MatDestroy_LMVM(Mat B)
 
   PetscFunctionBegin;
   if (lmvm->allocated) {
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->S);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lmvm->Y);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Xprev);CHKERRQ(ierr);
     ierr = VecDestroy(&lmvm->Fprev);CHKERRQ(ierr);
   }

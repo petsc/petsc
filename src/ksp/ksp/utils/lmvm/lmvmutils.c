@@ -74,15 +74,9 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
   lmvm->user_ksp = PETSC_FALSE;
   lmvm->user_scale = PETSC_FALSE;
   lmvm->J0scalar = 1.0;
-  if (lmvm->J0diag) {
-    ierr = VecDestroy(&lmvm->J0diag);CHKERRQ(ierr);
-  }
-  if (lmvm->J0) {
-    ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
-  }
-  if (lmvm->J0pc) {
-    ierr = PCDestroy(&lmvm->J0pc);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&lmvm->J0diag);CHKERRQ(ierr);
+  ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
+  ierr = PCDestroy(&lmvm->J0pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -198,9 +192,7 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
     MatCheckSameSize(B, 1, J0, 2);
   }
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
-  if (lmvm->J0) {
-    ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&lmvm->J0);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)J0);CHKERRQ(ierr);
   lmvm->J0 = J0;
   ierr = PetscObjectBaseTypeCompare((PetscObject)lmvm->J0, MATLMVM, &same);CHKERRQ(ierr);
@@ -250,9 +242,6 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
   ierr = MatDestroy(&J0);CHKERRQ(ierr);
   ierr = MatDestroy(&J0pre);CHKERRQ(ierr);
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
-  if (lmvm->J0pc) {
-    ierr = PCDestroy(&lmvm->J0pc);CHKERRQ(ierr);
-  }
   ierr = PetscObjectReference((PetscObject)J0pc);CHKERRQ(ierr);
   lmvm->J0pc = J0pc;
   lmvm->user_pc = PETSC_TRUE;
@@ -297,9 +286,7 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
     MatCheckSameSize(B, 1, J0pre, 3);
   }
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
-  if (lmvm->J0ksp) {
-    ierr = KSPDestroy(&lmvm->J0ksp);CHKERRQ(ierr);
-  }
+  ierr = KSPDestroy(&lmvm->J0ksp);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)J0ksp);CHKERRQ(ierr);
   lmvm->J0ksp = J0ksp;
   lmvm->user_ksp = PETSC_TRUE;

@@ -47,9 +47,9 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      # of updates: 19
-      # of rejects: 0
-      # of resets: 0
+      Number of updates: 19
+      Number of rejects: 0
+      Number of resets: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30
@@ -77,9 +77,9 @@ Tao Object: 1 MPI processes
         Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 5
-        # of updates: 19
-        # of rejects: 0
-        # of resets: 0
+        Number of updates: 19
+        Number of rejects: 0
+        Number of resets: 0
     total KSP iterations: 0
     Active Set subset type: subvec
     convergence tolerances: gatol=0.0001,     steptol=0.,     gttol=0.

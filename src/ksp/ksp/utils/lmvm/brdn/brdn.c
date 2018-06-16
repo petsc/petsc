@@ -186,10 +186,8 @@ static PetscErrorCode MatReset_LMVMBrdn(Mat B, PetscBool destructive)
   lbrdn->needP = lbrdn->needQ = PETSC_TRUE;
   if (destructive && lbrdn->allocated) {
     ierr = PetscFree2(lbrdn->sts, lbrdn->stq);CHKERRQ(ierr);
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &lbrdn->P);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(lmvm->m, &lbrdn->Q);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &lbrdn->P);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lbrdn->Q);CHKERRQ(ierr);
     lbrdn->allocated = PETSC_FALSE;
   }
   ierr = MatReset_LMVM(B, destructive);CHKERRQ(ierr);
@@ -228,10 +226,8 @@ static PetscErrorCode MatDestroy_LMVMBrdn(Mat B)
   PetscFunctionBegin;
   if (lbrdn->allocated) {
     ierr = PetscFree2(lbrdn->sts, lbrdn->stq);CHKERRQ(ierr);
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &lbrdn->P);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(lmvm->m, &lbrdn->Q);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &lbrdn->P);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lmvm->m, &lbrdn->Q);CHKERRQ(ierr);
     lbrdn->allocated = PETSC_FALSE;
   }
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);

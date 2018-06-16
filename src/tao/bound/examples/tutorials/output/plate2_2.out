@@ -34,9 +34,9 @@ Tao Object: 2 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      # of updates: 19
-      # of rejects: 0
-      # of resets: 1
+      Number of updates: 19
+      Number of rejects: 0
+      Number of resets: 1
   TaoLineSearch Object: 2 MPI processes
     type: more-thuente
     maximum function evaluations=30

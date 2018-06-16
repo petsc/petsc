@@ -276,9 +276,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
     if (destructive) {
       ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
       ierr = PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts);CHKERRQ(ierr);
-      if (lmvm->m > 0) {
-        ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
-      }
+      ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
       switch (ldfp->scale_type) {
       case SYMBRDN_SCALE_DIAG:
         ierr = VecDestroy(&ldfp->invDnew);CHKERRQ(ierr);
@@ -359,9 +357,7 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   if (ldfp->allocated) {
     ierr = VecDestroy(&ldfp->work);CHKERRQ(ierr);
     ierr = PetscFree4(ldfp->ytq, ldfp->yts, ldfp->yty, ldfp->sts);CHKERRQ(ierr);
-    if (lmvm->m > 0) {
-      ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
-    }
+    ierr = VecDestroyVecs(lmvm->m, &ldfp->Q);CHKERRQ(ierr);
     switch (ldfp->scale_type) {
     case SYMBRDN_SCALE_DIAG:
       ierr = VecDestroy(&ldfp->invDnew);CHKERRQ(ierr);
