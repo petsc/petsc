@@ -42,7 +42,12 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Compute direction */
     gnorm2 = gnorm*gnorm;
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
+    if (gnorm2 == 0.0) gnorm2 = PETSC_MACHINE_EPSILON;
+    if (f == 0.0) {
+      delta = 2.0 / gnorm2;
+    } else {
+      delta = 2.0 * PetscAbsScalar(f) / gnorm2;
+    }
     ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
     ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
     ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);

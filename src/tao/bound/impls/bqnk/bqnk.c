@@ -23,7 +23,12 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   /* Update the Hessian with the latest solution */
   if (bqnk->is_spd) {
     gnorm2 = bnk->gnorm*bnk->gnorm;
-    delta = 2.0 * PetscMax(1.0, PetscAbsScalar(bnk->f)) / PetscMax(gnorm2, PetscPowReal(PETSC_MACHINE_EPSILON, 2.0/3.0));
+    if (gnorm2 == 0.0) gnorm2 = PETSC_MACHINE_EPSILON;
+    if (bnk->f == 0.0) {
+      delta = 2.0 / gnorm2;
+    } else {
+      delta = 2.0 * PetscAbsScalar(bnk->f) / gnorm2;
+    }
     ierr = MatSymBrdnSetDelta(bqnk->B, delta);CHKERRQ(ierr);
   }
   ierr = MatLMVMUpdate(tao->hessian, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
