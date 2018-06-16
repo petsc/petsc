@@ -42,8 +42,6 @@ cdef extern from * nogil:
     int PetscLogEventRegister(char[],PetscLogClass,PetscLogEvent*)
     int PetscLogEventBegin(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
     int PetscLogEventEnd(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
-    int PetscLogEventBarrierBegin(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject,MPI_Comm)
-    int PetscLogEventBarrierEnd(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject,MPI_Comm)
 
     int PetscLogEventActivate(PetscLogEvent)
     int PetscLogEventDeactivate(PetscLogEvent)
