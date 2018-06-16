@@ -1253,6 +1253,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 #define MatCheckSameSize(A,ar1,B,ar2) \
   if ((A->rmap->N != B->rmap->N) || (A->cmap->N != B->cmap->N)) SETERRQ6(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->N,A->cmap->N,ar2,B->rmap->N,B->cmap->N);\
   MatCheckSameLocalSize(A,ar1,B,ar2);
+  
+#define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
+  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
+  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);\
+  if (M->rmap->n != b->map->n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector local length incompatible with matrix: parameter # %d local size %D != matrix row local size %D",ar2,b->map->n,M->rmap->n);
 
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>

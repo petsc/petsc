@@ -432,11 +432,6 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
 #define VecCheckSize(x,ar1,n,N)                                            \
   if ((x)->map->N != N) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %D != %D",ar1,(x)->map->N, N);\
   VecCheckLocalSize(x,ar1,n);
-  
-#define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
-  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
-  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);\
-  if (M->rmap->n != b->map->n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector local length incompatible with matrix: parameter # %d local size %D != matrix row local size %D",ar2,b->map->n,M->rmap->n);
 
 typedef struct _VecTaggerOps *VecTaggerOps;
 struct _VecTaggerOps {
