@@ -36,8 +36,8 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         alpha[lmvm->k+1], rho[lmvm->k+1];
-  PetscReal         beta, stf, ytx;
+  PetscReal         *alpha, beta;
+  PetscScalar       stf, ytx;
   
   PetscFunctionBegin;
   VecCheckSameSize(F, 2, dX, 3);
@@ -47,10 +47,10 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   ierr = VecCopy(F, lbfgs->work);CHKERRQ(ierr);
   
   /* Start the first loop */
+  ierr = PetscMalloc1(lmvm->k+1, &alpha);CHKERRQ(ierr);
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDot(lmvm->S[i], lbfgs->work, &stf);CHKERRQ(ierr);
-    rho[i] = 1.0/lbfgs->yts[i];
-    alpha[i] = rho[i] * stf;
+    alpha[i] = PetscRealPart(stf)/lbfgs->yts[i];
     ierr = VecAXPY(lbfgs->work, -alpha[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   
@@ -60,9 +60,10 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
-    beta = rho[i] * ytx;
+    beta = PetscRealPart(ytx)/lbfgs->yts[i];
     ierr = VecAXPY(dX, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(alpha);
   PetscFunctionReturn(0);
 }
 
@@ -102,7 +103,7 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         sjtpi, yjtsi, ytx, stz;
+  PetscScalar       sjtpi, yjtsi, ytx, stz, stp;
   
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Z, 3);
@@ -119,9 +120,10 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
         ierr = VecDotEnd(lmvm->S[j], lbfgs->P[i], &sjtpi);CHKERRQ(ierr);
         ierr = VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi);CHKERRQ(ierr);
         /* Compute the pure BFGS component of the forward product */
-        ierr = VecAXPBYPCZ(lbfgs->P[i], -sjtpi/lbfgs->stp[j], yjtsi/lbfgs->yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
+        ierr = VecAXPBYPCZ(lbfgs->P[i], -PetscRealPart(sjtpi)/lbfgs->stp[j], PetscRealPart(yjtsi)/lbfgs->yts[j], 1.0, lbfgs->P[j], lmvm->Y[j]);CHKERRQ(ierr);
       }
-      ierr = VecDot(lmvm->S[i], lbfgs->P[i], &lbfgs->stp[i]);CHKERRQ(ierr);
+      ierr = VecDot(lmvm->S[i], lbfgs->P[i], &stp);CHKERRQ(ierr);
+      lbfgs->stp[i] = PetscRealPart(stp);
     }
     lbfgs->needP = PETSC_FALSE;
   }
@@ -135,7 +137,7 @@ PetscErrorCode MatMult_LMVMBFGS(Mat B, Vec X, Vec Z)
     ierr = VecDotEnd(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Y[i], X, &ytx);CHKERRQ(ierr);
     /* Update Z_{i+1} = B_{i+1} * X */
-    ierr = VecAXPBYPCZ(Z, -stz/lbfgs->stp[i], ytx/lbfgs->yts[i], 1.0, lbfgs->P[i], lmvm->Y[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(Z, -PetscRealPart(stz)/lbfgs->stp[i], PetscRealPart(ytx)/lbfgs->yts[i], 1.0, lbfgs->P[i], lmvm->Y[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -148,10 +150,11 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *lbfgs = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i;
-  PetscReal         curvature, ytytmp, ststmp, curvtol;
+  PetscReal         curvtol;
+  PetscScalar       curvature, ytytmp, ststmp;
 
   PetscFunctionBegin;
-  if (lmvm->m == 0) PetscFunctionReturn(0);
+  if (!lmvm->m) PetscFunctionReturn(0);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     ierr = VecAYPX(lmvm->Xprev, -1.0, X);CHKERRQ(ierr);
@@ -163,12 +166,12 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
-    if (PetscMin(ststmp, ytytmp) < lmvm->eps) {
+    if (PetscMin(PetscRealPart(ststmp), PetscRealPart(ytytmp)) < lmvm->eps) {
       curvtol = 0.0;
     } else {
-      curvtol = lmvm->eps * ststmp;
+      curvtol = lmvm->eps * PetscRealPart(ststmp);
     }
-    if (curvature > curvtol) {
+    if (PetscRealPart(curvature) > curvtol) {
       /* Update is good, accept it */
       lbfgs->watchdog = 0;
       lbfgs->needP = PETSC_TRUE;
@@ -183,9 +186,9 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      lbfgs->yts[lmvm->k] = curvature;
-      lbfgs->yty[lmvm->k] = ytytmp;
-      lbfgs->sts[lmvm->k] = ststmp;
+      lbfgs->yts[lmvm->k] = PetscRealPart(curvature);
+      lbfgs->yty[lmvm->k] = PetscRealPart(ytytmp);
+      lbfgs->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Update the scaling */
       switch (lbfgs->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
@@ -452,6 +455,7 @@ static PetscErrorCode MatSetFromOptions_LMVMBFGS(PetscOptionItems *PetscOptionsO
 
 PetscErrorCode MatCreate_LMVMBFGS(Mat B)
 {
+  Mat_LMVM          *lmvm;
   Mat_SymBrdn       *lbfgs;
   PetscErrorCode    ierr;
 
@@ -465,7 +469,7 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   B->ops->destroy = MatDestroy_LMVMBFGS;
   B->ops->setfromoptions = MatSetFromOptions_LMVMBFGS;
 
-  Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
+  lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMBFGS;
   lmvm->ops->reset = MatReset_LMVMBFGS;

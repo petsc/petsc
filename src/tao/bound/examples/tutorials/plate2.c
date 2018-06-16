@@ -986,9 +986,11 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
    test:
      suffix: 16
      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnls
+     requires: !single
 
    test:
      suffix: 17
      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
+     requires: !single
 
 TEST*/

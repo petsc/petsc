@@ -17,8 +17,6 @@ typedef struct {
 #define BQNK_INIT_DIRECTION        1
 #define BQNK_INIT_TYPES            2
 
-static const char *BQNK_INIT[64] = {"constant", "direction", "interpolation"};
-
 PETSC_INTERN PetscErrorCode TaoSetUp_BQNK(Tao);
 PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao);
 

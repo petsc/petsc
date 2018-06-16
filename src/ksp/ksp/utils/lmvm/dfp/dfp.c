@@ -32,7 +32,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i, j;
-  PetscReal         yjtqi, sjtyi, ytx, stf;
+  PetscScalar       yjtqi, sjtyi, ytx, stf, ytq;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, VEC_CLASSID, 2);
@@ -51,9 +51,10 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
         ierr = VecDotEnd(lmvm->Y[j], ldfp->Q[i], &yjtqi);CHKERRQ(ierr);
         ierr = VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi);CHKERRQ(ierr);
         /* Compute the pure DFP component of the inverse application*/
-        ierr = VecAXPBYPCZ(ldfp->Q[i], -yjtqi/ldfp->ytq[j], sjtyi/ldfp->yts[j], 1.0, ldfp->Q[j], lmvm->S[j]);CHKERRQ(ierr);
+        ierr = VecAXPBYPCZ(ldfp->Q[i], -PetscRealPart(yjtqi)/ldfp->ytq[j], PetscRealPart(sjtyi)/ldfp->yts[j], 1.0, ldfp->Q[j], lmvm->S[j]);CHKERRQ(ierr);
       }
-      ierr = VecDot(lmvm->Y[i], ldfp->Q[i], &ldfp->ytq[i]);CHKERRQ(ierr);
+      ierr = VecDot(lmvm->Y[i], ldfp->Q[i], &ytq);CHKERRQ(ierr);
+      ldfp->ytq[i] = PetscRealPart(ytq);
     }
     ldfp->needQ = PETSC_FALSE;
   }
@@ -67,7 +68,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     ierr = VecDotEnd(lmvm->Y[i], dX, &ytx);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->S[i], F, &stf);CHKERRQ(ierr);
     /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
-    ierr = VecAXPBYPCZ(dX, -ytx/ldfp->ytq[i], stf/ldfp->yts[i], 1.0, ldfp->Q[i], lmvm->S[i]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(dX, -PetscRealPart(ytx)/ldfp->ytq[i], PetscRealPart(stf)/ldfp->yts[i], 1.0, ldfp->Q[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -104,17 +105,18 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          i;
-  PetscReal         alpha[lmvm->k+1];
-  PetscReal         beta, ytx, stz;
+  PetscReal         *alpha, beta;
+  PetscScalar       ytx, stz;
   
   PetscFunctionBegin;
   /* Copy the function into the work vector for the first loop */
   ierr = VecCopy(X, ldfp->work);CHKERRQ(ierr);
   
   /* Start the first loop */
+  ierr = PetscMalloc1(lmvm->k+1, &alpha);CHKERRQ(ierr);
   for (i = lmvm->k; i >= 0; --i) {
     ierr = VecDot(lmvm->Y[i], ldfp->work, &ytx);CHKERRQ(ierr);
-    alpha[i] = ytx/ldfp->yts[i];
+    alpha[i] = PetscRealPart(ytx)/ldfp->yts[i];
     ierr = VecAXPY(ldfp->work, -alpha[i], lmvm->S[i]);CHKERRQ(ierr);
   }
   
@@ -124,9 +126,10 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
   /* Start the second loop */
   for (i = 0; i <= lmvm->k; ++i) {
     ierr = VecDot(lmvm->S[i], Z, &stz);CHKERRQ(ierr);
-    beta = stz/ldfp->yts[i];
+    beta = PetscRealPart(stz)/ldfp->yts[i];
     ierr = VecAXPY(Z, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(alpha);
   PetscFunctionReturn(0);
 }
 
@@ -138,10 +141,11 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   Mat_SymBrdn       *ldfp = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i;
-  PetscReal         curvature, ytytmp, ststmp, curvtol;
+  PetscReal         curvtol;
+  PetscScalar       curvature, ytytmp, ststmp;
 
   PetscFunctionBegin;
-  if (lmvm->m == 0) PetscFunctionReturn(0);
+  if (!lmvm->m) PetscFunctionReturn(0);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     ierr = VecAYPX(lmvm->Xprev, -1.0, X);CHKERRQ(ierr);
@@ -153,12 +157,12 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
-    if (PetscMin(ststmp, ytytmp) < lmvm->eps) {
+    if (PetscMin(PetscRealPart(ststmp), PetscRealPart(ytytmp)) < lmvm->eps) {
       curvtol = 0.0;
     } else {
-      curvtol = lmvm->eps * ststmp;
+      curvtol = lmvm->eps * PetscRealPart(ststmp);
     }
-    if (curvature > curvtol) {
+    if (PetscRealPart(curvature) > curvtol) {
       /* Update is good, accept it */
       ldfp->watchdog = 0;
       ldfp->needQ = PETSC_TRUE;
@@ -173,9 +177,9 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      ldfp->yts[lmvm->k] = curvature;
-      ldfp->yty[lmvm->k] = ytytmp;
-      ldfp->sts[lmvm->k] = ststmp;
+      ldfp->yts[lmvm->k] = PetscRealPart(curvature);
+      ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
+      ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
       /* Update the scaling */
       switch (ldfp->scale_type) {
       case SYMBRDN_SCALE_SCALAR:
@@ -441,6 +445,7 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsOb
 
 PetscErrorCode MatCreate_LMVMDFP(Mat B)
 {
+  Mat_LMVM          *lmvm;
   Mat_SymBrdn       *ldfp;
   PetscErrorCode    ierr;
 
@@ -454,7 +459,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   B->ops->destroy = MatDestroy_LMVMDFP;
   B->ops->setfromoptions = MatSetFromOptions_LMVMDFP;
 
-  Mat_LMVM *lmvm = (Mat_LMVM*)B->data;
+  lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMDFP;
   lmvm->ops->reset = MatReset_LMVMDFP;

@@ -52,9 +52,8 @@ int main(int argc,char **argv)
   AppCtx             user;                  /* user-defined application context */
   KSP                ksp;
   PC                 pc;
-  Mat                M, J0;
+  Mat                M;
   Vec                in, out, out2;
-  PetscBool          lmvmJ0;
   PetscReal          mult_solve_dist;
 
   /* Initialize TAO and PETSc */
@@ -113,17 +112,12 @@ int main(int argc,char **argv)
     ierr = MatSolve(M, out, out2);CHKERRQ(ierr);
     ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
     ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
-    ierr = MatLMVMGetJ0(M, &J0);CHKERRQ(ierr);
-    if (J0) {
-      ierr = PetscObjectBaseTypeCompare((PetscObject)J0, MATLMVM, &lmvmJ0);CHKERRQ(ierr);
-      if (lmvmJ0) {
-        ierr = MatMult(J0, in, out);CHKERRQ(ierr);
-        ierr = MatSolve(J0, out, out2);CHKERRQ(ierr);
-        ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
-        ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between J0 MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
-      }
+    if (mult_solve_dist < 1.e-11) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-11\n");CHKERRQ(ierr);
+    } else if(mult_solve_dist < 1.e-6) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: < 1.e-6\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between LMVM MatMult and MatSolve: %e\n", (double)mult_solve_dist);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&in);CHKERRQ(ierr);
     ierr = VecDestroy(&out);CHKERRQ(ierr);
@@ -338,13 +332,9 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
    test:
      suffix: 18
      args: -tao_smonitor -tao_gatol 1e-4 -tao_type blmvm
-
-   test:
-     suffix: 19
-     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnkls
      
    test:
-     suffix: 20
+     suffix: 19
      args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
 
 TEST*/

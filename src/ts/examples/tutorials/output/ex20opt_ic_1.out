@@ -2,18 +2,19 @@ Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.49734;-0.834225], Cos
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.19278;-1.04229], Cost function f=0.00102718
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.22433;-1.01808], Cost function f=0.00012752
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21763;-1.02315], Cost function f=5.31613e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21744;-1.02326], Cost function f=5.28488e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21687;-1.02352], Cost function f=5.11911e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21585;-1.02371], Cost function f=4.6784e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21409;-1.0234], Cost function f=3.62767e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.212;-1.02167], Cost function f=1.87779e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21112;-1.01868], Cost function f=5.17845e-06
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21195;-1.01764], Cost function f=1.2374e-06
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21303;-1.01746], Cost function f=5.27648e-10
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=2.07958e-12
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.60935e-12
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=8.56072e-15
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.71796e-17
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21744;-1.02326], Cost function f=5.28491e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21687;-1.02353], Cost function f=5.12632e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21592;-1.02372], Cost function f=4.72868e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21423;-1.02349], Cost function f=3.75628e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21214;-1.02192], Cost function f=2.06264e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21108;-1.01889], Cost function f=5.90725e-06
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21186;-1.01768], Cost function f=1.47234e-06
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21299;-1.01744], Cost function f=5.2964e-09
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21306;-1.01747], Cost function f=1.29049e-11
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=3.77657e-12
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.82455e-13
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.82195e-16
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=3.22586e-19
 Tao Object: 1 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -26,7 +27,7 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 14
+      Number of updates: 15
       Number of rejects: 0
       Number of resets: 1
   TaoLineSearch Object: 1 MPI processes
@@ -40,10 +41,10 @@ Tao Object: 1 MPI processes
     Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=4.92024e-09
-  Objective value=1.71796e-17
-  total number of iterations=15,                          (max: 2000)
-  total number of function/gradient evaluations=16,      (max: 4000)
+  Residual in Function/Gradient:=7.19971e-10
+  Objective value=3.22586e-19
+  total number of iterations=16,                          (max: 2000)
+  total number of function/gradient evaluations=17,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes
   type: seq

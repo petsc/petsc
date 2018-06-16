@@ -536,17 +536,21 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
    test:
      suffix: 13
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls
+     requires: single!
      
    test:
      suffix: 14
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type blmvm
+     requires: single!
 
    test:
      suffix: 15
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnkls
+     requires: single!
      
    test:
      suffix: 16
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
+     requires: !single
 
 TEST*/

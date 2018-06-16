@@ -88,7 +88,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscMPIInt        size;                /* number of processes */
   PetscReal          one=1.0;
   
-  PetscBool          test_lmvm;
+  PetscBool          test_lmvm = PETSC_FALSE;
   KSP                ksp;
   PC                 pc;
   Mat                M;
@@ -638,18 +638,14 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
       
    test:
      suffix: 5
-     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnls
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnls
      
    test:
      suffix: 6
-     args: -tao_smonitor -tao_gatol 1e-4 -tao_type blmvm
-
-   test:
-     suffix: 7
-     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnkls
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type blmvm
      
    test:
-     suffix: 8
-     args: -tao_smonitor -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
+     suffix: 7
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
 
 TEST*/

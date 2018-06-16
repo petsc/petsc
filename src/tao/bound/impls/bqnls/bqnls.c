@@ -1,5 +1,7 @@
 #include <../src/tao/bound/impls/bqnk/bqnk.h>
 
+static const char *BNK_AS[64] = {"none", "bertsekas"};
+
 static PetscErrorCode TaoBQNLSComputeHessian(Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;

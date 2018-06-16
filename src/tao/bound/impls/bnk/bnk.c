@@ -1,7 +1,10 @@
 #include <petsctaolinesearch.h>
 #include <../src/tao/bound/impls/bnk/bnk.h>
-
 #include <petscksp.h>
+
+static const char *BNK_INIT[64] = {"constant", "direction", "interpolation"};
+static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
+static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 /*------------------------------------------------------------*/
 

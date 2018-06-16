@@ -420,17 +420,5 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
       suffix: 2
       nsize: 2
       args: -tao_smonitor -tao_type nls -mx 16 -my 16 -tao_gatol 1.e-4
-      
-   test:
-     suffix: 3
-     args: -mx 16 -my 16 -tao_smonitor -tao_gatol 1e-4 -tao_type bqnls
-     
-   test:
-     suffix: 4
-     args: -mx 16 -my 16 -tao_smonitor -tao_gatol 1e-4 -tao_type blmvm
-
-   test:
-     suffix: 5
-     args: -mx 16 -my 16 -tao_smonitor -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
 
 TEST*/

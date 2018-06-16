@@ -227,10 +227,6 @@ typedef struct {
 #define BNK_AS_BERTSEKAS   1
 #define BNK_AS_TYPES       2
 
-static const char *BNK_INIT[64] = {"constant", "direction", "interpolation"};
-static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
-static const char *BNK_AS[64] = {"none", "bertsekas"};
-
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems*, Tao);
