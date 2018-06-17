@@ -37,7 +37,7 @@ foreach TEST ($*)
       endif
     endif
     echo "Cleaning and updating clone at $USR@$MACH $PETSC_DIR"
-    $SSH $USR@$MACH $DASHN "cd $PETSC_DIR ; git fetch -q origin; git checkout -f origin/${BRANCH} "
+    $SSH $USR@$MACH $DASHN "cd $PETSC_DIR ; git fetch -p -q origin; git checkout -f origin/${BRANCH} "
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${PETSC_DIR}
   endif
