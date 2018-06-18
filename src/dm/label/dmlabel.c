@@ -238,6 +238,28 @@ PetscErrorCode DMLabelGetName(DMLabel label, const char **name)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMLabelSetName - Sets the name of a DMLabel object
+
+  Input parameters:
++ label - The DMLabel
+- name  - The label name
+
+  Level: beginner
+
+.seealso: DMLabelCreate()
+@*/
+PetscErrorCode DMLabelSetName(DMLabel label, const char *name)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(name, 2);
+  ierr = PetscFree(label->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, &label->name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 {
   PetscInt       v;
