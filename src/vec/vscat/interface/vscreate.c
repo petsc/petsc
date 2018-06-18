@@ -138,7 +138,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
 
   ierr = VecScatterRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-vecscatter_type","Vector Scatter type","VecScatterSetType",VecScatterList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
-  if (opt) {
+  if (size > 1 && opt) {
     ierr = VecScatterSetType(vscat,typeName);CHKERRQ(ierr);
   } else {
     ierr = VecScatterSetType(vscat,defaultType);CHKERRQ(ierr);
