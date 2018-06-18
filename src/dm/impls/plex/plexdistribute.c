@@ -1058,9 +1058,9 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,4);
-  ierr = PetscLogEventBegin(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 5);
 
+  ierr = PetscLogEventBegin(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
   /* Distribute cone section */
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = DMPlexGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
@@ -1158,7 +1158,7 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel, 3);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
 
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
@@ -1194,7 +1194,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
+
   ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -1258,7 +1259,7 @@ static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, IS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel, 4);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
 
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -1307,7 +1308,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 4);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 5);
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
 
   /* Set up tree */
@@ -1381,7 +1382,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,7);
+  PetscValidHeaderSpecific(dmParallel, DM_CLASSID, 3);
 
   /* Create point SF for parallel mesh */
   ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
@@ -1645,18 +1646,14 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   if (sf) PetscValidPointer(sf,4);
   PetscValidPointer(dmParallel,5);
 
-  ierr = PetscLogEventBegin(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
+  if (sf) *sf = NULL;
+  *dmParallel = NULL;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (size == 1) PetscFunctionReturn(0);
 
-  if (sf) *sf = NULL;
-  *dmParallel = NULL;
-  if (size == 1) {
-    ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
+  ierr = PetscLogEventBegin(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   /* Create cell partition */
   ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &cellPartSection);CHKERRQ(ierr);
@@ -1775,7 +1772,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
   Input Parameter:
 + dm  - The non-overlapping distrbuted DMPlex object
-- overlap - The overlap of partitions, 0 is the default
+- overlap - The overlap of partitions
 
   Output Parameter:
 + sf - The PetscSF used for point distribution
@@ -1808,12 +1805,14 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   if (sf) PetscValidPointer(sf, 3);
   PetscValidPointer(dmOverlap, 4);
 
+  if (sf) *sf = NULL;
+  *dmOverlap  = NULL;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (size == 1) {*dmOverlap = NULL; PetscFunctionReturn(0);}
-  ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
+  if (size == 1) PetscFunctionReturn(0);
 
+  ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
   /* Compute point overlap with neighbouring processes on the distributed DM */
   ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
@@ -1867,7 +1866,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
 .keywords: mesh
 .seealso: DMPlexDistribute(), DMPlexGetRedundantDM()
 @*/
-PetscErrorCode DMPlexGetGatherDM(DM dm, DM * gatherMesh)
+PetscErrorCode DMPlexGetGatherDM(DM dm, DM *gatherMesh)
 {
   MPI_Comm       comm;
   PetscMPIInt    size;
@@ -1876,9 +1875,10 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, DM * gatherMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(gatherMesh,2);
+  *gatherMesh = NULL;
   comm = PetscObjectComm((PetscObject)dm);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  *gatherMesh = NULL;
   if (size == 1) PetscFunctionReturn(0);
   ierr = DMPlexGetPartitioner(dm,&oldPart);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)oldPart);CHKERRQ(ierr);
@@ -1906,7 +1906,7 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, DM * gatherMesh)
 .keywords: mesh
 .seealso: DMPlexDistribute(), DMPlexGetGatherDM()
 @*/
-PetscErrorCode DMPlexGetRedundantDM(DM dm, DM * redundantMesh)
+PetscErrorCode DMPlexGetRedundantDM(DM dm, DM *redundantMesh)
 {
   MPI_Comm       comm;
   PetscMPIInt    size, rank;
@@ -1919,9 +1919,10 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, DM * redundantMesh)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(redundantMesh,2);
+  *redundantMesh = NULL;
   comm = PetscObjectComm((PetscObject)dm);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  *redundantMesh = NULL;
   if (size == 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *redundantMesh = dm;
