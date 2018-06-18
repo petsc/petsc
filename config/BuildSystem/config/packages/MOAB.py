@@ -5,7 +5,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     # To track MOAB.git, update gitcommit to 'git describe --always' or 'git rev-parse HEAD'
     self.gitcommit         = 'c4eed56fd6d2' # June 09, 2017, MOAB 5.0 release tag
-    self.download          = ['git://https://bitbucket.org/fathomteam/moab.git','ftp://ftp.mcs.anl.gov/pub/fathom/moab-5.0.0.tar.gz']
+    self.download          = ['git://https://bitbucket.org/fathomteam/moab.git','http://ftp.mcs.anl.gov/pub/fathom/moab-5.0.0.tar.gz']
     self.downloaddirnames  = ['moab']
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']

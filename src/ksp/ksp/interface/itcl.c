@@ -419,7 +419,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set && flag) {ierr = KSPConvergedDefaultSetUIRNorm(ksp);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set && flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
