@@ -1478,8 +1478,12 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
         ierr = DMPlexVecRestoreClosure(plex, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
       }
       if (locA) {
-        PetscInt subp;
-        ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);
+        DMLabel  spmap;
+        PetscInt subp = support[0];
+
+        /* If dm is a submesh, do not get subpoint */
+        ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+        if (!spmap) {ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);}
         ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
         for (i = 0; i < totDimAux; ++i) a[face*totDimAux+i] = x[i];
         ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
