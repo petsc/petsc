@@ -5,10 +5,12 @@
 #define matmffdsetfunction_            MATMFFDSETFUNCTION
 #define matmffdsettype_                MATMFFDSETTYPE
 #define matmffdsetoptionsprefix_       MATMFFDSETOPTIONSPREFIX
+#define matmffdsetbase_                MATMFFDSETBASE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdsetfunction_            matmffdsetfunction
 #define matmffdsettype_                matmffdsettype
 #define matmffdsetoptionsprefix_       matmffdsetoptionsprefix
+#define matmffdsetbase_                matmffdsetbase
 #endif
 
 static PetscErrorCode ourmatmffdfunction(void *ctx,Vec x,Vec f)
@@ -42,5 +44,11 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,char* prefix P
   FIXCHAR(prefix,len,t);
   *ierr = MatMFFDSetOptionsPrefix(*mat,t);
   FREECHAR(prefix,t);
+}
+
+PETSC_EXTERN void PETSC_STDCALL matmffdsetbase_(Mat *mat,Vec *u,Vec *f,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECT(f);
+ *ierr = MatMFFDSetBase(*mat,*u,*f);
 }
 
