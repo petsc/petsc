@@ -583,88 +583,83 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 
   PetscFunctionBegin;
   if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numcost,&rk->VecsDeltaLam);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecsSensiTemp);CHKERRQ(ierr);
   if(ts->vecs_sensip) {
-    ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vecs_sensip[0],&rk->VecDeltaMu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSAdjointStep_RK(TS ts)
 {
-  TS_RK            *rk  = (TS_RK*)ts->data;
-  RKTableau        tab  = rk->tableau;
-  const PetscInt   s    = tab->s;
+  TS_RK            *rk = (TS_RK*)ts->data;
+  RKTableau        tab = rk->tableau;
+  Mat              J;
+  const PetscInt   s = tab->s;
   const PetscReal  *A = tab->A,*b = tab->b,*c = tab->c;
-  PetscScalar      *w    = rk->work;
-  Vec              *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu;
+  PetscScalar      *w = rk->work;
+  Vec              *Y = rk->Y,*VecsDeltaLam = rk->VecsDeltaLam,VecDeltaMu = rk->VecDeltaMu,*VecsSensiTemp = rk->VecsSensiTemp;
   PetscInt         i,j,nadj;
   PetscReal        t = ts->ptime;
+  PetscReal        h = ts->time_step,stage_time;
+  PetscBool        zero;
   PetscErrorCode   ierr;
-  PetscReal        h = ts->time_step;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
-  for (i=s-1; i>=0; i--) {
-    Mat       J;
-    PetscReal stage_time = t + h*(1.0-c[i]);
-    PetscBool zero = PETSC_FALSE;
 
+  for (i=s-1; i>=0; i--) {
+    stage_time = t + h*(1.0-c[i]);
+    zero = PETSC_FALSE;
     ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,stage_time,Y[i],J,J);CHKERRQ(ierr);
     if (ts->vec_costintegral) {
       ierr = TSComputeDRDUFunction(ts,stage_time,Y[i],ts->vecs_drdu);CHKERRQ(ierr);
     }
-    /* Stage values of mu */
     if (ts->vecs_sensip) {
-      ierr = TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      ierr = TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacp);CHKERRQ(ierr); /* get f_p */
       if (ts->vec_costintegral) {
         ierr = TSComputeDRDPFunction(ts,stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
       }
     }
 
     if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
-    for (nadj=0; nadj<ts->numcost; nadj++) {
-      DM  dm;
-      Vec VecSensiTemp;
 
-      ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
+    for (j=i+1; j<s; j++) w[j-i-1]  = -h*A[j*s+i]; /* coefficients for computing VecsSensiTemp */
+
+    for (nadj=0; nadj<ts->numcost; nadj++) {
       /* Stage values of lambda */
       if (!zero) {
-        ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp);CHKERRQ(ierr);
-        ierr = VecScale(VecSensiTemp,-h*b[i]);CHKERRQ(ierr);
-        for (j=i+1; j<s; j++) w[j-i-1]  = -h*A[j*s+i];
-        ierr = VecMAXPY(VecSensiTemp,s-i-1,w,&VecDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
-        ierr = MatMultTranspose(J,VecSensiTemp,VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+        ierr = VecCopy(ts->vecs_sensi[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr); /* VecDeltaLam is an vec array of size s by numcost */
+        ierr = VecScale(VecsSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
+        ierr = VecMAXPY(VecsSensiTemp[nadj],s-i-1,w,&VecsDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
+        ierr = MatMultTranspose(J,VecsSensiTemp[nadj],VecsDeltaLam[nadj*s+i]);CHKERRQ(ierr);
       } else {
-        ierr = VecSet(VecDeltaLam[nadj*s+i],0);CHKERRQ(ierr);
+        ierr = VecSet(VecsDeltaLam[nadj*s+i],0);CHKERRQ(ierr);
       }
       if (ts->vec_costintegral) {
-        ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdu[nadj]);CHKERRQ(ierr);
+        ierr = VecAXPY(VecsDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdu[nadj]);CHKERRQ(ierr);
       }
 
       /* Stage values of mu */
       if (ts->vecs_sensip) {
         if (!zero) {
-          ierr = MatMultTranspose(ts->Jacp,VecSensiTemp,VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+          ierr = MatMultTranspose(ts->Jacp,VecsSensiTemp[nadj],VecDeltaMu);CHKERRQ(ierr);
         } else {
-          ierr = VecSet(VecDeltaMu[nadj*s+i],0);CHKERRQ(ierr);
+          ierr = VecSet(VecDeltaMu,0);CHKERRQ(ierr);
         }
         if (ts->vec_costintegral) {
-          ierr = VecAXPY(VecDeltaMu[nadj*s+i],-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
+          ierr = VecAXPY(VecDeltaMu,-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
+        ierr = VecAXPY(ts->vecs_sensip[nadj],1.,VecDeltaMu);CHKERRQ(ierr); /* update sensip for each stage */
       }
-      ierr = DMRestoreGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
     }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
-  for (nadj=0; nadj<ts->numcost; nadj++) {
-    ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
-    if (ts->vecs_sensip) {
-      ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
-    }
+  for (nadj=0; nadj<ts->numcost; nadj++) { /* no need to do this for mu's */
+    ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecsDeltaLam[nadj*s]);CHKERRQ(ierr);
   }
   rk->status = TS_STEP_COMPLETE;
   PetscFunctionReturn(0);
@@ -721,8 +716,9 @@ static PetscErrorCode TSRKTableauReset(TS ts)
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&rk->YdotRHS);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaLam);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&rk->VecsSensiTemp);CHKERRQ(ierr);
+  ierr = VecDestroy(&rk->VecDeltaMu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
