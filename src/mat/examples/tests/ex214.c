@@ -9,7 +9,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
 #if defined(PETSC_HAVE_MUMPS)
-  Mat            A,RHS,C,F,X,AX;
+  Mat            A,RHS,C,F,X,AX,spRHST,spRHS;
   Vec            u,x,b;
   PetscInt       m,n,nrhs,M,N,i,Istart,Iend,Ii,j,J;
   PetscScalar    v;
@@ -93,6 +93,7 @@ int main(int argc,char **args)
   ierr = VecCopy(x,u);CHKERRQ(ierr);
 
   /* (1) Test MatMatSolve(): dense RHS = A*C, C: true solutions */
+  /* ---------------------------------------------------------- */
   ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
@@ -105,6 +106,7 @@ int main(int argc,char **args)
 
   /* (2) Test MatMatSolve() for inv(A) with dense RHS:
    RHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
+  /* ------------------------------------------------------------------- */
   ierr = MatZeroEntries(RHS);CHKERRQ(ierr);
   for (i=0; i<nrhs; i++) {
     v = 1.0;
@@ -115,7 +117,7 @@ int main(int argc,char **args)
 
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
   if (displ) {
-    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," (2) first %D columns of inv(A) with dense RHS:\n",nrhs);}
+    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);}
     ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -126,39 +128,54 @@ int main(int argc,char **args)
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
+  ierr = MatZeroEntries(X);CHKERRQ(ierr);
 
-  if (size == 1) {
-    /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
+  /* (3) Test MatMatSolve() for inv(A) with sparse RHS stored in the host:
      spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
-    Mat RHST,spRHST,spRHS;
-
-    ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
-    ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
-
-    /* MUMPS requres spRHS in compressed column format, which PETSc does not support.
-     PETSc can create a new matrix object that shares same data structure with A and behaves like A^T */
-    ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-    ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
-    if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," (3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
-      ierr = MatView(X,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    }
-
-    /* Check the residual */
-    ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
-    ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
-    }
-
-    ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-    ierr = MatDestroy(&RHST);CHKERRQ(ierr);
+  /* ----------------------------------------------------------------------- */
+  /* Create spRHST */
+  ierr = MatCreate(PETSC_COMM_WORLD,&spRHST);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = MatSetSizes(spRHST,nrhs,M,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetSizes(spRHST,0,0,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   }
+  ierr = MatSetType(spRHST,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(spRHST);CHKERRQ(ierr);
+  ierr = MatSetUp(spRHST);CHKERRQ(ierr);
+  if (!rank) {
+    v = 1.0;
+    for (i=0; i<nrhs; i++) {
+      ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Create spRHS which uses the data structure of spRHST */
+  ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+
+  ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+  if (displ) {
+    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
+    ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  /* Check the residual */
+  ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
+
+  ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  if (norm > tol) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
+  }
+
+  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
 
   /* (4) Test MatMatSolve() for inv(A) with selected entries:
    input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
+  /* --------------------------------------------------------------------------------- */
   if (nrhs == N) { /* mumps requires nrhs = n */
     /* Create spRHS on proc[0] */
     Mat spRHS = NULL,spRHST;
