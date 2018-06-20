@@ -1,6 +1,10 @@
 import config.package
 import os
 
+def noCheck(command, status, output, error):
+  ''' Do no check result'''
+  return
+
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
@@ -46,6 +50,20 @@ class Configure(config.package.GNUPackage):
 
   def alternateConfigureLibrary(self):
     self.checkDownload()
+
+  def checkBfortVersion(self,mmajor,mminor,msubminor):
+    try:
+      import re
+      (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
+      ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      major    = int(ver.group(1))
+      minor    = int(ver.group(2))
+      subminor = int(ver.group(3))
+    except RuntimeError as e:
+      self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
+    if (major < mmajor) or (major == mmajor and minor < mminor) or (major == mmajor and minor == mminor and subminor < msubminor):
+      raise RuntimeError(self.bfort+' version '+str(major)+'.'+str(minor)+'.'+str(subminor)+' is older than required '+str(mmajor)+'.'+str(mminor)+'.'+str(msubminor)+'. Perhaps a stale install of sowing?')
+    return
 
   def configure(self):
     if ('with-sowing' in self.framework.clArgDB and not self.argDB['with-sowing']):
@@ -94,6 +112,7 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
 
+      self.checkBfortVersion(1,1,25)
       self.buildFortranStubs()
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
