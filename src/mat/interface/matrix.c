@@ -14,7 +14,7 @@ PetscClassId MAT_FDCOLORING_CLASSID;
 PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 
 PetscLogEvent MAT_Mult, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
-PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve;
+PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve,MAT_MatTrSolve;
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
@@ -3397,8 +3397,8 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
 .  X - the result matrix (dense matrix)
 
    Notes:
-   The matrices b and x cannot be the same.  I.e., one cannot
-   call MatMatSolveTranspose(A,x,x).
+   The matrices B and X cannot be the same.  I.e., one cannot
+   call MatMatSolveTranspose(A,X,X).
 
    Notes:
    Most users should usually employ the simplified KSP interface for linear solvers
@@ -3406,16 +3406,13 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
    See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
    at a time.
 
-   When using SuperLU_Dist as a parallel solver PETSc will use the SuperLU_Dist functionality to solve multiple right hand sides simultaneously. For MUMPS
-   it calls a separate solve for each right hand side since MUMPS does not yet support distributed right hand sides.
-
-   Since the resulting matrix X must always be dense we do not support sparse representation of the matrix B.
+   When using SuperLU_Dist or MUMPS as a parallel solver, PETSc will use their functionality to solve multiple right hand sides simultaneously.
 
    Level: developer
 
    Concepts: matrices^triangular solves
 
-.seealso: MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
+.seealso: MatMatSolve(), MatLUFactor(), MatCholeskyFactor()
 @*/
 PetscErrorCode MatMatSolveTranspose(Mat A,Mat B,Mat X)
 {
@@ -3445,6 +3442,62 @@ PetscErrorCode MatMatSolveTranspose(Mat A,Mat B,Mat X)
     ierr = (*A->ops->matsolvetranspose)(A,B,X);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMatTransposeSolve - Solves A X = B^T, given a factored matrix.
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the factored matrix
+-  Bt - the transpose of right-hand-side matrix
+
+   Output Parameter:
+.  X - the result matrix (dense matrix)
+
+   Notes:
+   Most users should usually employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
+   at a time.
+
+   For MUMPS, it only supports centralized sparse compressed column format on the host processor for right hand side matrix. User must create B^T in sparse compressed row format on the host processor and call MatMatTransposeSolve() to implement MUMPS' MatMatSolve().
+
+   Level: developer
+
+   Concepts: matrices^triangular solves
+
+.seealso: MatMatSolve(), MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
+@*/
+PetscErrorCode MatMatTransposeSolve(Mat A,Mat Bt,Mat X)
+{
+  PetscErrorCode ierr;
+  printf("MatMatTransposeSolve ...\n");
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidHeaderSpecific(Bt,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
+  PetscCheckSameComm(A,1,Bt,2);
+  PetscCheckSameComm(A,1,X,3);
+
+  if (X == Bt) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
+  if (!A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (A->cmap->N != X->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat X: global dim %D %D",A->cmap->N,X->rmap->N);
+  if (A->rmap->N != Bt->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat Bt: global dim %D %D",A->rmap->N,Bt->cmap->N);
+  if (X->cmap->N < Bt->rmap->N) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_SIZ,"Solution matrix must have same number of columns as row number of the rhs matrix");
+  if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(0);
+  MatCheckPreallocated(A,1);
+
+  ierr = PetscLogEventBegin(MAT_MatTrSolve,A,Bt,X,0);CHKERRQ(ierr);
+  if (A->ops->mattransposesolve) {
+    ierr = (*A->ops->mattransposesolve)(A,Bt,X);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatMatTransposeSolve() is not supported for the input matrix types");
+  ierr = PetscLogEventEnd(MAT_MatTrSolve,A,Bt,X,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

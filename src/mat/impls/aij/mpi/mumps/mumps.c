@@ -1062,6 +1062,25 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMatTransposeSolve_MUMPS(Mat A,Mat Bt,Mat X)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  Mat            B;
+
+  PetscFunctionBegin;
+  printf("MatMatTransposeSolve_MUMPS...\n");
+  ierr = PetscObjectTypeCompareAny((PetscObject)Bt,&flg,MATSEQAIJ,MATMPIAIJ,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Matrix Bt must be MATAIJ matrix");
+
+  /* Create B=Bt^T that uses Bt's data structure */
+  ierr = MatCreateTranspose(Bt,&B);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 #if !defined(PETSC_USE_COMPLEX)
 /*
   input:
@@ -1401,7 +1420,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
-  F->ops->matsolve        = MatMatSolve_MUMPS; 
+  F->ops->matsolve        = MatMatSolve_MUMPS;
+  F->ops->mattransposesolve = MatMatTransposeSolve_MUMPS;
   PetscFunctionReturn(0);
 }
 

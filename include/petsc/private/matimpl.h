@@ -206,6 +206,7 @@ struct _MatOps {
   /*144*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
+  PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -1640,6 +1641,7 @@ PETSC_EXTERN PetscLogEvent MAT_FDColoringFunction;
 PETSC_EXTERN PetscLogEvent MAT_CreateSubMat;
 PETSC_EXTERN PetscLogEvent MAT_MatMult;
 PETSC_EXTERN PetscLogEvent MAT_MatSolve;
+PETSC_EXTERN PetscLogEvent MAT_MatTrSolve;
 PETSC_EXTERN PetscLogEvent MAT_MatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_MatMultNumeric;
 PETSC_EXTERN PetscLogEvent MAT_Getlocalmatcondensed;
