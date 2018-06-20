@@ -462,7 +462,6 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
       PetscStageLog stageLog;
       PetscInt      st;
 
-      PetscFunctionBegin;
       ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
       for (st = 0; st < stageLog->numStages; ++st) {
         PetscBool same;
