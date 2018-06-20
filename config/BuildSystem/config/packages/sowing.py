@@ -61,6 +61,7 @@ class Configure(config.package.GNUPackage):
       subminor = int(ver.group(3))
     except RuntimeError as e:
       self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
+      return
     if (major < mmajor) or (major == mmajor and minor < mminor) or (major == mmajor and minor == mminor and subminor < msubminor):
       raise RuntimeError(self.bfort+' version '+str(major)+'.'+str(minor)+'.'+str(subminor)+' is older than required '+str(mmajor)+'.'+str(mminor)+'.'+str(msubminor)+'. Perhaps a stale install of sowing?')
     return
