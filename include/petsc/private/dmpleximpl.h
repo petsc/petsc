@@ -95,6 +95,7 @@ typedef struct {
   int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
   int tags[4];       /* Tag array */
+  PetscInt cellType; /* Cell type */
 } GmshElement;
 
 /* Utility struct to store the contents of a Fluent file in memory */
