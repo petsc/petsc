@@ -854,7 +854,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (flg) { /* dense B */
-    if (B->rmap->n != X->rmap->n) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
+    if (B->rmap->n != X->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
     mumps->id.ICNTL(20)= 0; /* dense RHS */
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
@@ -885,7 +885,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     } else { /* sparse B */
       ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
       ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
       /* mumps requires ia and ja start at 1! */
       mumps->id.irhs_ptr    = ia;
       mumps->id.irhs_sparse = ja;
@@ -910,7 +910,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (Bt) { /* sparse B */
       ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
       ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -987,7 +987,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!mumps->myid) {
       ierr = MatSeqAIJGetArray(b->A,&aa);CHKERRQ(ierr);
       ierr = MatGetRowIJ(b->A,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
       /* mumps requires ia and ja start at 1! */
       mumps->id.irhs_ptr    = ia;
       mumps->id.irhs_sparse = ja;
@@ -1052,7 +1052,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!mumps->myid) {
       ierr = MatSeqAIJRestoreArray(b->A,&aa);CHKERRQ(ierr);
       ierr = MatRestoreRowIJ(b->A,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
   } else {
     ierr = VecDestroy(&b_seq);CHKERRQ(ierr);
