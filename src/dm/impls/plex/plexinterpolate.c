@@ -730,7 +730,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
   DM             udm;
-  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, maxConeSize = 0, *cone;
+  PetscInt       dim, vStart, vEnd, cStart, cEnd, cMax, c, maxConeSize = 0, *cone;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -744,6 +744,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   }
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
   ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(udm, dim);CHKERRQ(ierr);
@@ -776,6 +777,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     ierr = DMPlexSetCone(udm, c, cone);CHKERRQ(ierr);
   }
   ierr = PetscFree(cone);CHKERRQ(ierr);
+  ierr = DMPlexSetHybridBounds(udm, cMax, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(udm);CHKERRQ(ierr);
   ierr = DMPlexStratify(udm);CHKERRQ(ierr);
   /* Reduce SF */
