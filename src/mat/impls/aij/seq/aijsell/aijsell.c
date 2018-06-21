@@ -83,12 +83,21 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
   PetscFunctionReturn(0);
 }
 
+/* Build or update the shadow matrix if and only if needed.
+ * We track the ObjectState to determine when this needs to be done. */
 PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL*) A->spptr;
+  PetscErrorCode   ierr;
+  Mat_SeqAIJSELL   *aijsell = (Mat_SeqAIJSELL*) A->spptr;
+  PetscObjectState state;
 
   PetscFunctionBegin;
+
+  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+  if (aijsell->S && aijsell->state == state) {
+    /* The existing shadow matrix is up-to-date, so simply exit. */
+    PetscFunctionReturn(0);
+  }
 
   if (aijsell->S) {
     ierr = MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_REUSE_MATRIX,&aijsell->S);CHKERRQ(ierr);
@@ -155,15 +164,10 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
   PetscErrorCode    ierr;
-  PetscObjectState  state;
 
   PetscFunctionBegin;
 
-  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
-  if (!aijsell->S || aijsell->state != state) {
-    ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
-  }
-
+  ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatMult(aijsell->S,xx,yy);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
