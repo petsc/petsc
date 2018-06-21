@@ -120,8 +120,8 @@ int main(int argc,char **args)
   /* (3) Test MatMatTransposeSolve() for inv(A) with sparse RHS stored in the host:
      spRHST = [e[0],...,e[nrhs-1]]^T, dense X holds first nrhs columns of inv(A) */
   /* --------------------------------------------------------------------------- */
-  /* Create spRHST: PETSc does not support compressed column format that is required by MUMPS for RHS matrix,
-     thus user must create spRHST, the transpose of spRHS in AIJ format, then call MatMatTransposeSolve() */
+  /* Create spRHST: PETSc does not support compressed column format which is required by MUMPS for sparse RHS matrix,
+     thus user must create spRHST=spRHS^T and call MatMatTransposeSolve() */
   ierr = MatCreate(PETSC_COMM_WORLD,&spRHST);CHKERRQ(ierr);
   if (!rank) {
     /* MUMPS requirs RHS be centralized on the host! */
@@ -143,10 +143,6 @@ int main(int argc,char **args)
 
   ierr = MatMatTransposeSolve(F,spRHST,X);CHKERRQ(ierr);
 
-  /* Create spRHS which uses the data structure of spRHST */
-  ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-
-  ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
   if (displ) {
     if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
     ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -161,48 +157,24 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-  ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-
   /* (4) Test MatMatSolve() for inv(A) with selected entries:
    input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
   /* --------------------------------------------------------------------------------- */
   if (nrhs == N) { /* mumps requires nrhs = n */
     /* Create spRHS on proc[0] */
-    Mat spRHS = NULL,spRHST;
-    if (!rank) {
-      /* Create spRHST = spRHS^T in compressed row format (aij) and set its nonzero structure */
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,2,NULL,&spRHST);CHKERRQ(ierr);
-      v = 0.0;
-      for (i=0; i<N; i++) {
-        ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      for (i=1; i<N; i++) {
-        j = i - 1;
-        ierr = MatSetValues(spRHST,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    Mat spRHS = NULL;
 
-      /* Create spRHS = spRHST^T. Two matrices share internal matrix data structure */
-      ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-    }
-
+    /* Create spRHS = spRHST^T. Two matrices share internal matrix data structure */
+    ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
     ierr = MatMumpsGetInverse(F,spRHS);CHKERRQ(ierr);
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
 
-    if (!rank) {
-      if (displ) {
-      /* spRHST and spRHS share same internal data structure */
-      Mat spRHSTT;
-      ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"\nSelected entries of inv(A):\n");CHKERRQ(ierr);
-      ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
-      }
-
-      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+    ierr = MatMumpsGetInverseTranspose(F,spRHST);CHKERRQ(ierr);
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"\nSelected entries of inv(A^T):\n");CHKERRQ(ierr);
+      ierr = MatView(spRHST,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
   }
 
   /* Free data structures */
@@ -212,6 +184,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = MatDestroy(&RHS);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

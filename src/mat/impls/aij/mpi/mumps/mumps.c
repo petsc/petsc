@@ -729,6 +729,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfo_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfog_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetInverse_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetInverseTranspose_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -856,9 +857,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   if (flg) { /* dense B */
     if (B->rmap->n != X->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
     mumps->id.ICNTL(20)= 0; /* dense RHS */
-  } else {
+  } else { /* sparse B */
     ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
-    if (flgT) { /* input B is transpose of actural RHS matrix, because mumps requires sparse compressed COLUMN storage! */
+    if (flgT) { /* input B is transpose of actural RHS matrix,
+                 because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
       ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
     mumps->id.ICNTL(20)= 1; /* sparse RHS */
@@ -1069,17 +1071,16 @@ PetscErrorCode MatMatTransposeSolve_MUMPS(Mat A,Mat Bt,Mat X)
   Mat            B;
 
   PetscFunctionBegin;
-  printf("MatMatTransposeSolve_MUMPS...\n");
   ierr = PetscObjectTypeCompareAny((PetscObject)Bt,&flg,MATSEQAIJ,MATMPIAIJ,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Matrix Bt must be MATAIJ matrix");
 
   /* Create B=Bt^T that uses Bt's data structure */
   ierr = MatCreateTranspose(Bt,&B);CHKERRQ(ierr);
 
+  ierr = MatMatSolve_MUMPS(A,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #if !defined(PETSC_USE_COMPLEX)
 /*
@@ -2036,30 +2037,32 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
 PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
 {
   PetscErrorCode ierr;
-  Mat            Bt = NULL;
-  PetscBool      flgT;
+  Mat            Bt = NULL,Btseq = NULL;
+  PetscBool      flg;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
-  PetscBool      done;
   PetscScalar    *aa;
   PetscInt       spnr,*ia,*ja;
 
   PetscFunctionBegin;
-  if (!mumps->myid) {
-    PetscValidIntPointer(spRHS,2);
-    ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
-    if (flgT) {
-      ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)spRHS),PETSC_ERR_ARG_WRONG,"Matrix spRHS must be type MATTRANSPOSEMAT matrix");
-    }
-  }
+  PetscValidIntPointer(spRHS,2);
+  ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)spRHS),PETSC_ERR_ARG_WRONG,"Matrix spRHS must be type MATTRANSPOSEMAT matrix");
 
   ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
 
+  if (mumps->size > 1) {
+    Mat_MPIAIJ *b = (Mat_MPIAIJ*)Bt->data;
+    Btseq = b->A;
+  } else {
+    Btseq = Bt;
+  }
+
   if (!mumps->myid) {
-    ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
-    if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+    ierr = MatSeqAIJGetArray(Btseq,&aa);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(Btseq,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
 
     mumps->id.irhs_ptr    = ia;
     mumps->id.irhs_sparse = ja;
@@ -2082,8 +2085,9 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
 
   if (!mumps->myid) {
-    ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
-    ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArray(Btseq,&aa);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(Btseq,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
   }
   PetscFunctionReturn(0);
 }
@@ -2115,6 +2119,52 @@ PetscErrorCode MatMumpsGetInverse(Mat F,Mat spRHS)
   PetscValidType(F,1);
   if (!F->factortype) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscUseMethod(F,"MatMumpsGetInverse_C",(Mat,Mat),(F,spRHS));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F,Mat spRHST)
+{
+  PetscErrorCode ierr;
+  Mat            spRHS;
+
+  PetscFunctionBegin;
+  ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+  ierr = MatMumpsGetInverse_MUMPS(F,spRHS);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  MatMumpsGetInverse - Get user-specified set of entries in inverse of matrix A
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix of A obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  spRHST - sequential sparse matrix in MATAIJ format holding specified indices of A^T in processor[0]
+
+  Output Parameter:
+. spRHST - requested entries of inverse of A^T
+
+   Level: beginner
+
+   References:
+.      MUMPS Users' Guide
+
+.seealso: MatGetFactor(), MatCreateTranspose(), MatMumpsGetInverse()
+@*/
+PetscErrorCode MatMumpsGetInverseTranspose(Mat F,Mat spRHST)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidType(F,1);
+  if (!F->factortype) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  ierr = PetscObjectTypeCompareAny((PetscObject)spRHST,&flg,MATSEQAIJ,MATMPIAIJ,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)spRHST),PETSC_ERR_ARG_WRONG,"Matrix spRHST must be MATAIJ matrix");
+
+  ierr = PetscUseMethod(F,"MatMumpsGetInverseTranspose_C",(Mat,Mat),(F,spRHST));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2336,6 +2386,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverse_C",MatMumpsGetInverse_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverseTranspose_C",MatMumpsGetInverseTranspose_MUMPS);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;

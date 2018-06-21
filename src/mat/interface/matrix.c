@@ -3475,7 +3475,6 @@ PetscErrorCode MatMatSolveTranspose(Mat A,Mat B,Mat X)
 PetscErrorCode MatMatTransposeSolve(Mat A,Mat Bt,Mat X)
 {
   PetscErrorCode ierr;
-  printf("MatMatTransposeSolve ...\n");
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
