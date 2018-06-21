@@ -1072,7 +1072,7 @@ PetscErrorCode  MatMFFDResetHHistory(Mat J)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
         Jacobian are computed
 
