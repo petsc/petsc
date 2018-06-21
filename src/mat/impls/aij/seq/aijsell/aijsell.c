@@ -6,6 +6,7 @@
 */
 
 #include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/sell/seq/sell.h>
 
 typedef struct {
   Mat S; /* The SELL formatted "shadow" matrix. */
@@ -82,6 +83,25 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL*) A->spptr;
+
+  PetscFunctionBegin;
+
+  if (aijsell->S) {
+    ierr = MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_REUSE_MATRIX,&aijsell->S);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_INITIAL_MATRIX,&aijsell->S);CHKERRQ(ierr);
+  }
+
+  /* Record the ObjectState so that we can tell when the shadow matrix needs updating */
+  ierr = PetscObjectStateGet((PetscObject)A,&aijsell->state);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
@@ -127,6 +147,24 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
   if (aijsell->eager_shadow) {
     /* TODO: Construct the shadow matrix here. */
   }
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  PetscErrorCode    ierr;
+  PetscObjectState  state;
+
+  PetscFunctionBegin;
+
+  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+  if (!aijsell->S || aijsell->state != state) {
+    ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  }
+
+  ierr = MatMult(aijsell->S,xx,yy);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -180,11 +218,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
     /* TODO: Have the shadow matrix for B be built now if eager_shadow is set to true. */
   }
 
+  B->ops->mult             = MatMult_SeqAIJSELL;
 /* Commenting these out for now, as these functions are not yet implemented.
-  B->ops->mult             = MatMult_SeqAIJSELL_SpMV2;
-  B->ops->multtranspose    = MatMultTranspose_SeqAIJSELL_SpMV2;
-  B->ops->multadd          = MatMultAdd_SeqAIJSELL_SpMV2;
-  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJSELL_SpMV2;
+  B->ops->multtranspose    = MatMultTranspose_SeqAIJSELL;
+  B->ops->multadd          = MatMultAdd_SeqAIJSELL;
+  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJSELL;
 */
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",MatConvert_SeqAIJSELL_SeqAIJ);CHKERRQ(ierr);
