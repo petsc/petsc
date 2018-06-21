@@ -102,6 +102,17 @@ cdef class DM(Object):
 
     #
 
+    def setDS(self, DS ds):
+        CHKERR( DMSetDS(self.dm, ds.ds) )
+
+    def getDS(self):
+        cdef DS ds = DS()
+        CHKERR( DMGetDS(self.dm, &ds.ds) )
+        PetscINCREF(ds.obj)
+        return ds
+
+    #
+
     def getBlockSize(self):
         cdef PetscInt bs = 1
         CHKERR( DMGetBlockSize(self.dm, &bs) )
@@ -129,7 +140,7 @@ cdef class DM(Object):
         return vg
 
     def restoreGlobalVec(self, Vec vg):
-        CHKERR( PetscObjectDereference(<PetscObject>vg.vec) ) 
+        CHKERR( PetscObjectDereference(<PetscObject>vg.vec) )
         CHKERR( DMRestoreGlobalVector(self.dm, &vg.vec) )
 
     def getLocalVec(self):
@@ -139,7 +150,7 @@ cdef class DM(Object):
         return vl
 
     def restoreLocalVec(self, Vec vl):
-        CHKERR( PetscObjectDereference(<PetscObject>vl.vec) ) 
+        CHKERR( PetscObjectDereference(<PetscObject>vl.vec) )
         CHKERR( DMRestoreLocalVector(self.dm, &vl.vec) )
 
     def globalToLocal(self, Vec vg, Vec vl, addv=None):
@@ -517,6 +528,22 @@ cdef class DM(Object):
             CHKERR( DMSNESSetJacobian(self.dm, SNES_Jacobian, <void*>context) )
         else:
             CHKERR( DMSNESSetJacobian(self.dm, NULL, NULL) )
+
+    # --- application context ---
+
+    property appctx:
+        def __get__(self):
+            return self.getAppCtx()
+        def __set__(self, value):
+            self.setAppCtx(value)
+
+    # --- discretization space ---
+
+    property ds:
+        def __get__(self):
+            return self.getDS()
+        def __set__(self, value):
+            self.setDS(value)
 
 # --------------------------------------------------------------------
 

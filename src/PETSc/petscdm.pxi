@@ -36,6 +36,9 @@ cdef extern from * nogil:
     int DMSetFromOptions(PetscDM)
     int DMSetUp(PetscDM)
 
+    int DMGetDS(PetscDM,PetscDS*)
+    int DMSetDS(PetscDM,PetscDS)
+
     int DMGetBlockSize(PetscDM,PetscInt*)
     int DMSetVecType(PetscDM,PetscVecType)
     int DMCreateLocalVector(PetscDM,PetscVec*)

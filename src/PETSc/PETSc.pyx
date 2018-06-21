@@ -127,6 +127,7 @@ include "petscobj.pxi"
 include "petscvwr.pxi"
 include "petscrand.pxi"
 include "petscis.pxi"
+include "petscsf.pxi"
 include "petscvec.pxi"
 include "petscsct.pxi"
 include "petscsec.pxi"
@@ -138,11 +139,11 @@ include "petscts.pxi"
 include "petsctao.pxi"
 include "petscao.pxi"
 include "petscdm.pxi"
+include "petscds.pxi"
 include "petscdmda.pxi"
 include "petscdmplex.pxi"
 include "petscdmcomposite.pxi"
 include "petscdmshell.pxi"
-include "petscsf.pxi"
 include "petscpartitioner.pxi"
 include "petsclinesearch.pxi"
 
@@ -162,6 +163,7 @@ include "Object.pyx"
 include "Viewer.pyx"
 include "Random.pyx"
 include "IS.pyx"
+include "SF.pyx"
 include "Vec.pyx"
 include "Scatter.pyx"
 include "Section.pyx"
@@ -173,11 +175,11 @@ include "TS.pyx"
 include "TAO.pyx"
 include "AO.pyx"
 include "DM.pyx"
+include "DS.pyx"
 include "DMDA.pyx"
 include "DMPlex.pyx"
 include "DMComposite.pyx"
 include "DMShell.pyx"
-include "SF.pyx"
 include "Partitioner.pyx"
 
 # --------------------------------------------------------------------
@@ -367,6 +369,7 @@ cdef extern from *:
     PetscClassId PETSC_TAO_CLASSID         "TAO_CLASSID"
     PetscClassId PETSC_AO_CLASSID          "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID          "DM_CLASSID"
+    PetscClassId PETSC_DS_CLASSID          "PETSCDS_CLASSID"
     PetscClassId PETSC_PARTITIONER_CLASSID "PETSCPARTITIONER_CLASSID"
 
 cdef bint registercalled = 0
@@ -415,6 +418,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_TAO_CLASSID,         TAO)
     PyPetscType_Register(PETSC_AO_CLASSID,          AO)
     PyPetscType_Register(PETSC_DM_CLASSID,          DM)
+    PyPetscType_Register(PETSC_DS_CLASSID,          DS)
     PyPetscType_Register(PETSC_PARTITIONER_CLASSID, Partitioner)
     return 0 # and we are done, enjoy !!
 

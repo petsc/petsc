@@ -176,6 +176,10 @@ class TestObjectDMDA(BaseTestObject, unittest.TestCase):
     FACTORY = 'create'
     TARGS = ([3,3,3],)
 
+class TestObjectDS(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.DS
+    FACTORY = 'create'
+
 class TestObjectVec(BaseTestObject, unittest.TestCase):
     CLASS   = PETSc.Vec
     FACTORY = 'createSeq'

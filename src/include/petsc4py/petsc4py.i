@@ -456,7 +456,8 @@ SWIG_From_dec(Type)(Type v) {
 
 %define SWIG_TYPECHECK_PETSC_AO            540 %enddef
 %define SWIG_TYPECHECK_PETSC_DM            541 %enddef
-%define SWIG_TYPECHECK_PETSC_PARTITIONER   542 %enddef
+%define SWIG_TYPECHECK_PETSC_DS            542 %enddef
+%define SWIG_TYPECHECK_PETSC_PARTITIONER   543 %enddef
 
 
 %define %petsc4py_objt(Pkg, PyType, Type, CODE)
@@ -560,7 +561,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , Random      , PetscRandom            , PETSC_RANDOM        )
 %petsc4py_objt( Petsc , IS          , IS                     , PETSC_IS            )
 %petsc4py_objt( Petsc , LGMap       , ISLocalToGlobalMapping , PETSC_IS_LTOGM      )
-%petsc4py_objt( Petsc , SF          , SF                     , PETSC_SF            )
+%petsc4py_objt( Petsc , SF          , PetscSF                , PETSC_SF            )
 %petsc4py_objt( Petsc , Vec         , Vec                    , PETSC_VEC           )
 %petsc4py_objt( Petsc , Scatter     , VecScatter             , PETSC_VEC_SCATTER   )
 %petsc4py_objt( Petsc , Section     , PetscSection           , PETSC_SECTION       )
@@ -573,6 +574,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , TAO         , Tao                    , PETSC_TAO           )
 %petsc4py_objt( Petsc , AO          , AO                     , PETSC_AO            )
 %petsc4py_objt( Petsc , DM          , DM                     , PETSC_DM            )
+%petsc4py_objt( Petsc , DS          , PetscDS                , PETSC_DS            )
 %petsc4py_objt( Petsc , Partitioner , PetscPartitioner       , PETSC_PARTITIONER   )
 
 /* ---------------------------------------------------------------- */

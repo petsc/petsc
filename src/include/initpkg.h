@@ -21,6 +21,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = TSInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscDSInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
