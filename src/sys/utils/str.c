@@ -382,8 +382,8 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
      Null string returns a string starting with zero
 
      If the string that is being copied is of length n or larger then the entire string is not
-     copied and the file location of s is set to NULL. This is different then the behavior of 
-     strncpy() which leaves s non-terminated.
+     copied and the final location of s is set to NULL. This is different then the behavior of 
+     strncpy() which leaves s non-terminated if there is not room for the entire string.
 
   Concepts: string copy
 
