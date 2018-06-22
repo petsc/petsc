@@ -2651,14 +2651,14 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   to->use_alltoallv = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_alltoall",&to->use_alltoallv,NULL);CHKERRQ(ierr);
   from->use_alltoallv = to->use_alltoallv;
-  if (from->use_alltoallv) PetscInfo(ctx,"Using MPI_Alltoallv() for scatter\n");
+  if (from->use_alltoallv) {ierr = PetscInfo(ctx,"Using MPI_Alltoallv() for scatter\n");CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_MPI_ALLTOALLW)  && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallv) {
     to->use_alltoallw = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_nopack",&to->use_alltoallw,NULL);CHKERRQ(ierr);
   }
   from->use_alltoallw = to->use_alltoallw;
-  if (from->use_alltoallw) PetscInfo(ctx,"Using MPI_Alltoallw() for scatter\n");
+  if (from->use_alltoallw) {ierr = PetscInfo(ctx,"Using MPI_Alltoallw() for scatter\n");CHKERRQ(ierr);}
 #endif
 
   to->use_window = PETSC_FALSE;
@@ -2702,7 +2702,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
       for (i=0; i<size; i++) from->types[i] = MPIU_SCALAR;
 
       if (from->contiq) {
-        PetscInfo(ctx,"Scattered vector entries are stored contiguously, taking advantage of this with -vecscatter_alltoall\n");
+        ierr = PetscInfo(ctx,"Scattered vector entries are stored contiguously, taking advantage of this with -vecscatter_alltoall\n");CHKERRQ(ierr);
         for (i=0; i<from->n; i++) from->wcounts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
 
         if (from->n) from->wdispls[from->procs[0]] = sizeof(PetscScalar)*from->indices[0];
