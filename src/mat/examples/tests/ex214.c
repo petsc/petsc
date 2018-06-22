@@ -9,7 +9,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
 #if defined(PETSC_HAVE_MUMPS)
-  Mat            A,RHS,C,F,X,AX,spRHST,spRHS;
+  Mat            A,RHS,C,F,X,AX,spRHST;
   PetscInt       m,n,nrhs,M,N,i,Istart,Iend,Ii,j,J;
   PetscScalar    v;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
