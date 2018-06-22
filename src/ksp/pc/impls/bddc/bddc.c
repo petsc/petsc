@@ -584,13 +584,13 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
 }
 
 /*@
- PCBDDCSetLevels - Sets the maximum number of levels for multilevel
+ PCBDDCSetLevels - Sets the maximum number of additional levels allowed for multilevel BDDC
 
    Logically collective on PC
 
    Input Parameters:
 +  pc - the preconditioning context
--  levels - the maximum number of levels (max 9)
+-  levels - the maximum number of levels
 
    Options Database Keys:
 .    -pc_bddc_levels
@@ -598,7 +598,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
    Level: intermediate
 
    Notes:
-     Default value is 0, i.e. traditional one-level BDDC
+     The default value is 0, that gives the classical two-levels BDDC
 
 .seealso: PCBDDC, PCBDDCSetCoarseningRatio()
 @*/
@@ -609,7 +609,7 @@ PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
-  if (levels > 99) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of levels for bddc is 99\n");
+  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d\n",PETSC_PCBDDC_MAXLEVELS-1);
   ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

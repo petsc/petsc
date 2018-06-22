@@ -4,6 +4,10 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
+#if !defined(PETSC_PCBDDC_MAXLEVELS)
+#define PETSC_PCBDDC_MAXLEVELS 8
+#endif
+
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
@@ -169,6 +173,5 @@ typedef struct {
   PetscInt    dbg_flag;
   PetscViewer dbg_viewer;
 } PC_BDDC;
-
 
 #endif /* __pcbddc_h */
