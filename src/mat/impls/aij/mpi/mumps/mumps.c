@@ -2135,7 +2135,7 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F,Mat spRHST)
 }
 
 /*@
-  MatMumpsGetInverse - Get user-specified set of entries in inverse of matrix A
+  MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix A^T
 
    Logically Collective on Mat
 
@@ -2461,6 +2461,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverse_C",MatMumpsGetInverse_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverseTranspose_C",MatMumpsGetInverseTranspose_MUMPS);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 #if defined(PETSC_USE_COMPLEX)
@@ -2522,6 +2523,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverse_C",MatMumpsGetInverse_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInverseTranspose_C",MatMumpsGetInverseTranspose_MUMPS);CHKERRQ(ierr);
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
