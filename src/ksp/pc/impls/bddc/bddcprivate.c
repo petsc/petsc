@@ -2805,6 +2805,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       ierr = ISRestoreIndices(zerodiag_subs[i],&idxs);CHKERRQ(ierr);
     }
     ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
+    ierr = MatSetOption(pcbddc->benign_change,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     /* set identity on velocities */
     for (i=0;i<n-nz;i++) {
@@ -2940,6 +2941,7 @@ PetscErrorCode PCBDDCBenignPopOrPushB0(PC pc, PetscBool pop)
           nnz[i] = n - nnz[i];
         }
         ierr = MatSeqAIJSetPreallocation(pcbddc->benign_B0,0,nnz);CHKERRQ(ierr);
+        ierr = MatSetOption(pcbddc->benign_B0,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(nnz);CHKERRQ(ierr);
       }
 
@@ -6289,6 +6291,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     }
   }
   ierr = MatSeqAIJSetPreallocation(pcbddc->ConstraintMatrix,0,nnz);CHKERRQ(ierr);
+  ierr = MatSetOption(pcbddc->ConstraintMatrix,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
 
   /* set values in constraint matrix */
@@ -6378,6 +6381,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
     }
     ierr = MatSeqAIJSetPreallocation(localChangeOfBasisMatrix,0,nnz);CHKERRQ(ierr);
+    ierr = MatSetOption(localChangeOfBasisMatrix,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     /* Set interior change in the matrix */
     if (!pcbddc->benign_change || pcbddc->fake_change) {
