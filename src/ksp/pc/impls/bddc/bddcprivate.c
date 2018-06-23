@@ -6193,24 +6193,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         constraints_n[total_counts_cc++] = pcbddc->adaptive_constraints_n[i];
       }
     }
-#if 0
-    printf("Found %d totals (%d)\n",total_counts_cc,total_counts);
-    for (i=0;i<total_counts_cc;i++) {
-      printf("const %d, start %d",i,constraints_idxs_ptr[i]);
-      printf(" end %d:\n",constraints_idxs_ptr[i+1]);
-      for (j=constraints_idxs_ptr[i];j<constraints_idxs_ptr[i+1];j++) {
-        printf(" %d",constraints_idxs[j]);
-      }
-      printf("\n");
-      printf("number of cc: %d\n",constraints_n[i]);
-    }
-    for (i=0;i<n_vertices;i++) {
-      PetscPrintf(PETSC_COMM_SELF,"[%d] vertex %d, n %d\n",PetscGlobalRank,i,pcbddc->adaptive_constraints_n[i]);
-    }
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      PetscPrintf(PETSC_COMM_SELF,"[%d] sub %d, edge %d, n %d\n",PetscGlobalRank,i,(PetscBool)PetscBTLookup(sub_schurs->is_edge,i),pcbddc->adaptive_constraints_n[i+n_vertices]);
-    }
-#endif
 
     max_size_of_constraint = 0;
     for (i=0;i<total_counts_cc;i++) max_size_of_constraint = PetscMax(max_size_of_constraint,constraints_idxs_ptr[i+1]-constraints_idxs_ptr[i]);
@@ -6318,15 +6300,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* assembling */
   ierr = MatAssemblyBegin(pcbddc->ConstraintMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pcbddc->ConstraintMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatChop(pcbddc->ConstraintMatrix,PETSC_SMALL);CHKERRQ(ierr);
-  ierr = MatSeqAIJCompress(pcbddc->ConstraintMatrix,&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = MatViewFromOptions(pcbddc->ConstraintMatrix,NULL,"-pc_bddc_constraint_mat_view");CHKERRQ(ierr);
 
-  /*
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-  ierr = MatView(pcbddc->ConstraintMatrix,(PetscViewer)0);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  */
   /* Create matrix for change of basis. We don't need it in case pcbddc->use_change_of_basis is FALSE */
   if (pcbddc->use_change_of_basis) {
     /* dual and primal dofs on a single cc */
@@ -6781,43 +6756,23 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     } else {
       Mat benign_global = NULL;
       if (pcbddc->benign_have_null) {
-        Mat tmat;
+        Mat M;
 
         pcbddc->change_interior = PETSC_TRUE;
-        ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-        ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-        ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecReciprocal(pcis->vec1_global);CHKERRQ(ierr);
-        ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = MatDuplicate(pc->pmat,MAT_DO_NOT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+        ierr = VecCopy(matis->counter,pcis->vec1_N);CHKERRQ(ierr);
+        ierr = VecReciprocal(pcis->vec1_N);CHKERRQ(ierr);
+        ierr = MatDuplicate(pc->pmat,MAT_DO_NOT_COPY_VALUES,&benign_global);CHKERRQ(ierr);
         if (pcbddc->benign_change) {
-          Mat M;
-
           ierr = MatDuplicate(pcbddc->benign_change,MAT_COPY_VALUES,&M);CHKERRQ(ierr);
           ierr = MatDiagonalScale(M,pcis->vec1_N,NULL);CHKERRQ(ierr);
-          ierr = MatISSetLocalMat(tmat,M);CHKERRQ(ierr);
-          ierr = MatDestroy(&M);CHKERRQ(ierr);
         } else {
-          Mat         eye;
-          PetscScalar *array;
-
-          ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,pcis->n,pcis->n,1,NULL,&eye);CHKERRQ(ierr);
-          for (i=0;i<pcis->n;i++) {
-            ierr = MatSetValue(eye,i,i,array[i],INSERT_VALUES);CHKERRQ(ierr);
-          }
-          ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-          ierr = MatAssemblyBegin(eye,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-          ierr = MatAssemblyEnd(eye,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-          ierr = MatISSetLocalMat(tmat,eye);CHKERRQ(ierr);
-          ierr = MatDestroy(&eye);CHKERRQ(ierr);
+          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,pcis->n,pcis->n,1,NULL,&M);CHKERRQ(ierr);
+          ierr = MatDiagonalSet(M,pcis->vec1_N,INSERT_VALUES);CHKERRQ(ierr);
         }
-        ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatConvert(tmat,MATAIJ,MAT_INITIAL_MATRIX,&benign_global);CHKERRQ(ierr);
-        ierr = MatDestroy(&tmat);CHKERRQ(ierr);
+        ierr = MatISSetLocalMat(benign_global,M);CHKERRQ(ierr);
+        ierr = MatDestroy(&M);CHKERRQ(ierr);
+        ierr = MatAssemblyBegin(benign_global,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(benign_global,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       }
       if (pcbddc->user_ChangeOfBasisMatrix) {
         ierr = MatMatMult(pcbddc->user_ChangeOfBasisMatrix,benign_global,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
