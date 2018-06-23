@@ -59,8 +59,8 @@
 \noindent January 2018
 
 \vspace*{20pt}
-\noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
-Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
+\noindent This material was based upon work supported by the Office of Science, Office of Advanced Scientific Computing Research, \\
+U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 
 
 \newpage
@@ -79,16 +79,16 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 %
 %   Next line temp removed
 %
-\noindent {\bf Abstract:}
+\noindent {\bf Abstract}
 
 \medskip \medskip
 PETSc is an extensible software library for scientific
-computation. This document provides useful information for PETSc
+computation. This document provides information for PETSc
 developers and those wishing to contribute to PETSc. The text assumes
 that you are familiar with PETSc and have access to PETSc source code
 and documentation (available
 via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}) including the PETSc users manual \cite{petsc-user-ref}.
-Higher level views of PETSc can be found in \cite{s2011}, \cite{bgms00}, \cite{miss-paper}, \cite{bgms98}, and \cite{petsc-efficient}. 
+Higher-level views of PETSc can be found in \cite{s2011}, \cite{bgms00}, \cite{miss-paper}, \cite{bgms98}, and \cite{petsc-efficient}. 
 
 Before contributing code to PETSc, please read Chapter \ref{chapter:styleguide}, which contains the source code style guide.
 Information on how to submit patches and pull requests to PETSc can be found at
@@ -119,34 +119,34 @@ be directed to \trl{petsc-maint@mcs.anl.gov}.
 \tableofcontents
 
 \pagestyle{fancy}
-\chapter{Responding to user requests and questions}
+\chapter{Responding to User Requests and Questions}
 
 PETSc users communicate to the PETSc team via two mailing lists:
 petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov. When responding
-to such inquiries please follow the guidelines given below.
+to such inquiries, please follow the guidelines given below.
 
 \begin{tightitemize}
 \item Be polite.
-\item Address the person by name (when it is possible to determine their name).
+\item Address the person by name (when you can determine the name).
 \item Apologize for the problem when it is appropriate (but not otherwise).
-\item Thank the person for their patience if it is more than six hours since the report came in.
+\item Thank the person for his or her patience if it is more than six hours since the report came in.
 \item If the person drops the \trl{petsc-maint} or \trl{petsc-users} from the reply list, add it back in.
-\item Don't ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them, or becomes confused.
+\item Don't ask too many questions or give too many suggestions in the same email. The user often responds only to the first of them or becomes confused.
 \end{tightitemize}
 
 \chapter{Style Guide}\label{chapter:styleguide}
 
 The PETSc team uses certain conventions to make the source code consistent and hence easier to maintain. We will interchangeably use the
-terminology {\em subclass}, {\em implementation}, or {\em type}\footnote{Type also refers to the string name of the subclass}
+terminology {\em subclass}, {\em implementation}, or {\em type}\footnote{Type also refers to the string name of the subclass.}
 to refer to a concrete realization of an abstract base class. For example, \lstinline{KSPGMRES} is a type for the base class \lstinline{KSP}.
 
 \section{Names}\label{sec:stylenames}
-Consistency of names for variables, functions, etc. is extremely
+Consistency of names for variables, functions, and so on is extremely
 important.
-We use several conventions:
+We use several conventions
 \begin{enumerate}
 \item All function names and enum types consist of acronyms or words, each of
-  which is capitalized, for example \lstinline{KSPSolve()} and
+  which is capitalized, for example, \lstinline{KSPSolve()} and
       \lstinline{MatGetOrdering()}.
 \item All enum elements and macro variables are named with all capital letters. When
       they consist of several complete words, there is an underscore between each word.
@@ -164,18 +164,18 @@ We use several conventions:
       of a particular file are declared \lstinline{static}.
       Also see item \ref{styleitem:petscextern} in Section \ref{sec:stylepetsc}.
 \item Function names in structures (for example, \lstinline{_matops}) are the same as the base application
-      function name without the object prefix, and are in small letters.
+      function name without the object prefix and are in small letters.
       For example, \lstinline{MatMultTranspose()} has a structure name of
       \lstinline{multtranspose}.
-\item Names of implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example \lstinline{KSPSolve_GMRES()}.
-\item Each application usable function begins with the name of the class object, followed by any subclass name,
-  for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
-\item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
+\item Names of implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example, \lstinline{KSPSolve_GMRES()}.
+\item Each application-usable function begins with the name of the class object, followed by any subclass name,
+  for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()}, or \lstinline{KSPGMRESSetRestart()}.
+\item Functions that PETSc provides as defaults for user-providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()}).
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
-\item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get''.
-For example, \trl{-ksp_gmres_restart}.
-\item Specific \lstinline{XXXType} values (for example \lstinline{MATSEQAIJ}) do not have an underscore in them, unless they refer to another package that uses an underscore, for example \lstinline{MATSOLVERSUPERLU_DIST}.
+\item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get'',
+for example, \trl{-ksp_gmres_restart}.
+\item Specific \lstinline{XXXType} values (for example, \lstinline{MATSEQAIJ}) do not have an underscore in them unless they refer to another package that uses an underscore, for example, \lstinline{MATSOLVERSUPERLU_DIST}.
 \end{enumerate}
 
 \section{Coding Conventions and Style}
@@ -186,7 +186,7 @@ so that the code is uniform and easily maintained.
 \begin{enumerate}
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \item All PETSc function bodies are indented two characters.
-\item Each additional level of loops, \lstinline{if} statements, etc. is indented
+\item Each additional level of loops, \lstinline{if} statements, and so on is indented
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
 \item Source code lines do not have a hard length limit; generally, we like them less than 150 characters wide.
@@ -202,15 +202,15 @@ PetscScalar a;
 PetscInt i,j; /* Incorrect */
 \end{lstlisting}
 
-\item Assignment and comparison operations, i.e. \lstinline{x = 22.0} or
+\item Assignment and comparison operations, for example, \lstinline{x = 22.0} or
 \lstinline{x < 22.0}, should have single spaces around the operator.
-This is true even when assignments are given directly in a line that declares
+This convention is true even when assignments are given directly in a line that declares
 the variable, such as \lstinline{PetscReal r = 22.3}. The exception is when
 these symbols are used in a \lstinline{for} loop; then, there should be no spaces,
 for example, \lstinline{for (i=0; i<m; i++)}. Comparisons in \lstinline{while()}
 constructs should have the spaces.
-\item When declaring variables there should be no space between multiple variables, that is it should be \lstinline{PetscReal a,b,c} not \lstinline{PetscReal a, b, c}.
-\item The prototypes for functions should not include the names of the variables; for example write
+\item When declaring variables there should be no space between multiple variables, for example, \lstinline{PetscReal a,b,c}, not \lstinline{PetscReal a, b, c}.
+\item The prototypes for functions should not include the names of the variables; for example, write
 \begin{lstlisting}
 PETSC_EXTERN PetscErrorCode MyFunction(PetscInt);
 \end{lstlisting}
@@ -224,7 +224,7 @@ PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); /* Incorrect */
 \item Equal signs should be aligned in regions where possible.
 \item There {\em must} be a single blank line
       between the local variable declarations and the body of the function.
-\item Indentation for \lstinline{if} statements {\em must}  be done  as
+\item Indentation for \lstinline{if} statements {\em must}  be done  as follows.
 \begin{lstlisting}
 if ( ) {
   ....
@@ -242,7 +242,7 @@ or
 for ( )
   a single indented line /* Incorrect */
 \end{lstlisting}
-instead use either
+Instead, use either
 \begin{lstlisting}
 if ( ) a single statement
 \end{lstlisting}
@@ -256,18 +256,18 @@ Note that error checking is a separate statement, so the following is {\em incor
 \begin{lstlisting}
 if ( ) ierr = XXX();CHKERRQ(ierr); /* Incorrect */
 \end{lstlisting}
-and instead one should use
+and instead you should use
 \begin{lstlisting}
 if ( ) {
   ierr = XXX();CHKERRQ(ierr);
 }
 \end{lstlisting}
 \item Always have a space between \lstinline{if} or \lstinline{for} and the following \lstinline{()}.
-\item \label{styleitem:bracesameline} The open brace should be on the same line as the \lstinline{if ( )} test, \lstinline{for ( )}, etc., never on its own line.  For example
+\item \label{styleitem:bracesameline} The open brace should be on the same line as the \lstinline{if ( )} test, \lstinline{for ( )}, and so forth, not on its own line, for example,
 \begin{lstlisting}
  } else {
 \end{lstlisting}
-never
+instead of
 \begin{lstlisting}
  }
  else { /* Incorrect */
@@ -278,7 +278,7 @@ See item \ref{styleitem:bracenextline} for an exception.
   This is an exception to item \ref{styleitem:bracesameline}.
 \item Do not leave sections of commented-out code in the source files.
 \item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
-\item All variables must be declared at the beginning of the code block (C89 style) never mixed in with code.
+\item All variables must be declared at the beginning of the code block (C89 style), never mixed in with code.
 \item Do not include a space after a \lstinline{(} or before a \lstinline{)}. Do not write
 \begin{lstlisting}
 ierr = PetscMalloc1( 10,&a );CHKERRQ(ierr); /* Incorrect */
@@ -287,7 +287,7 @@ but instead write
 \begin{lstlisting}
 ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \end{lstlisting}
-\item Do not use a space after the \lstinline{)} in a cast, or between the type and the \lstinline{*} in a cast.
+\item Do not use a space after the \lstinline{)} in a cast or between the type and the \lstinline{*} in a cast.
 \item Do not include a  space before or after a comma in lists.
 That is, do not write
 \begin{lstlisting}
@@ -297,13 +297,12 @@ but instead write
 \begin{lstlisting}
 ierr = func(a,22.0);CHKERRQ(ierr);
 \end{lstlisting}
-\item The PETSc ASCI output routines, such as \lstinline{PetscPrintf}, format strings take a \%D for all PETSc variables of
+\item The format strings in PETSc ASCI output routines, such as \lstinline{PetscPrintf}, take a \%D for all PETSc variables of
 type \lstinline{PetscInt}, not a \%d.
-\item All argumements of type \lstinline{PetscReal} to PETSc ASCI output routines, such as \lstinline{PetscPrintf}, must be cast to \lstinline{double}, for example
+\item All arguments of type \lstinline{PetscReal} to PETSc ASCI output routines, such as \lstinline{PetscPrintf}, must be cast to \lstinline{double}, for example,
 \begin{lstlisting}
 PetscPrintf(PETSC_COMM_WORLD,``Norm %g\n'',(double)norm);
 \end{lstlisting}
-type \lstinline{PetscInt}, not a \%d.
 \end{enumerate}
 
 
@@ -325,23 +324,23 @@ system it is used on.
 \subsection{Usage of PETSc Functions and Macros}
 \label{sec:stylepetsc}
 \begin{enumerate}
-\item Public PETSc includes, \trl{petsc*.h}, should not include private PETSc \trl{petsc/private/*impl.h} includes.
-\item Public and private PETSc includes cannot include include files located in the PETSc source tree.
+\item Public PETSc include files, \trl{petsc*.h}, should not reference private PETSc \trl{petsc/private/*impl.h} include files.
+\item Public and private PETSc include files cannot reference include files located in the PETSc source tree.
 \item The first line of the executable statements in functions must be \lstinline{PetscFunctionBegin;}
-\item Use \lstinline{PetscFunctionReturn(returnvalue);} not \lstinline{return(returnvalue);}
-\item {\em Never} put a function call in a \lstinline{return} statement; do not do
+\item Use \lstinline{PetscFunctionReturn(returnvalue)}, not \lstinline{return(returnvalue);}
+\item {\em Never} put a function call in a \lstinline{return} statement; do not write
 \begin{lstlisting}
 PetscFunctionReturn( somefunction(...) ); /* Incorrect */
 \end{lstlisting}
 \item Do {\em not} put a blank line immediately after \lstinline{PetscFunctionBegin;} or
   a blank line immediately before \lstinline{PetscFunctionReturn(0);}.
-\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, etc. directly in PETSc C/C++ source code or examples (usage is fine in Fortran source code).
-  Rather, use \lstinline{PetscSqrtScalar()}, \lstinline{PetscSqrtReal()}, etc., depending on the context.
+\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, and so on directly in PETSc C/C++ source code or examples (usage is fine in Fortran source code).
+  Rather, use \lstinline{PetscSqrtScalar()}, \lstinline{PetscSqrtReal()}, and so on, depending on the context.
   See \trl{petscmath.h} for expressions to use.
-\item \trl{assert.h} should not be included in PETSc source and \lstinline{assert()} should not be used. It doesn't play well in the parallel MPI world.
+\item Do not include \trl{assert.h} in PETSc source code. Do not use \lstinline{assert()}, it doesn't play well in the parallel MPI world.
 \item The macros \lstinline{SETERRQ()} and \lstinline{CHKERRQ()} should be on the
-  same line as the routine to be checked unless this violates the
-  150 character width rule. Try to make error messages short, but
+  same line as the routine to be checked unless doing so violates the
+  150 character-width-rule. Try to make error messages short but
   informative.
 \item Do not include a space before \lstinline{CHKXXX()}.
   That is, do not write
@@ -352,9 +351,9 @@ but instead write
 \begin{lstlisting}
 ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \end{lstlisting}
-\item Except in code that may be called before PETSc is fully initialized, always use \lstinline{PetscMallocN()} (for example \lstinline{PetscMalloc1()}), \lstinline{PetscCallocN()}, \lstinline{PetscNew()}, and \lstinline{PetscFree()}, not \lstinline{malloc()} and \lstinline{free()}.
+\item Except in code that may be called before PETSc is fully initialized, always use \lstinline{PetscMallocN()} (for example, \lstinline{PetscMalloc1()}), \lstinline{PetscCallocN()}, \lstinline{PetscNew()}, and \lstinline{PetscFree()}, not \lstinline{malloc()} and \lstinline{free()}.
 \item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate \trl{./configure} checks and \lstinline{#if defined()} checks.
- Code should also be provided that works if the MPI feature is not available. For example,
+ Code should also be provided that works if the MPI feature is not available, for example,
 \begin{lstlisting}
 #if defined(PETSC_HAVE_MPI_IN_PLACE)
   ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,
@@ -364,18 +363,18 @@ ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
                         displs,MPIU_INT,comm);CHKERRQ(ierr);
 #endif
 \end{lstlisting}
-\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine.
-  For example, one should not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it.
-  One should use the MPI routine \lstinline{MPI_Allreduce()} directly in the code.
-\item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
+\item Do not introduce PETSc routines that provide essentially the same functionality as an available MPI routine.
+  For example, do not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it.
+  Instead, use the MPI routine \lstinline{MPI_Allreduce()} directly in the code.
+\item Never use a local variable counter such as \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
 \item \label{styleitem:petscextern} Library functions should be declared \lstinline{PETSC_INTERN} if they are intended to be visible only within a single PETSc shared library.
 They should be declared \lstinline{PETSC_EXTERN} if intended to be visible across shared libraries.
-Note that PETSc can be configured to build a separate shared library for each top-level class (\lstinline{Mat}, \lstinline{Vec}, \lstinline{KSP}, etc.) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may need to be marked \lstinline{PETSC_EXTERN}.
+Note that PETSc can be configured to build a separate shared library for each top-level class (\lstinline{Mat}, \lstinline{Vec}, \lstinline{KSP}, and so on) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may need to be marked \lstinline{PETSC_EXTERN}.
 For example,
 \begin{itemize}
-\item \lstinline{MatStashCreate_Private} is marked \lstinline{PETSC_INTERN} as it is used across compilation units, but only within the \lstinline{Mat} package.
-\item All functions, such as \lstinline{KSPCreate()}, included in the public headers (\trl{include/petsc*.h}) should be marked \lstinline{PETSC_EXTERN}.
+\item \lstinline{MatStashCreate_Private} is marked \lstinline{PETSC_INTERN} as it is used across compilation units, but only within the \lstinline{Mat} package;
+\item all functions, such as \lstinline{KSPCreate()}, included in the public headers (\trl{include/petsc*.h}) should be marked \lstinline{PETSC_EXTERN};
 \item \lstinline{MatHeaderReplace()} is not intended for users (it is in \trl{include/petsc/private/matimpl.h}) but is marked \lstinline{PETSC_EXTERN} since it is used both by implementations of the \lstinline{Mat} class (which could be defined in plugin implementations) and by functions in the \lstinline{DM} and \lstinline{KSP} packages.
 \end{itemize}
 \item Before removing or renaming an API function or type, \lstinline{PETSC_DEPRECATED()} should be used in the relevant header file to indicate the new, correct usage and the version number where the deprecation will first appear. For example,
@@ -393,43 +392,43 @@ Documentation for Sowing and the formatting may be found at \href{http://wgropp.
 
 \begin{itemize}
     \item
-      \lstinline{/*@}\\      indicates a formatted comment of a function that will be used for
+      \lstinline{/*@}\\      a formatted comment of a function that will be used for
         both documentation and a Fortran interface.
     \item
       \lstinline{/*@C}\\    a formatted comment of a function that will be used only for
-        documentation, not to generate a Fortran interface, in general such labeled C functions should have a custom Fortran interface provided. Functions that take \lstinline{char*} or function pointer arguments must have the \lstinline{C} symbol and a custom Fortran interface provided.
+        documentation, not to generate a Fortran interface. In general, such labeled C functions should have a custom Fortran interface provided. Functions that take \lstinline{char*} or function pointer arguments must have the \lstinline{C} symbol and a custom Fortran interface provided.
     \item
-      \lstinline{/*E}\\     a formatted comment of an enum used for documentation only, note that
+      \lstinline{/*E}\\     a formatted comment of an enum used for documentation only. Note that
         each of these needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as
         a native and defined in the corresponding
-        \trl{include/petsc/finclude/petscxxx.h} fortran include file and the values
+        \trl{include/petsc/finclude/petscxxx.h} Fortran include file and the values
         set as parameters in the file \trl{src/SECTION/f90-mod/petscSUBSECTION.h}, for example, \trl{src/vec/f90-mod/petscis.h}.
     \item
-      \lstinline{/*S}\\     a formatted comment for a data type such as \lstinline{KSP}, note that each of these
+      \lstinline{/*S}\\     a formatted comment for a data type such as \lstinline{KSP}. Note that each of these
         needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as a \trl{nativeptr}.
     \item
       \lstinline{/*MC}\\    a formatted comment of a CPP macro or enum value for documentation.
 \end{itemize}
 
-The Fortran interface files supplied by user go into the two directories  \trl{ftn-custom} and \trl{f90-custom} while those generated by Sowing go into \trl{ftn-auto}.
+The Fortran interface files supplied by the user go into the two directories  \trl{ftn-custom} and \trl{f90-custom}, while those generated by Sowing go into \trl{ftn-auto}.
 
-\subsection{Manual Page Format}
+\subsection*{Manual Page Format}
 \label{sec:manpageformat}
-Each function, typedef, class, macro, enum, etc. in the public API should include the following data, correctly formatted
-(see previous section) to generate complete manual pages and Fortran interfaces with Sowing.
+Each function, typedef, class, macro, enum, and so on in the public API should include the following data, correctly formatted
+(see codes section) to generate complete manual pages and Fortran interfaces with Sowing.
 All entries below should be separated by blank lines. Except where noted, add a newline after the section headings.
 \begin{enumerate}
-  \item The item's name, followed by a dash and brief (one-sentence) description
-  \item If documenting a function, a description of the function's ``collectivity'' (whether all ranks in an MPI communicator need to participate)
+  \item The item's name, followed by a dash and brief (one-sentence) description.
+  \item If documenting a function, a description of the function's ``collectivity'' (whether all ranks in an MPI communicator need to participate).
     \begin{itemize}
     \item \trl{Not Collective} if the function need not be called on all MPI ranks
-    \item \trl{Collective [on XXX]} if the function is a collective operation [with respect to the data of class \lstinline{XXX}]
+    \item \trl{Collective [on XXX]} if the function is a collective operation (with respect to the data of class \lstinline{XXX})
     \item \trl{Logically Collective [on XXX]} if the function is collective but does not require any actual synchronization (say, setting class parameters uniformly).
     \end{itemize}
-  \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
-  \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
-  \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
-  \item (Optional) a \trl{Notes: } section. In-depth discussion, technical caveats, special cases, and so on should be listed here.
+  \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section.
+  \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section.
+  \item If documenting a function that interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section.
+  \item (Optional) a \trl{Notes } section containing in-depth discussion, technical caveats, special cases, and so on.
     If it is ambiguous whether returned pointers/objects need to be freed/destroyed by the user or not, this information should be mentioned here.
   \item (If applicable) a \trl{Fortran Notes: } section detailing any relevant differences in calling or using the item from Fortran.
   \item \label{item:manpagelevel}\trl{Level: } (no newline) followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, \trl{developer}, or \trl{deprecated}.
@@ -460,7 +459,7 @@ Each of these is discussed in a section below.
 
 % -------------------------------------------------------------------------------
 \section{PETSc Types}
-For maximum flexibility, the basic data types \lstinline{int}, \lstinline{double}, etc. are
+For maximum flexibility, the basic data types \lstinline{int}, \lstinline{double}, and so on are
  not used in PETSc source code. Rather it has:
 \begin{tightitemize}
   \item \lstinline{PetscScalar},
@@ -474,7 +473,7 @@ For maximum flexibility, the basic data types \lstinline{int}, \lstinline{double
 (64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays.
 \lstinline{PetscMPIInt} are used for integers passed to MPI as counts and sizes.
 These are always \lstinline{int} since that is what the MPI standard uses.
-Similarly, \lstinline{PetscBLASInt} is for counts, etc. passed to BLAS and LAPACK routines.
+Similarly, \lstinline{PetscBLASInt} is for counts, and so on passed to BLAS and LAPACK routines.
 These are almost always \lstinline{int} unless one is using a special ``64 bit integer'' BLAS/LAPACK (this is available, for
 example,  with Intel's MKL and OpenBLAS).
 
@@ -578,7 +577,7 @@ For example, the error code \lstinline{PETSC_ERR_MEM} is used whenever a request
 \subsection{Detailed Error Messages}
 In a modern parallel component-oriented application code, it does not always make sense
 to simply print error messages to the terminal (and more than likely there is no
-``terminal'', for example with Microsoft Windows or Apple iPad applications).
+``terminal'', for example, with Microsoft Windows or Apple iPad applications).
 PETSc provides the replaceable function pointer
 \begin{lstlisting}
 (*PetscErrorPrintf)("Format",...);
@@ -713,8 +712,8 @@ implemented using a C \lstinline{struct} that contains the data and function poi
 for operations on the data (much like virtual functions in C++ classes).
 Each class consists of three parts:
 \begin{tightenumerate}
-  \item A (small) common part shared by all PETSc classes (for example both \lstinline{KSP} and \lstinline{PC} have this same header),
-  \item another common part shared by all PETSc implementations of the class (for example both \lstinline{KSPGMRES} and \lstinline{KSPCG} have this common sub-header), and
+  \item A (small) common part shared by all PETSc classes (for example, both \lstinline{KSP} and \lstinline{PC} have this same header),
+  \item another common part shared by all PETSc implementations of the class (for example, both \lstinline{KSPGMRES} and \lstinline{KSPCG} have this common sub-header), and
   \item a private part used by only one particular implementation written in PETSc.
 \end{tightenumerate}
 For example, all matrix (\lstinline{Mat}) classes share a function table of operations that
@@ -830,7 +829,7 @@ struct _VecOps {
   PetscErrorCode (*axpy)(Vec,PetscScalar,Vec); /* y = y + alpha * x */
   PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec); /* y = alpha * x + beta * y*/
   PetscErrorCode (*maxpy)(Vec,PetscInt,const PetscScalar*,Vec*); /* y = y + alpha[j] x[j] */
-  ... (ETC.) ...
+  ... (AND SO ON) ...
 };
 \end{lstlisting}
 \begin{lstlisting}[caption= Data structure header common to all PETSc vector classes]
@@ -1042,7 +1041,7 @@ The PETSc source code is divided into the following
 library level packages: \trl{sys}, \trl{Vec}, \trl{Mat}, \trl{DM}, \trl{KSP}, \trl{SNES}, \trl{TS}, \trl{TAO}. Each
 of these has a directory under the \trl{src} directory in the PETSc
 tree and, optionally, can be compiled into separate libraries. Each
-package defines one or more classes, for example the \trl{KSP} package
+package defines one or more classes, for example, the \trl{KSP} package
 defines the \lstinline{KSP} and \lstinline{PC} classes, as well as several utility
 classes. In addition each library level package may contain several class level packages associated with individual classes in the library level package. In general most ``important'' classes in PETSc have their own class level package.
 Each package provides a registration
@@ -1340,7 +1339,7 @@ from a standard sparse matrix format and brings a large percent of the
 improvement one obtains via blocking.  Using a fixed block size gives
 the best performance, since the code can be hardwired with that
 particular size (for example, in some problems the size may be 3, in
-others 5, etc.), so that the compiler will then optimize for that
+others 5, and so on), so that the compiler will then optimize for that
 size, removing the overhead of small loops entirely.
 
 The following table presents the floating point performance
