@@ -847,7 +847,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   VecScatter     scat_rhs,scat_sol;
   PetscScalar    *aa;
   PetscInt       spnr,*ia,*ja;
-  Mat_MPIAIJ     *b;
+  Mat_MPIAIJ     *b = NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
@@ -1052,6 +1052,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   ierr = VecDestroy(&v_mpi);CHKERRQ(ierr);
   if (Bt) {
     if (!mumps->myid) {
+      b = (Mat_MPIAIJ*)Bt->data;
       ierr = MatSeqAIJRestoreArray(b->A,&aa);CHKERRQ(ierr);
       ierr = MatRestoreRowIJ(b->A,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
