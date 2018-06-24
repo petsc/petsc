@@ -1093,7 +1093,7 @@ functions) that define the problem to be solved. These functions are supplied by
 the user with calls such as \lstinline{SNESSetFunction(SNES,...)}
 and \lstinline{TSSetRHSFunction(TS,...)}. One would naturally think
 that the functions provided would be attached to the appropriate
-solver object, that is the SNES callbacks would be attached to the
+solver object, that is, that the SNES callbacks would be attached to the
 \lstinline{SNES} object and \lstinline{TS} callbacks to the \lstinline{TS} object. This is not the
 case. Or possibly one might think the callbacks would be attached to
 the \lstinline{DM} object associated with the solver object. This is also not the
@@ -1101,8 +1101,8 @@ case. Rather, the callback functions are attached to an inner nonpublic \lstinli
 (\lstinline{XXX} is \lstinline{KSP}, \lstinline{SNES}, or \lstinline{TS}) that is attached to the \lstinline{DM} that is attached
 to the \lstinline{XXX} solver object. This convoluted design is to support
 multilevel and multidomain solvers where different levels and
-different domains may (or may not) share the same callback function or call
-back context. you can control exactly what \lstinline{XXX}/\lstinline{DM} objects share a common \lstinline{DMXXX} object.
+different domains may (or may not) share the same callback function or callback context.
+You can control exactly what \lstinline{XXX}/\lstinline{DM} objects share a common \lstinline{DMXXX} object.
 
 \begin{figure}[hbt]
 \centering
@@ -1130,7 +1130,7 @@ In Figure \ref{fig_dmksp} we depict how three levels of \lstinline{KSP} objects 
   KSPGetDM(ksp_2,&dm_2);
   DMGetDMKSP(dm_2,&dmksp);
 \end{lstlisting}
-To obtain a new DMKSP object for which you can change the callback functions (or their contexts) without affecting the original DMKSP one calls
+To obtain a new DMKSP object for which you can change the callback functions (or their contexts) without affecting the original DMKSP, call
 \begin{lstlisting}
   DM    dm_2;
   DMKSP dmksp;
@@ -1154,7 +1154,7 @@ This results in the object organization as indicated in Figure \ref{fig_dmksp2}
 \draw[->] (4,1) -- (4,0) node[below] {$DM_3$};
 \draw[->] (4,-.8) -- (0,-1.8);
 \end{tikzpicture}
-  \caption{Two levels of KSP/DM share the same DMKSP, one has its own private copy}
+  \caption{Two levels of KSP/DM share the same DMKSP; one has its own private copy}
 \label{fig_dmksp2}
 \end{figure}
 
@@ -1183,7 +1183,7 @@ struct _p_DMKSP {
 \end{lstlisting}
 
 We now explore in more detail exactly how the solver calls set by the user are passed down to the inner \lstinline{DMKSP} object. For each user
-level solver routine for setting a callback there exists a similar routine at the \lstinline{DM} level, thus \lstinline{XXXSetY(XXX,...)} has a routine \lstinline{DMXXXSetY(DM,...)}.
+level solver routine for setting a callback a similar routine exists at the \lstinline{DM} level. Thus, \lstinline{XXXSetY(XXX,...)} has a routine \lstinline{DMXXXSetY(DM,...)}.
 \begin{lstlisting}
 PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
@@ -1238,7 +1238,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
   PetscFunctionReturn(0);
 }
 \end{lstlisting}
-The routine \lstinline{DMGetDMXXX(DM,DMXXX*)} has the form
+The routine \lstinline{DMGetDMXXX(DM,DMXXX*)} has the following form.
 \begin{lstlisting}
 PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 {
@@ -1286,12 +1286,13 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
   PetscFunctionReturn(0);
 }
 \end{lstlisting}
-insures that the new \lstinline{DM} shares the same \lstinline{DMXXX} as the parent \lstinline{DM} and also inherits the hooks if it is refined or coarsened.
+ensures that the new \lstinline{DM} shares the same \lstinline{DMXXX} as the parent \lstinline{DM} and also inherits the hooks if it is refined or coarsened.
 
-If you provide callbacks to a solver {\em after} the \lstinline{DM} associated with a solver has been refined or coarsened those child \lstinline{DM}'s will not share a common \lstinline{DMXXX}.
+If you provide callbacks to a solver {\em after} the \lstinline{DM} associated with a solver has been refined or coarsened,
+those child \lstinline{DM}s will not share a common \lstinline{DMXXX}.
 
 The \lstinline{TS} object manages its callback functions in a way similar to \lstinline{KSP}
-and \lstinline{SNES} though there are no multi-level \lstinline{TS} implementations so in
+and \lstinline{SNES}, although there are no multilevel \lstinline{TS} implementations so in
 theory the \lstinline{DMTS} object is currently unneeded.
 
 
@@ -1301,8 +1302,8 @@ theory the \lstinline{DMTS} object is currently unneeded.
 
 PETSc provides a variety of matrix implementations, since no single
 matrix format is appropriate for all problems.  This section first
-discusses various matrix blocking strategies, and then
-describes the assortment of matrix types within PETSc.
+discusses various matrix blocking strategies and then
+describes the assortment of matrix types in PETSc.
 
 \section{Matrix Blocking Strategies}
 \sindex{matrix blocking}
@@ -1312,70 +1313,70 @@ In today's computers, the time to perform an arithmetic operation is
 dominated by the time to move the data into position, not the time to
 compute the arithmetic result.  For example, the time to perform a
 multiplication operation may be one clock cycle, while the time to
-move the floating point number from memory to the arithmetic unit may
-take 10 or more cycles. To help manage this difference in time scales,
+move the floating-point number from memory to the arithmetic unit may
+take 10 or more cycles. In order to help manage this difference in time scales,
 most processors have at least three levels of memory: registers,
 cache, and random access memory. (In addition, some processors
 have external caches, and the complications of paging introduce
 another level to the hierarchy.)
 
 Thus, to achieve high performance, a code should first move data into
-cache, and from there move it into registers and use it repeatedly
+cache and from there move it into registers and use it repeatedly
 while it remains in the cache or registers before returning it to main
-memory. If one reuses a floating point number 50 times while it is in
+memory. If a floating-point number is reused 50 times while it is in
 registers, then the ``hit'' of 10 clock cycles to bring it into the
-register is not important. But if the floating point number is used
-only once, the ``hit'' of 10 clock cycles becomes very noticeable,
+register is not important. But if the floating-point number is used
+only once, the ``hit'' of 10 clock cycles becomes  noticeable,
 resulting in disappointing flop rates.
 
 Unfortunately, the compiler controls the use of the registers, and the
 hardware controls the use of the cache. Since the user has essentially
 no direct control, code must be written in such a way that the
-compiler and hardware cache system can perform well. Good quality code
-is then be said to respect the memory hierarchy.
+compiler and hardware cache system can perform well. Good-quality code
+is then said to respect the memory hierarchy.
 
 The standard approach to improving the hardware utilization is to use
 blocking. That is, rather than working with individual elements in
-the matrices, one employs blocks of elements.  Since the use of
+the matrices, you employ blocks of elements.  Since the use of
 implicit methods in PDE-based simulations leads to matrices with a
 naturally blocked structure (with a block size equal to the number of
-degrees of freedom per cell), blocking is extremely advantageous.  The
+degrees of freedom per cell), blocking is  advantageous.  The
 PETSc sparse matrix representations use a variety
-of techniques for blocking, including
+of techniques for blocking, including the following:
 
 \begin{itemize}
-\item storing the matrices using a generic sparse matrix format, but
+\item Storing the matrices using a generic sparse matrix format, but
    storing additional information about adjacent rows with identical
-   nonzero structure (so called I-nodes); this I-node information is
+   nonzero structure (so-called I-nodes); this I-node information is
    used in the key computational routines to improve performance
-    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats); and
-\item storing the matrices using a fixed (problem dependent) block size
-  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats);
+    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats).
+\item Storing the matrices using a fixed (problem dependent) block size
+  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats).
 \end{itemize}
 
 The advantage of the first approach is that it is a minimal change
-from a standard sparse matrix format and brings a large percent of the
-improvement one obtains via blocking.  Using a fixed block size gives
+from a standard sparse matrix format and brings a large percentage of the
+improvement obtained via blocking.  Using a fixed block size gives
 the best performance, since the code can be hardwired with that
 particular size (for example, in some problems the size may be 3, in
 others 5, and so on), so that the compiler will then optimize for that
 size, removing the overhead of small loops entirely.
 
-The following table presents the floating point performance
-for a basic matrix-vector product using these three approaches: a basic
+The following table presents the floating-point performance
+for a basic matrix-vector product using  three approaches: a basic
 compressed row storage format (using the PETSc runtime options
 \trl{-mat_seqaij -mat_no_unroll)}; the same compressed row format using
 I-nodes (with the option \trl{-mat_seqaij}); and a fixed block size code,
-with a block size of three for these problems (using the option
+with a block size of 3 for these problems (using the option
 \trl{-mat_seqbaij}). The rates were computed on one
 node of an older IBM Power processsor based system, using two test matrices.  The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
-simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros,
+simulation; it has 1,501 degrees of freedom, 26,131 matrix nonzeros,
  a natural block size of 3, and a small number of well terms. The
 second matrix (CFD), arises in a three-dimensional Euler flow
 simulation and has 15,360 degrees of freedom, 496,000 nonzeros, and a
 natural block size of 5. In addition to displaying the flop rates for
-matrix-vector products, we also display them for triangular solve
+matrix-vector products, we display them for triangular solves
 obtained from an ILU(0) factorization.
 
 \medskip
@@ -1405,6 +1406,10 @@ enhancements without altering a single line of their application
 codes.  Note that the speeds of the I-node and fixed block operations
 are several times that of the basic sparse implementations.
 
+\section{Assorted Matrix Types}
+
+PETSc offers a variety of both sparse and dense matrix types.
+
 \subsection{Sequential AIJ Sparse Matrices}
 
 The default matrix representation within PETSc is the general sparse
@@ -1413,7 +1418,7 @@ sparse row format, CSR).
 
 \subsection{Parallel AIJ Sparse Matrices}
 
-This matrix type, which is the
+The AIJ sparse matrix type, is the
 default parallel matrix format; additional implementation details are
 given in \cite{petsc-efficient}.
 
@@ -1432,8 +1437,8 @@ MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
 \end{lstlisting}
 The arguments \lstinline{nz} and \lstinline{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
-performance during matrix assembly, preallocation is crucial; however, the
-user can set \lstinline{nz=0} and \lstinline{nnz=NULL} for PETSc to dynamically
+performance during matrix assembly, preallocation is crucial; however, you
+can set \lstinline{nz=0} and \lstinline{nnz=NULL} for PETSc to dynamically
 allocate matrix memory as needed.  The PETSc users manual
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
@@ -1450,23 +1455,23 @@ the command \lstinline{MatCreateBAIJ()}
 MatCreateBAIJ(MPIComm comm,int nb,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A);
 \end{lstlisting}
 \lstinline{A} is the newly created matrix, while the arguments \lstinline{m}, \lstinline{n},
-\lstinline{M}, and \lstinline{N}, indicate the number of local rows and columns and
+\lstinline{M}, and \lstinline{N} indicate the number of local rows and columns and
 the number of global rows and columns, respectively. Either the local or
 global parameters can be replaced with \lstinline{PETSC_DECIDE}, so that
-PETSc will determine \lstinline{PETSC_DECIDE} them.
+PETSc will determine them.
 The matrix is stored with a fixed number of rows on
 each processor, given by \lstinline{m}, or determined by PETSc if \lstinline{m} is
 \lstinline{PETSC_DECIDE}.
 
 If \lstinline{PETSC_DECIDE} is not used for
-\lstinline{m} and \lstinline{n} then the user must ensure that they are chosen to be
-compatible with the vectors. To do this, one first considers the product
-$y = A x$. The \lstinline{m} that one uses in \lstinline{MatCreateBAIJ()}
+\lstinline{m} and \lstinline{n} then you must ensure that they are chosen to be
+compatible with the vectors. To do so, you first consider the product
+$y = A x$. The \lstinline{m} that used in \lstinline{MatCreateBAIJ()}
 must match the local size used in the \lstinline{VecCreateMPI()} for \lstinline{y}.
 The \lstinline{n} used must match that used as the local size in
 \lstinline{VecCreateMPI()} for \lstinline{x}.
 
-The user must set \lstinline{d_nz=0}, \lstinline{o_nz=0}, \lstinline{d_nnz=NULL}, and
+You must set \lstinline{d_nz=0}, \lstinline{o_nz=0}, \lstinline{d_nnz=NULL}, and
 \lstinline{o_nnz=NULL} for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \lstinline{nz} and \lstinline{nnz} for the routine
 \lstinline{MatCreateSeqBAIJ()}, these arguments optionally specify
