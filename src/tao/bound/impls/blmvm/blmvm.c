@@ -300,7 +300,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
+PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
@@ -324,7 +324,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
+PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
@@ -349,7 +349,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
+PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;

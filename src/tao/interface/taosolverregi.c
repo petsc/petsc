@@ -51,7 +51,6 @@ const char *TaoConvergedReasons_Shifted[] = {
     "CONVERGED_MINF",
     "CONVERGED_USER" };
 const char **TaoConvergedReasons = TaoConvergedReasons_Shifted + 7;
-extern PetscBool TaoRegisterAllCalled;
 
 /*@C
   TaoRegisterAll - Registers all of the minimization methods in the TAO

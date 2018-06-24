@@ -6,9 +6,16 @@ PetscBool TaoRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoList = NULL;
 
 PetscClassId TAO_CLASSID;
-PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_GradientEval, Tao_ObjGradientEval, Tao_HessianEval, Tao_ConstraintsEval, Tao_JacobianEval;
 
-const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
+PetscLogEvent TAO_Solve;
+PetscLogEvent TAO_ObjectiveEval;
+PetscLogEvent TAO_GradientEval;
+PetscLogEvent TAO_ObjGradEval;
+PetscLogEvent TAO_HessianEval;
+PetscLogEvent TAO_JacobianEval;
+PetscLogEvent TAO_ConstraintsEval;
+
+const char *TaoSubSetTypes[] = {"subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
 
 struct _n_TaoMonitorDrawCtx {
   PetscViewer viewer;
@@ -202,9 +209,9 @@ PetscErrorCode TaoSolve(Tao tao)
     ierr = TaoLineSearchReset(tao->linesearch);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
-  ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
 
@@ -460,7 +467,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
       ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    
+
     ierr = PetscOptionsString("-tao_gmonitor","Use the convergence monitor with extra globalization info","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
