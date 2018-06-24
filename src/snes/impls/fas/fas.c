@@ -563,7 +563,7 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
     B_c  = next->vec_rhs;
 
     if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
+    ierr = SNESFASRestrict(snes, X, Xo_c);CHKERRQ(ierr);
     /* restrict the defect: R(F(x) - b) */
     ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
     if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
