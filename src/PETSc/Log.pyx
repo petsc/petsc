@@ -59,10 +59,6 @@ cdef class Log:
         CHKERR( PetscLogView(vwr) )
 
     @classmethod
-    def destroy(cls):
-        CHKERR( PetscLogDestroy() )
-
-    @classmethod
     def logFlops(cls, flops):
         cdef PetscLogDouble cflops=flops
         CHKERR( PetscLogFlops(cflops) )
