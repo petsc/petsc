@@ -114,7 +114,7 @@ PetscErrorCode  PetscInfoActivateClass(PetscClassId classid)
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
 /*MC
     PetscInfo - Logs informative data, which is printed to standard output

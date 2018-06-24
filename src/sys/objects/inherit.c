@@ -6,16 +6,22 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
+PETSC_INTERN PetscObject *PetscObjects;
+PETSC_INTERN PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+PETSC_INTERN PetscBool   PetscObjectsLog;
+#endif
+
+#if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects      = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool   PetscObjectsLog    = PETSC_FALSE;
 #endif
 
-extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
-extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
-extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
-extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
 /*
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
@@ -82,8 +88,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   PetscFunctionReturn(0);
 }
 
-extern PetscBool      PetscMemoryCollectMaximumUsage;
-extern PetscLogDouble PetscMemoryMaximumUsage;
+PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
+PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
 
 /*
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by

@@ -896,11 +896,15 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
+PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 #endif
 #endif
+
+PETSC_EXTERN PetscLogEvent PETSC_Barrier;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 
 #endif /* _PETSCHEAD_H */
