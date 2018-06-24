@@ -5231,6 +5231,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       } else {
         ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
       }
+      ierr = KSPSetErrorIfNotConverged(pcbddc->ksp_D,pc->erroriffailure);CHKERRQ(ierr);
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)pc_temp,"PCSetCoordinates_C",&f);CHKERRQ(ierr);
@@ -5368,6 +5369,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       } else {
         ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
       }
+      ierr = KSPSetErrorIfNotConverged(pcbddc->ksp_R,pc->erroriffailure);CHKERRQ(ierr);
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)pc_temp,"PCSetCoordinates_C",&f);CHKERRQ(ierr);
@@ -8354,7 +8356,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
       /* Create ksp object suitable for estimation of extreme eigenvalues */
       ierr = KSPCreate(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),&check_ksp);CHKERRQ(ierr);
-      ierr = KSPSetErrorIfNotConverged(pcbddc->coarse_ksp,pc->erroriffailure);CHKERRQ(ierr);
+      ierr = KSPSetErrorIfNotConverged(pcbddc->coarse_ksp,PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);
       /* prevent from setup unneeded object */

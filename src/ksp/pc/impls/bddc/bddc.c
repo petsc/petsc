@@ -2452,6 +2452,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(newpc,"fetidp_");CHKERRQ(ierr);
+  ierr = PCSetErrorIfFailure(newpc,pc->erroriffailure);CHKERRQ(ierr);
   if (!fetidpmat_ctx->l2g_lambda_only) {
     ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
