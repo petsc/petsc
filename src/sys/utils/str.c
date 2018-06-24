@@ -462,8 +462,10 @@ PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (t && !n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"String buffer length must be positive");
   ierr = PetscStrlen(t,&len);CHKERRQ(ierr);
   strncat(s,t,n - len);
+  s[n-1] = 0;
   PetscFunctionReturn(0);
 }
 
