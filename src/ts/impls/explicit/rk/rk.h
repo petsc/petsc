@@ -37,4 +37,8 @@ typedef struct {
   IS           is_fast,is_slow;
   TS           subts_fast,subts_slow,subts_current,ts_root;
   PetscBool    use_multirate;
+  Mat          MatFwdSensip0;
+  Mat          *MatsFwdStageSensip;
+  Mat          *MatsFwdSensipTemp;
+  Vec          VecDeltaFwdSensipCol; /* Working vector for holding one column of the sensitivity matrix */
 } TS_RK;

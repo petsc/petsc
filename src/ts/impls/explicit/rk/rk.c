@@ -503,6 +503,112 @@ static PetscErrorCode TSRollBack_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSForwardStep_RK(TS ts)
+{
+  TS_RK           *rk   = (TS_RK*)ts->data;
+  RKTableau       tab  = rk->tableau;
+  Mat             J,*MatsFwdSensipTemp = rk->MatsFwdSensipTemp;
+  const PetscInt  s = tab->s;
+  const PetscReal *A = tab->A,*c = tab->c,*b = tab->b;
+  Vec             *Y = rk->Y;
+  PetscInt        i,j;
+  PetscReal       stage_time,h = ts->time_step;
+  PetscBool       zero;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCopy(ts->mat_sensip,rk->MatFwdSensip0,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+
+  for (i=0; i<s; i++) {
+    stage_time = ts->ptime + h*c[i];
+    zero = PETSC_FALSE;
+    if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
+    /* TLM Stage values */
+    if(!i) {
+      ierr = MatCopy(ts->mat_sensip,rk->MatsFwdStageSensip[i],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else if (!zero) {
+      ierr = MatZeroEntries(rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
+      for (j=0; j<i; j++) {
+        ierr = MatAXPY(rk->MatsFwdStageSensip[i],h*A[i*s+j],MatsFwdSensipTemp[j],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+      ierr = MatAXPY(rk->MatsFwdStageSensip[i],1.,ts->mat_sensip,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatZeroEntries(rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
+    }
+
+    ierr = TSComputeRHSJacobian(ts,stage_time,Y[i],J,J);CHKERRQ(ierr);
+    ierr = MatMatMult(J,rk->MatsFwdStageSensip[i],MAT_REUSE_MATRIX,PETSC_DEFAULT,&MatsFwdSensipTemp[i]);CHKERRQ(ierr);
+    if (ts->Jacp) {
+      ierr = TSComputeRHSJacobianP(ts,stage_time,Y[i],ts->Jacp);CHKERRQ(ierr); /* get f_p */
+      ierr = MatAXPY(MatsFwdSensipTemp[i],1.,ts->Jacp,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  }
+
+  for (i=0; i<s; i++) {
+    ierr = MatAXPY(ts->mat_sensip,h*b[i],rk->MatsFwdSensipTemp[i],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  rk->status = TS_STEP_COMPLETE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSForwardGetStages_RK(TS ts,PetscInt *ns,Mat **stagesensip)
+{
+  TS_RK     *rk = (TS_RK*)ts->data;
+  RKTableau tab  = rk->tableau;
+
+  PetscFunctionBegin;
+  if (ns) *ns = tab->s;
+  if (stagesensip) *stagesensip = rk->MatsFwdStageSensip;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSForwardSetUp_RK(TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  RKTableau      tab  = rk->tableau;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* backup sensitivity results for roll-backs */
+  ierr = MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatFwdSensip0);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(tab->s,&rk->MatsFwdStageSensip);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tab->s,&rk->MatsFwdSensipTemp);CHKERRQ(ierr);
+  for(i=0; i<tab->s; i++) {
+    ierr = MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
+    ierr = MatDuplicate(ts->mat_sensip,MAT_DO_NOT_COPY_VALUES,&rk->MatsFwdSensipTemp[i]);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicate(ts->vec_sol,&rk->VecDeltaFwdSensipCol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSForwardReset_RK(TS ts)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+  RKTableau      tab  = rk->tableau;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&rk->MatFwdSensip0);CHKERRQ(ierr);
+  if (rk->MatsFwdStageSensip) {
+    for (i=0; i<tab->s; i++) {
+      ierr = MatDestroy(&rk->MatsFwdStageSensip[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rk->MatsFwdStageSensip);CHKERRQ(ierr);
+  }
+  if (rk->MatsFwdSensipTemp) {
+    for (i=0; i<tab->s; i++) {
+      ierr = MatDestroy(&rk->MatsFwdSensipTemp[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rk->MatsFwdSensipTemp);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&rk->VecDeltaFwdSensipCol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSStep_RK(TS ts)
 {
   TS_RK           *rk  = (TS_RK*)ts->data;
@@ -1103,6 +1209,11 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 
   ts->ops->adjointintegral = TSAdjointCostIntegral_RK;
   ts->ops->forwardintegral = TSForwardCostIntegral_RK;
+
+  ts->ops->forwardsetup    = TSForwardSetUp_RK;
+  ts->ops->forwardreset    = TSForwardReset_RK;
+  ts->ops->forwardstep     = TSForwardStep_RK;
+  ts->ops->forwardgetstages= TSForwardGetStages_RK;
 
   ierr = PetscNewLog(ts,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
