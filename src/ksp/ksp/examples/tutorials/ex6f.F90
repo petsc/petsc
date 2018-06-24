@@ -173,7 +173,7 @@
         call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mat_view',pflag,ierr)
         if (pflag) then
           if (rank .eq. 0) write(6,100)
-          call flush(6)
+          call PetscFlush(6)
         endif
         call MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,A2,ierr)
 ! All other times: Set previous solution as initial guess for next solve.
@@ -190,7 +190,7 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       if (pflag) then
         if (rank .eq. 0) write(6,110)
-        call flush(6)
+        call PetscFlush(6)
       endif
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 

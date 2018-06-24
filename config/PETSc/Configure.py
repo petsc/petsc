@@ -1049,13 +1049,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('USE_GCOV','1')
     return
 
-  def configureFortranFlush(self):
-    if hasattr(self.compilers, 'FC'):
-      for baseName in ['flush','flush_']:
-        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
-          self.addDefine('HAVE_'+baseName.upper(), 1)
-          return
-
   def configureViewFromOptions(self):
     if not self.framework.argDB['with-viewfromoptions']:
       self.addDefine('SKIP_VIEWFROMOPTIONS',1)
@@ -1113,7 +1106,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
-    self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
     self.executeTest(self.configureViewFromOptions)
 
