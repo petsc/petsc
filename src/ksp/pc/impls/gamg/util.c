@@ -94,7 +94,6 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
     ierr = PetscObjectBaseTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
     ierr = PetscObjectBaseTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-
     ierr = PetscMalloc2(nloc, &d_nnz,isseqaij ? 0 : nloc, &o_nnz);CHKERRQ(ierr);
 
     if (isseqaij) {
@@ -142,9 +141,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
         if (o_nnz[jj] > (NN/bs-nloc)) o_nnz[jj] = NN/bs-nloc;
       }
 
-    } else {
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require AIJ matrix type");
-    }
+    } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require AIJ matrix type");
 
     /* get scalar copy (norms) of matrix */
     ierr = MatGetType(Amat,&mtype);CHKERRQ(ierr);
@@ -332,7 +329,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have npe > 1
+   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have size > 1
 
    Input Parameter:
    . Gmat - MPIAIJ matrix for scattters
@@ -345,7 +342,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm;
   Vec            tmp_crds;
   Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ*)Gmat->data;
   PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,nloc;
@@ -354,7 +350,6 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
   ierr      = PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
   ierr      = MatGetOwnershipRange(Gmat, &my0, &Iend);CHKERRQ(ierr);
   nloc      = Iend - my0;
