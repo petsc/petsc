@@ -387,12 +387,6 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
   PetscFunctionReturn(0);
 }
 
-
-/*
- *
- *  PCGAMGHashTableCreate
- */
-
 PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
@@ -400,8 +394,7 @@ PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
 
   PetscFunctionBegin;
   a_tab->size = a_size;
-  ierr = PetscMalloc1(a_size, &a_tab->table);CHKERRQ(ierr);
-  ierr = PetscMalloc1(a_size, &a_tab->data);CHKERRQ(ierr);
+  ierr = PetscMalloc2(a_size, &a_tab->table,a_size, &a_tab->data);CHKERRQ(ierr);
   for (kk=0; kk<a_size; kk++) a_tab->table[kk] = -1;
   PetscFunctionReturn(0);
 }
@@ -411,8 +404,7 @@ PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(a_tab->table);CHKERRQ(ierr);
-  ierr = PetscFree(a_tab->data);CHKERRQ(ierr);
+  ierr = PetscFree2(a_tab->table,a_tab->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -421,11 +413,8 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
   PetscInt kk,idx;
 
   PetscFunctionBegin;
-  if (a_key<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
-  for (kk = 0, idx = GAMG_HASH(a_key);
-       kk < a_tab->size;
-       kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
-
+  if (a_key<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %D.",a_key);
+  for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
     if (a_tab->table[idx] == a_key) {
       /* exists */
       a_tab->data[idx] = a_data;
@@ -443,18 +432,14 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
     PetscErrorCode ierr;
 
     a_tab->size = new_size;
-
-    ierr = PetscMalloc1(a_tab->size, &a_tab->table);CHKERRQ(ierr);
-    ierr = PetscMalloc1(a_tab->size, &a_tab->data);CHKERRQ(ierr);
-
+    ierr = PetscMalloc2(a_tab->size, &a_tab->table,a_tab->size, &a_tab->data);CHKERRQ(ierr);
     for (kk=0;kk<a_tab->size;kk++) a_tab->table[kk] = -1;
     for (kk=0;kk<oldsize;kk++) {
       if (oldtable[kk] != -1) {
         ierr = PCGAMGHashTableAdd(a_tab, oldtable[kk], olddata[kk]);CHKERRQ(ierr);
        }
     }
-    ierr = PetscFree(oldtable);CHKERRQ(ierr);
-    ierr = PetscFree(olddata);CHKERRQ(ierr);
+    ierr = PetscFree2(oldtable,olddata);CHKERRQ(ierr);
     ierr = PCGAMGHashTableAdd(a_tab, a_key, a_data);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
