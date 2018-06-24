@@ -145,7 +145,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       ierr = PetscFPrintf(comm, fp, "%D ", nC);CHKERRQ(ierr);
       ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
       for (v = 0; v < nC; ++v) {
-        ierr = PetscFPrintf(comm, fp, " %D", vertices[v]);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
     }
@@ -164,7 +164,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
         ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fp, "%D ", nC);CHKERRQ(ierr);
         for (v = 0; v < nC; ++v) {
-          ierr = PetscFPrintf(comm, fp, " %D", vertices[v]);CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
         }
         ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
       }
