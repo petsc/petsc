@@ -1521,7 +1521,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",mumps->id.ICNTL(14));CHKERRQ(ierr);
       /* ICNTL(15-17) not used */
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",mumps->id.ICNTL(18));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Schur complement info):                       %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Schur complement info):                      %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",mumps->id.ICNTL(20));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",mumps->id.ICNTL(21));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",mumps->id.ICNTL(22));CHKERRQ(ierr);
@@ -1578,8 +1578,6 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
           ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
         }
       }
-
-
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
 
       if (!mumps->myid) { /* information from the host */
