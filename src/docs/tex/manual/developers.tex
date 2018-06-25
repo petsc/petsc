@@ -1502,7 +1502,7 @@ dense format described above.
   \label{petsc-testing-system}
 
 
-The PETSc test system consists of:
+The PETSc test system consists of
 %
 \begin{quote}
 \newcounter{listcnt0}
@@ -1517,9 +1517,9 @@ tests to be run
 
 \item The \emph{test generator} (\lstinline{config/gmakegentest.py}) that at the
 \lstinline{make} step parses the example source files and generates the makefiles
-and shell scripts that compose:
+and shell scripts.
 
-\item The \emph{petsc test harness}: a harness consisting of makefile and
+\item The \emph{petsc test harness} that consists of makefile and
 shell scripts that runs the executables with several
 logging and reporting features.
 \end{list}
@@ -1528,13 +1528,13 @@ logging and reporting features.
 
 Details on using the harness may be found in the main PETSc manual.
 
-\section{PETSc Test description language%
+\section{PETSc Test Description Language%
   \label{petsc-test-description-language}%
 }
 
 PETSc tests and tutorials contain within their file a simple language to
 describe tests and subtests required to run executables associated with
-compilation of that file.  The general skeleton of the file is:
+compilation of that file.  The general skeleton of the file is
 %
 \begin{lstlisting}
 static char help[] = "A simple MOAB example\n\
@@ -1558,18 +1558,18 @@ static char help[] = "A simple MOAB example\n\
 TEST*/
 \end{lstlisting}
 
-For our language, a \emph{test} is associated with:
+For our language, a \emph{test} is associated with the following
 \begin{tightitemize}
   \item A single shell script
   \item A single makefile
   \item A single output file that represents the \emph{expected
-       esults}.
-  \item Two or more command tests.  Usually, one (or more) mpiexec
-        test that runs the executable, and one (or more) diff tests to
+       esults}
+  \item Two or more command tests, usually, one or more mpiexec
+        tests that run the executable, and one or more diff tests to
         compare output with the expected result.
 \end{tightitemize}
 Our language also supports a \emph{testset} that specifies
-either a new test entirely, or multiple executable/diff tests
+either a new test entirely or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
 \begin{bashlisting}
@@ -1578,12 +1578,12 @@ diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
 \end{bashlisting}
 
 In practice, we want to do various logging and counting by the test
-harness, this is explained further below.  The input language
-supports simple, yet flexible, test control and we begin by
+harness; as are explained further below.  The input language
+supports simple yet flexible test control, and we begin by
 describing this language.
 
 
-\subsection{Runtime language options%
+\subsection{Runtime Language Options%
   \label{runtime-language-options}%
 }
 
@@ -1592,30 +1592,30 @@ inserted to describe the test(s) to be run.  The elements of the
 test are done with a set of supported key words that sets up the test.
 %
 \begin{description}
-\item[{The goals of the language are to:}] \leavevmode \setcounter{listcnt0}{0}
+\item The goals of the language are to be \leavevmode \setcounter{listcnt0}{0}
 \begin{list}{\arabic{listcnt0}.}
 {
 \usecounter{listcnt0}
 \setlength{\rightmargin}{\leftmargin}
 }
 
-\item Be as minimal as possible with the simplest test requiring only one
-keyword
+\item as minimal as possible with the simplest test requiring only one
+keyword,
 
-\item Be independent of the filename such that a file can be renamed
-without rewriting the tests
+\item independent of the filename such that a file can be renamed
+without rewriting the tests, and
 
-\item Be intuitive
+\item intuitive.
 \end{list}
 
 \end{description}
 
-To enable the second bullet, the \emph{basestring} of the filename is defined
-as the filename without the extension; e.g., if the filename is \lstinline{ex1.c}
+In order to enable the second goal, the \emph{basestring} of the filename is defined
+as the filename without the extension; for example, if the filename is \lstinline{ex1.c},
 then \lstinline{basestring=ex1}.
 
 \noindent
-With this background, these keywords are are:
+With this background, these keywords are as follows.
 
 \begin{itemize}
 
@@ -1623,7 +1623,7 @@ With this background, these keywords are are:
 
     \begin{itemize}
 
-      \item[] At the top level, either a single test, or a testset must
+      \item[] At the top level either a single test or a test set must
             be specified.   All other keywords are sub-entries of this keyword.
 
     \end{itemize}
@@ -1631,9 +1631,9 @@ With this background, these keywords are are:
   \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=""})
     \begin{itemize}
 
-      \item The testname is given by: \lstinline{testname = basestring} if suffix is set to an empty string, and by \lstinline{ testname = basestring + "_" + suffix}
+      \item The test name is given by  \lstinline{testname = basestring} if the suffix is set to an empty string, and by \lstinline{ testname = basestring + "_" + suffix} otherwise.
 
-      \item This can only be specified for top level test nodes
+      \item This can  be specified only for top level test nodes.
 
      \end{itemize}
 
@@ -1642,7 +1642,7 @@ With this background, these keywords are are:
                  \lstinline{output_file = "output/" + testname + ".out"})
       \begin{itemize}
 
-      \item The output of the test is to be compared to an \emph{expected result}
+      \item The output of the test is to be compared with an \emph{expected result}
       whose name is given by \lstinline{output_file}.
 
       \item This file is described relative to the source directory of the
