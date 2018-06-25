@@ -8,7 +8,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   hid_t           file_id,group_matrix_id,dset_id,dspace_id,mspace_id,dtype;
   hsize_t         h5_count_i,h5_offset_i,h5_count_data,h5_offset_data,h5_dims[4];
 
-  PetscInt        count_i,offset_i,count_data,offset_data,offset_i_end;
+  PetscInt        count_i,offset_i,count_data,offset_data;
   PetscInt        *i = NULL,*j = NULL;
   PetscReal       *a = NULL;
   const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
@@ -45,9 +45,18 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscStackCallHDF5(H5Sclose,(dspace_id));
   PetscStackCallHDF5(H5Dclose,(dset_id));
 
-  m = PETSC_DECIDE;
-  ierr = PetscSplitOwnershipBlock(comm,bs,&m,&M);CHKERRQ(ierr);
-  ierr = MPI_Scan(&m,&offset_i_end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  /* If global sizes are set, check if they are consistent with that given in the file */
+  if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%D) and input matrix has (%D)",mat->rmap->N,M);
+  if (mat->cmap->N >= 0 && mat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%D) and input matrix has (%D)",mat->cmap->N,N);
+  mat->rmap->N = M;
+  mat->cmap->N = N;
+
+  /* determine ownership of all (block) rows and columns */
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  m = mat->rmap->n;
+  offset_i = mat->rmap->rstart;
+  count_i = m + 1;
 
   if (m > 0) {
     /* Read array i (array of row indices) */
@@ -57,9 +66,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
     ierr = PetscMalloc((m + 1) * sizeof(PetscInt),&i);CHKERRQ(ierr);
 
     /* Determine offset and count of elements for reading local part of array i */
-    offset_i = offset_i_end - m;
     ierr = PetscHDF5IntCast(offset_i,&h5_offset_i);CHKERRQ(ierr);
-    count_i = m + 1;
     ierr = PetscHDF5IntCast(count_i,&h5_count_i);CHKERRQ(ierr);
 
     /* Read local part of array i */
@@ -123,9 +130,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   for (p=1; p<count_i; ++p) i[p] -= i[0];
   i[0] = 0;
 
-  /* create matrix */
-  ierr = MatSetSizes(mat,m,PETSC_DETERMINE,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(mat,bs);CHKERRQ(ierr);
+  /* populate matrix */
   if (!((PetscObject)mat)->type_name) {
     ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   }
