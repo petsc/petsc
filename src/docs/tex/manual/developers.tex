@@ -56,7 +56,7 @@
 \textsuperscript{3}Mathematics and Computer Science Division, Argonne National Laboratory \\
 
 \vspace*{30pt}
-\noindent January 2018
+\noindent June 2018
 
 \vspace*{20pt}
 \noindent This material was based upon work supported by the Office of Science, Office of Advanced Scientific Computing Research, \\
@@ -218,7 +218,7 @@ not
 \begin{lstlisting}
 PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); /* Incorrect */
 \end{lstlisting}
-\item All local variables of a particular type (e.g., \lstinline{PetscInt}) should be
+\item All local variables of a particular type (for example, \lstinline{PetscInt}) should be
       listed on the same line if possible; otherwise, they should be listed
       on adjacent lines.
 \item Equal signs should be aligned in regions where possible.
@@ -1646,7 +1646,7 @@ With this background, these keywords are as follows.
       whose name is given by \lstinline{output_file}.
 
       \item This file is described relative to the source directory of the
-      source file and should be in the output subdirectory (e.g.,
+      source file and should be in the output subdirectory (for example,
       \lstinline{output/ex1.out})
 
       \end{itemize}
@@ -1655,7 +1655,7 @@ With this background, these keywords are as follows.
     \item[]  \textbf{nsize}: (\emph{Optional}; \emph{Default:} \lstinline{nsize=1})
       \begin{itemize}
 
-      \item The integer that is passed to mpiexec; i.e., \lstinline{mpiexec -n nsize}
+      \item This integer is passed to mpiexec; i.e., \lstinline{mpiexec -n nsize}
 
       \end{itemize}
 
@@ -1664,17 +1664,17 @@ With this background, these keywords are as follows.
 
       \begin{itemize}
 
-      \item The arguments to pass to the executable
+      \item These arguments are passed to the executable.
 
       \end{itemize}
 
     \item[]  \textbf{TODO}: (\emph{Optional}; \emph{Default:} \lstinline{False})
       \begin{itemize}
 
-      \item Setting this boolean to True will tell the test to appear in the test harness, but
+      \item Setting this Boolean to True will tell the test to appear in the test harness but
       report only TODO per the TAP standard.
 
-      \item A runscript will be generated and can easily be modified by hand to run
+      \item A runscript will be generated and can easily be modified by hand to run.
 
       \end{itemize}
 
@@ -1687,12 +1687,12 @@ With this background, these keywords are as follows.
       processes the executable output and puts it into the file
       to be actually compared with \lstinline{output_file}.
 
-      \item The value of this is the command to be run; e.g., \lstinline{grep foo} or
-      \lstinline{sort -nr}
+      \item The value of this is the command to be run, for example, \lstinline{grep foo} or
+      \lstinline{sort -nr}.
 
       \item If the filter begins with \lstinline{Error:}, then the test is
             assumed to be testing the \lstinline{stderr} output, and the error code and
-            output is set up to be tested.
+            output are set up to be tested.
 
       \end{itemize}
 
@@ -1701,8 +1701,8 @@ With this background, these keywords are as follows.
       \begin{itemize}
 
       \item Sometimes filtering the output file is useful for standardizing
-            tests; for example, to handle the issues related to parallel
-            output both the output from the test example and the output file need to be sorted (since
+            tests. For example, in order to handle the issues related to parallel
+            output, both the output from the test example and the output file need to be sorted (since
             sort does not produce the same output on all machines).  This works the same as filter to implement this
             feature
 
@@ -1715,7 +1715,7 @@ With this background, these keywords are as follows.
       \item The tests are run under \lstinline{PETSC_ARCH/tests}, but
             some tests require runtime files that are maintained in the
             source tree.  Files in this (space-delimited) list will be
-            copied over. If you list a directory instead of files it will copy the
+            copied over. If you list a directory instead of files, it will copy the
             entire directory (this is limited currently to a single directory)
 
       \item The copying is done by the test generator and not by
@@ -1726,25 +1726,25 @@ With this background, these keywords are as follows.
     \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
 
-        \item A space-delimited list of run requirements (not
-        build requirements. See Build requirements below)
+        \item This is a space-delimited list of run requirements (not
+        build requirements; see Build requirements below).
 
         \item In general, the language supports \lstinline{and} and \lstinline{not} constructs
-        using \lstinline{! => not} and \lstinline{, => and}
+        using \lstinline{! => not} and \lstinline{, => and}.
 
-        \item MPIUNI should work for all -n 1 examples so this need not be in the requirements list
+        \item MPIUNI should work for all -n 1 examples so this need not be in the requirements list.
 
-        \item Inputs sometimes include external matrices that are found in the
-        DATAFILES path.  \lstinline{requires: datafilespath} can be specifed for these
-        tests.
+        \item Inputs sometimes require external matrices that are found in the
+        DATAFILES path.   For these
+        tests \lstinline{requires: datafilespath} can be specifed.
 
-        \item Packages are specified with lower case specification; e.g.,
-        \lstinline{requires: superlu_dist}
+        \item Packages are indicated with lower-case specification, for example,
+        \lstinline{requires: superlu_dist}.
 
         \item Any defined variable in petscconf.h can be specified with the
-        \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
+        \lstinline{defined(...)} syntax, for example, \lstinline{defined(PETSC_USE_INFO)}.
 
-        \item Any define of the form \lstinline{PETSC_HAVE_FOO} can just use
+        \item Any definition of the form \lstinline{PETSC_HAVE_FOO} can just use
         \lstinline{requires: foo} similar to how third-party packages are handled.
 
       \end{itemize}
@@ -1752,9 +1752,9 @@ With this background, these keywords are as follows.
     \item[]  \textbf{timeoutfactor}: (\emph{Optional}; \emph{Default:} \lstinline{"1"})
       \begin{itemize}
 
-        \item This parameters allows one to extend the default timeout for an individual test such that the new timeout time is \lstinline{timeout=(default timeout) x (timeoutfactor)}.
+        \item This parameter allows you to extend the default timeout for an individual test such that the new timeout time is \lstinline{timeout=(default timeout) x (timeoutfactor)}.
 
-        \item Tests are limited to a set time that is found at the top of \lstinline{"config/petsc_harness.sh"}.
+        \item Tests are limited to a set time that is found at the top of \lstinline{"config/petsc_harness.sh"}
               and can be overwritten by passing in the \lstinline{TIMEOUT} argument to \lstinline{gmakefile} (see
               \lstinline{make -f gmakefile help}.
 
@@ -1764,12 +1764,12 @@ With this background, these keywords are as follows.
 
 
 
-\subsection{Additional specifications%
+\subsection{Additional Specifications%
   \label{additional-specifications}%
 }
 
 In addition to the above keywords, other language features are
-supported:
+supported.
 %
 \begin{quote}
 %
@@ -1777,12 +1777,12 @@ supported:
 
 \item for loops:  Specifying \lstinline!{{ ... }shared output}!
       or \lstinline!{{ ... }separate output}!
-      will create for loops over enclosed space-delmited list.
+      will create for loops over an enclosed space-delmited list.
       If the loop causes a different output, then separate output would
       be used.  If the loop does not cause separate output, then the
-      shared (in short hand notation, \lstinline!{{ ... }}!) syntax must be used.
+      shared (in shorthand notation, \lstinline!{{ ... }}!) syntax must be used.
 
-For loops are supported within nsize and args.  An example would be:
+For loops are supported within nsize and args.  An example is
 %
 \begin{outputlisting}
 args: -matload_block_size {{2 3}}
@@ -1792,8 +1792,8 @@ In this case, two execution lines would be addded with two different
 arguments.  Associated \lstinline{diff} lines would be added as well
 automatically.
 
-In this case, it assumed that the output for each
-\lstinline{matload_block_size} will give the same output so
+Here the output for each
+\lstinline{matload_block_size} is assumed to give the same output so
 that only one diff file is needed.  If the variables
 produced different output, then the \lstinline{separate output} option would be added.  In this case, each loop
 variable and value become a separate script.
@@ -1805,7 +1805,7 @@ See examples below for how it works in practice.
 \end{quote}
 
 
-\subsection{Test block examples%
+\subsection{Test Block Examples%
   \label{test-block-examples}%
 }
 
@@ -1813,21 +1813,21 @@ See examples below for how it works in practice.
 %  as it's smaller, and allows literal $ (which we use an an escape character for
 %  C code)
 
-This is the simplest test block:
+The following is the simplest test block:
 %
 \begin{outputlisting}
 /*TESTS
   test:
 TESTS*/
 \end{outputlisting}
-which is equivalent to:
+which is equivalent to
 \begin{outputlisting}
 /*TESTS
   testset:
     test:
 TESTS*/
 \end{outputlisting}
-which is equivalent to:
+which is equivalent to
 \begin{outputlisting}
 /*TESTS
   testset:
@@ -1838,7 +1838,7 @@ If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will c
 requires only one processor/thread, with no arguments, and diff the
 resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
 
-For Fortran, the equivalent is:
+For Fortran, the equivalent is
 %
 \begin{outputlisting}
 !/*TESTS
@@ -1846,7 +1846,7 @@ For Fortran, the equivalent is:
 !TESTS*/
 \end{outputlisting}
 
-A more complete example is:
+A more complete example is
 %
 \begin{outputlisting}
 /*TESTS
@@ -1865,7 +1865,7 @@ This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutor
 be \lstinline{a_b_tutorials-ex1} and \lstinline{a_b_tutorials-ex1_1}.
 
 
-An example of how one tests a permutuation of arguments against the same
+Following is an example of how to test a permutuation of arguments against the same
 output file:
 %
 \begin{outputlisting}
@@ -1884,7 +1884,7 @@ output file:
 Assuming that this is \lstinline{ex10.c}, there would be two
 mpiexec/diff invocations in \lstinline{runex10_19.sh}.
 
-Here is a similar example, but the permutation of arguments create
+Here is a similar example, but the permutation of arguments creates
 different output:
 
 \begin{outputlisting}
@@ -1900,10 +1900,10 @@ different output:
       suffix: 5
 */TESTS
 \end{outputlisting}
-Assuming that this is \lstinline{ex10.c}, there would be two shell
-scripts created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
+Assuming that this is \lstinline{ex10.c}, two shell
+scripts will be created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
 
-An example using a for loop would be:
+An example using a for loop is:
 %
 \begin{outputlisting}
 /*TESTS
@@ -1923,7 +1923,7 @@ An example using a for loop would be:
 In this example, \lstinline{ex138_2} will invoke \lstinline{runex138_2.sh} twice with two different
 arguments, but both are diffed with the same file.
 
-An example for showing the hierarchical nature of the test specification is:
+Following is an example  showing the hierarchical nature of the test specification.
 %
 \begin{outputlisting}
 testset:
@@ -1950,7 +1950,7 @@ testset:
     args: -mat_type seqsbaij
 \end{outputlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
-be:
+be
 \begin{outputlisting}
 runex10_19_pc_factor_levels-0.sh
 runex10_19_pc_factor_levels-2.sh
@@ -1958,23 +1958,23 @@ runex10_19_pc_factor_levels-4.sh
 \end{outputlisting}
 Each shell script would invoke \trl{mpiexec} twice.
 
-\subsection{Build language options%
+\subsection{Build Language Options%
   \label{build-language-options}%
 }
 
-It is possible to specify issues related to the compilation of the
-source file with the \lstinline{build:} block.  The language is:
+You can specify issues related to the compilation of the
+source file with the \lstinline{build:} block.  The language is as follows.
 %
 \begin{itemize}
   \item \textbf{requires:} (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
-\item Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
+\item Same as the runtime requirements (for example, can include \lstinline{requires: fftw})
 but also requirements related to types:
     \begin{enumerate}
       \item Precision types: \lstinline{single}, \lstinline{double}, \lstinline{quad}, \lstinline{int32}
       \item Scalar types: \lstinline{complex}  (and \lstinline{!complex})
     \end{enumerate}
-\item In addition, \lstinline{TODO}  is available to allow one to skip the
+\item In addition, \lstinline{TODO}  is available to allow you to skip the
 build of this file but still maintain it in the source tree.
       \end{itemize}
 
@@ -1984,7 +1984,7 @@ build of this file but still maintain it in the source tree.
       \end{itemize}
 \end{itemize}
 
-A typical example for compiling for only real numbers is:
+A typical example for compiling for only real numbers is
 \begin{outputlisting}
 /*T
 build:
@@ -1996,34 +1996,34 @@ T*/
   \label{petsc-test-harness}%
 }
 
-The goals of the PETSc Test Harness are to:
+The goals of the PETSc test harness are threefold.
 %
 \begin{tightitemize}
 \item Provide standard output used by other testing tools
 
-\item Lightweight as possible and easily fit within the PETSc build chain
+\item Be as lightweight as possible and easily fit within the PETSc build chain
 
 \item Provide information on all tests, even those that are not built or
 run because they do not meet the configuration requirements
 \end{tightitemize}
 
-Before understanding the test harness, it is first important to
+Before understanding the test harness, you should first
 understand the desired requirements for reporting and logging.
 
 
-\subsection{Testing the parsing%
+\subsection*{Testing the Parsing%
   \label{testing-the-parsing}%
 }
 
 After inserting the language into the file, you can test the parsing
-by executuing:
+by executuing
 %
 \begin{bashlisting}
 ${PETSC_DIR}/lib/petsc/bin/maint/testparse.py -t <test src file>
 \end{bashlisting}
 
-A dictionary will be pretty-printed out.  From this dictionary
-print-out, it is usually obvious if there is a problem in the parsing.
+A dictionary will be pretty-printed.  From this dictionary
+printout, any problems in the parsing are is usually obvious.
 This python file is used by
 \begin{bashlisting}
 ${PETSC_DIR}/config/gmakegentest.py
@@ -2031,16 +2031,16 @@ ${PETSC_DIR}/config/gmakegentest.py
 in generating the test harness.
 
 
-\section{Test output standards: TAP}%
+\section{Test Output Standards: TAP}%
   \label{test-output-standards-tap}%
 
 The PETSc test system is designed to be compliant with the Test Anything
-Protocal (TAP): See \url{https://testanything.org/tap-specification.html}
+Protocal (TAP); see \url{https://testanything.org/tap-specification.html}
 
-This is a very simple standard designed to allow testing tools to work
+This is a  simple standard designed to allow testing tools to work
 together easily.  There are libraries to enable the output to be used
-easily including sharness, which is used by the git team.  However, the
-simplicity of the petsc tests and TAP specification means that we use
+easily, including sharness, which is used by the git team.  However, the
+simplicity of the PETSc tests and TAP specification means that we use
 our own simple harness given by a single shell script that each file
 sources: \lstinline{petsc_harness.sh}.
 
@@ -2054,7 +2054,7 @@ test:
   requires: datafilespath
 \end{outputlisting}
 
-A sample output is:
+A sample output follows.
 \begin{outputlisting}[\scriptsize\ttfamily]
 ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
 ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
@@ -2068,14 +2068,14 @@ ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij
 ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
 \end{outputlisting}
 
-\section{Test harness implementation%
+\section{Test Harness Implementation%
   \label{test-harness-implementation}%
 }
 
 Most of the requirements for being TAP-compliant lie in the shell
-scripts so we focus on that description.
+scripts, so we focus on that description.
 
-A sample shell script is given by:
+A sample shell script is given the following.
 \begin{bashlisting}
 #!/bin/sh
 . petsc_harness.sh
@@ -2089,7 +2089,7 @@ petsc_testend
 \trl{petsc_harness.sh} is a small shell script that provides the logging and
 reporting functions \lstinline{petsc_testrun} and \lstinline{petsc_testend}.
 
-A small sample of the output from the test harness would be:
+A small sample of the output from the test harness is as follows.
 \begin{outputlisting}[\scriptsize\ttfamily]
 ok 1 ./ex1
 ok 2 diff ex1.tmp output/ex1.out
@@ -2113,11 +2113,11 @@ ok 18 diff ex3.tmp output/ex3.out
 \end{outputlisting}
 
 For developers, modifying the lines that get written to the file can be
-done by modifying:
+done by modifying
 \begin{bashlisting}
 ${PETSC_DIR}/config/example_template.py
 \end{bashlisting}
-To modify the test harness,  you can modify this file
+To modify the test harness,  you can modify the following file:
 \begin{bashlisting}
 ${PETSC_DIR}/config/petsc_harness.sh
 \end{bashlisting}
@@ -2133,17 +2133,17 @@ Note that the exact syntax of all input and output in this section is subject to
 git checkout master
 make -f gmakefile test
 \end{bashlisting}
-Confirm that all of the tests pass.
-\item Create a new branch and make your changes.
+Confirm that all the tests pass.
+\item Create a new branch, and make your changes.
 \begin{bashlisting}
 git checkout -b myname/my-feature
 # make and commit changes
 \end{bashlisting}
-\item Run the full test suite on your branch \footnote{For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein.}.
+\item Run the full test suite on your branch \footnote{For information on how to run a subset of tests, consult the users manual and other sources referenced therein.}.
 \begin{bashlisting}
 make -f gmakefile test
 \end{bashlisting}
-\item Examine the output for any failed tests, for example
+\item Examine the output for any failed tests, for example,
 \begin{outputlisting}
 # -------------
 #   Summary
@@ -2159,12 +2159,12 @@ make -f gmakefile test
 # To rerun failed tests:
 #     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
 \end{outputlisting}
-The above indicates that three tests have failed and should be investigated.
+This output indicates that three tests have failed and should be investigated.
 \item Rerun one of the failed tests, with additional verbosity.
 \begin{bashlisting}
 /opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-ex4_4'
 \end{bashlisting}
-\item Examine the output
+\item Examine the output.
 \begin{outputlisting}
 arch-darwin-master-double-debug/tests/sys/classes/viewer/examples/tests/runex4_4.sh  -v
 ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
@@ -2184,7 +2184,7 @@ not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/lib/petsc
 #	> Testing PetscViewerASCIIPrintf 1
 \end{outputlisting}
 This indicates that the output does not match the reference output.
-\item Take a look in the directory where the test was run from.
+\item Look in the directory from which the test was run.
 \begin{outputlisting}
 cd $PETSC_ARCH/tests/sys/classes/viewer/examples/tests/
 \end{outputlisting}
@@ -2197,7 +2197,7 @@ cd $PETSC_ARCH/tests/sys/classes/viewer/examples/tests/
       output_file: output/ex4a.out
 \end{outputlisting}
 (Note that the default number of MPI processes is 1.)
-\item We can deduce now that the command to rerun the example are
+\item We can deduce now that the command to rerun the example is
 \begin{outputlisting}
 make ex4
 $PETSC_DIR/$PETSC_ARCH/bin/mpiexec -n 1 ./ex4 -myviewer ascii:ex4a1.tmp::append
@@ -2208,20 +2208,20 @@ cat ex4a1.tmp
 $PETSC_DIR/src/sys/classes/viewer/examples/tests/output/ex4a.out
 \end{outputlisting}
 (Note that there is a default output location in \trl{output/testname_suffix}.)
-\item This should provide enough information to iteratively debug the problem by making changes, recompiling, and re-running this example directly.
-\item Repeat with other errors.
+\item This should provide enough information to iteratively debug the problem by making changes, recompiling, and rerunning this example directly.
+\item Repeat for other errors.
 \end{enumerate}
 
 \subsection{Additional Tips}
-To rerun just the reporting,
+To rerun just the reporting use
 \begin{bashlisting}
 config/report_tests.py
 \end{bashlisting}
-To see the full options:
+To see the full options use
 \begin{bashlisting}
 config/report_tests.py -h
 \end{bashlisting}
-To see the full timing information for the 5 most expensive tests:
+To see the full timing information for the five most expensive tests use
 \begin{bashlisting}
 config/report_tests.py -t 5
 \end{bashlisting}
