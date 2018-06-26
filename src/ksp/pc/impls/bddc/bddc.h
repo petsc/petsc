@@ -126,6 +126,7 @@ typedef struct {
   PetscInt            current_level;
   PetscInt            max_levels;
   PetscInt            coarse_eqs_per_proc;
+  PetscInt            coarse_eqs_limit;
   IS                  coarse_subassembling;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;

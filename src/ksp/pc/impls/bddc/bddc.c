@@ -55,7 +55,7 @@ PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
-  PetscInt       nt;
+  PetscInt       nt,i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -85,9 +85,14 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   }
   /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
   ierr = PetscOptionsBool("-pc_bddc_switch_static","Switch on static condensation ops around the interface preconditioner","none",pcbddc->switch_static,&pcbddc->switch_static,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_coarse_eqs_per_proc","Number of equations per process for coarse problem redistribution (significant only at the coarsest level)","none",pcbddc->coarse_eqs_per_proc,&pcbddc->coarse_eqs_per_proc,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_coarsening_ratio","Set coarsening ratio used in multilevel coarsening","none",pcbddc->coarsening_ratio,&pcbddc->coarsening_ratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_coarse_eqs_per_proc","Target number of equations per process for coarse problem redistribution (significant only at the coarsest level)","none",pcbddc->coarse_eqs_per_proc,&pcbddc->coarse_eqs_per_proc,NULL);CHKERRQ(ierr);
+  i    = pcbddc->coarsening_ratio;
+  ierr = PetscOptionsInt("-pc_bddc_coarsening_ratio","Set coarsening ratio used in multilevel coarsening","PCBDDCSetCoarseningRatio",i,&i,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCSetCoarseningRatio(pc,i);CHKERRQ(ierr);
+  i    = pcbddc->max_levels;
+  ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","PCBDDCSetLevels",i,&i,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCSetLevels(pc,i);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_coarse_eqs_limit","Set maximum number of equations on coarsest grid to aim for","none",pcbddc->coarse_eqs_limit,&pcbddc->coarse_eqs_limit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_rebuild","Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any adjacency)","none",pcbddc->sub_schurs_rebuild,&pcbddc->sub_schurs_rebuild,NULL);CHKERRQ(ierr);
@@ -609,6 +614,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
+  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d\n",PETSC_PCBDDC_MAXLEVELS-1);
   pcbddc->max_levels = levels;
   PetscFunctionReturn(0);
 }
@@ -639,7 +645,6 @@ PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
-  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d\n",PETSC_PCBDDC_MAXLEVELS-1);
   ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

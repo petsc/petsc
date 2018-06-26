@@ -7254,7 +7254,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   /* MPI */
   MPI_Comm               comm,comm_n;
   PetscSubcomm           subcomm;
-  PetscMPIInt            n_sends,n_recvs,commsize;
+  PetscMPIInt            n_sends,n_recvs,size;
   PetscMPIInt            *iflags,*ilengths_idxs,*ilengths_vals,*ilengths_idxs_is;
   PetscMPIInt            *onodes,*onodes_is,*olengths_idxs,*olengths_idxs_is,*olengths_vals;
   PetscMPIInt            len,tag_idxs,tag_idxs_is,tag_vals,tag_vecs,source_dest;
@@ -7312,9 +7312,9 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   ierr = PetscMPIIntCast(i,&n_sends);CHKERRQ(ierr);
 
   /* compute number of receives */
-  ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(commsize,&iflags);CHKERRQ(ierr);
-  ierr = PetscMemzero(iflags,commsize*sizeof(*iflags));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&iflags);CHKERRQ(ierr);
+  ierr = PetscMemzero(iflags,size*sizeof(*iflags));CHKERRQ(ierr);
   ierr = ISGetIndices(is_sends_internal,&is_indices);CHKERRQ(ierr);
   for (i=0;i<n_sends;i++) iflags[is_indices[i]] = 1;
   ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&n_recvs);CHKERRQ(ierr);
@@ -7333,7 +7333,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
       if (!n_recvs && n_sends) color = 1; /* just those processes that are sending but not receiving anything will not partecipate in new comm */
     }
     ierr = MPIU_Allreduce(&color,&subcommsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    subcommsize = commsize - subcommsize;
+    subcommsize = size - subcommsize;
     /* check if reuse has been requested */
     if (reuse) {
       if (*mat_n) {
@@ -7360,12 +7360,12 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   }
 
   /* prepare send/receive buffers */
-  ierr = PetscMalloc1(commsize,&ilengths_idxs);CHKERRQ(ierr);
-  ierr = PetscMemzero(ilengths_idxs,commsize*sizeof(*ilengths_idxs));CHKERRQ(ierr);
-  ierr = PetscMalloc1(commsize,&ilengths_vals);CHKERRQ(ierr);
-  ierr = PetscMemzero(ilengths_vals,commsize*sizeof(*ilengths_vals));CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&ilengths_idxs);CHKERRQ(ierr);
+  ierr = PetscMemzero(ilengths_idxs,size*sizeof(*ilengths_idxs));CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&ilengths_vals);CHKERRQ(ierr);
+  ierr = PetscMemzero(ilengths_vals,size*sizeof(*ilengths_vals));CHKERRQ(ierr);
   if (nis) {
-    ierr = PetscCalloc1(commsize,&ilengths_idxs_is);CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&ilengths_idxs_is);CHKERRQ(ierr);
   }
 
   /* Get data from local matrices */
@@ -7785,6 +7785,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   IS                     coarse_is,*isarray;
   PetscInt               i,im_active=-1,active_procs=-1;
   PetscInt               nis,nisdofs,nisneu,nisvert;
+  PetscInt               coarse_eqs_per_proc;
   PC                     pc_temp;
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
@@ -7795,7 +7796,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscScalar            *array;
   MatReuse               coarse_mat_reuse;
   PetscBool              restr, full_restr, have_void;
-  PetscMPIInt            commsize;
+  PetscMPIInt            size;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -7860,22 +7861,23 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* determine number of processes partecipating to coarse solver and compute subassembling pattern */
   /* restr : whether if we want to exclude senders (which are not receivers) from the subassembling pattern */
   /* full_restr : just use the receivers from the subassembling pattern */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&commsize);CHKERRQ(ierr);
-  coarse_mat_is = NULL;
-  multilevel_allowed = PETSC_FALSE;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  coarse_mat_is        = NULL;
+  multilevel_allowed   = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
-  pcbddc->coarse_eqs_per_proc = PetscMin(PetscMax(pcbddc->coarse_size,1),pcbddc->coarse_eqs_per_proc);
+  coarse_eqs_per_proc  = PetscMin(PetscMax(pcbddc->coarse_size,1),pcbddc->coarse_eqs_per_proc);
   if (pcbddc->current_level < pcbddc->max_levels) multilevel_requested = PETSC_TRUE;
+  if (pcbddc->coarse_size <= pcbddc->coarse_eqs_limit) multilevel_requested = PETSC_FALSE;
   if (multilevel_requested) {
-    ncoarse = active_procs/pcbddc->coarsening_ratio;
-    restr = PETSC_FALSE;
+    ncoarse    = active_procs/pcbddc->coarsening_ratio;
+    restr      = PETSC_FALSE;
     full_restr = PETSC_FALSE;
   } else {
-    ncoarse = pcbddc->coarse_size/pcbddc->coarse_eqs_per_proc;
-    restr = PETSC_TRUE;
+    ncoarse    = pcbddc->coarse_size/coarse_eqs_per_proc + !!(pcbddc->coarse_size%coarse_eqs_per_proc);
+    restr      = PETSC_TRUE;
     full_restr = PETSC_TRUE;
   }
-  if (!pcbddc->coarse_size || commsize == 1) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
+  if (!pcbddc->coarse_size || size == 1) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
     if (pcbddc->coarsening_ratio > 1) {
@@ -7887,7 +7889,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     } else {
       PetscMPIInt rank;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-      have_void = (active_procs == (PetscInt)commsize) ? PETSC_FALSE : PETSC_TRUE;
+      have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),1,rank,1,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
     }
   } else { /* if a subassembling pattern exists, then we can reuse the coarse ksp and compute the number of process involved */
@@ -7895,7 +7897,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (pcbddc->coarse_ksp) psum = 1;
     else psum = 0;
     ierr = MPIU_Allreduce(&psum,&ncoarse,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (ncoarse < commsize) have_void = PETSC_TRUE;
+    if (ncoarse < size) have_void = PETSC_TRUE;
   }
   /* determine if we can go multilevel */
   if (multilevel_requested) {
@@ -8084,10 +8086,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* set defaults for coarse KSP and PC */
   if (multilevel_allowed) {
     coarse_ksp_type = KSPRICHARDSON;
-    coarse_pc_type = PCBDDC;
+    coarse_pc_type  = PCBDDC;
   } else {
     coarse_ksp_type = KSPPREONLY;
-    coarse_pc_type = PCREDUNDANT;
+    coarse_pc_type  = PCREDUNDANT;
   }
 
   /* print some info if requested */
@@ -8160,6 +8162,18 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PCBDDCSetLevels(pc_temp,pcbddc->max_levels);CHKERRQ(ierr);
       /* allow user customization */
       ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
+      /* get some info after set from options */
+      ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
+      /* multilevel cannot be done with coarse PCs different from BDDC or NN */
+      ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
+      if (multilevel_allowed && !isbddc && !isnn) {
+        isbddc = PETSC_TRUE;
+        ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
+        ierr   = PCBDDCSetLevel(pc_temp,pcbddc->current_level+1);CHKERRQ(ierr);
+        ierr   = PCBDDCSetCoarseningRatio(pc_temp,pcbddc->coarsening_ratio);CHKERRQ(ierr);
+        ierr   = PCBDDCSetLevels(pc_temp,pcbddc->max_levels);CHKERRQ(ierr);
+      }
     }
     /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */
     ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
@@ -8210,6 +8224,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
       pcbddc_coarse->detect_disconnected = PETSC_TRUE;
       pcbddc_coarse->coarse_eqs_per_proc = pcbddc->coarse_eqs_per_proc;
+      pcbddc_coarse->coarse_eqs_limit    = pcbddc->coarse_eqs_limit;
       pcbddc_coarse->benign_saddle_point = pcbddc->benign_have_null;
       if (pcbddc_coarse->benign_saddle_point) {
         Mat                    coarsedivudotp_is;
