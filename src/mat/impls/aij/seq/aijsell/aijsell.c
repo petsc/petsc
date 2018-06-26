@@ -168,7 +168,7 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
 
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
-  ierr = MatMult(aijsell->S,xx,yy);CHKERRQ(ierr);
+  ierr = MatMult_SeqSELL(aijsell->S,xx,yy);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
