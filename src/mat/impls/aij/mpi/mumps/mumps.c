@@ -776,7 +776,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
      Unless the user provides a valid value for ICNTL(26), MatSolve and MatMatSolve routines solve the full system.
      This requires an extra call to PetscMUMPS_c and the computation of the factors for S
   */
-  if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
+  if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
     if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
     second_solve = PETSC_TRUE;
     ierr = MatMumpsHandleSchur_Private(A,PETSC_FALSE);CHKERRQ(ierr);
@@ -881,7 +881,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       mumps->id.ICNTL(20)   = 1;
     }
     /* handle condensation step of Schur complement (if any) */
-    if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
+    if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
       second_solve = PETSC_TRUE;
       ierr = MatMumpsHandleSchur_Private(A,PETSC_FALSE);CHKERRQ(ierr);
     }
