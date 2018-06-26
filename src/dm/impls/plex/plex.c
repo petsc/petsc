@@ -39,9 +39,9 @@ PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmRefined, 1);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm,&cMax,&fMax,NULL,NULL);CHKERRQ(ierr);
-  if (cMax >= 0 || fMax >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle hybrid meshes yet");
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   if (!(cEnd - cStart)) cellRefiner = REFINER_NOOP;
   else {
@@ -53,10 +53,12 @@ PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
     case 2:
       switch (coneSize) {
       case 3:
-        cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
+        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
+        else cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
       break;
       case 4:
-        cellRefiner = REFINER_NOOP;
+        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_2D;
+        else cellRefiner = REFINER_NOOP;
       break;
       default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
       }
@@ -64,9 +66,15 @@ PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
     case 3:
       switch (coneSize) {
       case 4:
-        cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
+        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;
+        else cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
+      break;
+      case 5:
+        if (cMax >= 0) cellRefiner = REFINER_HYBRID_SIMPLEX_TO_HEX_3D;
+        else cellRefiner = REFINER_NOOP;
       break;
       case 6:
+        if (cMax >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Simplex2Tensor in 3D with Hybrid mesh not yet done");
         cellRefiner = REFINER_NOOP;
       break;
       default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
@@ -663,6 +671,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt     numLabels, l, numColors, numLColors, dim, depth, cStart, cEnd, c, vStart, vEnd, v, eStart = 0, eEnd = 0, e, p;
     PetscMPIInt  rank, size;
     char         **names, **colors, **lcolors;
+    PetscBool    plotEdges, flg;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -685,6 +694,10 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       numLColors = 4;
       for (c = 0; c < numLColors; ++c) {ierr = PetscStrallocpy(deflcolors[c], &lcolors[c]);CHKERRQ(ierr);}
     }
+    plotEdges = (PetscBool)(depth > 1 && useNumbers && dim < 3);
+    ierr = PetscOptionsGetBool(((PetscObject) viewer)->options,((PetscObject) viewer)->prefix, "-dm_plex_view_edges", &plotEdges, &flg);CHKERRQ(ierr);
+    if (flg && plotEdges && depth < dim) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh must be interpolated");
+    if (depth < dim) plotEdges = PETSC_FALSE;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -744,8 +757,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     /* Plot edges */
-    if (depth > 1) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
-    if (dim < 3 && useNumbers) {
+    if (depth > 1 || plotEdges) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
+    if (plotEdges) {
       ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "\\path\n");CHKERRQ(ierr);
       for (e = eStart; e < eEnd; ++e) {
@@ -760,7 +773,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
         for (d = 0; d < dof; ++d) {
-          tcoords[d] = (double) (scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
+          tcoords[d] = (double) (0.5*scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
           tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
         }
         /* Rotate coordinates since PGF makes z point out of the page instead of up */
@@ -843,20 +856,30 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (cellHeight) {ierr = PetscViewerASCIIPrintf(viewer, "  Cells are at height %D\n", cellHeight);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, &pMax[1], &pMax[0]);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, depth > 1 ? &pMax[depth - 2] : NULL, &pMax[0]);CHKERRQ(ierr);
     ierr = PetscMalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
+      pMax[0] -= pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&pMax[0], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
-      for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+      for (p = 0; p < size; ++p) {
+        if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+        else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
+      pMax[depth] -= pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gather(&pMax[depth], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", dim);CHKERRQ(ierr);
-      for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+      for (p = 0; p < size; ++p) {
+        if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+        else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
       PetscMPIInt rank;
@@ -2172,8 +2195,8 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
     ierr = PetscSFCreateInverseSF((*subdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*subdm)), &sectionSeq);CHKERRQ(ierr);
     ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
-  
-    ierr = DMPlexCreateGlobalToNaturalSF(*subdm, sectionSeq, (*subdm)->sfMigration, &sfNatural);CHKERRQ(ierr);  
+
+    ierr = DMPlexCreateGlobalToNaturalSF(*subdm, sectionSeq, (*subdm)->sfMigration, &sfNatural);CHKERRQ(ierr);
     (*subdm)->sfNatural = sfNatural;
     ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
@@ -2202,8 +2225,8 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
       ierr = PetscSFCreateInverseSF((*superdm)->sfMigration, &sfMigrationInv);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PetscObjectComm((PetscObject) (*superdm)), &sectionSeq);CHKERRQ(ierr);
       ierr = PetscSFDistributeSection(sfMigrationInv, section, NULL, sectionSeq);CHKERRQ(ierr);
-    
-      ierr = DMPlexCreateGlobalToNaturalSF(*superdm, sectionSeq, (*superdm)->sfMigration, &sfNatural);CHKERRQ(ierr);  
+
+      ierr = DMPlexCreateGlobalToNaturalSF(*superdm, sectionSeq, (*superdm)->sfMigration, &sfNatural);CHKERRQ(ierr);
       (*superdm)->sfNatural = sfNatural;
       ierr = PetscSectionDestroy(&sectionSeq);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sfMigrationInv);CHKERRQ(ierr);
@@ -2283,6 +2306,8 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateDimStratum(DM,DMLabel,DMLabel,PetscInt,PetscInt);
+
 /*@
   DMPlexStratify - The DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
   can be illustrated by a Hasse Diagram (a http://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
@@ -2314,6 +2339,7 @@ PetscErrorCode DMPlexStratify(DM dm)
   DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
+  PetscInt       cMax, fMax, eMax, vMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2409,8 +2435,24 @@ PetscErrorCode DMPlexStratify(DM dm)
       DMLabelAddStratum(label,v);CHKERRQ(ierr);
     }
   }
-
   ierr = DMLabelGetState(label, &mesh->depthState);CHKERRQ(ierr);
+
+  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
+  if (cMax >= 0 || fMax >= 0 || eMax >= 0 || vMax >= 0) {
+    DMLabel  dimLabel;
+    PetscInt dim;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+    if (!dimLabel) {
+      ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
+      ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
+    }
+    if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim, cMax);CHKERRQ(ierr);}
+    if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
+    if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 1, eMax);CHKERRQ(ierr);}
+    if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, label, dimLabel, 0, vMax);CHKERRQ(ierr);}
+  }
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -6063,8 +6105,9 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
   if (cMax) *cMax = mesh->hybridPointMax[dim];
-  if (fMax) *fMax = mesh->hybridPointMax[dim-1];
+  if (fMax) *fMax = mesh->hybridPointMax[PetscMax(dim-1,0)];
   if (eMax) *eMax = mesh->hybridPointMax[1];
   if (vMax) *vMax = mesh->hybridPointMax[0];
   PetscFunctionReturn(0);
@@ -6073,7 +6116,7 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
 static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel dimLabel, PetscInt d, PetscInt dMax)
 {
   IS             is, his;
-  PetscInt       first, stride;
+  PetscInt       first = 0, stride;
   PetscBool      isStride;
   PetscErrorCode ierr;
 
@@ -6083,7 +6126,7 @@ static PetscErrorCode DMPlexCreateDimStratum(DM dm, DMLabel depthLabel, DMLabel 
   if (isStride) {
     ierr = ISStrideGetInfo(is, &first, &stride);CHKERRQ(ierr);
   }
-  if (!isStride || stride != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
+  if (is && (!isStride || stride != 1)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "DM is not stratified: depth %D IS is not contiguous", d);
   ierr = ISCreateStride(PETSC_COMM_SELF, (dMax - first), first, 1, &his);CHKERRQ(ierr);
   ierr = DMLabelSetStratumIS(dimLabel, d, his);CHKERRQ(ierr);
   ierr = ISDestroy(&his);CHKERRQ(ierr);
@@ -6109,27 +6152,16 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscInt       dim;
-  DMLabel        depthLabel;
-  DMLabel        dimLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (cMax >= 0) mesh->hybridPointMax[dim]   = cMax;
-  if (fMax >= 0) mesh->hybridPointMax[dim-1] = fMax;
-  if (eMax >= 0) mesh->hybridPointMax[1]     = eMax;
-  if (vMax >= 0) mesh->hybridPointMax[0]     = vMax;
-  ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
-  if (!dimLabel) {
-    ierr = DMCreateLabel(dm, "dim");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "dim", &dimLabel);CHKERRQ(ierr);
-  }
-  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
-  if (cMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim, cMax);CHKERRQ(ierr);}
-  if (fMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, dim - 1, fMax);CHKERRQ(ierr);}
-  if (eMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 1, eMax);CHKERRQ(ierr);}
-  if (vMax >= 0) {ierr = DMPlexCreateDimStratum(dm, depthLabel, dimLabel, 0, vMax);CHKERRQ(ierr);}
+  if (dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM dimension not yet set");
+  if (cMax >= 0) mesh->hybridPointMax[dim]               = cMax;
+  if (fMax >= 0) mesh->hybridPointMax[PetscMax(dim-1,0)] = fMax;
+  if (eMax >= 0) mesh->hybridPointMax[1]                 = eMax;
+  if (vMax >= 0) mesh->hybridPointMax[0]                 = vMax;
   PetscFunctionReturn(0);
 }
 
@@ -6389,7 +6421,7 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 
   Level: developer
 
-.seealso: DMCreate(), DMCheckSkeleton(), DMCheckFaces()
+.seealso: DMCreate(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
 @*/
 PetscErrorCode DMPlexCheckSymmetry(DM dm)
 {
@@ -6475,7 +6507,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 
   Level: developer
 
-.seealso: DMCreate(), DMCheckSymmetry(), DMCheckFaces()
+.seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckFaces()
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
@@ -6533,7 +6565,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
 
   Level: developer
 
-.seealso: DMCreate(), DMCheckSymmetry(), DMCheckSkeleton()
+.seealso: DMCreate(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton()
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {

@@ -68,6 +68,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->maxCell                  = NULL;
   v->bdtype                   = NULL;
   v->dimEmbed                 = PETSC_DEFAULT;
+  v->dim                      = PETSC_DETERMINE;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
@@ -5983,6 +5984,8 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
 
     ierr = DMGetLabelName(dmA, l, &name);CHKERRQ(ierr);
     ierr = PetscStrcmp(name, "depth", &flg);CHKERRQ(ierr);
+    if (flg) continue;
+    ierr = PetscStrcmp(name, "dim", &flg);CHKERRQ(ierr);
     if (flg) continue;
     ierr = DMGetLabel(dmA, name, &label);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);

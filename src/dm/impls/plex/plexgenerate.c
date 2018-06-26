@@ -189,7 +189,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
++  name_solver - name of a new user-defined grid generator
 .  fnc - generator function
 .  rfnc - refinement function
 -  dim - dimension of boundary of domain
@@ -199,19 +199,19 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 
    Sample usage:
 .vb
-   DMPlexGenerateRegister("my_generator",MyGeneratorCreate);
+   DMPlexGenerateRegister("my_generator",MyGeneratorCreate,MyGeneratorRefiner,dim);
 .ve
 
    Then, your generator can be chosen with the procedural interface via
-$     DMPlexGenerateSetType(ksp,"my_generator")
+$     DMPlexGenerate(dm,"my_generator",...)
    or at runtime via the option
-$     -dmplex_generate_type my_generator
+$     -dm_plex_generator my_generator
 
    Level: advanced
 
 .keywords: DMPlexGenerate, register
 
-.seealso: DMPlexGenerateRegisterAll(), DMPlexGenerateRegisterDestroy()
+.seealso: DMPlexGenerateRegisterAll(), DMPlexGenerate(), DMPlexGenerateRegisterDestroy()
 
 @*/
 PetscErrorCode  DMPlexGenerateRegister(const char sname[],PetscErrorCode (*fnc)(DM, PetscBool,DM*), PetscErrorCode (*rfnc)(DM, double*,DM*),PetscInt dim)
