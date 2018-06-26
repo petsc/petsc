@@ -1040,6 +1040,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)D,(PetscObject)fetidp->innerksp,0);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
     ierr = MatCreateVecs(F,&(fetidp->innerksp)->vec_rhs,&(fetidp->innerksp)->vec_sol);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
@@ -1165,19 +1166,17 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  fully redundant: %d\n",fetidp->fully_redundant);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  saddle point:    %d\n",fetidp->saddlepoint);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  inner solver details\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Inner KSP solver details\n");CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = KSPView(fetidp->innerksp,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC solver details\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Inner BDDC solver details\n");CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(fetidp->innerbddc,viewer);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

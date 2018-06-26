@@ -183,7 +183,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Detect disconnected: %d (filter %d)\n",pcbddc->detect_disconnected,pcbddc->detect_disconnected_filter);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick: %d (change explicit %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_change_explicit);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Algebraic computation of no-net-flux %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Algebraic computation of no-net-flux: %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
     if (!pc->setupcalled) PetscFunctionReturn(0);
 
     /* compute interface size */
@@ -215,7 +215,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
       ratio1 = pc->pmat->rmap->N/(1.*pcbddc->coarse_size);
       ratio2 = PetscRealPart(interface_size)/pcbddc->coarse_size;
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ********************************** STATISTICS AT LEVEL %d **********************************\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"********************************** STATISTICS AT LEVEL %d **********************************\n",pcbddc->current_level);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Global dofs sizes: all %D interface %D coarse %D\n",pc->pmat->rmap->N,(PetscInt)PetscRealPart(interface_size),pcbddc->coarse_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Coarsening ratios: all/coarse %D interface/coarse %D\n",(PetscInt)ratio1,(PetscInt)ratio2);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Active processes : %D\n",(PetscInt)gsum[0]);CHKERRQ(ierr);
@@ -229,20 +229,39 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Primal    dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Local     dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[4],(PetscInt)gmax[4],(PetscInt)(gsum[4]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Local     subs   :\t%D\t%D\n"    ,(PetscInt)gmin[5],(PetscInt)gmax[5]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  ********************************** COARSE PROBLEM DETAILS *********************************\n");CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+
+    /* local solvers */
+    ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pcbddc->ksp_D),&subviewer);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerASCIIPrintf(subviewer,"--- Interior solver (rank 0)\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
+      ierr = KSPView(pcbddc->ksp_D,subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(subviewer,"--- Correction solver (rank 0)\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
+      ierr = KSPView(pcbddc->ksp_R,subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pcbddc->ksp_D),&subviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /* the coarse problem can be handled by a different communicator */
     if (pcbddc->coarse_ksp) color = 1;
     else color = 0;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
     ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)pc),&subcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetNumber(subcomm,PetscMin(size,2));CHKERRQ(ierr);
     ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PetscSubcommChild(subcomm),&subviewer);CHKERRQ(ierr);
     if (color == 1) {
+      ierr = PetscViewerASCIIPrintf(subviewer,"--- Coarse solver\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
       ierr = KSPView(pcbddc->coarse_ksp,subviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(subviewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(subviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubViewer(viewer,PetscSubcommChild(subcomm),&subviewer);CHKERRQ(ierr);
@@ -2434,18 +2453,29 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  /* FETIDP linear matrix */
+  /* FETI-DP matrix */
   ierr = PCBDDCCreateFETIDPMatContext(pc,&fetidpmat_ctx);CHKERRQ(ierr);
   fetidpmat_ctx->fully_redundant = fully_redundant;
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,fetidpmat_ctx->n,fetidpmat_ctx->n,fetidpmat_ctx->N,fetidpmat_ctx->N,fetidpmat_ctx,&newmat);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)newmat,!fetidpmat_ctx->l2g_lambda_only ? "F" : "G");CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT_TRANSPOSE,(void (*)(void))FETIDPMatMultTranspose);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_DESTROY,(void (*)(void))PCBDDCDestroyFETIDPMat);CHKERRQ(ierr);
+  /* propagate MatOptions */
+  {
+    PC_BDDC   *pcbddc = (PC_BDDC*)fetidpmat_ctx->pc->data;
+    PetscBool issym;
+
+    ierr = MatGetOption(pc->mat,MAT_SYMMETRIC,&issym);CHKERRQ(ierr);
+    if (issym || pcbddc->symmetric_primal) {
+      ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
   ierr = MatSetOptionsPrefix(newmat,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(newmat,"fetidp_");CHKERRQ(ierr);
   ierr = MatSetUp(newmat);CHKERRQ(ierr);
-  /* FETIDP preconditioner */
+  /* FETI-DP preconditioner */
   ierr = PCBDDCCreateFETIDPPCContext(pc,&fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCBDDCSetupFETIDPPCContext(newmat,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCCreate(comm,&newpc);CHKERRQ(ierr);
@@ -2453,8 +2483,9 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(newpc,"fetidp_");CHKERRQ(ierr);
   ierr = PCSetErrorIfFailure(newpc,pc->erroriffailure);CHKERRQ(ierr);
-  if (!fetidpmat_ctx->l2g_lambda_only) {
+  if (!fetidpmat_ctx->l2g_lambda_only) { /* standard FETI-DP */
     ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
+    ierr = PCShellSetName(newpc,"FETI-DP multipliers");CHKERRQ(ierr);
     ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
     ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
     ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
@@ -2466,6 +2497,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     Mat      M,AM,PM;
     PetscInt nn;
 
+    ierr = ISViewFromOptions(fetidpmat_ctx->lagrange,NULL,"-lag_view");CHKERRQ(ierr);
+    ierr = ISViewFromOptions(fetidpmat_ctx->pressure,NULL,"-press_view");CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_PPmat",(PetscObject*)&M);CHKERRQ(ierr);
     ierr = PCSetType(newpc,PCFIELDSPLIT);CHKERRQ(ierr);
     ierr = PCFieldSplitSetIS(newpc,"lag",fetidpmat_ctx->lagrange);CHKERRQ(ierr);
@@ -2474,6 +2507,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCFieldSplitSetSchurFactType(newpc,PC_FIELDSPLIT_SCHUR_FACT_DIAG);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurScale(newpc,1.0);CHKERRQ(ierr);
+
+    /* we need to setfromoptions and setup here to access the blocks */
     ierr = PCSetFromOptions(newpc);CHKERRQ(ierr);
     ierr = PCSetUp(newpc);CHKERRQ(ierr);
 
@@ -2489,12 +2524,13 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCShellSetView(lagpc,FETIDPPCView);CHKERRQ(ierr);
     ierr = PCShellSetDestroy(lagpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
     ierr = KSPSetPC(ksps[0],lagpc);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)lagpc,(PetscObject)ksps[0],0);CHKERRQ(ierr);
     ierr = PCDestroy(&lagpc);CHKERRQ(ierr);
     ierr = PetscFree(ksps);CHKERRQ(ierr);
   }
   /* return pointers for objects created */
   *fetidp_mat = newmat;
-  *fetidp_pc = newpc;
+  *fetidp_pc  = newpc;
   PetscFunctionReturn(0);
 }
 

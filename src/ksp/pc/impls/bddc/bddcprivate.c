@@ -8359,6 +8359,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
       /* Create ksp object suitable for estimation of extreme eigenvalues */
       ierr = KSPCreate(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),&check_ksp);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)pcbddc->coarse_ksp,0);CHKERRQ(ierr);
       ierr = KSPSetErrorIfNotConverged(pcbddc->coarse_ksp,PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);

@@ -228,6 +228,25 @@ static PetscErrorCode PCBDDCReuseSolvers_InteriorTranspose(PC pc, Vec rhs, Vec s
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCBDDCReuseSolvers_View(PC pc, PetscViewer viewer)
+{
+  PCBDDCReuseSolvers ctx;
+  PetscBool          iascii;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&ctx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  }
+  ierr = MatView(ctx->F,viewer);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCBDDCReuseSolversReset(PCBDDCReuseSolvers reuse)
 {
   PetscInt       i;
@@ -1136,14 +1155,18 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = PCCreate(PetscObjectComm((PetscObject)A_II),&msolv_ctx->interior_solver);CHKERRQ(ierr);
       ierr = PCSetOperators(msolv_ctx->interior_solver,A_II,A_II);CHKERRQ(ierr);
       ierr = PCSetType(msolv_ctx->interior_solver,PCSHELL);CHKERRQ(ierr);
+      ierr = PCShellSetName(msolv_ctx->interior_solver,"Interior solver (w/o Schur factorization)");CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->interior_solver,msolv_ctx);CHKERRQ(ierr);
+      ierr = PCShellSetView(msolv_ctx->interior_solver,PCBDDCReuseSolvers_View);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->interior_solver,PCBDDCReuseSolvers_Interior);CHKERRQ(ierr);
       ierr = PCShellSetApplyTranspose(msolv_ctx->interior_solver,PCBDDCReuseSolvers_InteriorTranspose);CHKERRQ(ierr);
 
       /* correction solver */
       ierr = PCCreate(PetscObjectComm((PetscObject)A_II),&msolv_ctx->correction_solver);CHKERRQ(ierr);
       ierr = PCSetType(msolv_ctx->correction_solver,PCSHELL);CHKERRQ(ierr);
+      ierr = PCShellSetName(msolv_ctx->correction_solver,"Correction solver (with Schur factorization)");CHKERRQ(ierr);
       ierr = PCShellSetContext(msolv_ctx->correction_solver,msolv_ctx);CHKERRQ(ierr);
+      ierr = PCShellSetView(msolv_ctx->interior_solver,PCBDDCReuseSolvers_View);CHKERRQ(ierr);
       ierr = PCShellSetApply(msolv_ctx->correction_solver,PCBDDCReuseSolvers_Correction);CHKERRQ(ierr);
       ierr = PCShellSetApplyTranspose(msolv_ctx->correction_solver,PCBDDCReuseSolvers_CorrectionTranspose);CHKERRQ(ierr);
 
