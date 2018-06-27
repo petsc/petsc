@@ -1010,7 +1010,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_USE_LOG)
 PETSC_INTERN PetscObject *PetscObjects;
-PETSC_INTERN PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+PETSC_INTERN PetscInt    PetscObjectsCounts;
+PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
 PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
