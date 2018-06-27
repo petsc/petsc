@@ -308,18 +308,18 @@ See Section \ref{sec_debugging} for more information on debugging PETSc programs
 
 For testing builds, the general invocation from the \trl{PETSC_DIR} is:
 \begin{bashlisting}
-make -f gmakefile.test test PETSC_ARCH=<PETSC_ARCH>
+make -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 \end{bashlisting}
 
 For testing installs, the general invocation from the installation (prefix)
 directory is:
 \begin{bashlisting}
-make -f share/petsc/examples/gmakefile.test test
+make -f share/petsc/examples/gmakefile test
 \end{bashlisting}
 
 For a full list of options, use
 \begin{bashlisting}
-make -f gmakefile.test help
+make -f gmakefile help-test
 \end{bashlisting}
 
 \subsection{Understanding test output and more information}
@@ -340,7 +340,7 @@ make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> alltests
 
 The new testing system is available by running
 \begin{bashlisting}
-make -f gmakefile.test test PETSC_ARCH=<PETSC_ARCH>
+make -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 \end{bashlisting}
 
 The test reporting system classifies them according to the Test Anywhere
@@ -371,7 +371,7 @@ A label is used to denote where it can be found within the source tree.
 For example, test \trl{vec_vec_tutorials-ex6},
 which can be run e.g. with
 \begin{bashlisting}
-make -f gmakefile.test test search='vec_vec_tutorials-ex6'
+make -f gmakefile test search='vec_vec_tutorials-ex6'
 \end{bashlisting}
 (see the discussion of \trl{search} below), denotes the shell
 script:
@@ -395,29 +395,29 @@ wildcards, but rather whether the string is within the arguments.
 
 Some examples are:
 \begin{bashlisting}
-make -f gmakefile.test test search='ts%'                      # Run all TS examples
-make -f gmakefile.test test searchin='tutorials'              # Run all tutorials
-make -f gmakefile.test test search 'ts%' searchin='tutorials' # Run all TS tutorials
-make -f gmakefile.test test argsearch='cuda'                  # Run examples with cuda in arguments
+make -f gmakefile test search='ts%'                      # Run all TS examples
+make -f gmakefile test searchin='tutorials'              # Run all tutorials
+make -f gmakefile test search 'ts%' searchin='tutorials' # Run all TS tutorials
+make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
 \end{bashlisting}
 
 It is useful before invoking the tests to see what targets will
 be run.  The \lstinline{print-test} target helps with this:
 \begin{bashlisting}
-make -f gmakefile.test print-test argsearch='cuda'
+make -f gmakefile print-test argsearch='cuda'
 \end{bashlisting}
 To see all of the test targets which would be run, this command can be used:
 \begin{bashlisting}
-make -f gmakefile.test print-test
+make -f gmakefile print-test
 \end{bashlisting}
 
 For testing in install directories, some examples are:
 \begin{bashlisting}
-cd ${PREFIX_DIR}; make -f gmakefile.test test TESTDIR=mytests
+cd ${PREFIX_DIR}; make -f gmakefile test TESTDIR=mytests
 \end{bashlisting}
 or
 \begin{bashlisting}
-cd ${PREFIX_DIR}/share/petsc/examples; make -f gmakefile.test test TESTDIR=$PWD/mytests
+cd ${PREFIX_DIR}/share/petsc/examples; make -f gmakefile test TESTDIR=$PWD/mytests
 \end{bashlisting}
 where the latter is needed to make have it run in the local directory instead of
 \trl{$PREFIX_DIR}.
@@ -799,8 +799,8 @@ demonstrate the ease of extracting performance information.
 $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
 ...
 ------------------------------------------------------------------------------------------------------------------------
-Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total
-                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
+Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ----  Total
+                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 
 --- Event Stage 0: Main Stage

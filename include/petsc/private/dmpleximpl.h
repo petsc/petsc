@@ -7,10 +7,9 @@
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
-#include <petsc/private/hash.h>
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
-PETSC_EXTERN PetscLogEvent PETSCPARTITIONER_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
 PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
@@ -41,11 +40,13 @@ typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_2D,
               REFINER_HYBRID_SIMPLEX_2D,
               REFINER_SIMPLEX_TO_HEX_2D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_2D,
               REFINER_HEX_2D,
               REFINER_HYBRID_HEX_2D,
               REFINER_SIMPLEX_3D,
               REFINER_HYBRID_SIMPLEX_3D,
               REFINER_SIMPLEX_TO_HEX_3D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_3D,
               REFINER_HEX_3D,
               REFINER_HYBRID_HEX_3D} CellRefiner;
 
@@ -94,6 +95,7 @@ typedef struct {
   int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
   int tags[4];       /* Tag array */
+  PetscInt cellType; /* Cell type */
 } GmshElement;
 
 /* Utility struct to store the contents of a Fluent file in memory */

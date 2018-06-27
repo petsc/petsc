@@ -118,9 +118,9 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -223,9 +223,9 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -1183,9 +1183,9 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscCheckSameTypeAndComm(x,2,*y,3);
   VecCheckSameSize(x,1,*y,3);
 
-  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

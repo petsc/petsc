@@ -14,8 +14,6 @@
 \path (0.,2.) node(14_0) [draw,shape=circle,color=gray] {14};
 \path (1.,2.) node(15_0) [draw,shape=circle,color=gray] {15};
 \path (2.,2.) node(16_0) [draw,shape=circle,color=gray] {16};
-\path
-(0,0);
 \draw[color=gray] (8_0) -- (9_0) -- (11_0) -- (8_0);
 \draw[color=gray] (12_0) -- (14_0) -- (11_0) -- (12_0);
 \draw[color=gray] (11_0) -- (9_0) -- (12_0) -- (11_0);

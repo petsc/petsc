@@ -706,12 +706,13 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 
 static PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool flg)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (opt == MAT_SYMMETRIC && flg) {
     A->ops->sor  = MatSOR_BlockMat_Symmetric;
     A->ops->mult = MatMult_BlockMat_Symmetric;
   } else {
-    PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
+    ierr = PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

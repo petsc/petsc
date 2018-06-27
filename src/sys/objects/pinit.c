@@ -7,7 +7,8 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode PetscLogInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -657,13 +658,14 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
    See Users-Manual: ch_profiling for details.
 +  -info <optional filename> - Prints verbose information to the screen
 .  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
-.  -log_sync - Log the synchronization in scatters, inner products and norms
+.  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
+        however it slows things down and gives a distorted view of the overall runtime.
 .  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
 .  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
-.  -log_exclude: <vec,mat,pc.ksp,snes> - excludes subset of object classes from logging
+.  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
@@ -1353,7 +1355,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogDestroy();CHKERRQ(ierr);
+  ierr = PetscLogFinalize();CHKERRQ(ierr);
 #endif
 
   /*

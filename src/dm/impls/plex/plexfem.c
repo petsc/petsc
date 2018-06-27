@@ -1,6 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
+#include <petsc/private/hashsetij.h>
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 
@@ -1681,7 +1682,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   const char    *name = "Interpolator";
   PetscDS        prob;
   PetscSection   fsection, csection, globalFSection, globalCSection;
-  PetscHashJK    ht;
+  PetscHSetIJ    ht;
   PetscLayout    rLayout;
   PetscInt      *dnz, *onz;
   PetscInt       locRows, rStart, rEnd;
@@ -1715,7 +1716,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
   ierr = PetscCalloc2(locRows,&dnz,locRows,&onz);CHKERRQ(ierr);
-  ierr = PetscHashJKCreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscClassId     id;
@@ -1775,22 +1776,21 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
         if (numCoarseCells != Np) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
         {
-          PetscHashJKKey  key;
-          PetscHashJKIter missing, iter;
+          PetscHashIJKey key;
+          PetscBool      missing;
 
-          key.j = findices[i];
-          if (key.j >= 0) {
+          key.i = findices[i];
+          if (key.i >= 0) {
             /* Get indices for coarse elements */
             for (ccell = 0; ccell < numCoarseCells; ++ccell) {
               ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
               for (c = 0; c < numCIndices; ++c) {
-                key.k = cindices[c];
-                if (key.k < 0) continue;
-                ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
+                key.j = cindices[c];
+                if (key.j < 0) continue;
+                ierr = PetscHSetIJQueryAdd(ht, key, &missing);CHKERRQ(ierr);
                 if (missing) {
-                  ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-                  if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
-                  else                                     ++onz[key.j-rStart];
+                  if ((key.j >= rStart) && (key.j < rEnd)) ++dnz[key.i-rStart];
+                  else                                     ++onz[key.i-rStart];
                 }
               }
               ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
@@ -1803,7 +1803,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
   }
-  ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJDestroy(&ht);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(In, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(In, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
@@ -1938,7 +1938,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
   const char    *name = "Mass Matrix";
   PetscDS        prob;
   PetscSection   fsection, csection, globalFSection, globalCSection;
-  PetscHashJK    ht;
+  PetscHSetIJ    ht;
   PetscLayout    rLayout;
   PetscInt      *dnz, *onz;
   PetscInt       locRows, rStart, rEnd;
@@ -1971,7 +1971,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
   ierr = PetscCalloc2(locRows,&dnz,locRows,&onz);CHKERRQ(ierr);
-  ierr = PetscHashJKCreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscClassId     id;
@@ -2015,23 +2015,22 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
       ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
       if (numCoarseCells != Nq) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
       {
-        PetscHashJKKey  key;
-        PetscHashJKIter missing, iter;
+        PetscHashIJKey key;
+        PetscBool      missing;
 
         for (i = 0; i < numFIndices; ++i) {
-          key.j = findices[i];
-          if (key.j >= 0) {
+          key.i = findices[i];
+          if (key.i >= 0) {
             /* Get indices for coarse elements */
             for (ccell = 0; ccell < numCoarseCells; ++ccell) {
               ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
               for (c = 0; c < numCIndices; ++c) {
-                key.k = cindices[c];
-                if (key.k < 0) continue;
-                ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
+                key.j = cindices[c];
+                if (key.j < 0) continue;
+                ierr = PetscHSetIJQueryAdd(ht, key, &missing);CHKERRQ(ierr);
                 if (missing) {
-                  ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-                  if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
-                  else                                     ++onz[key.j-rStart];
+                  if ((key.j >= rStart) && (key.j < rEnd)) ++dnz[key.i-rStart];
+                  else                                     ++onz[key.i-rStart];
                 }
               }
               ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
@@ -2044,7 +2043,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
   }
-  ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJDestroy(&ht);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);

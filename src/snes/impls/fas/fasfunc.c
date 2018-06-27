@@ -424,16 +424,14 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
       ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
       fas  = (SNES_FAS*)levelsnes->data;
       if (flg) {
-        sprintf(eventname,"FASSetup %d",(int)i);
+        sprintf(eventname,"FASSetup  %d",(int)i);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsetup);CHKERRQ(ierr);
         sprintf(eventname,"FASSmooth %d",(int)i);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsolve);CHKERRQ(ierr);
-        sprintf(eventname,"FASResid %d",(int)i);
+        sprintf(eventname,"FASResid  %d",(int)i);
         ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventresidual);CHKERRQ(ierr);
-        if (i) {
-          sprintf(eventname,"FASInterp %d",(int)i);
-          ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
-        }
+        sprintf(eventname,"FASInterp %d",(int)i);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
       } else {
         fas->eventsmoothsetup    = 0;
         fas->eventsmoothsolve    = 0;

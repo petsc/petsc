@@ -53,7 +53,7 @@ echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b 
 # Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
 echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
-(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q --prune) >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
 rm -rf ./${nPETSC_ARCH} ./arch-*
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log

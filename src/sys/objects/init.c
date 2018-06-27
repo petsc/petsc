@@ -496,6 +496,9 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscOpenHistoryFile(NULL,&petsc_history);CHKERRQ(ierr);
     }
   }
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-log_sync",&PetscLogSyncOn,NULL);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,NULL,"-log_mpe",&flg1);CHKERRQ(ierr);
@@ -537,7 +540,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
-
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);

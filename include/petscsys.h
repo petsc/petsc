@@ -60,10 +60,12 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #endif
 
 #if defined(__cplusplus)
-#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#  define PETSC_INLINE PETSC_CXX_INLINE
 #else
-#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#  define PETSC_INLINE PETSC_C_INLINE
 #endif
+
+#define PETSC_STATIC_INLINE static PETSC_INLINE
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
@@ -256,7 +258,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #include <stdint.h>
 #endif
 #if defined (PETSC_HAVE_INTTYPES_H)
+#if !defined(__STDC_FORMAT_MACROS)
 #define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
+#endif
 #include <inttypes.h>
 # if !defined(PRId64)
 # define PRId64 "ld"

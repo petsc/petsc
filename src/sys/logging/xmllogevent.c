@@ -9,7 +9,6 @@
 #include <petsc/private/logimpl.h>
 #include <petsctime.h>
 #include <petscviewer.h>
-#include "../src/sys/logging/xmllogevent.h"
 #include "../src/sys/logging/xmlviewer.h"
 
 #if defined(PETSC_USE_LOG)

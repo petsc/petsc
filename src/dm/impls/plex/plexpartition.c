@@ -1,4 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/hashseti.h>
 
 PetscClassId PETSCPARTITIONER_CLASSID = 0;
 
@@ -1902,7 +1903,7 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHashI ht, PetscInt point, PetscBool up, PetscBool down)
+static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point, PetscBool up, PetscBool down)
 {
   PetscErrorCode ierr;
 
@@ -1917,9 +1918,8 @@ static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHashI ht, PetscInt point
       ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       for (i = 0; i < closureSize; i++) {
         PetscInt cpoint = closure[2*i];
-        PETSC_UNUSED PetscHashIIter iter, ret;
 
-        PetscHashIPut(ht, cpoint, ret, iter);
+        ierr = PetscHSetIAdd(ht, cpoint);CHKERRQ(ierr);
         ierr = DMPlexAddClosure_Tree(dm,ht,cpoint,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
@@ -1935,9 +1935,8 @@ static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHashI ht, PetscInt point
 
       for (i = 0; i < numChildren; i++) {
         PetscInt cpoint = children[i];
-        PETSC_UNUSED PetscHashIIter iter, ret;
 
-        PetscHashIPut(ht, cpoint, ret, iter);
+        ierr = PetscHSetIAdd(ht, cpoint);CHKERRQ(ierr);
         ierr = DMPlexAddClosure_Tree(dm,ht,cpoint,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -1973,30 +1972,29 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
 
   for (r = 0; r < numRanks; ++r) {
     const PetscInt rank = ranks[r];
-    PetscHashI     ht;
-    PETSC_UNUSED   PetscHashIIter iter, ret;
-    PetscInt       nkeys, *keys, off = 0;
+    PetscHSetI     ht;
+    PetscInt       nelems, *elems, off = 0;
 
     ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    PetscHashICreate(ht);
-    PetscHashIResize(ht, numPoints*16);
+    ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+    ierr = PetscHSetIResize(ht, numPoints*16);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
-        PetscHashIPut(ht, closure[c], ret, iter);
+        ierr = PetscHSetIAdd(ht, closure[c]);CHKERRQ(ierr);
         if (hasTree) {ierr = DMPlexAddClosure_Tree(dm, ht, closure[c], PETSC_TRUE, PETSC_TRUE);CHKERRQ(ierr);}
       }
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    PetscHashISize(ht, nkeys);
-    ierr = PetscMalloc1(nkeys, &keys);CHKERRQ(ierr);
-    PetscHashIGetKeys(ht, &off, keys);
-    PetscHashIDestroy(ht);
-    ierr = PetscSortInt(nkeys, keys);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, nkeys, keys, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);
+    ierr = PetscHSetIGetSize(ht, &nelems);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nelems, &elems);CHKERRQ(ierr);
+    ierr = PetscHSetIGetElems(ht, &off, elems);
+    ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+    ierr = PetscSortInt(nelems, elems);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);
     ierr = DMLabelSetStratumIS(label, rank, pointIS);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }

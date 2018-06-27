@@ -41,10 +41,17 @@
       end
 
 ! AVX512 crashes without this..
-      subroutine knl_workarround(xx)
-      PetscScalar xx,sd
+      block data init
+      implicit none
+      PetscScalar sd
       common /cb/ sd
       data sd /0/
+      end
+      subroutine knl_workarround(xx)
+      implicit none
+      PetscScalar xx
+      PetscScalar sd
+      common /cb/ sd
       sd = sd+xx
       end
 

@@ -714,7 +714,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     if (state != ostate) {
       ksp->guess_zero = PETSC_FALSE;
     } else {
-      PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");
+      ierr = PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");CHKERRQ(ierr);
       ksp->guess_zero = PETSC_TRUE;
     }
   }
@@ -913,7 +913,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
     if (state != ostate) {
       ksp->guess_zero = PETSC_FALSE;
     } else {
-      PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");
+      ierr = PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");CHKERRQ(ierr);
       ksp->guess_zero = PETSC_TRUE;
     }
   }

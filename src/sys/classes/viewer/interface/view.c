@@ -80,7 +80,7 @@ PetscErrorCode  PetscViewerInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("viewer",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
   }
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);

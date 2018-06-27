@@ -78,6 +78,13 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 
     ierr = PetscMalloc1(amat->rmap->n,&locals);CHKERRQ(ierr);
 
+    if (adj->values && !part->vertex_weights)
+      wgtflag = 1;
+    if (part->vertex_weights && !adj->values)
+      wgtflag = 2;
+    if (part->vertex_weights && adj->values)
+      wgtflag = 3;
+
     if (PetscLogPrintInfo) {itmp = pmetis->printout; pmetis->printout = 127;}
     ierr = PetscMalloc1(ncon*nparts,&tpwgts);CHKERRQ(ierr);
     for (i=0; i<ncon; i++) {

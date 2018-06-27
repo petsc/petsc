@@ -378,13 +378,13 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       /* check for dmplex */
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&same);CHKERRQ(ierr);
       if (same) {
-        PetscInfo(pc,"PCTelescope: found DMPLEX\n");
+        ierr = PetscInfo(pc,"PCTelescope: found DMPLEX\n");CHKERRQ(ierr);
         sr_type = TELESCOPE_DMPLEX;
       }
     }
 
     if (sred->ignore_dm) {
-      PetscInfo(pc,"PCTelescope: ignore DM\n");
+      ierr = PetscInfo(pc,"PCTelescope: ignore DM\n");CHKERRQ(ierr);
       sr_type = TELESCOPE_DEFAULT;
     }
     sred->sr_type = sr_type;

@@ -2867,6 +2867,9 @@ systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic. 
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
+The parameters for the eigen estimator can be set with the prefix``gamg_est_".
+For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
+
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
@@ -6828,7 +6831,7 @@ Phase summary info:
    Time and Flop/sec: Max - maximum over all processors
                        Ratio - ratio of maximum to minimum over all processors
    Mess: number of messages sent
-   Avg. len: average message length
+   AvgLen: average message length
    Reduct: number of global reductions
    Global: entire computation
    Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
@@ -6837,8 +6840,8 @@ Phase summary info:
       %R - percent reductions in this phase
    Total Mflop/s: 10^6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flop/sec                           --- Global ---  --- Stage ---   Total
-                            Max    Ratio      Max    Ratio  Mess  Avg len  Reduct %T %F %M %L %R  %T %F %M %L %R Mflop/s
+Phase              Count      Time (sec)       Flop/sec                          --- Global ---  --- Stage ----  Total
+                            Max    Ratio      Max    Ratio  Mess AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 ...
 

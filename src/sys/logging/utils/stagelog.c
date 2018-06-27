@@ -181,44 +181,37 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
 PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[], int *stage)
 {
   PetscStageInfo *stageInfo;
-  char           *str;
-  int            s, st;
+  int            s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
-  for (st = 0; st < stageLog->numStages; ++st) {
+  /* Check stage already registered */
+  for (s = 0; s < stageLog->numStages; ++s) {
     PetscBool same;
 
-    ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
+    ierr = PetscStrcmp(stageLog->stageInfo[s].name, sname, &same);CHKERRQ(ierr);
     if (same) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);
   }
+  /* Create new stage */
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
     ierr = PetscMalloc1(stageLog->maxStages*2, &stageInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(PetscStageInfo));CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
-
     stageLog->stageInfo  = stageInfo;
     stageLog->maxStages *= 2;
   }
-  /* Setup stage */
-  ierr = PetscStrallocpy(sname, &str);CHKERRQ(ierr);
-
-  stageLog->stageInfo[s].name                   = str;
-  stageLog->stageInfo[s].used                   = PETSC_FALSE;
-  stageLog->stageInfo[s].perfInfo.active        = PETSC_TRUE;
-  stageLog->stageInfo[s].perfInfo.visible       = PETSC_TRUE;
-  stageLog->stageInfo[s].perfInfo.count         = 0;
-  stageLog->stageInfo[s].perfInfo.flops         = 0.0;
-  stageLog->stageInfo[s].perfInfo.time          = 0.0;
-  stageLog->stageInfo[s].perfInfo.numMessages   = 0.0;
-  stageLog->stageInfo[s].perfInfo.messageLength = 0.0;
-  stageLog->stageInfo[s].perfInfo.numReductions = 0.0;
-
-  ierr = PetscEventPerfLogCreate(&stageLog->stageInfo[s].eventLog);CHKERRQ(ierr);
-  ierr = PetscClassPerfLogCreate(&stageLog->stageInfo[s].classLog);CHKERRQ(ierr);
+  /* Setup new stage info */
+  stageInfo = &stageLog->stageInfo[s];
+  ierr = PetscMemzero(stageInfo,sizeof(PetscStageInfo));CHKERRQ(ierr);
+  ierr = PetscStrallocpy(sname,&stageInfo->name);CHKERRQ(ierr);
+  stageInfo->used             = PETSC_FALSE;
+  stageInfo->perfInfo.active  = PETSC_TRUE;
+  stageInfo->perfInfo.visible = PETSC_TRUE;
+  ierr = PetscEventPerfLogCreate(&stageInfo->eventLog);CHKERRQ(ierr);
+  ierr = PetscClassPerfLogCreate(&stageInfo->classLog);CHKERRQ(ierr);
   *stage = s;
   PetscFunctionReturn(0);
 }
