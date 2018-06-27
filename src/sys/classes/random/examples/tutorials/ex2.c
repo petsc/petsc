@@ -17,7 +17,7 @@ typedef struct himaInfoTag himaInfo;
 
 PetscErrorCode readData(MPI_Comm,himaInfo *);
 PetscReal mcVal(PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-void exchange(PetscReal*, PetscReal*);
+void exchangeVal(PetscReal*, PetscReal*);
 PetscReal basketPayoff(PetscReal[], PetscReal[], PetscInt, PetscReal,PetscReal, PetscReal[]);
 PetscErrorCode stdNormalArray(PetscReal*, PetscInt,PetscRandom);
 PetscInt divWork(PetscMPIInt, PetscInt, PetscMPIInt);
@@ -127,9 +127,9 @@ PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r
       Stk[j] = mcVal(Stk[j],r,vol[j],dt,eps[pointcount++]);
       if ((Stk[j]/St0[j]) > (Stk[maxk]/St0[maxk])) maxk = j;
     }
-    exchange(Stk+j-1,Stk+maxk);
-    exchange(St0+j-1,St0+maxk);
-    exchange(vol+j-1,vol+maxk);
+    exchangeVal(Stk+j-1,Stk+maxk);
+    exchangeVal(St0+j-1,St0+maxk);
+    exchangeVal(vol+j-1,vol+maxk);
   }
 
   payoff = 0;
@@ -167,7 +167,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   PetscFunctionReturn(0);
 }
 
-void exchange(PetscReal *a, PetscReal *b)
+void exchangeVal(PetscReal *a, PetscReal *b)
 {
   PetscReal t;
 
