@@ -593,6 +593,36 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
 
+  /* Deprecated options */
+  if (!ksp->viewEV)       {ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_compute_eigenvalues",              &ksp->viewerEV,       &ksp->formatEV,       &ksp->viewEV);CHKERRQ(ierr);}
+  if (!ksp->viewEV)       {
+    ierr = PetscOptionsName("-ksp_plot_eigenvalues", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw]", "KSPView", &ksp->viewEV);CHKERRQ(ierr);
+    if (ksp->viewEV) {
+      ksp->formatEV = PETSC_VIEWER_DEFAULT;
+      ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
+      ierr = PetscObjectReference((PetscObject) ksp->viewerEV);CHKERRQ(ierr);
+    }
+  }
+  if (!ksp->viewEV)       {
+    ierr = PetscOptionsName("-ksp_plot_eigencontours", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour]", "KSPView", &ksp->viewEV);CHKERRQ(ierr);
+    if (ksp->viewEV) {
+      ksp->formatEV = PETSC_VIEWER_DRAW_CONTOUR;
+      ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
+      ierr = PetscObjectReference((PetscObject) ksp->viewerEV);CHKERRQ(ierr);
+    }
+  }
+  if (!ksp->viewEVExp)    {ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_compute_eigenvalues_explicitly",   &ksp->viewerEVExp,    &ksp->formatEVExp,    &ksp->viewEVExp);CHKERRQ(ierr);}
+  if (!ksp->viewEVExp)    {
+    ierr = PetscOptionsName("-ksp_plot_eigenvalues_explicitly", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]", "KSPView", &ksp->viewEVExp);CHKERRQ(ierr);
+    if (ksp->viewEVExp) {
+      ksp->formatEVExp = PETSC_VIEWER_DEFAULT;
+      ksp->viewerEVExp = PETSC_VIEWER_DRAW_(comm);
+      ierr = PetscObjectReference((PetscObject) ksp->viewerEVExp);CHKERRQ(ierr);
+    }
+  }
+  if (!ksp->viewSV)       {ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_compute_singularvalues",           &ksp->viewerSV,       &ksp->formatSV,       &ksp->viewSV);CHKERRQ(ierr);}
+  if (!ksp->viewFinalRes) {ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_final_residual",                   &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);}
+
 #if defined(PETSC_HAVE_SAWS)
   /*
     Publish convergence information using AMS
