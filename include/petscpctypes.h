@@ -312,7 +312,7 @@ PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 /*E
-    PCPatchConstructType - Set the algorithm used to construct patches for the preconditioner
+    PCPatchConstructType - The algorithm used to construct patches for the preconditioner
 
    Level: beginner
 
