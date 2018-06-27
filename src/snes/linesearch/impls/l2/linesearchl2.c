@@ -123,7 +123,8 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     /* compute the secant (Newton) update -- always go downhill */
     if (del2Fnrm > 0.) lambda_update = lambda - delFnrm / del2Fnrm;
-    else lambda_update = lambda + delFnrm / del2Fnrm;
+    else if (del2Fnrm < 0.) lambda_update = lambda + delFnrm / del2Fnrm;
+    else break;
 
     if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
 
