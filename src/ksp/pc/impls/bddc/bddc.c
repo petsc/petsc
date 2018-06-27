@@ -614,7 +614,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d\n",PETSC_PCBDDC_MAXLEVELS-1);
+  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
   pcbddc->max_levels = levels;
   PetscFunctionReturn(0);
 }
@@ -2568,7 +2568,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->setupcalled) {
     ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,PetscBool,const char*,Mat*,PC*),(pc,fully_redundant,prefix,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You must call PCSetup_BDDC() first \n");
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You must call PCSetup_BDDC() first");
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
