@@ -878,7 +878,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   When creating subsequent cohesive cells, we shift the old hybrid cells to the end of the numbering at
   each depth so that the new split/hybrid points can be inserted as a block.
 */
-static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label, DM sdm)
+static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label, DMLabel splitLabel, DM sdm)
 {
   MPI_Comm         comm;
   IS               valueIS;
@@ -1454,6 +1454,12 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt splitp = pMaxNew[dep] + p;
       PetscInt       l;
 
+      if (splitLabel) {
+        const PetscInt val = 100 + dep;
+
+        ierr = DMLabelSetValue(splitLabel, newp,    val);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(splitLabel, splitp, -val);CHKERRQ(ierr);
+      }
       for (l = 0; l < numLabels; ++l) {
         DMLabel     mlabel;
         const char *lname;
@@ -1505,13 +1511,14 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
 - label - The label specifying the boundary faces (this could be auto-generated)
 
   Output Parameters:
++ splitLabel - The label containing the split points, or NULL if no output is desired
 - dmSplit - The new DM
 
   Level: developer
 
 .seealso: DMCreate(), DMPlexLabelCohesiveComplete()
 @*/
-PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
+PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DMLabel splitLabel, DM *dmSplit)
 {
   DM             sdm;
   PetscInt       dim;
@@ -1527,7 +1534,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
   switch (dim) {
   case 2:
   case 3:
-    ierr = DMPlexConstructCohesiveCells_Internal(dm, label, sdm);CHKERRQ(ierr);
+    ierr = DMPlexConstructCohesiveCells_Internal(dm, label, splitLabel, sdm);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct cohesive cells for dimension %d", dim);
@@ -1964,7 +1971,8 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 - bdlabel - The optional label specifying the interface boundary vertices
 
   Output Parameters:
-+ hybridLabel - The label fully marking the interface
++ hybridLabel - The label fully marking the interface, or NULL if no output is desired
+. splitLabel - The label containing the split points, or NULL if no output is desired
 . dmInterface - The new interface DM, or NULL
 - dmHybrid - The new DM with cohesive cells
 
@@ -1972,10 +1980,10 @@ PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
 
 .seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DM *dmInterface, DM *dmHybrid)
+PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DMLabel *splitLabel, DM *dmInterface, DM *dmHybrid)
 {
   DM             idm;
-  DMLabel        subpointMap, hlabel;
+  DMLabel        subpointMap, hlabel, slabel = NULL;
   PetscInt       dim;
   PetscErrorCode ierr;
 
@@ -1983,8 +1991,9 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (bdlabel) PetscValidPointer(bdlabel, 3);
   if (hybridLabel) PetscValidPointer(hybridLabel, 4);
-  if (dmInterface) PetscValidPointer(dmInterface, 5);
-  PetscValidPointer(dmHybrid, 6);
+  if (splitLabel)  PetscValidPointer(splitLabel, 5);
+  if (dmInterface) PetscValidPointer(dmInterface, 6);
+  PetscValidPointer(dmHybrid, 7);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, PETSC_FALSE, &idm);CHKERRQ(ierr);
   ierr = DMPlexCheckValidSubmesh_Private(dm, label, idm);CHKERRQ(ierr);
@@ -1992,12 +2001,22 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DML
   ierr = DMPlexGetSubpointMap(idm, &subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDuplicate(subpointMap, &hlabel);CHKERRQ(ierr);
   ierr = DMLabelClearStratum(hlabel, dim);CHKERRQ(ierr);
+  if (splitLabel) {
+    const char *name;
+    char        sname[PETSC_MAX_PATH_LEN];
+
+    ierr = DMLabelGetName(hlabel, &name);CHKERRQ(ierr);
+    ierr = PetscStrncpy(sname, name, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscStrcat(sname, " split");CHKERRQ(ierr);
+    ierr = DMLabelCreate(sname, &slabel);CHKERRQ(ierr);
+  }
   ierr = DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, PETSC_FALSE, idm);CHKERRQ(ierr);
   if (dmInterface) {*dmInterface = idm;}
   else             {ierr = DMDestroy(&idm);CHKERRQ(ierr);}
-  ierr = DMPlexConstructCohesiveCells(dm, hlabel, dmHybrid);CHKERRQ(ierr);
+  ierr = DMPlexConstructCohesiveCells(dm, hlabel, slabel, dmHybrid);CHKERRQ(ierr);
   if (hybridLabel) *hybridLabel = hlabel;
   else             {ierr = DMLabelDestroy(&hlabel);CHKERRQ(ierr);}
+  if (splitLabel)  *splitLabel  = slabel;
   PetscFunctionReturn(0);
 }
 
