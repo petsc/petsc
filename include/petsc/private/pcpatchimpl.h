@@ -4,13 +4,14 @@
 #if !defined(__PATCH_IMPL)
 #define __PATCH_IMPL
 #include <petsc/private/pcimpl.h>
+#include <petsc/private/hashseti.h>
+#include <petsc/private/hashmapi.h>
 #include <petscksp.h>
-#include <petsc/private/hash.h>
 
 typedef struct {
   /* Topology */
   PCPatchConstructType ctype;              /* Algorithm for patch construction */
-  PetscErrorCode     (*patchconstructop)(void*, DM, PetscInt, PetscHashI); /* patch construction */
+  PetscErrorCode     (*patchconstructop)(void*, DM, PetscInt, PetscHSetI); /* patch construction */
   PetscErrorCode     (*userpatchconstructionop)(PC, PetscInt*, IS**, IS*, void* ctx);
   void                *userpatchconstructctx;
   IS                  *userIS;

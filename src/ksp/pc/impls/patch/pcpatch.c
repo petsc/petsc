@@ -16,24 +16,24 @@ PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewe
   return(0);
 }
 
-static PetscErrorCode PCPatchConstruct_Star(void *vpatch, DM dm, PetscInt point, PetscHashI ht)
+static PetscErrorCode PCPatchConstruct_Star(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
   PetscInt       starSize;
   PetscInt      *star = NULL, si;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscHashIClear(ht);
+  PetscHSetIClear(ht);
   /* To start with, add the point we care about */
-  PetscHashIAdd(ht, point, 0);
+  ierr = PetscHSetIAdd(ht, point);CHKERRQ(ierr);
   /* Loop over all the points that this point connects to */
   ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-  for (si = 0; si < starSize*2; si += 2) {PetscHashIAdd(ht, star[si], 0);}
+  for (si = 0; si < starSize*2; si += 2) {ierr = PetscHSetIAdd(ht, star[si]);CHKERRQ(ierr);}
   ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point, PetscHashI ht)
+static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
   PC_PATCH      *patch = (PC_PATCH *) vpatch;
   PetscInt       starSize;
@@ -43,9 +43,9 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscHashIClear(ht);
+  ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
   /* To start with, add the point we care about */
-  PetscHashIAdd(ht, point, 0);
+  ierr = PetscHSetIAdd(ht, point);CHKERRQ(ierr);
   /* Should we ignore any points of a certain dimension? */
   if (patch->vankadim >= 0) {
     shouldIgnore = PETSC_TRUE;
@@ -67,7 +67,7 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
 
       /* We've been told to ignore entities of this type.*/
       if (shouldIgnore && newpoint >= iStart && newpoint < iEnd) continue;
-      PetscHashIAdd(ht, newpoint, 0);
+      ierr = PetscHSetIAdd(ht, newpoint);CHKERRQ(ierr);
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
@@ -76,7 +76,7 @@ static PetscErrorCode PCPatchConstruct_Vanka(void *vpatch, DM dm, PetscInt point
 }
 
 /* The user's already set the patches in patch->userIS. Build the hash tables */
-static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point, PetscHashI ht)
+static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point, PetscHSetI ht)
 {
   PC_PATCH       *patch   = (PC_PATCH *) vpatch;
   IS              patchis = patch->userIS[point];
@@ -86,8 +86,8 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscHashIClear(ht);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);
+  ierr = PetscHSetIClear(ht);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = ISGetLocalSize(patchis, &n);CHKERRQ(ierr);
   ierr = ISGetIndices(patchis, &patchdata);CHKERRQ(ierr);
   for (i = 0; i < n; ++i) {
@@ -96,7 +96,7 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
     if (ownedpoint < pStart || ownedpoint >= pEnd) {
       SETERRQ3(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D was not in [%D, %D)", ownedpoint, pStart, pEnd);
     }
-    PetscHashIAdd(ht, ownedpoint, 0);
+    ierr = PetscHSetIAdd(ht, ownedpoint);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(patchis, &patchdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -119,14 +119,14 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscSFNode *iremote = NULL;
     PetscInt    *remoteOffsets = NULL;
     PetscInt     index = 0;
-    PetscHashI   rankToIndex;
+    PetscHMapI   rankToIndex;
     PetscInt     numRanks = 0;
     PetscSFNode *remote = NULL;
     PetscSF      rankSF;
     PetscInt    *ranks = NULL;
     PetscInt    *offsets = NULL;
     MPI_Datatype contig;
-    PetscHashI   ranksUniq;
+    PetscHSetI   ranksUniq;
 
     /* First figure out how many dofs there are in the concatenated numbering.
      * allRoots: number of owned global dofs;
@@ -142,7 +142,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     ierr = PetscMalloc1(allLeaves, &ilocal);CHKERRQ(ierr);
     ierr = PetscMalloc1(allLeaves, &iremote);CHKERRQ(ierr);
     /* Now build an SF that just contains process connectivity. */
-    PetscHashICreate(ranksUniq);
+    ierr = PetscHSetICreate(&ranksUniq);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
       const PetscMPIInt *ranks = NULL;
       PetscInt           nranks, j;
@@ -151,22 +151,22 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       ierr = PetscSFGetRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL);CHKERRQ(ierr);
       /* These are all the ranks who communicate with me. */
       for (j = 0; j < nranks; ++j) {
-        PetscHashIAdd(ranksUniq, (PetscInt) ranks[j], 0);
+        ierr = PetscHSetIAdd(ranksUniq, (PetscInt) ranks[j]);CHKERRQ(ierr);
       }
     }
-    PetscHashISize(ranksUniq, numRanks);
+    ierr = PetscHSetIGetSize(ranksUniq, &numRanks);CHKERRQ(ierr);
     ierr = PetscMalloc1(numRanks, &remote);CHKERRQ(ierr);
     ierr = PetscMalloc1(numRanks, &ranks);CHKERRQ(ierr);
-    PetscHashIGetKeys(ranksUniq, &index, ranks);
+    ierr = PetscHSetIGetElems(ranksUniq, &index, ranks);CHKERRQ(ierr);
 
-    PetscHashICreate(rankToIndex);
+    ierr = PetscHMapICreate(&rankToIndex);CHKERRQ(ierr);
     for (i = 0; i < numRanks; ++i) {
       remote[i].rank  = ranks[i];
       remote[i].index = 0;
-      PetscHashIAdd(rankToIndex, ranks[i], i);
+      ierr = PetscHMapISet(rankToIndex, ranks[i], i);CHKERRQ(ierr);
     }
     ierr = PetscFree(ranks);CHKERRQ(ierr);
-    PetscHashIDestroy(ranksUniq);
+    ierr = PetscHSetIDestroy(&ranksUniq);CHKERRQ(ierr);
     ierr = PetscSFCreate(PetscObjectComm((PetscObject) pc), &rankSF);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(rankSF, 1, numRanks, NULL, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetUp(rankSF);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
         PetscInt rank = remote[j].rank;
         PetscInt idx, rootOffset, k;
 
-        PetscHashIMap(rankToIndex, rank, idx);
+        ierr = PetscHMapIGet(rankToIndex, rank, &idx);CHKERRQ(ierr);
         if (idx == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Didn't find rank, huh?");
         /* Offset on given rank for ith subspace */
         rootOffset = remoteOffsets[n*idx + i];
@@ -219,7 +219,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       }
       leafOffset += nleaves * bs[i];
     }
-    PetscHashIDestroy(rankToIndex);
+    ierr = PetscHMapIDestroy(&rankToIndex);CHKERRQ(ierr);
     ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)pc), &patch->defaultSF);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(patch->defaultSF, allRoots, allLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -493,10 +493,10 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
    here we assume a standard FE sparsity pattern.*/
 /* TODO: Use DMPlexGetAdjacency() */
 /* TODO: Look at temp buffer management for GetClosure() */
-static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHashI ht, PetscHashI cht)
+static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI cht)
 {
   DM             dm;
-  PetscHashIIter hi;
+  PetscHashIter  hi;
   PetscInt       point;
   PetscInt      *star = NULL, *closure = NULL;
   PetscInt       ignoredim, iStart = 0, iEnd = -1, starSize, closureSize, si, ci;
@@ -506,12 +506,12 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHashI ht, PetscHashI 
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
   ierr = PCPatchGetIgnoreDim(pc, &ignoredim);CHKERRQ(ierr);
   if (ignoredim >= 0) {ierr = DMPlexGetDepthStratum(dm, ignoredim, &iStart, &iEnd);CHKERRQ(ierr);}
-  PetscHashIClear(cht);
-  PetscHashIIterBegin(ht, hi);
-  while (!PetscHashIIterAtEnd(ht, hi)) {
+  ierr = PetscHSetIClear(cht);CHKERRQ(ierr);
+  PetscHashIterBegin(ht, hi);
+  while (!PetscHashIterAtEnd(ht, hi)) {
 
-    PetscHashIIterGetKey(ht, hi, point);
-    PetscHashIIterNext(ht, hi);
+    PetscHashIterGetKey(ht, hi, point);
+    PetscHashIterNext(ht, hi);
 
     /* Loop over all the cells that this point connects to */
     ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
@@ -523,7 +523,7 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHashI ht, PetscHashI 
       for (ci = 0; ci < closureSize*2; ci += 2) {
         const PetscInt seenpoint = closure[ci];
         if (ignoredim >= 0 && seenpoint >= iStart && seenpoint < iEnd) continue;
-        PetscHashIAdd(cht, seenpoint, 0);
+        ierr = PetscHSetIAdd(cht, seenpoint);CHKERRQ(ierr);
       }
     }
   }
@@ -571,16 +571,16 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
    For Vanka smoothing, this needs to do something special: ignore dofs of the
    constraint subspace on entities that aren't the base entity we're building the patch
    around. */
-static PetscErrorCode PCPatchGetPointDofs(PC pc, PetscHashI pts, PetscHashI dofs, PetscInt base, PetscInt exclude_subspace)
+static PetscErrorCode PCPatchGetPointDofs(PC pc, PetscHSetI pts, PetscHSetI dofs, PetscInt base, PetscInt exclude_subspace)
 {
   PC_PATCH      *patch = (PC_PATCH *) pc->data;
-  PetscHashIIter hi;
+  PetscHashIter  hi;
   PetscInt       ldof, loff;
   PetscInt       k, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscHashIClear(dofs);
+  ierr = PetscHSetIClear(dofs);CHKERRQ(ierr);
   for (k = 0; k < patch->nsubspaces; ++k) {
     PetscInt subspaceOffset = patch->subspaceOffsets[k];
     PetscInt bs             = patch->bs[k];
@@ -593,22 +593,22 @@ static PetscErrorCode PCPatchGetPointDofs(PC pc, PetscHashI pts, PetscHashI dofs
       for (j = loff; j < ldof + loff; ++j) {
         for (l = 0; l < bs; ++l) {
           PetscInt dof = bs*j + l + subspaceOffset;
-          PetscHashIAdd(dofs, dof, 0);
+          ierr = PetscHSetIAdd(dofs, dof);CHKERRQ(ierr);
         }
       }
       continue; /* skip the other dofs of this subspace */
     }
 
-    PetscHashIIterBegin(pts, hi);
-    while (!PetscHashIIterAtEnd(pts, hi)) {
-      PetscHashIIterGetKey(pts, hi, p);
-      PetscHashIIterNext(pts, hi);
+    PetscHashIterBegin(pts, hi);
+    while (!PetscHashIterAtEnd(pts, hi)) {
+      PetscHashIterGetKey(pts, hi, p);
+      PetscHashIterNext(pts, hi);
       ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, k, patch->combined, p, &ldof, &loff);CHKERRQ(ierr);
       if (0 == ldof) continue;
       for (j = loff; j < ldof + loff; ++j) {
         for (l = 0; l < bs; ++l) {
           PetscInt dof = bs*j + l + subspaceOffset;
-          PetscHashIAdd(dofs, dof, 0);
+          ierr = PetscHSetIAdd(dofs, dof);CHKERRQ(ierr);
         }
       }
     }
@@ -617,20 +617,21 @@ static PetscErrorCode PCPatchGetPointDofs(PC pc, PetscHashI pts, PetscHashI dofs
 }
 
 /* Given two hash tables A and B, compute the keys in B that are not in A, and put them in C */
-static PetscErrorCode PCPatchComputeSetDifference_Private(PetscHashI A, PetscHashI B, PetscHashI C)
+static PetscErrorCode PCPatchComputeSetDifference_Private(PetscHSetI A, PetscHSetI B, PetscHSetI C)
 {
-  PetscHashIIter hi;
-  PetscInt       key, val;
+  PetscHashIter  hi;
+  PetscInt       key;
   PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscHashIClear(C);
-  PetscHashIIterBegin(B, hi);
-  while (!PetscHashIIterAtEnd(B, hi)) {
-    PetscHashIIterGetKeyVal(B, hi, key, val);
-    PetscHashIIterNext(B, hi);
-    PetscHashIHasKey(A, key, flg);
-    if (!flg) {PetscHashIAdd(C, key, val);}
+  ierr = PetscHSetIClear(C);CHKERRQ(ierr);
+  PetscHashIterBegin(B, hi);
+  while (!PetscHashIterAtEnd(B, hi)) {
+    PetscHashIterGetKey(B, hi, key);
+    PetscHashIterNext(B, hi);
+    ierr = PetscHSetIHas(A, key, &flg);CHKERRQ(ierr);
+    if (!flg) {ierr = PetscHSetIAdd(C, key);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -652,7 +653,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   PC_PATCH       *patch = (PC_PATCH *) pc->data;
   DMLabel         ghost = NULL;
   DM              dm, plex;
-  PetscHashI      ht, cht;
+  PetscHSetI      ht, cht;
   PetscSection    cellCounts,  pointCounts;
   PetscInt       *cellsArray, *pointsArray;
   PetscInt        numCells,    numPoints;
@@ -663,8 +664,8 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
 
   PetscFunctionBegin;
   /* Used to keep track of the cells in the patch. */
-  PetscHashICreate(ht);
-  PetscHashICreate(cht);
+  ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&cht);CHKERRQ(ierr);
 
   ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch PC\n");
@@ -704,7 +705,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   ierr = PetscSectionSetChart(pointCounts, vStart, vEnd);CHKERRQ(ierr);
   /* Count cells and points in the patch surrounding each entity */
   for (v = vStart; v < vEnd; ++v) {
-    PetscHashIIter hi;
+    PetscHashIter hi;
     PetscInt       chtSize, loc = -1;
     PetscBool      flg;
 
@@ -717,20 +718,20 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
 
     ierr = patch->patchconstructop((void *) patch, dm, v, ht);CHKERRQ(ierr);
     ierr = PCPatchCompleteCellPatch(pc, ht, cht);CHKERRQ(ierr);
-    PetscHashISize(cht, chtSize);
+    ierr = PetscHSetIGetSize(cht, &chtSize);CHKERRQ(ierr);
     /* empty patch, continue */
     if (chtSize == 0) continue;
 
     /* safe because size(cht) > 0 from above */
-    PetscHashIIterBegin(cht, hi);
-    while (!PetscHashIIterAtEnd(cht, hi)) {
+    PetscHashIterBegin(cht, hi);
+    while (!PetscHashIterAtEnd(cht, hi)) {
       PetscInt point, pdof;
 
-      PetscHashIIterGetKey(cht, hi, point);
+      PetscHashIterGetKey(cht, hi, point);
       ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, -1, patch->combined, point, &pdof, NULL);CHKERRQ(ierr);
       if (pdof)                            {ierr = PetscSectionAddDof(pointCounts, v, 1);CHKERRQ(ierr);}
       if (point >= cStart && point < cEnd) {ierr = PetscSectionAddDof(cellCounts, v, 1);CHKERRQ(ierr);}
-      PetscHashIIterNext(cht, hi);
+      PetscHashIterNext(cht, hi);
     }
   }
   if (isFiredrake) {ierr = DMLabelDestroyIndex(ghost);CHKERRQ(ierr);}
@@ -744,7 +745,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
 
   /* Now that we know how much space we need, run through again and actually remember the cells. */
   for (v = vStart; v < vEnd; v++ ) {
-    PetscHashIIter hi;
+    PetscHashIter hi;
     PetscInt       dof, off, cdof, coff, pdof, n = 0, cn = 0;
 
     ierr = PetscSectionGetDof(pointCounts, v, &dof);CHKERRQ(ierr);
@@ -754,21 +755,21 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
     if (dof <= 0) continue;
     ierr = patch->patchconstructop((void *) patch, dm, v, ht);CHKERRQ(ierr);
     ierr = PCPatchCompleteCellPatch(pc, ht, cht);CHKERRQ(ierr);
-    PetscHashIIterBegin(cht, hi);
-    while (!PetscHashIIterAtEnd(cht, hi)) {
+    PetscHashIterBegin(cht, hi);
+    while (!PetscHashIterAtEnd(cht, hi)) {
       PetscInt point;
 
-      PetscHashIIterGetKey(cht, hi, point);
+      PetscHashIterGetKey(cht, hi, point);
       ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, -1, patch->combined, point, &pdof, NULL);CHKERRQ(ierr);
       if (pdof)                            {pointsArray[off + n++] = point;}
       if (point >= cStart && point < cEnd) {cellsArray[coff + cn++] = point;}
-      PetscHashIIterNext(cht, hi);
+      PetscHashIterNext(cht, hi);
     }
     if (cn != cdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of cells in patch %D is %D, but should be %D", v, cn, cdof);
     if (n  != dof)  SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of points in patch %D is %D, but should be %D", v, n, dof);
   }
-  PetscHashIDestroy(ht);
-  PetscHashIDestroy(cht);
+  ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIDestroy(&cht);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, numCells,  cellsArray,  PETSC_OWN_POINTER, &patch->cells);CHKERRQ(ierr);
@@ -828,10 +829,10 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PetscInt        asmKey          = 0;
   DM              dm              = NULL;
   const PetscInt *bcNodes         = NULL;
-  PetscHashI      ht;
-  PetscHashI      globalBcs;
+  PetscHMapI      ht;
+  PetscHSetI      globalBcs;
   PetscInt        numBcs;
-  PetscHashI      ownedpts, seenpts, owneddofs, seendofs, artificialbcs;
+  PetscHSetI      ownedpts, seenpts, owneddofs, seendofs, artificialbcs;
   PetscInt        pStart, pEnd, p;
   PetscErrorCode  ierr;
 
@@ -854,30 +855,30 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
 
   /* Outside the patch loop, get the dofs that are globally-enforced Dirichlet
    conditions */
-  PetscHashICreate(globalBcs);
+  ierr = PetscHSetICreate(&globalBcs);CHKERRQ(ierr);
   ierr = ISGetIndices(patch->ghostBcNodes, &bcNodes); CHKERRQ(ierr);
   ierr = ISGetSize(patch->ghostBcNodes, &numBcs); CHKERRQ(ierr);
   for ( PetscInt i = 0; i < numBcs; i++ ) {
-    PetscHashIAdd(globalBcs, bcNodes[i], 0); /* these are already in concatenated numbering */
+    ierr = PetscHSetIAdd(globalBcs, bcNodes[i]);CHKERRQ(ierr); /* these are already in concatenated numbering */
   }
   ierr = ISRestoreIndices(patch->ghostBcNodes, &bcNodes); CHKERRQ(ierr);
   ierr = ISDestroy(&patch->ghostBcNodes); CHKERRQ(ierr); /* memory optimisation */
 
   /* Hash tables for artificial BC construction */
-  PetscHashICreate(ownedpts);
-  PetscHashICreate(seenpts);
-  PetscHashICreate(owneddofs);
-  PetscHashICreate(seendofs);
-  PetscHashICreate(artificialbcs);
+  ierr = PetscHSetICreate(&ownedpts);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&seenpts);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&owneddofs);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&seendofs);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&artificialbcs);CHKERRQ(ierr);
 
   ierr = ISGetIndices(cells, &cellsArray);CHKERRQ(ierr);
   ierr = ISGetIndices(points, &pointsArray);CHKERRQ(ierr);
-  PetscHashICreate(ht);
+  ierr = PetscHMapICreate(&ht);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscInt localIndex = 0;
     PetscInt dof, off, i, j, k, l;
 
-    PetscHashIClear(ht);
+    ierr = PetscHMapIClear(ht);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(cellCounts, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cellCounts, v, &off);CHKERRQ(ierr);
     if (dof <= 0) continue;
@@ -889,62 +890,60 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     ierr = PCPatchGetPointDofs(pc, seenpts, seendofs, v, -1); CHKERRQ(ierr);
     ierr = PCPatchComputeSetDifference_Private(owneddofs, seendofs, artificialbcs); CHKERRQ(ierr);
     if (patch->viewPatches) {
-      PetscHashI globalbcdofs;
-      PetscHashIIter hi;
-      PetscHashICreate(globalbcdofs);
-
+      PetscHSetI globalbcdofs;
+      PetscHashIter hi;
       MPI_Comm comm = PetscObjectComm((PetscObject)pc);
+
+      ierr = PetscHSetICreate(&globalbcdofs);CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm, "Patch %d: owned dofs:\n", v); CHKERRQ(ierr);
-      PetscHashIIterBegin(owneddofs, hi);
-      while (!PetscHashIIterAtEnd(owneddofs, hi)) {
+      PetscHashIterBegin(owneddofs, hi);
+      while (!PetscHashIterAtEnd(owneddofs, hi)) {
         PetscInt globalDof;
 
-        PetscHashIIterGetKey(owneddofs, hi, globalDof);
-        PetscHashIIterNext(owneddofs, hi);
+        PetscHashIterGetKey(owneddofs, hi, globalDof);
+        PetscHashIterNext(owneddofs, hi);
         ierr = PetscSynchronizedPrintf(comm, "%d ", globalDof); CHKERRQ(ierr);
       }
       ierr = PetscSynchronizedPrintf(comm, "\n"); CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm, "Patch %d: seen dofs:\n", v); CHKERRQ(ierr);
-      PetscHashIIterBegin(seendofs, hi);
-      while (!PetscHashIIterAtEnd(seendofs, hi)) {
+      PetscHashIterBegin(seendofs, hi);
+      while (!PetscHashIterAtEnd(seendofs, hi)) {
         PetscInt globalDof;
         PetscBool flg;
 
-        PetscHashIIterGetKey(seendofs, hi, globalDof);
-        PetscHashIIterNext(seendofs, hi);
+        PetscHashIterGetKey(seendofs, hi, globalDof);
+        PetscHashIterNext(seendofs, hi);
         ierr = PetscSynchronizedPrintf(comm, "%d ", globalDof); CHKERRQ(ierr);
 
-        PetscHashIHasKey(globalBcs, globalDof, flg);
-        if (flg) {
-          PetscHashIAdd(globalbcdofs, globalDof, 0);
-        }
+        ierr = PetscHSetIHas(globalBcs, globalDof, &flg);CHKERRQ(ierr);
+        if (flg) {ierr = PetscHSetIAdd(globalbcdofs, globalDof);CHKERRQ(ierr);}
       }
       ierr = PetscSynchronizedPrintf(comm, "\n"); CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm, "Patch %d: global BCs:\n", v); CHKERRQ(ierr);
-      PetscHashISize(globalbcdofs, numBcs);
+      ierr = PetscHSetIGetSize(globalbcdofs, &numBcs);CHKERRQ(ierr);
       if (numBcs > 0) {
-        PetscHashIIterBegin(globalbcdofs, hi);
-        while (!PetscHashIIterAtEnd(globalbcdofs, hi)) {
+        PetscHashIterBegin(globalbcdofs, hi);
+        while (!PetscHashIterAtEnd(globalbcdofs, hi)) {
           PetscInt globalDof;
-          PetscHashIIterGetKey(globalbcdofs, hi, globalDof);
-          PetscHashIIterNext(globalbcdofs, hi);
-          ierr = PetscSynchronizedPrintf(comm, "%d ", globalDof); CHKERRQ(ierr);
+          PetscHashIterGetKey(globalbcdofs, hi, globalDof);
+          PetscHashIterNext(globalbcdofs, hi);
+          ierr = PetscSynchronizedPrintf(comm, "%d ", globalDof);CHKERRQ(ierr);
         }
       }
-      ierr = PetscSynchronizedPrintf(comm, "\n"); CHKERRQ(ierr);
-      ierr = PetscSynchronizedPrintf(comm, "Patch %d: artificial BCs:\n", v); CHKERRQ(ierr);
-      PetscHashISize(artificialbcs, numBcs);
+      ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "Patch %d: artificial BCs:\n", v);CHKERRQ(ierr);
+      ierr = PetscHSetIGetSize(artificialbcs, &numBcs);CHKERRQ(ierr);
       if (numBcs > 0) {
-        PetscHashIIterBegin(artificialbcs, hi);
-        while (!PetscHashIIterAtEnd(artificialbcs, hi)) {
+        PetscHashIterBegin(artificialbcs, hi);
+        while (!PetscHashIterAtEnd(artificialbcs, hi)) {
           PetscInt globalDof;
-          PetscHashIIterGetKey(artificialbcs, hi, globalDof);
-          PetscHashIIterNext(artificialbcs, hi);
+          PetscHashIterGetKey(artificialbcs, hi, globalDof);
+          PetscHashIterNext(artificialbcs, hi);
           ierr = PetscSynchronizedPrintf(comm, "%d ", globalDof); CHKERRQ(ierr);
         }
       }
       ierr = PetscSynchronizedPrintf(comm, "\n\n"); CHKERRQ(ierr);
-      PetscHashIDestroy(globalbcdofs);
+      ierr = PetscHSetIDestroy(&globalbcdofs);CHKERRQ(ierr);
     }
    for (k = 0; k < patch->nsubspaces; ++k) {
       const PetscInt *cellNodeMap    = patch->cellNodeMap[k];
@@ -969,20 +968,21 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
           const PetscInt globalDof = cellNodeMap[cell*nodesPerCell + j]*bs + subspaceOffset;
           /* finally, loop over block size */
           for (l = 0; l < bs; ++l) {
-            PetscInt localDof, isGlobalBcDof, isArtificialBcDof;
+            PetscInt  localDof;
+            PetscBool isGlobalBcDof, isArtificialBcDof;
 
             /* first, check if this is either a globally enforced or locally enforced BC dof */
-            PetscHashIMap(globalBcs, globalDof + l, isGlobalBcDof);
-            PetscHashIMap(artificialbcs, globalDof + l, isArtificialBcDof);
+            ierr = PetscHSetIHas(globalBcs, globalDof + l, &isGlobalBcDof);CHKERRQ(ierr);
+            ierr = PetscHSetIHas(artificialbcs, globalDof + l, &isArtificialBcDof);CHKERRQ(ierr);
 
             /* if it's either, don't ever give it a local dof number */
-            if (isGlobalBcDof >= 0 || isArtificialBcDof >= 0) {
+            if (isGlobalBcDof || isArtificialBcDof) {
               dofsArray[globalIndex++] = -1; /* don't use this in assembly in this patch */
             } else {
-              PetscHashIMap(ht, globalDof + l, localDof);
+              ierr = PetscHMapIGet(ht, globalDof + l, &localDof);CHKERRQ(ierr);
               if (localDof == -1) {
                 localDof = localIndex++;
-                PetscHashIAdd(ht, globalDof + l, localDof);
+                ierr = PetscHMapISet(ht, globalDof + l, localDof);CHKERRQ(ierr);
               }
               if ( globalIndex >= numDofs ) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Found more dofs %D than expected %D", globalIndex+1, numDofs);
               /* And store. */
@@ -993,7 +993,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       }
     }
     /* How many local dofs in this patch? */
-    PetscHashISize(ht, dof);
+    ierr = PetscHMapIGetSize(ht, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(gtolCounts, v, dof);CHKERRQ(ierr);
   }
   if (globalIndex != numDofs) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Expected number of dofs (%d) doesn't match found number (%d)", numDofs, globalIndex);
@@ -1003,10 +1003,10 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
 
   /* Now populate the global to local map.  This could be merged into the above loop if we were willing to deal with reallocs. */
   for (v = vStart; v < vEnd; ++v) {
-    PetscHashIIter hi;
+    PetscHashIter hi;
     PetscInt       dof, off, Np, ooff, i, j, k, l;
 
-    PetscHashIClear(ht);
+    ierr = PetscHMapIClear(ht);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(cellCounts, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cellCounts, v, &off);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(pointCounts, v, &Np);CHKERRQ(ierr);
@@ -1030,7 +1030,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
             const PetscInt globalDof = cellNodeMap[cell*nodesPerCell + j]*bs + l + subspaceOffset;
             const PetscInt localDof  = dofsArray[key++];
 
-            if (localDof >= 0) PetscHashIAdd(ht, globalDof, localDof);
+            if (localDof >= 0) {ierr = PetscHMapISet(ht, globalDof, localDof);CHKERRQ(ierr);}
           }
         }
       }
@@ -1039,13 +1039,14 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       PetscInt goff;
 
       ierr = PetscSectionGetOffset(gtolCounts, v, &goff);CHKERRQ(ierr);
-      PetscHashIIterBegin(ht, hi);
-      while (!PetscHashIIterAtEnd(ht, hi)) {
+      PetscHashIterBegin(ht, hi);
+      while (!PetscHashIterAtEnd(ht, hi)) {
         PetscInt globalDof, localDof;
 
-        PetscHashIIterGetKeyVal(ht, hi, globalDof, localDof);
+        PetscHashIterGetKey(ht, hi, globalDof);
+        PetscHashIterGetVal(ht, hi, localDof);
         if (globalDof >= 0) globalDofsArray[goff + localDof] = globalDof;
-        PetscHashIIterNext(ht, hi);
+        PetscHashIterNext(ht, hi);
       }
 
       for (p = 0; p < Np; ++p) {
@@ -1053,16 +1054,16 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
         PetscInt       globalDof, localDof;
 
         ierr = PCPatchGetGlobalDofs(pc, patch->dofSection, k, patch->combined, point, NULL, &globalDof);CHKERRQ(ierr);
-        PetscHashIMap(ht, globalDof, localDof);
+        ierr = PetscHMapIGet(ht, globalDof, &localDof);CHKERRQ(ierr);
         offsArray[(ooff + p)*Nf + k] = localDof;
       }
     }
 
-    PetscHashIDestroy(ownedpts);
-    PetscHashIDestroy(seenpts);
-    PetscHashIDestroy(owneddofs);
-    PetscHashIDestroy(seendofs);
-    PetscHashIDestroy(artificialbcs);
+    ierr = PetscHSetIDestroy(&ownedpts);CHKERRQ(ierr);
+    ierr = PetscHSetIDestroy(&seenpts);CHKERRQ(ierr);
+    ierr = PetscHSetIDestroy(&owneddofs);CHKERRQ(ierr);
+    ierr = PetscHSetIDestroy(&seendofs);CHKERRQ(ierr);
+    ierr = PetscHSetIDestroy(&artificialbcs);CHKERRQ(ierr);
 
       /* At this point, we have a hash table ht built that maps globalDof -> localDof.
      We need to create the dof table laid out cellwise first, then by subspace,
@@ -1086,9 +1087,9 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
               const PetscInt globalDof = cellNodeMap[cell*nodesPerCell + j]*bs + l + subspaceOffset;
               PetscInt       localDof;
 
-              PetscHashIMap(ht, globalDof, localDof);
+              ierr = PetscHMapIGet(ht, globalDof, &localDof);CHKERRQ(ierr);
               /* If it's not in the hash table, i.e. is a BC dof,
-               then the PetscHashIMap above gives -1, which matches
+               then the PetscHSetIMap above gives -1, which matches
                exactly the convention for PETSc's matrix assembly to
                ignore the dof. So we don't need to do anything here */
               asmArray[asmKey++] = localDof;
@@ -1100,7 +1101,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   }
   if (1 == patch->nsubspaces) {ierr = PetscMemcpy(asmArray, dofsArray, numDofs * sizeof(PetscInt));CHKERRQ(ierr);}
 
-  PetscHashIDestroy(ht);
+  ierr = PetscHMapIDestroy(&ht);CHKERRQ(ierr);
   ierr = ISRestoreIndices(cells, &cellsArray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(points, &pointsArray);CHKERRQ(ierr);
   ierr = PetscFree(dofsArray);CHKERRQ(ierr);
