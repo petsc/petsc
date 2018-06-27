@@ -81,20 +81,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       nnodes = xm*ym*zm;
     }
     maxnnodes = PetscMax(maxnnodes,nnodes);
-#if 0
-    switch (dim) {
-    case 1:
-      ierr = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,0,0,0,0);CHKERRQ(ierr);
-      break;
-    case 2:
-      ierr = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm,ys+ym-1,xs,xs+xm-1,0,0);CHKERRQ(ierr);
-      break;
-    case 3:
-      ierr = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"No support for dimension %D",dim);
-    }
-#endif
     ierr     = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
     ierr     = PetscFPrintf(comm,fp,"      <Points>\n");CHKERRQ(ierr);
     ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
