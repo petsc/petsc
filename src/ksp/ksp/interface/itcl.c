@@ -6,6 +6,21 @@
 #include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 #include <petscdraw.h>
 
+static PetscErrorCode KSPSetupMonitor_Private(KSP ksp, PetscViewer viewer, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*), PetscBool useMonitor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (useMonitor) {
+    PetscViewerAndFormat *vf;
+
+    ierr = PetscViewerAndFormatCreate(viewer, format, &vf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) viewer);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp, monitor, vf, (PetscErrorCode (*)(void**)) PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
    KSP options in the database.
@@ -318,12 +333,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewerAndFormat *vf;
-    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
-  }
+  ierr = KSPSetupMonitor_Private(ksp, viewer, format, (PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*)) monitor, flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
