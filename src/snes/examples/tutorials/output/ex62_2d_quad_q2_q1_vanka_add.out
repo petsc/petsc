@@ -1,14 +1,14 @@
   0 SNES Function norm 9.088488010682e+00 
-  Linear solve converged due to CONVERGED_RTOL iterations 18
-  1 SNES Function norm 4.618498326350e-01 
-  Linear solve converged due to CONVERGED_RTOL iterations 578
-  2 SNES Function norm 6.772604617280e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 19
+  1 SNES Function norm 4.136084096183e-01 
+  Linear solve converged due to CONVERGED_RTOL iterations 470
+  2 SNES Function norm 8.538327354896e-05 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=596
+  total number of linear solver iterations=489
   total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -68,4 +68,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 37 nodes, limit used is 5
-L_2 Error: 4.7674e-05 [9.30015e-07, 4.76649e-05]
+L_2 Error: 6.45065e-05 [6.3592e-07, 6.45034e-05]
