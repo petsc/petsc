@@ -991,6 +991,20 @@ PetscErrorCode  KSPReset(KSP ksp)
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
 
+  ierr = PetscViewerDestroy(&ksp->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPre);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerReason);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPMat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerRhs);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSol);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerMatExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerSV);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerEVExp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerFinalRes);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&ksp->viewerPOpExp);CHKERRQ(ierr);
+
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);
 }
