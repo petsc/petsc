@@ -977,12 +977,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscInitializeCalled = PETSC_TRUE;
-    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-  }
-
   /*
       Setup building of stack frames for all function calls
   */
@@ -1005,6 +999,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       Once we are completedly initialized then we can set this variables
   */
   PetscInitializeCalled = PETSC_TRUE;
+
+  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
