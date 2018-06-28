@@ -258,10 +258,6 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (A->rmap->bs > 1) {
-    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
