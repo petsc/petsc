@@ -1365,3 +1365,58 @@ PetscErrorCode DMDASetGLLCoordinates(DM da,PetscGLL *gll)
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for 2 or 3d");
   PetscFunctionReturn(0);
 }
+
+PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1,DM dm2,PetscBool *compatible,PetscBool *set)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd1 = (DM_DA*)da1->data,*dd2;
+  DM             da2;
+  DMType         dmtype2;
+  PetscBool      isda,compatibleLocal;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!da1->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da1),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on first DM before DMGetCompatibility()");
+  ierr = DMGetType(dm2,&dmtype2);CHKERRQ(ierr);
+  ierr = PetscStrcmp(dmtype2,DMDA,&isda);CHKERRQ(ierr);
+  if (isda) {
+    da2 = dm2;
+    dd2 = (DM_DA*)da2->data;
+    if (!da2->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da2),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on second DM before DMGetCompatibility()");
+    compatibleLocal = da1->dim == da2->dim;
+    if (compatibleLocal) compatibleLocal &= (dd1->s == dd2->s); /* Stencil width */
+    if (compatibleLocal) compatibleLocal &=                     /* x:            */
+      dd1->M  == dd2->M &&                                      /* Global size   */
+      dd1->m  == dd2->m &&                                      /* ranks         */
+      dd1->bx == dd2->bx;                                       /* Boundary type */
+    if (compatibleLocal && da1->dim > 1) compatibleLocal &=
+      dd1->N  == dd2->N &&
+      dd1->n  == dd2->n &&
+      dd1->by == dd2->by;
+    if (compatibleLocal && da1->dim > 2) compatibleLocal &=
+      dd1->P  == dd2->P &&
+      dd1->p  == dd2->p &&
+      dd1->bz == dd2->bz;
+    if (compatibleLocal) {
+      for (i=0; i<dd1->m; ++i) {
+        compatibleLocal &= dd1->lx[i] == dd2->lx[i];           /* Local size     */
+      }
+    }
+    if (compatibleLocal && da1->dim > 1) {
+      for (i=0; i<dd1->n; ++i) {
+        compatibleLocal &= dd1->ly[i] == dd2->ly[i];
+      }
+    }
+    if (compatibleLocal && da1->dim > 2) {
+      for (i=0; i<dd1->p; ++i) {
+        compatibleLocal &= dd1->lz[i] == dd2->lz[i];
+      }
+    }
+    *compatible = compatibleLocal;
+    *set = PETSC_TRUE;
+  } else {
+    /* Decline to determine compatibility with other DM types */
+    *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
