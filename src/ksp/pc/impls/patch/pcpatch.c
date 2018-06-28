@@ -492,7 +492,6 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC, Petsc
    In full generality this should incorporate knowledge of the sparsity pattern of the matrix;
    here we assume a standard FE sparsity pattern.*/
 /* TODO: Use DMPlexGetAdjacency() */
-/* TODO: Look at temp buffer management for GetClosure() */
 static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI cht)
 {
   DM             dm;
@@ -1772,9 +1771,9 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
 }
 
 /*MC
-  PCPATCH = "patch" - A PC object that encapsulates flexible definition of blocks for overlapping and non-overlapping
-                      small block additive and multiplicative preconditioners. Block definition is based on topology from
-                      a DM and equation numbering from a PetscSection.
+  PCPATCH - A PC object that encapsulates flexible definition of blocks for overlapping and non-overlapping
+            small block additive preconditioners. Block definition is based on topology from
+            a DM and equation numbering from a PetscSection.
 
   Options Database Keys:
 + -pc_patch_cells_view   - Views the process local cell numbers for each patch
