@@ -187,11 +187,11 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, 
+$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x 
+$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
 $       socket[:port]                             defaults to the standard output port
 $       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
@@ -348,9 +348,12 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
       }
       if (loc2_fmt && *loc2_fmt) {
-        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)format,&flag);CHKERRQ(ierr);
+        PetscEnum tfmt;
+
+        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,&tfmt,&flag);CHKERRQ(ierr);
+        if (format) *format = tfmt;
         if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
-      } else if (viewer && (cnt == 6)) { /* Get format from VTK viewer */
+      } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
         ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
       }
       ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
@@ -569,7 +572,7 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt r
   MPI_Comm       comm;
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) { 
+  while (PETSC_TRUE) {
     if (rank < *mcnt) break;
     ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   }
