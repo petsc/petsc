@@ -145,7 +145,7 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
    Notes:
    You must call KSPSetUp() before calling PCKSPGetKSP().
 
-   If the PC is not a PCKSP object then a NULL is returned
+   If the PC is not a PCKSP object it raises an error
 
    Level: advanced
 
@@ -158,8 +158,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  *ksp = NULL;
-  ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
