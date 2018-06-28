@@ -124,7 +124,9 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = PetscMemcpy(aijsell_dest,aijsell,sizeof(Mat_SeqAIJSELL));CHKERRQ(ierr);
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
-  /* TODO: Have the shadow matrix be built now if eager_shadow is set to true. */
+  if (aijsell->eager_shadow) {
+    ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -154,7 +156,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
   aijsell = (Mat_SeqAIJSELL*) A->spptr;
   if (aijsell->eager_shadow) {
-    /* TODO: Construct the shadow matrix here. */
+    ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -218,8 +220,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* If A has already been assembled and eager shadowing is specified, build the shadow matrix. */
-  if (A->assembled) {
-    /* TODO: Have the shadow matrix for B be built now if eager_shadow is set to true. */
+  if (A->assembled && aijsell->eager_shadow) {
+    ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   }
 
   B->ops->mult             = MatMult_SeqAIJSELL;
