@@ -1252,10 +1252,7 @@ PetscErrorCode  PetscFinalize(void)
   mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
-    if (mname[0]) PetscLogDump(mname);
-    else          PetscLogDump(0);
-  }
+  if (flg1 || flg2) {ierr = PetscLogDump(mname);CHKERRQ(ierr);}
 #endif
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);
