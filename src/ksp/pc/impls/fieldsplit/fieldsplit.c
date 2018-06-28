@@ -1277,6 +1277,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   PetscFunctionBegin;
   ierr = PCReset_FieldSplit(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurGetSubKSP_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetFields_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetIS_C",NULL);CHKERRQ(ierr);
@@ -1386,6 +1387,29 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
     ilink->previous = next;
   }
   jac->nsplits++;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCFieldSplitSchurGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *subksp = NULL;
+  if (n) *n = 0;
+  if (jac->type == PC_COMPOSITE_SCHUR) {
+    PetscInt nn;
+
+    if (!jac->schur) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitSchurGetSubKSP()");
+    if (jac->nsplits != 2) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unexpected number of splits %D != 2",jac->nsplits);
+    nn   = jac->nsplits + (jac->kspupper != jac->head->ksp ? 1 : 0);
+    ierr = PetscMalloc1(nn,subksp);CHKERRQ(ierr);
+    (*subksp)[0] = jac->head->ksp;
+    (*subksp)[1] = jac->kspschur;
+    if (jac->kspupper != jac->head->ksp) (*subksp)[2] = jac->kspupper;
+    if (n) *n = nn;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1846,7 +1870,11 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
    After PCFieldSplitGetSubKSP() the array of KSPs is to be freed by the user with PetscFree()
    (not the KSP just the array that contains them).
 
-   You must call KSPSetUp() before calling PCFieldSplitGetSubKSP().
+   You must call PCSetUp() before calling PCFieldSplitGetSubKSP().
+
+   If the fieldsplit is of type PC_COMPOSITE_SCHUR, it returns the KSP object used inside the
+   Schur complement and the KSP object used to iterate over the Schur complement.
+   To access all the KSP objects used in PC_COMPOSITE_SCHUR, use PCFieldSplitSchurGetSubKSP()
 
    Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
       You can call PCFieldSplitGetSubKSP(pc,n,PETSC_NULL_KSP,ierr) to determine how large the
@@ -1865,6 +1893,50 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (n) PetscValidIntPointer(n,2);
   ierr = PetscUseMethod(pc,"PCFieldSplitGetSubKSP_C",(PC,PetscInt*,KSP **),(pc,n,subksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCFieldSplitSchurGetSubKSP - Gets the KSP contexts used inside the Schur complement based PCFIELDSPLIT
+
+   Collective on KSP
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  n - the number of splits
+-  subksp - the array of KSP contexts
+
+   Note:
+   After PCFieldSplitSchurGetSubKSP() the array of KSPs is to be freed by the user with PetscFree()
+   (not the KSP just the array that contains them).
+
+   You must call PCSetUp() before calling PCFieldSplitSchurGetSubKSP().
+
+   If the fieldsplit type is of type PC_COMPOSITE_SCHUR, it returns (in order)
+   - the KSP used for the (1,1) block
+   - the KSP used for the Schur complement (not the one used for the interior Schur solver)
+   - the KSP used for the (1,1) block in the upper triangular factor (if different from that of the (1,1) block).
+
+   It returns a null array if the fieldsplit is not of type PC_COMPOSITE_SCHUR; in this case, you should use PCFieldSplitGetSubKSP().
+
+   Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
+      You can call PCFieldSplitSchurGetSubKSP(pc,n,PETSC_NULL_KSP,ierr) to determine how large the
+      KSP array must be.
+
+   Level: advanced
+
+.seealso: PCFIELDSPLIT
+@*/
+PetscErrorCode  PCFieldSplitSchurGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (n) PetscValidIntPointer(n,2);
+  ierr = PetscUseMethod(pc,"PCFieldSplitSchurGetSubKSP_C",(PC,PetscInt*,KSP **),(pc,n,subksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2481,7 +2553,7 @@ $              (  0   S  )
    residual on all variables (PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE)), and then applies a simple ILU like preconditioner on all the variables.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
+           PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
           MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(),
           PCFieldSplitSetDetectSaddlePoint()
 M*/
@@ -2514,6 +2586,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   pc->ops->view            = PCView_FieldSplit;
   pc->ops->applyrichardson = 0;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurGetSubKSP_C",PCFieldSplitSchurGetSubKSP_FieldSplit);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetFields_C",PCFieldSplitSetFields_FieldSplit);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetIS_C",PCFieldSplitSetIS_FieldSplit);CHKERRQ(ierr);
