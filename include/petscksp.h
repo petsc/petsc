@@ -136,6 +136,7 @@ PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCKSPSetKSP(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
