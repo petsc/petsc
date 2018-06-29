@@ -1003,7 +1003,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   /* Now populate the global to local map.  This could be merged into the above loop if we were willing to deal with reallocs. */
   for (v = vStart; v < vEnd; ++v) {
     PetscHashIter hi;
-    PetscInt       dof, off, Np, ooff, i, j, k, l;
+    PetscInt      dof, off, Np, ooff, i, j, k, l;
 
     ierr = PetscHMapIClear(ht);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(cellCounts, v, &dof);CHKERRQ(ierr);
@@ -1017,6 +1017,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       PetscInt        nodesPerCell   = patch->nodesPerCell[k];
       PetscInt        subspaceOffset = patch->subspaceOffsets[k];
       PetscInt        bs             = patch->bs[k];
+      PetscInt        goff;
 
       for (i = off; i < off + dof; ++i) {
         /* Reconstruct mapping of global-to-local on this patch. */
@@ -1035,8 +1036,6 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       }
 
       /* Shove it in the output data structure. */
-      PetscInt goff;
-
       ierr = PetscSectionGetOffset(gtolCounts, v, &goff);CHKERRQ(ierr);
       PetscHashIterBegin(ht, hi);
       while (!PetscHashIterAtEnd(ht, hi)) {
