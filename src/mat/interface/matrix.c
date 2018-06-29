@@ -7854,6 +7854,23 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
   ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->createsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
+
+  /* Propagate symmetry information for diagonal blocks */
+  if (isrow == iscoltmp) {
+    if (mat->symmetric_set && mat->symmetric) {
+      ierr = MatSetOption(*newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (mat->structurally_symmetric_set && mat->structurally_symmetric) {
+      ierr = MatSetOption(*newmat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (mat->hermitian_set && mat->hermitian) {
+      ierr = MatSetOption(*newmat,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (mat->spd_set && mat->spd) {
+      ierr = MatSetOption(*newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
+
   if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   if (*newmat && cll == MAT_INITIAL_MATRIX) {ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
