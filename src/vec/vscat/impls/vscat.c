@@ -348,7 +348,7 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   fslots = gen_from->vslots;
   tslots = gen_to->vslots;
 
-  if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&gen_from->memcpy_plan,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr); }
+  if (gen_from->memcpy_plan.optimized[0]) { ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&gen_from->memcpy_plan,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr); }
   else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[tslots[i]]  = xv[fslots[i]]; }
   else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]] += xv[fslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
@@ -393,7 +393,7 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     xv += first;
-    if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_from->memcpy_plan,addv);CHKERRQ(ierr); }
+    if (gen_from->memcpy_plan.optimized[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_from->memcpy_plan,addv,1);CHKERRQ(ierr); }
     else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[fslots[i]]  = xv[i]; }
     else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[fslots[i]] += xv[i]; }
 #if !defined(PETSC_USE_COMPLEX)
@@ -402,7 +402,7 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   } else {
     yv += first;
-    if (gen_from->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_from->memcpy_plan,yv,addv);CHKERRQ(ierr); }
+    if (gen_from->memcpy_plan.optimized[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_from->memcpy_plan,yv,addv,1);CHKERRQ(ierr); }
     else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[i]  = xv[fslots[i]]; }
     else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[i] += xv[fslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
@@ -505,7 +505,7 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     yv += first;
-    if (gen_to->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_to->memcpy_plan,yv,addv);CHKERRQ(ierr); }
+    if (gen_to->memcpy_plan.optimized[0]) { ierr = VecScatterMemcpyPlanExecute_Pack(0,xv,&gen_to->memcpy_plan,yv,addv,1);CHKERRQ(ierr); }
     else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[i]  = xv[tslots[i]]; }
     else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[i] += xv[tslots[i]]; }
 #if !defined(PETSC_USE_COMPLEX)
@@ -514,7 +514,7 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   } else {
     xv += first;
-    if (gen_to->memcpy_plan.made_of_copies[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_to->memcpy_plan,addv);CHKERRQ(ierr); }
+    if (gen_to->memcpy_plan.optimized[0]) { ierr = VecScatterMemcpyPlanExecute_Unpack(0,xv,yv,&gen_to->memcpy_plan,addv,1);CHKERRQ(ierr); }
     else if (addv == INSERT_VALUES) { for (i=0; i<n; i++) yv[tslots[i]]  = xv[i]; }
     else if (addv == ADD_VALUES)    { for (i=0; i<n; i++) yv[tslots[i]] += xv[i]; }
 #if !defined(PETSC_USE_COMPLEX)
@@ -598,7 +598,7 @@ PetscErrorCode VecScatterView_SSToSG(VecScatter in,PetscViewer viewer)
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->first + in_from->step*i,in_to->vslots[i]);CHKERRQ(ierr);
     }
-    if (in_to->memcpy_plan.made_of_copies[0]) {
+    if (in_to->memcpy_plan.optimized[0]) {
       ierr = PetscViewerASCIIPrintf(viewer,"This stride1 to general scatter is made of %D copies\n",in_to->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
     }
   }
@@ -721,7 +721,7 @@ PetscErrorCode VecScatterView_SGToSG(VecScatter in,PetscViewer viewer)
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->vslots[i]);CHKERRQ(ierr);
     }
-    if (in_from->memcpy_plan.made_of_copies[0]) {
+    if (in_from->memcpy_plan.optimized[0]) {
       ierr = PetscViewerASCIIPrintf(viewer,"This general to general scatter is made of %D copies\n",in_from->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
     }
   }
@@ -777,7 +777,7 @@ PetscErrorCode VecScatterView_SGToSS(VecScatter in,PetscViewer viewer)
     for (i=0; i<in_to->n; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->first + in_to->step*i);CHKERRQ(ierr);
     }
-    if (in_from->memcpy_plan.made_of_copies[0]) {
+    if (in_from->memcpy_plan.optimized[0]) {
       ierr = PetscViewerASCIIPrintf(viewer,"This general to stride1 scatter is made of %D copies\n",in_from->memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
     }
   }
@@ -833,7 +833,7 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
 }
 
 /*
-  Create a memcpy plan based on indices of vector entries we want to scatter
+  Create memcpy optimization plans based on indices of vector entries we want to scatter
 
    Input Parameters:
   +  n       - number of target processors
@@ -847,24 +847,25 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
 PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt n,const PetscInt *starts,const PetscInt *indices,PetscInt bs,VecScatterMemcpyPlan *plan)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,my_copies,n_copies=0;
+  PetscInt       i,j,k,my_copies,n_copies=0,step;
+  PetscBool      strided,has_strided;
 
   PetscFunctionBegin;
   ierr    = PetscMemzero(plan,sizeof(VecScatterMemcpyPlan));CHKERRQ(ierr);
   plan->n = n;
-  ierr    = PetscMalloc2(n,&plan->made_of_copies,n+1,&plan->copy_offsets);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(n,&plan->optimized,n+1,&plan->copy_offsets);CHKERRQ(ierr);
 
   /* check if each remote part of the scatter is made of copies, and count total_copies */
-  for (i=0; i<n; i++) { /* for each remote processor procs[i] */
+  for (i=0; i<n; i++) { /* for each target processor procs[i] */
     my_copies = 1; /* count num. of copies for procs[i] */
     for (j=starts[i]; j<starts[i+1]-1; j++) { /* go through indices from the first to the second to last */
       if (indices[j]+bs != indices[j+1]) my_copies++;
     }
     if (bs*(starts[i+1]-starts[i])*sizeof(PetscScalar)/my_copies >= 256) { /* worth using memcpy? */
-      plan->made_of_copies[i] = PETSC_TRUE;
+      plan->optimized[i] = PETSC_TRUE;
       n_copies += my_copies;
     } else {
-      plan->made_of_copies[i] = PETSC_FALSE;
+      plan->optimized[i] = PETSC_FALSE;
     }
   }
 
@@ -874,8 +875,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt n,const PetscInt *start
   /* analyze the total_copies one by one */
   k                     = 0; /* k-th copy */
   plan->copy_offsets[0] = 0;
-  for (i=0; i<n; i++) { /* for remote processor procs[i] */
-    if (plan->made_of_copies[i]) {
+  for (i=0; i<n; i++) { /* for each target processor procs[i] */
+    if (plan->optimized[i]) {
       my_copies            = 1;
       plan->copy_starts[k] = indices[starts[i]];
       for (j=starts[i]; j<starts[i+1]-1; j++) {
@@ -891,9 +892,31 @@ PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt n,const PetscInt *start
       k++;
     }
 
-    /* set offset for next proc. When made_of_copies[i] is false, copy_offsets[i] = copy_offsets[i+1] */
+    /* set offset for next proc. When optimized[i] is false, copy_offsets[i] = copy_offsets[i+1] */
     plan->copy_offsets[i+1] = k;
   }
+
+  /* try the last chance to optimize. If a scatter is not memory copies, then is it strided? */
+  has_strided = PETSC_FALSE;
+  ierr = PetscMalloc3(n,&plan->stride_first,n,&plan->stride_step,n,&plan->stride_n);CHKERRQ(ierr);
+  for (i=0; i<n; i++) { /* for each target processor procs[i] */
+    if (!plan->optimized[i] && starts[i+1] - starts[i] >= 16) { /* few indices (<16) are not worth striding */
+      strided = PETSC_TRUE;
+      step    = indices[starts[i]+1] - indices[starts[i]];
+      for (j=starts[i]; j<starts[i+1]-1; j++) {
+        if (indices[j]+step != indices[j+1]) { strided = PETSC_FALSE; break; }
+      }
+      if (strided) {
+        plan->optimized[i]    = PETSC_TRUE;
+        plan->stride_first[i] = indices[starts[i]];
+        plan->stride_step[i]  = step;
+        plan->stride_n[i]     = starts[i+1] - starts[i];
+        has_strided           = PETSC_TRUE;
+      }
+    }
+  }
+  /* if none is strided, free the arrays to save memory here and also in plan copying */
+  if (!has_strided) { ierr = PetscFree3(plan->stride_first,plan->stride_step,plan->stride_n);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -913,8 +936,8 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
   from->memcpy_plan.n = 1;
 
   /* malloc and init the two fields to false and zero */
-  ierr = PetscCalloc2(1,&to->memcpy_plan.made_of_copies,2,&to->memcpy_plan.copy_offsets);CHKERRQ(ierr);
-  ierr = PetscCalloc2(1,&from->memcpy_plan.made_of_copies,2,&from->memcpy_plan.copy_offsets);CHKERRQ(ierr);
+  ierr = PetscCalloc2(1,&to->memcpy_plan.optimized,2,&to->memcpy_plan.copy_offsets);CHKERRQ(ierr);
+  ierr = PetscCalloc2(1,&from->memcpy_plan.optimized,2,&from->memcpy_plan.copy_offsets);CHKERRQ(ierr);
 
   /* count number of copies, which runs from 1 to n */
   n_copies = 1;
@@ -954,13 +977,15 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
       if (to->memcpy_plan.copy_starts[i] != from->memcpy_plan.copy_starts[i]) { same_copy_starts = PETSC_FALSE; break; }
     }
 
-    to->memcpy_plan.made_of_copies[0]   = PETSC_TRUE;
-    from->memcpy_plan.made_of_copies[0] = PETSC_TRUE;
+    to->memcpy_plan.optimized[0]        = PETSC_TRUE;
+    from->memcpy_plan.optimized[0]      = PETSC_TRUE;
     to->memcpy_plan.copy_offsets[1]     = n_copies;
     from->memcpy_plan.copy_offsets[1]   = n_copies;
     to->memcpy_plan.same_copy_starts    = same_copy_starts;
     from->memcpy_plan.same_copy_starts  = same_copy_starts;
   }
+
+  /* we do not do stride optimzation for this kind of scatter since the chance is rare. All related fields are zeroed out */
   PetscFunctionReturn(0);
 }
 
@@ -972,12 +997,18 @@ PetscErrorCode VecScatterMemcpyPlanCopy(const VecScatterMemcpyPlan *in,VecScatte
   PetscFunctionBegin;
   ierr   = PetscMemzero(out,sizeof(VecScatterMemcpyPlan));CHKERRQ(ierr);
   out->n = in->n;
-  ierr   = PetscMalloc2(in->n,&out->made_of_copies,in->n+1,&out->copy_offsets);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(in->n,&out->optimized,in->n+1,&out->copy_offsets);CHKERRQ(ierr);
   ierr   = PetscMalloc2(in->copy_offsets[in->n],&out->copy_starts,in->copy_offsets[in->n],&out->copy_lengths);CHKERRQ(ierr);
-  ierr   = PetscMemcpy(out->made_of_copies,in->made_of_copies,sizeof(PetscBool)*in->n);CHKERRQ(ierr);
+  ierr   = PetscMemcpy(out->optimized,in->optimized,sizeof(PetscBool)*in->n);CHKERRQ(ierr);
   ierr   = PetscMemcpy(out->copy_offsets,in->copy_offsets,sizeof(PetscInt)*(in->n+1));CHKERRQ(ierr);
   ierr   = PetscMemcpy(out->copy_starts,in->copy_starts,sizeof(PetscInt)*in->copy_offsets[in->n]);CHKERRQ(ierr);
   ierr   = PetscMemcpy(out->copy_lengths,in->copy_lengths,sizeof(PetscInt)*in->copy_offsets[in->n]);CHKERRQ(ierr);
+  if (in->stride_first) {
+    ierr = PetscMalloc3(in->n,&out->stride_first,in->n,&out->stride_step,in->n,&out->stride_n);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out->stride_first,in->stride_first,sizeof(PetscInt)*in->n);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out->stride_step,in->stride_step,sizeof(PetscInt)*in->n);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out->stride_n,in->stride_n,sizeof(PetscInt)*in->n);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -987,8 +1018,9 @@ PetscErrorCode VecScatterMemcpyPlanDestroy(VecScatterMemcpyPlan *plan)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree2(plan->made_of_copies,plan->copy_offsets);CHKERRQ(ierr);
+  ierr = PetscFree2(plan->optimized,plan->copy_offsets);CHKERRQ(ierr);
   ierr = PetscFree2(plan->copy_starts,plan->copy_lengths);CHKERRQ(ierr);
+  ierr = PetscFree3(plan->stride_first,plan->stride_step,plan->stride_n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

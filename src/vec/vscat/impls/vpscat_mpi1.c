@@ -46,7 +46,7 @@ PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
       if (to->n) {
         for (i=0; i<to->n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %D length = %D to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
-          if (to->memcpy_plan.made_of_copies[i]) { ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  is optimized with %D memcpy's in Pack\n",to->memcpy_plan.copy_offsets[i+1]-to->memcpy_plan.copy_offsets[i]);CHKERRQ(ierr); }
+          if (to->memcpy_plan.optimized[i]) { ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  is optimized with %D memcpy's in Pack\n",to->memcpy_plan.copy_offsets[i+1]-to->memcpy_plan.copy_offsets[i]);CHKERRQ(ierr); }
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote sends (in order by process sent to)\n");CHKERRQ(ierr);
         for (i=0; i<to->starts[to->n]; i++) {
@@ -58,7 +58,7 @@ PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
       if (from->n) {
         for (i=0; i<from->n; i++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D length %D from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
-          if (from->memcpy_plan.made_of_copies[i]) { ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  is optimized with %D memcpy's in Unpack\n",to->memcpy_plan.copy_offsets[i+1]-to->memcpy_plan.copy_offsets[i]);CHKERRQ(ierr); }
+          if (from->memcpy_plan.optimized[i]) { ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  is optimized with %D memcpy's in Unpack\n",to->memcpy_plan.copy_offsets[i+1]-to->memcpy_plan.copy_offsets[i]);CHKERRQ(ierr); }
         }
 
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
       }
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Indices for local part of scatter\n",rank);CHKERRQ(ierr);
-        if (to->local.memcpy_plan.made_of_copies[0]) {
+        if (to->local.memcpy_plan.optimized[0]) {
           ierr = PetscViewerASCIIPrintf(viewer,"Local part of the scatter is made of %D copies\n",to->local.memcpy_plan.copy_offsets[1]);CHKERRQ(ierr);
         }
         for (i=0; i<to->local.n; i++) {  /* the to and from have the opposite meaning from what you would expect */

@@ -119,7 +119,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.memcpy_plan.made_of_copies[0] && addv == INSERT_VALUES) {
+    if (to->local.memcpy_plan.optimized[0] && addv == INSERT_VALUES) {
       /* do copy when it is not a self-to-self copy */
       if (!(yv == xv && to->local.memcpy_plan.same_copy_starts)) {
         for (i=to->local.memcpy_plan.copy_offsets[0]; i<to->local.memcpy_plan.copy_offsets[1]; i++) {
@@ -302,7 +302,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI3Node)(VecScatter ctx,Vec xin,Vec yin
 
   /* take care of local scatters */
   if (to->local.n) {
-   if (to->local.memcpy_plan.made_of_copies[0] && addv == INSERT_VALUES) {
+   if (to->local.memcpy_plan.optimized[0] && addv == INSERT_VALUES) {
       /* do copy when it is not a self-to-self copy */
       if (!(yv == xv && to->local.memcpy_plan.same_copy_starts)) {
         for (i=to->local.memcpy_plan.copy_offsets[0]; i<to->local.memcpy_plan.copy_offsets[1]; i++) {
