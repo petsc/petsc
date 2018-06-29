@@ -45,12 +45,13 @@ PetscErrorCode TaoInitializePackage(void)
   /* Register Constructors */
   ierr = TaoRegisterAll();CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("TaoSolve",TAO_CLASSID,&Tao_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoObjectiveEval",TAO_CLASSID,&Tao_ObjectiveEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoGradientEval",TAO_CLASSID,&Tao_GradientEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoHessianEval",TAO_CLASSID,&Tao_HessianEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoConstraintsEval",TAO_CLASSID,&Tao_ConstraintsEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoJacobianEval",TAO_CLASSID,&Tao_JacobianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolve",         TAO_CLASSID,&TAO_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoObjectiveEval", TAO_CLASSID,&TAO_ObjectiveEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoGradientEval",  TAO_CLASSID,&TAO_GradientEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoObjGradEval",   TAO_CLASSID,&TAO_ObjGradEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoHessianEval",   TAO_CLASSID,&TAO_HessianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoConstrEval",    TAO_CLASSID,&TAO_ConstraintsEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoJacobianEval",  TAO_CLASSID,&TAO_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {

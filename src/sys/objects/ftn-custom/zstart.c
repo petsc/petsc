@@ -135,7 +135,7 @@ PETSC_EXTERN void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
-extern MPI_Op MPIU_SUM;
+PETSC_EXTERN MPI_Op MPIU_SUM;
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
@@ -152,16 +152,16 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
 
-extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
-extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
-extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Components(void);
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
-extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
-extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
-extern int  PetscGlobalArgc;
-extern char **PetscGlobalArgs;
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
+PETSC_INTERN int  PetscGlobalArgc;
+PETSC_INTERN char **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line argments and sends them to
@@ -234,21 +234,14 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 }
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-extern PetscFPT PetscFPTData;
-#endif
-
-#if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscFPT PetscFPTData;
 #endif
 
 /* -----------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
-extern PetscErrorCode  PetscInitializeSAWs(const char[]);
+PETSC_INTERN PetscErrorCode  PetscInitializeSAWs(const char[]);
 #endif
 
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm,PetscMPIInt,void *,void *);

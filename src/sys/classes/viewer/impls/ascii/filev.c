@@ -233,7 +233,7 @@ PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode m
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
 /*@
     PetscViewerASCIISetTab - Causes PetscViewer to tab in a number of times

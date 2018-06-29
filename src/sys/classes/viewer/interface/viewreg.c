@@ -167,7 +167,7 @@ PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidPointer(flg,0);
+  PetscValidPointer(flg,1);
   *flg = noviewer;
   PetscFunctionReturn(0);
 }

@@ -27,10 +27,6 @@ static PetscBool SignalSet = PETSC_FALSE;
 .    sigcontext - ??
 .    addr - ??
 
-    Note: this is declared extern "C" because it is passed to the system routine signal()
-          which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
-          extern "C".
-
 */
 #if defined(PETSC_HAVE_4ARG_SIGNAL_HANDLER)
 static void PetscSignalHandler_Private(int sig,int code,struct sigcontext * scp,char *addr)

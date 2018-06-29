@@ -3,7 +3,6 @@
 #include <petscviewer.h>
 #include <petsc/private/viewerimpl.h>
 
-extern PetscLogEvent PETSC_Barrier,PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
 /*@C

@@ -767,9 +767,7 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 . snes  - the SNES context
 . nw - number of work vectors to allocate
 
-   Level: developer
-
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
+  Level: developer
 
 @*/
 PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)

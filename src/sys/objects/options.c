@@ -799,7 +799,7 @@ PetscErrorCode  PetscOptionsView(PetscOptions options,PetscViewer viewer)
 /*
    Called by error handlers to print options used in run
 */
-PetscErrorCode  PetscOptionsViewError(void)
+PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void)
 {
   PetscInt       i;
   PetscOptions   options = defaultoptions;

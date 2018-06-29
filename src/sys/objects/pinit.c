@@ -7,11 +7,12 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
-PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
-PETSC_EXTERN PetscErrorCode PetscLogFinalize(void);
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
+PETSC_INTERN PetscFPT PetscFPTData;
 PetscFPT PetscFPTData = 0;
 #endif
 
@@ -20,14 +21,14 @@ PetscFPT PetscFPTData = 0;
 #endif
 /* -----------------------------------------------------------------------------------------*/
 
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
-extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
-extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
-extern PetscErrorCode PetscFunctionListPrintAll(void);
-extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
-extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-extern PetscErrorCode PetscCloseHistoryFile(FILE**);
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
+PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
+PETSC_INTERN PetscErrorCode PetscFunctionListPrintAll(void);
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE**);
 
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
@@ -61,7 +62,7 @@ PetscSpinlock PetscCommSpinLock;
        Checks the options database for initializations related to the
     PETSc components
 */
-PetscErrorCode  PetscOptionsCheckInitial_Components(void)
+PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
   PetscBool      flg1;
   PetscErrorCode ierr;
@@ -166,7 +167,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
   return 0;
 }
 
-extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
 
 /*
        This function is the MPI reduction operation used to compute the sum of the
@@ -494,7 +495,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscconfiginfo.h>
 
-PetscErrorCode  PetscInitializeSAWs(const char help[])
+PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 {
   if (!PetscGlobalRank) {
     char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline,*options,version[64];
@@ -1008,9 +1009,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 }
 
 #if defined(PETSC_USE_LOG)
-extern PetscObject *PetscObjects;
-extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
-extern PetscBool   PetscObjectsLog;
+PETSC_INTERN PetscObject *PetscObjects;
+PETSC_INTERN PetscInt    PetscObjectsCounts;
+PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
+PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
 /*
