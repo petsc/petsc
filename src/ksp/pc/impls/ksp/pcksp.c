@@ -158,7 +158,7 @@ PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   PetscCheckSameComm(pc,1,ksp,2);
-  ierr = PetscUseMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
