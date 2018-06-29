@@ -985,6 +985,8 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
     if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mat,viewer);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      MatNullSpace nullsp,transnullsp;
+
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
@@ -1005,8 +1007,12 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%.f, allocated nonzeros=%.f\n",info.nz_used,info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
-      if (mat->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
-      if (mat->nearnullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
+      ierr = MatGetNullSpace(mat,&nullsp);CHKERRQ(ierr);
+      ierr = MatGetTransposeNullSpace(mat,&transnullsp);CHKERRQ(ierr);
+      if (nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
+      if (transnullsp && transnullsp != nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached transposed null space\n");CHKERRQ(ierr);}
+      ierr = MatGetNearNullSpace(mat,&nullsp);CHKERRQ(ierr);
+      if (nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {
@@ -8030,7 +8036,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 }
 
 /*@C
-   MatGetNullSpace - retrieves the null space to a matrix.
+   MatGetNullSpace - retrieves the null space of a matrix.
 
    Logically Collective on Mat and MatNullSpace
 
@@ -8049,7 +8055,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(nullsp,2);
-  *nullsp = mat->nullsp;
+  *nullsp = (mat->symmetric_set && mat->symmetric && !mat->nullsp) ? mat->transnullsp : mat->nullsp;
   PetscFunctionReturn(0);
 }
 
@@ -8125,7 +8131,7 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidPointer(nullsp,2);
-  *nullsp = mat->transnullsp;
+  *nullsp = (mat->symmetric_set && mat->symmetric && !mat->transnullsp) ? mat->nullsp : mat->transnullsp;
   PetscFunctionReturn(0);
 }
 
