@@ -218,7 +218,7 @@ $       saws[:communicatorname]                    publishes object to the Scien
 @*/
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
-  char                           *value;
+  const char                     *value;
   PetscErrorCode                 ierr;
   PetscBool                      flag,hashelp;
 
@@ -231,7 +231,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&hashelp);CHKERRQ(ierr);
   if (hashelp) {
     PetscBool found;
 
@@ -253,7 +253,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
-  ierr = PetscOptionsFindPair_Private(NULL,pre,name,&value,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFindPair(NULL,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
     if (!value) {
