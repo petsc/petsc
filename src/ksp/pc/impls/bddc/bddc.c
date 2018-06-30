@@ -1462,6 +1462,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   Mat             lA;
   IS              lP,zerodiag = NULL;
   PetscInt        nrows,ncols;
+  PetscMPIInt     size;
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
   PetscBool       new_nearnullspace_provided,ismatis;
@@ -1472,6 +1473,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
   if (nrows != ncols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
@@ -1487,6 +1490,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
   pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
+  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && size > 1);
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && size > 1);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 

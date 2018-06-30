@@ -482,9 +482,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if (!sub_schurs->n_subs) {
-    PetscFunctionReturn(0);
-  }
+  if (!sub_schurs) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Missing PCBDDCSubSchurs");
+  if (!sub_schurs->n_subs) PetscFunctionReturn(0);
 
   /* Allocate arrays for subproblems */
   if (!deluxe_ctx->seq_n) {

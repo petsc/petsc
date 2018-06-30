@@ -1,3 +1,3 @@
-Solving ODE "hull1972a1" with dt 0.010000, final time 20.000000 and system size 1.
-Estimated Error = 3.134682E-05.
-Error           = 2.130651E-05.
+Solving ODE "hull1972a1" with dt 0.010000, final time 5.000000 and system size 1.
+Estimated Error = 1.856296E-09.
+Error           = 1.861837E-09.

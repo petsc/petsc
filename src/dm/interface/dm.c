@@ -878,7 +878,6 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscBool         isbinary;
   PetscMPIInt       size;
   PetscViewerFormat format;
-  PetscInt          tabs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -888,8 +887,6 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
-  ierr = PetscViewerASCIIGetTab(v, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(v, ((PetscObject)dm)->tablevel);CHKERRQ(ierr);
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)dm,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
@@ -903,7 +900,6 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISetTab(v, tabs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
