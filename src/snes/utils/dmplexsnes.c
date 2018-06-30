@@ -2303,7 +2303,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscQuadrature  qGeom = NULL;
   Mat              J = Jac, JP = JacP;
   PetscScalar     *work, *u = NULL, *u_t = NULL, *a = NULL, *elemMat = NULL, *elemMatP = NULL, *elemMatD = NULL;
-  PetscBool        hasJac, hasPrec, hasDyn, isAffine, assembleJac, isMatIS, isMatISP, *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE;
+  PetscBool        hasJac, hasPrec, hasDyn, isAffine, assembleJac, isMatIS, isMatISP, *isFE, hasFV = PETSC_FALSE;
   const PetscInt  *cells;
   PetscInt         Nf, fieldI, fieldJ, numCells, cStart, cEnd, numChunks, chunkSize, chunk, totDim, totDimAux = 0, sz, wsz, off = 0, offCell = 0;
   PetscErrorCode   ierr;
@@ -2328,7 +2328,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
     PetscClassId id;
     ierr = PetscDSGetDiscretization(prob, fieldI, &disc);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
-    if (id == PETSCFE_CLASSID)      {hasFE = PETSC_TRUE; isFE[fieldI] = PETSC_TRUE;}
+    if (id == PETSCFE_CLASSID)      {isFE[fieldI] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {hasFV = PETSC_TRUE; isFE[fieldI] = PETSC_FALSE;}
   }
   ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
