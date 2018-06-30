@@ -832,7 +832,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PetscHSetI      globalBcs;
   PetscInt        numBcs;
   PetscHSetI      ownedpts, seenpts, owneddofs, seendofs, artificialbcs;
-  PetscInt        pStart, pEnd, p;
+  PetscInt        pStart, pEnd, p, i;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -857,7 +857,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   ierr = PetscHSetICreate(&globalBcs);CHKERRQ(ierr);
   ierr = ISGetIndices(patch->ghostBcNodes, &bcNodes); CHKERRQ(ierr);
   ierr = ISGetSize(patch->ghostBcNodes, &numBcs); CHKERRQ(ierr);
-  for ( PetscInt i = 0; i < numBcs; i++ ) {
+  for (i = 0; i < numBcs; ++i) {
     ierr = PetscHSetIAdd(globalBcs, bcNodes[i]);CHKERRQ(ierr); /* these are already in concatenated numbering */
   }
   ierr = ISRestoreIndices(patch->ghostBcNodes, &bcNodes); CHKERRQ(ierr);
