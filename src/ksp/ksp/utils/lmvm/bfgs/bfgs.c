@@ -464,7 +464,6 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
   B->ops->view = MatView_LMVMSymBrdn;
-  B->ops->solve = MatSolve_LMVMBFGS;
   B->ops->setup = MatSetUp_LMVMBFGS;
   B->ops->destroy = MatDestroy_LMVMBFGS;
   B->ops->setfromoptions = MatSetFromOptions_LMVMBFGS;
@@ -475,6 +474,7 @@ PetscErrorCode MatCreate_LMVMBFGS(Mat B)
   lmvm->ops->reset = MatReset_LMVMBFGS;
   lmvm->ops->update = MatUpdate_LMVMBFGS;
   lmvm->ops->mult = MatMult_LMVMBFGS;
+  lmvm->ops->solve = MatSolve_LMVMBFGS;
   lmvm->ops->copy = MatCopy_LMVMBFGS;
 
   ierr = PetscNewLog(B, &lbfgs);CHKERRQ(ierr);

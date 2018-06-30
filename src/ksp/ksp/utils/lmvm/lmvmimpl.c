@@ -151,7 +151,7 @@ static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
   VecCheckSameSize(X, 2, Y, 3);
   VecCheckMatCompatible(B, X, 2, Y, 3);
   if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
-  ierr = lmvm->ops->mult(B, X, Y);CHKERRQ(ierr);
+  ierr = (*lmvm->ops->mult)(B, X, Y);CHKERRQ(ierr);
   if (lmvm->shift != 0.0) {
     ierr = VecAXPY(Y, lmvm->shift, X);CHKERRQ(ierr);
   }
@@ -202,7 +202,7 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(bctx->Fprev, mctx->Fprev);CHKERRQ(ierr);
   }
   if (bctx->ops->copy) {
-    ierr = bctx->ops->copy(B, M, str);CHKERRQ(ierr);
+    ierr = (*bctx->ops->copy)(B, M, str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -575,7 +575,6 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBRDN);CHKERRQ(ierr);
   ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
   B->ops->view = MatView_LMVMSymBrdn;
-  B->ops->solve = MatSolve_LMVMSymBrdn;
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBrdn;
   B->ops->setup = MatSetUp_LMVMSymBrdn;
   B->ops->destroy = MatDestroy_LMVMSymBrdn;
@@ -586,6 +585,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   lmvm->ops->reset = MatReset_LMVMSymBrdn;
   lmvm->ops->update = MatUpdate_LMVMSymBrdn;
   lmvm->ops->mult = MatMult_LMVMSymBrdn;
+  lmvm->ops->solve = MatSolve_LMVMSymBrdn;
   lmvm->ops->copy = MatCopy_LMVMSymBrdn;
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);

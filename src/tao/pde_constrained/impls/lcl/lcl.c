@@ -443,7 +443,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Compute the limited-memory quasi-newton direction */
       if (tao->niter > 0) {
-        ierr = MatSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
         if (descent <= 0) {
           if (lclP->verbose) {

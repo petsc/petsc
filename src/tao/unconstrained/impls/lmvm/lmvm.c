@@ -46,7 +46,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       stepType = LMVM_STEP_BFGS;
     } 
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
-    ierr = MatSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+    ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
     ierr = MatLMVMGetUpdateCount(lmP->M, &nupdates); CHKERRQ(ierr);
     if (nupdates > 0) stepType = LMVM_STEP_BFGS;
 
@@ -64,7 +64,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = MatSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
+      ierr = MatLMVMSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
 
       /* On a reset, the direction cannot be not a number; it is a
          scaled gradient step.  No need to check for this condition. */
@@ -92,7 +92,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = MatSolve(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+      ierr = MatLMVMSolve(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
 
       /* On a reset, the direction cannot be not a number; it is a
           scaled gradient step.  No need to check for this condition. */

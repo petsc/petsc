@@ -116,7 +116,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      ierr = bnk->computehessian(tao);CHKERRQ(ierr);
+      ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
     
@@ -132,7 +132,7 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
       tao->ksp_its=0;
       
       /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-      ierr = bnk->computestep(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
+      ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
       /* Temporarily accept the step and project it into the bounds */
       ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);

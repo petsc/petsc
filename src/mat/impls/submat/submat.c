@@ -71,16 +71,6 @@ static PetscErrorCode PostScaleRight(Mat N,Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatShift_SubMatrix(Mat N,PetscScalar shift)
-{
-  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShift(Na->A,shift);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 {
   Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
@@ -112,27 +102,6 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
       ierr = VecPointwiseMult(Na->right,right,Na->right);CHKERRQ(ierr);
     }
   }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatSolve_SubMatrix(Mat N,Vec x,Vec y)
-{
-  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
-  Vec            lwork, rwork, xx  = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PreScaleLeft(N,x,&xx);CHKERRQ(ierr);
-  ierr = VecZeroEntries(Na->lwork);CHKERRQ(ierr);
-  ierr = VecGetSubVector(Na->lwork, Na->iscol, &lwork);CHKERRQ(ierr);
-  ierr = VecCopy(x, lwork);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(Na->lwork, Na->iscol, &lwork);CHKERRQ(ierr);
-  ierr = MatSolve(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
-  ierr = VecGetSubVector(Na->rwork, Na->isrow, &rwork);CHKERRQ(ierr);
-  ierr = VecCopy(rwork, y);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(Na->rwork, Na->isrow, &rwork);CHKERRQ(ierr);
-  ierr = PostScaleRight(N,y);CHKERRQ(ierr);
-  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -311,14 +280,12 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   Na->scale = 1.0;
 
   N->ops->destroy          = MatDestroy_SubMatrix;
-  N->ops->solve            = MatSolve_SubMatrix;
   N->ops->mult             = MatMult_SubMatrix;
   N->ops->multadd          = MatMultAdd_SubMatrix;
   N->ops->multtranspose    = MatMultTranspose_SubMatrix;
   N->ops->multtransposeadd = MatMultTransposeAdd_SubMatrix;
   N->ops->scale            = MatScale_SubMatrix;
   N->ops->diagonalscale    = MatDiagonalScale_SubMatrix;
-  if (A->ops->shift) N->ops->shift = MatShift_SubMatrix;
 
   ierr = MatSetBlockSizesFromMats(N,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);

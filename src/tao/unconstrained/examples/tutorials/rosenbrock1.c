@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     ierr = VecDuplicate(x, &out2);CHKERRQ(ierr);
     ierr = VecSet(in, 1.0);CHKERRQ(ierr);
     ierr = MatMult(M, in, out);CHKERRQ(ierr);
-    ierr = MatSolve(M, out, out2);CHKERRQ(ierr);
+    ierr = MatLMVMSolve(M, out, out2);CHKERRQ(ierr);
     ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
     ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
     if (mult_solve_dist < 1.e-11) {

@@ -134,12 +134,12 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      ierr = bnk->computehessian(tao);CHKERRQ(ierr);
+      ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
       needH = PETSC_FALSE;
     }
     
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = bnk->computestep(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
+    ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;
