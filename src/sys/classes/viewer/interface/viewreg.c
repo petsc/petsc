@@ -348,9 +348,9 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
       }
       if (loc2_fmt && *loc2_fmt) {
-        PetscEnum tfmt;
+        PetscViewerFormat tfmt;
 
-        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,&tfmt,&flag);CHKERRQ(ierr);
+        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag);CHKERRQ(ierr);
         if (format) *format = tfmt;
         if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
