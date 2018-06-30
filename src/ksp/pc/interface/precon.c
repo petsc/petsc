@@ -1606,12 +1606,11 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 @*/
 PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
-  PCType            cstr;
-  PetscErrorCode    ierr;
-  PetscBool         iascii,isstring,isbinary,isdraw;
-  PetscViewerFormat format;
+  PCType         cstr;
+  PetscErrorCode ierr;
+  PetscBool      iascii,isstring,isbinary,isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         issaws;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -1631,10 +1630,6 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 #endif
 
   if (iascii) {
-    PetscInt    tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)pc)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -1662,7 +1657,6 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
         if (pc->pmat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
