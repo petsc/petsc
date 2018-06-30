@@ -16,7 +16,7 @@ include ${PETSC_DIR}/lib/petsc/conf/test
 chk:
 	@if [ ! -f ${LOC}/docs/manualpages/htmlmap ] ; then \
           printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
-          echo "You must first run make alldocs in ${PETSC_DIR}"; \
+          echo "You must first run make alldoc in ${PETSC_DIR}"; \
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 	@if [ ${PDFLATEX}foo = foo ] ; then \
           printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \

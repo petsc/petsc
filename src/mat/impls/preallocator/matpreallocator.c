@@ -1,8 +1,8 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
-#include <petsc/private/hash.h>
+#include <petsc/private/hashsetij.h>
 
 typedef struct {
-  PetscHashJK ht;
+  PetscHSetIJ ht;
   PetscInt   *dnz, *onz;
 } Mat_Preallocator;
 
@@ -13,7 +13,7 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
 
   PetscFunctionBegin;
   ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr);
-  ierr = PetscHashJKDestroy(&p->ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);
   ierr = PetscFree2(p->dnz, p->onz);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) A, 0);CHKERRQ(ierr);
@@ -31,7 +31,7 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m, NULL);CHKERRQ(ierr);
-  ierr = PetscHashJKCreate(&p->ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJCreate(&p->ht);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject) A), bs, &A->stash);CHKERRQ(ierr);
   ierr = PetscCalloc2(m, &p->dnz, m, &p->onz);CHKERRQ(ierr);
@@ -49,22 +49,21 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A, &cStart, &cEnd);CHKERRQ(ierr);
   for (r = 0; r < m; ++r) {
-    PetscHashJKKey  key;
-    PetscHashJKIter missing, iter;
+    PetscHashIJKey key;
+    PetscBool      missing;
 
-    key.j = rows[r];
-    if (key.j < 0) continue;
-    if ((key.j < rStart) || (key.j >= rEnd)) {
-      ierr = MatStashValuesRow_Private(&A->stash, key.j, n, cols, values, PETSC_FALSE);CHKERRQ(ierr);
+    key.i = rows[r];
+    if (key.i < 0) continue;
+    if ((key.i < rStart) || (key.i >= rEnd)) {
+      ierr = MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE);CHKERRQ(ierr);
     } else {
       for (c = 0; c < n; ++c) {
-        key.k = cols[c];
-        if (key.k < 0) continue;
-        ierr = PetscHashJKPut(p->ht, key, &missing, &iter);CHKERRQ(ierr);
+        key.j = cols[c];
+        if (key.j < 0) continue;
+        ierr = PetscHSetIJQueryAdd(p->ht, key, &missing);CHKERRQ(ierr);
         if (missing) {
-          ierr = PetscHashJKSet(p->ht, iter, 1);CHKERRQ(ierr);
-          if ((key.k >= cStart) && (key.k < cEnd)) ++p->dnz[key.j-rStart];
-          else                                     ++p->onz[key.j-rStart];
+          if ((key.j >= cStart) && (key.j < cEnd)) ++p->dnz[key.i-rStart];
+          else                                     ++p->onz[key.i-rStart];
         }
       }
     }

@@ -81,7 +81,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -105,7 +105,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -129,7 +129,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -159,7 +159,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
@@ -177,7 +177,7 @@ Downloaded package %s from: %s is not a tarball.
 [or installed python cannot process compressed files]
 * If you are behind a firewall - please fix your proxy and rerun ./configure
   For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s

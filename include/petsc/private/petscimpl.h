@@ -11,10 +11,6 @@
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
-#endif
-
 #if defined(PETSC_HAVE_CLOSURES)
 PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
 #endif
@@ -200,6 +196,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
+#define PetscValidHeaderSpecificType(h,ck,arg,t) do {} while (0)
 #define PetscValidHeader(h,arg) do {} while (0)
 #define PetscValidPointer(h,arg) do {} while (0)
 #define PetscValidCharPointer(h,arg) do {} while (0)
@@ -209,6 +206,16 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidFunction(h,arg) do {} while (0)
 
 #else
+
+/*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
+#define PetscValidHeaderSpecificType(h,ck,arg,t) \
+  do {   \
+    PetscErrorCode __ierr; \
+    PetscBool      same; \
+    PetscValidHeaderSpecific(h,ck,arg); \
+    __ierr = PetscObjectTypeCompare((PetscObject)h,t,&same);CHKERRQ(__ierr);      \
+    if (!same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+  } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   do {                                                                  \
@@ -801,9 +808,7 @@ typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETS
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
-#define REDUCE_SUM  0
-#define REDUCE_MAX  1
-#define REDUCE_MIN  2
+typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
   MPI_Comm    comm;

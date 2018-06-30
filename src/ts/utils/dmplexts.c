@@ -229,18 +229,23 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
-  IS             cellIS;
   DM             plex;
+  PetscDS        prob;
+  PetscBool      hasJac, hasPrec;
+  IS             cellIS;
   PetscInt       depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMTSConvertPlex(dm,&plex,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
+  if (hasJac && hasPrec) {ierr = MatZeroEntries(Jac);CHKERRQ(ierr);}
+  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(plex,&depth);CHKERRQ(ierr);
   ierr = DMGetStratumIS(plex, "dim", depth, &cellIS);CHKERRQ(ierr);
-  if (!cellIS) {
-    ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);
-  }
+  if (!cellIS) {ierr = DMGetStratumIS(plex, "depth", depth, &cellIS);CHKERRQ(ierr);}
   ierr = DMPlexComputeJacobian_Internal(plex, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);

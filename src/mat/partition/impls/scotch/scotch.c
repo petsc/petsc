@@ -238,7 +238,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   Mat_MPIAdj               *adj = (Mat_MPIAdj*)mat->data;
   PetscBool                flg,distributed;
   PetscBool                proc_weight_flg;
-  PetscInt                 i,j,p,wgtflag=0,bs=1,nold;
+  PetscInt                 i,j,p,bs=1,nold;
   PetscReal                *vwgttab,deltval;
   SCOTCH_Num               *locals,*velotab,*veloloctab,*edloloctab,vertlocnbr,edgelocnbr,nparts=part->n;
 
@@ -280,8 +280,8 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
-  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : NULL;
-  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : NULL;
+  veloloctab = part->vertex_weights;
+  edloloctab = adj->values;
 
   /* detect whether all vertices are located at the same process in original graph */
   for (p = 0; !mat->rmap->range[p+1] && p < nparts; ++p);

@@ -486,9 +486,14 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 .  layout - PetscLayout defining the global space
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
+.  localmode - copy mode for ilocal
 -  iremote - remote locations of root vertices for each leaf on the current process
 
    Level: intermediate
+
+   Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
+   encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
+   needed
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph(), PetscSFGetGraph()
 @*/

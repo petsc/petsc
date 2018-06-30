@@ -1290,7 +1290,7 @@ PetscErrorCode PetscOptionsFindPair_Private(PetscOptions options,const char pre[
   PetscErrorCode ierr;
   PetscInt       i,N;
   size_t         len;
-  char           **names,tmp[256];
+  char           **names,tmp[512];
   PetscBool      match;
 
   PetscFunctionBegin;
@@ -1357,7 +1357,7 @@ PetscErrorCode PetscOptionsFindPair_Private(PetscOptions options,const char pre[
       }
     }
     if (cnt) {
-      char tmp2[256],tmp3[256];
+      char tmp2[512],tmp3[512];
       for (i=0; i<cnt; i++) {
         ierr = PetscStrcpy(tmp2,"-");CHKERRQ(ierr);
         ierr = PetscStrncpy(tmp3,tmp,locs[i]+1);CHKERRQ(ierr);
@@ -1376,7 +1376,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
   PetscErrorCode ierr;
   PetscInt       i,N;
   size_t         len;
-  char           **names,tmp[256];
+  char           **names,tmp[512];
   PetscBool      match;
 
   PetscFunctionBegin;

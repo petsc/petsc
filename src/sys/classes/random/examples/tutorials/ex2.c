@@ -17,9 +17,9 @@ typedef struct himaInfoTag himaInfo;
 
 PetscErrorCode readData(MPI_Comm,himaInfo *);
 PetscReal mcVal(PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-void exchange(PetscReal*, PetscReal*);
+void exchangeVal(PetscReal*, PetscReal*);
 PetscReal basketPayoff(PetscReal[], PetscReal[], PetscInt, PetscReal,PetscReal, PetscReal[]);
-void stdNormalArray(PetscReal*, PetscInt,PetscRandom);
+PetscErrorCode stdNormalArray(PetscReal*, PetscInt,PetscRandom);
 PetscInt divWork(PetscMPIInt, PetscInt, PetscMPIInt);
 
 /*
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
   x = 0;
   for (i=0; i<myNumSim; i++) {
-    stdNormalArray(eps,numdim,ran);
+    ierr = stdNormalArray(eps,numdim,ran);CHKERRQ(ierr);
     x += basketPayoff(vol,St0,n,r,dt,eps);
   }
 
@@ -92,21 +92,23 @@ int main(int argc, char *argv[])
   return ierr;
 }
 
-void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
+PetscErrorCode stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
 {
   PetscInt       i;
   PetscScalar    u1,u2;
   PetscReal      t;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   for (i=0; i<numdim; i+=2) {
-    ierr = PetscRandomGetValue(ran,&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
-    ierr = PetscRandomGetValue(ran,&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+    ierr = PetscRandomGetValue(ran,&u1);CHKERRQ(ierr);
+    ierr = PetscRandomGetValue(ran,&u2);CHKERRQ(ierr);
 
     t        = PetscSqrtReal(-2*PetscLogReal(PetscRealPart(u1)));
     eps[i]   = t * PetscCosReal(2*PETSC_PI*PetscRealPart(u2));
     eps[i+1] = t * PetscSinReal(2*PETSC_PI*PetscRealPart(u2));
   }
+  PetscFunctionReturn(0);
 }
 
 
@@ -125,9 +127,9 @@ PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r
       Stk[j] = mcVal(Stk[j],r,vol[j],dt,eps[pointcount++]);
       if ((Stk[j]/St0[j]) > (Stk[maxk]/St0[maxk])) maxk = j;
     }
-    exchange(Stk+j-1,Stk+maxk);
-    exchange(St0+j-1,St0+maxk);
-    exchange(vol+j-1,vol+maxk);
+    exchangeVal(Stk+j-1,Stk+maxk);
+    exchangeVal(St0+j-1,St0+maxk);
+    exchangeVal(vol+j-1,vol+maxk);
   }
 
   payoff = 0;
@@ -165,7 +167,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   PetscFunctionReturn(0);
 }
 
-void exchange(PetscReal *a, PetscReal *b)
+void exchangeVal(PetscReal *a, PetscReal *b)
 {
   PetscReal t;
 

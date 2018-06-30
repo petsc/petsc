@@ -1,6 +1,6 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
-#include <petsc/private/hash.h>
+#include <petsc/private/hashtable.h>
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
@@ -71,7 +71,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
   size_t          l1,l2;
 #if !defined(PETSC_HAVE_THREADSAFETY)
   char            *both;
-  khint_t         newitem;
+  int             newitem;
 #endif
   PetscErrorCode  ierr;
 

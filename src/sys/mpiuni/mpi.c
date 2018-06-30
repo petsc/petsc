@@ -649,12 +649,15 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_get_count_(int *status,int *datatype,i
 }
 
 /* duplicate from fortranimpl.h */
+#ifndef PETSC_FORTRAN_CHARLEN_T
+#  define PETSC_FORTRAN_CHARLEN_T int
+#endif
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_MIXED_LEN(len) ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_END_LEN(len)
 #else
 #define PETSC_MIXED_LEN(len)
-#define PETSC_END_LEN(len)   ,int len
+#define PETSC_END_LEN(len)   ,PETSC_FORTRAN_CHARLEN_T len
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_get_processor_name_(char *name PETSC_MIXED_LEN(len),int *result_len,int *ierr PETSC_END_LEN(len))

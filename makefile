@@ -5,7 +5,7 @@
 #
 ALL: all
 LOCDIR	 = ./
-DIRS	 = src include tutorials interfaces
+DIRS	 = src include tutorials interfaces share/petsc/matlab
 CFLAGS	 =
 FFLAGS	 =
 CPPFLAGS =
@@ -15,7 +15,7 @@ FPPFLAGS =
 include ././${PETSC_ARCH}/lib/petsc/conf/petscvariables
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
+include ${PETSC_DIR}/lib/petsc/conf/test.common
 
 # This makefile contains a lot of PHONY targets with improperly specified prerequisites
 # where correct execution instead depends on the targets being processed in the correct
@@ -119,16 +119,20 @@ info:
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using system modules: ${LOADEDMODULES}"
-	-@TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
+	-@if [ "${MPI_IS_MPIUNI}" = "1" ]; then \
+           echo Using mpi.h: mpiuni; \
+        else \
+           TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
            echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
            BUF=`${CPP} ${PETSC_CCPPFLAGS} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
-           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}
+           echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
+        fi
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "------------------------------------------"
-	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) -l$(NPMAX) $(MAKEFLAGS)"
+	-@echo "Using MAKEFLAGS: -j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)"
 	-@echo "=========================================="
 
 #
@@ -147,7 +151,7 @@ build:
 # Build MatLab binaries
 #
 matlabbin:
-	-@if [ "${MATLAB_MEX}" != "" -a "${PETSC_SCALAR}" = "real" -a "${PETSC_PRECISION}" = "double" ]; then \
+	-@if [ "${MATLAB_MEX}" != "" -a "${MATLAB_SOCKET}" != "" -a "${PETSC_SCALAR}" = "real" -a "${PETSC_PRECISION}" = "double" ]; then \
           echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi; \
@@ -161,11 +165,6 @@ test_install: test
 check: test
 test:
 	-+@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
-	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
-          printf "=========================================\n"; \
-          printf "Now to evaluate the computer systems you plan use - do:\n"; \
-          printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams\n"; \
-        fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/testx.log
 test_build:
@@ -258,10 +257,13 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
+	-@echo "running streams in src/benchmarks/streams"
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams
 
 stream:
-	+cd src/benchmarks/streams; ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+	-@echo "running stream in src/benchmarks/streams"
+	+@cd src/benchmarks/streams; ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} stream
+
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
@@ -301,7 +303,7 @@ SCRIPTS    = lib/petsc/bin/maint/builddist  lib/petsc/bin/maint/wwwman lib/petsc
 
 
 # Builds all the documentation - should be done every night
-alldoc: allcite allpdf alldoc1 alldoc2 alldoc3 docsetdate
+alldoc: allcite allpdf alldoc1 alldoc2 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -338,14 +340,6 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
-#
-# Builds HTML versions of Matlab scripts
-alldoc3: chk_loc
-	if  [ "${MATLAB_COMMAND}" != "" ]; then\
-          export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/share/petsc/matlab; \
-          cd ${PETSC_DIR}/share/petsc/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
-        fi
-
 #
 # Makes links for all manual pages in $LOC/docs/manualpages/all
 allman:

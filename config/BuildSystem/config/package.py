@@ -613,7 +613,7 @@ class Package(config.base.Configure):
       return
 
   def downLoad(self):
-    '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
+    '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
     import retrieval
 
     if self.havePETSc:
@@ -635,6 +635,7 @@ class Package(config.base.Configure):
         download_urls.append(url)
       if url.find('http://ftp.mcs.anl.gov') >=0:
         download_urls.append(url.replace('http://','ftp://'))
+        download_urls.append(url.replace('http://ftp.mcs.anl.gov/pub/petsc/','https://www.mcs.anl.gov/petsc/mirror/'))
       # prefer giturl from a petsc gitclone, and tarball urls from a petsc tarball.
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):

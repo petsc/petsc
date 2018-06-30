@@ -1,17 +1,19 @@
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /*@
-  DMDASetSizes - Sets the global sizes
+  DMDASetSizes - Sets the number of grid points in the three dimensional directions
 
   Logically Collective on DMDA
 
   Input Parameters:
 + da - the DMDA
-. M - the global X size (or PETSC_DECIDE)
-. N - the global Y size (or PETSC_DECIDE)
-- P - the global Z size (or PETSC_DECIDE)
+. M - the global X size
+. N - the global Y size
+- P - the global Z size
 
   Level: intermediate
+
+  Developer Notes: Since the dimension may not yet have been set the code cannot error check for non-positive Y and Z number of grid points
 
 .seealso: DMDAGetSize(), PetscSplitOwnership()
 @*/
@@ -20,11 +22,14 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidLogicalCollectiveInt(da,M,2);
   PetscValidLogicalCollectiveInt(da,N,3);
   PetscValidLogicalCollectiveInt(da,P,4);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  if (M < 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in X direction must be positive");
+  if (N < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Y direction must be positive");
+  if (P < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Z direction must be positive");
 
   dd->M = M;
   dd->N = N;
@@ -53,7 +58,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
   PetscValidLogicalCollectiveInt(da,m,2);
   PetscValidLogicalCollectiveInt(da,n,3);
   PetscValidLogicalCollectiveInt(da,p,4);
@@ -95,7 +100,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,bx,2);
   PetscValidLogicalCollectiveEnum(da,by,3);
   PetscValidLogicalCollectiveEnum(da,bz,4);
@@ -125,7 +130,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,dof,2);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->w  = dof;
@@ -154,7 +159,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
   DM_DA *dd = (DM_DA *) da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(dof,2);
   *dof = dd->w;
   PetscFunctionReturn(0);
@@ -183,7 +188,7 @@ PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (x) *x = dd->xol;
   if (y) *y = dd->yol;
   if (z) *z = dd->zol;
@@ -211,7 +216,7 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,x,2);
   PetscValidLogicalCollectiveInt(da,y,3);
   PetscValidLogicalCollectiveInt(da,z,4);
@@ -243,7 +248,7 @@ PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (Nsub) *Nsub = dd->Nsub;
   PetscFunctionReturn(0);
 }
@@ -267,7 +272,7 @@ PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,Nsub,2);
   dd->Nsub = Nsub;
   PetscFunctionReturn(0);
@@ -299,7 +304,7 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,xo,2);
   PetscValidLogicalCollectiveInt(da,yo,3);
   PetscValidLogicalCollectiveInt(da,zo,4);
@@ -345,7 +350,7 @@ PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,Petsc
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (xo) *xo = dd->xo;
   if (yo) *yo = dd->yo;
   if (zo) *zo = dd->zo;
@@ -381,7 +386,7 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (xs) *xs = dd->nonxs;
   if (ys) *ys = dd->nonys;
   if (zs) *zs = dd->nonzs;
@@ -416,7 +421,7 @@ PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pet
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,xs,2);
   PetscValidLogicalCollectiveInt(da,ys,3);
   PetscValidLogicalCollectiveInt(da,zs,4);
@@ -452,7 +457,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,stype,2);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->stencil_type = stype;
@@ -480,7 +485,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(stype,2);
   *stype = dd->stencil_type;
   PetscFunctionReturn(0);
@@ -505,7 +510,7 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,width,2);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->s = width;
@@ -533,7 +538,7 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
   DM_DA *dd = (DM_DA *) da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(width,2);
   *width = dd->s;
   PetscFunctionReturn(0);
@@ -574,7 +579,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   if (lx) {
     if (dd->m < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
@@ -627,7 +632,7 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,ctype,2);
   dd->interptype = ctype;
   PetscFunctionReturn(0);
@@ -656,7 +661,7 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(ctype,2);
   *ctype = dd->interptype;
   PetscFunctionReturn(0);
@@ -691,7 +696,7 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   *ranks = dd->neighbors;
   PetscFunctionReturn(0);
 }
@@ -730,7 +735,7 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (lx) *lx = dd->lx;
   if (ly) *ly = dd->ly;
   if (lz) *lz = dd->lz;
@@ -765,7 +770,7 @@ PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refin
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,refine_x,2);
   PetscValidLogicalCollectiveInt(da,refine_y,3);
   PetscValidLogicalCollectiveInt(da,refine_z,4);
@@ -801,7 +806,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (refine_x) *refine_x = dd->refine_x;
   if (refine_y) *refine_y = dd->refine_y;
   if (refine_z) *refine_z = dd->refine_z;
@@ -830,7 +835,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   da->ops->creatematrix = f;
   PetscFunctionReturn(0);
 }
@@ -926,7 +931,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(daref,3);
 
   ierr = DMGetDimension(da, &dim);CHKERRQ(ierr);
@@ -1088,7 +1093,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(daref,3);
 
   ierr = DMGetDimension(da, &dim);CHKERRQ(ierr);

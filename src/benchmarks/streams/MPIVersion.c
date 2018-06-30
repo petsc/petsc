@@ -74,8 +74,6 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-#include <mpi.h>
-
 int main(int argc,char **args)
 {
   int            quantum, checktick(void);

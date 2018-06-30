@@ -13,8 +13,9 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,const MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
@@ -1046,14 +1047,14 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
-    PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");
+    ierr = PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");CHKERRQ(ierr);
   } else {
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {
       if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
-        PetscInfo1(A,"Matrix is missing block diagonal number %D\n",i);
+        ierr = PetscInfo1(A,"Matrix is missing block diagonal number %D\n",i);CHKERRQ(ierr);
         break;
       }
     }
@@ -1223,6 +1224,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1345,7 +1347,6 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX && mbs != nbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = PetscCalloc1(1+nbs,&col);CHKERRQ(ierr);
 
@@ -3046,6 +3047,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_baij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqbaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

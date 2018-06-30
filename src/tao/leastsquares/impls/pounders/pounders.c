@@ -1018,8 +1018,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   mfqP->npmax = PetscMin((mfqP->n+1)*(mfqP->n+2)/2,mfqP->npmax);
   mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n+2);
 
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Xhist);CHKERRQ(ierr);
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Xhist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fhist);CHKERRQ(ierr);
   for (i=0;i<mfqP->n+1;i++) {
     ierr = VecDuplicate(tao->solution,&mfqP->Xhist[i]);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[i]);CHKERRQ(ierr);
@@ -1028,7 +1028,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   ierr = VecDuplicate(tao->sep_objective,&mfqP->workfvec);CHKERRQ(ierr);
   mfqP->nHist = 0;
 
-  ierr = PetscMalloc1(tao->max_funcs+10,&mfqP->Fres);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fres);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->npmax*mfqP->m,&mfqP->RES);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->n,&mfqP->work2);CHKERRQ(ierr);
@@ -1110,8 +1110,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
     ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)mfqP, 1);CHKERRQ(ierr);
-    ierr = TaoSetType(mfqP->subtao,TAOTRON);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)tao, 1);CHKERRQ(ierr);
+    ierr = TaoSetType(mfqP->subtao,TAOBNTR);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
     ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
     ierr = TaoSetObjectiveAndGradientRoutine(mfqP->subtao,pounders_fg,(void*)mfqP);CHKERRQ(ierr);
@@ -1211,9 +1211,7 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(PetscOptionItems *PetscOptionsO
   ierr = PetscOptionsHead(PetscOptionsObject,"POUNDERS method for least-squares optimization");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL);CHKERRQ(ierr);
   mfqP->delta = mfqP->delta0;
-  mfqP->npmax = PETSC_DEFAULT;
   ierr = PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,NULL);CHKERRQ(ierr);
-  mfqP->usegqt = PETSC_FALSE;
   ierr = PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1268,6 +1266,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
+  mfqP->npmax = PETSC_DEFAULT;
   mfqP->delta0 = 0.1;
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;
@@ -1279,6 +1278,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->gamma1=2.0;
   mfqP->eta0 = 0.0;
   mfqP->eta1 = 0.1;
+  mfqP->usegqt = PETSC_FALSE;
   mfqP->gqt_rtol = 0.001;
   mfqP->gqt_maxits = 50;
   mfqP->workxvec = 0;

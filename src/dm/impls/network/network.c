@@ -554,13 +554,11 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       offsetd;
+  PetscInt       offsetd = 0;
 
   PetscFunctionBegin;
-
   ierr = DMNetworkGetComponentKeyOffset(dm,p,compnum,key,&offsetd);CHKERRQ(ierr);
   *component = network->componentdataarray+offsetd;
-
   PetscFunctionReturn(0);
 }
 
@@ -1277,6 +1275,7 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
 {
   DM_Network     *network=(DM_Network*)dm->data;
   PetscErrorCode ierr;
+  PetscInt       nVertices = network->nVertices;
 
   PetscFunctionBegin;
   network->userEdgeJacobian   = eflg;
@@ -1286,9 +1285,9 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
     ierr = PetscCalloc1(3*network->nEdges,&network->Je);CHKERRQ(ierr);
   }
 
-  if (vflg && !network->Jv) {
+  if (vflg && !network->Jv && nVertices) {
     PetscInt       i,*vptr,nedges,vStart=network->vStart;
-    PetscInt       nVertices = network->nVertices,nedges_total;
+    PetscInt       nedges_total;
     const PetscInt *edges;
 
     /* count nvertex_total */

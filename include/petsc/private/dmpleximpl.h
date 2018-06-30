@@ -7,24 +7,46 @@
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
-#include <petsc/private/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
+PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeOverlap;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeField;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeData;
+PETSC_EXTERN PetscLogEvent DMPLEX_Migrate;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolateSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Preallocate;
+PETSC_EXTERN PetscLogEvent DMPLEX_ResidualFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_JacobianFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolatorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
-PETSC_INTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
 typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_1D,
               REFINER_SIMPLEX_2D,
               REFINER_HYBRID_SIMPLEX_2D,
               REFINER_SIMPLEX_TO_HEX_2D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_2D,
               REFINER_HEX_2D,
               REFINER_HYBRID_HEX_2D,
               REFINER_SIMPLEX_3D,
               REFINER_HYBRID_SIMPLEX_3D,
               REFINER_SIMPLEX_TO_HEX_3D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_3D,
               REFINER_HEX_3D,
               REFINER_HYBRID_HEX_3D} CellRefiner;
 
@@ -48,7 +70,7 @@ typedef struct {
 } PetscPartitioner_Chaco;
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt ptype;
 } PetscPartitioner_ParMetis;
 
 typedef struct {
@@ -73,6 +95,7 @@ typedef struct {
   int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
   int tags[4];       /* Tag array */
+  PetscInt cellType; /* Cell type */
 } GmshElement;
 
 /* Utility struct to store the contents of a Fluent file in memory */

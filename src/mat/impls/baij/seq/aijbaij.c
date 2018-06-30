@@ -78,21 +78,21 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatR
   PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths;
 
   PetscFunctionBegin;
-  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (A->rmap->bs > 1) {
     ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-
-  ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    rowlengths[i] = ai[i+1] - ai[i];
-  }
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      rowlengths[i] = ai[i+1] - ai[i];
+    }
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  } else B = *newmat;
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 

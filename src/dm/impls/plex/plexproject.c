@@ -122,9 +122,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
     if (!sp[f]) continue;
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     if (!funcs[f]) {
-      for (d = 0; d < spDim; d++, v++) {
-        values[v] = 0.;
-      }
+      for (d = 0; d < spDim; d++, v++) values[v] = 0.;
       continue;
     }
     ierr = PetscDualSpaceGetDM(sp[f],&dm);CHKERRQ(ierr);
@@ -136,7 +134,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
       const PetscReal *invJ;
 
       if (isAffine) {
-        CoordinatesRefToReal(dim, dim, fegeom->xi, fegeom->v, fegeom->J, &points[q*dim], x);
+        CoordinatesRefToReal(dE, dim, fegeom->xi, fegeom->v, fegeom->J, &points[q*dim], x);
         v0 = x;
         invJ = fegeom->invJ;
       } else {
@@ -145,7 +143,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
       }
       EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, invJ, coefficients, coefficients_t, u, u_x, u_t);
       if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
-      (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
+      (*funcs[f])(dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, v0, numConstants, constants, &pointEval[Nc[f]*q]);
     }
     ierr = PetscDualSpaceApplyAll(sp[f], pointEval, &values[v]);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm,numPoints*Nc[f],MPIU_SCALAR,&pointEval);CHKERRQ(ierr);

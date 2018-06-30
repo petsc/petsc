@@ -61,7 +61,7 @@ PetscErrorCode TaoInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("tao",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(TAO_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(TAO_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(TaoFinalizePackage);CHKERRQ(ierr);

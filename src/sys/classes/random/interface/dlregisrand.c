@@ -55,7 +55,7 @@ PetscErrorCode  PetscRandomInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("random",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_RANDOM_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_RANDOM_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscRandomFinalizePackage);CHKERRQ(ierr);

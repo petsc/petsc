@@ -13,6 +13,8 @@
 #include <_hypre_parcsr_ls.h>
 #include <_hypre_sstruct_ls.h>
 
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat,Mat,HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat,HYPRE_IJMatrix);
@@ -953,6 +955,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatHYPRESetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatHYPREGetParCSR_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1445,6 +1448,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_mpiaij_hypre_C",MatPtAP_AIJ_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPRESetPreallocation_C",MatHYPRESetPreallocation_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPREGetParCSR_C",MatHYPREGetParCSR_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_hypre_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -904,9 +904,10 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
   /* set local to global mapping for ghosted vector */
-  nb   = n/bs;
-  ierr = PetscMalloc1(nb+nghost,&indices);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
+  nb     = n/bs;
+  ierr   = PetscMalloc1(nb+nghost,&indices);CHKERRQ(ierr);
+  ierr   = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
+  rstart = rstart/bs;
 
   for (i=0; i<nb; i++)      indices[i]    = rstart + i;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];

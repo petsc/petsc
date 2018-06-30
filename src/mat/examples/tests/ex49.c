@@ -52,8 +52,8 @@ int main(int argc,char **argv)
 
   /* Form matrix transpose */
   ierr = PetscOptionsHasName(NULL,NULL,"-in_place",&flg);CHKERRQ(ierr);
-  if (!rect && flg) {
-    ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
+  if (flg) {
+    ierr = MatTranspose(mat,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
     ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
@@ -90,5 +90,24 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+
+   testset:
+     args: -rect1
+     test:
+       suffix: r1
+       output_file: output/ex49_r1.out
+     test:
+       suffix: r1_inplace
+       args: -in_place
+       output_file: output/ex49_r1.out
+     test:
+       suffix: r1_par
+       nsize: 2
+       output_file: output/ex49_r1_par.out
+     test:
+       suffix: r1_par_inplace
+       args: -in_place
+       nsize: 2
+       output_file: output/ex49_r1_par.out
 
 TEST*/

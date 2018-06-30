@@ -59,3 +59,9 @@ PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *p
   if (close(t)) PETSC_MEX_ERROR("closing socket");
   return;
 }
+
+int main(int argc, char **argv)
+{
+  return 0;
+}
+

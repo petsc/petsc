@@ -194,9 +194,11 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   if (bx == DM_BOUNDARY_PERIODIC) {
+    if (!Mx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
+    if (Mx < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratio = (mx-1)/(Mx-1);
     if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
@@ -271,20 +273,23 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   if (bx == DM_BOUNDARY_PERIODIC) {
+    if (!Mx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
+    if (Mx < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
   if (by == DM_BOUNDARY_PERIODIC) {
+    if (!My) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
+    if (My < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
-
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
@@ -494,6 +499,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  if (!Mx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
+  if (!My) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
   ratioi = mx/Mx;
   ratioj = my/My;
   if (ratioi*Mx != mx) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
@@ -606,6 +613,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
+  if (!Mx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
+  if (!My) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
+  if (!Mz) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ratioi = mx/Mx;
   ratioj = my/My;
@@ -732,27 +742,33 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   if (mx == Mx) {
     ratioi = 1;
   } else if (bx == DM_BOUNDARY_PERIODIC) {
+    if (!Mx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be positive",Mx);
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
+    if (Mx < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of x coarse grid points %D must be greater than 1",Mx);
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
   if (my == My) {
     ratioj = 1;
   } else if (by == DM_BOUNDARY_PERIODIC) {
+    if (!My) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be positive",My);
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
+    if (My < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of y coarse grid points %D must be greater than 1",My);
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
   if (mz == Mz) {
     ratiok = 1;
   } else if (bz == DM_BOUNDARY_PERIODIC) {
+    if (!Mz) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be positive",Mz);
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
   } else {
+    if (Mz < 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of z coarse grid points %D must be greater than 1",Mz);
     ratiok = (mz-1)/(Mz-1);
     if (ratiok*(Mz-1) != mz-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }

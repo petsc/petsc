@@ -27,10 +27,10 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.debugging   = framework.require('PETSc.options.debugging', self)
     self.compilers   = framework.require('config.compilers', self)
     self.libraries   = framework.require('config.libraries', self)
     self.types       = framework.require('config.types', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     return
 
 
@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
-    if self.debugging.debugging:
+    if self.compilerFlags.debugging:
       if self.useThreadSafety:
         raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
       self.addDefine('USE_DEBUG',1)

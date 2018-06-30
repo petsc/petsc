@@ -44,6 +44,8 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
    Level: advanced
 
 .keywords: MG, multigrid, get, coarse grid
+
+.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetSmoother()
 @*/
 PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 {
@@ -434,7 +436,7 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 
 .keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
+.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetCoarseSolve()
 @*/
 PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 {

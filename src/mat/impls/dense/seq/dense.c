@@ -1479,15 +1479,12 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 
   PetscFunctionBegin;
   v = mat->v; m = A->rmap->n; M = mat->lda; n = A->cmap->n;
-  if (reuse == MAT_INPLACE_MATRIX) { /* in place transpose */
-    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
-    else {
-      for (j=0; j<m; j++) {
-        for (k=0; k<j; k++) {
-          tmp        = v[j + k*M];
-          v[j + k*M] = v[k + j*M];
-          v[k + j*M] = tmp;
-        }
+  if (reuse == MAT_INPLACE_MATRIX && m == n) { /* in place transpose */
+    for (j=0; j<m; j++) {
+      for (k=0; k<j; k++) {
+        tmp        = v[j + k*M];
+        v[j + k*M] = v[k + j*M];
+        v[k + j*M] = tmp;
       }
     }
   } else { /* out-of-place transpose */
@@ -1496,7 +1493,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     PetscScalar  *v2;
     PetscInt     M2;
 
-    if (reuse == MAT_INITIAL_MATRIX) {
+    if (reuse != MAT_REUSE_MATRIX) {
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&tmat);CHKERRQ(ierr);
       ierr = MatSetSizes(tmat,A->cmap->n,A->rmap->n,A->cmap->n,A->rmap->n);CHKERRQ(ierr);
       ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -1511,7 +1508,10 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     }
     ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    *matout = tmat;
+    if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) *matout = tmat;
+    else {
+      ierr = MatHeaderMerge(A,&tmat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

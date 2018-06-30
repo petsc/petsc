@@ -1,0 +1,15 @@
+<HTML>
+<HEAD>
+<TITLE>Sensitivity - ODE integrators</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2>Sensitivity analysis for ODE and DAE: <A HREF="PETSC_DIRsrc/ts/examples/tutorials/index.html">Examples</A></H2>
+
+The TS library provides discrete adjoint models (TSAdjoint) and tangent linear models (TSForward) for sensitivity analysis for ODEs and DAEs.
+
+The adjoint solvers support gradient calculation for multiple cost functions, and the tangent linear solvers support gradient calculation with respect to multiple parameters. Adjoint is particularly efficient when the number of cost functions is much less than the number of parameters. Note that the parameters can be initial states or system parameters as used in the calculation of ODE/DAE right-hand sides.
+
+Typical cost functions of interest may depend on the final solution to the ODE/DAE or on the whole trajectory (taking an integral form). The integral can be evaluated together with the time integration.
+
+<P>

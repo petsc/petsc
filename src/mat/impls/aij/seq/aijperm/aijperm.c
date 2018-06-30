@@ -82,6 +82,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatR
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaijperm_C",NULL);CHKERRQ(ierr);
 
   /* Free everything in the Mat_SeqAIJPERM data structure.*/
   ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
@@ -634,6 +635,8 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
   PetscFunctionReturn(0);
 }
 
+/* This function prototype is needed in MatConvert_SeqAIJ_SeqAIJPERM(), below. */
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /* MatConvert_SeqAIJ_SeqAIJPERM converts a SeqAIJ matrix into a
  * SeqAIJPERM matrix.  This routine is called by the MatCreate_SeqAIJPERM()
@@ -673,6 +676,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijperm_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaijperm_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;

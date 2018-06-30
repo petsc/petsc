@@ -446,9 +446,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
-      if (ts->vec_costintegral && ts->costintegralfwd) {
-        ierr = VecCopy(rk->VecCostIntegral0,ts->vec_costintegral);CHKERRQ(ierr);
-      }
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -474,7 +471,7 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   ierr = VecCopy(ts->vec_costintegral,rk->VecCostIntegral0);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,rk->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -493,7 +490,7 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
   PetscFunctionBegin;
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,ts->ptime-ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,ts->ptime+ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -867,25 +864,6 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     ierr = PetscFree(namelist);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  size_t         left,count;
-  char           *p;
-
-  PetscFunctionBegin;
-  for (i=0,p=buf,left=len; i<n; i++) {
-    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
-    if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
-    left -= count;
-    p    += count;
-    *p++  = ' ';
-  }
-  p[i ? 0 : -1] = 0;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,4 @@
-static char help[] =
-"Example of inverting a block diagonal matrix.\n"
+static char help[] = "Example of inverting a block diagonal matrix.\n"
 "\n";
 
 #include <petscmat.h>

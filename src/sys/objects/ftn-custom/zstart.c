@@ -156,7 +156,7 @@ extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
 extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
-extern PetscErrorCode  PetscLogInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
 #endif
 extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
 extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);

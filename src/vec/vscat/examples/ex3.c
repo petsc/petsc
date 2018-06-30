@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   Vec            x,y;
   IS             isx,isy;
   VecScatter     ctx;
+  PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -74,9 +75,11 @@ int main(int argc,char **argv)
   ierr = VecScale(x,-1.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   if (rank == 1) {
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = VecView(y,sviewer);CHKERRQ(ierr);
   }
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
 
   /* Free spaces */
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);

@@ -83,11 +83,7 @@ MPI_Datatype MPIU_ENUM;
 */
 PetscErrorCode (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
-#else
 PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
-#endif
 /*
   This is needed to turn on/off GPU synchronization
 */
@@ -500,6 +496,9 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscOpenHistoryFile(NULL,&petsc_history);CHKERRQ(ierr);
     }
   }
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-log_sync",&PetscLogSyncOn,NULL);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,NULL,"-log_mpe",&flg1);CHKERRQ(ierr);
@@ -527,16 +526,20 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
-    if (format == PETSC_VIEWER_ASCII_XML){
+    if (format == PETSC_VIEWER_ASCII_XML) {
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);
     } else {
       ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
     }
   }
+  if (flg4 && format == PETSC_VIEWER_ASCII_XML) {
+    PetscReal threshold = PetscRealConstant(0.01);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-log_threshold",&threshold,&flg1);CHKERRQ(ierr);
+    if (flg1) {ierr = PetscLogSetThreshold((PetscLogDouble)threshold,NULL);CHKERRQ(ierr);}
+  }
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
-
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
