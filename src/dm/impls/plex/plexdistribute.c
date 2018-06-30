@@ -1509,10 +1509,10 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     /* Point ownership vote: Process with highest rank owns shared points */
     for (p = 0; p < nleaves; ++p) {
       if (shiftDebug) {
-        ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %D RemotePoint %D Shift %D MyRank %D\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) shift[roots[p].index%numShifts], (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %D RemotePoint %D Shift %D MyRank %D\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]), (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size);CHKERRQ(ierr);
       }
       /* Either put in a bid or we know we own it */
-      leafNodes[p].rank  = (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size;
+      leafNodes[p].rank  = (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size;
       leafNodes[p].index = p;
     }
     for (p = 0; p < nroots; p++) {
@@ -1539,14 +1539,14 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {
     if (shiftDebug) {
-      ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Root %D, Rank %D MyRank %D\n", rank, roots[p].index, leafNodes[p].rank, (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Root %D, Rank %D MyRank %D\n", rank, roots[p].index, leafNodes[p].rank, (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size);CHKERRQ(ierr);
     }
-    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) npointLeaves++;
+    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size) npointLeaves++;
   }
   ierr = PetscMalloc1(npointLeaves, &pointLocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
-    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) {
+    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size) {
       pointLocal[idx] = p;
       pointRemote[idx] = leafNodes[p];
       idx++;

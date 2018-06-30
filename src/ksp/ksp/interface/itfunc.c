@@ -502,7 +502,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 
 #include <petscdraw.h>
 
-static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool explicit, PetscViewer viewer, PetscViewerFormat format)
+static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool isExplicit, PetscViewer viewer, PetscViewerFormat format)
 {
   PetscReal     *r, *c;
   PetscInt       n, i, neig;
@@ -514,7 +514,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool explicit, P
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) ksp), &rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
-  if (explicit) {
+  if (isExplicit) {
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc2(n, &r, n, &c);CHKERRQ(ierr);
     ierr = KSPComputeEigenvaluesExplicitly(ksp, n, r, c);CHKERRQ(ierr);
@@ -529,7 +529,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool explicit, P
     ierr = KSPComputeEigenvalues(ksp, n, r, c, &neig);CHKERRQ(ierr);
   }
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%s computed eigenvalues\n", explicit ? "Explicitly" : "Iteratively");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%s computed eigenvalues\n", isExplicit ? "Explicitly" : "Iteratively");CHKERRQ(ierr);
     for (i = 0; i < neig; ++i) {
       if (c[i] >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, "%g + %gi\n", (double) r[i],  (double) c[i]);CHKERRQ(ierr);}
       else             {ierr = PetscViewerASCIIPrintf(viewer, "%g - %gi\n", (double) r[i], -(double) c[i]);CHKERRQ(ierr);}
@@ -541,7 +541,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool explicit, P
     if (format == PETSC_VIEWER_DRAW_CONTOUR) {
       ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
     } else {
-      if (!ksp->eigviewer) {ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,explicit ? "Explicitly Computed Eigenvalues" : "Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);}
+      if (!ksp->eigviewer) {ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,isExplicit ? "Explicitly Computed Eigenvalues" : "Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);}
       ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
