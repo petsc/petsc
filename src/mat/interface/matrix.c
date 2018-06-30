@@ -4428,7 +4428,9 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   B    = *M;
 
   ierr = MatGetOperation(mat,MATOP_VIEW,&viewf);CHKERRQ(ierr);
-  ierr = MatSetOperation(B,MATOP_VIEW,viewf);CHKERRQ(ierr);
+  if (viewf) {
+    ierr = MatSetOperation(B,MATOP_VIEW,viewf);CHKERRQ(ierr);
+  }
 
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
