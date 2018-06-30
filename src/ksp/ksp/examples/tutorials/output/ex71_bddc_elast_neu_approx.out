@@ -52,7 +52,7 @@ PC Object: 8 MPI processes
     Symmetric computation of primal basis functions: 1
     Num. Procs. to map coarse adjacency list: 0
     Coarse eqs per proc (significant at the coarsest level): 1
-    Detect disconnected: 0
+    Detect disconnected: 0 (filter 0)
     Benign subspace trick: 0 (change explicit 0)
     Benign subspace trick is active: 0
     Algebraic computation of no-net-flux 0
@@ -105,6 +105,6 @@ PC Object: 8 MPI processes
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3
-    total: nonzeros=156078, allocated nonzeros=240570
+    total: nonzeros=156078, allocated nonzeros=195300
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
