@@ -3528,4 +3528,19 @@ int main(int argc, char **argv)
     filter: grep -v "variant HERMITIAN" | grep -v "SNES iterations" | grep -v "solver iterations" | grep -v "evaluations="
     args: -petscpartitioner_type simple -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_fieldsplit_schur_fact_type diag -fetidp_fieldsplit_p_pc_type jacobi -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_fieldsplit_p_ksp_type preonly -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat -fetidp_bddc_sub_schurs_mat_mumps_icntl_14 500 -fetidp_bddc_sub_schurs_posdef 0 -fetidp_bddc_sub_schurs_discrete_harmonic
 
+  testset:
+    nsize: 3
+    requires: triangle
+    output_file: output/ex69_p2p1fetidp_olof.out
+    args: -dm_view -dm_mat_type is -dm_refine 1 -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -petscpartitioner_type simple -snes_error_if_not_converged -ksp_error_if_not_converged -ksp_type fetidp -ksp_fetidp_saddlepoint -ksp_fetidp_saddlepoint_flip -fetidp_ksp_type cg  -fetidp_ksp_norm_type natural -fetidp_bddc_pc_bddc_detect_disconnected -fetidp_bddc_pc_bddc_symmetric -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_graph_maxcount 2 -fetidp_bddc_pc_bddc_dirichlet_pc_type none -fetidp_bddc_pc_bddc_neumann_pc_type svd -fetidp_bddc_pc_bddc_coarse_redundant_pc_type cholesky -fetidp_pc_discrete_harmonic 1 -fetidp_harmonic_pc_type cholesky -fetidp_fieldsplit_lag_ksp_error_if_not_converged 0 -fetidp_fieldsplit_lag_ksp_type chebyshev -fetidp_fieldsplit_lag_ksp_max_it 2 -ksp_fetidp_pressure_schur -fetidp_fieldsplit_p_ksp_type preonly -fetidp_fieldsplit_p_pc_type bddc -fetidp_fieldsplit_p_pc_bddc_dirichlet_pc_type none
+    test:
+      suffix: p2p1fetidp_olof_full
+      args: -fetidp_pc_fieldsplit_schur_fact_type full
+    test:
+      suffix: p2p1fetidp_olof_diag
+      args: -fetidp_pc_fieldsplit_schur_fact_type diag
+    test:
+      suffix: p2p1fetidp_olof_additive
+      args: -fetidp_pc_fieldsplit_type additive
+
 TEST*/
