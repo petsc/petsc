@@ -110,8 +110,8 @@ PC Object: (fieldsplit_pressure_upper_) 1 MPI processes
           KSP of A00
       KSP Object: (fieldsplit_pressure_inner_) 1 MPI processes
         type: preonly
-        maximum iterations=5, initial guess is zero
-        tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
 PC Object: (fieldsplit_pressure_inner_) 1 MPI processes
