@@ -225,10 +225,9 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
-  if (set) *set = PETSC_FALSE;
-#if defined(PETSC_SKIP_VIEWFROMOPTIONS)
-  PetscFunctionReturn(0);
-#endif
+  if (viewer) *viewer = NULL;
+  if (format) *format = PETSC_VIEWER_DEFAULT;
+  if (set)    *set    = PETSC_FALSE;
   ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 

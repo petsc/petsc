@@ -670,6 +670,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+.  -viewfromoptions on,off - Enable or disable XXXSetFromOptions() calls, for applications with many small solves turn this off
 -  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
     Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
@@ -723,9 +724,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
-#if defined(PETSC_HAVE_HWLOC)
-  PetscViewer    viewer;
-#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -977,12 +975,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscInitializeCalled = PETSC_TRUE;
-    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-  }
-
   /*
       Setup building of stack frames for all function calls
   */
@@ -995,16 +987,27 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
 #if defined(PETSC_HAVE_HWLOC)
-  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+  {
+    PetscViewer viewer;
+    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
   }
 #endif
+
+  flg = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE); CHKERRQ(ierr);}
 
   /*
       Once we are completedly initialized then we can set this variables
   */
   PetscInitializeCalled = PETSC_TRUE;
+
+  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1226,7 +1229,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
+  ierr = PetscOptionsPushGetViewerOff(PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
+  ierr = PetscOptionsPopGetViewerOff();CHKERRQ(ierr);
+
   mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -1252,10 +1258,7 @@ PetscErrorCode  PetscFinalize(void)
   mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
-    if (mname[0]) PetscLogDump(mname);
-    else          PetscLogDump(0);
-  }
+  if (flg1 || flg2) {ierr = PetscLogDump(mname);CHKERRQ(ierr);}
 #endif
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);
