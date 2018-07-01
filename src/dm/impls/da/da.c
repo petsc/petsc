@@ -1044,7 +1044,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
   }
-  
+
 
   /* copy vector type information */
   ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
@@ -1383,33 +1383,25 @@ PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1,DM dm2,PetscBool *compa
     da2 = dm2;
     dd2 = (DM_DA*)da2->data;
     if (!da2->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da2),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on second DM before DMGetCompatibility()");
-    compatibleLocal = da1->dim == da2->dim;
-    if (compatibleLocal) compatibleLocal &= (dd1->s == dd2->s); /* Stencil width */
-    if (compatibleLocal) compatibleLocal &=                     /* x:            */
-      dd1->M  == dd2->M &&                                      /* Global size   */
-      dd1->m  == dd2->m &&                                      /* ranks         */
-      dd1->bx == dd2->bx;                                       /* Boundary type */
-    if (compatibleLocal && da1->dim > 1) compatibleLocal &=
-      dd1->N  == dd2->N &&
-      dd1->n  == dd2->n &&
-      dd1->by == dd2->by;
-    if (compatibleLocal && da1->dim > 2) compatibleLocal &=
-      dd1->P  == dd2->P &&
-      dd1->p  == dd2->p &&
-      dd1->bz == dd2->bz;
+    compatibleLocal = (PetscBool)(da1->dim == da2->dim);
+    if (compatibleLocal) compatibleLocal &= (PetscBool)(dd1->s == dd2->s); /* Stencil width */
+    /*                                                                      Global size              ranks               Boundary type */
+    if (compatibleLocal)                 compatibleLocal &= (PetscBool)((dd1->M  == dd2->M) && (dd1->m == dd2->m) && (dd1->bx == dd2->bx));
+    if (compatibleLocal && da1->dim > 1) compatibleLocal &= (PetscBool)((dd1->N  == dd2->N) && (dd1->n == dd2->n) && (dd1->by == dd2->by));
+    if (compatibleLocal && da1->dim > 2) compatibleLocal &= (PetscBool)((dd1->P  == dd2->P) && (dd1->p == dd2->p) && (dd1->bz == dd2->bz));
     if (compatibleLocal) {
       for (i=0; i<dd1->m; ++i) {
-        compatibleLocal &= dd1->lx[i] == dd2->lx[i];           /* Local size     */
+        compatibleLocal &= (PetscBool)(dd1->lx[i] == dd2->lx[i]);           /* Local size     */
       }
     }
     if (compatibleLocal && da1->dim > 1) {
       for (i=0; i<dd1->n; ++i) {
-        compatibleLocal &= dd1->ly[i] == dd2->ly[i];
+        compatibleLocal &= (PetscBool)(dd1->ly[i] == dd2->ly[i]);
       }
     }
     if (compatibleLocal && da1->dim > 2) {
       for (i=0; i<dd1->p; ++i) {
-        compatibleLocal &= dd1->lz[i] == dd2->lz[i];
+        compatibleLocal &= (PetscBool)(dd1->lz[i] == dd2->lz[i]);
       }
     }
     *compatible = compatibleLocal;
