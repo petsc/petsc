@@ -1522,6 +1522,22 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     }
     ierr = PetscSFReduceBegin(migrationSF, MPIU_2INT, leafNodes, rootNodes, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(migrationSF, MPIU_2INT, leafNodes, rootNodes, MPI_MAXLOC);CHKERRQ(ierr);
+    if (mesh->partitionBalance) {
+      /* We've voted, now we need to get the rank.  When we're balancing the partition, the "rank" in rootNotes is not
+       * the rank but rather (rank + random)%size.  So we do another reduction, voting the same way, but sending the
+       * rank instead of the index. */
+      PetscSFNode *rootRanks = NULL;
+      ierr = PetscMalloc1(nroots, &rootRanks);CHKERRQ(ierr);
+      for (p = 0; p < nroots; p++) {
+        rootRanks[p].rank = -3;
+        rootRanks[p].index = -3;
+      }
+      for (p = 0; p < nleaves; p++) leafNodes[p].index = rank;
+      ierr = PetscSFReduceBegin(migrationSF, MPIU_2INT, leafNodes, rootRanks, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(migrationSF, MPIU_2INT, leafNodes, rootRanks, MPI_MAXLOC);CHKERRQ(ierr);
+      for (p = 0; p < nroots; p++) rootNodes[p].rank = rootRanks[p].index;
+      ierr = PetscFree(rootRanks);CHKERRQ(ierr);
+    }
   } else {
     for (p = 0; p < nroots; p++) {
       rootNodes[p].index = -1;
@@ -1538,15 +1554,12 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes);CHKERRQ(ierr);
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {
-    if (shiftDebug) {
-      ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Root %D, Rank %D MyRank %D\n", rank, roots[p].index, leafNodes[p].rank, (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size);CHKERRQ(ierr);
-    }
-    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) npointLeaves++;
+    if (leafNodes[p].rank != rank) npointLeaves++;
   }
   ierr = PetscMalloc1(npointLeaves, &pointLocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
-    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size) {
+    if (leafNodes[p].rank != rank) {
       pointLocal[idx] = p;
       pointRemote[idx] = leafNodes[p];
       idx++;
