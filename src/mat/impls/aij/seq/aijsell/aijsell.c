@@ -175,6 +175,45 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqSELL(aijsell->S,xx,yy);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqSELL(aijsell->S,xx,yy,zz);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd_SeqSELL(aijsell->S,xx,yy,zz);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 /* MatConvert_SeqAIJ_SeqAIJSELL converts a SeqAIJ matrix into a
  * SeqAIJSELL matrix.  This routine is called by the MatCreate_SeqAIJSELL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
@@ -225,11 +264,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
   }
 
   B->ops->mult             = MatMult_SeqAIJSELL;
-/* Commenting these out for now, as these functions are not yet implemented.
   B->ops->multtranspose    = MatMultTranspose_SeqAIJSELL;
   B->ops->multadd          = MatMultAdd_SeqAIJSELL;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJSELL;
-*/
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",MatConvert_SeqAIJSELL_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijsell_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
