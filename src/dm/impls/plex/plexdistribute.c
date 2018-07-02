@@ -1479,7 +1479,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   const PetscSFNode *roots;
   PetscSFNode       *rootNodes, *leafNodes, *pointRemote;
   Vec                shifts;
-  const PetscInt     numShifts = 37; /* TODO Use larger prime */
+  const PetscInt     numShifts = 13759;
   const PetscScalar *shift = NULL;
   const PetscBool    shiftDebug = PETSC_FALSE;
   PetscErrorCode     ierr;
@@ -1497,7 +1497,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
       PetscRandom r;
 
       ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-      ierr = PetscRandomSetInterval(r, 0, 17*size);CHKERRQ(ierr);
+      ierr = PetscRandomSetInterval(r, 0, 2467*size);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_SELF, &shifts);CHKERRQ(ierr);
       ierr = VecSetSizes(shifts, numShifts, numShifts);CHKERRQ(ierr);
       ierr = VecSetType(shifts, VECSTANDARD);CHKERRQ(ierr);
