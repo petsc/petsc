@@ -380,6 +380,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 
+PETSC_INTERN int  PetscGlobalArgc;
+PETSC_INTERN char **PetscGlobalArgs;
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList;
