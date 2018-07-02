@@ -694,7 +694,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
     ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
-  } else if (snes->nfuncs >= snes->max_funcs) {
+  } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
     ierr    = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }

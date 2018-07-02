@@ -3395,7 +3395,7 @@ PetscErrorCode  SNESGetForceIteration(SNES snes,PetscBool *force)
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
 .  maxit - maximum number of iterations
--  maxf - maximum number of function evaluations
+-  maxf - maximum number of function evaluations (-1 indicates no limit)
 
    Options Database Keys:
 +    -snes_atol <abstol> - Sets abstol
@@ -3441,7 +3441,7 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
     snes->max_its = maxit;
   }
   if (maxf != PETSC_DEFAULT) {
-    if (maxf < 0) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of function evaluations %D must be non-negative",maxf);
+    if (maxf < -1) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of function evaluations %D must be -1 or nonnegative",maxf);
     snes->max_funcs = maxf;
   }
   snes->tolerancesset = PETSC_TRUE;
