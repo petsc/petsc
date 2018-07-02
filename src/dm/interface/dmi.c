@@ -223,99 +223,99 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
 /* This assumes that the DM has been cloned prior to the call */
 PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
-  PetscSection  *sections, *sectionGlobals;
-  PetscInt      *Nfs, Nf = 0, *subIndices, i;
+  MPI_Comm       comm;
+  PetscSection   supersection, *sections, *sectionGlobals;
+  PetscInt      *Nfs, Nf = 0, f, supf, nullf = -1, i;
+  PetscBool      haveNull = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dms[0], &comm);CHKERRQ(ierr);
+  /* Pull out local and global sections */
   ierr = PetscMalloc3(len, &Nfs, len, &sections, len, &sectionGlobals);CHKERRQ(ierr);
   for (i = 0 ; i < len; ++i) {
     ierr = DMGetDefaultSection(dms[i], &sections[i]);CHKERRQ(ierr);
     ierr = DMGetDefaultGlobalSection(dms[i], &sectionGlobals[i]);CHKERRQ(ierr);
-    if (!sections[i]) SETERRQ(PetscObjectComm((PetscObject)dms[0]), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
-    if (!sectionGlobals[i]) SETERRQ(PetscObjectComm((PetscObject)dms[0]), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
+    if (!sections[i]) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
+    if (!sectionGlobals[i]) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
     ierr = PetscSectionGetNumFields(sections[i], &Nfs[i]);CHKERRQ(ierr);
     Nf += Nfs[i];
   }
+  /* Create the supersection */
+  ierr = PetscSectionCreateSupersection(sections, len, &supersection);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*superdm, supersection);CHKERRQ(ierr);
+  /* Create ISes */
   if (is) {
-    PetscInt *offs, *globalOffs, iOff = 0;
+    PetscSection supersectionGlobal;
+    PetscInt     bs = -1, startf = 0;
 
     ierr = PetscMalloc1(len, is);CHKERRQ(ierr);
-    ierr = PetscCalloc2(len+1, &offs, len+1, &globalOffs);CHKERRQ(ierr);
-    for (i = 0 ; i < len; ++i) {
-      ierr = PetscSectionGetConstrainedStorageSize(sectionGlobals[i], &offs[i]);CHKERRQ(ierr);
-      offs[len] += offs[i];
-    }
-    ierr = MPI_Scan(offs, globalOffs, len+1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dms[0]));CHKERRQ(ierr);
-    for (i = 0 ; i <= len; ++i) globalOffs[i] -= offs[i];
-    for (i = 0 ; i < len; ++i, iOff += offs[i-1]) {
-      PetscInt bs = -1, bsLocal[2], bsMinMax[2];
-      PetscInt subSize = 0, subOff = 0, gtoff = globalOffs[len] - globalOffs[i], pStart, pEnd, p;
+    ierr = DMGetDefaultGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
+    for (i = 0 ; i < len; startf += Nfs[i], ++i) {
+      PetscInt *subIndices;
+      PetscInt  subSize, subOff, pStart, pEnd, p, start, end;
 
       ierr = PetscSectionGetChart(sectionGlobals[i], &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetConstrainedStorageSize(sectionGlobals[i], &subSize);CHKERRQ(ierr);
       ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        PetscInt gdof, gcdof, gtdof, goff, d;
+      for (p = pStart, subOff = 0; p < pEnd; ++p) {
+        PetscInt gdof, gcdof, gtdof, d;
 
         ierr = PetscSectionGetDof(sectionGlobals[i], p, &gdof);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintDof(sections[i], p, &gcdof);CHKERRQ(ierr);
-        gtdof = gdof-gcdof;
+        gtdof = gdof - gcdof;
         if (gdof > 0 && gtdof) {
           if (bs < 0)           {bs = gtdof;}
           else if (bs != gtdof) {bs = 1;}
-          ierr = PetscSectionGetOffset(sectionGlobals[i], p, &goff);CHKERRQ(ierr);
-          for (d = 0; d < gtdof; ++d, ++subOff) {
-            subIndices[subOff] = goff+gtoff+d+iOff;
-          }
+          ierr = DMGetGlobalFieldOffset_Private(*superdm, p, startf, &start, &end);CHKERRQ(ierr);
+          if (end-start != gtdof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of global dofs %D != %D for dm %D on point %D", end-start, gtdof, i, p);
+          for (d = start; d < end; ++d, ++subOff) subIndices[subOff] = d;
         }
       }
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dms[0]), subSize, subIndices, PETSC_OWN_POINTER, &(*is)[i]);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(comm, subSize, subIndices, PETSC_OWN_POINTER, &(*is)[i]);CHKERRQ(ierr);
       /* Must have same blocksize on all procs (some might have no points) */
-      bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
-      ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dms[0]), bsLocal, bsMinMax);CHKERRQ(ierr);
-      if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
-      else                            {bs = bsMinMax[0];}
-      ierr = ISSetBlockSize((*is)[i], bs);CHKERRQ(ierr);
-    }
-    ierr = PetscFree2(offs, globalOffs);CHKERRQ(ierr);
-  }
-  if (superdm) {
-    PetscSection supersection;
-    PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     field, f, nf = 0;
+      {
+        PetscInt bs = -1, bsLocal[2], bsMinMax[2];
 
-    ierr = PetscSectionCreateSupersection(sections, len, &supersection);CHKERRQ(ierr);
-    ierr = DMSetDefaultSection(*superdm, supersection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&supersection);CHKERRQ(ierr);
-    for (i = 0, field = 0; i < len; ++i) {
-      for (f = 0; f < Nfs[i]; ++f, ++field) {
-        (*superdm)->nullspaceConstructors[field] = dms[i]->nullspaceConstructors[f];
-        if ((*superdm)->nullspaceConstructors[field]) {
-          haveNull = PETSC_TRUE;
-          nf       = field;
-        }
-      }
-    }
-    if (haveNull && is) {
-      MatNullSpace nullSpace;
-
-      ierr = (*(*superdm)->nullspaceConstructors[nf])(*superdm, nf, &nullSpace);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) (*is)[nf], "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-    }
-    if (len && dms[0]->prob) {
-      ierr = DMSetNumFields(*superdm, Nf);CHKERRQ(ierr);
-      for (i = 0, field = 0; i < len; ++i) {
-        for (f = 0; f < Nfs[i]; ++f, ++field) {
-          PetscObject disc;
-
-          ierr = DMGetField(dms[i], f, &disc);CHKERRQ(ierr);
-          ierr = DMSetField(*superdm, field, disc);CHKERRQ(ierr);
-        }
+        bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+        ierr = PetscGlobalMinMaxInt(comm, bsLocal, bsMinMax);CHKERRQ(ierr);
+        if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+        else                            {bs = bsMinMax[0];}
+        ierr = ISSetBlockSize((*is)[i], bs);CHKERRQ(ierr);
       }
     }
   }
+  /* Preserve discretizations */
+  if (len && dms[0]->prob) {
+    ierr = DMSetNumFields(*superdm, Nf);CHKERRQ(ierr);
+    for (i = 0, supf = 0; i < len; ++i) {
+      for (f = 0; f < Nfs[i]; ++f, ++supf) {
+        PetscObject disc;
+
+        ierr = DMGetField(dms[i], f, &disc);CHKERRQ(ierr);
+        ierr = DMSetField(*superdm, supf, disc);CHKERRQ(ierr);
+      }
+    }
+  }
+  /* Preserve nullspaces */
+  for (i = 0, supf = 0; i < len; ++i) {
+    for (f = 0; f < Nfs[i]; ++f, ++supf) {
+      (*superdm)->nullspaceConstructors[supf] = dms[i]->nullspaceConstructors[f];
+      if ((*superdm)->nullspaceConstructors[supf]) {
+        haveNull = PETSC_TRUE;
+        nullf    = supf;
+      }
+    }
+  }
+  /* Attach nullspace to IS */
+  if (haveNull && is) {
+    MatNullSpace nullSpace;
+
+    ierr = (*(*superdm)->nullspaceConstructors[nullf])(*superdm, nullf, &nullSpace);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) (*is)[nullf], "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionDestroy(&supersection);CHKERRQ(ierr);
   ierr = PetscFree3(Nfs, sections, sectionGlobals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
