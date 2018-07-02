@@ -3054,7 +3054,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   ierr = ISGetIndices(row,&rl);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nrg);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %D -> %D greater than maximum possible %D",i,rl[i],nrg);
+  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %D -> %D greater then maximum possible %D",i,rl[i],nrg);
 #endif
   ierr = PetscMalloc1(nrg,&idxs);CHKERRQ(ierr);
   /* map from [0,nrl) to row */
@@ -3080,7 +3080,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
     ierr = ISGetIndices(col,&cl);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&ncg);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %D -> %D greater than maximum possible %D",i,cl[i],ncg);
+    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %D -> %D greater then maximum possible %D",i,cl[i],ncg);
 #endif
     ierr = PetscMalloc1(ncg,&idxs);CHKERRQ(ierr);
     /* map from [0,ncl) to col */

@@ -10276,7 +10276,7 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    MatSetValuesBlockedLocal() will also be implemented.
 
    The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that
-   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.
+   matrices obtained with DMCreateMatrix() generally already have the local to global mapping provided.
 
 .seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef(), MatSetLocalToGlobalMapping()
 @*/
