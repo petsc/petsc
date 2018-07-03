@@ -16,7 +16,7 @@ typedef struct {
   PetscReal delta, delta_min, delta_max, sigma;
   PetscInt sigma_hist;                      /* length of update history to be used for scaling */
   PetscInt scale_type;
-  PetscInt watchdog, max_seq_resets;        /* tracker to reset after a certain # of consecutive rejects */
+  PetscInt watchdog, max_seq_rejects;        /* tracker to reset after a certain # of consecutive rejects */
 } Mat_SymBrdn;
 
 #define SYMBRDN_SCALE_NONE      0

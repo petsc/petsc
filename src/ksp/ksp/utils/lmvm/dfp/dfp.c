@@ -152,12 +152,10 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     ierr = VecAYPX(lmvm->Fprev, -1.0, F);CHKERRQ(ierr);
     /* Test if the updates can be accepted */
     ierr = VecDotBegin(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
     ierr = VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Fprev, lmvm->Fprev, &ytytmp);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
-    if (PetscMin(PetscRealPart(ststmp), PetscRealPart(ytytmp)) < lmvm->eps) {
+    if (PetscRealPart(ststmp) < lmvm->eps) {
       curvtol = 0.0;
     } else {
       curvtol = lmvm->eps * PetscRealPart(ststmp);
@@ -177,6 +175,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);
       ldfp->yts[lmvm->k] = PetscRealPart(curvature);
       ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
       ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
@@ -213,7 +212,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     }
   }
   
-  if (ldfp->watchdog > ldfp->max_seq_resets) {
+  if (ldfp->watchdog > ldfp->max_seq_rejects) {
     ierr = MatLMVMReset(B, PETSC_FALSE);CHKERRQ(ierr);
   }
 
@@ -248,7 +247,7 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   mctx->rho = bctx->rho;
   mctx->sigma_hist = bctx->sigma_hist;
   mctx->watchdog = bctx->watchdog;
-  mctx->max_seq_resets = bctx->max_seq_resets;
+  mctx->max_seq_rejects = bctx->max_seq_rejects;
   switch (bctx->scale_type) {
   case SYMBRDN_SCALE_SCALAR:
     mctx->sigma = bctx->sigma;
@@ -431,7 +430,7 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsOb
   ierr = PetscOptionsReal("-mat_lmvm_theta","(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling","",lsb->theta,&lsb->theta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_rho","(developer) update limiter in the J0 scaling","",lsb->rho,&lsb->rho,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_lmvm_alpha","(developer) convex ratio in the J0 scaling","",lsb->alpha,&lsb->alpha,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_lmvm_beta","(developer) exponential factor in the diagonal J0 scaling","",lsb->alpha,&lsb->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_lmvm_beta","(developer) exponential factor in the diagonal J0 scaling","",lsb->beta,&lsb->beta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_lmvm_sigma_hist","(developer) number of past updates to use in the default J0 scalar","",lsb->sigma_hist,&lsb->sigma_hist,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if ((lsb->theta < 0.0) || (lsb->theta > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the diagonal J0 scale cannot be outside the range of [0, 1]");
@@ -483,7 +482,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ldfp->sigma_hist = 1;
   ldfp->scale_type = SYMBRDN_SCALE_DIAG;
   ldfp->watchdog = 0;
-  ldfp->max_seq_resets = lmvm->m/2;
+  ldfp->max_seq_rejects = lmvm->m/2;
   PetscFunctionReturn(0);
 }
 
