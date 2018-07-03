@@ -1249,6 +1249,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
 #define MatCheckSameLocalSize(A,ar1,B,ar2) \
+  PetscCheckSameComm(A,ar1,B,ar2); \
   if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->n,A->cmap->n,ar2,B->rmap->n,B->cmap->n);
   
 #define MatCheckSameSize(A,ar1,B,ar2) \
@@ -1257,8 +1258,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   
 #define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
   if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
-  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);\
-  if (M->rmap->n != b->map->n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector local length incompatible with matrix: parameter # %d local size %D != matrix row local size %D",ar2,b->map->n,M->rmap->n);
+  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);
 
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>
