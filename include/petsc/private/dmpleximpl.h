@@ -40,11 +40,13 @@ typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_2D,
               REFINER_HYBRID_SIMPLEX_2D,
               REFINER_SIMPLEX_TO_HEX_2D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_2D,
               REFINER_HEX_2D,
               REFINER_HYBRID_HEX_2D,
               REFINER_SIMPLEX_3D,
               REFINER_HYBRID_SIMPLEX_3D,
               REFINER_SIMPLEX_TO_HEX_3D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_3D,
               REFINER_HEX_3D,
               REFINER_HYBRID_HEX_3D} CellRefiner;
 
@@ -93,6 +95,7 @@ typedef struct {
   int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
   int tags[4];       /* Tag array */
+  PetscInt cellType; /* Cell type */
 } GmshElement;
 
 /* Utility struct to store the contents of a Fluent file in memory */

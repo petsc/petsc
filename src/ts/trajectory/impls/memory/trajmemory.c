@@ -323,16 +323,16 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
   for (i=0;i<stack->stacksize;i++) {
     e = stack->container[i];
-    ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
     ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
     ts->trajectory->diskwrites++;
   }
   /* save the last step for restart, the last step is in memory when using single level schemes, but not necessarily the case for multi level schemes */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(ts->steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
   for (i=0;i<stack->stacksize;i++) {
     ierr = StackPop(stack,&e);CHKERRQ(ierr);
@@ -362,16 +362,16 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   for (i=0;i<stack->stacksize;i++) {
     ierr = ElementCreate(ts,stack,&e);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
     ierr = ReadFromDisk(&e->stepnum,&e->time,&e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
     ts->trajectory->diskreads++;
   }
   /* load the last step into TS */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -418,9 +418,9 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   }
 #endif
   /* load the last step into TS */
-  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -457,9 +457,9 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -483,9 +483,9 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

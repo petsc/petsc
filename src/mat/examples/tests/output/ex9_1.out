@@ -5,6 +5,6 @@ Mat Object: 3 MPI processes
   total number of mallocs used during MatSetValues calls =0
     not using I-node (on process 0) routines
 matrix information (global sums):
-     nonzeros = 74, allocated nonzeros = 180
+nonzeros = 74, allocated nonzeros = 180
 matrix information (global max):
-     nonzeros = 29, allocated nonzeros = 60
+nonzeros = 29, allocated nonzeros = 60

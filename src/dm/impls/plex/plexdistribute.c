@@ -1548,7 +1548,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 {
   MPI_Comm               comm;
-  PetscInt               dim, nroots;
+  PetscInt               dim, cdim, nroots;
   PetscSF                sfPoint;
   ISLocalToGlobalMapping ltogMigration;
   ISLocalToGlobalMapping ltogOriginal = NULL;
@@ -1561,6 +1561,8 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(targetDM, dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(targetDM, cdim);CHKERRQ(ierr);
 
   /* Check for a one-to-all distribution pattern */
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);

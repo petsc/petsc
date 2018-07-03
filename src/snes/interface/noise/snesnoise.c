@@ -1,6 +1,10 @@
 
 #include <petsc/private/snesimpl.h>
 
+PETSC_INTERN PetscErrorCode SNESDiffParameterCreate_More(SNES,Vec,void**);
+PETSC_INTERN PetscErrorCode SNESDiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
+PETSC_INTERN PetscErrorCode SNESDiffParameterDestroy_More(void*);
+
 /* Data used by Jorge's diff parameter computation method */
 typedef struct {
   Vec      *workv;           /* work vectors */
@@ -14,10 +18,11 @@ typedef struct {
 } DIFFPAR_MORE;
 
 
-extern PetscErrorCode SNESNoise_dnest_(PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
+PETSC_INTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
+PETSC_INTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
+PETSC_INTERN PetscErrorCode SNESNoise_dnest_(PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
+
 static PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
-extern PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
-extern PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
 PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {

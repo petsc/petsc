@@ -50,7 +50,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   PetscSection   coordSection;
   PetscVTKInt    *conn,*offsets;
   PetscVTKType   *types;
-  PetscInt       dim,vStart,vEnd,cStart,cEnd,pStart,pEnd,cellHeight,cMax,numLabelCells,hasLabel,c,v,countcell,countconn;
+  PetscInt       dim,vStart,vEnd,cStart,cEnd,pStart,pEnd,cellHeight,numLabelCells,hasLabel,c,v,countcell,countconn;
 
   PetscFunctionBegin;
   ierr = PetscMalloc3(piece->nconn,&conn,piece->ncells,&offsets,piece->ncells,&types);CHKERRQ(ierr);
@@ -60,8 +60,6 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr     = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
 
@@ -127,7 +125,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   PetscErrorCode           ierr;
-  PetscInt                 dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
+  PetscInt                 dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,numLabelCells,hasLabel,c,v,r,i;
   PetscBool                localized;
   PieceInfo                piece,*gpiece = NULL;
   void                     *buffer = NULL;
@@ -154,8 +152,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);

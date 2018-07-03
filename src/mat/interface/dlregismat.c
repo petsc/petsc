@@ -219,6 +219,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatTranspose",     MAT_CLASSID,&MAT_Transpose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMult",       MAT_CLASSID,&MAT_MatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatSolve",      MAT_CLASSID,&MAT_MatSolve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatTrSolve",    MAT_CLASSID,&MAT_MatTrSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultSym",    MAT_CLASSID,&MAT_MatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultNum",    MAT_CLASSID,&MAT_MatMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMatMult",    MAT_CLASSID,&MAT_MatMatMult);CHKERRQ(ierr);
@@ -296,13 +297,13 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("mat",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
   }
 
   /* Register the PETSc built in factorization based solvers */

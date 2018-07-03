@@ -38,19 +38,19 @@ PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscErrorCode AOInitializePackage(void);
-extern PetscErrorCode PetscSFInitializePackage(void);
+PETSC_EXTERN PetscErrorCode AOInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 #if !defined(PETSC_USE_COMPLEX)
-extern PetscErrorCode CharacteristicInitializePackage(void);
+PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 #endif
-extern PetscErrorCode ISInitializePackage(void);
-extern PetscErrorCode VecInitializePackage(void);
-extern PetscErrorCode MatInitializePackage(void);
-extern PetscErrorCode DMInitializePackage(void);
-extern PetscErrorCode PCInitializePackage(void);
-extern PetscErrorCode KSPInitializePackage(void);
-extern PetscErrorCode SNESInitializePackage(void);
-extern PetscErrorCode TSInitializePackage(void);
+PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
+PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
+PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
+PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
+PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 #endif
 
@@ -58,7 +58,7 @@ static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
 */
-PetscErrorCode  PetscInitialize_DynamicLibraries(void)
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
   PetscErrorCode ierr;
@@ -141,7 +141,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */
-PetscErrorCode PetscFinalize_DynamicLibraries(void)
+PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;

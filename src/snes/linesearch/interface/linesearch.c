@@ -910,9 +910,6 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscInt     tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer);CHKERRQ(ierr);
     if (linesearch->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -932,7 +929,6 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
     if (linesearch->ops->postcheck) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n", linesearch->max_its);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1604,8 +1600,6 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 
    Level: developer
 
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
-
 .keywords: SNESLineSearch, work, vector
 
 .seealso: SNESSetWorkVecs()
@@ -1717,7 +1711,7 @@ PetscErrorCode  SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearc
 
 .seealso: SNESLineSearchGetVIFunctions(), SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 @*/
-extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc projectfunc, SNESLineSearchVINormFunc normfunc)
+PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc projectfunc, SNESLineSearchVINormFunc normfunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
@@ -1744,7 +1738,7 @@ extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SN
 
 .seealso: SNESLineSearchSetVIFunctions(), SNESLineSearchGetPostCheck(), SNESLineSearchGetPreCheck()
 @*/
-extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc *projectfunc, SNESLineSearchVINormFunc *normfunc)
+PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc *projectfunc, SNESLineSearchVINormFunc *normfunc)
 {
   PetscFunctionBegin;
   if (projectfunc) *projectfunc = linesearch->ops->viproject;

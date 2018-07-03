@@ -11,20 +11,24 @@ typedef struct {
   PetscLogEvent createMeshEvent;
   PetscLogStage stages[4];
   /* Domain and mesh definition */
-  PetscInt      dim;                          /* The topological mesh dimension */
-  PetscBool     interpolate;                  /* Generate intermediate mesh elements */
-  PetscReal     refinementLimit;              /* The largest allowable cell volume */
-  PetscBool     cellSimplex;                  /* Use simplices or hexes */
-  PetscBool     cellWedge;                    /* Use wedges */
-  PetscBool     simplex2tensor;               /* Refine simplicials in hexes */
-  DomainShape   domainShape;                  /* Shape of the region to be meshed */
-  PetscInt      *domainBoxSizes;              /* Sizes of the box mesh */
-  DMBoundaryType periodicity[3];              /* The domain periodicity */
-  char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  char          bdfilename[PETSC_MAX_PATH_LEN]; /* Import mesh boundary from file */
-  PetscBool     testPartition;                /* Use a fixed partitioning for testing */
-  PetscInt      overlap;                      /* The cell overlap to use during partitioning */
-  PetscBool     testShape;                    /* Test the cell shape quality */
+  PetscInt      dim;                             /* The topological mesh dimension */
+  PetscBool     interpolate;                     /* Generate intermediate mesh elements */
+  PetscReal     refinementLimit;                 /* The largest allowable cell volume */
+  PetscBool     cellSimplex;                     /* Use simplices or hexes */
+  PetscBool     cellWedge;                       /* Use wedges */
+  PetscBool     simplex2tensor;                  /* Refine simplicials in hexes */
+  DomainShape   domainShape;                     /* Shape of the region to be meshed */
+  PetscInt      *domainBoxSizes;                 /* Sizes of the box mesh */
+  DMBoundaryType periodicity[3];                 /* The domain periodicity */
+  char          filename[PETSC_MAX_PATH_LEN];    /* Import mesh from file */
+  char          bdfilename[PETSC_MAX_PATH_LEN];  /* Import mesh boundary from file */
+  char          extfilename[PETSC_MAX_PATH_LEN]; /* Import 2D mesh to be extruded from file */
+  PetscBool     testPartition;                   /* Use a fixed partitioning for testing */
+  PetscInt      overlap;                         /* The cell overlap to use during partitioning */
+  PetscBool     testShape;                       /* Test the cell shape quality */
+  PetscBool     check[3];                        /* Runs DMPlex checks on the mesh */
+  PetscReal     extrude_thickness;               /* Thickness of extrusion */
+  PetscInt      extrude_layers;                  /* Layers to be extruded */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -49,10 +53,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->periodicity[2]    = DM_BOUNDARY_NONE;
   options->filename[0]       = '\0';
   options->bdfilename[0]     = '\0';
+  options->extfilename[0]    = '\0';
   options->testPartition     = PETSC_FALSE;
   options->overlap           = PETSC_FALSE;
   options->testShape         = PETSC_FALSE;
   options->simplex2tensor    = PETSC_FALSE;
+  options->check[0]          = PETSC_FALSE;
+  options->check[1]          = PETSC_FALSE;
+  options->check[2]          = PETSC_FALSE;
+  options->extrude_layers    = 2;
+  options->extrude_thickness = 0.1;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -79,9 +89,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->periodicity[2] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-bd_filename", "The mesh boundary file", "ex1.c", options->bdfilename, options->bdfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ext_filename", "The 2D mesh file to be extruded", "ex1.c", options->extfilename, options->extfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ext_layers", "The number of layers to extrude", "ex1.c", options->extrude_layers, &options->extrude_layers, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ext_thickness", "The thickness of the layer to be extruded", "ex1.c", options->extrude_thickness, &options->extrude_thickness, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_shape", "Report cell shape qualities (Jacobian condition numbers)", "ex1.c", options->testShape, &options->testShape, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-check_symmetry", "Run DMPlexCheckSymmetry", "ex1.c", options->check[0], &options->check[0], NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-check_skeleton", "Run DMPlexCheckSkeleton", "ex1.c", options->check[1], &options->check[1], NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-check_faces", "Run DMPlexCheckFaces", "ex1.c", options->check[2], &options->check[2], NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -102,6 +118,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      simplex2tensor       = user->simplex2tensor;
   const char    *filename             = user->filename;
   const char    *bdfilename           = user->bdfilename;
+  const char    *extfilename          = user->extfilename;
   PetscInt       triSizes_n2[2]       = {4, 4};
   PetscInt       triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
   PetscInt       triSizes_n8[8]       = {1, 1, 1, 1, 1, 1, 1, 1};
@@ -119,7 +136,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
                                          75, 76, 77, 78, 79, 86, 87,  88,  90,  92, 113, 115, 116, 117, 118, 119, 120, 123, 138, 140, 141, 142, 146, 148, 149,
                                           0,  2, 11, 13, 15, 20, 21,  22,  23,  49,  52,  53,  54,  55,  56,  57,  58,  59,  60,  62,  63,  64,  65,  66,  67,
                                          68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
-  size_t         len, bdlen;
+  size_t         len, bdlen, extlen;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -129,6 +146,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   ierr = PetscStrlen(bdfilename, &bdlen);CHKERRQ(ierr);
+  ierr = PetscStrlen(extfilename, &extlen);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
   if (len) {
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
@@ -138,16 +156,27 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexCreateFromFile(comm, bdfilename, interpolate, &boundary);CHKERRQ(ierr);
     ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
     ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+  } else if (extlen) {
+    DM edm;
+
+    ierr = DMPlexCreateFromFile(comm, extfilename, interpolate, &edm);CHKERRQ(ierr);
+    ierr = DMPlexExtrude(edm, user->extrude_layers, user->extrude_thickness, PETSC_TRUE, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMDestroy(&edm);CHKERRQ(ierr);
   } else {
     switch (user->domainShape) {
     case BOX:
-      ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);
+      if (cellWedge) {
+        if (dim != 3) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a wedge mesh, not %D", dim);
+        ierr = DMPlexCreateWedgeBoxMesh(comm, user->domainBoxSizes, NULL, NULL, user->periodicity, PETSC_FALSE, interpolate, dm);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);
+      }
       break;
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
       if (cellWedge) {
-        ierr = DMPlexCreateWedgeCylinderMesh(comm, 6, PETSC_FALSE, dm);CHKERRQ(ierr);
+        ierr = DMPlexCreateWedgeCylinderMesh(comm, 6, interpolate, dm);CHKERRQ(ierr);
       } else {
         ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
       }
@@ -155,6 +184,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
   }
+
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   {
@@ -237,11 +267,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = rdm;
     }
+    user->cellSimplex = PETSC_FALSE;
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
+  if (user->check[0]) {
+    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+  }
+  if (user->check[1]) {
+    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+  }
+  if (user->check[2]) {
+    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +311,7 @@ static void ex1_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype
 static PetscErrorCode TestCellShape(DM dm)
 {
   PetscMPIInt    rank,size;
-  PetscInt       dim, c, cStart, cEnd, count = 0;
+  PetscInt       dim, c, cStart, cEnd, cMax, count = 0;
   ex1_stats_t    stats, globalStats;
   PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
   MPI_Comm       comm = PetscObjectComm((PetscObject)dm);
@@ -284,12 +324,14 @@ static PetscErrorCode TestCellShape(DM dm)
   stats.sum = stats.squaresum = 0.;
   stats.count = 0;
 
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm,&dim);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(dim * dim, &J, dim * dim, &invJ);CHKERRQ(ierr);
 
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; c++) {
+  ierr = DMPlexGetHybridBounds(dm,&cMax,NULL,NULL,NULL);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
+  for (c = cStart; c < cMax; c++) {
     PetscInt  i;
     PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
 
@@ -333,7 +375,7 @@ static PetscErrorCode TestCellShape(DM dm)
     min = globalStats.min;
     max = globalStats.max;
     mean = globalStats.sum / globalStats.count;
-    stdev = PetscSqrtReal(globalStats.squaresum / globalStats.count - mean * mean);
+    stdev = globalStats.count > 1 ? PetscSqrtReal((globalStats.squaresum - globalStats.count * mean * mean) / (globalStats.count - 1) ) : 0.0;
   }
   ierr = PetscPrintf(comm,"Mesh with %D cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
 
@@ -415,7 +457,6 @@ int main(int argc, char **argv)
   test:
     suffix: 1d_2
     args: -dim 1 -domain_box_sizes 5 -x_periodicity periodic -dm_view ascii::ascii_info_detail -test_shape
-
 
   # Parallel refinement tests with overlap
   test:
@@ -524,6 +565,43 @@ int main(int argc, char **argv)
     nsize: 4
     requires: !single mpiio
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -viewer_binary_mpiio -petscpartitioner_type simple -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_13_hybs2t
+    nsize: 4
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh -petscpartitioner_type simple -interpolate 1 -dm_view -test_shape -simplex2tensor -dm_plex_gmsh_hybrid -check_faces -check_skeleton -check_symmetry
+  test:
+    suffix: gmsh_14_ext
+    requires: !single
+    args: -ext_layers 2 -ext_thickness 1.5 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -check_symmetry -check_skeleton
+  test:
+    suffix: gmsh_14_ext_s2t
+    requires: !single
+    args: -ext_layers 2 -ext_thickness 1.5 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -interpolate -check_faces -check_symmetry -check_skeleton -simplex2tensor -test_shape
+  test:
+    suffix: gmsh_15_hyb3d
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -check_faces -check_symmetry -check_skeleton -dm_plex_gmsh_hybrid
+  test:
+    suffix: gmsh_15_hyb3d_vtk
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk:
+  test:
+    suffix: gmsh_15_hyb3d_s2t
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -interpolate -check_faces -check_symmetry -check_skeleton -dm_plex_gmsh_hybrid -simplex2tensor -test_shape
+  test:
+    suffix: gmsh_16_spheresurface
+    nsize : 4
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -check_symmetry -check_faces -check_skeleton -dm_view -interpolate -test_shape -petscpartitioner_type simple
+  test:
+    suffix: gmsh_16_spheresurface_s2t
+    nsize : 4
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -simplex2tensor -check_symmetry -check_faces -check_skeleton -dm_view -interpolate -test_shape -petscpartitioner_type simple
+  test:
+    suffix: gmsh_16_spheresurface_extruded
+    nsize : 4
+    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_hybrid -dm_plex_gmsh_spacedim 3 -check_symmetry -check_faces -check_skeleton -dm_view -interpolate -petscpartitioner_type simple
+  test:
+    suffix: gmsh_16_spheresurface_extruded_s2t
+    nsize : 4
+    args: -ext_layers 3 -ext_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -simplex2tensor -check_symmetry -check_faces -check_skeleton -dm_view -interpolate -test_shape -petscpartitioner_type simple
 
   # Fluent mesh reader tests
   test:
@@ -593,7 +671,12 @@ int main(int argc, char **argv)
 
   test:
     suffix: cylinder_wedge
-    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape cylinder -dm_view
+    args: -dim 3 -cell_simplex 0 -interpolate 0 -cell_wedge -domain_shape cylinder -dm_view vtk: -check_symmetry -check_faces 0 -check_skeleton
+
+  test:
+    suffix: cylinder_wedge_int
+    output_file: output/ex1_cylinder_wedge.out
+    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape cylinder -dm_view vtk: -check_symmetry -check_faces -check_skeleton
 
   test:
     suffix: box_2d
@@ -610,6 +693,21 @@ int main(int argc, char **argv)
   test:
     suffix: box_3d
     args: -dim 3 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 3 -test_shape -dm_view
+
+  test:
+    requires: triangle
+    suffix: box_wedge
+    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape box -dm_view vtk: -check_symmetry -check_faces -check_skeleton
+
+  testset:
+    requires: triangle
+    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape box -domain_box_sizes 2,3,1 -dm_view -check_symmetry -check_faces -check_skeleton -simplex2tensor -test_shape
+    test:
+      suffix: box_wedge_s2t
+    test:
+      nsize: 3
+      args: -petscpartitioner_type simple
+      suffix: box_wedge_s2t_parallel
 
   # Test GLVis output
   test:

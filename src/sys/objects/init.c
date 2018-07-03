@@ -94,6 +94,7 @@ PetscBool PetscCUDASynchronize = PETSC_FALSE;
 /*
    Optional file where all PETSc output from various prints is saved
 */
+PETSC_INTERN FILE *petsc_history;
 FILE *petsc_history = NULL;
 
 PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
@@ -136,7 +137,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
+PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -210,10 +211,10 @@ PetscErrorCode  PetscEnd(void)
 }
 
 PetscBool PetscOptionsPublish = PETSC_FALSE;
-extern PetscErrorCode PetscSetUseTrMalloc_Private(void);
-extern PetscErrorCode PetscSetUseHBWMalloc_Private(void);
-extern PetscBool      petscsetmallocvisited;
-static char           emacsmachinename[256];
+PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void);
+PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void);
+PETSC_INTERN PetscBool      petscsetmallocvisited;
+static       char           emacsmachinename[256];
 
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
@@ -241,10 +242,10 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 }
 
 #if defined(PETSC_USE_LOG)
-extern PetscBool   PetscObjectsLog;
+PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
-PetscErrorCode  PetscOptionsCheckInitial_Private(void)
+PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm          comm = PETSC_COMM_WORLD;

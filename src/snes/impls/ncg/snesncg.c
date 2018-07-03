@@ -338,7 +338,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
         PetscFunctionReturn(0);
       }
     }
-    if (snes->nfuncs >= snes->max_funcs) {
+    if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscFunctionReturn(0);
     }

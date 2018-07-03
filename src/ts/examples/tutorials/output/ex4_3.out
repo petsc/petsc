@@ -106,7 +106,7 @@ TS Object: 1 MPI processes
   maximum time=1.
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-TSAdapt Object: 1 MPI processes
-  type: none
+  TSAdapt Object: 1 MPI processes
+    type: none
 Total timesteps 100, Final time 0.0143637
 Avg. error (2 norm) = 0.00258577 Avg. error (max norm) = 0.00385707

@@ -430,6 +430,7 @@ PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMatSolveTranspose(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMatTransposeSolve(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
@@ -1700,6 +1701,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInverseTranspose(Mat,Mat);
 #endif
 
 /*

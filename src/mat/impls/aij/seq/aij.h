@@ -379,8 +379,11 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 .  sum - negative the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -   don't use this; it changes nnz and hence is WRONG
--   PETSC_KERNEL_USE_UNROLL_2 -
++   PETSC_KERNEL_USE_UNROLL_4
+-   PETSC_KERNEL_USE_UNROLL_2
+
+  Developer Notes:
+    The macro changes sum but not other parameters
 
 .seealso: PetscSparseDensePlusDot()
 
@@ -388,15 +391,20 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
     if (nnz > 0) { \
-      switch (nnz & 0x3) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
       case 3: sum -= *xv++ *r[*xi++]; \
       case 2: sum -= *xv++ *r[*xi++]; \
       case 1: sum -= *xv++ *r[*xi++]; \
-        nnz       -= 4;} \
-      while (nnz > 0) { \
-        sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] - \
-               xv[2] * r[xi[2]] - xv[3] * r[xi[3]]; \
-        xv += 4; xi += 4; nnz -= 4; }}}
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
+        sum -=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
@@ -426,8 +434,11 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 .  sum - the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -  don't use this; it changes nnz and hence is WRONG
--   PETSC_KERNEL_USE_UNROLL_2 -
++   PETSC_KERNEL_USE_UNROLL_4
+-   PETSC_KERNEL_USE_UNROLL_2
+
+  Developer Notes:
+    The macro changes sum but not other parameters
 
 .seealso: PetscSparseDenseMinusDot()
 
@@ -435,15 +446,20 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
     if (nnz > 0) { \
-      switch (nnz & 0x3) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
       case 3: sum += *xv++ *r[*xi++]; \
       case 2: sum += *xv++ *r[*xi++]; \
       case 1: sum += *xv++ *r[*xi++]; \
-        nnz       -= 4;} \
-      while (nnz > 0) { \
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
         sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
-               xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-        xv += 4; xi += 4; nnz -= 4; }}}
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \

@@ -1295,6 +1295,15 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
+  def configureFortranFlush(self):
+    self.pushLanguage('FC')
+    for baseName in ['flush','flush_']:
+      if self.checkLink(body='      call '+baseName+'(6)'):
+        self.addDefine('HAVE_FORTRAN_'+baseName.upper(), 1)
+        break
+    self.popLanguage()
+    return
+
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
@@ -1694,6 +1703,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranModuleOutput)
       self.executeTest(self.checkFortranTypeStar)
       self.executeTest(self.checkFortranTypeInitialize)
+      self.executeTest(self.configureFortranFlush)
     self.no_configure()
     return
 

@@ -194,7 +194,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 
   PetscFunctionBegin;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A00)->comm,S);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A00),S);CHKERRQ(ierr);
   ierr = MatSetType(*S,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   ierr = MatSchurComplementSetSubMatrices(*S,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -227,32 +227,32 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11)
 {
   PetscErrorCode      ierr;
-  PetscInt            m,n;
   Mat_SchurComplement *Na = (Mat_SchurComplement*)S->data;
+  PetscBool           isschur;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) PetscFunctionReturn(0);
   if (S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdateSubMatrices() for already used matrix");
-  PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(Ap00,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(A01,MAT_CLASSID,3);
-  PetscValidHeaderSpecific(A10,MAT_CLASSID,4);
-  PetscCheckSameComm(A00,1,Ap00,2);
-  PetscCheckSameComm(A00,1,A01,3);
-  PetscCheckSameComm(A00,1,A10,4);
+  PetscValidHeaderSpecific(A00,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Ap00,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(A01,MAT_CLASSID,4);
+  PetscValidHeaderSpecific(A10,MAT_CLASSID,5);
+  PetscCheckSameComm(A00,2,Ap00,3);
+  PetscCheckSameComm(A00,2,A01,4);
+  PetscCheckSameComm(A00,2,A10,5);
   if (A00->rmap->n != A00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local columns %D",A00->rmap->n,A00->cmap->n);
   if (A00->rmap->n != Ap00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local rows of Ap00 %D",A00->rmap->n,Ap00->rmap->n);
   if (Ap00->rmap->n != Ap00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of Ap00 %D do not equal local columns %D",Ap00->rmap->n,Ap00->cmap->n);
   if (A00->cmap->n != A01->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A00 %D do not equal local rows of A01 %D",A00->cmap->n,A01->rmap->n);
   if (A10->cmap->n != A00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A10 %D do not equal local rows of A00 %D",A10->cmap->n,A00->rmap->n);
   if (A11) {
-    PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
-    PetscCheckSameComm(A00,1,A11,5);
+    PetscValidHeaderSpecific(A11,MAT_CLASSID,6);
+    PetscCheckSameComm(A00,2,A11,6);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
-  ierr   = MatGetLocalSize(A01,NULL,&n);CHKERRQ(ierr);
-  ierr   = MatGetLocalSize(A10,&m,NULL);CHKERRQ(ierr);
-  ierr   = MatSetSizes(S,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr   = MatSetSizes(S,A10->rmap->n,A01->cmap->n,A10->rmap->N,A01->cmap->N);CHKERRQ(ierr);
   ierr   = PetscObjectReference((PetscObject)A00);CHKERRQ(ierr);
   ierr   = PetscObjectReference((PetscObject)Ap00);CHKERRQ(ierr);
   ierr   = PetscObjectReference((PetscObject)A01);CHKERRQ(ierr);
@@ -265,12 +265,9 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
   if (A11) {
     ierr = PetscObjectReference((PetscObject)A11);CHKERRQ(ierr);
   }
-  S->assembled    = PETSC_TRUE;
-  S->preallocated = PETSC_TRUE;
-
-  ierr = PetscLayoutSetUp((S)->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((S)->cmap);CHKERRQ(ierr);
+  ierr = MatSetUp(S);CHKERRQ(ierr);
   ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
+  S->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -295,9 +292,13 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
 PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
 {
   Mat_SchurComplement *Na;
+  PetscBool           isschur;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONG,"Not for type %s",((PetscObject)S)->type_name);
   PetscValidPointer(ksp,2);
   Na   = (Mat_SchurComplement*) S->data;
   *ksp = Na->ksp;
@@ -317,6 +318,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
 
   Developer Notes:
     This is used in PCFieldSplit to reuse the 0-split KSP to implement ksp(A00,Ap00) in S.
+    The KSP operators are overwritten with A00 and Ap00 currently set in S.
 
 .seealso: MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatCreateNormal(), MatMult(), MatCreate(), MATSCHURCOMPLEMENT
 @*/
@@ -324,9 +326,12 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 {
   Mat_SchurComplement *Na;
   PetscErrorCode      ierr;
+  PetscBool           isschur;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   Na      = (Mat_SchurComplement*) S->data;
   ierr    = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
@@ -363,23 +368,28 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
 {
   PetscErrorCode      ierr;
   Mat_SchurComplement *Na = (Mat_SchurComplement*)S->data;
+  PetscBool           isschur;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) PetscFunctionReturn(0);
   if (!S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSetSubMatrices() for a new matrix");
-  PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(A01,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(A10,MAT_CLASSID,3);
-  PetscCheckSameComm(A00,1,Ap00,2);
-  PetscCheckSameComm(A00,1,A01,3);
-  PetscCheckSameComm(A00,1,A10,4);
+  PetscValidHeaderSpecific(A00,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Ap00,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(A01,MAT_CLASSID,4);
+  PetscValidHeaderSpecific(A10,MAT_CLASSID,5);
+  PetscCheckSameComm(A00,2,Ap00,3);
+  PetscCheckSameComm(A00,2,A01,4);
+  PetscCheckSameComm(A00,2,A10,5);
   if (A00->rmap->n != A00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local columns %D",A00->rmap->n,A00->cmap->n);
   if (A00->rmap->n != Ap00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A00 %D do not equal local rows of Ap00 %D",A00->rmap->n,Ap00->rmap->n);
   if (Ap00->rmap->n != Ap00->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of Ap00 %D do not equal local columns %D",Ap00->rmap->n,Ap00->cmap->n);
   if (A00->cmap->n != A01->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A00 %D do not equal local rows of A01 %D",A00->cmap->n,A01->rmap->n);
   if (A10->cmap->n != A00->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local columns of A10 %D do not equal local rows of A00 %D",A10->cmap->n,A00->rmap->n);
   if (A11) {
-    PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
-    PetscCheckSameComm(A00,1,A11,5);
+    PetscValidHeaderSpecific(A11,MAT_CLASSID,6);
+    PetscCheckSameComm(A00,2,A11,6);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
@@ -435,19 +445,12 @@ PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&flg);CHKERRQ(ierr);
-  if (flg) {
-    if (A00) *A00 = Na->A;
-    if (Ap00) *Ap00 = Na->Ap;
-    if (A01) *A01 = Na->B;
-    if (A10) *A10 = Na->C;
-    if (A11) *A11 = Na->D;
-  } else {
-    if (A00) *A00 = 0;
-    if (Ap00) *Ap00 = 0;
-    if (A01) *A01 = 0;
-    if (A10) *A10 = 0;
-    if (A11) *A11 = 0;
-  }
+  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONG,"Not for type %s",((PetscObject)S)->type_name);
+  if (A00) *A00 = Na->A;
+  if (Ap00) *Ap00 = Na->Ap;
+  if (A01) *A01 = Na->B;
+  if (A10) *A10 = Na->C;
+  if (A11) *A11 = Na->D;
   PetscFunctionReturn(0);
 }
 
@@ -518,7 +521,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
   }
   if (D) {
     ierr = MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-   }
+  }
   ierr = MatScale(*S,-1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -538,9 +541,12 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
   PetscValidHeaderSpecific(iscol0,IS_CLASSID,3);
   PetscValidHeaderSpecific(isrow1,IS_CLASSID,4);
   PetscValidHeaderSpecific(iscol1,IS_CLASSID,5);
+  PetscValidLogicalCollectiveEnum(mat,mreuse,6);
+  PetscValidLogicalCollectiveEnum(mat,ainvtype,8);
+  PetscValidLogicalCollectiveEnum(mat,preuse,9);
   if (mreuse == MAT_IGNORE_MATRIX && preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
-  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,10);
 
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
@@ -564,7 +570,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
     break;
   default:
-    if (mreuse != MAT_IGNORE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
+    if (mreuse != MAT_IGNORE_MATRIX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse %d",(int)mreuse);
   }
   if (preuse != MAT_IGNORE_MATRIX) {
     ierr = MatCreateSchurComplementPmat(A,B,C,D,ainvtype,preuse,newpmat);CHKERRQ(ierr);
@@ -634,8 +640,11 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   PetscValidHeaderSpecific(iscol0,IS_CLASSID,3);
   PetscValidHeaderSpecific(isrow1,IS_CLASSID,4);
   PetscValidHeaderSpecific(iscol1,IS_CLASSID,5);
+  PetscValidLogicalCollectiveEnum(A,mreuse,6);
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*S,MAT_CLASSID,7);
-  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,9);
+  PetscValidLogicalCollectiveEnum(A,ainvtype,8);
+  PetscValidLogicalCollectiveEnum(A,preuse,9);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,10);
   PetscValidType(A,1);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   f = NULL;
@@ -643,7 +652,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     ierr = PetscObjectQueryFunction((PetscObject)*S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
   }
   if (f) {
-      ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
+    ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
   } else {
     ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,ainvtype,preuse,Sp);CHKERRQ(ierr);
   }
@@ -678,15 +687,14 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType ainvtype)
 {
   PetscErrorCode      ierr;
-  const char*         t;
   PetscBool           isschur;
   Mat_SchurComplement *schur;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
-  ierr = PetscObjectGetType((PetscObject)S,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
-  if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) PetscFunctionReturn(0);
+  PetscValidLogicalCollectiveEnum(S,ainvtype,2);
   schur = (Mat_SchurComplement*)S->data;
   if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d",(int)ainvtype);
   schur->ainvtype = ainvtype;
@@ -720,15 +728,13 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
 PetscErrorCode  MatSchurComplementGetAinvType(Mat S,MatSchurComplementAinvType *ainvtype)
 {
   PetscErrorCode      ierr;
-  const char*         t;
   PetscBool           isschur;
   Mat_SchurComplement *schur;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
-  ierr = PetscObjectGetType((PetscObject)S,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
-  if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
+  ierr = PetscObjectTypeCompare((PetscObject)S,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) SETERRQ1(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONG,"Not for type %s",((PetscObject)S)->type_name);
   schur = (Mat_SchurComplement*)S->data;
   if (ainvtype) *ainvtype = schur->ainvtype;
   PetscFunctionReturn(0);
@@ -761,7 +767,6 @@ PetscErrorCode  MatSchurComplementGetAinvType(Mat S,MatSchurComplementAinvType *
 @*/
 PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,MatSchurComplementAinvType ainvtype,MatReuse preuse,Mat *Spmat)
 {
-
   PetscErrorCode ierr;
   PetscInt       N00;
 
@@ -769,7 +774,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
   /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
-
+  PetscValidLogicalCollectiveEnum(A11,preuse,6);
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
 
   /* A zero size A00 or empty A01 or A10 imply S = A11. */
@@ -781,10 +786,9 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
       /* TODO: when can we pass SAME_NONZERO_PATTERN? */
       ierr = MatCopy(A11,*Spmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
-
   } else {
-    Mat         AdB;
-    Vec         diag;
+    Mat AdB;
+    Vec diag;
 
     if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
       ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
@@ -818,9 +822,9 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
       ierr = MatScale(*Spmat,-1.0);CHKERRQ(ierr);
     } else {
       /* TODO: when can we pass SAME_NONZERO_PATTERN? */
-      ierr     = MatAYPX(*Spmat,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatAYPX(*Spmat,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
-    ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
+    ierr = MatDestroy(&AdB);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -833,7 +837,6 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
   PetscFunctionBegin;
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
-
   ierr = MatSchurComplementGetSubMatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
   if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
   ierr = MatCreateSchurComplementPmat(A,B,C,D,schur->ainvtype,preuse,Spmat);CHKERRQ(ierr);
@@ -879,8 +882,10 @@ PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,MAT_CLASSID,1);
-  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,3);
   PetscValidType(S,1);
+  PetscValidLogicalCollectiveEnum(S,preuse,2);
+  if (preuse != MAT_IGNORE_MATRIX) PetscValidPointer(Sp,3);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,3);
   if (S->factortype) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   ierr = PetscObjectQueryFunction((PetscObject)S,"MatSchurComplementGetPmat_C",&f);CHKERRQ(ierr);

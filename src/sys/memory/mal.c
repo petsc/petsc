@@ -1,4 +1,3 @@
-
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -24,7 +23,7 @@ PetscMemkindType previousmktype = PETSC_MK_HBW_PREFERRED;
 */
 #define SHIFT_CLASSID 456123
 
-PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],void **result)
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t mem,int line,const char func[],const char file[],void **result)
 {
   if (!mem) { *result = NULL; return 0; }
 #if defined(PETSC_HAVE_MEMKIND)
@@ -33,7 +32,7 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
     if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,result,PETSC_MEMALIGN,mem);
     else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,result,PETSC_MEMALIGN,mem);
     if (ierr == EINVAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
-    if (ierr == ENOMEM) PetscInfo1(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem); 
+    if (ierr == ENOMEM) PetscInfo1(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem);
   }
 #else
 #  if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
@@ -62,7 +61,7 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
   return 0;
 }
 
-PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[])
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char file[])
 {
   if (!ptr) return 0;
 #if defined(PETSC_HAVE_MEMKIND)
@@ -91,7 +90,7 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
   return 0;
 }
 
-PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const char file[], void **result)
+PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const char file[], void **result)
 {
   PetscErrorCode ierr;
 
@@ -150,7 +149,7 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
       if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,&newResult,PETSC_MEMALIGN,mem);
       else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,&newResult,PETSC_MEMALIGN,mem);
       if (ierr == EINVAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
-      if (ierr == ENOMEM) PetscInfo1(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem); 
+      if (ierr == ENOMEM) PetscInfo1(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem);
     }
 #  else
     newResult = memalign(PETSC_MEMALIGN,mem);
@@ -180,6 +179,7 @@ PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**) = P
 PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[])           = PetscFreeAlign;
 PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**) = PetscReallocAlign;
 
+PETSC_INTERN PetscBool petscsetmallocvisited;
 PetscBool petscsetmallocvisited = PETSC_FALSE;
 
 /*@C
@@ -199,8 +199,8 @@ PetscBool petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation
 
 @*/
-PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],void**),
-                                              PetscErrorCode (*ifree)(void*,int,const char[],const char[]))
+PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],void**),
+                              PetscErrorCode (*ifree)(void*,int,const char[],const char[]))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
@@ -224,7 +224,7 @@ PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[]
     free() an address that was malloced by a different memory management system
 
 @*/
-PetscErrorCode  PetscMallocClear(void)
+PetscErrorCode PetscMallocClear(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;
@@ -265,7 +265,7 @@ static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])    
    Notes:
      This provides a way to do the allocation on DRAM temporarily. One
      can switch back to the previous choice by calling PetscMallocReset().
- 
+
 .seealso: PetscMallocReset()
 @*/
 PetscErrorCode PetscMallocSetDRAM(void)
@@ -276,7 +276,7 @@ PetscErrorCode PetscMallocSetDRAM(void)
     previousmktype = currentmktype;
     currentmktype  = PETSC_MK_DEFAULT;
 #endif
-  } else { 
+  } else {
     /* Save the previous choice */
     PetscTrMallocOld = PetscTrMalloc;
     PetscTrFreeOld   = PetscTrFree;
@@ -301,7 +301,7 @@ PetscErrorCode PetscMallocResetDRAM(void)
   if (PetscTrMalloc == PetscMallocAlign) {
 #if defined(PETSC_HAVE_MEMKIND)
     currentmktype = previousmktype;
-#endif 
+#endif
   } else {
     /* Reset to the previous choice */
     PetscTrMalloc = PetscTrMallocOld;

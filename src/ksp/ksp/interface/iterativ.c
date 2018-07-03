@@ -420,7 +420,8 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   PetscReal      outer_rtol, outer_abstol, outer_dtol, inner_rtol;
   PetscInt       outer_maxits,nksp,first,i;
   KSPDynTolCtx   *scale   = (KSPDynTolCtx*)dummy;
-  KSP            kspinner = NULL, *subksp = NULL;
+  KSP            *subksp = NULL;
+  PetscBool      isksp;
 
   PetscFunctionBegin;
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
@@ -436,8 +437,11 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %g\n", (double)inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */
-  ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
-  if (kspinner) {
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp);CHKERRQ(ierr);
+  if (isksp) {
+    KSP kspinner;
+
+    ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
     ierr = KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

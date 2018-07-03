@@ -1692,6 +1692,22 @@ PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
   ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
   ierr = MatDestroy(&localmat);CHKERRQ(ierr);
+  if (matis->sf) {
+    Mat_IS *bmatis = (Mat_IS*)(B->data);
+
+    ierr       = PetscObjectReference((PetscObject)matis->sf);CHKERRQ(ierr);
+    bmatis->sf = matis->sf;
+    ierr       = PetscMalloc2(matis->sf->nroots,&bmatis->sf_rootdata,matis->sf->nleaves,&bmatis->sf_leafdata);CHKERRQ(ierr);
+    if (matis->sf != matis->csf) {
+      ierr        = PetscObjectReference((PetscObject)matis->csf);CHKERRQ(ierr);
+      bmatis->csf = matis->csf;
+      ierr        = PetscMalloc2(matis->csf->nroots,&bmatis->csf_rootdata,matis->csf->nleaves,&bmatis->csf_leafdata);CHKERRQ(ierr);
+    } else {
+      bmatis->csf          = bmatis->sf;
+      bmatis->csf_leafdata = bmatis->sf_leafdata;
+      bmatis->csf_rootdata = bmatis->sf_rootdata;
+    }
+  }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = B;
