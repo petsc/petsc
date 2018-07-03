@@ -35,6 +35,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A,MatType type,MatR
   B->ops->multtranspose    = MatMultTranspose_SeqAIJ;
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
+  B->ops->sor              = MatSOR_SeqAIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijsell_C",NULL);CHKERRQ(ierr);
@@ -215,6 +216,19 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSOR_SeqAIJSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
+  ierr = MatSOR_SeqSELL(aijsell->S,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 /* This function prototype is needed in MatConvert_SeqAIJ_SeqAIJSELL(), below. */
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
@@ -271,6 +285,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
   B->ops->multtranspose    = MatMultTranspose_SeqAIJSELL;
   B->ops->multadd          = MatMultAdd_SeqAIJSELL;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJSELL;
+  B->ops->sor              = MatSOR_SeqAIJSELL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijsell_seqaij_C",MatConvert_SeqAIJSELL_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijsell_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
