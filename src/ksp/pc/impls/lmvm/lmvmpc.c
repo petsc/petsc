@@ -135,7 +135,7 @@ static PetscErrorCode PCApply_LMVM(PC pc,Vec x,Vec y)
   } else {
     ierr = VecCopy(x, ctx->xwork);CHKERRQ(ierr);
   }
-  ierr = MatLMVMSolve(ctx->B, ctx->xwork, ctx->ywork);CHKERRQ(ierr);
+  ierr = MatSolve(ctx->B, ctx->xwork, ctx->ywork);CHKERRQ(ierr);
   if (ctx->inactive) {
     ierr = VecGetSubVector(ctx->ywork, ctx->inactive, &ysub);CHKERRQ(ierr);
     ierr = VecCopy(ysub, y);CHKERRQ(ierr);

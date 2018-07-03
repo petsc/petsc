@@ -50,7 +50,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     }
     ierr = MatSymBrdnSetDelta(blmP->M, delta);CHKERRQ(ierr);
     ierr = MatLMVMUpdate(blmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+    ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
 
     /* Check for success (descent direction) */
@@ -62,7 +62,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(blmP->M,blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(blmP->M,blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
     }
     ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
 
@@ -85,7 +85,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
       ierr = MatLMVMReset(blmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       /* This may be incorrect; linesearch has values for stepmax and stepmin

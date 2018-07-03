@@ -276,13 +276,13 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_LMVMBadBrdn;
   B->ops->destroy = MatDestroy_LMVMBadBrdn;
+  B->ops->solve = MatSolve_LMVMBadBrdn;
 
   lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
   lmvm->ops->allocate = MatAllocate_LMVMBadBrdn;
   lmvm->ops->reset = MatReset_LMVMBadBrdn;
   lmvm->ops->mult = MatMult_LMVMBadBrdn;
-  lmvm->ops->solve = MatSolve_LMVMBadBrdn;
   lmvm->ops->update = MatUpdate_LMVMBadBrdn;
   lmvm->ops->copy = MatCopy_LMVMBadBrdn;
 

@@ -287,6 +287,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   ierr = MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_LMVMSR1;
   B->ops->destroy = MatDestroy_LMVMSR1;
+  B->ops->solve = MatSolve_LMVMSR1;
   
   lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
@@ -294,7 +295,6 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   lmvm->ops->reset = MatReset_LMVMSR1;
   lmvm->ops->update = MatUpdate_LMVMSR1;
   lmvm->ops->mult = MatMult_LMVMSR1;
-  lmvm->ops->solve = MatSolve_LMVMSR1;
   lmvm->ops->copy = MatCopy_LMVMSR1;
   
   ierr = PetscNewLog(B, &lsr1);CHKERRQ(ierr);

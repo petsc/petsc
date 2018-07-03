@@ -329,7 +329,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
     /* Compute the trial step vector with which we will estimate the active set at the next iteration */
     if (bnk->M) {
       /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
-      ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
+      ierr = MatSolve(bnk->M, bnk->unprojected_gradient, bnk->W);CHKERRQ(ierr);
     } else {
       if (tao->hessian) {
         ierr = MatAssembled(tao->hessian, &hessComputed);CHKERRQ(ierr);
@@ -626,7 +626,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
         *stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
-        ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
         /* Check for success (descent direction) 
           NOTE: Negative gdx here means not a descent direction because 
@@ -641,7 +641,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
           /* Use steepest descent direction (scaled) */
           ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-          ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
           *stepType = BNK_SCALED_GRADIENT;
         } else {
@@ -699,7 +699,7 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
          Use steepest descent direction (scaled) */
       ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(bnk->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
       ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
       *stepType = BNK_SCALED_GRADIENT;
@@ -769,7 +769,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
         *stepType = BNK_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
-        ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+        ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
         /* Check for success (descent direction) 
            NOTE: Negative gdx means not a descent direction because the step here is missing a negative sign. */
         ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
@@ -779,7 +779,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
              Use steepest descent direction (scaled) */
           ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-          ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
           *stepType = BNK_SCALED_GRADIENT;
@@ -801,7 +801,7 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
          Attempt to use the scaled gradient direction */
       ierr = MatLMVMReset(bnk->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = MatSolve(bnk->M, bnk->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
 
       bfgsUpdates = 1;
       *stepType = BNK_SCALED_GRADIENT;

@@ -31,7 +31,7 @@ static PetscErrorCode TaoBQNLSComputeStep(Tao tao, PetscBool shift, KSPConverged
   PetscInt       nupdates;
 
   PetscFunctionBegin;
-  ierr = MatLMVMSolve(bqnk->B, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+  ierr = MatSolve(bqnk->B, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   ierr = TaoBNKBoundStep(tao, bnk->as_type, tao->stepdirection);CHKERRQ(ierr);
   *ksp_reason = KSP_CONVERGED_ATOL;

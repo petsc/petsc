@@ -99,7 +99,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+    ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
     ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -121,7 +121,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
       ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(lmP->M,lmP->GV, lmP->D);CHKERRQ(ierr);
+      ierr = MatSolve(lmP->M,lmP->GV, lmP->D);CHKERRQ(ierr);
 
       ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -168,7 +168,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
         ierr = MatLMVMSetJ0Scale(lmP->M, delta);CHKERRQ(ierr);
         ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+        ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
         ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
@@ -184,7 +184,7 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
         ierr = MatLMVMSetJ0Scale(lmP->M, 1.0);CHKERRQ(ierr);
         ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+        ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
         ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 

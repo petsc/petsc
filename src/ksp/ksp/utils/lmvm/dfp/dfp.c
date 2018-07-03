@@ -456,6 +456,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   B->ops->setup = MatSetUp_LMVMDFP;
   B->ops->destroy = MatDestroy_LMVMDFP;
   B->ops->setfromoptions = MatSetFromOptions_LMVMDFP;
+  B->ops->solve = MatSolve_LMVMDFP;
 
   lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
@@ -463,7 +464,6 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   lmvm->ops->reset = MatReset_LMVMDFP;
   lmvm->ops->update = MatUpdate_LMVMDFP;
   lmvm->ops->mult = MatMult_LMVMDFP;
-  lmvm->ops->solve = MatSolve_LMVMDFP;
   lmvm->ops->copy = MatCopy_LMVMDFP;
 
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);

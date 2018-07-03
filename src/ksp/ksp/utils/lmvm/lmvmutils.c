@@ -46,42 +46,6 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
   PetscFunctionReturn(0);
 }
 
-/*@
-   MatLMVMSolve - Uses the quasi-Newton update formula to apply the inverse of 
-   the approximate Jacobian directly.
-
-   Input Parameters:
-+  B - An LMVM-type matrix
--  F - Function/RHS vector
-
-   Output Parameters:
-.  X - Solution vector
-
-   Level: intermediate
-
-.seealso: MatLMVMReset(), MatLMVMAllocate()
-@*/
-PetscErrorCode MatLMVMSolve(Mat B, Vec F, Vec X)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  PetscErrorCode    ierr;
-  PetscBool         same;
-  
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
-  if (!lmvm->allocated) {
-    ierr = MatLMVMAllocate(B, X, F);CHKERRQ(ierr);
-  } else {
-    VecCheckMatCompatible(B, X, 2, F, 3);
-  }
-  ierr = (*lmvm->ops->solve)(B, F, X);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*------------------------------------------------------------*/
 
 /*@
