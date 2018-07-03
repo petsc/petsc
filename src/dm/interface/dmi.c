@@ -253,7 +253,7 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
     ierr = DMGetDefaultGlobalSection(*superdm, &supersectionGlobal);CHKERRQ(ierr);
     for (i = 0 ; i < len; startf += Nfs[i], ++i) {
       PetscInt *subIndices;
-      PetscInt  subSize, subOff, pStart, pEnd, p, start, end;
+      PetscInt  subSize, subOff, pStart, pEnd, p, start, end, dummy;
 
       ierr = PetscSectionGetChart(sectionGlobals[i], &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetConstrainedStorageSize(sectionGlobals[i], &subSize);CHKERRQ(ierr);
@@ -267,7 +267,8 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
         if (gdof > 0 && gtdof) {
           if (bs < 0)           {bs = gtdof;}
           else if (bs != gtdof) {bs = 1;}
-          ierr = DMGetGlobalFieldOffset_Private(*superdm, p, startf, &start, &end);CHKERRQ(ierr);
+          ierr = DMGetGlobalFieldOffset_Private(*superdm, p, startf, &start, &dummy);CHKERRQ(ierr);
+          ierr = DMGetGlobalFieldOffset_Private(*superdm, p, startf+Nfs[i]-1, &dummy, &end);CHKERRQ(ierr);
           if (end-start != gtdof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of global dofs %D != %D for dm %D on point %D", end-start, gtdof, i, p);
           for (d = start; d < end; ++d, ++subOff) subIndices[subOff] = d;
         }
