@@ -6599,3 +6599,133 @@ PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
   coloring->ops->fdcoloringapply = MatFDColoringApply_AIJDM;
   PetscFunctionReturn(0);
 }
+
+/*@
+    DMGetCompatibility - determine if two DMs are compatible
+
+    Collective
+
+    Input Parameters:
++    dm - the first DM
+-    dm2 - the second DM
+
+    Output Parameters:
++    compatible - whether or not the two DMs are compatible
+-    set - whether or not the compatible value was set
+
+    Notes:
+    Two DMs are deemed compatible if they represent the same parallel decomposition
+    of the same topology. This implies that the the section (field data) on one
+    "makes sense" with respect to the topology and parallel decomposition of the other.
+    Loosely speaking, compatibile DMs represent the same domain, with the same parallel
+    decomposition, with different data.
+
+    Typically, one would confirm compatibility if intending to simultaneously iterate
+    over a pair of vectors obtained from different DMs.
+
+    For example, two DMDA objects are compatible if they have the same local
+    and global sizes and the same stencil width. They can have different numbers
+    of degrees of freedom per node. Thus, one could use the node numbering from
+    either DM in bounds for a loop over vectors derived from either DM.
+
+    Consider the operation of summing data living on a 2-dof DMDA to data living
+    on a 1-dof DMDA, which should be compatible, as in the following snippet.
+.vb
+  ...
+  ierr = DMGetCompatibility(da1,da2,&compatible,&set);CHKERRQ(ierr);
+  if (set && compatible)  {
+    ierr = DMDAVecGetArrayDOF(da1,vec1,&arr1);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayDOF(da2,vec2,&arr2);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da1,&x,&y,NULL,&m,&n);CHKERRQ(ierr);
+    for (j=y; j<y+n; ++j) {
+      for (i=x; i<x+m, ++i) {
+        arr1[j][i][0] = arr2[j][i][0] + arr2[j][i][1];
+      }
+    }
+    ierr = DMDAVecRestoreArrayDOF(da1,vec1,&arr1);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayDOF(da2,vec2,&arr2);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)da1,PETSC_ERR_ARG_INCOMP,"DMDA objects incompatible");
+  }
+  ...
+.ve
+
+    Checking compatibility might be expensive for a given implementation of DM,
+    or might be impossible to unambiguously confirm or deny. For this reason,
+    this function may decline to determine compatibility, and hence users should
+    always check the "set" output parameter.
+
+    A DM is always compatible with itself.
+
+    In the current implementation, DMs which live on "unequal" communicators
+    (MPI_UNEQUAL in the terminology of MPI_Comm_compare()) are always deemed
+    incompatible.
+
+    This function is labeled "Collective," as information about all subdomains
+    is required on each rank. However, in DM implementations which store all this
+    information locally, this function may be merely "Logically Collective".
+
+    Developer Notes:
+    Compatibility is assumed to be a symmetric concept; if DM A is compatible with DM B,
+    the DM B is compatible with DM A. Thus, this function checks the implementations
+    of both dm and dm2 (if they are of different types), attempting to determine
+    compatibility. It is left to DM implementers to ensure that symmetry is
+    preserved. The simplest way to do this is, when implementing type-specific
+    logic for this function, to check for existing logic in the implementation
+    of other DM types and let *set = PETSC_FALSE if found; the logic of this
+    function will then call that logic.
+
+    Level: advanced
+
+.seealso: DM, DMDACreateCompatibleDMDA()
+@*/
+
+PetscErrorCode DMGetCompatibility(DM dm,DM dm2,PetscBool *compatible,PetscBool *set)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    compareResult;
+  DMType         type,type2;
+  PetscBool      sameType;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
+
+  /* Declare a DM compatible with itself */
+  if (dm == dm2) {
+    *set = PETSC_TRUE;
+    *compatible = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+
+  /* Declare a DM incompatible with a DM that lives on an "unequal"
+     communicator. Note that this does not preclude compatibility with
+     DMs living on "congruent" or "similar" communicators, but this must be
+     determined by the implementation-specific logic */
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dm),PetscObjectComm((PetscObject)dm2),&compareResult);CHKERRQ(ierr);
+  if (compareResult == MPI_UNEQUAL) {
+    *set = PETSC_TRUE;
+    *compatible = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
+  /* Pass to the implementation-specific routine, if one exists. */
+  if (dm->ops->getcompatibility) {
+    ierr = (*dm->ops->getcompatibility)(dm,dm2,compatible,set);CHKERRQ(ierr);
+    if (*set) {
+      PetscFunctionReturn(0);
+    }
+  }
+
+  /* If dm and dm2 are of different types, then attempt to check compatibility
+     with an implementation of this function from dm2 */
+  ierr = DMGetType(dm,&type);CHKERRQ(ierr);
+  ierr = DMGetType(dm2,&type2);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,type2,&sameType);CHKERRQ(ierr);
+  if (!sameType && dm2->ops->getcompatibility) {
+    ierr = (*dm2->ops->getcompatibility)(dm2,dm,compatible,set);CHKERRQ(ierr); /* Note argument order */
+  } else {
+    *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
