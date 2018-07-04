@@ -72,8 +72,8 @@ SNES Object: 5 MPI processes
       Detect disconnected: 0 (filter 0)
       Benign subspace trick: 0 (change explicit 0)
       Benign subspace trick is active: 0
-      Algebraic computation of no-net-flux 0
-      ********************************** STATISTICS AT LEVEL 0 **********************************
+      Algebraic computation of no-net-flux: 0
+    ********************************** STATISTICS AT LEVEL 0 **********************************
       Global dofs sizes: all 1227 interface 171 coarse 36
       Coarsening ratios: all/coarse 34 interface/coarse 4
       Active processes : 5
@@ -84,40 +84,76 @@ SNES Object: 5 MPI processes
       Primal    dofs   :	9	24	16
       Local     dofs   :	153	333	282
       Local     subs   :	1	1
-      ********************************** COARSE PROBLEM DETAILS *********************************
-    KSP Object: (pc_bddc_coarse_) 5 MPI processes
-      type: preonly
-      maximum iterations=1, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-      left preconditioning
-      using NONE norm type for convergence test
-    PC Object: (pc_bddc_coarse_) 5 MPI processes
-      type: redundant
-        First (color=0) of 5 PCs follows
-      linear system matrix = precond matrix:
-      Mat Object: 5 MPI processes
-        type: mpiaij
-        rows=36, cols=36
-        total: nonzeros=1056, allocated nonzeros=1162
-        total number of mallocs used during MatSetValues calls =0
-          using I-node (on process 0) routines: found 2 nodes, limit used is 5
-            KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
-              type: preonly
-              maximum iterations=10000, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using NONE norm type for convergence test
-            PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
-              type: svd
-                All singular values smaller than 1e-12 treated as zero
-                Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
-              linear system matrix = precond matrix:
-              Mat Object:     1 MPI processes
-                type: seqaij
-                rows=36, cols=36
-                total: nonzeros=1056, allocated nonzeros=1056
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node routines: found 14 nodes, limit used is 5
+    --- Interior solver (rank 0)
+      KSP Object: (pc_bddc_dirichlet_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_dirichlet_) 1 MPI processes
+        type: svd
+          All singular values smaller than 1e-12 treated as zero
+          Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
+          type: seqaij
+          rows=242, cols=242
+          total: nonzeros=7380, allocated nonzeros=7380
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 116 nodes, limit used is 5
+    --- Correction solver (rank 0)
+      KSP Object: (pc_bddc_neumann_) 1 MPI processes
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_neumann_) 1 MPI processes
+        type: svd
+          All singular values smaller than 1e-12 treated as zero
+          Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_neumann_) 1 MPI processes
+          type: seqaij
+          rows=293, cols=293
+          total: nonzeros=9617, allocated nonzeros=9617
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 137 nodes, limit used is 5
+    --- Coarse solver
+      KSP Object: (pc_bddc_coarse_) 5 MPI processes
+        type: preonly
+        maximum iterations=1, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object: (pc_bddc_coarse_) 5 MPI processes
+        type: redundant
+          First (color=0) of 5 PCs follows
+        linear system matrix = precond matrix:
+        Mat Object: (pc_bddc_coarse_) 5 MPI processes
+          type: mpiaij
+          rows=36, cols=36
+          total: nonzeros=1056, allocated nonzeros=1162
+          total number of mallocs used during MatSetValues calls =0
+            using I-node (on process 0) routines: found 2 nodes, limit used is 5
+              KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+                type: svd
+                  All singular values smaller than 1e-12 treated as zero
+                  Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+                linear system matrix = precond matrix:
+                Mat Object:     1 MPI processes
+                  type: seqaij
+                  rows=36, cols=36
+                  total: nonzeros=1056, allocated nonzeros=1056
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 14 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 5 MPI processes
       type: is
@@ -126,4 +162,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 9.38912e-09 [5.57165e-10, 9.37257e-09]
+L_2 Error: 9.38912e-09 [5.57163e-10, 9.37257e-09]
