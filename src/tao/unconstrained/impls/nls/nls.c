@@ -1,19 +1,7 @@
 #include <petsctaolinesearch.h>
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/unconstrained/impls/nls/nlsimpl.h>
 
 #include <petscksp.h>
-
-#define NLS_PC_NONE     0
-#define NLS_PC_AHESS    1
-#define NLS_PC_BFGS     2
-#define NLS_PC_PETSC    3
-#define NLS_PC_TYPES    4
-
-#define BFGS_SCALE_AHESS        0
-#define BFGS_SCALE_PHESS        1
-#define BFGS_SCALE_BFGS         2
-#define BFGS_SCALE_TYPES        3
 
 #define NLS_INIT_CONSTANT         0
 #define NLS_INIT_DIRECTION        1
@@ -25,29 +13,9 @@
 #define NLS_UPDATE_INTERPOLATION  2
 #define NLS_UPDATE_TYPES          3
 
-static const char *NLS_PC[64] = {"none", "ahess", "bfgs", "petsc"};
-
-static const char *BFGS_SCALE[64] = {"ahess", "phess", "bfgs"};
-
 static const char *NLS_INIT[64] = {"constant", "direction", "interpolation"};
 
 static const char *NLS_UPDATE[64] = {"step", "reduction", "interpolation"};
-
-/* Routine for BFGS preconditioner */
-
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
-{
-  PetscErrorCode ierr;
-  Mat            M;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
-  ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /*
  Implements Newton's Method with a line search approach for solving
@@ -65,15 +33,14 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 
 #define NLS_NEWTON              0
 #define NLS_BFGS                1
-#define NLS_SCALED_GRADIENT     2
-#define NLS_GRADIENT            3
+#define NLS_GRADIENT            2
 
 static PetscErrorCode TaoSolve_NLS(Tao tao)
 {
   PetscErrorCode               ierr;
   TAO_NLS                      *nlsP = (TAO_NLS *)tao->data;
   KSPType                      ksp_type;
-  PetscBool                    is_nash,is_stcg,is_gltr;
+  PetscBool                    is_nash,is_stcg,is_gltr,is_bfgs,is_jacobi,is_symmetric,sym_set;
   KSPConvergedReason           ksp_reason;
   PC                           pc;
   TaoLineSearchConvergedReason ls_reason;
@@ -82,7 +49,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal                    f, fold, gdx, gnorm, pert;
   PetscReal                    step = 1.0;
-  PetscReal                    delta;
   PetscReal                    norm_d = 0.0, e_min;
 
   PetscInt                     stepType;
@@ -129,14 +95,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     tao->trust = PetscMin(tao->trust, nlsP->max_radius);
   }
 
-  /* Get vectors we will need */
-  if (NLS_PC_BFGS == nlsP->pc_type && !nlsP->M) {
-    ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
-    ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&nlsP->M);CHKERRQ(ierr);
-    ierr = MatLMVMAllocateVectors(nlsP->M,tao->solution);CHKERRQ(ierr);
-  }
-
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
@@ -148,38 +106,21 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
-  /* create vectors for the limited memory preconditioner */
-  if ((NLS_PC_BFGS == nlsP->pc_type) && (BFGS_SCALE_BFGS != nlsP->bfgs_scale_type)) {
-    if (!nlsP->Diag) {
-      ierr = VecDuplicate(tao->solution,&nlsP->Diag);CHKERRQ(ierr);
-    }
-  }
-
-  /* Modify the preconditioner to use the bfgs approximation */
+  /* Allocate the vectors needed for the BFGS approximation */
   ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
-  switch(nlsP->pc_type) {
-  case NLS_PC_NONE:
-    ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    break;
-
-  case NLS_PC_AHESS:
-    ierr = PCSetType(pc, PCJACOBI);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &is_bfgs);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc, PCJACOBI, &is_jacobi);CHKERRQ(ierr);
+  if (is_bfgs) {
+    nlsP->bfgs_pre = pc;
+    ierr = PCLMVMGetMatLMVM(nlsP->bfgs_pre, &nlsP->M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tao->solution, &n);CHKERRQ(ierr);
+    ierr = VecGetSize(tao->solution, &N);CHKERRQ(ierr);
+    ierr = MatSetSizes(nlsP->M, n, n, N, N);CHKERRQ(ierr);
+    ierr = MatLMVMAllocate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+    ierr = MatIsSymmetricKnown(nlsP->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
+    if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
+  } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
-    break;
-
-  case NLS_PC_BFGS:
-    ierr = PCSetType(pc, PCSHELL);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-    ierr = PCShellSetName(pc, "bfgs");CHKERRQ(ierr);
-    ierr = PCShellSetContext(pc, nlsP->M);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc, MatLMVMSolveShell);CHKERRQ(ierr);
-    break;
-
-  default:
-    /* Use the pc method set by pc_type */
-    break;
   }
 
   /* Initialize trust-region radius.  The initialization is only performed
@@ -306,22 +247,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     }
   }
 
-  /* Set initial scaling for the BFGS preconditioner
-     This step is done after computing the initial trust-region radius
-     since the function value may have decreased */
-  if (NLS_PC_BFGS == nlsP->pc_type) {
-    if (f != 0.0) {
-      delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-    } else {
-      delta = 2.0 / (gnorm*gnorm);
-    }
-    ierr = MatLMVMSetDelta(nlsP->M,delta);CHKERRQ(ierr);
-  }
-
   /* Set counter for gradient/reset steps*/
   nlsP->newt = 0;
   nlsP->bfgs = 0;
-  nlsP->sgrad = 0;
   nlsP->grad = 0;
 
   /* Have not converged; continue with Newton method */
@@ -334,14 +262,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
     }
 
-    if ((NLS_PC_BFGS == nlsP->pc_type) && (BFGS_SCALE_AHESS == nlsP->bfgs_scale_type)) {
-      /* Obtain diagonal for the bfgs preconditioner  */
-      ierr = MatGetDiagonal(tao->hessian, nlsP->Diag);CHKERRQ(ierr);
-      ierr = VecAbs(nlsP->Diag);CHKERRQ(ierr);
-      ierr = VecReciprocal(nlsP->Diag);CHKERRQ(ierr);
-      ierr = MatLMVMSetScale(nlsP->M,nlsP->Diag);CHKERRQ(ierr);
-    }
-
     /* Shift the Hessian matrix */
     if (pert > 0) {
       ierr = MatShift(tao->hessian, pert);CHKERRQ(ierr);
@@ -350,15 +270,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       }
     }
 
-    if (NLS_PC_BFGS == nlsP->pc_type) {
-      if (BFGS_SCALE_PHESS == nlsP->bfgs_scale_type) {
-        /* Obtain diagonal for the bfgs preconditioner  */
-        ierr = MatGetDiagonal(tao->hessian, nlsP->Diag);CHKERRQ(ierr);
-        ierr = VecAbs(nlsP->Diag);CHKERRQ(ierr);
-        ierr = VecReciprocal(nlsP->Diag);CHKERRQ(ierr);
-        ierr = MatLMVMSetScale(nlsP->M,nlsP->Diag);CHKERRQ(ierr);
-      }
-      /* Update the limited memory preconditioner */
+    if (nlsP->bfgs_pre) {
       ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ++bfgsUpdates;
     }
@@ -408,17 +320,10 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     }
     ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
-    if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&  (NLS_PC_BFGS == nlsP->pc_type) && (bfgsUpdates > 1)) {
+    if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&  (nlsP->bfgs_pre)) {
       /* Preconditioner is numerically indefinite; reset the
          approximate if using BFGS preconditioning. */
-
-      if (f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-      } else {
-        delta = 2.0 / (gnorm*gnorm);
-      }
-      ierr = MatLMVMSetDelta(nlsP->M,delta);CHKERRQ(ierr);
-      ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
+      ierr = MatLMVMReset(nlsP->M, PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       bfgsUpdates = 1;
     }
@@ -456,7 +361,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         pert = PetscMin(nlsP->pmax, PetscMax(nlsP->pgfac * pert, nlsP->pmgfac * gnorm));
       }
 
-      if (NLS_PC_BFGS != nlsP->pc_type) {
+      if (!nlsP->bfgs_pre) {
         /* We don't have the bfgs matrix around and updated
            Must use gradient direction in this case */
         ierr = VecCopy(tao->gradient, nlsP->D);CHKERRQ(ierr);
@@ -465,7 +370,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         stepType = NLS_GRADIENT;
       } else {
         /* Attempt to use the BFGS direction */
-        ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
+        ierr = MatSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
         ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
 
         /* Check for success (descent direction) */
@@ -477,26 +382,20 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
              which is guaranteed to be descent */
 
           /* Use steepest descent direction (scaled) */
-
-          if (f != 0.0) {
-            delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-          } else {
-            delta = 2.0 / (gnorm*gnorm);
-          }
-          ierr = MatLMVMSetDelta(nlsP->M, delta);CHKERRQ(ierr);
-          ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
+          ierr = MatLMVMReset(nlsP->M, PETSC_FALSE);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-          ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
+          ierr = MatSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
 
           bfgsUpdates = 1;
-          ++nlsP->sgrad;
-          stepType = NLS_SCALED_GRADIENT;
+          ++nlsP->grad;
+          stepType = NLS_GRADIENT;
         } else {
+          ierr = MatLMVMGetUpdateCount(nlsP->M, &bfgsUpdates);CHKERRQ(ierr);
           if (1 == bfgsUpdates) {
             /* The first BFGS direction is always the scaled gradient */
-            ++nlsP->sgrad;
-            stepType = NLS_SCALED_GRADIENT;
+            ++nlsP->grad;
+            stepType = NLS_GRADIENT;
           } else {
             ++nlsP->bfgs;
             stepType = NLS_BFGS;
@@ -567,7 +466,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           pert = PetscMin(nlsP->pmax, PetscMax(nlsP->pgfac * pert, nlsP->pmgfac * gnorm));
         }
 
-        if (NLS_PC_BFGS != nlsP->pc_type) {
+        if (!nlsP->bfgs_pre) {
           /* We don't have the bfgs matrix around and being updated
              Must use gradient direction in this case */
           ierr = VecCopy(tao->gradient, nlsP->D);CHKERRQ(ierr);
@@ -575,32 +474,25 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           stepType = NLS_GRADIENT;
         } else {
           /* Attempt to use the BFGS direction */
-          ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
+          ierr = MatSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
           /* Check for success (descent direction) */
           ierr = VecDot(tao->solution, nlsP->D, &gdx);CHKERRQ(ierr);
           if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
             /* BFGS direction is not descent or direction produced not a number
                We can assert bfgsUpdates > 1 in this case
                Use steepest descent direction (scaled) */
-
-            if (f != 0.0) {
-              delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-            } else {
-              delta = 2.0 / (gnorm*gnorm);
-            }
-            ierr = MatLMVMSetDelta(nlsP->M, delta);CHKERRQ(ierr);
-            ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
+            ierr = MatLMVMReset(nlsP->M, PETSC_FALSE);CHKERRQ(ierr);
             ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-            ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
+            ierr = MatSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
 
             bfgsUpdates = 1;
-            ++nlsP->sgrad;
-            stepType = NLS_SCALED_GRADIENT;
+            ++nlsP->grad;
+            stepType = NLS_GRADIENT;
           } else {
             if (1 == bfgsUpdates) {
               /* The first BFGS direction is always the scaled gradient */
-              ++nlsP->sgrad;
-              stepType = NLS_SCALED_GRADIENT;
+              ++nlsP->grad;
+              stepType = NLS_GRADIENT;
             } else {
               ++nlsP->bfgs;
               stepType = NLS_BFGS;
@@ -613,33 +505,9 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         /* Can only enter if pc_type == NLS_PC_BFGS
            Failed to obtain acceptable iterate with BFGS step
            Attempt to use the scaled gradient direction */
-
-        if (f != 0.0) {
-          delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-        } else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetDelta(nlsP->M, delta);CHKERRQ(ierr);
-        ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
+        ierr = MatLMVMReset(nlsP->M, PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
-
-        bfgsUpdates = 1;
-        ++nlsP->sgrad;
-        stepType = NLS_SCALED_GRADIENT;
-        break;
-
-      case NLS_SCALED_GRADIENT:
-        /* Can only enter if pc_type == NLS_PC_BFGS
-           The scaled gradient step did not produce a new iterate;
-           attemp to use the gradient direction.
-           Need to make sure we are not using a different diagonal scaling */
-
-        ierr = MatLMVMSetScale(nlsP->M,0);CHKERRQ(ierr);
-        ierr = MatLMVMSetDelta(nlsP->M,1.0);CHKERRQ(ierr);
-        ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
-        ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
+        ierr = MatSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
 
         bfgsUpdates = 1;
         ++nlsP->grad;
@@ -846,8 +714,8 @@ static PetscErrorCode TaoSetUp_NLS(Tao tao)
   if (!nlsP->D) {ierr = VecDuplicate(tao->solution,&nlsP->D);CHKERRQ(ierr);}
   if (!nlsP->Xold) {ierr = VecDuplicate(tao->solution,&nlsP->Xold);CHKERRQ(ierr);}
   if (!nlsP->Gold) {ierr = VecDuplicate(tao->solution,&nlsP->Gold);CHKERRQ(ierr);}
-  nlsP->Diag = 0;
   nlsP->M = 0;
+  nlsP->bfgs_pre = 0;
   PetscFunctionReturn(0);
 }
 
@@ -864,8 +732,6 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
     ierr = VecDestroy(&nlsP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&nlsP->Gold);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&nlsP->Diag);CHKERRQ(ierr);
-  ierr = MatDestroy(&nlsP->M);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -878,8 +744,6 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton line search method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_nls_pc_type", "pc type", "", NLS_PC, NLS_PC_TYPES, NLS_PC[nlsP->pc_type], &nlsP->pc_type, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_nls_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[nlsP->bfgs_scale_type], &nlsP->bfgs_scale_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_init_type", "radius initialization type", "", NLS_INIT, NLS_INIT_TYPES, NLS_INIT[nlsP->init_type], &nlsP->init_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_nls_update_type", "radius update type", "", NLS_UPDATE, NLS_UPDATE_TYPES, NLS_UPDATE[nlsP->update_type], &nlsP->update_type, 0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_sval", "perturbation starting value", "", nlsP->sval, &nlsP->sval,NULL);CHKERRQ(ierr);
@@ -938,7 +802,6 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject
 static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
-  PetscInt       nrejects;
   PetscBool      isascii;
   PetscErrorCode ierr;
 
@@ -946,13 +809,8 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (NLS_PC_BFGS == nlsP->pc_type && nlsP->M) {
-      ierr = MatLMVMGetRejects(nlsP->M,&nrejects);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n",nrejects);CHKERRQ(ierr);
-    }
     ierr = PetscViewerASCIIPrintf(viewer, "Newton steps: %D\n", nlsP->newt);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", nlsP->bfgs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", nlsP->sgrad);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", nlsP->grad);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIPrintf(viewer, "nls ksp atol: %D\n", nlsP->ksp_atol);CHKERRQ(ierr);
@@ -1108,8 +966,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   nlsP->max_radius = 1.0e10;
   nlsP->epsilon = 1.0e-6;
 
-  nlsP->pc_type         = NLS_PC_BFGS;
-  nlsP->bfgs_scale_type = BFGS_SCALE_PHESS;
   nlsP->init_type       = NLS_INIT_INTERPOLATION;
   nlsP->update_type     = NLS_UPDATE_STEP;
 

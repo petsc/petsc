@@ -1,9 +1,9 @@
 #ifndef __TAO_IMPL_H
 #define __TAO_IMPL_H
 
+#include <petsctao.h>
 #include <petsctaolinesearch.h>
 #include <petsc/private/petscimpl.h>
-#include <petscksp.h>
 
 PETSC_EXTERN PetscBool TaoRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
@@ -163,6 +163,7 @@ struct _p_Tao {
     PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
+    PetscBool bounded;
 
     TaoSubsetType subset_type;
     PetscInt      hist_max;/* Number of iteration histories to keep */

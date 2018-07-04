@@ -1497,6 +1497,53 @@ this can lead to cleaner, simpler, less buggy codes.  One should never
 make code overly complicated in order to generate all values locally. Rather,
 one should organize the code in such a way that {\em most} values are generated locally.
 
+\subsubsection{Limited-Memory Variable Metric (LMVM) Matrices}
+
+Variable metric methods, also known as quasi-Newton methods, are frequently used for root finding problems 
+and approximate Jacobian matrices or their inverses via sequential nonlinear updates based on the secant condition. 
+The limited-memory variants do not store the full explicit Jacobian, and instead compute forward products and 
+inverse applications based on a fixed number of stored update vectors.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+{\bf Method}                                       & {\bf PETSc Type}                & {\bf Name}          & {\bf Property} \\
+\hline
+``Good'' Broyden \cite{griewank2012broyden}             & \lstinline|MATLMVMBrdn|         & \trl{lmvmbrdn}      & Square \\
+``Bad'' Broyden \cite{griewank2012broyden}              & \lstinline|MATLMVMBadBrdn|      & \trl{lmvmbadbrdn}   & Square  \\
+Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|          & \trl{lmvmsr1}       & Symmetric \\
+Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
+Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc LMVM matrix implementations.}
+\label{tab_matlmvmimpl}
+\end{table}
+
+PETSc implements six different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
+the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
+We will review the most important ones below:
+\begin{itemize}
+  \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store 
+  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while 
+  the \lstinline{F} defines the function space for the history of updates.
+  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such 
+  that $s_k = x_k - x_{k-1}$ and $y_k = f(x_k) - f(x_{k-1})$, where $k$ is the index for the update.
+  \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets 
+  the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data 
+  structures and necessitates another allocation call before the matrix can be updated and used for products and solves.
+  \item \lstinline{MatLMVMSetJ0(Mat B, Mat J0)} -- Defines the initial Jacobian to apply the updates to. If no initial 
+  Jacobian is provided, the updates are applied to an identity matrix.
+\end{itemize}
+
+LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
+in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
+\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
+\lstinline{-mat_lmvm_num_vecs} option. Restricted Broyden Family, DFP and BFGS methods additionally implement scalar 
+and diagonal scaling of the initial Jacobian which can be selected via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}.
+
 \subsection{Dense Matrices}
 \label{sec_matdense}
 

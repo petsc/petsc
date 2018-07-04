@@ -88,6 +88,13 @@ typedef const char* MatType;
 #define MATSEQSELL         "seqsell"
 #define MATMPISELL         "mpisell"
 #define MATDUMMY           "dummy"
+#define MATLMVM            "lmvm"
+#define MATLMVMDFP         "lmvmdfp"
+#define MATLMVMBFGS        "lmvmbfgs"
+#define MATLMVMSR1         "lmvmsr1"
+#define MATLMVMBRDN        "lmvmbrdn"
+#define MATLMVMBADBRDN     "lmvmbadbrdn"
+#define MATLMVMSYMBRDN     "lmvmsymbrdn"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -213,6 +220,7 @@ typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATT
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A);
 #endif
+
 PETSC_EXTERN PetscErrorCode MatCreateSeqSELL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSELL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatSeqSELLSetPreallocation(Mat,PetscInt,const PetscInt[]);

@@ -4,7 +4,7 @@ mx: 8,  my: 12,  ecc: 0.1
 
 iter =   0, Function value 0., Residual: 1.11613 
 iter =   0, Function value -0.146978, Residual: 0.424351 
-  iter =   0,   Function value -0.146978,   Residual: 0.281355 
+  iter =   0,   Function value -0.146978,   Residual: 0.424351 
   iter =   1,   Function value -0.165734,   Residual: 0.361666 
   iter =   2,   Function value -0.174871,   Residual: 0.252311 
   iter =   3,   Function value -0.180655,   Residual: 0.114971 
