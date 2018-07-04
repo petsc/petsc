@@ -132,6 +132,7 @@ extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char***,IS**,IS**,DM**);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
+PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM,DM,PetscBool*,PetscBool*);
 
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
@@ -460,6 +461,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
+  da->ops->getcompatibility            = DMGetCompatibility_DA;
   ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
