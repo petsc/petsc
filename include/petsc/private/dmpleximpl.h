@@ -194,6 +194,7 @@ typedef struct {
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;
+  PetscInt             printL2;
   PetscReal            printTol;
 } DM_Plex;
 
