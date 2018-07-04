@@ -9,7 +9,6 @@ cdef extern from * nogil:
     PetscDMType DMSHELL
     PetscDMType DMMESH
     PetscDMType DMPLEX
-    PetscDMType DMCARTESIAN
     PetscDMType DMREDUNDANT
     PetscDMType DMPATCH
     PetscDMType DMMOAB
