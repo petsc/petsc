@@ -38,7 +38,7 @@ PC Object: (physical_) 4 MPI processes
     Symmetric computation of primal basis functions: 1
     Num. Procs. to map coarse adjacency list: 0
     Coarse eqs per proc (significant at the coarsest level): 1
-    Detect disconnected: 0
+    Detect disconnected: 0 (filter 0)
     Benign subspace trick: 0 (change explicit 0)
     Benign subspace trick is active: 0
     Algebraic computation of no-net-flux 0

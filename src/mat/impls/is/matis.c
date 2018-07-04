@@ -1042,6 +1042,7 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
     IS                     is;
     PetscInt               *lidxs,*lgidxs,*newgidxs;
     PetscInt               ll,newloc,irbs,icbs,arbs,acbs,rbs,cbs;
+    PetscBool              cong;
     MPI_Comm               comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -1082,14 +1083,8 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
     /* local is to extract local submatrix */
     newmatis = (Mat_IS*)(*newmat)->data;
     ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_ris);CHKERRQ(ierr);
-    if (mat->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
-      PetscBool cong;
-
-      ierr = PetscLayoutCompare(mat->rmap,mat->cmap,&cong);CHKERRQ(ierr);
-      if (cong) mat->congruentlayouts = 1;
-      else      mat->congruentlayouts = 0;
-    }
-    if (mat->congruentlayouts && irow == icol && matis->csf == matis->sf) {
+    ierr = MatHasCongruentLayouts(mat,&cong);CHKERRQ(ierr);
+    if (cong && irow == icol && matis->csf == matis->sf) {
       ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,rl2g);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)newmatis->getsub_ris);CHKERRQ(ierr);
       newmatis->getsub_cis = newmatis->getsub_ris;
@@ -1303,7 +1298,8 @@ PetscErrorCode  MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[]
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+/* this is used by DMDA */
+PETSC_EXTERN PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_IS         *matis = (Mat_IS*)(B->data);
   PetscInt       bs,i,nlocalcols;
@@ -1500,6 +1496,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   if (issbaij) {
     ierr = MatRestoreRowUpperTriangular(matis->A);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
