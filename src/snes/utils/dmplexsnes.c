@@ -1530,6 +1530,23 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF)
+{
+  DMField        coordField;
+  DMLabel        depthLabel;
+  IS             facetIS;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(depthLabel, dim-1, &facetIS);CHKERRQ(ierr);
+  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
+  ierr = DMPlexComputeBdResidual_Single_Internal(dm, t, label, numValues, values, field, locX, locX_t, locF, coordField, facetIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   PetscDS        prob;
