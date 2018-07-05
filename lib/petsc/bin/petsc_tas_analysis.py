@@ -41,13 +41,23 @@ def main(cmdLineArgs):
     print("Mesh Convergence")
     print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1])) 
 
+    plt.style.use('petsc_tas_style') #uses the specified style sheet for generating the plots
     
-    plt.title('Mesh Convergence')
-    plt.xlabel('Problem Size $\log N$')
-    plt.ylabel('Error $\log |x - x^*|$')
-    meshConv, = plt.loglog(dofs, errors[0])
-    meshConvLstSq, = plt.loglog(dofs, (dofs**lstSqMeshConv[0] * 10**lstSqMeshConv[1])) 
-    plt.legend([meshConv, meshConvLstSq], ['Original Data', 'Least Squares + delta'])
+    fig = plt.figure()
+    
+    ax = fig.add_subplot(111)
+    ax.set(xlabel ='Problem Size $\log N$', ylabel ='Error $\log |x - x^*|$' , title ='Mesh Convergence')
+    #plt.title('Mesh Convergence')
+    #plt.xlabel('Problem Size $\log N$')
+    #plt.ylabel('Error $\log |x - x^*|$')
+    meshConv, = ax.loglog(dofs, errors[0], 'ro')
+    slope = ((((dofs[6]**lstSqMeshConv[0] * 10**lstSqMeshConv[1]))-((dofs[5])**lstSqMeshConv[0] * 10**lstSqMeshConv[1])) \
+            /(dofs[6]-dofs[5]))
+
+    slope = 'Slope : ' + str(slope)
+    meshConvLstSq, = ax.loglog(dofs, ((dofs)**lstSqMeshConv[0] * 10**lstSqMeshConv[1]), 'g--') 
+    ax.legend([meshConv, meshConvLstSq], ['Original Data', 'Least Squares'])
+    ax.annotate(slope, xy = (5,5),  xycoords = 'data', arrowprops = dict(facecolor = 'black', shrink = 0.05))
     plt.show()
     plt.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
 
