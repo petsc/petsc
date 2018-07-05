@@ -5600,23 +5600,30 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     ierr = KSPGetRhs(pcbddc->coarse_ksp,&rhs);CHKERRQ(ierr);
     ierr = KSPGetSolution(pcbddc->coarse_ksp,&sol);CHKERRQ(ierr);
     ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
-    ierr = MatGetNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
-    if (nullsp) {
-      ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
-    }
     if (applytranspose) {
       if (pcbddc->benign_apply_coarse_only) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
       ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+      ierr = MatGetTransposeNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
+      if (nullsp) {
+        ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
+      }
     } else {
+      ierr = MatGetNullSpace(coarse_mat,&nullsp);CHKERRQ(ierr);
       if (pcbddc->benign_apply_coarse_only && isbddc) { /* need just to apply the coarse preconditioner during presolve */
         PC        coarse_pc;
 
+        if (nullsp) {
+          ierr = MatNullSpaceRemove(nullsp,rhs);CHKERRQ(ierr);
+        }
         ierr = KSPGetPC(pcbddc->coarse_ksp,&coarse_pc);CHKERRQ(ierr);
         ierr = PCPreSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
         ierr = PCBDDCBenignRemoveInterior(coarse_pc,rhs,sol);CHKERRQ(ierr);
         ierr = PCPostSolve(coarse_pc,pcbddc->coarse_ksp);CHKERRQ(ierr);
       } else {
         ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
+        if (nullsp) {
+          ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
+        }
       }
     }
     /* we don't need the benign correction at coarser levels anymore */
@@ -5628,9 +5635,6 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       coarsepcbddc = (PC_BDDC*)(coarse_pc->data);
       coarsepcbddc->benign_skip_correction = PETSC_TRUE;
       coarsepcbddc->benign_apply_coarse_only = PETSC_FALSE;
-    }
-    if (nullsp) {
-      ierr = MatNullSpaceRemove(nullsp,sol);CHKERRQ(ierr);
     }
   }
 
