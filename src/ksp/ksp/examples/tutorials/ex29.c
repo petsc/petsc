@@ -216,7 +216,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
     ierr = MatViewFromOptions(J2,NULL,"-view_conv_assembled");CHKERRQ(ierr);
     ierr = MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(J2,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",nrm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm);CHKERRQ(ierr);
     ierr = MatViewFromOptions(J2,NULL,"-view_conv_err");CHKERRQ(ierr);
     ierr = MatDestroy(&J2);CHKERRQ(ierr);
   }
