@@ -234,7 +234,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     if (tao->niter>1) {
       for (i=0;i<mfqP->m;i++) {
         factor = mfqP->C[i];
-        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[i],&blasn2,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[i],&blasm,mfqP->Hres,&ione));
       }
     }
   }
