@@ -2489,6 +2489,101 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCView_BDDCIPC(PC pc, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  BDDCIPC_ctx    bddcipc_ctx;
+  PetscBool      isascii;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&bddcipc_ctx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"BDDC interface preconditioner\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PCView(bddcipc_ctx->bddc,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
+{
+  PetscErrorCode ierr;
+  BDDCIPC_ctx    bddcipc_ctx;
+  PetscBool      isbddc;
+  Vec            vv;
+  IS             is;
+  PC_IS          *pcis;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&bddcipc_ctx);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)bddcipc_ctx->bddc,PCBDDC,&isbddc);CHKERRQ(ierr);
+  if (!isbddc) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
+  ierr = PCSetUp(bddcipc_ctx->bddc);CHKERRQ(ierr);
+
+  /* create interface scatter */
+  pcis = (PC_IS*)(bddcipc_ctx->bddc->data);
+  ierr = VecScatterDestroy(&bddcipc_ctx->g2l);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&vv,NULL);CHKERRQ(ierr);
+  ierr = ISRenumber(pcis->is_B_global,NULL,NULL,&is);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vv,is,pcis->vec1_B,NULL,&bddcipc_ctx->g2l);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = VecDestroy(&vv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApply_BDDCIPC(PC pc, Vec r, Vec x)
+{
+  PetscErrorCode ierr;
+  BDDCIPC_ctx    bddcipc_ctx;
+  PC_IS          *pcis;
+  VecScatter     tmps;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&bddcipc_ctx);CHKERRQ(ierr);
+  pcis = (PC_IS*)(bddcipc_ctx->bddc->data);
+  tmps = pcis->global_to_B;
+  pcis->global_to_B = bddcipc_ctx->g2l;
+  ierr = PCBDDCScalingRestriction(bddcipc_ctx->bddc,r,pcis->vec1_B);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(bddcipc_ctx->bddc,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCBDDCScalingExtension(bddcipc_ctx->bddc,pcis->vec1_B,x);CHKERRQ(ierr);
+  pcis->global_to_B = tmps;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplyTranspose_BDDCIPC(PC pc, Vec r, Vec x)
+{
+  PetscErrorCode ierr;
+  BDDCIPC_ctx    bddcipc_ctx;
+  PC_IS          *pcis;
+  VecScatter     tmps;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&bddcipc_ctx);CHKERRQ(ierr);
+  pcis = (PC_IS*)(bddcipc_ctx->bddc->data);
+  tmps = pcis->global_to_B;
+  pcis->global_to_B = bddcipc_ctx->g2l;
+  ierr = PCBDDCScalingRestriction(bddcipc_ctx->bddc,r,pcis->vec1_B);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(bddcipc_ctx->bddc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCBDDCScalingExtension(bddcipc_ctx->bddc,pcis->vec1_B,x);CHKERRQ(ierr);
+  pcis->global_to_B = tmps;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
+{
+  PetscErrorCode ierr;
+  BDDCIPC_ctx    bddcipc_ctx;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void **)&bddcipc_ctx);CHKERRQ(ierr);
+  ierr = PCDestroy(&bddcipc_ctx->bddc);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&bddcipc_ctx->g2l);CHKERRQ(ierr);
+  ierr = PetscFree(bddcipc_ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
  PCBDDCMatFETIDPGetSolution - Compute the physical solution using the solution of the FETI-DP linear system
 
@@ -2571,11 +2666,10 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
     ierr = PCShellSetView(newpc,FETIDPPCView);CHKERRQ(ierr);
     ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
-  } else {
-    KSP      *ksps;
-    PC       lagpc;
-    Mat      M,AM,PM;
-    PetscInt nn;
+  } else { /* saddle-point FETI-DP */
+    Mat       M;
+    PetscInt  psize;
+    PetscBool fake = PETSC_FALSE, isfieldsplit;
 
     ierr = ISViewFromOptions(fetidpmat_ctx->lagrange,NULL,"-lag_view");CHKERRQ(ierr);
     ierr = ISViewFromOptions(fetidpmat_ctx->pressure,NULL,"-press_view");CHKERRQ(ierr);
@@ -2585,28 +2679,105 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCFieldSplitSetIS(newpc,"p",fetidpmat_ctx->pressure);CHKERRQ(ierr);
     ierr = PCFieldSplitSetType(newpc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurFactType(newpc,PC_FIELDSPLIT_SCHUR_FACT_DIAG);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
+    ierr = ISGetSize(fetidpmat_ctx->pressure,&psize);CHKERRQ(ierr);
+    if (psize != M->rmap->N) {
+      Mat      M2;
+      PetscInt lpsize;
+
+      fake = PETSC_TRUE;
+      ierr = ISGetLocalSize(fetidpmat_ctx->pressure,&lpsize);CHKERRQ(ierr);
+      ierr = MatCreate(comm,&M2);CHKERRQ(ierr);
+      ierr = MatSetType(M2,MATAIJ);CHKERRQ(ierr);
+      ierr = MatSetSizes(M2,lpsize,lpsize,psize,psize);CHKERRQ(ierr);
+      ierr = MatSetUp(M2);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(M2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(M2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M2);CHKERRQ(ierr);
+      ierr = MatDestroy(&M2);CHKERRQ(ierr);
+    } else {
+      ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
+    }
     ierr = PCFieldSplitSetSchurScale(newpc,1.0);CHKERRQ(ierr);
 
     /* we need to setfromoptions and setup here to access the blocks */
     ierr = PCSetFromOptions(newpc);CHKERRQ(ierr);
     ierr = PCSetUp(newpc);CHKERRQ(ierr);
 
-    /* set the solver for the (0,0) block */
-    ierr = PCFieldSplitGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
-    ierr = PCCreate(comm,&lagpc);CHKERRQ(ierr);
-    ierr = PCSetType(lagpc,PCSHELL);CHKERRQ(ierr);
-    ierr = KSPGetOperators(ksps[0],&AM,&PM);CHKERRQ(ierr);
-    ierr = PCSetOperators(lagpc,AM,PM);CHKERRQ(ierr);
-    ierr = PCShellSetContext(lagpc,fetidppc_ctx);CHKERRQ(ierr);
-    ierr = PCShellSetApply(lagpc,FETIDPPCApply);CHKERRQ(ierr);
-    ierr = PCShellSetApplyTranspose(lagpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
-    ierr = PCShellSetView(lagpc,FETIDPPCView);CHKERRQ(ierr);
-    ierr = PCShellSetDestroy(lagpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
-    ierr = KSPSetPC(ksps[0],lagpc);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)lagpc,(PetscObject)ksps[0],0);CHKERRQ(ierr);
-    ierr = PCDestroy(&lagpc);CHKERRQ(ierr);
-    ierr = PetscFree(ksps);CHKERRQ(ierr);
+    /* user may have changed the type (e.g. -fetidp_pc_type none) */
+    ierr = PetscObjectTypeCompare((PetscObject)newpc,PCFIELDSPLIT,&isfieldsplit);CHKERRQ(ierr);
+    if (isfieldsplit) {
+      KSP       *ksps;
+      PC        ppc,lagpc;
+      PetscInt  nn;
+      PetscBool ismatis,matisok = PETSC_FALSE;
+
+      /* set the solver for the (0,0) block */
+      ierr = PCFieldSplitSchurGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
+      if (!nn) { /* not of type PC_COMPOSITE_SCHUR */
+        ierr = PCFieldSplitGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
+        if (!fake) { /* pass pmat to the pressure solver */
+          Mat F;
+
+          ierr = KSPGetOperators(ksps[1],&F,NULL);CHKERRQ(ierr);
+          ierr = KSPSetOperators(ksps[1],F,M);CHKERRQ(ierr);
+        }
+      } else {
+        PetscBool issym;
+        Mat       S;
+
+        ierr = PCFieldSplitSchurGetS(newpc,&S);CHKERRQ(ierr);
+
+        ierr = MatGetOption(newmat,MAT_SYMMETRIC,&issym);CHKERRQ(ierr);
+        if (issym) {
+          ierr = MatSetOption(S,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        }
+      }
+      ierr = KSPGetPC(ksps[0],&lagpc);CHKERRQ(ierr);
+      ierr = PCSetType(lagpc,PCSHELL);CHKERRQ(ierr);
+      ierr = PCShellSetName(lagpc,"FETI-DP multipliers");CHKERRQ(ierr);
+      ierr = PCShellSetContext(lagpc,fetidppc_ctx);CHKERRQ(ierr);
+      ierr = PCShellSetApply(lagpc,FETIDPPCApply);CHKERRQ(ierr);
+      ierr = PCShellSetApplyTranspose(lagpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
+      ierr = PCShellSetView(lagpc,FETIDPPCView);CHKERRQ(ierr);
+      ierr = PCShellSetDestroy(lagpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
+
+      /* Olof's idea: interface Schur complement preconditioner for the mass matrix */
+      ierr = KSPGetPC(ksps[1],&ppc);CHKERRQ(ierr);
+      if (fake) {
+        BDDCIPC_ctx bddcipc_ctx;
+
+        matisok = PETSC_TRUE;
+
+        /* create inner BDDC solver */
+        ierr = PetscNew(&bddcipc_ctx);CHKERRQ(ierr);
+        ierr = PCCreate(comm,&bddcipc_ctx->bddc);CHKERRQ(ierr);
+        ierr = PCSetType(bddcipc_ctx->bddc,PCBDDC);CHKERRQ(ierr);
+        ierr = PCSetOperators(bddcipc_ctx->bddc,M,M);CHKERRQ(ierr);
+        ierr = PCSetOptionsPrefix(bddcipc_ctx->bddc,((PetscObject)ksps[1])->prefix);CHKERRQ(ierr);
+        ierr = PCSetErrorIfFailure(bddcipc_ctx->bddc,pc->erroriffailure);CHKERRQ(ierr);
+        ierr = PCSetFromOptions(bddcipc_ctx->bddc);CHKERRQ(ierr);
+
+        /* wrap the interface application */
+        ierr = PCSetType(ppc,PCSHELL);CHKERRQ(ierr);
+        ierr = PCShellSetName(ppc,"FETI-DP pressure");CHKERRQ(ierr);
+        ierr = PCShellSetContext(ppc,bddcipc_ctx);CHKERRQ(ierr);
+        ierr = PCShellSetSetUp(ppc,PCSetUp_BDDCIPC);CHKERRQ(ierr);
+        ierr = PCShellSetApply(ppc,PCApply_BDDCIPC);CHKERRQ(ierr);
+        ierr = PCShellSetApplyTranspose(ppc,PCApplyTranspose_BDDCIPC);CHKERRQ(ierr);
+        ierr = PCShellSetView(ppc,PCView_BDDCIPC);CHKERRQ(ierr);
+        ierr = PCShellSetDestroy(ppc,PCDestroy_BDDCIPC);CHKERRQ(ierr);
+      }
+
+      /* determine if we need to assemble M to construct a preconditioner */
+      if (!matisok) {
+        ierr = PetscObjectTypeCompare((PetscObject)M,MATIS,&ismatis);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompareAny((PetscObject)ppc,&matisok,PCBDDC,PCJACOBI,PCNONE,PCMG,"");CHKERRQ(ierr);
+        if (ismatis && !matisok) {
+          ierr = MatConvert(M,MATAIJ,MAT_INPLACE_MATRIX,&M);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscFree(ksps);CHKERRQ(ierr);
+    }
   }
   /* return pointers for objects created */
   *fetidp_mat = newmat;

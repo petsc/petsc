@@ -522,7 +522,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   Mat              A,Ap;
   PetscInt         fid = -1;
   PetscMPIInt      size;
-  PetscBool        ismatis,pisz,allp;
+  PetscBool        ismatis,pisz,allp,schp;
   PetscBool        flip; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
@@ -537,10 +537,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   pisz = PETSC_FALSE;
   flip = PETSC_FALSE;
   allp = PETSC_FALSE;
+  schp = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_fetidp_pressure_schur","Use a BDDC solver for pressure",NULL,schp,&schp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
@@ -960,8 +962,16 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         Mat C;
 
         ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject*)&C);CHKERRQ(ierr);
-        if (C) { /* non-zero pressure block, most likely Almost Incompressible Elasticity */
+        if (!schp && C) { /* non-zero pressure block, most likely Almost Incompressible Elasticity */
           ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
+        } else if (!pisz && schp) { /* we need the whole pressure mass matrix to define the interface BDDC */
+          IS  P;
+
+          ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(A,P,P,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          ierr = MatScale(C,-1.);CHKERRQ(ierr);
+          ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
+          ierr = MatDestroy(&C);CHKERRQ(ierr);
         } else { /* identity (need to be scaled properly by the user using e.g. a Richardson method */
           PetscInt nl;
 
@@ -1000,9 +1010,13 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
         if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
-          ierr  = MatCreateSubMatrix(PPmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          if (schp) {
+            ierr = MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          } else {
+            ierr = MatCreateSubMatrix(PPmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          }
         } else if (pAg == PAM) { /* global ordering for pressure only */
-          if (!allp) { /* solving for interface pressure only */
+          if (!allp && !schp) { /* solving for interface pressure only */
             IS restr;
 
             ierr = ISRenumber(fetidp->pP,NULL,NULL,&restr);CHKERRQ(ierr);
@@ -1013,6 +1027,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
             C    = PPmat;
           }
         } else if (pIg == PAM) { /* global ordering for selected pressure only */
+          if (schp) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
           ierr = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
           C    = PPmat;
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");

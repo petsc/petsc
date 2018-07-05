@@ -242,4 +242,11 @@ struct _BDdelta_DN {
 };
 typedef struct _BDdelta_DN *BDdelta_DN;
 
+/* Schur interface preconditioner */
+struct _BDDCIPC_ctx {
+  VecScatter g2l;
+  PC         bddc;
+};
+typedef struct _BDDCIPC_ctx *BDDCIPC_ctx;
+
 #endif
