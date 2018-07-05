@@ -6227,7 +6227,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
   /* determine if a QR strategy is needed for change of basis */
-  qr_needed = PETSC_FALSE;
+  qr_needed = pcbddc->use_qr_single;
   ierr = PetscBTCreate(total_counts_cc,&qr_needed_idx);CHKERRQ(ierr);
   total_primal_vertices=0;
   pcbddc->local_primal_size_cc = 0;
@@ -6313,13 +6313,13 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* dual and primal dofs on a single cc */
     PetscInt     dual_dofs,primal_dofs;
     /* working stuff for GEQRF */
-    PetscScalar  *qr_basis,*qr_tau = NULL,*qr_work,lqr_work_t;
+    PetscScalar  *qr_basis = NULL,*qr_tau = NULL,*qr_work = NULL,lqr_work_t;
     PetscBLASInt lqr_work;
     /* working stuff for UNGQR */
-    PetscScalar  *gqr_work,lgqr_work_t;
+    PetscScalar  *gqr_work = NULL,lgqr_work_t;
     PetscBLASInt lgqr_work;
     /* working stuff for TRTRS */
-    PetscScalar  *trs_rhs;
+    PetscScalar  *trs_rhs = NULL;
     PetscBLASInt Blas_NRHS;
     /* pointers for values insertion into change of basis matrix */
     PetscInt     *start_rows,*start_cols;
@@ -6332,7 +6332,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* temporary change of basis */
     Mat          localChangeOfBasisMatrix;
     /* extra space for debugging */
-    PetscScalar  *dbg_work;
+    PetscScalar  *dbg_work = NULL;
 
     /* local temporary change of basis acts on local interfaces -> dimension is n_B x n_B */
     ierr = MatCreate(PETSC_COMM_SELF,&localChangeOfBasisMatrix);CHKERRQ(ierr);
@@ -6410,7 +6410,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
           - QR decomposition of constraints otherwise
     */
-    if (qr_needed) {
+    if (qr_needed && max_size_of_constraint) {
       /* space to store Q */
       ierr = PetscMalloc1(max_size_of_constraint*max_size_of_constraint,&qr_basis);CHKERRQ(ierr);
       /* array to store scaling factors for reflectors */
