@@ -35,18 +35,23 @@ int main(int argc,char **args)
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
   M    = (ne+1)*(ne+1); /* global number of nodes */
-  /* create stiffness matrix */
-  ierr = MatCreateAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                      18,NULL,6,NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                      18,NULL,6,NULL,&Pmat);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  m    = Iend-Istart;
-  /* Generate vectors */
-  ierr = VecCreate(comm,&xx);CHKERRQ(ierr);
-  ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
+
+  /* create stiffness matrix (2) */
+  ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
+  ierr = MatSetType(Amat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL);CHKERRQ(ierr);
+
+  ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
+  ierr = MatSetType(Pmat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL);CHKERRQ(ierr);
+
+  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
+
+  /* vectors */
+  ierr = MatCreateVecs(Amat,&bb,&xx);CHKERRQ(ierr);
   ierr = VecSet(bb,.0);CHKERRQ(ierr);
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
@@ -80,8 +85,10 @@ int main(int argc,char **args)
   {
     PetscReal *coords;
     PC             pc;
-    ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
     /* forms the element stiffness for the Laplacian and coordinates */
+    ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
+    m    = Iend-Istart;
+    ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
       /* coords */
@@ -92,11 +99,8 @@ int main(int argc,char **args)
         /* radius */
         PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
-
         idx[0] = Ii; idx[1] = Ii+1; idx[2] = Ii + (ne+1) + 1; idx[3] =  Ii + (ne+1);
         if (radius < 0.25) alpha = soft_alpha;
-
-
         for (ii=0; ii<4; ii++) {
           for (jj=0; jj<4; jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
@@ -214,6 +218,11 @@ int main(int argc,char **args)
    test:
       nsize: 4
       args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg
+
+   test:
+      suffix: seqaijmkl
+      nsize: 4
+      args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1 -ksp_monitor -ksp_converged_reason -ksp_type cg -mat_seqaij_type seqaijmkl
 
    test:
       suffix: Classical
