@@ -825,11 +825,13 @@ int main(int argc,char **args)
       test:
          requires: parmetis
          suffix: bddc_par_nd_parmetis
+         filter: sed -e "s/Number of iterations =   [0-9]/Number of iterations = 9/g"
          nsize: 4
-         args: -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type parmetis
+         args: -ksp_error_if_not_converged -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type parmetis
       test:
          requires: ptscotch define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
          suffix: bddc_par_nd_ptscotch
+         filter: sed -e "s/Number of iterations =   [0-9]/Number of iterations = 9/g"
          nsize: 4
-         args: -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
+         args: -ksp_error_if_not_converged -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
 TEST*/
