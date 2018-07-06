@@ -170,7 +170,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     for (i=0;i<mfqP->m;i++) {
       ierr = VecGetValues(tao->sep_weights_v,1,&i,&factor);CHKERRQ(ierr);
       factor=factor*mfqP->C[i];
-      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
+      PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
     }
 
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
@@ -180,7 +180,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
       if (tao->niter>1) {
         factor=wii*mfqP->C[i];
         /* add wii * ci * Hi */
-        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[i],&blasn2,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[i],&blasm,mfqP->Hres,&ione));
       }
       /* add wii * gi * gi' */
       PetscStackCallBLAS("BLASgemm_",BLASgemm_("N","T",&blasn,&blasn,&ione,&wii,&mfqP->Fdiff[blasn*i],&blasn,&mfqP->Fdiff[blasn*i],&blasn,&one,mfqP->Hres,&blasn));
@@ -214,11 +214,11 @@ static PetscErrorCode pounders_update_res(Tao tao)
 
         /* add  wij*cj*Hi */
         factor = tao->sep_weights_w[i]*mfqP->C[col]/2.0;
-        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[row],&blasn2,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[row],&blasm,mfqP->Hres,&ione));
 
         /* add wij*ci*Hj */
         factor = tao->sep_weights_w[i]*mfqP->C[row]/2.0;
-        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[col],&blasn2,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[col],&blasm,mfqP->Hres,&ione));
       }
     }
   } else {
@@ -746,6 +746,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
         mfqP->Fdiff[ii+mfqP->n*j] = f[j] - fmin[j];
       }
       ierr = VecRestoreArray(mfqP->Fhist[i],&f);CHKERRQ(ierr);
+
       mfqP->model_indices[ii++] = i;
     }
     for (j=0;j<mfqP->m;j++) {
@@ -767,12 +768,11 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     for (i=0;i<mfqP->n+1;i++) {
       if (i == mfqP->minindex) continue;
 
-      mfqP->model_indices[ii++] = i;
       ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray(mfqP->localx,&x);CHKERRQ(ierr);
       for (j=0;j<mfqP->n;j++) {
-        mfqP->Disp[i+mfqP->npmax*j] = (x[j] - mfqP->xmin[j])/mfqP->delta;
+        mfqP->Disp[ii+mfqP->npmax*j] = (x[j] - mfqP->xmin[j])/mfqP->delta;
       }
       ierr = VecRestoreArray(mfqP->localx,&x);CHKERRQ(ierr);
 
@@ -780,9 +780,11 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       ierr = VecScatterEnd(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray(mfqP->localf,&f);CHKERRQ(ierr);
       for (j=0;j<mfqP->m;j++) {
-        mfqP->Fdiff[i*mfqP->n+j] = f[j] - fmin[j];
+        mfqP->Fdiff[ii+mfqP->n*j] = f[j] - fmin[j];
       }
       ierr = VecRestoreArray(mfqP->localf,&f);CHKERRQ(ierr);
+
+      mfqP->model_indices[ii++] = i;
     }
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
