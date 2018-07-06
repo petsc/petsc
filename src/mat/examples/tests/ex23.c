@@ -177,6 +177,7 @@ int main(int argc,char **args)
         for (rb = 1; rb < 4; rb++) {
           ierr = ISCreateBlock(PETSC_COMM_SELF,rb,3,r,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
+          ierr = ISDestroy(&is);CHKERRQ(ierr);
           for (cb = 1; cb < 4; cb++) {
             Mat  T,lT,T2;
             char testname[256];
@@ -186,6 +187,7 @@ int main(int argc,char **args)
 
             ierr = ISCreateBlock(PETSC_COMM_SELF,cb,4,c,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
             ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
+            ierr = ISDestroy(&is);CHKERRQ(ierr);
 
             ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
             ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,rb*3,cb*4);CHKERRQ(ierr);
