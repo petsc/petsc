@@ -222,6 +222,7 @@ int main(int argc,char **args)
    test:
       suffix: seqaijmkl
       nsize: 4
+      requires: mkl_sparse
       args: -ne 19 -alpha 1.e-3 -pc_type gamg -pc_gamg_agg_nsmooths 1 -ksp_monitor -ksp_converged_reason -ksp_type cg -mat_seqaij_type seqaijmkl
 
    test:
