@@ -166,11 +166,6 @@
 !    BEGIN COMMON-BLOCK VARIABLES
 !
 !
-!     PETSc world communicator
-!
-      MPI_Comm PETSC_COMM_WORLD
-      MPI_Comm PETSC_COMM_SELF
-!
 !     Fortran Null
 !
       PetscChar(80)       PETSC_NULL_CHARACTER
@@ -213,8 +208,6 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_NULL_BOOL
-      common /petscfortran9/ PETSC_COMM_WORLD
-      common /petscfortran10/ PETSC_COMM_SELF
 #if defined(PETSC_USE_REAL___FLOAT128)
       common /petscfortran11/ MPIU_REAL
       common /petscfortran12/ MPIU_SCALAR

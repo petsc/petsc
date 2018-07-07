@@ -75,9 +75,30 @@
         module petscsys
         use iso_c_binding
         use petscsysdef
+        MPI_Comm PETSC_COMM_SELF,PETSC_COMM_WORLD
 #include <../src/sys/f90-mod/petscsys.h90>
         interface
 #include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
         end interface
+
         end module
+
+        subroutine PetscSetCOMM(c1,c2)
+        use petscsys
+        implicit none
+        MPI_Comm c1,c2
+
+        PETSC_COMM_WORLD    = c1
+        PETSC_COMM_SELF     = c2
+        return
+        end
+
+        subroutine PetscGetCOMM(c1)
+        use petscsys
+        implicit none
+        MPI_Comm c1
+
+        c1 = PETSC_COMM_WORLD
+        return
+        end
 

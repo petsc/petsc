@@ -7,21 +7,24 @@
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
 #define petscsetcommonblocknumeric_   PETSCSETCOMMONBLOCKNUMERIC
+#define petscsetcomm_                 PETSCSETCOMM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
 #define petscsetcommonblocknumeric_   petscsetcommonblocknumeric
+#define petscsetcomm_                 petscsetcomm
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_();
 PETSC_EXTERN void PETSC_STDCALL petscsetcommonblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
 PETSC_EXTERN void PETSC_STDCALL petscsetcommonblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -49,7 +52,8 @@ PetscErrorCode PetscInitializeFortran(void)
 
   if (PETSC_COMM_WORLD) c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
   c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
-  petscsetcommonblock_(&c1,&c2);
+  petscsetcommonblock_();
+  petscsetcomm_(&c1,&c2);
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   {
