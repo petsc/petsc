@@ -130,7 +130,7 @@ int main(int argc,char **args)
     if (!flg) {
       ierr = ISViewFromOptions(is1[i],NULL,"-err_view");CHKERRQ(ierr);
       ierr = ISViewFromOptions(is2[i],NULL,"-err_view");CHKERRQ(ierr);
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);
     }
   }
 

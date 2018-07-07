@@ -182,7 +182,7 @@ int main(int argc,char **args)
             Mat  T,lT,T2;
             char testname[256];
 
-            ierr = PetscSNPrintf(testname,sizeof(testname),"MatConvert_IS_XAIJ special case (%d %d, bs %d %d)",ri,ci,rb,cb);
+            ierr = PetscSNPrintf(testname,sizeof(testname),"MatConvert_IS_XAIJ special case (%D %D, bs %D %D)",ri,ci,rb,cb);CHKERRQ(ierr);
             ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %s\n",testname);CHKERRQ(ierr);
 
             ierr = ISCreateBlock(PETSC_COMM_SELF,cb,4,c,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
