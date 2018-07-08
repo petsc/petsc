@@ -144,8 +144,8 @@
         end
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-        use petscsys
         subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum)
+        use petscsys
         implicit none
 
         integer freal,fscalar,fsum
