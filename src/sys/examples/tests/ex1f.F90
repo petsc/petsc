@@ -26,7 +26,7 @@
       end
 
       program main
-      use petscsysdef
+      use petscsys
       PetscErrorCode ierr
       external       MyErrHandler
 
