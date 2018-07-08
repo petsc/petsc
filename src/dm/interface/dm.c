@@ -4279,13 +4279,15 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
 + dm - the DM
 - c - coordinate vector
 
-  Note:
-  The coordinates do include those for ghost points, which are in the local vector
+  Notes:
+  The coordinates do include those for ghost points, which are in the local vector.
+
+  The vector c should be destroyed by the caller.
 
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
-.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLoca(), DMGetCoordinateDM()
+.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM()
 @*/
 PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 {
@@ -4312,10 +4314,12 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 +  dm - the DM
 -  c - coordinate vector
 
-  Note:
+  Notes:
   The coordinates of ghost points can be set using DMSetCoordinates()
   followed by DMGetCoordinatesLocal(). This is intended to enable the
   setting of ghost coordinates outside of the domain.
+
+  The vector c should be destroyed by the caller.
 
   Level: intermediate
 
