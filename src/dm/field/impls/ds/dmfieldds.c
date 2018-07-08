@@ -717,7 +717,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
     PetscInt hStart, hEnd;
 
     ierr = DMPlexGetHeightStratum(dm,h,&hStart,&hEnd);CHKERRQ(ierr);
-    if (imin >= hStart && imax < hEnd) break;
+    if (imax >= hStart && imin < hEnd) break;
   }
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   h -= cellHeight;
