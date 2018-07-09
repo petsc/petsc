@@ -170,7 +170,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     for (i=0;i<mfqP->m;i++) {
       ierr = VecGetValues(tao->sep_weights_v,1,&i,&factor);CHKERRQ(ierr);
       factor=factor*mfqP->C[i];
-      PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
+      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
     }
 
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
@@ -183,7 +183,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[i],&blasm,mfqP->Hres,&ione));
       }
       /* add wii * gi * gi' */
-      PetscStackCallBLAS("BLASgemm_",BLASgemm_("N","T",&blasn,&blasn,&ione,&wii,&mfqP->Fdiff[blasn*i],&blasn,&mfqP->Fdiff[blasn*i],&blasn,&one,mfqP->Hres,&blasn));
+      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&wii,&mfqP->Fdiff[blasn*i],&blasn,&mfqP->Fdiff[blasn*i],&blasn,&one,mfqP->Hres,&blasn));
     }
   } else if (tao->sep_weights_w) {
     /* General case: .5 * Gres= sum_ij[wij * (cjgi + cigj)] */
@@ -204,8 +204,8 @@ static PetscErrorCode pounders_update_res(Tao tao)
       col=tao->sep_weights_cols[i];
       factor=tao->sep_weights_w[i]/2.0;
       /* add wij * gi gj' + wij * gj gi' */
-      PetscStackCallBLAS("BLASgemm_",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*row],&blasn,&mfqP->Fdiff[blasn*col],&blasn,&one,mfqP->Hres,&blasn));
-      PetscStackCallBLAS("BLASgemm_",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*col],&blasn,&mfqP->Fdiff[blasn*row],&blasn,&one,mfqP->Hres,&blasn));
+      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*row],&blasn,&mfqP->Fdiff[blasn*col],&blasn,&one,mfqP->Hres,&blasn));
+      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*col],&blasn,&mfqP->Fdiff[blasn*row],&blasn,&one,mfqP->Hres,&blasn));
     }
     if (tao->niter > 1) {
       for (i=0;i<tao->sep_weights_n;i++) {
@@ -214,11 +214,11 @@ static PetscErrorCode pounders_update_res(Tao tao)
 
         /* add  wij*cj*Hi */
         factor = tao->sep_weights_w[i]*mfqP->C[col]/2.0;
-        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[row],&blasm,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[row],&blasm,mfqP->Hres,&ione));
 
         /* add wij*ci*Hj */
         factor = tao->sep_weights_w[i]*mfqP->C[row]/2.0;
-        PetscStackCallBLAS("BLASaxpy_",BLASaxpy_(&blasn2,&factor,&mfqP->H[col],&blasm,mfqP->Hres,&ione));
+        PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[col],&blasm,mfqP->Hres,&ione));
       }
     }
   } else {
