@@ -1343,6 +1343,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningApplyND(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
@@ -1350,6 +1351,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode 
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
@@ -1588,10 +1591,11 @@ PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatISFixLocalEmpty(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
+PETSC_EXTERN PETSC_DEPRECATED("Use the MatConvert() interface") PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.

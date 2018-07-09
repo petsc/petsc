@@ -5045,7 +5045,10 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  if (!col) { /* attach global id of condensed columns */
+    ierr = PetscObjectCompose((PetscObject)aloc[0],"_petsc_GetLocalMatCondensed_iscol",(PetscObject)iscola);CHKERRQ(ierr);
+  }
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
@@ -5432,7 +5435,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
@@ -5569,7 +5572,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_MPIAIJ_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisell_C",MatConvert_MPIAIJ_MPISELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);

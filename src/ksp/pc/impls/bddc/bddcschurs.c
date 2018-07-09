@@ -1583,8 +1583,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
   /* Global matrix of all assembled Schur on subsets */
   ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(work_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(work_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatISSetMPIXAIJPreallocation_Private(work_mat,global_schur_subsets,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
+  ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
 
   /* Get local part of (\sum_j S_Ej) */
   ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
@@ -1597,12 +1599,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   /* Get local part of (\sum_j S^-1_Ej) (\sum_j St^-1_Ej) */
   if (compute_Stilda) {
     ierr = MatISSetLocalMat(work_mat,sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
-    ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
+    ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
     ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_tilda_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     if (deluxe) {
       ierr = MatISSetLocalMat(work_mat,sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
-      ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
+      ierr = MatConvert(work_mat,MATAIJ,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
       ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
       ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_inv_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     } else {

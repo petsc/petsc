@@ -1121,6 +1121,8 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMatMult_transpose_seqaij_seqaij_C",NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqsell_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_is_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatResetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -3620,14 +3622,14 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
 
     /* allocate the matrix space */
     /* FIXME: should B's old memory be unlogged? */
-    ierr    = MatSeqXAIJFreeAIJ(B,&b->a,&b->j,&b->i);CHKERRQ(ierr);
+    ierr = MatSeqXAIJFreeAIJ(B,&b->a,&b->j,&b->i);CHKERRQ(ierr);
     if (B->structure_only) {
-      ierr    = PetscMalloc1(nz,&b->j);CHKERRQ(ierr);
-      ierr    = PetscMalloc1(B->rmap->n+1,&b->i);CHKERRQ(ierr);
-      ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc1(nz,&b->j);CHKERRQ(ierr);
+      ierr = PetscMalloc1(B->rmap->n+1,&b->i);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
-      ierr    = PetscMalloc3(nz,&b->a,nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
-      ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+      ierr = PetscMalloc3(nz,&b->a,nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
     }
     b->i[0] = 0;
     for (i=1; i<B->rmap->n+1; i++) {
@@ -3919,6 +3921,7 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /*@C
@@ -4055,6 +4058,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqdense_C",MatConvert_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqsell_C",MatConvert_SeqAIJ_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsHermitianTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetPreallocation_C",MatSeqAIJSetPreallocation_SeqAIJ);CHKERRQ(ierr);

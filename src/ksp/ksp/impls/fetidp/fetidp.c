@@ -938,7 +938,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
         ierr = PetscObjectTypeCompare((PetscObject)PPmat,MATIS,&ismatis);CHKERRQ(ierr);
         if (ismatis) {
-          ierr = MatISGetMPIXAIJ(PPmat,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          ierr = MatConvert(PPmat,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
           ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
           ierr = MatDestroy(&C);CHKERRQ(ierr);
           ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
