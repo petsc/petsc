@@ -334,7 +334,11 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscInt         numPoints;
 
     if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
-    ierr = PetscDualSpaceGetAllPointsUnion(Nf,cellsp,dim,funcs,&allPoints);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (!effectiveHeight) {sp[f] = cellsp[f];}
+      else                  {ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);}
+    }
+    ierr = PetscDualSpaceGetAllPointsUnion(Nf,sp,dim,funcs,&allPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints,NULL,NULL,&numPoints,&points,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc4(Nf, &basisTab, Nf, &basisDerTab, NfAux, &basisTabAux, NfAux, &basisDerTabAux);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {

@@ -402,7 +402,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
 
   PetscFunctionBegin;
   dm = field->dm;
-  ierr = ISGetMinMax(cellIS,&imax,&imin);CHKERRQ(ierr);
+  ierr = ISGetMinMax(cellIS,&imin,&imax);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   *quad = NULL;
   for (h = 0; h <= dim; h++) {
