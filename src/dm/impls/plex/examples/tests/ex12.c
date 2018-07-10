@@ -13,6 +13,7 @@ typedef struct {
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
   PetscBool testRedundant;                /* Use a redundant partitioning for testing */
   PetscBool loadBalance;                  /* Load balance via a second distribute step */
+  PetscBool partitionBalance;             /* Balance shared point partition */
   PetscLogStage stages[4];
 } AppCtx;
 
@@ -21,13 +22,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim           = 2;
-  options->cellSimplex   = PETSC_TRUE;
-  options->filename[0]   = '\0';
-  options->overlap       = 0;
-  options->testPartition = PETSC_FALSE;
-  options->testRedundant = PETSC_FALSE;
-  options->loadBalance   = PETSC_FALSE;
+  options->dim              = 2;
+  options->cellSimplex      = PETSC_TRUE;
+  options->filename[0]      = '\0';
+  options->overlap          = 0;
+  options->testPartition    = PETSC_FALSE;
+  options->testRedundant    = PETSC_FALSE;
+  options->loadBalance      = PETSC_FALSE;
+  options->partitionBalance = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -37,6 +39,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-partition_balance", "Balance the ownership of shared points", "ex12.c", options->partitionBalance, &options->partitionBalance, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogStageRegister("MeshLoad",         &options->stages[STAGE_LOAD]);CHKERRQ(ierr);
@@ -74,6 +77,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
   if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
   if (!user->testRedundant) {
@@ -121,6 +125,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
     }
+    ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
     if (distMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -201,4 +206,53 @@ int main(int argc, char **argv)
     nsize: 2
     args: -test_redundant -dm_view ascii::ascii_info_detail
 
+  # Same tests as above, but with balancing of the shared point partition
+  test:
+    suffix: 9
+    requires: triangle
+    args: -dm_view ascii:mesh.tex:ascii_latex -partition_balance
+  test:
+    suffix: 10
+    requires: triangle
+    nsize: 3
+    args: -test_partition -dm_view ascii::ascii_info_detail -partition_balance
+  test:
+    suffix: 11
+    requires: triangle
+    nsize: 8
+    args: -test_partition -dm_view ascii::ascii_info_detail -partition_balance
+  # Parallel, level-1 overlap tests 3-4
+  test:
+    suffix: 12
+    requires: triangle
+    nsize: 3
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+  test:
+    suffix: 13
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+  # Parallel, level-2 overlap test 5
+  test:
+    suffix: 14
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 2 -dm_view ascii::ascii_info_detail -partition_balance
+  # Parallel load balancing, test 6-7
+  test:
+    suffix: 15
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail -partition_balance
+  test:
+    suffix: 16
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail -partition_balance
+  # Parallel redundant copying, test 8
+  test:
+    suffix: 17
+    requires: triangle
+    nsize: 2
+    args: -test_redundant -dm_view ascii::ascii_info_detail -partition_balance
 TEST*/
