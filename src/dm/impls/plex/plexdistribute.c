@@ -1454,6 +1454,50 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexSetPartitionBalance - Should distribution of the DM attempt to balance the shared point partition?
+
+  Input Parameters:
++ dm - The DMPlex object
+- flg - Balance the partition?
+
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexGetPartitionBalance()
+@*/
+PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  mesh->partitionBalance = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetPartitionBalance - Does distribution of the DM attempt to balance the shared point partition?
+
+  Input Parameter:
++ dm - The DMPlex object
+
+  Output Parameter:
++ flg - Balance the partition?
+
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexSetPartitionBalance()
+@*/
+PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(flg, 2);
+  *flg = mesh->partitionBalance;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexDerivePointSF - Build a point SF from an SF describing a point migration
 
@@ -1471,7 +1515,6 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 @*/
 PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF)
 {
-  DM_Plex           *mesh = (DM_Plex *) dm->data;
   PetscMPIInt        rank, size;
   PetscInt           p, nroots, nleaves, idx, npointLeaves;
   PetscInt          *pointLocal;
@@ -1482,6 +1525,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   const PetscInt     numShifts = 13759;
   const PetscScalar *shift = NULL;
   const PetscBool    shiftDebug = PETSC_FALSE;
+  PetscBool          balance;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -1489,11 +1533,12 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
 
+  ierr = DMPlexGetPartitionBalance(dm, &balance);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(migrationSF, &nroots, &nleaves, &leaves, &roots);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &rootNodes, nleaves, &leafNodes);CHKERRQ(ierr);
   if (ownership) {
     /* If balancing, we compute a random cyclic shift of the rank for each remote point. That way, the max will evenly distribute among ranks. */
-    if (mesh->partitionBalance) {
+    if (balance) {
       PetscRandom r;
 
       ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
@@ -1522,7 +1567,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     }
     ierr = PetscSFReduceBegin(migrationSF, MPIU_2INT, leafNodes, rootNodes, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(migrationSF, MPIU_2INT, leafNodes, rootNodes, MPI_MAXLOC);CHKERRQ(ierr);
-    if (mesh->partitionBalance) {
+    if (balance) {
       /* We've voted, now we need to get the rank.  When we're balancing the partition, the "rank" in rootNotes is not
        * the rank but rather (rank + random)%size.  So we do another reduction, voting the same way, but sending the
        * rank instead of the index. */
@@ -1686,7 +1731,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   DM                     dmCoord;
   DMLabel                lblPartition, lblMigration;
   PetscSF                sfProcess, sfMigration, sfStratified, sfPoint;
-  PetscBool              flg;
+  PetscBool              flg, balance;
   PetscMPIInt            rank, size, p;
   PetscErrorCode         ierr;
 
@@ -1757,7 +1802,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = DMPlexMigrate(dm, sfMigration, *dmParallel);CHKERRQ(ierr);
 
   /* Build the point SF without overlap */
-  ((DM_Plex*) (*dmParallel)->data)->partitionBalance = ((DM_Plex*) dm->data)->partitionBalance;
+  ierr = DMPlexGetPartitionBalance(dm, &balance);CHKERRQ(ierr);
+  ierr = DMPlexSetPartitionBalance(*dmParallel, balance);CHKERRQ(ierr);
   ierr = DMPlexCreatePointSF(*dmParallel, sfMigration, PETSC_TRUE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmParallel, sfPoint);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(*dmParallel, &dmCoord);CHKERRQ(ierr);
