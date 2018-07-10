@@ -1,6 +1,10 @@
 
 #include "petsc/finclude/petscsys.h"
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsGetEnum
+#endif
+
       Subroutine PetscOptionsGetEnum(po,pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding
       use petscsysdef

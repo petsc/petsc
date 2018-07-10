@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include <petsc/finclude/petscsys.h>
       subroutine F90Array1dCreateScalar(array,start,len1,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start,len1
       PetscScalar, target ::                                                      &
      &     array(start:start+len1-1)
@@ -14,7 +14,6 @@
 
       subroutine F90Array1dCreateReal(array,start,len1,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start,len1
       PetscReal, target ::                                                        &
      &     array(start:start+len1-1)
@@ -25,7 +24,6 @@
 
       subroutine F90Array1dCreateInt(array,start,len1,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start,len1
       PetscInt, target ::                                                         &
      &     array(start:start+len1-1)
@@ -36,7 +34,6 @@
 
       subroutine F90Array1dCreateFortranAddr(array,start,len1,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start,len1
       PetscFortranAddr, target ::                                                 &
      &     array(start:start+len1-1)
@@ -48,7 +45,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array1dAccessScalar(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:)
       PetscFortranAddr address
       PetscInt start
@@ -59,7 +55,6 @@
 
       subroutine F90Array1dAccessReal(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:)
       PetscFortranAddr address
       PetscInt start
@@ -70,7 +65,6 @@
 
       subroutine F90Array1dAccessInt(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:)
       PetscFortranAddr address
       PetscInt start
@@ -81,7 +75,6 @@
 
       subroutine F90Array1dAccessFortranAddr(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:)
       PetscFortranAddr address
       PetscInt start
@@ -93,7 +86,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array1dDestroyScalar(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:)
 
       nullify(ptr)
@@ -101,7 +93,6 @@
 
       subroutine F90Array1dDestroyReal(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:)
 
       nullify(ptr)
@@ -109,7 +100,6 @@
 
       subroutine F90Array1dDestroyInt(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:)
 
       nullify(ptr)
@@ -117,7 +107,6 @@
 
       subroutine F90Array1dDestroyFortranAddr(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:)
 
       nullify(ptr)
@@ -128,7 +117,6 @@
       subroutine F90Array2dCreateScalar(array,start1,len1,                        &
      &     start2,len2,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscScalar, target ::                                                      &
@@ -141,7 +129,6 @@
       subroutine F90Array2dCreateReal(array,start1,len1,                          &
      &     start2,len2,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscReal, target ::                                                        &
@@ -154,7 +141,6 @@
       subroutine F90Array2dCreateInt(array,start1,len1,                           &
      &     start2,len2,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt, target ::                                                         &
@@ -167,7 +153,6 @@
       subroutine F90Array2dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscFortranAddr, target ::                                                 &
@@ -180,7 +165,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dAccessScalar(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:)
       PetscFortranAddr address
       PetscInt start1,start2
@@ -192,7 +176,6 @@
 
       subroutine F90Array2dAccessReal(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:)
       PetscFortranAddr address
       PetscInt start1,start2
@@ -204,7 +187,6 @@
 
       subroutine F90Array2dAccessInt(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:)
       PetscFortranAddr address
       PetscInt start1,start2
@@ -216,7 +198,6 @@
 
       subroutine F90Array2dAccessFortranAddr(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:,:)
       PetscFortranAddr address
       PetscInt start1,start2
@@ -229,7 +210,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dDestroyScalar(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:)
 
       nullify(ptr)
@@ -237,7 +217,6 @@
 
       subroutine F90Array2dDestroyReal(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:)
 
       nullify(ptr)
@@ -245,7 +224,6 @@
 
       subroutine F90Array2dDestroyInt(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:)
 
       nullify(ptr)
@@ -253,7 +231,6 @@
 
       subroutine F90Array2dDestroyFortranAddr(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:,:)
 
       nullify(ptr)
@@ -264,7 +241,6 @@
       subroutine F90Array3dCreateScalar(array,start1,len1,                        &
      &     start2,len2,start3,len3,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -279,7 +255,6 @@
       subroutine F90Array3dCreateReal(array,start1,len1,                          &
      &     start2,len2,start3,len3,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -294,7 +269,6 @@
       subroutine F90Array3dCreateInt(array,start1,len1,                           &
      &     start2,len2,start3,len3,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -309,7 +283,6 @@
       subroutine F90Array3dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,start3,len3,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -324,7 +297,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dAccessScalar(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3
@@ -337,7 +309,6 @@
 
       subroutine F90Array3dAccessReal(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3
@@ -350,7 +321,6 @@
 
       subroutine F90Array3dAccessInt(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3
@@ -363,7 +333,6 @@
 
       subroutine F90Array3dAccessFortranAddr(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3
@@ -378,7 +347,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dDestroyScalar(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:,:)
 
       nullify(ptr)
@@ -386,7 +354,6 @@
 
       subroutine F90Array3dDestroyReal(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:,:)
 
       nullify(ptr)
@@ -394,7 +361,6 @@
 
       subroutine F90Array3dDestroyInt(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:,:)
 
       nullify(ptr)
@@ -402,7 +368,6 @@
 
       subroutine F90Array3dDestroyFortranAddr(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:,:,:)
 
       nullify(ptr)
@@ -412,7 +377,6 @@
       subroutine F90Array4dCreateScalar(array,start1,len1,                        &
      &     start2,len2,start3,len3,start4,len4,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -428,7 +392,6 @@
       subroutine F90Array4dCreateReal(array,start1,len1,                          &
      &     start2,len2,start3,len3,start4,len4,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -444,7 +407,6 @@
       subroutine F90Array4dCreateInt(array,start1,len1,                           &
      &     start2,len2,start3,len3,start4,len4,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -460,7 +422,6 @@
       subroutine F90Array4dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,start3,len3,start4,len4,ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt start1,len1
       PetscInt start2,len2
       PetscInt start3,len3
@@ -475,7 +436,6 @@
 
       subroutine F90Array4dAccessScalar(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3,start4
@@ -490,7 +450,6 @@
 
       subroutine F90Array4dAccessReal(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3,start4
@@ -505,7 +464,6 @@
 
       subroutine F90Array4dAccessInt(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
       PetscInt start1,start2,start3,start4
@@ -520,7 +478,6 @@
 
       subroutine F90Array4dAccessFortranAddr(ptr,address)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
       PetscFortranAddr start1,start2,start3,start4
@@ -535,7 +492,6 @@
 
       subroutine F90Array4dDestroyScalar(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscScalar, pointer :: ptr(:,:,:,:)
 
       nullify(ptr)
@@ -543,7 +499,6 @@
 
       subroutine F90Array4dDestroyReal(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscReal, pointer :: ptr(:,:,:,:)
 
       nullify(ptr)
@@ -551,7 +506,6 @@
 
       subroutine F90Array4dDestroyInt(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscInt, pointer :: ptr(:,:,:,:)
 
       nullify(ptr)
@@ -559,7 +513,6 @@
 
       subroutine F90Array4dDestroyFortranAddr(ptr)
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
       PetscFortranAddr, pointer :: ptr(:,:,:,:)
 
       nullify(ptr)
