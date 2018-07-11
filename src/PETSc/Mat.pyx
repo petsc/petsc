@@ -1523,18 +1523,6 @@ cdef class Mat(Object):
 
     # MatIS
 
-    def convertISToAIJ(self, Mat out=None):
-        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
-        if out is None: out = type(self)()
-        if out.mat == self.mat:
-            reuse = MAT_INPLACE_MATRIX
-        elif out.mat == NULL:
-            reuse = MAT_INITIAL_MATRIX
-        else:
-            reuse = MAT_REUSE_MATRIX
-        CHKERR( MatISGetMPIXAIJ(self.mat, reuse, &out.mat) )
-        return out
-
     def getISLocalMat(self):
         cdef Mat localmat = type(self)()
         CHKERR( MatISGetLocalMat(self.mat, &localmat.mat) )
