@@ -1,9 +1,8 @@
 !
-!     Utility routine used to set MPIUNI commonblock
 !
-      subroutine MPIUNISetCommonBlock()
+      subroutine MPIUNISetModuleBlock()
+      use mpiuni
       implicit none
-#include "petsc/mpiuni/mpif.h"
       call MPIUNISetFortranBasePointers(MPI_IN_PLACE)
       return
       end

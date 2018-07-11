@@ -92,10 +92,4 @@
        integer MPI_MAX_PROCESSOR_NAME
        parameter (MPI_MAX_PROCESSOR_NAME=128-1)
 
-!
-!  some parameters require common blocks?
-!
-       integer MPI_IN_PLACE
-       common /MPIUNIPRIV/ MPI_IN_PLACE
-       save /MPIUNIPRIV/
 
