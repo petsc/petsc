@@ -13,7 +13,7 @@
          print*, 'Unable to begin PETSc program'
        endif
 
-       f(1) = 1.0
+       f(1) = 1
        call MPI_Allreduce(MPI_IN_PLACE,f,1,MPIU_INTEGER,MPI_MIN,PETSC_COMM_WORLD,ierr)
        call PetscFinalize(ierr)
        end
