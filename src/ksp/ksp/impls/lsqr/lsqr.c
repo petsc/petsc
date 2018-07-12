@@ -84,9 +84,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
-  /* mark norm of matrix with negative number to indicate it has not yet been computed */
-  lsqr->anorm = -1.0;
-
   /* vectors of length m, where system size is mxn */
   B  = ksp->vec_rhs;
   U  = lsqr->vwork_m[0];
@@ -152,6 +149,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecCopy(Z,W);CHKERRQ(ierr);
   }
 
+  lsqr->anorm  = 0.0;
   lsqr->arnorm = alpha * beta;
   phibar       = beta;
   rhobar       = alpha;
@@ -166,6 +164,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     if (beta > 0.0) {
       ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
+      lsqr->anorm = PetscSqrtScalar(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
     }
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
@@ -457,7 +456,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
-  lsqr->arnorm = 0.0;
+  lsqr->anorm  = -1.0;
+  lsqr->arnorm = -1.0;
   ksp->data    = (void*)lsqr;
   ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
 
