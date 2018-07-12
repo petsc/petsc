@@ -6,80 +6,8 @@ import matplotlib.pyplot as plt
 import argparse
 
 def main(cmdLineArgs):
-    module = importlib.import_module(cmdLineArgs.file[0])
-    Nf     = 1
-    dofs   = []
-    times  = []
-    flops  = []
-    errors = []
-    for f in range(Nf): errors.append([])
-    level  = 0
-    while level >= 0:
-      stageName = "ConvEst Refinement Level "+str(level)
-      if stageName in module.Stages:
-        dofs.append(module.Stages[stageName]["ConvEst Error"][0]["dof"])
-        times.append(module.Stages[stageName]["SNESSolve"][0]["time"])
-        flops.append(module.Stages[stageName]["SNESSolve"][0]["flop"])
-        for f in range(Nf): errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
-        level = level + 1
-      else:
-        level = -1
-
-    dofs   = np.array(dofs)
-    times  = np.array(times)
-    flops  = np.array(flops)
-    errors = np.array(errors)
-    
-    lstSqMeshConv = np.empty([2]) 
-
-    #Least squares solution for Mesh Convergence
-    lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(dofs, errors[0])    
-    
-    
-    print("Least Squares Data")
-    print("==================")
-    print("Mesh Convergence")
-    print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1])) 
-
-    plt.style.use('petsc_tas_style') #uses the specified style sheet for generating the plots
-    
-    fig = plt.figure()
-    
-    end = dofs.size-1
-
-    ax = fig.add_subplot(111)
-    ax.set(xlabel ='Problem Size $\log N$', ylabel ='Error $\log |x - x^*|$' , title ='Mesh Convergence')
-    meshConv, = ax.loglog(dofs, errors[0], 'ro')
-    slope = ((((dofs[end]**lstSqMeshConv[0] * 10**lstSqMeshConv[1]))-((dofs[0])**lstSqMeshConv[0] * 10**lstSqMeshConv[1])) \
-            /(dofs[end]-dofs[0]))
-
-    print('Slope: {}'.format(slope))
-
-    ##Start Mesh Convergance graph
-    slope = 'Slope : ' + str(slope)
-    meshConvLstSq, = ax.loglog(dofs, ((dofs)**lstSqMeshConv[0] * 10**lstSqMeshConv[1]), 'g--') 
-    ax.legend([meshConv, meshConvLstSq], ['Original Data', 'Least Squares'])
-    ax.annotate(slope, xy = (5,5),  xycoords = 'data', arrowprops = dict(facecolor = 'black', shrink = 0.05))
-    plt.savefig(module.__name__ + 'meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    plt.show()
-    
-    ##Start Static Scaling Graph
-    plt.title('Static Scaling')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Flop Rate (F/s)')
-    plt.loglog(times, flops/times, label = module.__name__)
-    plt.legend()
-    plt.savefig(module.__name__ + 'staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    plt.show()
-    
-    ##Start Efficacy graph
-    plt.title('Efficacy')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Action (s)')
-    plt.loglog(times, errors[0]*times, label = module.__name__)
-    plt.legend()
-    plt.savefig(module.__name__ + 'efficacy' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    plt.show()
+    data = dataProces(cmdLineArgs)
+    graphGen(data)
    
 def dataProces(cmdLineArgs):
     """
@@ -275,20 +203,4 @@ if __name__ == "__main__":
     
     cmdLineArgs = cmdLine.parse_args()
     
-    print cmdLineArgs
-    print len(cmdLineArgs.file)
-    for x in cmdLineArgs.file:
-        print x
-    
-    print ("******New Section***********")
-    print cmdLineArgs.file[0]
-    test = cmdLineArgs.file
-    print(test)
-    test = importlib.import_module(test[0])
-    print("Size: ", test.size)
-    data = dataProces(cmdLineArgs.file)
-    graphGen(data)
-    #print cmdLineArgs.file[1]
-    #m = importlib.import_module("run")
-    #print type(m.size)
-    #main(cmdLineArgs)
+    main(cmdLineArgs)
