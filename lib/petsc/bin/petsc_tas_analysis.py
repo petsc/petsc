@@ -133,8 +133,18 @@ def dataProces(cmdLineArgs):
     return data
 
 def graphGen(data):
-    
+    """
+    This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and 
+        Efficacy graphs.
+
+        :param data: Contains the data to be ploted on the graphs, assumes the format: data[<file name>][<data type>]: <numpy array>
+        :type datat: Dictionary
+
+        :returns: None
+    """
     lstSqMeshConv = np.empty([2])
+    
+    counter = 0
 
     #Set up plots with labels
     plt.style.use('petsc_tas_style') #uses the specified style sheet for generating the plots
@@ -175,15 +185,13 @@ def graphGen(data):
         print('Slope: {} of {} data'.format(slope,fileName))
 
         ##Start Mesh Convergance graph
-        slope = 'Slope : ' + str(slope)
-        x, = axMeshConv.loglog(value['dofs'], value['errors'][0], 'ro', label = fileName + 'Orig Data')
+        slope = str(slope)
+        x, = axMeshConv.loglog(value['dofs'], value['errors'][0], label = fileName + ' Orig Data')
         meshConvOrigHandles.append(x)
 
-        x, = axMeshConv.loglog(value['dofs'], ((value['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])), 'g--', 
-                label = 'Least Squares Slope: ' + slope) 
-            
-
-        meshConvLstSqHandles.append(x)         
+        y, = axMeshConv.loglog(value['dofs'], ((value['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])), 
+                label = fileName + " Least Squares Slope =  " + slope ) 
+        meshConvLstSqHandles.append(y)         
         
         ##Start Static Scaling Graph
         x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
@@ -192,11 +200,15 @@ def graphGen(data):
         ##Start Efficacy graph
         x, = axEffic.loglog(value['times'], value['errors'][0]*value['times'], label = fileName)
 
-        efficHandles.append(x)    
-    
+        efficHandles.append(x)
+
+        counter = counter + 1
     meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
     meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
-    meshConvFig.legend(handles = meshConvOrigHandles, labels = meshConvLabels)
+    meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
+    print(meshConvHandles)
+    print(meshConvLabels)
+    meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
     meshConvFig.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     meshConvFig.show()
     
@@ -210,6 +222,15 @@ def graphGen(data):
     efficFig.savefig('efficacy' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     efficFig.show()
 
+
+def getLineStyles(counter):
+    switch = {
+            '0': 'b-',
+            '1': 'g--',
+            '2': 'r-.',
+            '3': 'y:',
+            '4': 'k'
+            }
 
 def leastSquares(x, y):
     """
