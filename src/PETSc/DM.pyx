@@ -71,6 +71,14 @@ cdef class DM(Object):
         cdef PetscInt cdim = asInt(dim)
         CHKERR( DMSetDimension(self.dm, cdim) )
 
+    def getCoordinateDim(self):
+        cdef PetscInt dim = 0
+        CHKERR( DMGetCoordinateDim(self.dm, &dim) )
+        return toInt(dim)
+
+    def setCoordinateDim(self, dim):
+        cdef PetscInt cdim = asInt(dim)
+        CHKERR( DMSetCoordinateDim(self.dm, cdim) )
 
     def setOptionsPrefix(self, prefix):
         cdef const_char *cval = NULL
