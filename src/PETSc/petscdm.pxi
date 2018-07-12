@@ -53,6 +53,8 @@ cdef extern from * nogil:
     int DMGetCoordinates(PetscDM,PetscVec*)
     int DMSetCoordinatesLocal(PetscDM,PetscVec)
     int DMGetCoordinatesLocal(PetscDM,PetscVec*)
+    int DMGetCoordinateDim(PetscDM,PetscInt*)
+    int DMSetCoordinateDim(PetscDM,PetscInt)
 
     int DMCreateInterpolation(PetscDM,PetscDM,PetscMat*,PetscVec*)
     int DMCreateInjection(PetscDM,PetscDM,PetscMat*)
