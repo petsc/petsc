@@ -433,7 +433,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   PetscInt                     bfgsUpdates = 0;
   PetscInt                     kspits;
-  PetscBool                    is_lmvm;
+  PetscBool                    is_lmvm, is_shell;
   
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
@@ -450,9 +450,12 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     if (is_lmvm) {
       ierr = MatShift(tao->hessian, bnk->pert);CHKERRQ(ierr);
     } else {
-      ierr = MatShift(bnk->H_inactive, bnk->pert);CHKERRQ(ierr);
-      if (bnk->H_inactive != bnk->Hpre_inactive) {
-        ierr = MatShift(bnk->Hpre_inactive, bnk->pert);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)tao->hessian, MATSHELL, &is_shell);CHKERRQ(ierr);
+      if (!is_shell) {
+        ierr = MatShift(bnk->H_inactive, bnk->pert);CHKERRQ(ierr);
+        if (bnk->H_inactive != bnk->Hpre_inactive) {
+          ierr = MatShift(bnk->Hpre_inactive, bnk->pert);CHKERRQ(ierr);
+        }
       }
     }
   }
