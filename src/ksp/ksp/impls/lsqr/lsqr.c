@@ -12,8 +12,8 @@ typedef struct {
   Vec       *vwork_n;   /* work vectors of length n */
   Vec       se;         /* Optional standard error vector */
   PetscBool se_flg;     /* flag for -ksp_lsqr_set_standard_error */
-  PetscReal arnorm;     /* Norm of the vector A.r */
-  PetscReal anorm;      /* Frobenius norm of the matrix A */
+  PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
+  PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
   PetscReal rhs_norm;   /* Norm of the right hand side */
 } KSP_LSQR;
 
@@ -433,7 +433,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 .  1. - The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, 1982.
 
      In exact arithmetic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
-     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. It appears the implementation with preconditioner
+     The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. It appears the implementation with preconditioner
      track the true norm of the residual and uses that in the convergence test.
 
    Developer Notes:
