@@ -29,7 +29,7 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt iter,PetscReal rnorm,KSPConv
   ierr = KSPGetSolution(solksp, &x_sol);CHKERRQ(ierr);
   ierr = VecNorm(x_sol, NORM_2, &xnorm);CHKERRQ(ierr);
 
-  ierr = KSPLSQRGetArnorm(solksp, &arnorm, &bnorm, &anorm);CHKERRQ(ierr);
+  ierr = KSPLSQRGetNorms(solksp, &arnorm, &bnorm, &anorm);CHKERRQ(ierr);
   if (bnorm > 0.0) {
     stop1 = rnorm / bnorm;
     rtol  = rtol + atol * anorm*xnorm/bnorm;

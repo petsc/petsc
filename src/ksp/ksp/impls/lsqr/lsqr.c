@@ -276,23 +276,35 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
+/*@
+   KSPLSQRGetNorms - Get norm estimates that LSQR computes internally during KSPSolve().
+
+   Not Collective
+
+   Input Parameters:
+.  ksp   - iterative context
+
+   Output Parameters:
++  arnorm - good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion
+-  anorm - poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion
+
+   Notes:
+   These are the same quantities as normar and norma in MATLAB's lsqr().
+   This function's output lsvec is a vector of normar / norma for all iterations.
+
+   Level: intermediate
+
+.keywords: KSP, KSPLSQR
+
+.seealso: KSPSolve(), KSPLSQR
+@*/
+PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *arnorm = lsqr->arnorm;
-  if (anorm) {
-    if (lsqr->anorm < 0.0) {
-      PC  pc;
-      Mat Amat;
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr);
-      ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
-    }
-    *anorm = lsqr->anorm;
-  }
+  if (arnorm)   *arnorm = lsqr->arnorm;
+  if (anorm)    *anorm = lsqr->anorm;
   if (rhs_norm) *rhs_norm = lsqr->rhs_norm;
   PetscFunctionReturn(0);
 }
