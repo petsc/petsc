@@ -12,11 +12,7 @@ Vec Object: 1 MPI processes
 0.000244399
 
  sensitivity wrt parameters: d[y(tf)]/d[mu]
-Vec Object: 1 MPI processes
-  type: seq
--2.13117e-11
+-2.13118e-11
 
  sensivitity wrt parameters: d[z(tf)]/d[mu]
-Vec Object: 1 MPI processes
-  type: seq
--1.2979e-10
+-1.29769e-10
