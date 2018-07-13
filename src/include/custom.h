@@ -158,47 +158,49 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_VECCUDA)
 
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayRead(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayReadWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec,PetscScalar**);
 
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayRead(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec,PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayReadWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec,PetscScalar**);
 
 #else
 
 PETSC_STATIC_INLINE PetscErrorCode
-VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
+VecCUDAGetArray(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires CUSP",PETSC_FUNCTION_NAME);
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires VECCUDA",PETSC_FUNCTION_NAME);
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
-#define VecCUSPGetCUDAArrayRead      VecCUSPGetCUDAArray
-#define VecCUSPGetCUDAArrayWrite     VecCUSPGetCUDAArray
-#define VecCUSPGetCUDAArrayReadWrite VecCUSPGetCUDAArray
+#define VecCUDAGetArrayRead(v,a) VecCUDAGetArray(v,(PetscScalar**)(a))
+#define VecCUDAGetArrayWrite     VecCUDAGetArray
+#define VecCUDAGetArrayReadWrite VecCUDAGetArray
 
 PETSC_STATIC_INLINE PetscErrorCode
-VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
+VecCUDARestoreArray(Vec v,PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires CUSP",PETSC_FUNCTION_NAME);
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires VECCUDA",PETSC_FUNCTION_NAME);
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
-#define VecCUSPRestoreCUDAArrayRead      VecCUSPRestoreCUDAArray
-#define VecCUSPRestoreCUDAArrayWrite     VecCUSPRestoreCUDAArray
-#define VecCUSPRestoreCUDAArrayReadWrite VecCUSPRestoreCUDAArray
+#define VecCUDARestoreArrayRead(v,a) VecCUDARestoreArray(v,(PetscScalar**)(a))
+#define VecCUDARestoreArrayWrite     VecCUDARestoreArray
+#define VecCUDARestoreArrayReadWrite VecCUDARestoreArray
 
 #endif
+
+/* ---------------------------------------------------------------- */
 
 PETSC_STATIC_INLINE PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
