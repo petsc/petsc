@@ -156,6 +156,7 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
   if (!*options) return 0;
   ierr = PetscOptionsClear(*options);if (ierr) return ierr;
   /* XXX what about monitors ? */
+  free(*options);
   *options = NULL;
   PetscFunctionReturn(0);
 }
