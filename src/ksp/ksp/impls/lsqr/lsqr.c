@@ -53,11 +53,10 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   }
   ierr = KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   if (lsqr->se_flg && !lsqr->se) {
-    /* lsqr->se is not set by user, get it from pmat */
-    Vec *se;
-    ierr     = KSPCreateVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
-    lsqr->se = *se;
-    ierr     = PetscFree(se);CHKERRQ(ierr);
+    ierr = VecDuplicate(lsqr->vwork_n[0],&lsqr->se);CHKERRQ(ierr);
+    ierr = VecSet(lsqr->se,PETSC_INFINITY);CHKERRQ(ierr);
+  } else if (!lsqr->se_flg) {
+    ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -68,7 +67,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscInt       i,size1,size2;
   PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau;
   PetscReal      beta,alpha,rnorm;
-  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = NULL;
+  Vec            X,B,V,V1,U,U1,TMP,W,W2,Z = NULL;
   Mat            Amat,Pmat;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscBool      diagonalscale,nopreconditioner;
@@ -98,12 +97,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (!nopreconditioner) Z = lsqr->vwork_n[4];
 
   /* standard error vector */
-  SE = lsqr->se;
-  if (SE) {
-    ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
-    ierr = VecGetSize(X,&size2);CHKERRQ(ierr);
-    if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %D) does not match solution vector (size %D)",size1,size2);
-    ierr = VecSet(SE,0.0);CHKERRQ(ierr);
+  if (lsqr->se) {
+    ierr = VecSet(lsqr->se,0.0);CHKERRQ(ierr);
   }
 
   /* Compute initial residual, temporarily use work vector u */
@@ -193,11 +188,11 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
     ierr = VecAXPY(X,phi/rho,W);CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
 
-    if (SE) {
+    if (lsqr->se) {
       ierr = VecCopy(W,W2);CHKERRQ(ierr);
       ierr = VecSquare(W2);CHKERRQ(ierr);
       ierr = VecScale(W2,1.0/(rho*rho));CHKERRQ(ierr);
-      ierr = VecAXPY(SE, 1.0, W2);CHKERRQ(ierr); /* SE <- SE + (w^2/rho^2) */
+      ierr = VecAXPY(lsqr->se, 1.0, W2);CHKERRQ(ierr); /* lsqr->se <- lsqr->se + (w^2/rho^2) */
     }
     if (nopreconditioner) {
       ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr);  /* w <- v - (theta/rho) w */
@@ -224,13 +219,13 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (i >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   /* Finish off the standard error estimates */
-  if (SE) {
+  if (lsqr->se) {
     tmp  = 1.0;
     ierr = MatGetSize(Amat,&size1,&size2);CHKERRQ(ierr);
     if (size1 > size2) tmp = size1 - size2;
     tmp  = rnorm / PetscSqrtScalar(tmp);
-    ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
-    ierr = VecScale(SE,tmp);CHKERRQ(ierr);
+    ierr = VecSqrtAbs(lsqr->se);CHKERRQ(ierr);
+    ierr = VecScale(lsqr->se,tmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -249,24 +244,64 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
-  if (lsqr->se_flg) {
-    ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
+/*@
+   KSPLSQRSetComputeStandardErrorVec - Compute vector of standard error estimates during KSPSolve_LSQR().
+
+   Not Collective
+
+   Input Parameters:
++  ksp   - iterative context
+-  flg   - compute the vector of standard estimates or not
+
+   Developer notes:
+   Vaclav: I'm not sure whether this vector is useful for anything.
+
+   Level: intermediate
+
+.keywords: KSP, KSPLSQR
+
+.seealso: KSPSolve(), KSPLSQR, KSPLSQRGetStandardErrorVec()
+@*/
+PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = VecDestroy(&lsqr->se);CHKERRQ(ierr);
-  lsqr->se = se;
+  lsqr->se_flg = flg;
   PetscFunctionReturn(0);
 }
 
+/*@
+   KSPLSQRGetStandardErrorVec - Get vector of standard error estimates.
+   Only available if -ksp_lsqr_set_standard_error was set to true
+   or KSPLSQRSetComputeStandardErrorVec(ksp, PETSC_TRUE) was called.
+   Otherwise returns NULL.
+
+   Not Collective
+
+   Input Parameters:
+.  ksp   - iterative context
+
+   Output Parameters:
+.  se - vector of standard estimates
+
+   Options Database Keys:
+.   -ksp_lsqr_set_standard_error  - set standard error estimates of solution
+
+   Developer notes:
+   Vaclav: I'm not sure whether this vector is useful for anything.
+
+   Level: intermediate
+
+.keywords: KSP, KSPLSQR
+
+.seealso: KSPSolve(), KSPLSQR, KSPLSQRSetComputeStandardErrorVec()
+@*/
 PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
@@ -357,7 +392,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_lsqr_compute_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetComputeStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet",KSPLSQRMonitorDefault);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -374,7 +409,6 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
   if (iascii) {
     if (lsqr->se) {
       PetscReal rnorm;
-      ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
     }
@@ -436,8 +470,8 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
      KSPLSQR - This implements LSQR
 
    Options Database Keys:
-+   -ksp_lsqr_set_standard_error  - Set Standard Error Estimates of Solution see KSPLSQRSetStandardErrorVec()
--   -ksp_lsqr_monitor - Monitor residual norm, norm of residual of normal equations A'*A x = A' b, and estimate of matrix norm ||A||.
++   -ksp_lsqr_set_standard_error  - set standard error estimates of solution, see KSPLSQRSetComputeStandardErrorVec() and KSPLSQRGetStandardErrorVec()
+-   -ksp_lsqr_monitor - monitor residual norm, norm of residual of normal equations A'*A x = A' b, and estimate of matrix norm ||A||
 
    Level: beginner
 
@@ -467,7 +501,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
 
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRConvergedDefault(), KSPSolve()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec()
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
