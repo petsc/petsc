@@ -437,8 +437,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
    Options Database Keys:
 +   -ksp_lsqr_set_standard_error  - Set Standard Error Estimates of Solution see KSPLSQRSetStandardErrorVec()
-.   -ksp_lsqr_monitor - Monitor residual norm and norm of residual of normal equations
--   see KSPSolve()
+-   -ksp_lsqr_monitor - Monitor residual norm, norm of residual of normal equations A'*A x = A' b, and estimate of matrix norm ||A||.
 
    Level: beginner
 
@@ -453,6 +452,8 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
      Supports only left preconditioning.
 
+     For least squares problems wit nonzero residual A*x - b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRConvergedDefault().
+
    References:
 .  1. - The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, 1982.
 
@@ -465,9 +466,8 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
 
-   For least squares problems without a zero to A*x = b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRDefaultConverged()
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRDefaultConverged()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRConvergedDefault(), KSPSolve()
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
