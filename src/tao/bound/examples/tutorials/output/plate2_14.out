@@ -7,14 +7,15 @@ iter =   0, Function value 1.57687, Residual: 0.447462
   iter =   1,   Function value 1.53574,   Residual: 0.222631 
   iter =   2,   Function value 1.51391,   Residual: 0.189627 
   iter =   3,   Function value 1.51031,   Residual: 0.119047 
-iter =   1, Function value 1.50567, Residual: 0.00369492 
-  iter =   0,   Function value 1.50567,   Residual: 0.00371589 
-  iter =   1,   Function value 1.50567,   Residual: 0.00272504 
+iter =   1, Function value 1.50567, Residual: 0.00369517 
+  iter =   0,   Function value 1.50567,   Residual: 0.00369517 
+  iter =   1,   Function value 1.50567,   Residual: 0.00272511 
   iter =   2,   Function value 1.50567,   Residual: 0.00202831 
-  iter =   3,   Function value 1.50566,   Residual: 0.00194302 
-iter =   2, Function value 1.50566, Residual: 1.20898e-06 
+  iter =   3,   Function value 1.50566,   Residual: 0.00194307 
+iter =   2, Function value 1.50566, Residual: 1.20705e-06 
 Tao Object: 1 MPI processes
   type: bntr
+    Rejected BFGS updates: 0
     CG steps: 6
     Newton steps: 2
     BFGS steps: 0
@@ -37,14 +38,26 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=0
     using variable bounds
     Termination reason: 0
-  KSP Object: 1 MPI processes
+  KSP Object: (tao_bnk_) 1 MPI processes
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object: 1 MPI processes
-    type: jacobi
+  PC Object: (tao_bnk_) 1 MPI processes
+    type: lmvm
+    Mat Object: (pc_lmvm_) 1 MPI processes
+      type: lmvmbfgs
+      rows=48, cols=48
+        Scale type: diagonal
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 2
+        Number of updates: 2
+        Number of rejects: 0
+        Number of resets: 0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -52,10 +65,10 @@ Tao Object: 1 MPI processes
       total: nonzeros=190, allocated nonzeros=190
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  total KSP iterations: 33
+  total KSP iterations: 39
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.20898e-06
+  Residual in Function/Gradient:=1.20705e-06
   Objective value=1.50566
   total number of iterations=2,                          (max: 50)
   total number of function/gradient evaluations=24,      (max: 4000)

@@ -138,7 +138,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
-    if (snes->nfuncs >= snes->max_funcs) {
+    if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       ierr         = PetscInfo(snes,"Exceeded maximum function evaluations, while checking full step length!\n");CHKERRQ(ierr);
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
-    if (snes->nfuncs >= snes->max_funcs) {
+    if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       ierr         = PetscInfo1(snes,"Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n",snes->nfuncs);CHKERRQ(ierr);
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       ierr         = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (linesearch->ops->viproject) {
           ierr = (*linesearch->ops->viproject)(snes,W);CHKERRQ(ierr);
         }
-        if (snes->nfuncs >= snes->max_funcs) {
+        if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
           ierr = PetscInfo1(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count);CHKERRQ(ierr);
           if (!objective) {
             ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",

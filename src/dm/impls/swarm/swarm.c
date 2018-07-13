@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
-#include <petsc/private/hash.h>
+#include <petsc/private/hashsetij.h>
 #include <petscviewer.h>
 #include <petscdraw.h>
 #include <petscdmplex.h>
@@ -169,7 +169,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   const char    *name = "Mass Matrix";
   PetscDS        prob;
   PetscSection   fsection, globalFSection;
-  PetscHashJK    ht;
+  PetscHSetIJ    ht;
   PetscLayout    rLayout;
   PetscInt      *dnz, *onz;
   PetscInt       locRows, rStart, rEnd;
@@ -200,7 +200,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
   ierr = PetscCalloc2(locRows,&dnz,locRows,&onz);CHKERRQ(ierr);
-  ierr = PetscHashJKCreate(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscQuadrature  quad;
@@ -223,21 +223,20 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       maxC = PetscMax(maxC, numCIndices);
       /* Update preallocation info */
       {
-        PetscHashJKKey  key;
-        PetscHashJKIter missing, iter;
+        PetscHashIJKey key;
+        PetscBool      missing;
 
         for (i = 0; i < numFIndices; ++i) {
-          key.j = findices[i];
-          if (key.j >= 0) {
+          key.i = findices[i];
+          if (key.i >= 0) {
             /* Get indices for coarse elements */
             for (c = 0; c < numCIndices; ++c) {
-              key.k = cindices[c];
-              if (key.k < 0) continue;
-              ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
+              key.j = cindices[c];
+              if (key.j < 0) continue;
+              ierr = PetscHSetIJQueryAdd(ht, key, &missing);CHKERRQ(ierr);
               if (missing) {
-                ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-                if ((size == 1) || ((key.k >= rStart) && (key.k < rEnd))) ++dnz[key.j-rStart];
-                else                                                      ++onz[key.j-rStart];
+                if ((size == 1) || ((key.j >= rStart) && (key.j < rEnd))) ++dnz[key.i-rStart];
+                else                                                      ++onz[key.i-rStart];
               }
             }
           }
@@ -247,7 +246,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
   }
-  ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
+  ierr = PetscHSetIJDestroy(&ht);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);

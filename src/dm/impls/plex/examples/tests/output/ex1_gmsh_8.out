@@ -11337,4 +11337,4 @@ Process 0:
   ( 526) dim  3 offset 5682 -5. -2.8 5.5
   ( 527) dim  3 offset 5685 -5. 5.45423 5.5
   ( 528) dim  3 offset 5688 -5. 2.8 5.5
-Mesh with 456 cells, shape condition numbers: min = 3.01557, max = 11.6398, mean = 5.03362, stddev = 1.3001
+Mesh with 456 cells, shape condition numbers: min = 3.01557, max = 11.6398, mean = 5.03362, stddev = 1.30153

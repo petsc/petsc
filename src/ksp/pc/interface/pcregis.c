@@ -29,6 +29,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC);
 
 #if defined(PETSC_HAVE_ML)
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
@@ -129,5 +130,6 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
 #endif
   ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
+  ierr = PCRegister(PCLMVM         ,PCCreate_LMVM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

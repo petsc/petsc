@@ -176,6 +176,7 @@ endif
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpiuni.mod
+  $(OBJDIR)/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o
 endif
 $(OBJDIR)/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/sys/mpiuni/f90-mod/mpiunimod.o)
 $(OBJDIR)/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o

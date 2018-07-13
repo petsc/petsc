@@ -51,7 +51,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
-    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
     help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     return
 
@@ -1048,17 +1047,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('USE_GCOV','1')
     return
 
-  def configureFortranFlush(self):
-    if hasattr(self.compilers, 'FC'):
-      for baseName in ['flush','flush_']:
-        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
-          self.addDefine('HAVE_'+baseName.upper(), 1)
-          return
-
-  def configureViewFromOptions(self):
-    if not self.framework.argDB['with-viewfromoptions']:
-      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
-
   def postProcessPackages(self):
     postPackages=[]
     for i in self.framework.packages:
@@ -1112,9 +1100,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
-    self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
-    self.executeTest(self.configureViewFromOptions)
 
     self.Dump()
     self.dumpConfigInfo()

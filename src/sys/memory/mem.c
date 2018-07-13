@@ -111,6 +111,9 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
+PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
+
 PetscBool      PetscMemoryCollectMaximumUsage = PETSC_FALSE;
 PetscLogDouble PetscMemoryMaximumUsage        = 0;
 

@@ -74,12 +74,12 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   if (opt) {
     ierr = PetscStrInList("draw",logList,',',&pkg);CHKERRQ(ierr);
     if (pkg) {
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAW_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAW_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAWAXIS_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAWLG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAWBAR_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventExcludeClass(PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Register package finalizer */

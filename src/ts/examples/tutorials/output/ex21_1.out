@@ -1,0 +1,11 @@
+Timestep 0: time = 0.,2-norm error = 0., max norm error = 0.
+Timestep 1: time = 0.00847458,2-norm error = 5.41039e-10, max norm error = 1.90092e-09
+Timestep 2: time = 0.00998865,2-norm error = 1.76839e-06, max norm error = 6.76212e-06
+Timestep 3: time = 0.0104103,2-norm error = 2.07186e-05, max norm error = 7.89658e-05
+Timestep 4: time = 0.0106327,2-norm error = 1.81957e-06, max norm error = 6.23297e-06
+Timestep 5: time = 0.0110559,2-norm error = 2.92317e-05, max norm error = 0.000112845
+Timestep 6: time = 0.0112661,2-norm error = 3.85111e-06, max norm error = 1.48224e-05
+Timestep 7: time = 0.0118091,2-norm error = 3.30498e-05, max norm error = 0.000129329
+Timestep 8: time = 0.0119702,2-norm error = 4.68313e-06, max norm error = 1.83153e-05
+Timestep 9: time = 0.0123056,2-norm error = 1.71327e-05, max norm error = 6.63078e-05
+Timestep 10: time = 0.0125551,2-norm error = 7.85814e-06, max norm error = 2.96618e-05

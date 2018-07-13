@@ -10,7 +10,9 @@ typedef struct {
   PetscBool cellSimplex;    /* Use simplices or hexes */
   PetscBool testPartition;  /* Use a fixed partitioning for testing */
   PetscInt  testNum;        /* The particular mesh to test */
+  PetscBool simplex2tensor; /* Refine simplicials in hexes */
   PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
+  PetscBool reinterpolate;  /* Reinterpolate the mesh at the end */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -25,17 +27,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cellSimplex    = PETSC_TRUE;
   options->testPartition  = PETSC_TRUE;
   options->testNum        = 0;
+  options->simplex2tensor = PETSC_FALSE;
   options->uninterpolate  = PETSC_FALSE;
+  options->reinterpolate  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_refinements", "The number of refinement steps", "ex4.c", options->numRefinements, &options->numRefinements, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cell_hybrid", "Use a hyrbid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_hybrid", "Use a hybrid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex4.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex4.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-reinterpolate", "Reinterpolate the mesh at the end", "ex4.c", options->reinterpolate, &options->reinterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -161,7 +167,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[2]      = {3, 4};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     case 1:
@@ -174,7 +180,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[3]       = {5, 6, 7};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+      for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
@@ -185,6 +191,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(idm, faultLabel, &hybridLabel, &hdm);CHKERRQ(ierr);
+
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(&idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -752,6 +759,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
+  } else {
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   }
   {
     DM refinedMesh     = NULL;
@@ -778,13 +790,35 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
-  if (user->uninterpolate) {
+  if (user->simplex2tensor) {
+    DM rdm = NULL;
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexRefineSimplexToTensor(*dm, &rdm);CHKERRQ(ierr);
+    if (rdm) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = rdm;
+    }
+    user->cellSimplex = PETSC_FALSE;
+  }
+  if (user->uninterpolate || user->reinterpolate) {
     DM udm = NULL;
 
     ierr = DMPlexUninterpolate(*dm, &udm);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(*dm, udm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = udm;
+  }
+
+  if (user->reinterpolate) {
+    DM idm = NULL;
+
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
+    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+    ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -953,5 +987,34 @@ int main(int argc, char **argv)
     suffix: 34
     nsize: 2
     args: -dim 2 -cell_hybrid 0 -num_refinements 3 -uninterpolate -dm_view ascii::ascii_info_detail
+
+  # Hybrid interpolation
+  testset:
+    nsize: 2
+    args: -test_partition 0 -petscpartitioner_type simple -dm_view -reinterpolate
+    test:
+      suffix: hybint_2d_0
+      args: -dim 2 -num_refinements 2
+    test:
+      suffix: hybint_2d_s2t_0
+      args: -dim 2 -num_refinements 2 -simplex2tensor
+    test:
+      suffix: hybint_2d_1
+      args: -dim 2 -num_refinements 2 -test_num 1
+    test:
+      suffix: hybint_2d_s2t_1
+      args: -dim 2 -num_refinements 2 -simplex2tensor -test_num 1
+    test:
+      suffix: hybint_3d_0
+      args: -dim 3 -num_refinements 1
+    test:
+      suffix: hybint_3d_s2t_0
+      args: -dim 3 -num_refinements 1 -simplex2tensor
+    test:
+      suffix: hybint_3d_1
+      args: -dim 3 -num_refinements 1 -test_num 1
+    test:
+      suffix: hybint_3d_s2t_1
+      args: -dim 3 -num_refinements 1  -simplex2tensor -test_num 1
 
 TEST*/

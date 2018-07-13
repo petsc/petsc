@@ -77,6 +77,9 @@ class Configure(config.base.Configure):
   def getDefineName(self, library):
     return 'HAVE_LIB'+self.getLibName(library).upper().replace('-','_').replace('=','_').replace('+','_').replace('.', '_').replace('/','_')
 
+  def getDefineNameFunc(self, funcName):
+    return 'HAVE_'+ funcName.upper()
+
   def haveLib(self, library):
     return self.getDefineName(library) in self.defines
 
@@ -152,7 +155,7 @@ class Configure(config.base.Configure):
     # no match - assuming the given name is already in short notation
     return lib
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, examineOutput=lambda ret,out,err:None):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, functionDefine = 0, examineOutput=lambda ret,out,err:None):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
@@ -236,8 +239,10 @@ extern "C" {
     found = 0
     if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       found = 1
+      # define the symbol as found
+      if functionDefine: self.addDefine(self.getDefineNameFunc(fname), 1)
       # add to list of found libraries
-      if libName:
+      elif libName:
         for lib in libName:
           shortlib = self.getShortLibName(lib)
           if shortlib: self.addDefine(self.getDefineName(shortlib), 1)

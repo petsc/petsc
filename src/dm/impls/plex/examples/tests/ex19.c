@@ -213,7 +213,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error);CHKERRQ(ierr);
 
   ierr = VecSet(ones, 1.0);CHKERRQ(ierr);
-  ierr = DMPlexSNESComputeJacobianActionFEM(dma, ua, ones, massLumped, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobianAction(dma, NULL, 0, 0, ua, NULL, ones, massLumped, user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) massLumped, "Lumped mass");CHKERRQ(ierr);
   ierr = VecViewFromOptions(massLumped, NULL, "-mass_vec_view");CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(dm, dma, &mass);CHKERRQ(ierr);

@@ -3,11 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = schurm.c dmproject.c
+SOURCEC  = kspmatregi.c dmproject.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     =
+DIRS     = lmvm schurm
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/utils/
 

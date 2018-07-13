@@ -523,7 +523,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyCoarse,pc,0,0,0);CHKERRQ(ierr);
   if (u) {
     if (!vec3_B) vec3_B = u;
     ierr = VecPointwiseMult(vec1_B,pcis->D,u);CHKERRQ(ierr);
@@ -573,7 +573,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   }
   ierr = VecScatterBegin(pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyCoarse,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

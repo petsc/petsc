@@ -7,8 +7,8 @@
 
 const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
 
-extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
-extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
+static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
+static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 
 /*@C
    PetscSubcommSetFromOptions - Allows setting options from a PetscSubcomm
@@ -321,7 +321,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
+static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*subsize,duprank=-1,subrank=-1;
@@ -393,7 +393,7 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
                     subcomm[0] subcomm[1]  subcomm[2]
 */
 
-PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
+static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*subsize,duprank,subrank;

@@ -206,6 +206,7 @@ struct _MatOps {
   /*144*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
+  PetscErrorCode (*mattransposesolve)(Mat,Mat,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -434,6 +435,7 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat,PetscInt,const Petsc
 typedef struct _MatPartitioningOps *MatPartitioningOps;
 struct _MatPartitioningOps {
   PetscErrorCode (*apply)(MatPartitioning,IS*);
+  PetscErrorCode (*applynd)(MatPartitioning,IS*);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatPartitioning);
   PetscErrorCode (*destroy)(MatPartitioning);
   PetscErrorCode (*view)(MatPartitioning,PetscViewer);
@@ -448,6 +450,9 @@ struct _p_MatPartitioning {
   void        *data;
   PetscInt    setupcalled;
 };
+
+/* needed for parallel nested dissection by ParMetis and PTSCOTCH */
+PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
 
 /*
     Object for coarsen graphs
@@ -1247,6 +1252,18 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
+#define MatCheckSameLocalSize(A,ar1,B,ar2) \
+  PetscCheckSameComm(A,ar1,B,ar2); \
+  if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->n,A->cmap->n,ar2,B->rmap->n,B->cmap->n);
+  
+#define MatCheckSameSize(A,ar1,B,ar2) \
+  if ((A->rmap->N != B->rmap->N) || (A->cmap->N != B->cmap->N)) SETERRQ6(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->N,A->cmap->N,ar2,B->rmap->N,B->cmap->N);\
+  MatCheckSameLocalSize(A,ar1,B,ar2);
+  
+#define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
+  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
+  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);
+
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>
 /*
@@ -1626,6 +1643,7 @@ PETSC_EXTERN PetscLogEvent MAT_GetOrdering;
 PETSC_EXTERN PetscLogEvent MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap;
 PETSC_EXTERN PetscLogEvent MAT_Partitioning;
+PETSC_EXTERN PetscLogEvent MAT_PartitioningND;
 PETSC_EXTERN PetscLogEvent MAT_Coarsen;
 PETSC_EXTERN PetscLogEvent MAT_ZeroEntries;
 PETSC_EXTERN PetscLogEvent MAT_Load;
@@ -1640,6 +1658,7 @@ PETSC_EXTERN PetscLogEvent MAT_FDColoringFunction;
 PETSC_EXTERN PetscLogEvent MAT_CreateSubMat;
 PETSC_EXTERN PetscLogEvent MAT_MatMult;
 PETSC_EXTERN PetscLogEvent MAT_MatSolve;
+PETSC_EXTERN PetscLogEvent MAT_MatTrSolve;
 PETSC_EXTERN PetscLogEvent MAT_MatMultSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_MatMultNumeric;
 PETSC_EXTERN PetscLogEvent MAT_Getlocalmatcondensed;
@@ -1675,10 +1694,6 @@ PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
-PETSC_EXTERN PetscLogEvent MAT_SetValuesBatchI;
-PETSC_EXTERN PetscLogEvent MAT_SetValuesBatchII;
-PETSC_EXTERN PetscLogEvent MAT_SetValuesBatchIII;
-PETSC_EXTERN PetscLogEvent MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge;
 PETSC_EXTERN PetscLogEvent MAT_Residual;

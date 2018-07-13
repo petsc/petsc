@@ -46,7 +46,9 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
   ierr = MatSetBlockSizesFromMats(Bnew,A,A);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSELLSetPreallocation(Bnew,0,Bsell->rlen);CHKERRQ(ierr);
-  ((Mat_SeqSELL*)Bnew->data)->nonew = Bsell->nonew; /* Inherit insertion error options. */
+  if (Bsell->nonew >= 0) { /* Inherit insertion error options (if positive). */
+    ((Mat_SeqSELL*)Bnew->data)->nonew = Bsell->nonew;
+  }
 
   /*
    Ensure that B's nonzerostate is monotonically increasing.

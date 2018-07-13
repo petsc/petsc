@@ -17,7 +17,7 @@ typedef struct {
   PetscInt degree;         /* vertex degree */
 } GAMGNode;
 
-int petsc_geo_mg_compare(const void *a, const void *b)
+PETSC_STATIC_INLINE int petsc_geo_mg_compare(const void *a, const void *b)
 {
   return (((GAMGNode*)a)->degree - ((GAMGNode*)b)->degree);
 }
@@ -40,12 +40,11 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 1);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-
   ierr = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
-  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %D %D.",a_nloc,nloc);
+  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %D.",nloc);
 
   pc_gamg->data_cell_rows = 1;
   if (!coords && nloc > 0) SETERRQ(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
@@ -619,9 +618,8 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   qsort(gnodes, nloc, sizeof(GAMGNode), petsc_geo_mg_compare);
   /* create IS of permutation */
   for (kk=0; kk<nloc; kk++) permute[kk] = gnodes[kk].lid; /* locals only */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
-
   ierr = PetscFree(gnodes);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
 
   /* get MIS aggs */
 

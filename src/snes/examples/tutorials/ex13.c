@@ -253,6 +253,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
+  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

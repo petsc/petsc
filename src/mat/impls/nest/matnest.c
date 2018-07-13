@@ -1154,8 +1154,8 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       VecScatter             scat;
       IS                     isreq;
       Vec                    lvec,gvec;
+      Mat                    sub = NULL;
       union {char padding[sizeof(PetscScalar)]; PetscInt integer;} *x;
-      Mat sub;
 
       if (sizeof(*x) != sizeof(PetscScalar)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support when scalars smaller than integers");
       if (!colflg) {

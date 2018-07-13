@@ -36,8 +36,8 @@ typedef struct _Object {
 /* Action and object logging variables */
 PETSC_EXTERN Action    *petsc_actions;
 PETSC_EXTERN Object    *petsc_objects;
-PETSC_EXTERN PetscBool petsc_logActions;
-PETSC_EXTERN PetscBool petsc_logObjects;
+PETSC_EXTERN PetscBool  petsc_logActions;
+PETSC_EXTERN PetscBool  petsc_logObjects;
 PETSC_EXTERN int        petsc_numActions;
 PETSC_EXTERN int        petsc_maxActions;
 PETSC_EXTERN int        petsc_numObjects;
@@ -51,6 +51,13 @@ PETSC_EXTERN char           petsc_tracespace[128];
 PETSC_EXTERN PetscLogDouble petsc_tracetime;
 
 #ifdef PETSC_USE_LOG
+
+PETSC_EXTERN PetscErrorCode PetscIntStackCreate(PetscIntStack *);
+PETSC_EXTERN PetscErrorCode PetscIntStackDestroy(PetscIntStack);
+PETSC_EXTERN PetscErrorCode PetscIntStackPush(PetscIntStack, int);
+PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
+PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
+PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
 
 /* Creation and destruction functions */
 PETSC_EXTERN PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *);
@@ -73,6 +80,7 @@ PETSC_EXTERN PetscErrorCode PetscEventPerfLogActivateClass(PetscEventPerfLog, Pe
 PETSC_EXTERN PetscErrorCode PetscEventPerfLogDeactivateClass(PetscEventPerfLog, PetscEventRegLog, PetscClassId);
 
 /* Logging functions */
+PETSC_EXTERN PetscErrorCode PetscLogEventSynchronize(PetscLogEvent, MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscLogEventEndDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);

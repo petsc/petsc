@@ -343,4 +343,9 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
 
+PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
+PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat*);
+PETSC_EXTERN PetscErrorCode PCLMVMSetIS(PC, IS);
+PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
+
 #endif /* __PETSCPC_H */

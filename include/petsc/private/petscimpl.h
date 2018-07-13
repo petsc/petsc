@@ -808,9 +808,7 @@ typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETS
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
-#define REDUCE_SUM  0
-#define REDUCE_MAX  1
-#define REDUCE_MIN  2
+typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
   MPI_Comm    comm;
@@ -898,11 +896,15 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
+PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 #endif
 #endif
+
+PETSC_EXTERN PetscLogEvent PETSC_Barrier;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 
 #endif /* _PETSCHEAD_H */

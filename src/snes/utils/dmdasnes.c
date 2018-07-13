@@ -425,8 +425,6 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
 
    Notes:
     The user must use
-    extern PetscErrorCode  SNESPicardComputeFunction(SNES,Vec,Vec,void*);
-    extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
     ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
     in their code before calling this routine.
 
