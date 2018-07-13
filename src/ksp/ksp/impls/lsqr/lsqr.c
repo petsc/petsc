@@ -447,7 +447,14 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
     if (lsqr->se) {
       PetscReal rnorm;
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  norm of standard error %g, iterations %d\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  standard error not computed\n");CHKERRQ(ierr);
+    }
+    if (lsqr->exact_norm) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using exact matrix norm\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using inexact matrix norm\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
