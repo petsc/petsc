@@ -207,6 +207,7 @@ static void f0_r2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   PetscInt d;
 
+  f0[0] = 0.0;
   for (d = 0; d < dim; ++d) f0[0] += PetscSqr(x[d])*u[0];
 }
 
@@ -245,20 +246,23 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
 
   //ierr = DMSwarmCreateInterpolationMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   ierr = MatMult(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(rhs, NULL, "-rhs_view");CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
   ierr = DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(M, NULL, "-fe_mass_mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(M, NULL, "-M_view");CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp, M, M);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs, fhat);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) density: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
+  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
                      fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -321,7 +325,11 @@ int main (int argc, char * argv[]) {
 /*TEST
 
   test:
-    suffix: proj_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 1 -petscfe_default_quadrature_order 1
+    suffix: proj_tri_0
+    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+
+  test:
+    suffix: proj_quad_0
+    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
 
 TEST*/
