@@ -144,8 +144,6 @@ int main(int argc,char **argv)
   PetscAssert(has == PETSC_FALSE);
   ierr = PetscOptionsClearValue(NULL,"-abc_xyz");CHKERRQ(ierr);
 
-  ierr = PetscOptionsView(NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsLeft(NULL);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -154,6 +152,5 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      filter: egrep -v "(malloc|saws_port_auto_select|vecscatter_mpi1|error_output_stdout|check_pointer_intensity)"
 
 TEST*/
