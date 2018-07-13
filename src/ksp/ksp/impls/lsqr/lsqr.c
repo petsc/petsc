@@ -380,8 +380,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 }
 
 /*@C
-   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPConvergedDefault() and if that does not determine convergence then checks
-      convergence for the least squares problem.
+   KSPLSQRConvergedDefault - Determines convergence of the LSQR Krylov method.
 
    Collective on KSP
 
@@ -406,7 +405,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault()
 @*/
-PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -479,7 +478,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->view           = KSPView_LSQR;
 
   ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,KSPLSQRDefaultConverged,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
