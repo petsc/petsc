@@ -309,7 +309,8 @@ PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 }
 
 /*@C
-   KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method and the norm of the residual of the normal equations A'*A x = A' b
+   KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method,
+   norm of the residual of the normal equations A'*A x = A' b, and estimate of matrix norm ||A||.
 
    Collective on KSP
 
@@ -321,9 +322,9 @@ PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 
    Level: intermediate
 
-.keywords: KSP, default, monitor, residual
+.keywords: KSP, KSPLSQR, default, monitor, residual
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate(), KSPMonitorDefault()
+.seealso: KSPLSQR, KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate(), KSPMonitorDefault()
 @*/
 PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewerAndFormat *dummy)
 {
@@ -334,14 +335,16 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscVi
   PetscFunctionBegin;
   ierr = PetscViewerPushFormat(viewer,dummy->format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
-  if (((PetscObject)ksp)->prefix) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norm and norm of normal equations for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  if (!n && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norm, norm of normal equations, and matrix norm for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
   }
+
   if (!n) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e\n",n,rnorm);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e Residual norm normal equations %14.12e\n",n,rnorm,lsqr->arnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP resid norm %14.12e normal eq resid norm %14.12e matrix norm %14.12e\n",n,rnorm,lsqr->arnorm,lsqr->anorm);CHKERRQ(ierr);
   }
+
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
