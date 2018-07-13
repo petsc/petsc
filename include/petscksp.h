@@ -335,6 +335,7 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 #define KSP_FILE_CLASSID 1211223
 
+PETSC_EXTERN PetscErrorCode KSPLSQRSetExactMatNorm(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetNorms(KSP,PetscReal*,PetscReal*);

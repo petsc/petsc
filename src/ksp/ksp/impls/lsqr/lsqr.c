@@ -12,6 +12,7 @@ typedef struct {
   Vec       *vwork_n;   /* work vectors of length n */
   Vec       se;         /* Optional standard error vector */
   PetscBool se_flg;     /* flag for -ksp_lsqr_set_standard_error */
+  PetscBool exact_norm; /* flag for -ksp_lsqr_exact_mat_norm */
   PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
   PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
   PetscReal rhs_norm;   /* Norm of the right hand side */
@@ -145,7 +146,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecCopy(Z,W);CHKERRQ(ierr);
   }
 
-  lsqr->anorm  = 0.0;
+  if (lsqr->exact_norm) {
+    ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
+  } else lsqr->anorm = 0.0;
+
   lsqr->arnorm = alpha * beta;
   phibar       = beta;
   rhobar       = alpha;
@@ -160,7 +164,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     if (beta > 0.0) {
       ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
-      lsqr->anorm = PetscSqrtScalar(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
+      if (!lsqr->exact_norm) {
+        lsqr->anorm = PetscSqrtScalar(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
+      }
     }
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
@@ -274,6 +280,35 @@ PetscErrorCode  KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 
   PetscFunctionBegin;
   lsqr->se_flg = flg;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPLSQRSetExactMatNorm - Compute exact matrix norm instead of iteratively refined estimate.
+
+   Not Collective
+
+   Input Parameters:
++  ksp   - iterative context
+-  flg   - compute exact matrix norm or not
+
+   Notes:
+   By default, flg=PETSC_FALSE. This is usually preferred to avoid possibly expensive computation of the norm.
+   For flg=PETSC_TRUE, we call MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
+   This can affect convergence rate as KSPLSQRConvergedDefault() assumes different value of ||A|| used in normal equation stopping criterion.
+
+   Level: intermediate
+
+.keywords: KSP, KSPLSQR
+
+.seealso: KSPSolve(), KSPLSQR, KSPLSQRGetNorms(), KSPLSQRConvergedDefault()
+@*/
+PetscErrorCode  KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
+{
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+
+  PetscFunctionBegin;
+  lsqr->exact_norm = flg;
   PetscFunctionReturn(0);
 }
 
@@ -394,6 +429,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_lsqr_compute_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetComputeStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_lsqr_exact_mat_norm","Compute exact matrix norm instead of iteratively refined estimate","KSPLSQRSetExactMatNorm",lsqr->exact_norm,&lsqr->exact_norm,NULL);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet",KSPLSQRMonitorDefault);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -472,6 +508,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
    Options Database Keys:
 +   -ksp_lsqr_set_standard_error  - set standard error estimates of solution, see KSPLSQRSetComputeStandardErrorVec() and KSPLSQRGetStandardErrorVec()
+.   -ksp_lsqr_exact_mat_norm - compute exact matrix norm instead of iteratively refined estimate, see KSPLSQRSetExactMatNorm()
 -   -ksp_lsqr_monitor - monitor residual norm, norm of residual of normal equations A'*A x = A' b, and estimate of matrix norm ||A||
 
    Level: beginner
@@ -502,7 +539,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
 
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec(), KSPLSQRSetExactMatNorm()
 
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
@@ -515,6 +552,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
+  lsqr->exact_norm = PETSC_FALSE;
   lsqr->anorm  = -1.0;
   lsqr->arnorm = -1.0;
   ksp->data    = (void*)lsqr;
