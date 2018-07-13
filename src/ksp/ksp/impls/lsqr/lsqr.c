@@ -39,19 +39,20 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
-  /*  nopreconditioner =PETSC_FALSE; */
 
-  lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
-  if (nopreconditioner) lsqr->nwork_n = 4;
-  else lsqr->nwork_n = 5;
 
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   }
+
+  lsqr->nwork_m = 2;
+  if (nopreconditioner) lsqr->nwork_n = 4;
+  else lsqr->nwork_n = 5;
   ierr = KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
+
   if (lsqr->se_flg && !lsqr->se) {
     ierr = VecDuplicate(lsqr->vwork_n[0],&lsqr->se);CHKERRQ(ierr);
     ierr = VecSet(lsqr->se,PETSC_INFINITY);CHKERRQ(ierr);
