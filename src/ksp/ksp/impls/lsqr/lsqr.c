@@ -298,14 +298,13 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 
 .seealso: KSPSolve(), KSPLSQR
 @*/
-PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
+PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   if (arnorm)   *arnorm = lsqr->arnorm;
   if (anorm)    *anorm = lsqr->anorm;
-  if (rhs_norm) *rhs_norm = lsqr->rhs_norm;
   PetscFunctionReturn(0);
 }
 
