@@ -232,7 +232,6 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
       ls->f_fullstep = *f;
     }
 
-    /* call monitor */
     ierr = TaoLineSearchMonitor(ls, its, *f, ls->step);CHKERRQ(ierr);
 
     if (PetscIsInfOrNanReal(*f)) {

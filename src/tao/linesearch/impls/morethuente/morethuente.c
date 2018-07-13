@@ -188,7 +188,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       }
     }
     
-    /* Call the monitor */
+    /* update bracketing parameters in the MT context for printouts in monitor */
     mt->stx = stx;
     mt->fx = fx;
     mt->dgx = dgx;

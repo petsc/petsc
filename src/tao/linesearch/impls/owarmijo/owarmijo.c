@@ -251,7 +251,6 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     ierr = TaoLineSearchComputeObjectiveAndGradient(ls,armP->work,f,g);CHKERRQ(ierr);
     g_computed=PETSC_TRUE;
     
-    /* Call the monitor */
     ierr = TaoLineSearchMonitor(ls, its, *f, ls->step);CHKERRQ(ierr);
 
     if (ls->step == ls->initstep) {

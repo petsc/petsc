@@ -123,7 +123,6 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       g_computed=PETSC_TRUE;
     }
     
-    /* call monitor */
     ierr = TaoLineSearchMonitor(ls, i+1, *f, ls->step);CHKERRQ(ierr);
 
     if (0 == i) {
