@@ -357,7 +357,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
-  ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,NULL);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp,"-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet",KSPLSQRMonitorDefault);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
