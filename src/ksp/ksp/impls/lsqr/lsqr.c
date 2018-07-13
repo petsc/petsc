@@ -81,7 +81,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
-  /*  nopreconditioner =PETSC_FALSE; */
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
@@ -360,14 +359,15 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 -  anorm - poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion
 
    Notes:
-   These are the same quantities as normar and norma in MATLAB's lsqr().
-   This function's output lsvec is a vector of normar / norma for all iterations.
+   Output parameters are meaningful only after KSPSolve().
+   These are the same quantities as normar and norma in MATLAB's lsqr(), whose output lsvec is a vector of normar / norma for all iterations.
+   If -ksp_lsqr_exact_mat_norm is set or KSPLSQRSetExactMatNorm(ksp, PETSC_TRUE) called, then anorm is exact Frobenius norm.
 
    Level: intermediate
 
 .keywords: KSP, KSPLSQR
 
-.seealso: KSPSolve(), KSPLSQR
+.seealso: KSPSolve(), KSPLSQR, KSPLSQRSetExactMatNorm()
 @*/
 PetscErrorCode  KSPLSQRGetNorms(KSP ksp,PetscReal *arnorm, PetscReal *anorm)
 {
@@ -473,6 +473,8 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
    KSPConvergedDefault() is called first to check for convergence in A*x=b.
    If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
    Possible convergence for the least squares problem (which is based on the residual of the normal equations) are KSP_CONVERGED_RTOL_NORMAL norm and KSP_CONVERGED_ATOL_NORMAL.
+   KSP_CONVERGED_RTOL_NORMAL is returned if ||A'*r|| < rtol * ||A|| * ||r||.
+   Matrix norm ||A|| is iteratively refined estimate, see KSPLSQRGetNorms().
    This criterion is now largely compatible with that in MATLAB lsqr().
 
    Level: intermediate
@@ -480,7 +482,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 .keywords: KSP, KSPLSQR, default, convergence, residual
 
 .seealso: KSPLSQR, KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault()
+          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault(), KSPLSQRGetNorms(), KSPLSQRSetExactMatNorm()
 @*/
 PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
