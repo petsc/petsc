@@ -396,13 +396,16 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 -   0 - otherwise.
 
    Notes:
-      Possible convergence for the least squares problem (which is based on the residual of the normal equations) are KSP_CONVERGED_RTOL_NORMAL norm and KSP_CONVERGED_ATOL_NORMAL.
+   KSPConvergedDefault() is called first to check for convergence in A*x=b.
+   If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
+   Possible convergence for the least squares problem (which is based on the residual of the normal equations) are KSP_CONVERGED_RTOL_NORMAL norm and KSP_CONVERGED_ATOL_NORMAL.
+   This criterion is now largely compatible with that in MATLAB lsqr().
 
    Level: intermediate
 
-.keywords: KSP, default, convergence, residual
+.keywords: KSP, KSPLSQR, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
+.seealso: KSPLSQR, KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault()
 @*/
 PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
@@ -411,10 +414,18 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
+  /* check for convergence in A*x=b */
   ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (!n || *reason) PetscFunctionReturn(0);
-  if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) *reason = KSP_CONVERGED_RTOL_NORMAL;
-  if (lsqr->arnorm < ksp->abstol) *reason = KSP_CONVERGED_ATOL_NORMAL;
+
+  /* check for convergence in min{|b-A*x|} */
+  if (lsqr->arnorm < ksp->abstol) {
+    ierr = PetscInfo3(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->abstol,n);CHKERRQ(ierr);
+    *reason = KSP_CONVERGED_ATOL_NORMAL;
+  } else if (lsqr->arnorm < ksp->rtol * lsqr->anorm * rnorm) {
+    ierr = PetscInfo5(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than rel. tol. %14.12e times approx. Frobenius norm of matrix %14.12e times residual %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->rtol,(double)lsqr->anorm,(double)rnorm,n);CHKERRQ(ierr);
+    *reason = KSP_CONVERGED_RTOL_NORMAL;
+  }
   PetscFunctionReturn(0);
 }
 
