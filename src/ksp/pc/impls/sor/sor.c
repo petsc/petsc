@@ -26,11 +26,9 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  PetscReal      fshift;
 
   PetscFunctionBegin;
-  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
-  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -40,14 +38,12 @@ static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  PetscReal      fshift;
   PetscBool      set,sym;
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
   if (!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
-  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
-  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
