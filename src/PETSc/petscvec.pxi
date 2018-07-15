@@ -153,12 +153,12 @@ cdef extern from * nogil:
     int VecISAXPY(PetscVec,PetscIS,PetscScalar,PetscVec)
     int VecISSet(PetscVec,PetscIS,PetscScalar)
 
-    int VecCUSPGetCUDAArrayRead(PetscVec,PetscScalar*[])
-    int VecCUSPGetCUDAArrayWrite(PetscVec,PetscScalar*[])
-    int VecCUSPGetCUDAArrayReadWrite(PetscVec,PetscScalar*[])
-    int VecCUSPRestoreCUDAArrayRead(PetscVec,PetscScalar*[])
-    int VecCUSPRestoreCUDAArrayWrite(PetscVec,PetscScalar*[])
-    int VecCUSPRestoreCUDAArrayReadWrite(PetscVec,PetscScalar*[])
+    int VecCUDAGetArrayRead(PetscVec,const_PetscScalar*[])
+    int VecCUDAGetArrayWrite(PetscVec,PetscScalar*[])
+    int VecCUDAGetArrayReadWrite(PetscVec,PetscScalar*[])
+    int VecCUDARestoreArrayRead(PetscVec,const_PetscScalar*[])
+    int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
+    int VecCUDARestoreArrayReadWrite(PetscVec,PetscScalar*[])
 
 # --------------------------------------------------------------------
 
