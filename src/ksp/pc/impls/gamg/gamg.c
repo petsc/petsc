@@ -97,8 +97,11 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
-  if (!pc_gamg->repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
-  else {
+  if (!pc_gamg->repart && new_size==nactive) {
+    *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
+    /* we know that the grid structure can be reused in MatPtAP */
+  } else {
+    /* we know that the grid structure can NOT be reused in MatPtAP */
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
 
@@ -445,13 +448,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB);CHKERRQ(ierr);
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
-          /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2) {
-            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+          /* 2nd solve, matrix structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
+          if (pc_gamg->setup_count==2 /* && pc_gamg->repart||reduction */) {
+            ierr = PetscInfo2(pc,"new RAP after first solve level %D, %D setup\n",level,pc_gamg->setup_count);CHKERRQ(ierr);
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,2.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
-
             mglevels[level]->A = B;
           } else {
+            ierr = PetscInfo2(pc,"RAP after first solve reusing matrix level %D, %D setup\n",level,pc_gamg->setup_count);CHKERRQ(ierr);
             ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B);CHKERRQ(ierr);
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
