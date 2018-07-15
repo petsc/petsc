@@ -244,7 +244,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
     ierr = SNESDiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;
 
-  ierr = PetscOptionsHasName(((PetscObject)snes)->options,NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(((PetscObject)snes)->options,&flg);CHKERRQ(ierr);
   ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
   if (((PetscObject)snes)->prefix) {ierr = PetscStrlcat(p,((PetscObject)snes)->prefix,sizeof(p));CHKERRQ(ierr);}
   if (flg) {

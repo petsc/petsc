@@ -338,7 +338,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscOptionsHasName(NULL,NULL,"-v",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-version",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg3);CHKERRQ(ierr);
   if (flg1 || flg2 || flg3) {
 
     /*
@@ -615,7 +615,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
        Print basic help message
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -help: prints help method for each option\n");CHKERRQ(ierr);

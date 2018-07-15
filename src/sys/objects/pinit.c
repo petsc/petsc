@@ -64,12 +64,12 @@ PetscSpinlock PetscCommSpinLock;
 */
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
-  PetscBool      flg1;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
+  if (flg) {
 #if defined(PETSC_USE_LOG)
     MPI_Comm comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
@@ -397,6 +397,44 @@ PetscErrorCode PetscCitationsInitialize(void)
   PetscFunctionReturn(0);
 }
 
+static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
+
+PetscErrorCode  PetscSetProgramName(const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr  = PetscStrncpy(programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscGetProgramName - Gets the name of the running program.
+
+    Not Collective
+
+    Input Parameter:
+.   len - length of the string name
+
+    Output Parameter:
+.   name - the name of the running program
+
+   Level: advanced
+
+    Notes:
+    The name of the program is copied into the user-provided character
+    array of length len.  On some machines the program name includes
+    its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
+@*/
+PetscErrorCode  PetscGetProgramName(char name[],size_t len)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+   ierr = PetscStrncpy(name,programname,len);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscGetArgs - Allows you to access the raw command line arguments anywhere
      after PetscInitialize() is called but before PetscFinalize().
@@ -455,12 +493,12 @@ PetscErrorCode  PetscGetArguments(char ***args)
 
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
-  if (!argc) {*args = 0; PetscFunctionReturn(0);}
+  if (!argc) {*args = NULL; PetscFunctionReturn(0);}
   ierr = PetscMalloc1(argc,args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
   }
-  (*args)[argc-1] = 0;
+  (*args)[argc-1] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -934,7 +972,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
      Print main application help message
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }

@@ -183,7 +183,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortr
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 
 

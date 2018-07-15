@@ -409,6 +409,56 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 }
 #endif
 
+/*@
+   PetscObjectSetPrintedOptions - indicate to an object that it should behave as if it has already printed the help for its options
+
+   Input Parameters:
+.  obj  - the PetscObject
+
+   Level: developer
+
+   Developer Notes:
+   This is used, for example to prevent sequential objects that are created from a parallel object; such as the KSP created by
+   PCBJACOBI from all printing the same help messages to the screen
+
+.seealso: PetscOptionsInsert()
+@*/
+PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
+{
+  PetscFunctionBegin;
+  obj->optionsprinted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscObjectInheritPrintedOptions - If the child object is not on the rank 0 process of the parent object and the child is sequential then the child gets it set.
+
+   Input Parameters:
++  pobj - the parent object
+-  obj  - the PetscObject
+
+   Level: developer
+
+   Developer Notes:
+   This is used, for example to prevent sequential objects that are created from a parallel object; such as the KSP created by
+   PCBJACOBI from all printing the same help messages to the screen
+
+   This will not handle more complicated situations like with GASM where children may live on any subset of the parent's processes and overlap
+
+.seealso: PetscOptionsInsert(), PetscObjectSetPrintedOptions()
+@*/
+PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    prank,size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(pobj->comm,&prank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(obj->comm,&size);CHKERRQ(ierr);
+  if (size == 1 && prank > 0) obj->optionsprinted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*@C
     PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.
 
