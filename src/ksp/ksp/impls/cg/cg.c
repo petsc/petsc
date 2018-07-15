@@ -171,6 +171,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if ((i > 0) && (beta*betaold < 0.0)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Diverged due to indefinite preconditioner");
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr        = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
       break;
@@ -194,6 +195,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     betaold = beta;
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Diverged due to indefinite matrix");
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
       break;
@@ -330,6 +332,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if ((i > 0) && (beta*betaold < 0.0)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Diverged due to indefinite preconditioner");
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr        = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
       break;
@@ -358,6 +361,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
     KSPCheckDot(ksp,beta);
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"Diverged due to indefinite matrix");
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
       break;
