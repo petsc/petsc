@@ -1,4 +1,4 @@
-static char help[] = "Tests L2 projection with DMSwarm.\n";
+static char help[] = "Tests L2 projection with DMSwarm using delta function particles.\n";
 
 #include <petscdmplex.h>
 #include <petscdmswarm.h>
@@ -10,6 +10,14 @@ typedef struct {
   PetscBool simplex;                          /* Flag for simplices or tensor cells */
   char      meshFilename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
   PetscInt  faces;                            /* Number of faces per edge if unit square/cube generated */
+  /* geometry  */
+  PetscInt  particles_cell;
+  PetscReal domain_lo[3], domain_hi[3];
+  DMBoundaryType boundary[3];                 /* The domain boundary */
+  PetscReal particle_perturbation;
+  PetscReal mesh_perturbation;
+  PetscInt  k;
+  PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -20,14 +28,48 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
+static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
+{
+  AppCtx *ctx = (AppCtx*)a_ctx;
+  int     i = 0;
+  u[0] = 1;
+  for(i=0;i<dim;i++){
+    double L2 = ctx->domain_hi[i]*ctx->domain_hi[i], x2 = x[i]*x[i];
+    u[0] *= x2*L2 - x2*x2;
+  }
+
+  return 0;
+}
+
+static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
+{
+  AppCtx *ctx = (AppCtx*)a_ctx;
+/* PetscPrintf(PETSC_COMM_SELF, "[%D]sinx: x = %12.5e,%12.5e, val=%12.5e k=%D\n",-1,x[0],x[1],u[0],ctx->k); */
+  u[0] = sin(x[0]*ctx->k);
+  return 0;
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
-
+  PetscInt       ii, bd;
+  char           fstring[PETSC_MAX_PATH_LEN] = "linear";
+  PetscBool      flag;
   PetscFunctionBeginUser;
   options->dim     = 2;
   options->simplex = PETSC_TRUE;
   options->faces   = 1;
+  options->domain_lo[0]  = 0.0;
+  options->domain_lo[1]  = 0.0;
+  options->domain_lo[2]  = 0.0;
+  options->domain_hi[0]  = 1.0; // 2*PETSC_PI;
+  options->domain_hi[1]  = 1.0;
+  options->domain_hi[2]  = 1.0;
+  options->boundary[0]= DM_BOUNDARY_NONE; /* PERIODIC (plotting does not work in parallel, moments not conserved) */
+  options->boundary[1]= DM_BOUNDARY_NONE; /* Neumann */
+  options->boundary[2]= DM_BOUNDARY_NONE;
+  options->particles_cell = 0; /* > 0 for grid of particles, 0 for quadrature points */
+  options->k = 1;
   ierr = PetscStrcpy(options->meshFilename, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");CHKERRQ(ierr);
@@ -35,6 +77,37 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex2.c", options->meshFilename, options->meshFilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-faces", "Number of faces per edge if unit square/cube generated", "ex2.c", options->faces, &options->faces, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-k", "Mode number of test", "ex2.c", options->k, &options->k, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-particles_cell", "Number of particles per cell", "ex2.c", options->particles_cell, &options->particles_cell, NULL);CHKERRQ(ierr);
+  if (options->simplex && options->particles_cell > 1) options->particles_cell = 1; /* triangles can have only one particle */
+  ierr = PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particle_perturbation, &options->particle_perturbation, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mesh_perturbation", "Relative perturbation of mesh points (0,1)", "ex2.c", options->mesh_perturbation, &options->mesh_perturbation, NULL);CHKERRQ(ierr);
+  ii = options->dim;
+  ierr = PetscOptionsRealArray("-domain_hi", "Domain size", "ex2.c", options->domain_hi, &ii, NULL);CHKERRQ(ierr);
+  ii = options->dim;
+  ierr = PetscOptionsRealArray("-domain_lo", "Domain size", "ex2.c", options->domain_lo, &ii, NULL);CHKERRQ(ierr);
+  ii = options->dim;
+  bd = options->boundary[0];
+  ierr = PetscOptionsEList("-x_boundary", "The x-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[0]], &bd, NULL);CHKERRQ(ierr);
+  options->boundary[0] = (DMBoundaryType) bd;
+  bd = options->boundary[1];
+  ierr = PetscOptionsEList("-y_boundary", "The y-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[1]], &bd, NULL);CHKERRQ(ierr);
+  options->boundary[1] = (DMBoundaryType) bd;
+  bd = options->boundary[2];
+  ierr = PetscOptionsEList("-z_boundary", "The z-boundary", "ex2.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->boundary[2]], &bd, NULL);CHKERRQ(ierr);
+  options->boundary[2] = (DMBoundaryType) bd;
+  ierr = PetscOptionsString("-function", "Name of test function", "ex2.c", fstring, fstring, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscStrcmp(fstring, "linear", &flag);CHKERRQ(ierr);
+  if (flag) {
+    options->func = linear;
+  } else {
+    ierr = PetscStrcmp(fstring, "sin", &flag);CHKERRQ(ierr);
+    if (flag) {
+      options->func = sinx;
+    } else {
+      options->func = x2_x4;
+    }
+  }
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -93,6 +166,7 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe,"fe");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   /* Setup to form mass matrix */
   ierr = PetscDSSetJacobian(prob, 0, 0, identity, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -129,7 +203,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
     ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
     cellid[c] = c;
     for (d = 0; d < dim; ++d) coords[c*dim+d] = centroid[d];
-    linear(dim, 0.0, &coords[c*dim], 1, &vals[c], NULL);
+    user->func(dim, 0.0, &coords[c*dim], 1, &vals[c], user);
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
@@ -258,6 +332,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   ierr = KSPSetOperators(ksp, M, M);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs, fhat);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fhat,"fhat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);

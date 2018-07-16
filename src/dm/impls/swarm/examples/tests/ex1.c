@@ -1,4 +1,4 @@
-static char help[] = "Tests projection with DMSwarm.\n";
+static char help[] = "Tests projection with DMSwarm using general particle shapes.\n";
 
 #include <petsc/private/dmswarmimpl.h>
 #include <petsc/private/petscfeimpl.h>
