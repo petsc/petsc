@@ -329,7 +329,19 @@ int main (int argc, char * argv[]) {
     args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
 
   test:
+    suffix: proj_tri_2_faces
+    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+
+  test:
     suffix: proj_quad_0
     args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
-
+ 
+  test:
+    suffix: proj_tri_quad_order_3_0
+    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+ 
+  test:
+    suffix: proj_quad_order_3_0
+    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+ 
 TEST*/
