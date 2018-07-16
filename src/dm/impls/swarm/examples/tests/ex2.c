@@ -1,4 +1,4 @@
-static char help[] = "Tests L2 projection with DMSwarm.\n";
+static char help[] = "Tests L2 projection with DMSwarm using delta function particles.\n";
 
 #include <petscdmplex.h>
 #include <petscdmswarm.h>
