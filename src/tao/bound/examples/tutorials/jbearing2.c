@@ -561,6 +561,6 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
    test:
      suffix: 18
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type none
-     requires: !single!
+     requires: !single
 
 TEST*/
