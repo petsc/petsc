@@ -1040,7 +1040,7 @@ static PetscErrorCode MatGetArray_HYPRE(Mat A, PetscInt size, void **array)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatRestoreArray_HYPRE(Mat A, PetscInt size, void **array)
+static PetscErrorCode MatRestoreArray_HYPRE(Mat A, void **array)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
 
@@ -1063,7 +1063,6 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
 
   PetscFunctionBegin;
   ierr = MatGetArray_HYPRE(A,sizeof(PetscInt)*(2*nc)+sizeof(PetscScalar)*nc*nr,&array);CHKERRQ(ierr);
-  ierr = PetscMemzero(array,sizeof(PetscInt)*(2*nc)+sizeof(PetscScalar)*nc*nr);CHKERRQ(ierr);
   cscr[0] = (PetscInt*)array;
   cscr[1] = ((PetscInt*)array)+nc;
   sscr = (PetscScalar*)(((PetscInt*)array)+nc*2);
@@ -1074,7 +1073,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
     }
   }
   if (!nzc) {
-    ierr = MatRestoreArray_HYPRE(A,sizeof(PetscInt)*(2*nc)+sizeof(PetscScalar)*nc*nr,&array);CHKERRQ(ierr);
+    ierr = MatRestoreArray_HYPRE(A,&array);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1105,7 +1104,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
     }
   }
 
-  ierr = MatRestoreArray_HYPRE(A,sizeof(PetscInt)*(2*nc)+sizeof(PetscScalar)*nc*nr,&array);CHKERRQ(ierr);
+  ierr = MatRestoreArray_HYPRE(A,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
