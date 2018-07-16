@@ -2,9 +2,13 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
 
 /*
    See ex5.c for details on the equation.
-   This code demonestrates the TSAdjoint interface to a system of time-dependent partial differential equations.
-   It computes the sensitivity of a component in the final solution, which locates in the center of the 2D domain, w.r.t. the initial conditions.
-   The user does not need to provide any additional functions. The required functions in the original simultion are resued in the adjoint run.
+   This code demonestrates the TSAdjoint/TAO interface to solve an inverse initial value problem built on a system of
+   time-dependent partial differential equations.
+   In this problem, the initial value for the PDE is unknown, but the output (the final solution of the PDE) is known.
+   We want to determine the initial value that can produce the given output.
+   We formulate the problem as a nonlinear optimization problem that minimizes the discrepency between the simulated
+   result and given reference solution, calculate the gradient of the objective function with the discrete adjoint
+   solver, and solve the optimization problem with TAO.
 
    Runtime options:
      -forwardonly  - run only the forward simulation
@@ -57,6 +61,9 @@ PetscErrorCode ReInitializeLambda(DM da,Vec lambda,Vec U,PetscInt iob,AppCtx *ap
   PetscFunctionReturn(0);
 }
 
+/*
+   Set up a viewer that dumps data into a binary file
+ */
 PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -68,6 +75,9 @@ PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+   Generate a reference solution and save it to a binary file
+ */
 PetscErrorCode GenerateOBs(TS ts,Vec U,AppCtx *appctx)
 {
   PetscInt       iob;
