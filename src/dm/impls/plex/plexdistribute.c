@@ -1557,7 +1557,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
         ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d] Point %D RemotePoint %D Shift %D MyRank %D\n", rank, leaves ? leaves[p] : p, roots[p].index, (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]), (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size);CHKERRQ(ierr);
       }
       /* Either put in a bid or we know we own it */
-      leafNodes[p].rank  = (rank + (shift ? (PetscInt) shift[roots[p].index%numShifts] : 0))%size;
+      leafNodes[p].rank  = (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size;
       leafNodes[p].index = p;
     }
     for (p = 0; p < nroots; p++) {
