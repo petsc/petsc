@@ -4,6 +4,7 @@ static char help[] = "Tests L2 projection with DMSwarm using delta function part
 #include <petscdmswarm.h>
 #include <petscds.h>
 #include <petscksp.h>
+#include <petsc/private/petscfeimpl.h>
 
 typedef struct {
   PetscInt  dim;                              /* The topological mesh dimension */
@@ -62,14 +63,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->domain_lo[0]  = 0.0;
   options->domain_lo[1]  = 0.0;
   options->domain_lo[2]  = 0.0;
-  options->domain_hi[0]  = 1.0; // 2*PETSC_PI;
+  options->domain_hi[0]  = 2*PETSC_PI;
   options->domain_hi[1]  = 1.0;
   options->domain_hi[2]  = 1.0;
   options->boundary[0]= DM_BOUNDARY_NONE; /* PERIODIC (plotting does not work in parallel, moments not conserved) */
   options->boundary[1]= DM_BOUNDARY_NONE; /* Neumann */
   options->boundary[2]= DM_BOUNDARY_NONE;
-  options->particles_cell = 0; /* > 0 for grid of particles, 0 for quadrature points */
+  options->particles_cell = 1;
   options->k = 1;
+  options->particle_perturbation = 1.e-20;
+  options->mesh_perturbation = 1.e-20;
   ierr = PetscStrcpy(options->meshFilename, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");CHKERRQ(ierr);
@@ -113,6 +116,47 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode perturbVertices(DM dm, AppCtx *user)
+{
+  PetscErrorCode ierr;
+  Vec            coordinates;
+  PetscScalar    *coords;
+  PetscInt       i, dimEmbed, nCoords;
+  PetscRandom    rnd;
+  PetscReal      interval = user->mesh_perturbation;
+  PetscReal      hh[3];
+
+  PetscFunctionBeginUser;
+  for (i=0;i<user->dim;i++) hh[i] = (user->domain_hi[i]-user->domain_lo[i])/(user->faces-1);
+  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)dm),&rnd);CHKERRQ(ierr);
+  ierr = PetscRandomSetInterval(rnd,-interval,interval);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
+  if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+  ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+  for (i = 0; i < nCoords; i += dimEmbed) {
+    PetscInt j, pert = 1;
+    PetscScalar *coord = &coords[i];
+    for (j = 0; j < dimEmbed ; j++) {
+      if (user->domain_hi[j] == coord[j] || coord[j] == user->domain_lo[j]) pert = 0;
+    }
+    if (pert) {
+      PetscScalar value;
+      for (j = 0; j < dimEmbed ; j++) {
+        ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+        coord[j] += value*hh[j];
+      }
+    }
+  }
+  ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
   PetscBool      flg;
@@ -124,7 +168,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
     PetscInt faces[3];
 
     faces[0] = user->faces; faces[1] = user->faces; faces[2] = user->faces;
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, faces, user->domain_lo, user->domain_hi, user->boundary, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->meshFilename, PETSC_TRUE, dm);CHKERRQ(ierr);
     ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
@@ -138,6 +182,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
       *dm  = distributedMesh;
     }
   }
+  ierr = perturbVertices(*dm,user);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -177,8 +222,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
   PetscScalar   *vals;
   PetscReal     *centroid, *coords;
-  PetscInt      *cellid;
-  PetscInt       Ncell, c, dim, d;
+  PetscInt      *cellid,use_centroid = 0;
+  PetscInt       N, q, Ncell, c, dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -192,23 +237,64 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &Ncell);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(*sw, Ncell, 0);CHKERRQ(ierr);
+  if (use_centroid) {
+    q = Ncell;
+  } else {
+    N = PetscCeilReal(PetscPowReal((PetscReal)user->particles_cell,1./(PetscReal)dim));
+    user->particles_cell = PetscPowReal((PetscReal)N,(PetscReal)dim); /* change p/c to make fit */
+    q = Ncell * user->particles_cell;
+  }
+  ierr = DMSwarmSetLocalSizes(*sw, q, 0);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
-
-  ierr = PetscMalloc1(dim, &centroid);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
-  for (c = 0; c < Ncell; ++c) {
-    ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
-    cellid[c] = c;
-    for (d = 0; d < dim; ++d) coords[c*dim+d] = centroid[d];
-    user->func(dim, 0.0, &coords[c*dim], 1, &vals[c], user);
+  if (use_centroid) {
+    ierr = PetscMalloc1(dim, &centroid);CHKERRQ(ierr);
+    for (c = 0; c < Ncell; ++c) {
+      ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
+      cellid[c] = c;
+      for (d = 0; d < dim; ++d) coords[c*dim+d] = centroid[d];
+      user->func(dim, 0.0, &coords[c*dim], 1, &vals[c], user);
+    }
+    ierr = PetscFree(centroid);CHKERRQ(ierr);
+  } else {
+    PetscReal   *v0, *J, *invJ, detJ, *xi0, interval = user->particle_perturbation;
+    PetscInt    p,ii,jj,kk;
+    PetscReal   ecoord[3];
+    PetscReal   dx = 2./(PetscReal)N, dx_2 = dx/2;
+    PetscScalar value;
+    PetscRandom rnd;
+    ierr = PetscRandomCreate(PetscObjectComm((PetscObject)dm),&rnd);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(rnd,-interval,interval);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
+    if (interval>dx_2) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Perturbation %g > dx/2 %g",interval,dx_2);
+    ierr = PetscMalloc4(dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
+    for (c = 0; c < dim; c++) xi0[c] = -1.;
+    for (c = 0; c < Ncell; ++c) {
+      ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr); /* affine */
+      for ( p = kk = 0; kk < (dim==3 ? N : 1) ; kk++) {
+        ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+        ecoord[2] = kk*dx - 1 + dx_2 + value; /* regular grid on [-1,-1] */
+        for ( ii = 0; ii < N ; ii++) {
+          ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+          ecoord[0] = ii*dx - 1 + dx_2 + value; /* regular grid on [-1,-1] */
+          for ( jj = 0; jj < N ; jj++, p++) {
+            ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+            ecoord[1] = jj*dx - 1 + dx_2 + value; /* regular grid on [-1,-1] */
+            cellid[c*user->particles_cell + p] = c;
+            CoordinatesRefToReal(dim, dim, xi0, v0, J, ecoord, &coords[(c*user->particles_cell + p)*dim]);
+            user->func(dim, 0.0, &coords[(c*user->particles_cell + p)*dim], 1, &vals[c], user);
+          }
+        }
+      }
+    }
+    ierr = PetscFree4(xi0, v0, J, invJ);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
-  ierr = PetscFree(centroid);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *sw, "Particles");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*sw, NULL, "-sw_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
