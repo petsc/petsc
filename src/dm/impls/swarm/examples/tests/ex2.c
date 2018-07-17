@@ -127,7 +127,7 @@ static PetscErrorCode perturbVertices(DM dm, AppCtx *user)
   PetscReal      hh[3];
 
   PetscFunctionBeginUser;
-  for (i=0;i<user->dim;i++) hh[i] = (user->domain_hi[i]-user->domain_lo[i])/(user->faces-1);
+  for (i=0;i<user->dim;i++){ hh[i] = (user->domain_hi[i]-user->domain_lo[i])/(user->faces); }
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)dm),&rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rnd,-interval,interval);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
@@ -151,9 +151,9 @@ static PetscErrorCode perturbVertices(DM dm, AppCtx *user)
     }
   }
   ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
-
+  ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -182,8 +182,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
       *dm  = distributedMesh;
     }
   }
-  ierr = perturbVertices(*dm,user);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = perturbVertices(*dm,user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -410,6 +411,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   ierr = MatMult(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
   ierr = VecViewFromOptions(rhs, NULL, "-rhs_view");CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
