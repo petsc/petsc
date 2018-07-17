@@ -2222,6 +2222,8 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   ierr = PetscOptionsInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMView", 0, &mesh->printL2, NULL);CHKERRQ(ierr);
   /* Point Location */
   ierr = PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMView", PETSC_FALSE, &mesh->useHashLocation, NULL);CHKERRQ(ierr);
+  /* Partitioning and distribution */
+  ierr = PetscOptionsBool("-dm_plex_partition_balance", "Attempt to evenly divide points on partition boundary between processes", "DMPlexSetPartitionBalance", PETSC_FALSE, &mesh->partitionBalance, NULL);CHKERRQ(ierr);
   /* Generation and remeshing */
   ierr = PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMView", PETSC_FALSE, &mesh->remeshBd, NULL);CHKERRQ(ierr);
   /* Projection behavior */

@@ -146,6 +146,7 @@ typedef struct {
   char                *tetgenOpts;
   char                *triangleOpts;
   PetscPartitioner     partitioner;
+  PetscBool            partitionBalance;  /* Evenly divide partition overlap when distributing */
   PetscBool            remeshBd;
 
   /* Submesh */
