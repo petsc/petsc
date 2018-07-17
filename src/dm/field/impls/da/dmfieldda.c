@@ -402,7 +402,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
 
   PetscFunctionBegin;
   dm = field->dm;
-  ierr = ISGetMinMax(cellIS,&imax,&imin);CHKERRQ(ierr);
+  ierr = ISGetMinMax(cellIS,&imin,&imax);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   *quad = NULL;
   for (h = 0; h <= dim; h++) {
@@ -456,7 +456,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       }
     }
     ierr = VecRestoreArrayRead(coords,&array);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((PetscReal *) mins,&(dafield->coordRange[0][0]),2*dim,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (j = 0; j < dim; j++) {
       dafield->coordRange[j][1] = -dafield->coordRange[j][1];
     }

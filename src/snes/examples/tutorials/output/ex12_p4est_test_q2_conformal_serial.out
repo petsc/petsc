@@ -457,7 +457,7 @@ Vec Object: Residual, Iterate 0 1 MPI processes
 0.
 L_2 Residual: 0.
 Au - b = Au + F(0)
-Vec Object: Solution, Iterate 0 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.
 0.

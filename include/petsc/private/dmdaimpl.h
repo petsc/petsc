@@ -47,6 +47,7 @@ typedef struct {
 
   DMDAElementType       elementtype;
   PetscInt              ne;                  /* number of elements */
+  PetscInt              nen;                 /* number of nodes per element */
   PetscInt              *e;                  /* the elements */
   IS                    ecorners;            /* corners of the subdomain */
 

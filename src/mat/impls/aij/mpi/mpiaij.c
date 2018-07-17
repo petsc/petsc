@@ -122,9 +122,11 @@ PetscErrorCode  MatDiagonalSet_MPIAIJ(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*) Y->data;
+  PetscBool         cong;
 
   PetscFunctionBegin;
-  if (Y->assembled && Y->rmap->rstart == Y->cmap->rstart && Y->rmap->rend == Y->cmap->rend) {
+  ierr = MatHasCongruentLayouts(Y,&cong);CHKERRQ(ierr);
+  if (Y->assembled && cong) {
     ierr = MatDiagonalSet(aij->A,D,is);CHKERRQ(ierr);
   } else {
     ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
@@ -774,6 +776,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
   PetscInt      *lrows;
   PetscInt       r, len;
+  PetscBool      cong;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -792,13 +795,8 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   }
   /* Must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
-  if (A->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
-    PetscBool cong;
-    ierr = PetscLayoutCompare(A->rmap,A->cmap,&cong);CHKERRQ(ierr);
-    if (cong) A->congruentlayouts = 1;
-    else      A->congruentlayouts = 0;
-  }
-  if ((diag != 0.0) && A->congruentlayouts) {
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
+  if ((diag != 0.0) && cong) {
     ierr = MatZeroRows(mat->A, len, lrows, diag, NULL, NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
@@ -4322,7 +4320,7 @@ PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[]
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscBool      flg;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
@@ -5047,7 +5045,10 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  if (!col) { /* attach global id of condensed columns */
+    ierr = PetscObjectCompose((PetscObject)aloc[0],"_petsc_GetLocalMatCondensed_iscol",(PetscObject)iscola);CHKERRQ(ierr);
+  }
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
@@ -5434,7 +5435,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
@@ -5571,7 +5572,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_MPIAIJ_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisell_C",MatConvert_MPIAIJ_MPISELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);

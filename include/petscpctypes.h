@@ -70,6 +70,7 @@ typedef const char* PCType;
 #define PCKACZMARZ        "kaczmarz"
 #define PCTELESCOPE       "telescope"
 #define PCPATCH           "patch"
+#define PCLMVM            "lmvm"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

@@ -13,7 +13,6 @@ if __name__ == '__main__':
 
     '--with-cudac=win32fe nvcc',
     '--with-cuda=1',
-    '--with-cusp=1',
     '--with-cuda-arch=sm_12',
     '--with-precision=single',
   ]

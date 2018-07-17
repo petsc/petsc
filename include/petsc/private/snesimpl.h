@@ -1,4 +1,3 @@
-
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 
@@ -144,7 +143,7 @@ struct _p_SNES {
   /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
   PetscReal   ttol;              /* rtol*initial_residual_norm */
   PetscReal   rnorm0;            /* initial residual norm (used for divergence testing) */
-  
+
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
 
@@ -263,8 +262,8 @@ PETSC_EXTERN PetscLogEvent SNES_NGSFuncEval;
 PETSC_EXTERN PetscLogEvent SNES_NPCSolve;
 PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 
-extern PetscBool SNEScite;
-extern const char SNESCitation[];
+PETSC_INTERN PetscBool SNEScite;
+PETSC_INTERN const char SNESCitation[];
 
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf

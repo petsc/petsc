@@ -290,6 +290,10 @@ M*/
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table entries
 
+  Level: developer
+
+  Concepts: hash table, set
+
 .keywords: hash table, set, array
 .seealso: PetscHSetTGetSize()
 M*/

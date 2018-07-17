@@ -51,10 +51,14 @@ typedef const char *TaoType;
 #define TAOOWLQN    "owlqn"
 #define TAOBMRM     "bmrm"
 #define TAOBLMVM    "blmvm"
+#define TAOBQNLS    "bqnls"
 #define TAOBNCG     "bncg"
 #define TAOBNLS     "bnls"
 #define TAOBNTR     "bntr"
 #define TAOBNTL     "bntl"
+#define TAOBQNKLS   "bqnkls"
+#define TAOBQNKTR   "bqnktr"
+#define TAOBQNKTL   "bqnktl"
 #define TAOBQPIP    "bqpip"
 #define TAOGPCG     "gpcg"
 #define TAONM       "nm"
@@ -134,6 +138,7 @@ PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetGradientNorm(Tao, Mat);
 PETSC_EXTERN PetscErrorCode TaoGetGradientNorm(Tao, Mat*);
+PETSC_EXTERN PetscErrorCode TaoGetLMVMMatrix(Tao, Mat*);
 PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao, Mat);
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao, Mat*);
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao, KSP*);

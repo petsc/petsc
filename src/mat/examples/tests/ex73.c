@@ -27,7 +27,7 @@ int main(int argc,char **args)
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
-  PetscBool       flg,viewMats,viewIS,viewVecs;
+  PetscBool       flg,viewMats,viewIS,viewVecs,useND,noVecLoad = PETSC_FALSE;
   PetscInt        ierr,*nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;
@@ -41,6 +41,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-view_is", &viewIS);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-use_nd", &useND);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-novec_load", &noVecLoad);CHKERRQ(ierr);
 
   /*
      Determine file from which we read the matrix
@@ -59,15 +61,20 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
-  ierr = VecLoad(xin,fd);CHKERRQ(ierr);
+  if (!noVecLoad) {
+    ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
+    ierr = VecLoad(xin,fd);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateVecs(A,&xin,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(xin,NULL);CHKERRQ(ierr);
+  }
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (viewMats) {
-    if (!rank) printf("Original matrix:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Original matrix:\n");CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
   if (viewVecs) {
-    if (!rank) printf("Original vector:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Original vector:\n");CHKERRQ(ierr);
     ierr = VecView(xin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -77,16 +84,20 @@ int main(int argc,char **args)
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
 
   /* get new processor owner number of each vertex */
-  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  if (useND) {
+    ierr = MatPartitioningApplyND(part,&is);CHKERRQ(ierr);
+  } else {
+    ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+  }
   if (viewIS) {
-    if (!rank) printf("IS1 - new processor ownership:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"IS1 - new processor ownership:\n");CHKERRQ(ierr);
     ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   if (viewIS) {
-    if (!rank) printf("IS2 - new global numbering:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"IS2 - new global numbering:\n");CHKERRQ(ierr);
     ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -96,19 +107,22 @@ int main(int argc,char **args)
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* get old global number of each new global number */
-  ierr = ISInvertPermutation(isn,nlocal[rank],&is);CHKERRQ(ierr);
-  ierr = PetscFree(nlocal);CHKERRQ(ierr);
-  ierr = ISDestroy(&isn);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(isn,useND ? PETSC_DECIDE : nlocal[rank],&is);CHKERRQ(ierr);
   if (viewIS) {
-    if (!rank) printf("IS3=inv(IS2) - old global number of each new global number:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"IS3=inv(IS2) - old global number of each new global number:\n");CHKERRQ(ierr);
     ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* move the matrix rows to the new processes they have been assigned to by the permutation */
-  ierr = ISSort(is);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = PetscFree(nlocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isn);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+  if (viewMats) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Partitioned matrix:\n");CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
 
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
@@ -117,15 +131,12 @@ int main(int argc,char **args)
   ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  if (viewMats) {
-    if (!rank) printf("Partitioned matrix:\n");
-    ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
   if (viewVecs) {
-    if (!rank) printf("Mapped vector:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Mapped vector:\n");CHKERRQ(ierr);
     ierr = VecView(xout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&xout);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   {
     PetscInt          rstart,i,*nzd,*nzo,nzl,nzmax = 0,*ncols,nrow,j;
@@ -172,7 +183,7 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (viewMats) {
-      if (!rank) printf("Jacobian matrix structure:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Jacobian matrix structure:\n");CHKERRQ(ierr);
       ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&J);CHKERRQ(ierr);
@@ -185,7 +196,6 @@ int main(int argc,char **args)
   */
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&xin);CHKERRQ(ierr);
-  ierr = VecDestroy(&xout);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -195,6 +205,34 @@ int main(int argc,char **args)
    test:
       nsize: 3
       requires: parmetis datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info
+      args: -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info -novec_load
+
+   test:
+      requires: parmetis !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex73_1.out
+      suffix: parmetis_nd_32
+      nsize: 3
+      args: -nox -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -mat_partitioning_type parmetis -viewer_binary_skip_info -use_nd -novec_load
+
+   test:
+      requires: parmetis !complex double define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex73_1.out
+      suffix: parmetis_nd_64
+      nsize: 3
+      args: -nox -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int64-float64 -mat_partitioning_type parmetis -viewer_binary_skip_info -use_nd -novec_load
+
+   test:
+      requires: ptscotch !complex double !define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+      output_file: output/ex73_1.out
+      suffix: ptscotch_nd_32
+      nsize: 4
+      args: -nox -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -mat_partitioning_type ptscotch -viewer_binary_skip_info -use_nd -novec_load
+
+   test:
+      requires: ptscotch !complex double define(PETSC_USE_64BIT_INDICES) define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+      output_file: output/ex73_1.out
+      suffix: ptscotch_nd_64
+      nsize: 4
+      args: -nox -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int64-float64 -mat_partitioning_type ptscotch -viewer_binary_skip_info -use_nd -novec_load
 
 TEST*/

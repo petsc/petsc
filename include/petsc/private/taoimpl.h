@@ -1,10 +1,11 @@
 #ifndef __TAO_IMPL_H
 #define __TAO_IMPL_H
 
+#include <petsctao.h>
 #include <petsctaolinesearch.h>
 #include <petsc/private/petscimpl.h>
-#include <petscksp.h>
 
+PETSC_EXTERN PetscBool TaoRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
 
 typedef struct _TaoOps *TaoOps;
@@ -162,6 +163,7 @@ struct _p_Tao {
     PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
+    PetscBool bounded;
 
     TaoSubsetType subset_type;
     PetscInt      hist_max;/* Number of iteration histories to keep */
@@ -174,7 +176,13 @@ struct _p_Tao {
     PetscBool     hist_malloc;
 };
 
-extern PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_ObjGradientEval, Tao_GradientEval, Tao_HessianEval, Tao_ConstraintsEval, Tao_JacobianEval;
+PETSC_EXTERN PetscLogEvent TAO_Solve;
+PETSC_EXTERN PetscLogEvent TAO_ObjectiveEval;
+PETSC_EXTERN PetscLogEvent TAO_GradientEval;
+PETSC_EXTERN PetscLogEvent TAO_ObjGradEval;
+PETSC_EXTERN PetscLogEvent TAO_HessianEval;
+PETSC_EXTERN PetscLogEvent TAO_ConstraintsEval;
+PETSC_EXTERN PetscLogEvent TAO_JacobianEval;
 
 PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, PetscReal resid, PetscReal cnorm, PetscInt totits)
 {

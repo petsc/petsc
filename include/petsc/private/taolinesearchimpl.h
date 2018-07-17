@@ -63,5 +63,6 @@ struct _p_TaoLineSearch {
     Tao tao;
 };
 
-extern PetscLogEvent TaoLineSearch_ApplyEvent, TaoLineSearch_EvalEvent;
+PETSC_EXTERN PetscLogEvent TAOLINESEARCH_Apply;
+PETSC_EXTERN PetscLogEvent TAOLINESEARCH_Eval;
 #endif

@@ -5,32 +5,42 @@ Context for bounded Newton-Krylov type optimization algorithms
 #if !defined(__TAO_BNK_H)
 #define __TAO_BNK_H
 #include <petsc/private/taoimpl.h>
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/bound/impls/bncg/bncg.h>
 
 typedef struct {
+  /* Function pointer for hessian evaluation
+     NOTE: This is necessary so that quasi-Newton-Krylov methods can "evaluate"
+     a quasi-Newton approximation while full Newton-Krylov methods call-back to
+     the application's Hessian */
+  PetscErrorCode (*computehessian)(Tao);
+  PetscErrorCode (*computestep)(Tao, PetscBool, KSPConvergedReason*, PetscInt*);
+
   /* Embedded TAOBNCG */
   Tao bncg;
   TAO_BNCG *bncg_ctx;
   PetscInt max_cg_its, tot_cg_its;
   Vec bncg_sol;
-  
+
   /* Allocated vectors */
   Vec W, Xwork, Gwork, Xold, Gold;
   Vec unprojected_gradient, unprojected_gradient_old;
-  Vec Diag_min, Diag_max;
-  
+
   /* Unallocated matrices and vectors */
-  Mat H_inactive, Hpre_inactive, M;
-  Vec Diag, Diag_red, X_inactive, G_inactive, inactive_work, active_work;
+  Mat H_inactive, Hpre_inactive;
+  Vec X_inactive, G_inactive, inactive_work, active_work;
   IS  inactive_idx, active_idx, active_lower, active_upper, active_fixed;
-  
+
   /* Scalar values for the solution and step */
   PetscReal fold, f, gnorm, dnorm;
-  
+
   /* Parameters for active set estimation */
   PetscReal as_tol;
   PetscReal as_step;
+
+  /* BFGS preconditioner data */
+  PC bfgs_pre;
+  Mat M;
+  Vec Diag_min, Diag_max;
 
   /* Parameters when updating the perturbation added to the Hessian matrix
      according to the following scheme:
@@ -179,8 +189,7 @@ typedef struct {
   PetscInt sgrad;               /*  Scaled gradient directions attempted */
   PetscInt grad;                /*  Gradient directions attempted */
 
-  PetscInt as_type;             /*   Active set estimation method */
-  PetscInt pc_type;             /*  Preconditioner for the code */
+  PetscInt as_type;             /*  Active set estimation method */
   PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /*  Trust-region initialization method */
   PetscInt update_type;         /*  Trust-region update method */
@@ -194,25 +203,15 @@ typedef struct {
   PetscInt ksp_iter;
   PetscInt ksp_othr;
   PetscBool is_nash, is_stcg, is_gltr;
-} TAO_BNK;
 
-#endif /* if !defined(__TAO_BNK_H) */
+  /* Implementation specific context */
+  void* ctx;
+} TAO_BNK;
 
 #define BNK_NEWTON              0
 #define BNK_BFGS                1
 #define BNK_SCALED_GRADIENT     2
 #define BNK_GRADIENT            3
-
-#define BNK_PC_NONE     0
-#define BNK_PC_AHESS    1
-#define BNK_PC_BFGS     2
-#define BNK_PC_PETSC    3
-#define BNK_PC_TYPES    4
-
-#define BFGS_SCALE_AHESS        0
-#define BFGS_SCALE_PHESS        1
-#define BFGS_SCALE_BFGS         2
-#define BFGS_SCALE_TYPES        3
 
 #define BNK_INIT_CONSTANT         0
 #define BNK_INIT_DIRECTION        1
@@ -230,16 +229,25 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
+PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems*, Tao);
+PETSC_INTERN PetscErrorCode TaoDestroy_BNK(Tao);
+PETSC_INTERN PetscErrorCode TaoView_BNK(Tao, PetscViewer);
 
-PETSC_INTERN PetscErrorCode MatLMVMSolveShell(PC, Vec, Vec);
+PETSC_INTERN PetscErrorCode TaoSolve_BNLS(Tao);
+PETSC_INTERN PetscErrorCode TaoSolve_BNTR(Tao);
+PETSC_INTERN PetscErrorCode TaoSolve_BNTL(Tao);
+
+PETSC_INTERN PetscErrorCode TaoBNKPreconBFGS(PC, Vec, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKInitialize(Tao, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKEstimateActiveSet(Tao, PetscInt);
 PETSC_INTERN PetscErrorCode TaoBNKComputeHessian(Tao);
 PETSC_INTERN PetscErrorCode TaoBNKBoundStep(Tao, PetscInt, Vec);
 PETSC_INTERN PetscErrorCode TaoBNKTakeCGSteps(Tao, PetscBool*);
-PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*);
+PETSC_INTERN PetscErrorCode TaoBNKComputeStep(Tao, PetscBool, KSPConvergedReason*, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKRecomputePred(Tao, Vec, PetscReal*);
 PETSC_INTERN PetscErrorCode TaoBNKSafeguardStep(Tao, KSPConvergedReason, PetscInt*);
 PETSC_INTERN PetscErrorCode TaoBNKPerformLineSearch(Tao, PetscInt*, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_INTERN PetscErrorCode TaoBNKUpdateTrustRadius(Tao, PetscReal, PetscReal, PetscInt, PetscInt, PetscBool*);
 PETSC_INTERN PetscErrorCode TaoBNKAddStepCounts(Tao, PetscInt);
+
+#endif /* if !defined(__TAO_BNK_H) */

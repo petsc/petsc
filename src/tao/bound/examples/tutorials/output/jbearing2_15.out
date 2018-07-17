@@ -1,0 +1,32 @@
+
+---- Journal Bearing Problem SHB-----
+mx: 8,  my: 12,  ecc: 0.1 
+
+iter =   0, Function value 0., Residual: 1.11613 
+iter =   1, Function value -0.148934, Residual: 0.469316 
+iter =   2, Function value -0.164956, Residual: 0.394366 
+iter =   3, Function value -0.173793, Residual: 0.228735 
+iter =   4, Function value -0.17709, Residual: 0.274004 
+iter =   5, Function value -0.181299, Residual: 0.0944777 
+iter =   6, Function value -0.182405, Residual: 0.0809047 
+iter =   7, Function value -0.182882, Residual: 0.038546 
+iter =   8, Function value -0.183069, Residual: 0.0347997 
+iter =   9, Function value -0.183319, Residual: 0.0224442 
+iter =  10, Function value -0.18337, Residual: 0.013827 
+iter =  11, Function value -0.183395, Residual: 0.009429 
+iter =  12, Function value -0.183418, Residual: 0.00816837 
+iter =  13, Function value -0.183421, Residual: 0.0116866 
+iter =  14, Function value -0.183428, Residual: 0.00542286 
+iter =  15, Function value -0.183432, Residual: 0.00363874 
+iter =  16, Function value -0.183434, Residual: 0.00261747 
+iter =  17, Function value -0.183436, Residual: 0.00212211 
+iter =  18, Function value -0.183437, Residual: 0.00156708 
+iter =  19, Function value -0.183437, Residual: 0.00194073 
+iter =  20, Function value -0.183437, Residual: 0.000898956 
+iter =  21, Function value -0.183437, Residual: 0.00104613 
+iter =  22, Function value -0.183437, Residual: 0.000696357 
+iter =  23, Function value -0.183437, Residual: 0.000408476 
+iter =  24, Function value -0.183437, Residual: 0.000224259 
+iter =  25, Function value -0.183437, Residual: 0.000183638 
+iter =  26, Function value -0.183437, Residual: 0.000123041 
+iter =  27, Function value -0.183437, Residual: 7.52435e-05 

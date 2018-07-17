@@ -7,11 +7,12 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
-PETSC_EXTERN PetscErrorCode PetscLogInitialize(void);
-PETSC_EXTERN PetscErrorCode PetscLogFinalize(void);
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
+PETSC_INTERN PetscFPT PetscFPTData;
 PetscFPT PetscFPTData = 0;
 #endif
 
@@ -20,14 +21,14 @@ PetscFPT PetscFPTData = 0;
 #endif
 /* -----------------------------------------------------------------------------------------*/
 
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
-extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
-extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
-extern PetscErrorCode PetscFunctionListPrintAll(void);
-extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
-extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-extern PetscErrorCode PetscCloseHistoryFile(FILE**);
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
+PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
+PETSC_INTERN PetscErrorCode PetscFunctionListPrintAll(void);
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE**);
 
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
@@ -61,14 +62,14 @@ PetscSpinlock PetscCommSpinLock;
        Checks the options database for initializations related to the
     PETSc components
 */
-PetscErrorCode  PetscOptionsCheckInitial_Components(void)
+PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
-  PetscBool      flg1;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
+  if (flg) {
 #if defined(PETSC_USE_LOG)
     MPI_Comm comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
@@ -166,7 +167,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
   return 0;
 }
 
-extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
 
 /*
        This function is the MPI reduction operation used to compute the sum of the
@@ -379,6 +380,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 
+PETSC_INTERN int  PetscGlobalArgc;
+PETSC_INTERN char **PetscGlobalArgs;
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList;
@@ -391,6 +394,44 @@ PetscErrorCode PetscCitationsInitialize(void)
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley and Dave A. May and Lois Curfman McInnes\n            and Richard Tran Mills and Todd Munson and Karl Rupp and Patrick Sanan\n            and Barry F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.9},\n  Institution = {Argonne National Laboratory},\n  Year = {2018}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
+
+PetscErrorCode  PetscSetProgramName(const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr  = PetscStrncpy(programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscGetProgramName - Gets the name of the running program.
+
+    Not Collective
+
+    Input Parameter:
+.   len - length of the string name
+
+    Output Parameter:
+.   name - the name of the running program
+
+   Level: advanced
+
+    Notes:
+    The name of the program is copied into the user-provided character
+    array of length len.  On some machines the program name includes
+    its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
+@*/
+PetscErrorCode  PetscGetProgramName(char name[],size_t len)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+   ierr = PetscStrncpy(name,programname,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -452,12 +493,12 @@ PetscErrorCode  PetscGetArguments(char ***args)
 
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
-  if (!argc) {*args = 0; PetscFunctionReturn(0);}
+  if (!argc) {*args = NULL; PetscFunctionReturn(0);}
   ierr = PetscMalloc1(argc,args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
   }
-  (*args)[argc-1] = 0;
+  (*args)[argc-1] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -494,7 +535,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscconfiginfo.h>
 
-PetscErrorCode  PetscInitializeSAWs(const char help[])
+PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 {
   if (!PetscGlobalRank) {
     char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline,*options,version[64];
@@ -669,6 +710,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+.  -viewfromoptions on,off - Enable or disable XXXSetFromOptions() calls, for applications with many small solves turn this off
 -  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
     Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
@@ -722,9 +764,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
-#if defined(PETSC_HAVE_HWLOC)
-  PetscViewer    viewer;
-#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -933,7 +972,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
      Print main application help message
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
@@ -976,12 +1015,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscInitializeCalled = PETSC_TRUE;
-    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-  }
-
   /*
       Setup building of stack frames for all function calls
   */
@@ -994,23 +1027,35 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
 #if defined(PETSC_HAVE_HWLOC)
-  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+  {
+    PetscViewer viewer;
+    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
   }
 #endif
+
+  flg = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE); CHKERRQ(ierr);}
 
   /*
       Once we are completedly initialized then we can set this variables
   */
   PetscInitializeCalled = PETSC_TRUE;
+
+  ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_USE_LOG)
-extern PetscObject *PetscObjects;
-extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
-extern PetscBool   PetscObjectsLog;
+PETSC_INTERN PetscObject *PetscObjects;
+PETSC_INTERN PetscInt    PetscObjectsCounts;
+PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
+PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
 /*
@@ -1224,7 +1269,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
+  ierr = PetscOptionsPushGetViewerOff(PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
+  ierr = PetscOptionsPopGetViewerOff();CHKERRQ(ierr);
+
   mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -1250,10 +1298,7 @@ PetscErrorCode  PetscFinalize(void)
   mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
-    if (mname[0]) PetscLogDump(mname);
-    else          PetscLogDump(0);
-  }
+  if (flg1 || flg2) {ierr = PetscLogDump(mname);CHKERRQ(ierr);}
 #endif
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);

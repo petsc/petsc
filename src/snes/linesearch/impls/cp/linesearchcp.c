@@ -93,6 +93,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     }
     /* if the solve is going in the wrong direction, fix it */
     if (PetscRealPart(s) > 0.) s = -s;
+    if (s == 0.0) break;
     lambda_update =  lambda - PetscRealPart(fty / s);
 
     /* switch directions if we stepped out of bounds */

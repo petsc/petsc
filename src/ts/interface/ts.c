@@ -1901,9 +1901,6 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    PetscInt    tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)ts)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
     if (ts->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -1946,7 +1943,6 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
     ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);

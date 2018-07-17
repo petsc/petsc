@@ -28,7 +28,6 @@ typedef const char* DMType;
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
 #define DMPLEX      "plex"
-#define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
@@ -277,4 +276,6 @@ PETSC_EXTERN PetscErrorCode DMComputeL2FieldDiff(DM,PetscReal,PetscErrorCode(**)
 
 PETSC_EXTERN PetscErrorCode DMGetNullSpaceConstructor(DM, PetscInt, PetscErrorCode (**)(DM, PetscInt, MatNullSpace *));
 PETSC_EXTERN PetscErrorCode DMSetNullSpaceConstructor(DM, PetscInt, PetscErrorCode (*)(DM, PetscInt, MatNullSpace *));
+
+PETSC_EXTERN PetscErrorCode DMGetCompatibility(DM,DM,PetscBool*,PetscBool*);
 #endif

@@ -183,7 +183,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortr
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 
 
@@ -896,11 +895,15 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
+PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 #endif
 #endif
+
+PETSC_EXTERN PetscLogEvent PETSC_Barrier;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
 
 #endif /* _PETSCHEAD_H */

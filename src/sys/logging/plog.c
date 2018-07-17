@@ -95,7 +95,7 @@ char             petsc_tracespace[128]       = " ";
 PetscLogDouble   petsc_tracetime             = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
-PETSC_EXTERN PetscErrorCode PetscLogInitialize(void)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
 {
   int            stage;
   PetscBool      opt;
@@ -128,7 +128,7 @@ PETSC_EXTERN PetscErrorCode PetscLogInitialize(void)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscLogFinalize(void)
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 {
   PetscStageLog  stageLog;
   PetscErrorCode ierr;
@@ -1085,7 +1085,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
   _TotalTime -= petsc_BaseTime;
   /* Open log file */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  if (sname) sprintf(file, "%s.%d", sname, rank);
+  if (sname && sname[0]) sprintf(file, "%s.%d", sname, rank);
   else sprintf(file, "Log.%d", rank);
   ierr = PetscFixFilename(file, fname);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
@@ -1587,6 +1587,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         }
       }
     } else {
+      if (!localStageVisible[stage]) continue;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage);CHKERRQ(ierr);
     }
   }

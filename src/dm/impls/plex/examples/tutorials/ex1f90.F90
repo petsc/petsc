@@ -2,6 +2,7 @@
 #include "petsc/finclude/petscdmplex.h"
 #include "petsc/finclude/petscdmlabel.h"
       use petscdmplex
+      use petscsys
       implicit none
 
       DM :: dm
@@ -22,7 +23,7 @@
       IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
       IS, pointer :: pBcPointIS(:)
-      PetscBool :: interpolate
+      PetscBool :: interpolate,flg
       PetscErrorCode :: ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
@@ -31,7 +32,7 @@
         stop
       endif
       dim = 2
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-dim', dim,PETSC_NULL_BOOL, ierr);CHKERRA(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-dim', dim,flg, ierr);CHKERRA(ierr)
       interpolate = PETSC_TRUE
 !     Create a mesh
       call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, PETSC_NULL_INTEGER, PETSC_NULL_REAL, PETSC_NULL_REAL, PETSC_NULL_INTEGER, interpolate, dm, ierr);CHKERRA(ierr)

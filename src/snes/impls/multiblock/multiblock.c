@@ -562,7 +562,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
     SNESCheckFunctionNorm(snes,fnorm);
 
-    if (snes->nfuncs >= snes->max_funcs) {
+    if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >=0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
     }

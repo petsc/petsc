@@ -88,6 +88,13 @@ typedef const char* MatType;
 #define MATSEQSELL         "seqsell"
 #define MATMPISELL         "mpisell"
 #define MATDUMMY           "dummy"
+#define MATLMVM            "lmvm"
+#define MATLMVMDFP         "lmvmdfp"
+#define MATLMVMBFGS        "lmvmbfgs"
+#define MATLMVMSR1         "lmvmsr1"
+#define MATLMVMBRDN        "lmvmbrdn"
+#define MATLMVMBADBRDN     "lmvmbadbrdn"
+#define MATLMVMSYMBRDN     "lmvmsymbrdn"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -213,6 +220,7 @@ typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATT
 PETSC_EXTERN PetscErrorCode MatCreateBAIJMKL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A);
 #endif
+
 PETSC_EXTERN PetscErrorCode MatCreateSeqSELL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSELL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatSeqSELLSetPreallocation(Mat,PetscInt,const PetscInt[]);
@@ -422,6 +430,7 @@ PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMatSolveTranspose(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMatTransposeSolve(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
@@ -1334,6 +1343,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
+PETSC_EXTERN PetscErrorCode MatPartitioningApplyND(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
@@ -1341,6 +1351,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode 
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
@@ -1555,6 +1567,7 @@ typedef enum { MATOP_SET_VALUES=0,
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat,MatOperation,void(**)(void));
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatHasCongruentLayouts(Mat,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat,MatOperation,void(**)(void));
@@ -1578,10 +1591,11 @@ PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatISFixLocalEmpty(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
+PETSC_EXTERN PETSC_DEPRECATED("Use the MatConvert() interface") PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
@@ -1692,6 +1706,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInverseTranspose(Mat,Mat);
 #endif
 
 /*
