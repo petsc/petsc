@@ -271,7 +271,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &rowIDXs, maxC, &xi);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &rowIDXs, maxC*dim, &xi);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject     obj;
     PetscReal      *Bcoarse, *coords;
