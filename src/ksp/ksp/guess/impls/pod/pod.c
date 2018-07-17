@@ -45,6 +45,7 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
   PetscBool      cong;
 
   PetscFunctionBegin;
+  pod->nen  = 0;
   pod->n    = 0;
   pod->curr = 0;
   /* need to wait for completion of outstanding requests */
