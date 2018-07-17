@@ -11,6 +11,9 @@ typedef struct {
   HYPRE_IJVector b;
   MPI_Comm       comm;
   PetscBool      inner_free;
+  void           *array;
+  PetscInt       size;
+  PetscBool      available;
 } Mat_HYPRE;
 
 #endif
