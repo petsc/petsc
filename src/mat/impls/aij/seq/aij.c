@@ -4365,7 +4365,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
     if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %D length = %D",ii,i[ii+1] - i[ii]);
     for (jj=i[ii]+1; jj<i[ii+1]; jj++) {
       if (j[jj] < j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
-      if (j[jj] == j[jj]-1) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
+      if (j[jj] == j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
     }
 #endif
   }
