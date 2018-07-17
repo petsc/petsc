@@ -506,7 +506,7 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
     ierr = PetscInfo3(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than absolute tolerance %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->abstol,n);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_ATOL_NORMAL;
   } else if (lsqr->arnorm < ksp->rtol * lsqr->anorm * rnorm) {
-    ierr = PetscInfo5(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than rel. tol. %14.12e times approx. Frobenius norm of matrix %14.12e times residual %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->rtol,(double)lsqr->anorm,(double)rnorm,n);CHKERRQ(ierr);
+    ierr = PetscInfo6(ksp,"LSQR solver has converged. Normal equation residual %14.12e is less than rel. tol. %14.12e times %s Frobenius norm of matrix %14.12e times residual %14.12e at iteration %D\n",(double)lsqr->arnorm,(double)ksp->rtol,lsqr->exact_norm?"exact":"approx.",(double)lsqr->anorm,(double)rnorm,n);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_RTOL_NORMAL;
   }
   PetscFunctionReturn(0);
