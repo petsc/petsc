@@ -146,7 +146,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   dgy = dginit;
 
   ls->step=ls->initstep;
-  for (i=0; i< ls->max_funcs; i++) {    
+  for (i=0; i< ls->max_funcs; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
     if (mt->bracket) {
       ls->stepmin = PetscMin(stx,sty);

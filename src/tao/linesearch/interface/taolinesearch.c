@@ -524,7 +524,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
   const char     *default_type=TAOLINESEARCHMT;
-  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
+  char           type[256],monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
   PetscBool      flg;
 

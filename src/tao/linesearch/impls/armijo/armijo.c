@@ -97,13 +97,12 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscErrorCode       ierr;
-  PetscInt             i, its=0;
+  PetscInt             i,its=0;
   PetscReal            fact, ref, gdx;
   PetscInt             idx;
   PetscBool            g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
 
   PetscFunctionBegin;
-  
   ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
