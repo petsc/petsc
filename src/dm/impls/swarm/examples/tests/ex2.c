@@ -21,11 +21,12 @@ typedef struct {
   PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
 {
   PetscInt d;
+  AppCtx *ctx = (AppCtx*)a_ctx;
   u[0] = 0.0;
-  for (d = 0; d < dim; ++d) u[0] += x[d];
+  for (d = 0; d < dim; ++d) u[0] += x[d]/ctx->domain_hi[d];
   return 0;
 }
 
@@ -190,8 +191,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "identity"
 static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -281,11 +280,13 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
           ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
           ecoord[0] = ii*dx - 1 + dx_2 + value; /* regular grid on [-1,-1] */
           for ( jj = 0; jj < N ; jj++, p++) {
+            PetscInt idx = c*user->particles_cell + p;
             ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
             ecoord[1] = jj*dx - 1 + dx_2 + value; /* regular grid on [-1,-1] */
-            cellid[c*user->particles_cell + p] = c;
-            CoordinatesRefToReal(dim, dim, xi0, v0, J, ecoord, &coords[(c*user->particles_cell + p)*dim]);
-            user->func(dim, 0.0, &coords[(c*user->particles_cell + p)*dim], 1, &vals[c], user);
+            cellid[idx] = c;
+            CoordinatesRefToReal(dim, dim, xi0, v0, J, ecoord, &coords[(idx)*dim]);
+            user->func(dim, 0.0, &coords[idx*dim], 1, &vals[idx], user);
+            /* PetscPrintf(PETSC_COMM_SELF, "[%D]CreateParticles: %D) real coord[%4D]:%12.5e,%12.5e, w_p[%D]=%12.5e\n",-1,c,(idx)*dim,coords[(idx)*dim],coords[(idx)*dim+1],c,vals[idx]); */
           }
         }
       }
@@ -339,8 +340,6 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f0_1"
 static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -349,8 +348,6 @@ static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = u[0];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f0_x"
 static void f0_x(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 		    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
 		    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -359,8 +356,6 @@ static void f0_x(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = x[0]*u[0];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f0_r2"
 static void f0_r2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                   const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -408,7 +403,9 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   //ierr = DMSwarmCreateInterpolationMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
+  /* make particle weight vector */
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  /* create matrix RHS vector */
   ierr = MatMult(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
@@ -484,6 +481,29 @@ int main (int argc, char * argv[]) {
   ierr = PetscFinalize();
   return ierr;
 }
+
+  /* if (1) { /\* print array *\/ */
+  /*   PetscInt    rStart, cStart, cEnd, cell; */
+  /*   PetscScalar *w_p; */
+  /*   const PetscReal *coords, *c2; */
+  /*   ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr); */
+  /*   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr); */
+  /*   ierr = VecGetOwnershipRange(f,&rStart,NULL);CHKERRQ(ierr); */
+  /*   ierr = DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr); */
+  /*   ierr = VecGetArray(f,&w_p);CHKERRQ(ierr); */
+  /*   for (cell = cStart, c2 = coords; cell < cEnd; ++cell) { */
+  /*     PetscInt *cindices, p; */
+  /*     PetscInt  numCIndices; */
+  /*     ierr = DMSwarmSortGetPointsPerCell(sw, cell, &numCIndices, &cindices);CHKERRQ(ierr); */
+  /*     for (p = 0; p < numCIndices; ++p, c2 += 2) { */
+  /*       PetscPrintf(PETSC_COMM_SELF, "[%D]TestL2Projection: %D) real coord[%4D]:%12.5e,%12.5e, w_p[%D]=%12.5e\n",-1,c2-coords,c2-coords,c2[0],c2[1],cindices[p],w_p[cindices[p]]); */
+  /*     } */
+  /*     ierr = PetscFree(cindices);CHKERRQ(ierr); */
+  /*   } */
+  /*   ierr = VecRestoreArray(f,&w_p);CHKERRQ(ierr); */
+  /*   ierr = DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr); */
+  /*   ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr); */
+  /* } */
 
 /*TEST
 

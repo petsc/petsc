@@ -292,7 +292,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
       for (p = 0; p < numCIndices; ++p) {
         CoordinatesRealToRef(dim, dim, v0ref, v0, invJ, &coords[cindices[p]*dim], &xi[p*dim]);
-        /* PetscPrintf(PETSC_COMM_SELF,"[%D]DMSwarmComputeMassMatrix_Private: %2D.%D) coord = (%12.5e, %12.5e) element coord = (%12.5e, %12.5e) cindices[%D]=%D detJ=%12.5e\n",rank,cell,p,pxx[0],pxx[1],pxi[0],pxi[1],p,cindices[p],detJ); */
+        /* PetscPrintf(PETSC_COMM_SELF,"[%D]DMSwarmComputeMassMatrix_Private: %2D.%D) coord[%D] = (%12.5e, %12.5e) element coord = (%12.5e, %12.5e) cindices[%D]=%D detJ=%12.5e\n",-1,cell,p,cindices[p]*dim,coords[cindices[p]*dim],coords[cindices[p]*dim+1],xi[p*dim],xi[p*dim+1],p,cindices[p],detJ); */
       }
       ierr = PetscFEGetTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
       /* Get elemMat entries by multiplying by weight */
