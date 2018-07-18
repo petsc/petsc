@@ -37,7 +37,7 @@
       call VecDestroy(f,ierr);CHKERRA(ierr)
       call KSPDestroy(ksp,ierr);CHKERRA(ierr)
       call DMDestroy(da,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr);CHKERRA(ierr)
+      call PetscFinalize(ierr)
       end
 
 ! AVX512 crashes without this..

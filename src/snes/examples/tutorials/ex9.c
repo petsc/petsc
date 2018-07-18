@@ -111,8 +111,8 @@ int main(int argc,char **argv)
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 
