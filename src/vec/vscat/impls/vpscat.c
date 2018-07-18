@@ -278,6 +278,8 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
   ierr = VecScatterMemcpyPlanDestroy(&from->memcpy_plan);CHKERRQ(ierr);
   ierr = VecScatterMemcpyPlanDestroy(&to->local.memcpy_plan);CHKERRQ(ierr);
   ierr = VecScatterMemcpyPlanDestroy(&from->local.memcpy_plan);CHKERRQ(ierr);
+  ierr = PetscFree(from);CHKERRQ(ierr);
+  ierr = PetscFree(to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
