@@ -21,6 +21,8 @@ typedef struct {
   PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
+/* const char *const ex2FunctionTypes[] = {"linear","x2_x4","sin","ex2FunctionTypes","EX2_FUNCTION_",0}; */
+
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
 {
   PetscInt d;
@@ -109,7 +111,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     if (flag) {
       options->func = sinx;
     } else {
+      ierr = PetscStrcmp(fstring, "x2_x4", &flag);CHKERRQ(ierr);
       options->func = x2_x4;
+      if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
     }
   }
   ierr = PetscOptionsEnd();
@@ -154,7 +158,7 @@ static PetscErrorCode perturbVertices(DM dm, AppCtx *user)
   ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
