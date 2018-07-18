@@ -22,8 +22,8 @@ class Configure(config.base.Configure):
     # twin processor; it also happens to serve as a compiler barrier
 
     # x86
-    if self.checkCompile('', 'asm volatile("rep; nop" ::: "memory");'):
-      self.addDefine('CPU_RELAX()','asm volatile("rep; nop" ::: "memory")')
+    if self.checkCompile('', '__asm__ __volatile__("rep; nop" ::: "memory");'):
+      self.addDefine('CPU_RELAX()','__asm__ __volatile__("rep; nop" ::: "memory")')
       return
     # PowerPC
     if self.checkCompile('','do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)'):
@@ -37,14 +37,14 @@ class Configure(config.base.Configure):
     ''' Definitions for memory barrier instructions'''
     # ---- Definitions for x86_64 -----
     # General Memory Barrier
-    if self.checkCompile('','asm volatile("mfence":::"memory")'):
-      self.addDefine('MEMORY_BARRIER()','asm volatile("mfence":::"memory")')
+    if self.checkCompile('','__asm__ __volatile__ ("mfence":::"memory")'):
+      self.addDefine('MEMORY_BARRIER()','__asm__ __volatile__ ("mfence":::"memory")')
     # Read Memory Barrier
-    if self.checkCompile('','asm volatile("lfence":::"memory")'):
-      self.addDefine('READ_MEMORY_BARRIER()','asm volatile("lfence":::"memory")')
+    if self.checkCompile('','__asm__ __volatile__ ("lfence":::"memory")'):
+      self.addDefine('READ_MEMORY_BARRIER()','__asm__ __volatile__ ("lfence":::"memory")')
     # Write Memory Barrier
-    if self.checkCompile('','asm volatile("sfence":::"memory")'):
-      self.addDefine('WRITE_MEMORY_BARRIER()','asm volatile("sfence":::"memory")')
+    if self.checkCompile('','__asm__ __volatile__ ("sfence":::"memory")'):
+      self.addDefine('WRITE_MEMORY_BARRIER()','__asm__ __volatile__ ("sfence":::"memory")')
     return
 
   def configure(self):
