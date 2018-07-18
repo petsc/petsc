@@ -250,7 +250,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
       requires: !complex !single
 
    test:
-      nsize: 2
+      suffix: 1
+      nsize: 1
       args: -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls
 
    test:
@@ -261,26 +262,22 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
    test:
       suffix: 3
       nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls
+      args: -snes_grid_sequence 2 -snes_vi_monitor -snes_type vinewtonrsls
 
    test:
       suffix: 4
-      nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type vinewtonssls
+      nsize: 1
+      args: -mat_is_symmetric
 
    test:
       suffix: 5
-      args: -snes_fd_color
-
-   test:
-      suffix: 5_2
-      nsize: 4
-      args: -snes_fd_color
-      output_file: output/ex9_5.out
+      nsize: 1
+      args: -ksp_converged_reason -snes_fd_color
 
    test:
       suffix: 6
-      args: -da_refine 3 -pc_type mg -snes_monitor_short -ksp_monitor_short
+      nsize: 2
+      args: -snes_grid_sequence 2 -pc_type mg -snes_monitor_short -ksp_converged_reason
 
    test:
       suffix: 7
