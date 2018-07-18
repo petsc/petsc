@@ -193,7 +193,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscHSetIJ    ht;
   PetscLayout    rLayout, colLayout;
   PetscInt      *dnz, *onz;
-  PetscInt       locRows, locCols, rStart, colStart, colEnd, *rowIDXs;
+  PetscInt       locRows, locCols, rStart, colStart, colEnd, *colIDXs;
   PetscReal     *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
   PetscScalar   *elemMat;
   PetscInt       dim, Nf, field, cStart, cEnd, cell, totDim, maxC = 0;
@@ -243,7 +243,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       {
         PetscHashIJKey key;
         PetscBool      missing;
-
         /* PetscPrintf(PETSC_COMM_SELF, "\t[%D]DMSwarmComputeMassMatrix_Private: cell %D\n",rank,cell); */
         for (i = 0; i < numFIndices; ++i) {
           key.i = findices[i]; /* global row (from Plex) */
@@ -271,7 +270,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &rowIDXs, maxC*dim, &xi);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &colIDXs, maxC*dim, &xi);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject     obj;
     PetscReal      *Bcoarse, *coords;
@@ -306,16 +305,16 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
           }
         }
       }
-      for (p = 0; p < numCIndices; ++p) rowIDXs[p] = cindices[p] + rStart;
+      for (p = 0; p < numCIndices; ++p) colIDXs[p] = cindices[p] + colStart;
       if (0) {ierr = DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat);CHKERRQ(ierr);}
-      ierr = MatSetValues(mass, numFIndices, findices, numCIndices, rowIDXs, elemMat, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(mass, numFIndices, findices, numCIndices, colIDXs, elemMat, ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscFree(cindices);CHKERRQ(ierr);
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
       ierr = PetscFERestoreTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = DMSwarmRestoreField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   }
-  ierr = PetscFree3(elemMat, rowIDXs, xi);CHKERRQ(ierr);
+  ierr = PetscFree3(elemMat, colIDXs, xi);CHKERRQ(ierr);
   ierr = DMSwarmSortRestoreAccess(dmc);CHKERRQ(ierr);
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -335,7 +334,7 @@ static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass
   ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMSwarmGetLocalSize(dmCoarse, &n);CHKERRQ(ierr);
-
+PetscPrintf(PETSC_COMM_SELF,"\t[%D]DMCreateMassMatrix_Swarm: m=%D n=%D\n",-1,m,n);
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
   ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
