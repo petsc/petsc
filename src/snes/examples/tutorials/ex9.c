@@ -117,12 +117,12 @@ int main(int argc,char **argv) {
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,
              "errors on %D x %D grid:  av |u-uexact|  = %.3e,  |u-uexact|_inf = %.3e\n",
-             info.mx,info.my,error1,errorinf);CHKERRQ(ierr);
+             info.mx,info.my,(double)error1,(double)errorinf);CHKERRQ(ierr);
 
   ierr = VecDestroy(&u_exact); CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u) {
@@ -247,7 +247,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
 /*TEST
 
    build:
-      requires: !complex !single
+      requires: !complex
 
    test:
       suffix: 1
