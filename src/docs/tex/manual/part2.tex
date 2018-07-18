@@ -782,7 +782,7 @@ DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 followed by
 \begin{lstlisting}
 VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);
-MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);
+MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping);
 \end{lstlisting}
 Now entries may be added to the vector and matrix using the local numbering
 and \break\lstinline{VecSetValuesLocal()} and \lstinline{MatSetValuesLocal()}.

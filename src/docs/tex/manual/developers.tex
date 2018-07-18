@@ -1816,22 +1816,22 @@ See examples below for how it works in practice.
 The following is the simplest test block:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   test:
-TESTS*/
+TEST*/
 \end{outputlisting}
 which is equivalent to
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     test:
-TESTS*/
+TEST*/
 \end{outputlisting}
 which is equivalent to
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
-TESTS*/
+TEST*/
 \end{outputlisting}
 
 If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
@@ -1841,15 +1841,15 @@ resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
 For Fortran, the equivalent is
 %
 \begin{outputlisting}
-!/*TESTS
+!/*TEST
 !  test:
-!TESTS*/
+!TEST*/
 \end{outputlisting}
 
 A more complete example is
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   test:
   test:
     suffix: 1
@@ -1858,7 +1858,7 @@ A more complete example is
     args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
     args: -s2_pc_type jacobi -s2_ksp_monitor_short
     requires: x
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutorials/ex1.c}, the tests would
@@ -1869,7 +1869,7 @@ Following is an example of how to test a permutuation of arguments against the s
 output file:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     suffix: 19
     requires: datafilespath
@@ -1878,7 +1878,7 @@ output file:
     test:
     test:
       args: -mat_type seqsbaij
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 Assuming that this is \lstinline{ex10.c}, there would be two
@@ -1888,7 +1888,7 @@ Here is a similar example, but the permutation of arguments creates
 different output:
 
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     requires: datafilespath
     args: -f0 ${DATAFILESPATH}/matrices/medium
@@ -1898,7 +1898,7 @@ different output:
       args: -pc_type lu
     test:
       suffix: 5
-*/TESTS
+*/TEST
 \end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, two shell
 scripts will be created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
@@ -1906,7 +1906,7 @@ scripts will be created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
 An example using a for loop is:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     suffix: 1
     args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
@@ -1917,7 +1917,7 @@ An example using a for loop is:
     args: -f ${DATAFILESPATH}/matrices/small
     args: -mat_type baij -matload_block_size {{2 3}shared output}
     requires: datafilespath
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 In this example, \lstinline{ex138_2} will invoke \lstinline{runex138_2.sh} twice with two different
