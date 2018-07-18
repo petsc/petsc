@@ -2483,8 +2483,8 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   ierr = DMSNESRestoreFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qGeom);CHKERRQ(ierr);
   if (hasFV) {ierr = MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE);CHKERRQ(ierr);}
-  ierr = DMRestoreWorkArray(dm, Nf, PETSC_BOOL, &isFE);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, ((1 + (X_t?1:0) + (dmAux?1:0))*totDim + ((hasJac?1:0) + (hasPrec?1:0) + (hasDyn?1:0))*totDim*totDim)*chunkSize, PETSC_SCALAR, &work);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, Nf, MPIU_BOOL, &isFE);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, ((1 + (X_t?1:0) + (dmAux?1:0))*totDim + ((hasJac?1:0) + (hasPrec?1:0) + (hasDyn?1:0))*totDim*totDim)*chunkSize, MPIU_SCALAR, &work);CHKERRQ(ierr);
   /* Compute boundary integrals */
   /* ierr = DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, ctx);CHKERRQ(ierr); */
   /* Assemble matrix */
