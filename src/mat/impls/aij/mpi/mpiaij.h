@@ -108,6 +108,7 @@ PETSC_INTERN PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,Mat);
@@ -122,6 +123,8 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
+
+
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
 #endif
