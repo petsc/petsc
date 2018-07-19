@@ -32,7 +32,7 @@ Example usage:
 
 #include <petsc.h>
 
-// z = psi(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
+/* z = psi(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0 */
 PetscReal psi(PetscReal x, PetscReal y) {
     const PetscReal  r = x * x + y * y,
                      r0 = 0.9,
@@ -62,8 +62,8 @@ PetscReal u_exact(PetscReal x, PetscReal y) {
                     B     = 0.471519893402112;
     PetscReal  r;
     r = PetscSqrtReal(x * x + y * y);
-    return (r <= afree) ? psi(x,y)  // active set; on the obstacle
-                        : - A * PetscLogReal(r) + B; // solves laplace eqn
+    return (r <= afree) ? psi(x,y)  /* active set; on the obstacle */
+                        : - A * PetscLogReal(r) + B; /* solves laplace eqn */
 }
 
 extern PetscErrorCode FormExactSolution(DMDALocalInfo*,Vec);
