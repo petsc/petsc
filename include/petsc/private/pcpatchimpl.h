@@ -78,6 +78,11 @@ typedef struct {
   PetscViewerFormat    formatMatrix;       /*   Format for patch matrix */
 } PC_PATCH;
 
-PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches, PC_Patch_ComputeOp, PC_Patch_Solve, PC_Patch_Scatter, PC_Patch_Apply, PC_Patch_Prealloc;
+PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;
+PETSC_EXTERN PetscLogEvent PC_Patch_ComputeOp;
+PETSC_EXTERN PetscLogEvent PC_Patch_Solve;
+PETSC_EXTERN PetscLogEvent PC_Patch_Scatter;
+PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
+PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
 #endif
