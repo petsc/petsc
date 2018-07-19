@@ -1139,9 +1139,9 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
 
 static PetscErrorCode PCPatchZeroFillMatrix_Private(Mat mat, const PetscInt ncell, const PetscInt ndof, const PetscInt *dof)
 {
-  const PetscScalar *values = NULL;
-  PetscInt           rows, c, i;
-  PetscErrorCode     ierr;
+  PetscScalar    *values = NULL;
+  PetscInt        rows, c, i;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscCalloc1(ndof*ndof, &values);CHKERRQ(ierr);
