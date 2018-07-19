@@ -35,6 +35,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchDestroy(TaoLineSearch*);
+PETSC_EXTERN PetscErrorCode TaoLineSearchMonitor(TaoLineSearch,PetscInt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 

@@ -97,12 +97,13 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscErrorCode       ierr;
-  PetscInt             i;
+  PetscInt             i,its=0;
   PetscReal            fact, ref, gdx;
   PetscInt             idx;
   PetscBool            g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
 
   PetscFunctionBegin;
+  ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
   if (!armP->work) {
@@ -208,6 +209,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   ls->step = ls->initstep;
   while (ls->step >= ls->stepmin && (ls->nfeval+ls->nfgeval) < ls->max_funcs) {
     /* Calculate iterate */
+    ++its;
     ierr = VecCopy(x,armP->work);CHKERRQ(ierr);
     ierr = VecAXPY(armP->work,ls->step,s);CHKERRQ(ierr);
     if (ls->bounded) {
@@ -228,6 +230,8 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     if (ls->step == ls->initstep) {
       ls->f_fullstep = *f;
     }
+
+    ierr = TaoLineSearchMonitor(ls, its, *f, ls->step);CHKERRQ(ierr);
 
     if (PetscIsInfOrNanReal(*f)) {
       ls->step *= armP->beta_inf;
