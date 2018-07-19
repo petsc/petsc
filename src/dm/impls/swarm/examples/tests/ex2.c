@@ -401,22 +401,50 @@ int main (int argc, char * argv[]) {
 
   test:
     suffix: proj_tri_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+    args: -dim 2 -faces 1 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
 
   test:
     suffix: proj_tri_2_faces
-    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+    args: -dim 2 -faces 2 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
 
   test:
+    suffix: proj_tri_quad_order_3
+    args: -dim 2 -faces 1 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+ 
+  test:
+    suffix: proj_tri_2_faces_quad_order_3
+    args: -dim 2 -faces 2 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+ 
+  test:
+    suffix: proj_tri_2_ppc
+    args: -dim 2 -faces 1 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+ 
+  test:
+    suffix: proj_tri_2_ppc_quad_order_3
+    args: -dim 2 -faces 1 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+ 
+  test:
+    suffix: proj_tri_2_ppc_2_faces
+    args: -dim 2 -faces 2 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+ 
+  test:
+    suffix: proj_tri_3d_1ppc_1face
+    args: -dim 3 -faces 1 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+ 
+  test:
     suffix: proj_quad_0
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+    args: -dim 2 -simplex 0 -faces 1 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
  
   test:
-    suffix: proj_tri_quad_order_3_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
- 
+    suffix: proj_quad_quad_order_3
+    args: -dim 2 -simplex 0 -faces 1 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+
   test:
-    suffix: proj_quad_order_3_0
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+    suffix: proj_quad_2_faces_quad_order_2
+    args: -dim 2 -simplex 0 -faces 2 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+
+  test:
+    suffix: proj_quad_2_faces_quad_order_3
+    args: -dim 2 -simplex 0 -faces 2 -particles_cell 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
  
 TEST*/
