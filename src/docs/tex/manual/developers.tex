@@ -317,7 +317,7 @@ actually be prototyped as \lstinline{void*}. This prevents the caller from havin
 Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg)} or \lstinline{if (!flg)}.
 \item Do not use \lstinline{#ifdef} or \lstinline{#ifndef}. Rather, use \lstinline{#if defined(...} or \lstinline{#if !defined(...}
 \item Never use system random number generators such as \lstinline{rand()} in PETSc code or examples because these can produce different results
-on different systems thus making portability testing difficult. Instead use the PetscRandom which produces the exact same results regardless of
+on different systems thus making portability testing difficult. Instead use \lstinline{PetscRandom} which produces the exact same results regardless of
 system it is used on.
 \end{enumerate}
 
