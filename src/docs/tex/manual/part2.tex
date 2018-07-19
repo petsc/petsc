@@ -1515,6 +1515,8 @@ Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|
 Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
 Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+Restricted Broyden Family Diagonal                      & \lstinline|MATLMVMDiagBrdn|
+& \trl{lmvmdiagbrdn}  & SPD \\
 \hline
 \end{tabular}
 \end{center}
@@ -1522,7 +1524,7 @@ Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymB
 \label{tab_matlmvmimpl}
 \end{table}
 
-PETSc implements six different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
+PETSc implements seven different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
 the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
 We will review the most important ones below:
 \begin{itemize}

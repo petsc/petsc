@@ -273,7 +273,7 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBRDN);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMBADBRDN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_LMVMBadBrdn;
   B->ops->destroy = MatDestroy_LMVMBadBrdn;
   B->ops->solve = MatSolve_LMVMBadBrdn;
