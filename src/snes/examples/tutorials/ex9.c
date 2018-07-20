@@ -274,7 +274,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
 
    test:
       suffix: 5
-      requires: !single
       nsize: 1
       args: -ksp_converged_reason -snes_fd_color
 
