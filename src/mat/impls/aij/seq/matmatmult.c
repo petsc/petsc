@@ -1549,6 +1549,7 @@ PetscInt cmpfunc (const void * a, const void * b)
    return ( *(PetscInt*)a - *(PetscInt*)b );
 }
 
+/* This algorithm combines the symbolic and numeric phase of matrix-matrix multiplication. */
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
@@ -1567,10 +1568,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
   PetscScalar        *aa_i = a->a;
 
   PetscFunctionBegin;
-
   /* Step 1: Determine upper bounds on memory for C */
-  for (i=0; i<am; i++) /* iterate over all rows of A */
-  {
+  for (i=0; i<am; i++) { /* iterate over all rows of A */
     const PetscInt anzi  = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
     const PetscInt *acol = aj + ai[i]; /* column indices of nonzero entries in this row */
     a_rownnz = 0;
@@ -1586,8 +1585,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
   ca_i = ca;
   cj_i = cj;
   ci[0] = 0;
-  PetscMemzero(c_row_val_dense, bn * sizeof(PetscScalar));
-  PetscMemzero(c_row_idx_flags, bn * sizeof(PetscBool));
+  ierr = PetscMemzero(c_row_val_dense, bn * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(c_row_idx_flags, bn * sizeof(PetscBool));CHKERRQ(ierr);
   for (i=0; i<am; i++) {
     /* Step 2: Initialize the dense row vector for C  */
     const PetscInt anzi     = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
@@ -1650,8 +1649,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
   (*C)->info.fill_ratio_given  = fill;
   (*C)->info.fill_ratio_needed = afill;
 
-  PetscFree(c_row_val_dense);
-  PetscFree(c_row_idx_flags);
+  ierr = PetscFree(c_row_val_dense);CHKERRQ(ierr);
+  ierr = PetscFree(c_row_idx_flags);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

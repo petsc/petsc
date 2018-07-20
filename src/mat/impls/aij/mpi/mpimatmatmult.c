@@ -951,6 +951,9 @@ static void Merge3SortedArrays(PetscInt  size1, PetscInt *in1,
   *size4 = l;
 }
 
+/* This matrix-matrix multiplication algorithm divides the multiplication into three multiplications and  */
+/* adds up the products. Two of these three multiplications are performed with existing (sequential)      */
+/* matrix-matrix multiplications.  */
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal fill, Mat *C)
@@ -979,10 +982,9 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   Mat                adpd, aopoth;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(P, &p_rowstart, &p_rowend); CHKERRQ(ierr);
 
   /* create struct Mat_PtAPMPI and attached it to C later */
@@ -1011,13 +1013,13 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ierr = MatPreallocateInitialize(comm,am,pn,dnz,onz);CHKERRQ(ierr);
 
   /* Symbolic calc of A_loc_diag * P_loc_diag */
-  MatMatMultSymbolic_SeqAIJ_SeqAIJ(a->A, p->A, fill, &adpd);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(a->A, p->A, fill, &adpd);CHKERRQ(ierr);
   adpd_seq = (Mat_SeqAIJ*)((adpd)->data);
   adpdi = adpd_seq->i; adpdj = adpd_seq->j;
   p_off = (Mat_SeqAIJ*)((p->B)->data);
   poff_i = p_off->i; poff_j = p_off->j;
 
-  /* j_temp stores indices of a result row before they added to the linked list */
+  /* j_temp stores indices of a result row before they are added to the linked list */
   ierr = PetscMalloc1(pN+2,&j_temp);CHKERRQ(ierr);
 
 
@@ -1058,7 +1060,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   }
 
   /* Symbolic calc of A_off * P_oth */
-  MatMatMultSymbolic_SeqAIJ_SeqAIJ(a->B, ptap->P_oth, fill, &aopoth);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(a->B, ptap->P_oth, fill, &aopoth);CHKERRQ(ierr);
   aopoth_seq = (Mat_SeqAIJ*)((aopoth)->data);
   aopothi = aopoth_seq->i; aopothj = aopoth_seq->j;
 
@@ -1133,9 +1135,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   *C = Cmpi;
 
   /* set MatInfo */
-  /* afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1) + 1.e-5; */
-  /* if (afill < 1.0) afill = 1.0; */
-  afill = 1.0;
+  afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
   Cmpi->info.mallocs           = nspacedouble;
   Cmpi->info.fill_ratio_given  = fill;
   Cmpi->info.fill_ratio_needed = afill;
@@ -1149,11 +1150,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   }
 #endif
 
-  MatDestroy(&aopoth);
-  MatDestroy(&adpd);
-  PetscFree(j_temp);
-  PetscFree(adpoj);
-  PetscFree(adpoi);
+  ierr = MatDestroy(&aopoth);CHKERRQ(ierr);
+  ierr = MatDestroy(&adpd);CHKERRQ(ierr);
+  ierr = PetscFree(j_temp);CHKERRQ(ierr);
+  ierr = PetscFree(adpoj);CHKERRQ(ierr);
+  ierr = PetscFree(adpoi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

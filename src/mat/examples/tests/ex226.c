@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-o",&o,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-result_view",&mat_view);
+  ierr = PetscOptionsHasName(NULL,NULL,"-result_view",&mat_view);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-stencil",stencil,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Create a aij matrix A */
@@ -243,10 +243,10 @@ int main(int argc,char **argv)
   /* Copy A into B in order to have a more representative benchmark (A*A has more cache hits than A*B) */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
 
-  ierr = PetscLogStageRegister("Full MatMatMult",&fullMatMatMultStage);
+  ierr = PetscLogStageRegister("Full MatMatMult",&fullMatMatMultStage);CHKERRQ(ierr);
 
   /* Test C = A*B */
-  ierr = PetscLogStagePush(fullMatMatMultStage);
+  ierr = PetscLogStagePush(fullMatMatMultStage);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
