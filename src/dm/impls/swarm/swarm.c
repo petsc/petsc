@@ -193,7 +193,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscHSetIJ    ht;
   PetscLayout    rLayout, colLayout;
   PetscInt      *dnz, *onz;
-  PetscInt       locRows, locCols, rStart, colStart, colEnd, *colIDXs;
+  PetscInt       locRows, locCols, rStart, colStart, colEnd, *rowIDXs;
   PetscReal     *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
   PetscScalar   *elemMat;
   PetscInt       dim, Nf, field, cStart, cEnd, cell, totDim, maxC = 0;
@@ -227,7 +227,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
   ierr = PetscCalloc2(locRows, &dnz, locRows, &onz);CHKERRQ(ierr);
   ierr = PetscHSetIJCreate(&ht);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(comm, "DMSwarmComputeMassMatrix_Private: rStart = %D rEnd = %D colStart = %D colEnd = %D\n", rStart, rStart+locRows, colStart, colEnd);CHKERRQ(ierr);
+  /* ierr = PetscSynchronizedPrintf(comm, "DMSwarmComputeMassMatrix_Private: rStart = %D rEnd = %D colStart = %D colEnd = %D\n", rStart, rStart+locRows, colStart, colEnd);CHKERRQ(ierr); */
   ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
   /* count non-zeros */
   ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
@@ -245,16 +245,16 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
         PetscBool      missing;
         /* PetscPrintf(PETSC_COMM_SELF, "\t[%D]DMSwarmComputeMassMatrix_Private: cell %D\n",rank,cell); */
         for (i = 0; i < numFIndices; ++i) {
-          key.i = findices[i]; /* global row (from Plex) */
+          key.j = findices[i]; /* global column (from Plex) */
           /* PetscPrintf(PETSC_COMM_SELF, "\t\t[%D]DMSwarmComputeMassMatrix_Private: j ('fine',vertices) = %D, num rows ('coarse',particles) = %D\n",rank,key.i,numCIndices); */
-          if (key.i >= 0) {
+          if (key.j >= 0) {
             /* Get indices for coarse elements */
             for (c = 0; c < numCIndices; ++c) {
-              key.j = cindices[c] + colStart; /* global cols (from Swarm) */
-              if (key.j < 0) continue;
+              key.i = cindices[c] + rStart; /* global cols (from Swarm) */
+              if (key.i < 0) continue;
               ierr = PetscHSetIJQueryAdd(ht, key, &missing);CHKERRQ(ierr);
               if (missing) {
-                /* PetscPrintf(PETSC_COMM_SELF, "\t\t\t[%D]DMSwarmComputeMassMatrix_Private: new key j (row,particle) = %D, i (col,vertices) = %D\n",rank,key.j,key.i); */
+/* PetscPrintf(PETSC_COMM_SELF, "\t\t\t[%D]DMSwarmComputeMassMatrix_Private: new key j (row,particle) = %D, i (col,vertices) = %D\n",-1,key.j,key.i); */
                 if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
                 else                                         ++onz[key.i - rStart];
               } else SETERRQ2(PetscObjectComm((PetscObject) dmf), PETSC_ERR_SUP, "Set new value at %D,%D", key.i, key.j);
@@ -270,7 +270,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &colIDXs, maxC*dim, &xi);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxC*totDim, &elemMat, maxC, &rowIDXs, maxC*dim, &xi);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject     obj;
     PetscReal      *Bcoarse, *coords;
@@ -300,21 +300,21 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
         for (p = 0; p < numCIndices; ++p) {
           for (c = 0; c < Nc; ++c) {
             /* B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c */
-            elemMat[i*numCIndices+p] += Bcoarse[(p*numFIndices + i)*Nc + c]*(useDeltaFunction ? 1.0 : detJ);
+            elemMat[p*numFIndices+i] += Bcoarse[(p*numFIndices + i)*Nc + c]*(useDeltaFunction ? 1.0 : detJ);
             /* PetscPrintf(PETSC_COMM_SELF, "\t[%D]DMSwarmComputeMassMatrix_Private: %2D) findices[%D] (col) %D, particle (row) %D (nc=%D) Bcoarse[%2D]=%12.5e\n",rank,cell,i,findices[i],cindices[p],c,(p*numFIndices + i)*Nc + c,Bcoarse[(p*numFIndices + i)*Nc + c]); */
           }
         }
       }
-      for (p = 0; p < numCIndices; ++p) colIDXs[p] = cindices[p] + colStart;
+      for (p = 0; p < numCIndices; ++p) rowIDXs[p] = cindices[p] + rStart;
       if (0) {ierr = DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat);CHKERRQ(ierr);}
-      ierr = MatSetValues(mass, numFIndices, findices, numCIndices, colIDXs, elemMat, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(mass, numCIndices, rowIDXs, numFIndices, findices, elemMat, ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscFree(cindices);CHKERRQ(ierr);
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
       ierr = PetscFERestoreTabulation((PetscFE) obj, numCIndices, xi, &Bcoarse, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = DMSwarmRestoreField(dmc, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   }
-  ierr = PetscFree3(elemMat, colIDXs, xi);CHKERRQ(ierr);
+  ierr = PetscFree3(elemMat, rowIDXs, xi);CHKERRQ(ierr);
   ierr = DMSwarmSortRestoreAccess(dmc);CHKERRQ(ierr);
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscFunctionReturn(0);
 }
 
-/* FEM rows, Particle cols */
+/* FEM cols, Particle rows */
 static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass)
 {
   PetscSection   gsf;
@@ -335,7 +335,7 @@ static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMSwarmGetLocalSize(dmCoarse, &n);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mass, n, m, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
 

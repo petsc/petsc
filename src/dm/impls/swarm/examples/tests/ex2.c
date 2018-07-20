@@ -391,7 +391,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   /* make particle weight vector */
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   /* create matrix RHS vector */
-  ierr = MatMult(M_p, f, rhs);CHKERRQ(ierr);
+  ierr = MatMultTranspose(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
   ierr = VecViewFromOptions(rhs, NULL, "-rhs_view");CHKERRQ(ierr);
