@@ -523,4 +523,16 @@ int main (int argc, char * argv[]) {
     suffix: proj_tri_mdx
     args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}
 
+  test:
+    suffix: proj_tri_2_ppc
+    args: -dim 2 -faces 1 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+
+  test:
+    suffix: proj_tri_2_ppc_quad_order_3
+    args: -dim 2 -faces 1 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 3
+
+  test:
+    suffix: proj_tri_2_ppc_2_faces
+    args: -dim 2 -faces 2 -particles_cell 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order 2
+
 TEST*/
