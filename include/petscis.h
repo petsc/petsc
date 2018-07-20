@@ -75,6 +75,9 @@ PETSC_EXTERN PetscErrorCode ISIntersect(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISLocate(IS,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode ISGetPointRange(IS,PetscInt*,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode ISRestorePointRange(IS,PetscInt*,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode ISGetPointSubrange(IS,PetscInt,PetscInt,const PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);

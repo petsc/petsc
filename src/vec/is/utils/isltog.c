@@ -16,6 +16,51 @@ typedef struct {
 } ISLocalToGlobalMapping_Hash;
 
 
+PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+{
+  PetscInt       numCells, step = 1;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  *pStart = 0;
+  *points = NULL;
+  ierr = ISGetLocalSize(pointIS, &numCells);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pointIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {ierr = ISStrideGetInfo(pointIS, pStart, &step);CHKERRQ(ierr);}
+  *pEnd   = *pStart + numCells;
+  if (!isStride || step != 1) {ierr = ISGetIndices(pointIS, points);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+{
+  PetscInt       step = 1;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscObjectTypeCompare((PetscObject) pointIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {ierr = ISStrideGetInfo(pointIS, pStart, &step);CHKERRQ(ierr);}
+  if (!isStride || step != 1) {ierr = ISGetIndices(pointIS, points);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  if (points) {
+    ierr = ISSetType(subpointIS, ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(subpointIS, pEnd-pStart, &points[pStart], PETSC_USE_POINTER);CHKERRQ(ierr);
+  } else {
+    ierr = ISSetType(subpointIS, ISSTRIDE);CHKERRQ(ierr);
+    ierr = ISStrideSetStride(subpointIS, pEnd-pStart, pStart, 1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -----------------------------------------------------------------------------------------*/
 
 /*
