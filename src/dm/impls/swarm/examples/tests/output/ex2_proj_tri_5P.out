@@ -1,0 +1,38 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 4
+  1-cells: 5
+  2-cells: 2
+Labels:
+  Face Sets: 1 strata with value/size (1 (4))
+  marker: 1 strata with value/size (1 (8))
+  depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
+  DMSWARM_PIC: Using method CellDM->LocatePoints
+  DMSWARM_PIC: Using method CellDM->GetNeigbors
+DM Object: Particles 1 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 10 
+  buffer             = 0 
+  allocated          = 10 
+  nfields registered = 5 
+    [  0]     DMSwarm_pid : Mem. usage       = 8.00e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 4.00e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2] DMSwarmPIC_coor : Mem. usage       = 1.60e-04 (MB) [rank0]
+                            blocksize        = 2 
+                            atomic size      = 16 [full block, bs=2]
+                            atomic size/item = 8 
+    [  3]  DMSwarm_cellid : Mem. usage       = 4.00e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  4]             w_q : Mem. usage       = 8.00e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+  Total mem. usage                           = 4.00e-04 (MB) (collective)
+DMSwarmComputeMassMatrix_Private: rStart = 0 rEnd = 9 colStart = 0 colEnd = 10
+L2 projection m ([m - m_p]/m) mass:  1.9827595801981e+00 (-5.5994e-16), x-momentum:  2.0080695584244e-01 (-1.2440e-15), energy:  7.4838693114397e-01 (-1.4835e-16).
