@@ -334,7 +334,6 @@ static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass
   ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMSwarmGetLocalSize(dmCoarse, &n);CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_SELF,"\t[%D]DMCreateMassMatrix_Swarm: m=%D n=%D\n",-1,m,n);
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
   ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
