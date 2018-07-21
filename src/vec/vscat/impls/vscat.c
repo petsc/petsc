@@ -5,7 +5,6 @@
   some special cases for parallel scatters.
 */
 
-#include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #if defined(PETSC_HAVE_VECCUDA)

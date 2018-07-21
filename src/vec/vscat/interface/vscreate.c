@@ -1,22 +1,12 @@
-
 /*
     The VECSCATTER (vec scatter) interface routines, callable by users.
 */
 
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>
 
 /* Logging support */
 PetscClassId VEC_SCATTER_CLASSID;
 
-#define VEC_SEQ_ID 0
-#define VEC_MPI_ID 1
-
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-extern PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
-#endif
-
-/* -------------------------------- */
 PetscFunctionList VecScatterList              = NULL;
 PetscBool         VecScatterRegisterAllCalled = PETSC_FALSE;
 
