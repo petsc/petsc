@@ -3,14 +3,12 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecscattercreate_         VECSCATTERCREATE
 #define vecscatterremap_          VECSCATTERREMAP
-#define vecscatterdestroy_        VECSCATTERDESTROY
 #define vecscatterview_           VECSCATTERVIEW
 #define vecscattercreatetoall_    VECSCATTERCREATETOALL
 #define vecscattercreatetozero_   VECSCATTERCREATETOZERO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecscattercreate_         vecscattercreate
 #define vecscatterremap_          vecscatterremap
-#define vecscatterdestroy_        vecscatterdestroy
 #define vecscatterview_           vecscatterview
 #define vecscattercreatetoall_    vecscattercreatetoall
 #define vecscattercreatetozero_   vecscattercreatetozero
@@ -40,11 +38,6 @@ PETSC_EXTERN void PETSC_STDCALL vecscatterremap_(VecScatter *scat,PetscInt *rto,
   CHKFORTRANNULLINTEGER(rto);
   CHKFORTRANNULLINTEGER(rfrom);
   *ierr = VecScatterRemap(*scat,rto,rfrom);
-}
-
-PETSC_EXTERN void PETSC_STDCALL vecscatterdestroy_(VecScatter *ctx, int *ierr)
-{
-  *ierr = VecScatterDestroy(ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL vecscatterview_(VecScatter *vecscatter,PetscViewer *viewer,PetscErrorCode *ierr)

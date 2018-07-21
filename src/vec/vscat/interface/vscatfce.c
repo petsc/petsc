@@ -156,7 +156,7 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecScatterDestroy - Destroys a scatter context created by
    VecScatterCreate().
 

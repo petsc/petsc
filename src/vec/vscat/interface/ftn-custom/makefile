@@ -3,12 +3,12 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zvscatf.c
+SOURCEC  = zvscatfcef.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscvec
-LOCDIR   = src/vec/vec/utils/ftn-custom/
+LOCDIR   = src/vec/vscat/interface/ftn-custom/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
