@@ -521,6 +521,38 @@ int main (int argc, char * argv[]) {
 
   test:
     suffix: proj_tri_mdx
-    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}
+    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+
+  test:
+    suffix: proj_tri_mdx_5P
+    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+
+  test:
+    suffix: proj_tri_3d
+    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}  -pc_type lu
+  
+  test:
+    suffix: proj_tri_3d_2_faces
+    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+  
+  test:
+    suffix: proj_tri_3d_5P
+    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+
+  test:
+    suffix: proj_tri_3d_mdx
+    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+
+  test:
+    suffix: proj_tri_3d_mdx_5P
+    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+  
+  test:
+    suffix: proj_tri_3d_mdx_2_faces
+    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+
+  test:
+    suffix: proj_tri_3d_mdx_5P_2_faces
+    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
 
 TEST*/
