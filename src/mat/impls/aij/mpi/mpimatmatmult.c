@@ -974,7 +974,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,rstart=A->rmap->rstart;
   PetscInt           *lnk,i, i1=0,pnz,row,*adpoi,*adpoj, *api, *adpoJ, *aopJ, *apJ,*Jptr, aopnz, nspacedouble=0,j,nzi,
                      *apj,apnz, *adpdi, *adpdj, *adpdJ, *poff_i, *poff_j, *j_temp, *aopothi, *aopothj;
-  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n, p_rowstart, p_rowend;
+  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n, p_colstart, p_colend;
   PetscBT            lnkbt;
   PetscScalar        *apa;
   PetscReal          afill;
@@ -985,7 +985,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(P, &p_rowstart, &p_rowend); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(P, &p_colstart, &p_colend); CHKERRQ(ierr);
 
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(&ptap);CHKERRQ(ierr);
@@ -1089,7 +1089,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 
     /* Correct indices from A_diag*P_diag */
     for(i1 = 0; i1 < adpdnz; i1++) {
-      adpdJ[i1] += p_rowstart;
+      adpdJ[i1] += p_colstart;
     }
     /* Merge j-arrays of A_diag * P_loc_off and A_diag * P_loc_diag and A_off * P_oth */
     Merge3SortedArrays(adponz, adpoJ, adpdnz, adpdJ, aopnz, aopJ, &apnz, apJ);
