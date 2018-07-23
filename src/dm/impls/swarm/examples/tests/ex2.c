@@ -75,7 +75,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->k                = 1;
   options->particleRelDx    = 1.e-20;
   options->meshRelDx        = 1.e-20;
-  options->momentTol        = 10.*PETSC_MACHINE_EPSILON;
+  options->momentTol        = 100.*PETSC_MACHINE_EPSILON;
   ierr = PetscStrcpy(options->meshFilename, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");CHKERRQ(ierr);
