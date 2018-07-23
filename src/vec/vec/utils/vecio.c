@@ -424,7 +424,7 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   if (v->ndim != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%D)", v->ndim);
   ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
   rstart_t = rstart;
-  N_t  = rstart + n;
+  N_t  = n;
   sel  = adios_selection_boundingbox (v->ndim, &rstart_t, &N_t);
   ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
   adios_schedule_read(adios->adios_fp, sel, vname, 0, 1, x);
