@@ -645,34 +645,23 @@ PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
   int64_t           id;
   PetscInt          n,N,rstart;
   const PetscScalar *array;
-  size_t            len;
-  char              *vname,*nname,nlocalname[16],coffset[16];
+  char              nglobalname[16],nlocalname[16],coffset[16];
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
-  ierr = PetscStrlen(vecname,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc(len+2,&nname);CHKERRQ(ierr);
-  ierr = PetscStrcpy(nname,vecname);CHKERRQ(ierr);
-  ierr = PetscStrcat(nname,"_n");CHKERRQ(ierr);
-  ierr = PetscMalloc(len+6,&vname);CHKERRQ(ierr);
-  ierr = PetscStrcpy(vname,vecname);CHKERRQ(ierr);
-  ierr = PetscStrcat(vname,"_value");CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
   ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
-  id   = adios_define_var(Petsc_adios_group,nname,"",adios_integer,"","","");CHKERRQ(ierr);
-  ierr = adios_write_byid(adios->adios_handle,id,&N);CHKERRQ(ierr);
 
   sprintf(nlocalname,"%d",(int)n);
+  sprintf(nglobalname,"%d",(int)N);
   sprintf(coffset,"%d",(int)rstart);
-  id   = adios_define_var(Petsc_adios_group,vname,"",adios_double,nlocalname,nname,coffset);CHKERRQ(ierr);
+  id   = adios_define_var(Petsc_adios_group,vecname,"",adios_double,nlocalname,nglobalname,coffset);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = adios_write_byid(adios->adios_handle,id,array);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
 
-  ierr = PetscFree(nname);CHKERRQ(ierr);
-  ierr = PetscFree(vname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
