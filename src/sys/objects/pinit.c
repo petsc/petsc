@@ -610,6 +610,9 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 #include <adios_read.h>
 extern int64_t Petsc_adios_group;
 #endif
+#if defined(PETSC_HAVE_ADIOS2)
+#include <adios2_c.h>
+#endif
 
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI.
@@ -1010,6 +1013,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);
   ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_ADIOS2)
+#endif
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -1109,6 +1114,8 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_ADIOS)
   ierr = adios_read_finalize_method(ADIOS_READ_METHOD_BP_AGGREGATE);CHKERRQ(ierr);
   ierr = adios_finalize(rank);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ADIOS2)
 #endif
   ierr = PetscOptionsHasName(NULL,NULL,"-citations",&flg);CHKERRQ(ierr);
   if (flg) {
