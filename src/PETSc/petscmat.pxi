@@ -182,6 +182,7 @@ cdef extern from * nogil:
     int MatMPISBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
     int MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
     int MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
+    int MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
 
     int MatSetOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
