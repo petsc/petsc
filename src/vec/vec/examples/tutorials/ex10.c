@@ -188,6 +188,7 @@ int main(int argc,char **args)
 
      test:
        suffix: 4
+       requires: hdf5
        nsize: 2
        args: -hdf5
 
@@ -198,6 +199,7 @@ int main(int argc,char **args)
 
      test:
        suffix: 6
+       requires: hdf5
        nsize: 4
        args: -hdf5 -sizes_set
 
