@@ -566,7 +566,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i = 0; i < n_local_true; ++i) {
       
     /* solve the overlapping i-block */
-    ierr = KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
 
     if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution */
      ierr = VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward);CHKERRQ(ierr);

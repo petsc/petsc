@@ -271,4 +271,8 @@ PetscErrorCode FormMatrix(Mat jac,void *ctx)
       filter: sed 's/ATOL/RTOL/g'
       requires: !single
 
+   test:
+      suffix: transpose_asm
+      args: -symmetric false -ksp_monitor -ksp_view -pc_type asm -sub_pc_type lu
+
 TEST*/
