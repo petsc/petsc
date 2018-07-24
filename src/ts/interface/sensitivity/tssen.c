@@ -1123,8 +1123,6 @@ PetscErrorCode TSAdjointStep(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
-  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts,"-ts_view_solution");CHKERRQ(ierr);
-
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
   if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
