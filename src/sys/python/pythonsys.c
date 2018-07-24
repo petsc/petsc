@@ -53,9 +53,10 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[PETSC_MAX_
 
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
 {
-  const char     cmdline1[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
+  const char     cmdline1[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
   const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
-  const char     cmdline3[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
+  const char     cmdline3[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
+
   PetscBool      found = PETSC_FALSE;
   PetscErrorCode ierr;
 
