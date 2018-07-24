@@ -10,5 +10,4 @@ typedef struct {
   ADIOS_FILE    *adios_fp;
 } PetscViewer_ADIOS;
 
-extern int64_t Petsc_adios_group;
 #endif

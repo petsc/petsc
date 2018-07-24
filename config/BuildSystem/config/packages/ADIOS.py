@@ -29,15 +29,39 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Add ADIOS specific configure arguments'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('--with-mpi="'+self.mpi.directory+'"')
-    if self.hdf5.found:
-      args.append('--with-phdf5="'+self.hdf5.directory+'"')
-    if self.netcdf.found:
-      args.append('--with-nc4par="'+self.netcdf.directory+'"')
-    if self.zlib.found:
-      args.append('--with-zlib="'+self.zlib.directory+'"')
-    if not hasattr(self.compilers, 'FC'):
+    self.framework.pushLanguage('C')
+    args.append('MPICC="'+self.framework.getCompiler()+'"')
+    self.framework.popLanguage()
+    if hasattr(self.compilers, 'CXX'):
+      self.framework.pushLanguage('Cxx')
+      args.append('MPICXX="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('MPIFC="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
+    else:
       args.append('--disable-fortran')
+    if self.hdf5.found:
+      args.append('--with-phdf5=yes')
+      args.append('--with-phdf5-incdir='+self.installDir)
+      args.append('--with-phdf5-libdir='+self.installDir)
+      args.append('--with-phdf5-libs=" "')
+    if self.netcdf.found:
+      args.append('--with-nc4par=yes')
+      args.append('--with-nc4par-incdir='+self.installDir)
+      args.append('--with-nc4par-libdir='+self.installDir)
+      args.append('--with-nc4par-libs=" "')
+      args.append('NETCDF_LIBS=" "')
+    if self.zlib.found:
+      args.append('--with-zlib=yes')
+      args.append('--with-zlib-incdir='+self.installDir)
+      args.append('--with-zlib-libdir='+self.installDir)
+      args.append('--with-zlib-libs=" "')
+      args.append('ZLIB_LIBS=" "')
+
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
 
     return args
 

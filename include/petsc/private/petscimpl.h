@@ -905,4 +905,8 @@ extern PetscSpinlock PetscCommSpinLock;
 #endif
 #endif
 
+#if defined(PETSC_HAVE_ADIOS)
+PETSC_EXTERN int64_t Petsc_adios_group;
+#endif
+
 #endif /* _PETSCHEAD_H */

@@ -608,7 +608,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 #if defined(PETSC_HAVE_ADIOS)
 #include <adios.h>
 #include <adios_read.h>
-extern int64_t Petsc_adios_group;
+int64_t Petsc_adios_group;
 #endif
 #if defined(PETSC_HAVE_ADIOS2)
 #include <adios2_c.h>
@@ -1009,7 +1009,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_ADIOS)
   ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",0);CHKERRQ(ierr);
+  ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",adios_stat_default);CHKERRQ(ierr);
   ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);
   ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
 #endif

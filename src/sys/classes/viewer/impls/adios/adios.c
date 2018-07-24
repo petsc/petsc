@@ -2,8 +2,6 @@
 #include <adios.h>
 #include <adios_read.h>
 
-int64_t Petsc_adios_group;
-
 #include <petsc/private/vieweradiosimpl.h>
 
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS(PetscOptionItems *PetscOptionsObject,PetscViewer v)

@@ -85,7 +85,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ADIOS)
+#if defined(PETSC_HAVE_ADIOS2)
   } else if (isadios2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerADIOS2Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
