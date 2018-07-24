@@ -1,9 +1,5 @@
 #include <petsc/private/viewerimpl.h>    /*I   "petscsys.h"   I*/
-#include <adios.h>
-#include <adios_read.h>
-
-int64_t Petsc_adios_group;
-
+#include <adios2_c.h>
 #include <petsc/private/vieweradios2impl.h>
 
 static PetscErrorCode PetscViewerSetFromOptions_ADIOS2(PetscOptionItems *PetscOptionsObject,PetscViewer v)
