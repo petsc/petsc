@@ -197,15 +197,19 @@ struct _p_TS {
   Vec *vecs_sensi2;
   Vec *vecs_sensi2p;
   Vec vec_dir; /* directional vector for optimization */
-  Vec *vecs_fuu;
-  Vec *vecs_fup;
-  Vec *vecs_fpu;
-  Vec *vecs_fpp;
-  void *ihessianproductctx;
+  Vec *vecs_fuu,*vecs_guu;
+  Vec *vecs_fup,*vecs_gup;
+  Vec *vecs_fpu,*vecs_gpu;
+  Vec *vecs_fpp,*vecs_gpp;
+  void *ihessianproductctx,*rhshessianproductctx;
   PetscErrorCode (*ihessianproduct_fuu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
   PetscErrorCode (*ihessianproduct_fup)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
   PetscErrorCode (*ihessianproduct_fpu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
   PetscErrorCode (*ihessianproduct_fpp)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_guu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gup)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gpu)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
+  PetscErrorCode (*rhshessianproduct_gpp)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */
   Mat       mat_sensip;              /* matrix storing forward sensitivities */

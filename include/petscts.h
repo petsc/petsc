@@ -269,6 +269,15 @@ PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunction1(TS,PetscReal,Vec,V
 PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunction2(TS,PetscReal,Vec,Vec*,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunction3(TS,PetscReal,Vec,Vec*,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunction4(TS,PetscReal,Vec,Vec*,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSSetRHSHessianProduct(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                                    Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                                    Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                                    Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                                    void*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunction1(TS,PetscReal,Vec,Vec*,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunction2(TS,PetscReal,Vec,Vec*,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunction3(TS,PetscReal,Vec,Vec*,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunction4(TS,PetscReal,Vec,Vec*,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetCostHessianProducts(TS,PetscInt,Vec*,Vec*,Vec);
 PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS,PetscInt*,Vec**,Vec**,Vec*);
 

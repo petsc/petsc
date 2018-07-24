@@ -629,6 +629,193 @@ PetscErrorCode TSComputeIHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl
   PetscFunctionReturn(0);
 }
 
+/*@C
+  TSSetRHSHessianProduct - Sets the function that computes the vecotr-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts - TS context obtained from TSCreate()
+. rhshp1 - an array of vectors storing the result of vector-Hessian-vector product for G_UU
+. hessianproductfunc1 - vector-Hessian-vector product function for G_UU
+. rhshp2 - an array of vectors storing the result of vector-Hessian-vector product for G_UP
+. hessianproductfunc2 - vector-Hessian-vector product function for G_UP
+. rhshp3 - an array of vectors storing the result of vector-Hessian-vector product for G_PU
+. hessianproductfunc3 - vector-Hessian-vector product function for G_PU
+. rhshp4 - an array of vectors storing the result of vector-Hessian-vector product for G_PP
+. hessianproductfunc4 - vector-Hessian-vector product function for G_PP
+
+  Calling sequence of ihessianproductfunc:
+$ rhshessianproductfunc (TS ts,PetscReal t,Vec U,Vec Vl,Vec Vr,Vec VHV,void *ctx);
++   t - current timestep
+.   U - input vector (current ODE solution)
+.   Vl - input vector to be left-multiplied with the Hessian
+.   Vr - input vector to be right-multiplied with the Hessian
+.   VHV - output vector for vector-Hessian-vector product
+-   ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+Note: The first Hessian function and the working array are required.
+
+.keywords: TS, sensitivity
+
+.seealso:
+@*/
+PetscErrorCode TSSetRHSHessianProduct(TS ts,Vec *rhshp1,PetscErrorCode (*rhshessianproductfunc1)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *rhshp2,PetscErrorCode (*rhshessianproductfunc2)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *rhshp3,PetscErrorCode (*rhshessianproductfunc3)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                          Vec *rhshp4,PetscErrorCode (*rhshessianproductfunc4)(TS,PetscReal,Vec,Vec*,Vec,Vec*,void*),
+                                    void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(rhshp1,2);
+
+  ts->rhshessianproductctx = ctx;
+  if (rhshp1) ts->vecs_guu = rhshp1;
+  if (rhshp2) ts->vecs_gup = rhshp2;
+  if (rhshp3) ts->vecs_gpu = rhshp3;
+  if (rhshp4) ts->vecs_gpp = rhshp4;
+  ts->rhshessianproduct_guu = rhshessianproductfunc1;
+  ts->rhshessianproduct_gup = rhshessianproductfunc2;
+  ts->rhshessianproduct_gpu = rhshessianproductfunc3;
+  ts->rhshessianproduct_gpp = rhshessianproductfunc4;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeRHSHessianProductFunction1 - Runs the user-defined vector-Hessian-vector product function for Guu.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeRHSHessianProductFunction1() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetRHSHessianProduct()
+@*/
+PetscErrorCode TSComputeRHSHessianProductFunction1(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!VHV) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user RHSHessianProduct function 1 for sensitivity analysis");
+  ierr = (*ts->rhshessianproduct_guu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeRHSHessianProductFunction2 - Runs the user-defined vector-Hessian-vector product function for Gup.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeRHSHessianProductFunction2() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetRHSHessianProduct()
+@*/
+PetscErrorCode TSComputeRHSHessianProductFunction2(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!VHV) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user RHSHessianProduct function 2 for sensitivity analysis");
+  ierr = (*ts->rhshessianproduct_gup)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeRHSHessianProductFunction3 - Runs the user-defined vector-Hessian-vector product function for Gpu.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeRHSHessianProductFunction3() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetRHSHessianProduct()
+@*/
+PetscErrorCode TSComputeRHSHessianProductFunction3(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!VHV) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user RHSHessianProduct function 3 for sensitivity analysis");
+  ierr = (*ts->rhshessianproduct_gpu)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSComputeRHSHessianProductFunction4 - Runs the user-defined vector-Hessian-vector product function for Gpp.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeRHSHessianProductFunction4() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+
+.seealso: TSSetRHSHessianProduct()
+@*/
+PetscErrorCode TSComputeRHSHessianProductFunction4(TS ts,PetscReal t,Vec U,Vec *Vl,Vec Vr,Vec *VHV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!VHV) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+
+  PetscStackPush("TS user RHSHessianProduct function 3 for sensitivity analysis");
+  ierr = (*ts->rhshessianproduct_gpp)(ts,t,U,Vl,Vr,VHV,ts->rhshessianproductctx);CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------- Adjoint sensitivity ---------------------------*/
 
 /*@
