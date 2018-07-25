@@ -4,11 +4,20 @@ def node_name = alljob[0]
 def arch_name = alljob[1]
 
 pipeline { 
-    agent { node { label node_name} }
+    agent { 
+        node { 
+            label node_name
+            customWorkspace "${arch_name}/${BRANCH_NAME}"
+        } 
+    }
     
     stages {
         stage('Local Merge') {
             steps {
+                echo "Current dir: ${pwd()}"
+                echo "Workspace variable: ${WORKSPACE}"
+                echo "Running on node: ${node_name}"
+                echo "Building for arch: ${arch_name}"
                 checkout scm
             }
         }
@@ -24,7 +33,12 @@ pipeline {
         }
         stage('Examples') {
             steps {
-                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} -f gmakefile test"    
+                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} -f gmakefile test" 
+            }
+            post {
+                always {
+                    junit "**/${arch_name}/tests/testresults.xml"
+                }
             }
         }
     }  
