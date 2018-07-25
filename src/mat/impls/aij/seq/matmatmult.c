@@ -1543,12 +1543,6 @@ void appendToArray(PetscInt val, PetscInt *array, PetscInt *cnzi)
   array[(*cnzi)++] = val;
 }
 
-/* Needed for qsort in MatMatMult_SeqAIJ_SeqAIJ_Combined() */
-PetscInt cmpfunc (const void * a, const void * b)
-{
-   return ( *(PetscInt*)a - *(PetscInt*)b );
-}
-
 /* This algorithm combines the symbolic and numeric phase of matrix-matrix multiplication. */
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat *C)
 {
@@ -1611,7 +1605,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
     }
 
     /* Sort array */
-    qsort(cj_i, cnzi, sizeof(PetscInt), cmpfunc);
+    ierr = PetscSortInt(cnzi, cj_i);CHKERRQ(ierr);
     /* Step 4 */
     for (k=0; k < cnzi; k++) {
       ca_i[k] = c_row_val_dense[cj_i[k]];
