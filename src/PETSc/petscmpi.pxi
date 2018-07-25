@@ -6,6 +6,9 @@ cdef extern from * nogil:
     MPI_Comm MPI_COMM_SELF
     MPI_Comm MPI_COMM_WORLD
 
+    MPI_Datatype MPI_DATATYPE_NULL
+    MPI_Op       MPI_OP_NULL
+
     enum: MPI_IDENT
     enum: MPI_CONGRUENT
     int MPI_Comm_compare(MPI_Comm,MPI_Comm,int*)
@@ -33,8 +36,10 @@ cdef extern from * nogil:
 cdef extern from "cython.h":
     void *Cython_ImportFunction(object, char[], char[]) except? NULL
 
-ctypedef MPI_Comm* PyMPICommGet(object) except NULL
-ctypedef object    PyMPICommNew(MPI_Comm)
+ctypedef MPI_Comm*     PyMPICommGet(object) except NULL
+ctypedef object        PyMPICommNew(MPI_Comm)
+ctypedef MPI_Datatype* PyMPIDatatypeGet(object) except NULL
+ctypedef MPI_Op*       PyMPIOpGet(object) except NULL
 
 cdef inline MPI_Comm mpi4py_Comm_Get(object comm) except *:
     from mpi4py import MPI
@@ -53,6 +58,26 @@ cdef inline object mpi4py_Comm_New(MPI_Comm comm):
         MPI, b"PyMPIComm_New", b"PyObject *(MPI_Comm)")
     if commnew == NULL: return None
     return commnew(comm)
+
+cdef inline MPI_Datatype mpi4py_Datatype_Get(object datatype) except *:
+    from mpi4py import MPI
+    cdef PyMPIDatatypeGet *datatypeget = \
+        <PyMPIDatatypeGet*> Cython_ImportFunction(
+        MPI, b"PyMPIDatatype_Get", b"MPI_Datatype *(PyObject *)")
+    if datatypeget == NULL: return MPI_DATATYPE_NULL
+    cdef MPI_Datatype *ptr = datatypeget(datatype)
+    if ptr == NULL: return MPI_DATATYPE_NULL
+    return ptr[0]
+
+cdef inline MPI_Op mpi4py_Op_Get(object op) except *:
+    from mpi4py import MPI
+    cdef PyMPIOpGet *opget = \
+        <PyMPIOpGet*> Cython_ImportFunction(
+        MPI, b"PyMPIOp_Get", b"MPI_Op *(PyObject *)")
+    if opget == NULL: return MPI_OP_NULL
+    cdef MPI_Op *ptr = opget(op)
+    if ptr == NULL: return MPI_OP_NULL
+    return ptr[0]
 
 # --------------------------------------------------------------------
 

@@ -23,5 +23,21 @@ cdef extern from * nogil:
     int PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const_PetscInt*,PetscCopyMode,PetscSFNode*,PetscCopyMode)
     int PetscSFSetRankOrder(PetscSF,PetscBool)
 
+    int PetscSFComputeDegreeBegin(PetscSF,const_PetscInt**)
+    int PetscSFComputeDegreeEnd(PetscSF,const_PetscInt**)
     int PetscSFGetMultiSF(PetscSF,PetscSF*)
     int PetscSFCreateInverseSF(PetscSF,PetscSF*)
+
+    int PetscSFCreateEmbeddedSF(PetscSF,PetscInt,const_PetscInt*,PetscSF*)
+    int PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const_PetscInt*,PetscSF*)
+
+    int PetscSFBcastBegin(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFBcastEnd(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFReduceBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
+    int PetscSFReduceEnd(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
+    int PetscSFScatterBegin(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFScatterEnd(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFGatherBegin(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFGatherEnd(PetscSF,MPI_Datatype,const void*,void*)
+    int PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
+    int PetscSFFetchAndOpEnd(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
