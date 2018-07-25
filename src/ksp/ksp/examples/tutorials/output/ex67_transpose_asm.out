@@ -1,5 +1,6 @@
   0 KSP Residual norm 9.498551328864e-01 
   1 KSP Residual norm 1.118520285740e-16 
+Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -22,7 +23,7 @@ PC Object: 1 MPI processes
     PC Object: (sub_) 1 MPI processes
       type: lu
         out-of-place factorization
-        tolerance for zero pivot 2.22045e-14
+        tolerance for zero pivot 1e-16
         matrix ordering: nd
         factor fill ratio given 5., needed 1.4
           Factored matrix follows:
@@ -51,3 +52,4 @@ PC Object: 1 MPI processes
       not using I-node routines
   0 KSP Residual norm 4.716750439283e-02 
   1 KSP Residual norm 7.423680515748e-18 
+Linear solve converged due to CONVERGED_RTOL iterations 1
