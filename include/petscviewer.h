@@ -31,6 +31,8 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERSAWS         "saws"
 #define PETSCVIEWERGLVIS        "glvis"
+#define PETSCVIEWERADIOS        "adios"
+#define PETSCVIEWERADIOS2       "adios2"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
@@ -44,6 +46,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscVie
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIISetFILE(PetscViewer,FILE*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerADIOSOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerADIOS2Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer,PetscBool);
