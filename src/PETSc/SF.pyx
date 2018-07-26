@@ -68,16 +68,25 @@ cdef class SF(Object):
         remote = remote.reshape(nleaves, 2)
         return toInt(nroots), toInt(nleaves), local, remote
 
-    def setGraph(self, nroots, nleaves, local, remote):
+    def setGraph(self, nroots, local, remote):
+        """
+        The nleaves argument is determined from the shape of local and/or remote.
+        local may be None, meaning contiguous storage.
+        remote should be 2*nleaves long as (rank, index) pairs.
+        """
         cdef PetscInt cnroots = asInt(nroots)
-        cdef PetscInt cnleaves = asInt(nleaves)
-        cdef PetscInt nlocal = 0
+        cdef PetscInt nleaves
+        cdef PetscInt nremote
         cdef const_PetscInt *ilocal = NULL
         cdef const_PetscSFNode* iremote = NULL
+        nremote = asInt(remote.reshape(-1).shape[0])
         if local is not None:
-            local = iarray_i(local, &nlocal, &ilocal)
-        remote = iarray_i(remote.reshape(-1), &nlocal, <const_PetscInt **>&iremote)
-        CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES) )
+            local = iarray_i(local, &nleaves, &ilocal)
+            assert 2*nleaves == nremote
+        else:
+            assert nremote % 2 == 0
+            nleaves = nremote // 2
+        CHKERR( PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES) )
 
     def setRankOrder(self, flag):
         cdef PetscBool bval = flag
