@@ -329,14 +329,6 @@ cdef class Mat(Object):
         Mat_AllocAIJ_CSR(self.mat, csr)
         return self
 
-    def setPreallocationIS(self, nnz, onnz):
-        cdef PetscInt *cnnz = NULL
-        cdef PetscInt *connz = NULL
-        nnz = iarray_i(nnz, NULL, &cnnz)
-        onnz = iarray_i(onnz, NULL, &connz)
-        CHKERR( MatISSetPreallocation(self.mat, 0, cnnz, 0, connz) )
-        return self
-
     def createAIJWithArrays(self, size, csr, bsize=None, comm=None):
         # communicator
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -1400,6 +1392,14 @@ cdef class Mat(Object):
 
     def setISLocalMat(self, Mat local not None):
         CHKERR( MatISSetLocalMat(self.mat, local.mat) )
+
+    def setISPreallocation(self, nnz, onnz):
+        cdef PetscInt *cnnz = NULL
+        cdef PetscInt *connz = NULL
+        nnz = iarray_i(nnz, NULL, &cnnz)
+        onnz = iarray_i(onnz, NULL, &connz)
+        CHKERR( MatISSetPreallocation(self.mat, 0, cnnz, 0, connz) )
+        return self
 
     # LRC
 
