@@ -182,6 +182,7 @@ cdef extern from * nogil:
     int MatMPISBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
     int MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
     int MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
+    int MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
 
     int MatSetOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
@@ -317,6 +318,10 @@ cdef extern from * nogil:
     int MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
     int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
+    int MatISFixLocalEmpty(PetscMat,PetscBool)
+    int MatISGetLocalMat(PetscMat,PetscMat*)
+    int MatISRestoreLocalMat(PetscMat,PetscMat*)
+    int MatISSetLocalMat(PetscMat,PetscMat)
     ctypedef char* PetscMatSolverType "const char*"
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE

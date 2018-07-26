@@ -1371,6 +1371,32 @@ cdef class Mat(Object):
     def setUnfactored(self):
         CHKERR( MatSetUnfactored(self.mat) )
 
+    # IS
+
+    def fixISLocalEmpty(self, fix):
+        cdef PetscBool cfix = asBool(fix)
+        CHKERR( MatISFixLocalEmpty(self.mat, cfix) )
+
+    def getISLocalMat(self):
+        cdef Mat local = Mat()
+        CHKERR( MatISGetLocalMat(self.mat, &local.mat) )
+        PetscINCREF(local.obj)
+        return local
+
+    def restoreISLocalMat(self, Mat local not None):
+        CHKERR( MatISRestoreLocalMat(self.mat, &local.mat) )
+
+    def setISLocalMat(self, Mat local not None):
+        CHKERR( MatISSetLocalMat(self.mat, local.mat) )
+
+    def setISPreallocation(self, nnz, onnz):
+        cdef PetscInt *cnnz = NULL
+        cdef PetscInt *connz = NULL
+        nnz = iarray_i(nnz, NULL, &cnnz)
+        onnz = iarray_i(onnz, NULL, &connz)
+        CHKERR( MatISSetPreallocation(self.mat, 0, cnnz, 0, connz) )
+        return self
+
     # LRC
 
     def getLRCMats(self):
