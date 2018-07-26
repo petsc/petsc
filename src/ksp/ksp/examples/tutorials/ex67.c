@@ -273,6 +273,6 @@ PetscErrorCode FormMatrix(Mat jac,void *ctx)
 
    test:
       suffix: transpose_asm
-      args: -symmetric false -ksp_monitor -ksp_view -pc_type asm -sub_pc_type lu -sub_pc_factor_zeropivot 1.e-16 -ksp_converged_reason
+      args: -symmetric false -ksp_monitor -ksp_view -pc_type asm -sub_pc_type lu -sub_pc_factor_zeropivot 1.e-33 -ksp_converged_reason
 
 TEST*/
