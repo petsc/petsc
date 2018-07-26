@@ -56,6 +56,7 @@ cdef class SF(Object):
     #
 
     def getGraph(self):
+        """nleaves can be determined from the shape of local"""
         cdef PetscInt nroots = 0, nleaves = 0
         cdef const_PetscInt *ilocal = NULL
         cdef const_PetscSFNode *iremote = NULL
@@ -66,7 +67,7 @@ cdef class SF(Object):
             local = array_i(nleaves, ilocal)
         remote = array_i(nleaves*2, <const PetscInt*>iremote)
         remote = remote.reshape(nleaves, 2)
-        return toInt(nroots), toInt(nleaves), local, remote
+        return toInt(nroots), local, remote
 
     def setGraph(self, nroots, local, remote):
         """
