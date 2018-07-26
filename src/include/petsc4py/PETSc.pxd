@@ -8,6 +8,12 @@ cdef extern from "petsc.h":
     ctypedef struct _p_MPI_Comm
     ctypedef _p_MPI_Comm* MPI_Comm
 
+    ctypedef struct _p_MPI_Op
+    ctypedef _p_MPI_Op* MPI_Op
+
+    ctypedef struct _p_MPI_Datatype
+    ctypedef _p_MPI_Datatype* MPI_Datatype
+
     ctypedef struct _p_PetscObject
     ctypedef _p_PetscObject* PetscObject
 

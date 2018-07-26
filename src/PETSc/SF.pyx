@@ -56,35 +56,42 @@ cdef class SF(Object):
     #
 
     def getGraph(self):
+        """nleaves can be determined from the shape of local"""
         cdef PetscInt nroots = 0, nleaves = 0
         cdef const_PetscInt *ilocal = NULL
         cdef const_PetscSFNode *iremote = NULL
         CHKERR( PetscSFGetGraph(self.sf, &nroots, &nleaves, &ilocal, &iremote) )
-        local = array_i(nleaves, ilocal)
-        remote = []
-        for i in range(toInt(nleaves)):
-            sfnode = (toInt(iremote[asInt(i)].rank), toInt(iremote[asInt(i)].index))
-            remote.append( sfnode )
-        return toInt(nroots), toInt(nleaves), local, remote
+        if ilocal == NULL:
+            local = arange(0, nleaves, 1)
+        else:
+            local = array_i(nleaves, ilocal)
+        remote = array_i(nleaves*2, <const PetscInt*>iremote)
+        remote = remote.reshape(nleaves, 2)
+        return toInt(nroots), local, remote
 
-    def setGraph(self, nroots, nleaves, local, remote):
+    def setGraph(self, nroots, local, remote):
+        """
+        The nleaves argument is determined from the shape of local and/or remote.
+        local may be None, meaning contiguous storage.
+        remote should be 2*nleaves long as (rank, index) pairs.
+        """
         cdef PetscInt cnroots = asInt(nroots)
-        cdef PetscInt cnleaves = asInt(nleaves)
-        cdef PetscInt nlocal = 0
-        cdef PetscInt *ilocal = NULL
-        local = iarray_i(local, &nlocal, &ilocal)
-        cdef PetscSFNode* iremote = NULL
-        CHKERR( PetscMalloc(nleaves*sizeof(PetscSFNode), &iremote) )
-        cdef int i = 0
-        for rank, index in remote:
-            iremote[i].rank  = asInt(rank)
-            iremote[i].index = asInt(index)
-            i += 1
-        CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_OWN_POINTER) )
+        cdef PetscInt nleaves
+        cdef PetscInt nremote
+        cdef const_PetscInt *ilocal = NULL
+        cdef const_PetscSFNode* iremote = NULL
+        nremote = asInt(remote.reshape(-1).shape[0])
+        if local is not None:
+            local = iarray_i(local, &nleaves, &ilocal)
+            assert 2*nleaves == nremote
+        else:
+            assert nremote % 2 == 0
+            nleaves = nremote // 2
+        CHKERR( PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES) )
 
     def setRankOrder(self, flag):
         cdef PetscBool bval = flag
-        CHKERR( PetscSFSetRankOrder(self.sf, bval) ) 
+        CHKERR( PetscSFSetRankOrder(self.sf, bval) )
 
     #
 
@@ -98,6 +105,87 @@ cdef class SF(Object):
         cdef SF sf = SF()
         CHKERR( PetscSFCreateInverseSF(self.sf, &sf.sf) )
         return sf
+
+    def computeDegree(self):
+        cdef const_PetscInt *cdegree = NULL
+        cdef PetscInt nroots
+        CHKERR( PetscSFComputeDegreeBegin(self.sf, &cdegree) )
+        CHKERR( PetscSFComputeDegreeEnd(self.sf, &cdegree) )
+        CHKERR( PetscSFGetGraph(self.sf, &nroots, NULL, NULL, NULL) )
+        degree = array_i(nroots, cdegree)
+        return degree
+
+    def createEmbeddedSF(self, selected):
+        cdef PetscInt nroots = asInt(len(selected))
+        cdef const_PetscInt *cselected = NULL
+        cdef SF sf = SF()
+        selected = iarray_i(selected, &nroots, &cselected)
+        CHKERR( PetscSFCreateEmbeddedSF(self.sf, nroots, cselected, &sf.sf) )
+        return sf
+
+    def createEmbeddedLeafSF(self, selected):
+        cdef PetscInt nleaves = asInt(len(selected))
+        cdef const_PetscInt *cselected = NULL
+        cdef SF sf = SF()
+        selected = iarray_i(selected, &nleaves, &cselected)
+        CHKERR( PetscSFCreateEmbeddedLeafSF(self.sf, nleaves, cselected, &sf.sf) )
+        return sf
+
+    def bcastBegin(self, unit, ndarray rootdata, ndarray leafdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFBcastBegin(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
+                                  <void*>PyArray_DATA(leafdata)) )
+
+    def bcastEnd(self, unit, ndarray rootdata, ndarray leafdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFBcastEnd(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
+                                <void*>PyArray_DATA(leafdata)) )
+
+    def reduceBegin(self, unit, ndarray leafdata, ndarray rootdata, op):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
+        CHKERR( PetscSFReduceBegin(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
+                                   <void*>PyArray_DATA(rootdata), cop) )
+
+    def reduceEnd(self, unit, ndarray leafdata, ndarray rootdata, op):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
+        CHKERR( PetscSFReduceEnd(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
+                                 <void*>PyArray_DATA(rootdata), cop) )
+
+    def scatterBegin(self, unit, ndarray multirootdata, ndarray leafdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFScatterBegin(self.sf, dtype, <const void*>PyArray_DATA(multirootdata),
+                                    <void*>PyArray_DATA(leafdata)) )
+
+    def scatterEnd(self, unit, ndarray multirootdata, ndarray leafdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFScatterEnd(self.sf, dtype, <const void*>PyArray_DATA(multirootdata),
+                                  <void*>PyArray_DATA(leafdata)) )
+
+    def gatherBegin(self, unit, ndarray leafdata, ndarray multirootdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFGatherBegin(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
+                                   <void*>PyArray_DATA(multirootdata)) )
+
+    def gatherEnd(self, unit, ndarray leafdata, ndarray multirootdata):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        CHKERR( PetscSFGatherEnd(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
+                                 <void*>PyArray_DATA(multirootdata)) )
+
+    def fetchAndOpBegin(self, unit, rootdata, leafdata, leafupdate, op):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
+        CHKERR( PetscSFFetchAndOpBegin(self.sf, dtype, <void*>PyArray_DATA(rootdata),
+                                       <const void*>PyArray_DATA(leafdata),
+                                       <void*>PyArray_DATA(leafupdate), cop) )
+
+    def fetchAndOpEnd(self, unit, rootdata, leafdata, leafupdate, op):
+        cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        cdef MPI_Op cop = mpi4py_Op_Get(op)
+        CHKERR( PetscSFFetchAndOpEnd(self.sf, dtype, <void*>PyArray_DATA(rootdata),
+                                     <const void*>PyArray_DATA(leafdata),
+                                     <void*>PyArray_DATA(leafupdate), cop) )
 
 # --------------------------------------------------------------------
 
