@@ -83,6 +83,8 @@ cdef extern from "scalar.h":
 
 cdef inline object toBool(PetscBool value):
     return True if value else False
+cdef inline PetscBool asBool(object value) except? <PetscBool>0:
+    return PETSC_TRUE if value else PETSC_FALSE
 
 cdef inline object toInt(PetscInt value):
     return value
