@@ -1374,11 +1374,7 @@ cdef class Mat(Object):
     # IS
 
     def fixISLocalEmpty(self, fix):
-        cdef PetscBool cfix
-        if fix:
-            cfix = PETSC_TRUE
-        else:
-            cfix = PETSC_FALSE
+        cdef PetscBool cfix = asBool(fix)
         CHKERR( MatISFixLocalEmpty(self.mat, cfix) )
 
     def getISLocalMat(self):
