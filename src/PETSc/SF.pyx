@@ -56,7 +56,7 @@ cdef class SF(Object):
     #
 
     def getGraph(self):
-        """nleaves can be determined from the shape of local"""
+        """nleaves can be determined from the size of local"""
         cdef PetscInt nroots = 0, nleaves = 0
         cdef const_PetscInt *ilocal = NULL
         cdef const_PetscSFNode *iremote = NULL
@@ -71,16 +71,16 @@ cdef class SF(Object):
 
     def setGraph(self, nroots, local, remote):
         """
-        The nleaves argument is determined from the shape of local and/or remote.
+        The nleaves argument is determined from the size of local and/or remote.
         local may be None, meaning contiguous storage.
         remote should be 2*nleaves long as (rank, index) pairs.
         """
         cdef PetscInt cnroots = asInt(nroots)
-        cdef PetscInt nleaves
-        cdef PetscInt nremote
-        cdef const_PetscInt *ilocal = NULL
-        cdef const_PetscSFNode* iremote = NULL
-        nremote = asInt(remote.reshape(-1).shape[0])
+        cdef PetscInt nleaves = 0
+        cdef PetscInt nremote = 0
+        cdef PetscInt *ilocal = NULL
+        cdef PetscSFNode* iremote = NULL
+        remote = iarray_i(remote, &nremote, <PetscInt*>&iremote)
         if local is not None:
             local = iarray_i(local, &nleaves, &ilocal)
             assert 2*nleaves == nremote
@@ -90,7 +90,7 @@ cdef class SF(Object):
         CHKERR( PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES) )
 
     def setRankOrder(self, flag):
-        cdef PetscBool bval = flag
+        cdef PetscBool bval = asBool(flag)
         CHKERR( PetscSFSetRankOrder(self.sf, bval) )
 
     #
@@ -117,17 +117,17 @@ cdef class SF(Object):
 
     def createEmbeddedSF(self, selected):
         cdef PetscInt nroots = asInt(len(selected))
-        cdef const_PetscInt *cselected = NULL
-        cdef SF sf = SF()
+        cdef PetscInt *cselected = NULL
         selected = iarray_i(selected, &nroots, &cselected)
+        cdef SF sf = SF()
         CHKERR( PetscSFCreateEmbeddedSF(self.sf, nroots, cselected, &sf.sf) )
         return sf
 
     def createEmbeddedLeafSF(self, selected):
         cdef PetscInt nleaves = asInt(len(selected))
-        cdef const_PetscInt *cselected = NULL
-        cdef SF sf = SF()
+        cdef PetscInt *cselected = NULL
         selected = iarray_i(selected, &nleaves, &cselected)
+        cdef SF sf = SF()
         CHKERR( PetscSFCreateEmbeddedLeafSF(self.sf, nleaves, cselected, &sf.sf) )
         return sf
 
