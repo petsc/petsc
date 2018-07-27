@@ -80,7 +80,7 @@ cdef class SF(Object):
         cdef PetscInt nremote = 0
         cdef PetscInt *ilocal = NULL
         cdef PetscSFNode* iremote = NULL
-        remote = iarray_i(remote, &nremote, <PetscInt*>&iremote)
+        remote = iarray_i(remote, &nremote, <PetscInt**>&iremote)
         if local is not None:
             local = iarray_i(local, &nleaves, &ilocal)
             assert 2*nleaves == nremote
