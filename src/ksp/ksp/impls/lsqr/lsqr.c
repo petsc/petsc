@@ -4,7 +4,7 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-#include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
 typedef struct {
   PetscInt  nwork_n,nwork_m;
