@@ -2914,7 +2914,7 @@ systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic. 
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
-The parameters for the eigen estimator can be set with the prefix``gamg_est_".
+The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
 For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
 
 AMG methods requires knowledge of the number of degrees of
