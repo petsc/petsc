@@ -99,11 +99,17 @@ int main(int argc, char** argv)
 /*TEST
 
    test:
-      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor
+      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_compute_standard_error -ksp_lsqr_monitor
 
    test:
       suffix: 2
       nsize: 4
-      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor
+      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_compute_standard_error -ksp_lsqr_monitor
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_monitor -ksp_convergence_test lsqr -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm
+
 
 TEST*/
