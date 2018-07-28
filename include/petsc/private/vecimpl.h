@@ -334,10 +334,12 @@ typedef struct {
 PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_Index(PetscInt,const PetscInt*,const PetscInt*,PetscInt,VecScatterMemcpyPlan*);
 /* Create a memcpy plan for a SG (sequential general vector) to SG scatter */
 PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt,VecScatter_Seq_General*,VecScatter_Seq_General*);
-/* Create a memcpy plan for a P (parallel vector) to P scatter */
-PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_PtoP(PetscInt,VecScatter_MPI_General*,VecScatter_MPI_General*);
 PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCopy(const VecScatterMemcpyPlan*,VecScatterMemcpyPlan*);
 PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanDestroy(VecScatterMemcpyPlan*);
+/* Create/copy/destroy a memcpy plan for a P (parallel vector) to P scatter */
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_PtoP(VecScatter_MPI_General*,VecScatter_MPI_General*);
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCopy_PtoP(const VecScatter_MPI_General*,const VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter_MPI_General*);
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanDestroy_PtoP(VecScatter_MPI_General*,VecScatter_MPI_General*);
 
 /* Pack data from x to y according to the i-th memcpy plan in xplan */
 PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,const PetscScalar *PETSC_RESTRICT x,const VecScatterMemcpyPlan *xplan,PetscScalar *PETSC_RESTRICT y,InsertMode addv,PetscInt bs)
