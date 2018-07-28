@@ -2661,4 +2661,28 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: glvis_adv_2d_quad
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
+  test:
+    suffix: tut_1
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+
+  test:
+    suffix: tut_2
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+
+  test:
+    suffix: tut_3
+    requires: exodusii
+    nsize: 16
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
+
+  test:
+    suffix: tut_4
+    requires: exodusii
+    nsize: 4
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
+
 TEST*/
