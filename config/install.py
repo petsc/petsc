@@ -335,7 +335,7 @@ for file in files:
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
     os.mkdir(os.path.join(examplesdir,'src'))
-    self.copyExamples(self.rootSrcDir,examplesdir)
+    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
     self.copyConfig(self.rootDir,examplesdir)
     self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return
