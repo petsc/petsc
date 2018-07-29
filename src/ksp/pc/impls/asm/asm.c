@@ -568,7 +568,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 
     /* solve the overlapping i-block */
     ierr = PetscLogEventBegin(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
-    ierr = KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_ApplyOnBlocks,osm->ksp[i],osm->x[i],osm->y[i],0);CHKERRQ(ierr);
 
     if (osm->lprolongation) { /* interpolate the non-overalapping i-block solution to the local solution */
