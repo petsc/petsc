@@ -615,8 +615,8 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     PetscSection s, gs;
     PetscInt     Nf, f;
 
-    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
     if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
     ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
     if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
