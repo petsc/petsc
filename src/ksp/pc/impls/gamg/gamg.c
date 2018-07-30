@@ -1002,14 +1002,14 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 .  -pc_gamg_threshold <threshold>
 
    Notes:
-    Before aggregating the graph GAMG will remove small values from the graph thus reducing the coupling in the graph and a different
-    (perhaps better) coarser set of points.
+    Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
+    Before coarsening or aggregating the graph, GAMG removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
 
    Level: intermediate
 
    Concepts: Unstructured multigrid preconditioner
 
-.seealso: PCGAMGFilterGraph()
+.seealso: PCGAMGFilterGraph(), PCGAMGSetSquareGraph()
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {

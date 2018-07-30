@@ -103,11 +103,14 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
    Options Database Key:
 .  -pc_gamg_square_graph <n,default = 1> - number of levels to square the graph on before aggregating it
 
+   Notes:
+   Squaring the graph increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
+
    Level: intermediate
 
    Concepts: Aggregation AMG preconditioner
 
-.seealso: PCGAMGSetSymGraph()
+.seealso: PCGAMGSetSymGraph(), PCGAMGSetThreshold()
 @*/
 PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 {
