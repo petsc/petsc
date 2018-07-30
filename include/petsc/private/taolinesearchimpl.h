@@ -16,6 +16,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*setfromoptions)(PetscOptionItems*,TaoLineSearch);
     PetscErrorCode (*reset)(TaoLineSearch);
     PetscErrorCode (*destroy)(TaoLineSearch);
+    PetscErrorCode (*monitor)(TaoLineSearch);
 };
 
 struct _p_TaoLineSearch {
@@ -24,7 +25,9 @@ struct _p_TaoLineSearch {
     void *userctx_grad;
     void *userctx_funcgrad;
     void *userctx_funcgts;
-
+    PetscBool usemonitor;
+    PetscViewer viewer;
+    
     PetscBool setupcalled;
     PetscBool usegts;
     PetscBool usetaoroutines;

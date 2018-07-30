@@ -450,11 +450,11 @@ int main(int argc, char **argv)
       if (0) {
         PetscSection sec;
 
-        ierr = DMGetDefaultSection(dms[0], &sec);CHKERRQ(ierr);
+        ierr = DMGetSection(dms[0], &sec);CHKERRQ(ierr);
         ierr = PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = DMGetDefaultSection(dms[1], &sec);CHKERRQ(ierr);
+        ierr = DMGetSection(dms[1], &sec);CHKERRQ(ierr);
         ierr = PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = DMGetDefaultSection(dmErrAux, &sec);CHKERRQ(ierr);
+        ierr = DMGetSection(dmErrAux, &sec);CHKERRQ(ierr);
         ierr = PetscSectionView(sec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       }
       ierr = DMViewFromOptions(dmErrAux, NULL, "-dm_err_view");CHKERRQ(ierr);

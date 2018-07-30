@@ -2291,7 +2291,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   PetscReal         threshold = 1.e-5;
   PetscInt          m,n,M,N;
   void              *functx;
-  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE,flg;
+  PetscBool         complete_print = PETSC_FALSE,threshold_print = PETSC_FALSE,test = PETSC_FALSE,flg;
   PetscViewer       viewer,mviewer;
   MPI_Comm          comm;
   PetscInt          tabs;
@@ -2303,6 +2303,11 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   ierr = PetscOptionsName("-snes_test_jacobian","Compare hand-coded and finite difference Jacobians","None",&test);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_test_jacobian", "Threshold for element difference between hand-coded and finite difference being meaningful", "None", threshold, &threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsViewer("-snes_test_jacobian_view","View difference between hand-coded and finite difference Jacobians element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
+  if (!complete_print) {
+    ierr = PetscOptionsViewer("-snes_test_jacobian_display","Display difference between hand-coded and finite difference Jacobians","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
+  }
+  /* for compatibility with PETSc 3.9 and older. */
+  ierr = PetscOptionsReal("-snes_test_jacobian_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", threshold, &threshold, &threshold_print);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (!test) PetscFunctionReturn(0);
 
@@ -2366,7 +2371,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatView(B,mviewer);CHKERRQ(ierr);
     }
 
-    if (complete_print) {
+    if (threshold_print) {
       PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
       PetscScalar       *cvals;
       const PetscInt    *bcols;
@@ -2399,7 +2404,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
       ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference Jacobian with tolerance %g ----------\n",(double)threshold);CHKERRQ(ierr);
-      ierr = MatView(C,mviewer);CHKERRQ(ierr);
+      ierr = MatView(C,complete_print ? mviewer : viewer);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);

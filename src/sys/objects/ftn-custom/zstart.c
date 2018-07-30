@@ -237,6 +237,10 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 PETSC_INTERN PetscFPT PetscFPTData;
 #endif
 
+#if defined(PETSC_HAVE_ADIOS)
+#include <adios.h>
+#include <adios_read.h>
+#endif
 /* -----------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_SAWS)
@@ -481,6 +485,16 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   *ierr = PetscFPTCreate(10000);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscFPTCreate()\n");return;}
+#endif
+#if defined(PETSC_HAVE_ADIOS)
+  *ierr = adios_init_noxml(PETSC_COMM_WORLD);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:adios_init_noxml()\n");return;}
+  *ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",adios_stat_default);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:adios_declare_group()\n");return;}
+  *ierr = adios_select_method(Petsc_adios_group,"MPI","","");
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:adios_select_method()\n");return;}
+  *ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:adios_read_init_method()\n");return;}
 #endif
 }
 

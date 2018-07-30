@@ -2914,7 +2914,7 @@ systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic. 
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
-The parameters for the eigen estimator can be set with the prefix``gamg_est_".
+The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
 For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
 
 AMG methods requires knowledge of the number of degrees of
@@ -5940,9 +5940,9 @@ element method,
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
 DMPlexGetChart(dm, &pStart, &pEnd);
-DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
-DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
-DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);
+DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   /* cells */
+DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   /* edges */
+DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);   /* vertices, equivalent to DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd); */
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5973,7 +5973,7 @@ VecSetFromOptions(localVec);
 \end{lstlisting}
 though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
-DMSetDefaultSection(dm, s);
+DMSetSection(dm, s);
 DMGetLocalVector(dm, &localVec);
 DMGetGlobalVector(dm, &globalVec);
 \end{lstlisting}
