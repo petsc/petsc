@@ -632,6 +632,70 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionReturn(0);
 }
 
+
+PetscErrorCode MatSetValues_MPIAIJ_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
+{
+  Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
+  Mat            A      = aij->A; /* diagonal part of the matrix */
+  Mat            B      = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b     = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
+  PetscInt       *ailen = a->ilen,*aj = a->j;
+  PetscInt       *bilen = b->ilen,*bj = b->j;
+  PetscInt       am     = aij->A->rmap->n,i;
+  PetscInt       col, diag_so_far=0, offd_so_far=0,j,*first_diag_elem;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  /* Allocate memory. first_diag stores which element tells which element of mat_j stores the first diagonal element */
+  ierr = PetscMalloc1(am+1, &first_diag_elem);CHKERRQ(ierr);
+
+  /* Find first index of mat_j which is in the diagonal and store it in first_diag */
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    /* Iterate over all columns, until a diagonal element is found */
+    for (i=0; i<dnz[j]+onz[j]; i++) {
+      col = i + mat_i[j];
+      /* If current element is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        first_diag_elem[j] = i;
+        break;
+      }
+    }
+  }
+
+  /* Set the off-diagonal elements */
+  for (j=0; j<am; j++) {
+    /* left off-diagonal */
+    for (i=0; i<onz[j] && i<first_diag_elem[j]; i++) {
+      col = i + mat_i[j];
+      bj[i+offd_so_far] = mat_j[col];
+    }
+    /* right off-diagonal */
+    for (i=i+dnz[j]; i<dnz[j]+onz[j]; i++) {
+      col = i + mat_i[j];
+      bj[i-dnz[j]+offd_so_far] = mat_j[col];
+    }
+    bilen[j] = onz[j];
+    offd_so_far += onz[j];
+  }
+
+  /* Set the diagonal elements */
+  for (j=0; j<am; j++) {
+    for (i=0; i<dnz[j]; i++) {
+      col = i + mat_i[j];
+      aj[diag_so_far + i] = mat_j[col+first_diag_elem[j]] - cstart;
+      ailen[j] = dnz[j];
+    }
+    diag_so_far += dnz[j];
+  }
+  ierr = PetscFree(first_diag_elem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
