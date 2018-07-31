@@ -28,7 +28,7 @@ PC Object: 4 MPI processes
               Replace tiny pivots FALSE 
               Use iterative refinement FALSE 
               Processors in row 2 col partition 2 
-              Row permutation LargeDiag 
+              Row permutation LargeDiag_MC64 
               Column permutation METIS_AT_PLUS_A
               Parallel symbolic factorization FALSE 
               Repeated factorization SamePattern
