@@ -642,35 +642,23 @@ PetscErrorCode MatSetValues_MPIAIJ_Symbolic(Mat mat, const PetscInt mat_j[], con
   PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
   PetscInt       *ailen = a->ilen,*aj = a->j;
   PetscInt       *bilen = b->ilen,*bj = b->j;
-  PetscInt       am     = aij->A->rmap->n,i,j,k;
+  PetscInt       am     = aij->A->rmap->n,i,j;
   PetscInt       col, diag_so_far=0, offd_so_far=0;
 
   PetscFunctionBegin;
   /* Iterate over all rows of the matrix */
   for (j=0; j<am; j++) {
-    /* set the left off-diagonal */
-    for (i=0; i<onz[j]; i++) {
+    for (i=0; i<dnz[j]+onz[j]; i++) {
       col = i + mat_i[j];
-      /* If column is in the diagonal... */
+      /* If column is in the diagonal */
       if (mat_j[col] >= cstart && mat_j[col] < cend) {
-        break;
+        aj[diag_so_far++] = mat_j[col] - cstart;
+      } else { /* off-diagonal entries */
+        bj[offd_so_far++] = mat_j[col];
       }
-      bj[i+offd_so_far] = mat_j[col];
     }
-    /* ... set the diagonal elements */
-    for (k=0; k<dnz[j]; k++) {
-      col = k + mat_i[j] + i;
-      aj[diag_so_far+k] = mat_j[col] - cstart;
-      ailen[j] = dnz[j];
-    }
-    diag_so_far += dnz[j];
-    /* Set the right off-diagonal */
-    for (i=i+dnz[j]; i<dnz[j]+onz[j]; i++) {
-      col = i + mat_i[j];
-      bj[i-dnz[j]+offd_so_far] = mat_j[col];
-    }
+    ailen[j] = dnz[j];
     bilen[j] = onz[j];
-    offd_so_far += onz[j];
   }
   PetscFunctionReturn(0);
 }
