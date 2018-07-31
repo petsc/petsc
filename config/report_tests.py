@@ -36,8 +36,9 @@ def summarize_results(directory,make,ntime,etime):
     print('# No tests run')
     return
   summary={'total':0,'success':0,'failed':0,'failures':[],'todo':0,'skip':0,
-           'time':0}
+           'time':0, 'cputime':0}
   timesummary={}
+  cputimesummary={}
   timelist=[]
   for cfile in glob.glob('*.counts'):
     with open(cfile, 'r') as f:
@@ -49,7 +50,9 @@ def summarize_results(directory,make,ntime,etime):
         elif l[0] == 'time':
            if len(l)==1: continue
            summary[l[0]] += float(l[1])
+           summary['cputime'] += float(l[2])
            timesummary[cfile]=float(l[1])
+           cputimesummary[cfile]=float(l[2])
            timelist.append(float(l[1]))
         elif l[0] not in summary:
            continue
@@ -68,7 +71,7 @@ def summarize_results(directory,make,ntime,etime):
   print("#")
   if etime:
     print("# Wall clock time for tests: %s sec"% etime)
-  print("# Approximate CPU time (not incl. build time): %s sec"% summary['time'])
+  print("# Approximate CPU time (not incl. build time): %s sec"% summary['cputime'])
 
   if failstr.strip():
       fail_targets=(
@@ -93,7 +96,7 @@ def summarize_results(directory,make,ntime,etime):
       print("#     "+make+" -f "+makefile+" test search='" + fail_targets.strip()+"'")
 
   if ntime>0:
-      print("#\n# Timing summary: ")
+      print("#\n# Timing summary (actual test time / total CPU time): ")
       timelist=list(set(timelist))
       timelist.sort(reverse=True)
       nlim=(ntime if ntime<len(timelist) else len(timelist))
@@ -101,7 +104,7 @@ def summarize_results(directory,make,ntime,etime):
       for timelimit in timelist[0:nlim]:
         for cf in timesummary:
           if timesummary[cf] == timelimit:
-              print("#   %s: %.2f sec" % (re.sub('.counts','',cf), timesummary[cf]))
+            print("#   %s: %.2f sec / %.2f sec" % (re.sub('.counts','',cf), timesummary[cf], cputimesummary[cf]))
   os.chdir(startdir)
   return
   
