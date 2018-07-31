@@ -2676,7 +2676,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: tut_3
     requires: exodusii
-    nsize: 16
+    nsize: 4
     args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
 
   test:

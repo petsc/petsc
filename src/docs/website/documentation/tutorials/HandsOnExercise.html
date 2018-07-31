@@ -170,7 +170,7 @@
      mpiexec -n 4 ./ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex2_tut_2.out">[Expected output]</a>
     </pre>
   </li>
-  <li> Run with the same options on 16 processors with 128 grid points
+  <li> Run with the same options on 4 processors with 128 grid points
     <pre>
      mpiexec -n 16 ./ex2 -ts_max_steps 10 -ts_monitor -M 128     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex2_tut_3.out">[Expected output]</a>
     </pre>
@@ -340,7 +340,7 @@
   </li>
   <li>Run simple advection through a larger quadrilateral mesh of an annulus with least squares reconstruction and no limiting, monitoring the error
     <pre>
-     mpiexec -n 16 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_4.out">[Expected output]</a>
+     mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/output/ex11_tut_4.out">[Expected output]</a>
     </pre>
     Compare turning to the error after turning off reconstruction.
   </li>
