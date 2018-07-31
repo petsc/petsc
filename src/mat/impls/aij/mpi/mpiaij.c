@@ -632,7 +632,11 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetValues_MPIAIJ_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
+/*
+    This function sets the j-arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
 {
   Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
   Mat            A      = aij->A; /* diagonal part of the matrix */
@@ -662,7 +666,6 @@ PetscErrorCode MatSetValues_MPIAIJ_Symbolic(Mat mat, const PetscInt mat_j[], con
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
