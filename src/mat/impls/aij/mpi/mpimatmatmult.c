@@ -757,7 +757,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     if (apnz_max < apnz) apnz_max = apnz;
   }
   ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
-
   ierr = PetscLLCondensedCreate_Scalable(apnz_max,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
@@ -782,7 +781,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       Jptr = pj_oth + pi_oth[row];
       ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
     }
-
     apnz     = *lnk;
     api[i+1] = api[i] + apnz;
 
@@ -818,7 +816,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   /* malloc apa for assembly Cmpi */
   ierr = PetscCalloc1(apnz_max,&apa);CHKERRQ(ierr);
-
   ptap->apa = apa;
 
   ierr = MatSetValues_MPIAIJ_Symbolic(Cmpi, apj, api, dnz, onz);CHKERRQ(ierr);
