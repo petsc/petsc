@@ -119,21 +119,24 @@ def generate_xml(directory):
         # to recover the problem name and the package it belongs to
         fname = cfile.split('.')[0]
         testname = fname.split('-')
-        probname = testname[1]
+        probname = ''
+        for i in range(1,len(testname)):
+            probname += testname[i]
         # we split the package into its subcomponents of PETSc module (e.g.: snes) 
         # and test type (e.g.: tutorial)
         testname_list = testname[0].split('_')
         pkgname = testname_list[0]
         testtype = testname_list[-1]
         # in order to correct assemble the folder path for problem outputs, we 
-        # iterate over any possible subpackage names
-        probfolder = 'run%s'%probname
-        if probfolder.split('_')[1] == '1':
-            probfolder = probfolder.split('_')[0]
+        # iterate over any possible subpackage names and test suffixes
         testname_short = testname_list[:-1]
         prob_subdir = os.path.join(*testname_short)
-        # assemble the final full folder path for problem outputs and read the files
+        probfolder = 'run%s'%probname
         probdir = os.path.join('..', prob_subdir, 'examples', testtype, probfolder)
+        if not os.path.exists(probdir):
+            probfolder = probfolder.split('_')[0]
+            probdir = os.path.join('..', prob_subdir, 'examples', testtype, probfolder)
+        # assemble the final full folder path for problem outputs and read the files
         try:
             with open('%s/diff-%s.out'%(probdir, probfolder),'r') as probdiff:
                 difflines = probdiff.readlines()

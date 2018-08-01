@@ -709,13 +709,13 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MatInitializePackage();CHKERRQ(ierr);
   mtype = da->mattype;
 
-  ierr = DMGetDefaultSection(da, &section);CHKERRQ(ierr);
+  ierr = DMGetSection(da, &section);CHKERRQ(ierr);
   if (section) {
     PetscInt  bs = -1;
     PetscInt  localSize;
     PetscBool isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
 
-    ierr = DMGetDefaultGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);

@@ -218,7 +218,7 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (n) PetscValidIntPointer(n,4);
   if (closure) PetscValidPointer(closure, 5);
-  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
   ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, Pet
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidScalarPointer(vArray, 4);
   if (values) PetscValidPointer(values, 6);
-  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
   ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
@@ -476,7 +476,7 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidScalarPointer(values, 4);
   PetscValidPointer(values, 5);
-  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) {ierr = DMGetSection(dm, &section);CHKERRQ(ierr);}
   if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
   ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);

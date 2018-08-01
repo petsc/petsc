@@ -1763,7 +1763,7 @@ boundary:
       PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *);
 
       ierr = DMGetCoordinateDim(dm,&cdim);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+      ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
       ierr = PetscSectionGetNumFields(section,&nf);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(dm,&vcoords);CHKERRQ(ierr);
       ierr = VecGetLocalSize(vcoords,&nl);CHKERRQ(ierr);
