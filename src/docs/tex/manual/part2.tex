@@ -123,7 +123,7 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of \lstinline{INSERT_VALUES} and
 \lstinline{ADD_VALUES} this nondeterministic behavior will not occur in PETSc.)
 
-You can called \lstinline{VecGetValues()} to pull local values from a vector (but
+You can call \lstinline{VecGetValues()} to pull local values from a vector (but
 not off-process values),
 an alternative method for extracting some components of a vector are
 the vector scatter routines.  
@@ -1173,7 +1173,7 @@ MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
 By placing other code between these two calls, the user can perform
 computations while messages are in transit.
 Calls to \lstinline{MatSetValues()} with the \lstinline{INSERT_VALUES} and
-\lstinline{ADD_VALUES] options {\em cannot} be mixed without intervening calls to
+\lstinline{ADD_VALUES} options {\em cannot} be mixed without intervening calls to
 the assembly routines.  For such intermediate assembly calls the
 second routine argument  typically should be \lstinline{MAT_FLUSH_ASSEMBLY},
 \findex{MAT_FLUSH_ASSEMBLY} which omits some of the work of the full
@@ -1305,7 +1305,7 @@ Thus, when assembling a sparse matrix with very different
 numbers of nonzeros in various rows, one could proceed
 as follows for finite difference methods:
 \begin{tightenumerate}
-\item item Allocate integer array \lstinline{nnz}.
+\item Allocate integer array \lstinline{nnz}.
 \item Loop over grid, counting the expected number of nonzeros for the row(s)
 associated with the various grid points.
 \item Create the sparse matrix via \lstinline{MatCreateSeqAIJ()} or alternative.
@@ -2222,7 +2222,7 @@ set to work with the \lstinline{KSP} object is ignored if \lstinline{KSPLSQR} wa
 
 By default, \lstinline{KSP} assumes an initial guess of zero by zeroing the initial
 value for the solution vector that is given; this zeroing is done at the
-call to \lstinline{KSPSolve()} (or \lstinline{KSPSolve()}). To use a nonzero
+call to \lstinline{KSPSolve()}. To use a nonzero
 initial guess, the user {\em must} call
 \begin{lstlisting}
 KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg);
@@ -3444,7 +3444,6 @@ For matrices defined with any number of blocks there are three ``block'' algorit
   0   & \text{ksp}(A_{11},Ap_{11}) \\
 \end{array} \right)
 \]
-
 block Gauss-Seidel,
 \[
 \left( \begin{array}{cc}
@@ -3664,11 +3663,11 @@ solve these systems.
 
 First, one must know what the null space is and store it using an orthonormal basis
 in an array of PETSc Vecs. The constant functions can be handled separately, since
-they are such a common cas). Create a \lstinline{MatNullSpace} object with the command
+they are such a common case). Create a \lstinline{MatNullSpace} object with the command
 \begin{lstlisting}
 MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,PetscInt dim,Vec *basis,MatNullSpace *nsp);
 \end{lstlisting}
-Her, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
+Here, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
 if the null space contains the constant functions. If the null space contains the constant
 functions you do not need to include it in the \lstinline{basis} vectors you provide, nor in the count \lstinline{dim}.
 
@@ -4508,7 +4507,7 @@ The second approach, taken from Walker and Pernice, \cite{pw98}, computes $ h $ 
         h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
 \end{eqnarray*}
 This has no tunable parameters, but note that inside the nonlinear solve for
-the entire {\bf linear} iterative process $ u $ does not change hence
+the entire \emph{linear} iterative process $ u $ does not change hence
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the
 options
 \begin{lstlisting}
