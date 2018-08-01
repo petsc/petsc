@@ -4,12 +4,13 @@ mx: 10     my: 8
 
 iter =   0, Function value 1.45591, Residual: 0.21372 
   iter =   0,   Function value 1.45591,   Residual: 0.21372 
-  iter =   1,   Function value 1.43049,   Residual: 0.132023 
-  iter =   2,   Function value 1.42067,   Residual: 0.0934364 
-  iter =   3,   Function value 1.41945,   Residual: 0.0918066 
-iter =   1, Function value 1.41776, Residual: 0.00507797 
-  iter =   0,   Function value 1.41776,   Residual: 0.00507797 
-  iter =   1,   Function value 1.41775,   Residual: 0.001775 
-  iter =   2,   Function value 1.41775,   Residual: 0.00178522 
-  iter =   3,   Function value 1.41775,   Residual: 0.000938981 
-iter =   2, Function value 1.41775, Residual: < 1.0e-6 
+  iter =   0,   Function value 1.42961,   Residual: 0.150207 
+gtd/(dtd) is small or positive: 2.2483903752015929525e-04
+  iter =   1,   Function value 1.42216,   Residual: 0.0878366 
+  iter =   2,   Function value 1.41947,   Residual: 0.0821721 
+  iter =   3,   Function value 1.41816,   Residual: 0.0307967 
+iter =   1, Function value 1.41775, Residual: 0.000419271 
+  iter =   0,   Function value 1.41775,   Residual: 0.000419271 
+  iter =   1,   Function value 1.41775,   Residual: 0.0002045 
+  iter =   2,   Function value 1.41775,   Residual: 0.000145457 
+  iter =   3,   Function value 1.41775,   Residual: 8.56461e-05 
