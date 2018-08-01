@@ -22,12 +22,24 @@ lid velocity = 0.000106281, prandtl # = 1., grashof # = 1.
     8 KSP Residual norm 2.336948935104e-09 
     9 KSP Residual norm 4.378689442660e-10 
   2 SNES Function norm 2.503925085367e-10 
+    0 KSP Residual norm 4.377201912341e-10 
+    1 KSP Residual norm 1.301710740308e-10 
+    2 KSP Residual norm 4.911627444716e-11 
+    3 KSP Residual norm 1.629334185679e-11 
+    4 KSP Residual norm 3.966572220621e-12 
+    5 KSP Residual norm 1.201091398418e-12 
+    6 KSP Residual norm 2.399034074753e-13 
+    7 KSP Residual norm 5.152830599460e-14 
+    8 KSP Residual norm 1.728793265661e-14 
+    9 KSP Residual norm 4.944662929385e-15 
+   10 KSP Residual norm 1.518465265686e-15 
+  3 SNES Function norm 1.014356640724e-14 
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-07, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=18
-  total number of function evaluations=3
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=28
+  total number of function evaluations=4
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
     type: bt
@@ -76,4 +88,4 @@ SNES Object: 4 MPI processes
       rows=37636, cols=37636, bs=4
       total: nonzeros=746512, allocated nonzeros=746512
       total number of mallocs used during MatSetValues calls =0
-Number of SNES iterations = 2
+Number of SNES iterations = 3
