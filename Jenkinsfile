@@ -33,7 +33,7 @@ pipeline {
         }
         stage('Examples') {
             steps {
-                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} -f gmakefile test" 
+                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} allgtest-tap"
             }
             post {
                 always {
