@@ -700,11 +700,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   Mat_SeqAIJ         *ad        = (Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*p_loc,*p_oth;
   PetscInt           *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart;
-  PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max;
-  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;
+  PetscInt           i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi,*lnk,apnz_max=0;
+  PetscInt           am=A->rmap->n,pn=P->cmap->n,pm=P->rmap->n,lsize=20;
   PetscReal          afill;
   PetscScalar        *apa;
-  PetscTable         ta;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -735,29 +734,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ptap->api = api;
   api[0]    = 0;
 
-  /* create and initialize a linked list */
-  ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr);
-
-  /* Calculate apnz_max */
-  apnz_max = 0;
-  for (i=0; i<am; i++) {
-    ierr = PetscTableRemoveAll(ta);CHKERRQ(ierr);
-    /* diagonal portion of A */
-    nzi  = adi[i+1] - adi[i];
-    Jptr = adj+adi[i];  /* cols of A_diag */
-    MatMergeRows_SeqAIJ(p_loc,nzi,Jptr,ta);
-    ierr = PetscTableGetCount(ta,&apnz);CHKERRQ(ierr);
-    if (apnz_max < apnz) apnz_max = apnz;
-
-    /*  off-diagonal portion of A */
-    nzi = aoi[i+1] - aoi[i];
-    Jptr = aoj+aoi[i];  /* cols of A_off */
-    MatMergeRows_SeqAIJ(p_oth,nzi,Jptr,ta);
-    ierr = PetscTableGetCount(ta,&apnz);CHKERRQ(ierr);
-    if (apnz_max < apnz) apnz_max = apnz;
-  }
-  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
-  ierr = PetscLLCondensedCreate_Scalable(apnz_max,&lnk);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate_Scalable(lsize,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(adi[am],PetscIntSumTruncate(aoi[am],pi_loc[pm]))),&free_space);CHKERRQ(ierr);
@@ -770,8 +747,18 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       row  = *adj++;
       pnz  = pi_loc[row+1] - pi_loc[row];
       Jptr = pj_loc + pi_loc[row];
+      /* Expand list if it is not long enough */
+      while (pnz+apnz_max > lsize) {
+        /* Expand list by 30%. This expansion typically occurs only rarely and the list */
+        /* is typically quite short, so this factor does not have a big impact on performance and memory usage. */
+        lsize *= 1.3;
+        ierr = PetscLLCondensedExpand_Scalable(lsize, &lnk);
+      }
       /* add non-zero cols of P into the sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
+      apnz     = *lnk; /* The first element in the list is the number of items in the list */
+      api[i+1] = api[i] + apnz;
+      if (apnz > apnz_max) apnz_max = apnz;
     }
     /* off-diagonal portion of A */
     nzi = aoi[i+1] - aoi[i];
@@ -779,10 +766,20 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       row  = *aoj++;
       pnz  = pi_oth[row+1] - pi_oth[row];
       Jptr = pj_oth + pi_oth[row];
+      /* Expand list if it is not long enough */
+      while (pnz+apnz_max > lsize) {
+        lsize *= 1.3;
+        ierr = PetscLLCondensedExpand_Scalable(lsize, &lnk);
+      }
+      /* add non-zero cols of P into the sorted linked list lnk */
       ierr = PetscLLCondensedAddSorted_Scalable(pnz,Jptr,lnk);CHKERRQ(ierr);
+      apnz     = *lnk;  /* The first element in the list is the number of items in the list */
+      api[i+1] = api[i] + apnz;
+      if (apnz > apnz_max) apnz_max = apnz;
     }
     apnz     = *lnk;
     api[i+1] = api[i] + apnz;
+    if (apnz > apnz_max) apnz_max = apnz;
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
@@ -832,7 +829,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   /* attach the supporting struct to Cmpi for reuse */
   c       = (Mat_MPIAIJ*)Cmpi->data;
   c->ptap = ptap;
-
   *C = Cmpi;
 
   /* set MatInfo */
