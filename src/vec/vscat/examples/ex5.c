@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscMalloc1(n,&tomap);CHKERRQ(ierr);
   for (i=0; i<n/2; i++) { tomap[i] = i+n/2; tomap[i+n/2] = i; };
-  ierr = VecScatterRemap(vscat,tomap,NULL);
+  ierr = VecScatterRemap(vscat,tomap,NULL);CHKERRQ(ierr);
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
