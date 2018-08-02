@@ -2061,4 +2061,22 @@ int main(int argc,char **args)
       suffix: 3
       args: -stokes_ksp_converged_reason -stokes_pc_type fieldsplit -resolve
 
+   test:
+      suffix: tut_1
+      nsize: 4
+      requires: !single
+      args: -stokes_ksp_monitor
+
+   test:
+      suffix: tut_2
+      nsize: 4
+      requires: !single
+      args: -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
+
+   test:
+      suffix: tut_3
+      nsize: 4
+      requires: !single
+      args: -mx 20 -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
+
 TEST*/
