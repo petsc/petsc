@@ -1134,12 +1134,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
-  {
-    static PetscScalar w[2000]; /* very BAD need to fix */
-    fortransolvebaij4blas_(&n,x,ai,aj,diag,aa,b,w);
-  }
-#elif defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
   {
     static PetscScalar w[2000]; /* very BAD need to fix */
     fortransolvebaij4_(&n,x,ai,aj,diag,aa,b,w);

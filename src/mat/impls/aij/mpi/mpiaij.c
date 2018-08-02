@@ -632,6 +632,41 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionReturn(0);
 }
 
+/*
+    This function sets the j-arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
+{
+  Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
+  Mat            A      = aij->A; /* diagonal part of the matrix */
+  Mat            B      = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b     = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
+  PetscInt       *ailen = a->ilen,*aj = a->j;
+  PetscInt       *bilen = b->ilen,*bj = b->j;
+  PetscInt       am     = aij->A->rmap->n,i,j;
+  PetscInt       col, diag_so_far=0, offd_so_far=0;
+
+  PetscFunctionBegin;
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    for (i=0; i<dnz[j]+onz[j]; i++) {
+      col = i + mat_i[j];
+      /* If column is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        aj[diag_so_far++] = mat_j[col] - cstart;
+      } else { /* off-diagonal entries */
+        bj[offd_so_far++] = mat_j[col];
+      }
+    }
+    ailen[j] = dnz[j];
+    bilen[j] = onz[j];
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;

@@ -16,8 +16,8 @@ T*/
 
 
 /*
-   Include "petscdraw.h" so that we can use distributed arrays (DMDAs).
-   Include "petscdraw.h" so that we can use PETSc drawing routines.
+   Include "petscdm.h" so that we can use data management objects (DMs)
+   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h    - base PETSc routines
