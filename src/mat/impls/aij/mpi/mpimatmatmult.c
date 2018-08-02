@@ -748,10 +748,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       pnz  = pi_loc[row+1] - pi_loc[row];
       Jptr = pj_loc + pi_loc[row];
       /* Expand list if it is not long enough */
-      while (pnz+apnz_max > lsize) {
-        /* Expand list by 30%. This expansion typically occurs only rarely and the list */
-        /* is typically quite short, so this factor does not have a big impact on performance and memory usage. */
-        lsize *= 1.3;
+      if (pnz+apnz_max > lsize) {
+        lsize = pnz+apnz_max;
         ierr = PetscLLCondensedExpand_Scalable(lsize, &lnk);
       }
       /* add non-zero cols of P into the sorted linked list lnk */
@@ -767,8 +765,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
       pnz  = pi_oth[row+1] - pi_oth[row];
       Jptr = pj_oth + pi_oth[row];
       /* Expand list if it is not long enough */
-      while (pnz+apnz_max > lsize) {
-        lsize *= 1.3;
+      if (pnz+apnz_max > lsize) {
+        lsize = pnz + apnz_max;
         ierr = PetscLLCondensedExpand_Scalable(lsize, &lnk);
       }
       /* add non-zero cols of P into the sorted linked list lnk */
