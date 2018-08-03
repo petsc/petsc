@@ -132,6 +132,20 @@
         <li> Added PCKSPSetKSP() </li>
       </ul>
       <h4>KSP:</h4>
+      <ul>
+        <li><code>KSPLSQR</code>
+          <ul>
+            <li>Computes now an estimate of the operator's norm in the same way as Saunders and MATLAB, and uses it in the type-specific stopping criterion <code>KSPLSQRConvergedDefault()</code>; this now gives the same number of iterations as MATLAB's <code>lsqr()</code>.</li>
+            <li>Added <code>-ksp_lsqr_exact_mat_norm</code> and <code>KSPLSQRSetExactMatNorm()</code> to optionally compute and use the exact Frobenius norm instead of the estimate.</li>
+            <li><code>KSPLSQRMonitorDefault()</code> and <code>-ksp_lsqr_monitor</code> now additionally print the (estimate of) the operator's norm.</li>
+            <li>Allow setting <code>-ksp_convergence_test lsqr</code> (it's a default for <code>KSPLSQR</code>, though).</li>
+            <li><code>KSPLSQRSetStandardErrorVec()</code> is replaced by <code>KSPLSQRSetComputeStandardErrorVec()</code> which now specifies whether standard error vector should be computed instead of setting the vector;</li>
+            <li>likewise, option <code>-ksp_lsqr_set_standard_error</code> is replaced by <code>-ksp_lsqr_compute_standard_error</code>.</li>
+            <li>Renamed <code>KSPLSQRGetArnorm()</code> to <code>KSPLSQRGetNorms()</code> and removed its <code>rhs_norm</code> argument.</li>
+            <li>Renamed <code>KSPLSQRDefaultConverged()</code> to <code>KSPLSQRConvergedDefault()</code> merged with <code>KSPConvergedLSQR()</code>.</li>
+          </ul>
+        </li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
         <li>SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate unlimited number of function evaluations.</li>
