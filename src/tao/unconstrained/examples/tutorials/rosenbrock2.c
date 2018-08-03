@@ -105,10 +105,10 @@ int main(int argc,char **argv)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
   ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONVERGED_GATOL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
-  ierr = TaoGetIterationNumber(tao, &oneshot_its);
+  ierr = TaoGetIterationNumber(tao, &oneshot_its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %d | oneshot its: %d\n", recycled_its, oneshot_its);CHKERRQ(ierr);
-  if (recycled_its != oneshot_its) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling don't work!");
+  ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its);CHKERRQ(ierr);
+  if (recycled_its != oneshot_its) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
   
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
