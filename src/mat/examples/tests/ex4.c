@@ -5,7 +5,7 @@ static char help[] = "Creates a matrix, inserts some values, and tests MatCreate
 
 int main(int argc,char **argv)
 {
-  Mat            mat,submat,*submatrices;
+  Mat            mat,submat,*submatrices,submat_virtual;
   PetscInt       m = 10,n = 10,i = 4,tmp,rstart,rend;
   PetscErrorCode ierr;
   IS             irow,icol;
