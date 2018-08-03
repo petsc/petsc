@@ -1,6 +1,7 @@
 /*
 
-     Tests MPIDENSE matrix operations MatMultTranspose() with processes with no rows or columns
+     Tests MPIDENSE matrix operations MatMultTranspose() with processes with no rows or columns.
+     As the matrix is rectangular, least square solution is computed, so KSPLSQR is also tested here.
 */
 
 #include <petscksp.h>
@@ -109,7 +110,6 @@ int main(int argc, char** argv)
    test:
       suffix: 3
       nsize: 2
-      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_monitor -ksp_convergence_test lsqr -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm
-
+      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_monitor -ksp_convergence_test lsqr -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
 
 TEST*/
