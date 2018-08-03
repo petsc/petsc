@@ -2789,9 +2789,9 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     ierr = PetscOptionsGetBool(PetscOptionsObject->options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
     if (!quiet) {
       if (newname) {
-        ierr = PetscPrintf(PetscOptionsObject->comm,"** DEPRECATION WARNING **: the option %s is deprecated as of version %s and will be removed in a future release. Please use the option %s instead. Silence this warning with %s .\n",oldname,version,newname,quietopt);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscOptionsObject->comm,"** PETSc DEPRECATION WARNING **: the option %s is deprecated as of version %s and will be removed in a future release. Please use the option %s instead. Silence this warning with %s .\n",oldname,version,newname,quietopt);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PetscOptionsObject->comm,"** DEPRECATION WARNING **: the option %s is deprecated as of version %s and will be removed in a future release. Silence this warning with %s .",oldname,version,quietopt);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscOptionsObject->comm,"** PETSc DEPRECATION WARNING **: the option %s is deprecated as of version %s and will be removed in a future release. Silence this warning with %s .",oldname,version,quietopt);CHKERRQ(ierr);
       }
     }
   }
