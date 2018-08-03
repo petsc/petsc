@@ -2159,7 +2159,8 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *frommap)
 {
   VecScatter_MPI_General *to,*from;
-  VecScatter_Seq_General *sgfrom;
+  VecScatter_Seq_General *sgto,*sgfrom;
+  VecScatter_Seq_Stride  *ssto;
   PetscInt               i,ierr;
 
   PetscFunctionBegin;
@@ -2169,6 +2170,8 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *fromma
 
   to     = (VecScatter_MPI_General*)scat->todata;
   from   = (VecScatter_MPI_General*)scat->fromdata;
+  ssto   = (VecScatter_Seq_Stride*)scat->todata;
+  sgto   = (VecScatter_Seq_General*)scat->todata;
   sgfrom = (VecScatter_Seq_General*)scat->fromdata;
 
   /* remap indices from where we take/read data */
@@ -2182,16 +2185,25 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *fromma
       /* handle local part */
       for (i=0; i<to->local.n; i++) to->local.vslots[i] = tomap[to->local.vslots[i]];
 
-      /* test if the local part is made of copies and try to optimize it.
-         Before the remapping, the context may or may not contain optimized local copies.
-         After the remapping, old optimizations (if exist) may become invalid and new
-         optimization oppertunities may appear. So we free old stuff and try to re-optimize.
+      /* the memcpy optimizations in vecscatter was based on index patterns it has.
+         They need to be recalculated when indices are changed (remapped).
        */
-      ierr = VecScatterMemcpyPlanDestroy(&to->local.memcpy_plan);CHKERRQ(ierr);
-      ierr = VecScatterMemcpyPlanDestroy(&from->local.memcpy_plan);CHKERRQ(ierr);
-      ierr = VecScatterMemcpyPlanCreate_SGToSG(to->bs,&to->local,&from->local);CHKERRQ(ierr);
+      ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
+      ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
     } else if (sgfrom->format == VEC_SCATTER_SEQ_GENERAL) {
+      /* remap indices*/
       for (i=0; i<sgfrom->n; i++) sgfrom->vslots[i] = tomap[sgfrom->vslots[i]];
+      /* update optimizations, which happen when it is a Stride1toSG, SGtoStride1 or SGToSG vecscatter */
+      if (ssto->format == VEC_SCATTER_SEQ_STRIDE && ssto->step == 1) {
+        PetscInt tmp[2];
+        tmp[0] = 0; tmp[1] = sgfrom->n;
+        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+        ierr = VecScatterMemcpyPlanCreate_Index(1,tmp,sgfrom->vslots,1/*bs*/,&sgfrom->memcpy_plan);CHKERRQ(ierr);
+      } else if (sgto->format == VEC_SCATTER_SEQ_GENERAL) {
+        ierr = VecScatterMemcpyPlanDestroy(&sgto->memcpy_plan);CHKERRQ(ierr);;
+        ierr = VecScatterMemcpyPlanDestroy(&sgfrom->memcpy_plan);CHKERRQ(ierr);
+        ierr = VecScatterMemcpyPlanCreate_SGToSG(1/*bs*/,sgto,sgfrom);CHKERRQ(ierr);
+      }
     } else if (sgfrom->format == VEC_SCATTER_SEQ_STRIDE) {
       VecScatter_Seq_Stride *ssto = (VecScatter_Seq_Stride*)sgfrom;
 
