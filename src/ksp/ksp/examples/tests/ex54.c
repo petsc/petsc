@@ -65,7 +65,7 @@ PetscErrorCode fill(Mat m, Vec v)
 int main(int argc, char** argv)
 {
   Mat            Q;
-  Vec            v, a;
+  Vec            v, a, se;
   KSP            QRsolver;
   PC             pc;
   PetscErrorCode ierr;
@@ -87,6 +87,10 @@ int main(int argc, char** argv)
   ierr = MatViewFromOptions(Q, NULL, "-sys_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(a, NULL, "-rhs_view");CHKERRQ(ierr);
   ierr = KSPSolve(QRsolver, v, a);CHKERRQ(ierr);
+  ierr = KSPLSQRGetStandardErrorVec(QRsolver, &se);CHKERRQ(ierr);
+  if (se) {
+    ierr = VecViewFromOptions(se, NULL, "-se_view");CHKERRQ(ierr);
+  }
   ierr = KSPDestroy(&QRsolver);CHKERRQ(ierr);
   ierr = VecDestroy(&a);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
@@ -110,6 +114,6 @@ int main(int argc, char** argv)
    test:
       suffix: 3
       nsize: 2
-      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_monitor -ksp_convergence_test lsqr -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
+      args: -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_monitor -ksp_convergence_test lsqr -ksp_lsqr_compute_standard_error -se_view -ksp_lsqr_exact_mat_norm {{0 1}separate output}
 
 TEST*/
