@@ -196,6 +196,14 @@ static PetscErrorCode PetscSpaceDestroy_Tensor(PetscSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscSpaceTensorGetNumSubspaces(sp, &Ns);CHKERRQ(ierr);
+  if (tens->subspaces) {
+    PetscInt d;
+
+    for (d = 0; d < sp->Nv; ++d) {
+      ierr = PetscSpaceDestroy(&tens->subspaces[d]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(tens->subspaces);CHKERRQ(ierr);
   for (i = 0; i < Ns; i++) {ierr = PetscSpaceDestroy(&tens->spaces[i]);CHKERRQ(ierr);}
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpaceTensorSetSubspace_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpaceTensorGetSubspace_C", NULL);CHKERRQ(ierr);
@@ -249,9 +257,11 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
   if (D || H)      {ierr = DMGetWorkArray(dm, npoints*pdim*Nv,    MPIU_REAL, &sD);CHKERRQ(ierr);}
   if (H)           {ierr = DMGetWorkArray(dm, npoints*pdim*Nv*Nv, MPIU_REAL, &sH);CHKERRQ(ierr);}
   if (B) {
+    for (i = 0; i < npoints*pdim*Nc*Nc; i++) B[i] = 0.;
     for (i = 0; i < npoints*pdim; i++) B[i * Nc*Nc] = 1.;
   }
   if (D) {
+    for (i = 0; i < npoints*pdim*Nc*Nc*Nv; i++) D[i] = 0.;
     for (i = 0; i < npoints*pdim; i++) {
       for (l = 0; l < Nv; l++) {
         D[i * Nc*Nc*Nv + l] = 1.;
@@ -259,6 +269,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
     }
   }
   if (H) {
+    for (i = 0; i < npoints*pdim*Nc*Nc*Nv*Nv; i++) D[i] = 0.;
     for (i = 0; i < npoints*pdim; i++) {
       for (l = 0; l < Nv*Nv; l++) {
         H[i * Nc*Nc*Nv*Nv + l] = 1.;
@@ -469,6 +480,44 @@ static PetscErrorCode PetscSpaceTensorSetSubspace_Tensor(PetscSpace space, Petsc
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSpaceGetHeightSubspace_Tensor(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
+  PetscSpace_Tensor *tens = (PetscSpace_Tensor *) sp->data;
+  PetscInt         Nc, dim, order, i;
+  PetscSpace       bsp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tens->uniform) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Can only get a generic height subspace of a uniform tensor space: this tensor space is not uniform.\n");
+  ierr = PetscSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDegree(sp, &order, NULL);CHKERRQ(ierr);
+  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (!tens->subspaces) {ierr = PetscCalloc1(dim, &tens->subspaces);CHKERRQ(ierr);}
+  if (height <= dim) {
+    if (!tens->subspaces[height-1]) {
+      PetscSpace sub;
+
+      ierr = PetscSpaceTensorGetSubspace(sp, 0, &bsp);CHKERRQ(ierr);
+      ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
+      ierr = PetscSpaceSetType(sub, PETSCSPACETENSOR);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
+      ierr = PetscSpaceSetDegree(sub, order, PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumVariables(sub, dim-height);CHKERRQ(ierr);
+      ierr = PetscSpaceTensorSetNumSubspaces(sub, dim-height);CHKERRQ(ierr);
+      for (i = 0; i < dim - height; i++) {
+        ierr = PetscSpaceTensorSetSubspace(sub, i, bsp);CHKERRQ(ierr);
+      }
+      ierr = PetscSpaceSetUp(sub);CHKERRQ(ierr);
+      tens->subspaces[height-1] = sub;
+    }
+    *subsp = tens->subspaces[height-1];
+  } else {
+    *subsp = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscSpaceTensorGetSubspace_Tensor(PetscSpace space, PetscInt s, PetscSpace *subspace)
 {
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *) space->data;
@@ -493,7 +542,7 @@ static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp)
   sp->ops->destroy           = PetscSpaceDestroy_Tensor;
   sp->ops->getdimension      = PetscSpaceGetDimension_Tensor;
   sp->ops->evaluate          = PetscSpaceEvaluate_Tensor;
-  sp->ops->getheightsubspace = NULL;
+  sp->ops->getheightsubspace = PetscSpaceGetHeightSubspace_Tensor;
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpaceTensorGetNumSubspaces_C", PetscSpaceTensorGetNumSubspaces_Tensor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpaceTensorSetNumSubspaces_C", PetscSpaceTensorSetNumSubspaces_Tensor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpaceTensorGetSubspace_C", PetscSpaceTensorGetSubspace_Tensor);CHKERRQ(ierr);

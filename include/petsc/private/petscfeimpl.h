@@ -52,6 +52,7 @@ typedef struct {
   PetscInt    dim;
   PetscBool   uniform;
   PetscBool   setupCalled;
+  PetscSpace *subspaces;    /* Height subspaces */
 } PetscSpace_Tensor;
 
 typedef struct {
