@@ -285,6 +285,33 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 }
 
 /*@
+   TSTrajectoryReset - Resets a trajectory context
+
+   Collective on TSTrajectory
+
+   Input Parameter:
+.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
+
+   Level: developer
+
+.keywords: TS, trajectory, timestep, reset
+
+.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
+@*/
+PetscErrorCode TSTrajectoryReset(TSTrajectory *tj)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*tj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
+  if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
+  if ((*tj)->ops->reset) {ierr = (*(*tj)->ops->reset)((*tj));CHKERRQ(ierr);}
+  (*tj)->setupcalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSTrajectoryDestroy - Destroys a trajectory context
 
    Collective on TSTrajectory

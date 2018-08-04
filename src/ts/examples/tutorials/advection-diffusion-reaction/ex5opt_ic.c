@@ -26,7 +26,6 @@ typedef struct {
 } Field;
 
 typedef struct {
-  PetscInt  nobs;
   PetscReal D1,D2,gamma,kappa;
   TS        ts;
   Vec       U;
@@ -40,9 +39,9 @@ extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 extern PetscErrorCode FormFunctionAndGradient(Tao,Vec,PetscReal*,Vec,void*);
 
 /*
-   Add terminal condition at a specified observation to the adjoint variable
+   Set terminal condition for the adjoint variable
  */
-PetscErrorCode ReInitializeLambda(DM da,Vec lambda,Vec U,PetscInt iob,AppCtx *appctx)
+PetscErrorCode InitializeLambda(DM da,Vec lambda,Vec U,AppCtx *appctx)
 {
   char           filename[PETSC_MAX_PATH_LEN]="";
   PetscViewer    viewer;
@@ -50,7 +49,7 @@ PetscErrorCode ReInitializeLambda(DM da,Vec lambda,Vec U,PetscInt iob,AppCtx *ap
   PetscErrorCode ierr;
 
   ierr = VecDuplicate(U,&Uob);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt-%03d.obs",iob);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoad(Uob,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -80,23 +79,17 @@ PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
  */
 PetscErrorCode GenerateOBs(TS ts,Vec U,AppCtx *appctx)
 {
-  PetscInt       iob;
-  PetscInt       maxsteps;
   char           filename[PETSC_MAX_PATH_LEN] = "";
   PetscViewer    viewer;
   DM             da;
   PetscErrorCode ierr;
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = TSGetMaxSteps(ts,&maxsteps);CHKERRQ(ierr);
-  for (iob=1; iob<=appctx->nobs; iob++) {
-    ierr = TSSetMaxSteps(ts,iob*maxsteps/appctx->nobs);CHKERRQ(ierr);
-    ierr = TSSolve(ts,U);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt-%03D.obs",iob);CHKERRQ(ierr);
-    ierr = OutputBIN(da,filename,&viewer);CHKERRQ(ierr);
-    ierr = VecView(U,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
+  ierr = OutputBIN(da,filename,&viewer);CHKERRQ(ierr);
+  ierr = VecView(U,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +242,6 @@ int main(int argc,char **argv)
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;
   appctx.kappa = .06;
-  appctx.nobs  = 1;
 
   /* Create distributed array (DMDA) to manage parallel grid and vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,64,64,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
@@ -279,15 +271,10 @@ int main(int argc,char **argv)
   ierr = InitialConditions(da,appctx.U);CHKERRQ(ierr);
   ierr = TSSetSolution(appctx.ts,appctx.U);CHKERRQ(ierr);
 
-  /* Have the TS save its trajectory needed by TSAdjointSolve() */
-  if (!forwardonly) {
-    ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
-  }
-
   /* Set solver options */
   ierr = TSSetMaxTime(appctx.ts,2000.0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx.ts,0.5);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
 
   ierr = GenerateOBs(appctx.ts,appctx.U,&appctx);CHKERRQ(ierr);
@@ -307,6 +294,11 @@ int main(int argc,char **argv)
 
     ierr = VecDuplicate(appctx.U,&lambda[0]);CHKERRQ(ierr);
     ierr = TSSetCostGradients(appctx.ts,1,lambda,NULL);CHKERRQ(ierr);
+
+    /* Have the TS save its trajectory needed by TSAdjointSolve() */
+    if (!forwardonly) {
+      ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
+    }
 
     /* Create TAO solver and set desired solution method */
     ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -679,8 +671,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
 PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*)ctx;
-  PetscInt       iob;
-  PetscInt       maxsteps;
+  TSTrajectory   tj;
   PetscReal      soberr,timestep;
   Vec            *lambda;
   Vec            SDiff;
@@ -696,39 +687,32 @@ PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
     ierr = TSSetTimeStep(appctx->ts,-timestep);CHKERRQ(ierr);
   }
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(appctx->ts);CHKERRQ(ierr);
 
   ierr = VecDuplicate(P,&SDiff);CHKERRQ(ierr);
   ierr = VecCopy(P,appctx->U);CHKERRQ(ierr);
   ierr = TSGetDM(appctx->ts,&da);CHKERRQ(ierr);
-  ierr = TSGetMaxSteps(appctx->ts,&maxsteps);CHKERRQ(ierr);
   *f = 0;
 
-  for (iob=1; iob<=appctx->nobs; iob++) {
-    ierr = TSSetMaxSteps(appctx->ts,iob*maxsteps/appctx->nobs);CHKERRQ(ierr);
-    ierr = TSSolve(appctx->ts,appctx->U);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt-%03d.obs",iob);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = VecLoad(SDiff,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecAYPX(SDiff,-1.,appctx->U);CHKERRQ(ierr);
-    ierr = VecDot(SDiff,SDiff,&soberr);CHKERRQ(ierr);
-    *f += soberr;
-  }
+  ierr = TSSolve(appctx->ts,appctx->U);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = VecLoad(SDiff,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecAYPX(SDiff,-1.,appctx->U);CHKERRQ(ierr);
+  ierr = VecDot(SDiff,SDiff,&soberr);CHKERRQ(ierr);
+  *f += soberr;
 
   ierr = TSGetCostGradients(appctx->ts,NULL,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecSet(lambda[0],0.0);CHKERRQ(ierr);
-  for (iob=appctx->nobs; iob>=1; iob--) {
-    TSTrajectory tj;
-    PetscReal    time;
-    ierr = TSGetTrajectory(appctx->ts,&tj);CHKERRQ(ierr);
-    ierr = TSTrajectoryGet(tj,appctx->ts,iob*maxsteps/appctx->nobs,&time);CHKERRQ(ierr);
-    ierr = ReInitializeLambda(da,lambda[0],appctx->U,iob,appctx);CHKERRQ(ierr);
-    ierr = TSAdjointSetSteps(appctx->ts,maxsteps/appctx->nobs);CHKERRQ(ierr);
-    ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
-  }
+  ierr = InitializeLambda(da,lambda[0],appctx->U,appctx);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
+
   ierr = VecCopy(lambda[0],G);CHKERRQ(ierr);
 
   ierr = VecDestroy(&SDiff);CHKERRQ(ierr);
+  ierr = TSGetTrajectory(appctx->ts,&tj);CHKERRQ(ierr);
+  ierr = TSTrajectoryReset(&tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

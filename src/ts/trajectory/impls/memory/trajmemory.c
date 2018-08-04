@@ -617,7 +617,9 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
     ierr = StackTop(stack,&e);CHKERRQ(ierr);
     e->timenext = ts->ptime;
   }
-  if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+  if (stepnum < stack->top) {
+    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
+  }
   ierr = ElementCreate(ts,stack,&e);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1767,6 +1769,24 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
+{
+  TJScheduler    *tjsch = (TJScheduler*)tj->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
+#if defined(PETSC_HAVE_REVOLVE)
+    revolve_reset();
+    if (tjsch->stype == TWO_LEVEL_TWO_REVOLVE) {
+      revolve2_reset();
+      ierr = PetscFree(tjsch->diskstack.container);CHKERRQ(ierr);
+    }
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
@@ -1812,6 +1832,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   tj->ops->setup          = TSTrajectorySetUp_Memory;
   tj->ops->destroy        = TSTrajectoryDestroy_Memory;
   tj->ops->setfromoptions = TSTrajectorySetFromOptions_Memory;
+  tj->ops->reset          = TSTrajectoryReset_Memory;
 
   ierr = PetscCalloc1(1,&tjsch);CHKERRQ(ierr);
   tjsch->stype        = NONE;
