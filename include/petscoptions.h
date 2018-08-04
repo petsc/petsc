@@ -276,7 +276,7 @@ M*/
 #define PetscOptionsStringArray(a,b,c,d,e,f) PetscOptionsStringArray_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsBoolArray(a,b,c,d,e,f) PetscOptionsBoolArray_Private(PetscOptionsObject,a,b,c,d,e,f)
 #define PetscOptionsEnumArray(a,b,c,d,e,f,g) PetscOptionsEnumArray_Private(PetscOptionsObject,a,b,c,d,e,f,g)
-#define PetscOptionsDeprecated(a,b,c) PetscOptionsDeprecated_Private(PetscOptionsObject,a,b,c)
+#define PetscOptionsDeprecated(a,b,c,d) PetscOptionsDeprecated_Private(PetscOptionsObject,a,b,c,d)
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool*);
@@ -297,7 +297,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems*,const
 PETSC_EXTERN PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems*,const char[],const char[],const char[],char*[],PetscInt*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems*,const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum[],PetscInt*,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems*,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems*,const char[],const char[],const char[],const char[]);
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(PetscOptions);
