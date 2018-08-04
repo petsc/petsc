@@ -1434,7 +1434,7 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,"tao_bnk_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
-  ierr = KSPGetPC(tao->ksp, &pc);
+  ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
   ierr = PCSetType(pc, PCLMVM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

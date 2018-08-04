@@ -88,7 +88,7 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
   PetscValidHeaderSpecific(inactive, IS_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
-  ierr = PCLMVMClearIS(pc);
+  ierr = PCLMVMClearIS(pc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)inactive);CHKERRQ(ierr);
   ctx->inactive = inactive;
   PetscFunctionReturn(0);
@@ -255,7 +255,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
   pc->ops->presolve        = 0;
   pc->ops->postsolve       = 0;
   
-  ierr = PCSetReusePreconditioner(pc, PETSC_TRUE);
+  ierr = PCSetReusePreconditioner(pc, PETSC_TRUE);CHKERRQ(ierr);
   
   ierr = MatCreate(PetscObjectComm((PetscObject)pc), &ctx->B);CHKERRQ(ierr);
   ierr = MatSetType(ctx->B, MATLMVMBFGS);CHKERRQ(ierr);

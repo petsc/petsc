@@ -1991,7 +1991,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(ht, &nelems);CHKERRQ(ierr);
     ierr = PetscMalloc1(nelems, &elems);CHKERRQ(ierr);
-    ierr = PetscHSetIGetElems(ht, &off, elems);
+    ierr = PetscHSetIGetElems(ht, &off, elems);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
     ierr = PetscSortInt(nelems, elems);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);
