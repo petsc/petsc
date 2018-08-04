@@ -2759,7 +2759,9 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
 
    Notes:
-   Must be called between PetscOptionsBegin() and PetscOptionsEnd()
+   Must be called between PetscOptionsBegin() and PetscOptionsEnd().
+   If newname is provided, the old option is replaced. Otherwise, it remains
+   in the options database.
 
    Level: developer
 
@@ -2783,8 +2785,8 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
       ierr = PetscOptionsPrefixPush(PetscOptionsObject->options,PetscOptionsObject->prefix);CHKERRQ(ierr);
       ierr = PetscOptionsSetValue(PetscOptionsObject->options,newname,value);CHKERRQ(ierr);
       ierr = PetscOptionsPrefixPop(PetscOptionsObject->options);CHKERRQ(ierr);
+      ierr = PetscOptionsClearValue(PetscOptionsObject->options,oldname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsClearValue(PetscOptionsObject->options,oldname);CHKERRQ(ierr);
     quiet = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PetscOptionsObject->options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
     if (!quiet) {
