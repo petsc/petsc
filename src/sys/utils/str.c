@@ -441,7 +441,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
    Not Collective
 
    Input Parameters:
-+  s - pointer to string to be added to end
++  s - pointer to string to be added to at end
 .  t - string to be added to
 -  n - length of the original allocated string
 
@@ -466,6 +466,7 @@ PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
 
   PetscFunctionBegin;
   if (t && !n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"String buffer length must be positive");
+  if (!t) PetscFunctionReturn(0);
   ierr = PetscStrlen(t,&len);CHKERRQ(ierr);
   strncat(s,t,n - len);
   s[n-1] = 0;
