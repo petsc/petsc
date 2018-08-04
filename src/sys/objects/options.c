@@ -2749,8 +2749,7 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
    Not Collective
 
    Input Parameters:
-+  options - options database, use NULL for default global database
-.  pre - string to prepend to name or NULL
++  pre - string to prepend to name or NULL
 .  oldname - the old, deprecated option
 .  newname - the new option, or NULL if option is purely removed
 -  version - a string describing the version of first deprecation, e.g. "3.9"
