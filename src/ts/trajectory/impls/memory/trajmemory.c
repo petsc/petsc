@@ -1784,6 +1784,13 @@ static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
     }
 #endif
   }
+  ierr = StackDestroy(&tjsch->stack);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_REVOLVE)
+  if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
+    ierr = PetscFree(tjsch->rctx);CHKERRQ(ierr);
+    ierr = PetscFree(tjsch->rctx2);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1793,22 +1800,6 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
-#if defined(PETSC_HAVE_REVOLVE)
-    revolve_reset();
-    if (tjsch->stype == TWO_LEVEL_TWO_REVOLVE) {
-      revolve2_reset();
-      ierr = PetscFree(tjsch->diskstack.container);CHKERRQ(ierr);
-    }
-#endif
-  }
-  ierr = StackDestroy(&tjsch->stack);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_REVOLVE)
-  if (tjsch->stype > TWO_LEVEL_NOREVOLVE) {
-    ierr = PetscFree(tjsch->rctx);CHKERRQ(ierr);
-    ierr = PetscFree(tjsch->rctx2);CHKERRQ(ierr);
-  }
-#endif
   ierr = PetscFree(tjsch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1830,9 +1821,9 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
   tj->ops->set            = TSTrajectorySet_Memory;
   tj->ops->get            = TSTrajectoryGet_Memory;
   tj->ops->setup          = TSTrajectorySetUp_Memory;
-  tj->ops->destroy        = TSTrajectoryDestroy_Memory;
   tj->ops->setfromoptions = TSTrajectorySetFromOptions_Memory;
   tj->ops->reset          = TSTrajectoryReset_Memory;
+  tj->ops->destroy        = TSTrajectoryDestroy_Memory;
 
   ierr = PetscCalloc1(1,&tjsch);CHKERRQ(ierr);
   tjsch->stype        = NONE;

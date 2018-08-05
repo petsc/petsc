@@ -712,7 +712,7 @@ PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
 
   ierr = VecDestroy(&SDiff);CHKERRQ(ierr);
   ierr = TSGetTrajectory(appctx->ts,&tj);CHKERRQ(ierr);
-  ierr = TSTrajectoryReset(&tj);CHKERRQ(ierr);
+  ierr = TSTrajectoryReset(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
