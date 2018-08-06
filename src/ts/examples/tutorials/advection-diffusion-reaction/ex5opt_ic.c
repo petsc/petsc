@@ -722,7 +722,7 @@ PetscErrorCode FormFunctionAndGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ct
       requires: !complex !single
 
    test:
-      args: -ts_max_steps 1 -tao_monitor -da_grid_x 64 -da_grid_y 64
+      args: -ts_max_steps 5 -ts_type rk -ts_rk_type 3 -ts_trajectory_type memory -tao_monitor -tao_view
       output_file: output/ex5opt_ic_1.out
 
 TEST*/
