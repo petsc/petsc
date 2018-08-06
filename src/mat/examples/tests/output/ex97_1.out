@@ -1,6 +1,6 @@
-                       MatMult: norm difference < 1e-12
-              MatMultTranspose: norm difference < 1e-12
-             MatMultAdd v2==v3: norm difference < 1e-12
-             MatMultAdd v2!=v3: norm difference < 1e-12
-    MatMultTransposeAdd v2==v3: norm difference < 1e-12
-    MatMultTransposeAdd v2!=v3: norm difference < 1e-12
+                       MatMult: norm difference < sqrt(eps_machine)
+              MatMultTranspose: norm difference < sqrt(eps_machine)
+             MatMultAdd v2==v3: norm difference < sqrt(eps_machine)
+             MatMultAdd v2!=v3: norm difference < sqrt(eps_machine)
+    MatMultTransposeAdd v2==v3: norm difference < sqrt(eps_machine)
+    MatMultTransposeAdd v2!=v3: norm difference < sqrt(eps_machine)
