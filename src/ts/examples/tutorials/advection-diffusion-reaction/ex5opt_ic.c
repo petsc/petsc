@@ -296,9 +296,7 @@ int main(int argc,char **argv)
     ierr = TSSetCostGradients(appctx.ts,1,lambda,NULL);CHKERRQ(ierr);
 
     /* Have the TS save its trajectory needed by TSAdjointSolve() */
-    if (!forwardonly) {
-      ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
-    }
+    ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
     /* Create TAO solver and set desired solution method */
     ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
