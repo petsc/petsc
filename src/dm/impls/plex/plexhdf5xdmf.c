@@ -3,6 +3,26 @@
 #include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
+static PetscErrorCode SplitPath_Private(char path[], char name[])
+{
+  char *tmp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrrchr(path,'/',&tmp);CHKERRQ(ierr);
+  ierr = PetscStrcpy(name,tmp);CHKERRQ(ierr);
+  if (tmp != path) {
+    /* '/' found, name is substring of path after last occurence of '/'. */
+    /* Trim the '/name' part from path just by inserting null character. */
+    tmp--;
+    *tmp = '\0';
+  } else {
+    /* '/' not found, name = path, path = "/". */
+    ierr = PetscStrcpy(path,"/");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
@@ -12,15 +32,27 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
+  char            topo_path[PETSC_MAX_PATH_LEN]="/viz/topology/cells", topo_name[PETSC_MAX_PATH_LEN];
+  char            geom_path[PETSC_MAX_PATH_LEN]="/geometry/vertices",  geom_name[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex HDF5/XDMF Loader Options","PetscViewer");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_plex_hdf5_topology_path","HDF5 path of topology dataset",NULL,topo_path,topo_path,sizeof(topo_path),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_plex_hdf5_geometry_path","HDF5 path to geometry dataset",NULL,geom_path,geom_path,sizeof(geom_path),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = SplitPath_Private(topo_path, topo_name);CHKERRQ(ierr);
+  ierr = SplitPath_Private(geom_path, geom_name);CHKERRQ(ierr);
+  ierr = PetscInfo2(dm, "Topology group %s, name %s\n", topo_path, topo_name);CHKERRQ(ierr);
+  ierr = PetscInfo2(dm, "Geometry group %s, name %s\n", geom_path, geom_name);CHKERRQ(ierr);
+
   /* Read topology */
-  ierr = PetscViewerHDF5PushGroup(viewer, "/viz/topology");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topo_path);CHKERRQ(ierr);
   ierr = ISCreate(comm, &cells);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) cells, "cells");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) cells, topo_name);CHKERRQ(ierr);
   ierr = ISLoad(cells, viewer);CHKERRQ(ierr);
   ierr = ISGetLocalSize(cells, &numCells);CHKERRQ(ierr);
   ierr = ISGetBlockSize(cells, &numCorners);CHKERRQ(ierr);
@@ -28,9 +60,9 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   numCells /= numCorners;
 
   /* Read geometry */
-  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, geom_path);CHKERRQ(ierr);
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, geom_name);CHKERRQ(ierr);
   ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &numVertices);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
