@@ -15,7 +15,6 @@ typedef struct {
   PetscBool exact_norm; /* flag for -ksp_lsqr_exact_mat_norm */
   PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
   PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
-  PetscReal rhs_norm;   /* Norm of the right hand side */
 } KSP_LSQR;
 
 static PetscErrorCode  VecSquare(Vec v)
@@ -80,9 +79,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
-
-  /* Calculate norm of right hand side */
-  ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
   /* vectors of length m, where system size is mxn */
   B  = ksp->vec_rhs;
