@@ -8,7 +8,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
   Vec             coordinates;
   IS              cells;
-  PetscInt        dim, spatialDim, N, numCells, numVertices, numCorners, bs;
+  PetscInt        spatialDim, N, numCells, numVertices, numCorners;
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -18,15 +18,12 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   /* Read topology */
-  ierr = PetscViewerHDF5ReadAttribute(viewer, "/viz/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer, "/viz/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz/topology");CHKERRQ(ierr);
   ierr = ISCreate(comm, &cells);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) cells, "cells");CHKERRQ(ierr);
   ierr = ISLoad(cells, viewer);CHKERRQ(ierr);
   ierr = ISGetLocalSize(cells, &numCells);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(cells, &bs);CHKERRQ(ierr);
-  if (bs != numCorners) SETERRQ(comm, PETSC_ERR_FILE_UNEXPECTED, "cell_corners and 2-dimension of cells not equal");
+  ierr = ISGetBlockSize(cells, &numCorners);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   numCells /= numCorners;
 
@@ -42,6 +39,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   numVertices /= spatialDim;
+
+  ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %d numCorners %d numVertices %d spatialDim %d\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   /* Check that maximum index referred in cells is in line with global number of vertices */
@@ -94,7 +93,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
     coordinates_arr_real = (PetscReal*)coordinates_arr;
 #endif
 
-    ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(dm, spatialDim);CHKERRQ(ierr);
     ierr = DMPlexBuildFromCellList_Parallel_Internal(dm, spatialDim, numCells, numVertices, numCorners, cells_arr_int, PETSC_TRUE, &sfVert);CHKERRQ(ierr);
     ierr = DMPlexBuildCoordinates_Parallel_Internal( dm, spatialDim, numCells, numVertices, sfVert, coordinates_arr_real);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
