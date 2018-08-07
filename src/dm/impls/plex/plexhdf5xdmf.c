@@ -8,7 +8,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 {
   Vec             coordinates;
   IS              cells;
-  PetscInt        spatialDim, N, numCells, numVertices, numCorners;
+  PetscInt        spatialDim, numCells, numVertices, numCorners;
   PetscMPIInt     rank;
   MPI_Comm        comm;
   PetscErrorCode  ierr;
@@ -31,9 +31,6 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadSizes(viewer, "vertices", &spatialDim, &N);CHKERRQ(ierr);
-  ierr = VecSetSizes(coordinates, PETSC_DECIDE, N);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(coordinates, spatialDim);CHKERRQ(ierr);
   ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &numVertices);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
