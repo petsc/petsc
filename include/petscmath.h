@@ -111,7 +111,7 @@ typedef __float128 PetscReal;
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #define MPIU_REAL MPIU___FP16
 typedef __fp16 PetscReal;
-#define PetscRound(a)       roundf(a)
+#define PetscRoundReal(a)   roundf(a)
 #define PetscSqrtReal(a)    sqrtf(a)
 #define PetscExpReal(a)     expf(a)
 #define PetscLogReal(a)     logf(a)

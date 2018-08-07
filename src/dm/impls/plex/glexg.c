@@ -16,7 +16,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
 #endif
 
 /*@C
-  DMPlexGenerateRegisterAll - Registers all of the Krylov subspace methods in the DMPlexGenerate package.
+  DMPlexGenerateRegisterAll - Registers all of the mesh generation methods in the DMPlexGenerate package.
 
   Not Collective
 

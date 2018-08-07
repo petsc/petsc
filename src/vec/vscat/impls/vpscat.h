@@ -119,14 +119,14 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.made_of_copies && addv == INSERT_VALUES) {
+    if (to->local.memcpy_plan.optimized[0] && addv == INSERT_VALUES) {
       /* do copy when it is not a self-to-self copy */
-      if (!(yv == xv && to->local.same_copy_starts)) {
-        for (i=0; i<to->local.n_copies; i++) {
+      if (!(yv == xv && to->local.memcpy_plan.same_copy_starts)) {
+        for (i=to->local.memcpy_plan.copy_offsets[0]; i<to->local.memcpy_plan.copy_offsets[1]; i++) {
           /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
              so I just leave it and let PetscMemcpy detect this bug.
            */
-          ierr = PetscMemcpy(yv + from->local.copy_starts[i],xv + to->local.copy_starts[i],to->local.copy_lengths[i]);CHKERRQ(ierr);
+          ierr = PetscMemcpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -302,14 +302,14 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI3Node)(VecScatter ctx,Vec xin,Vec yin
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.made_of_copies && addv == INSERT_VALUES) {
+   if (to->local.memcpy_plan.optimized[0] && addv == INSERT_VALUES) {
       /* do copy when it is not a self-to-self copy */
-      if (!(yv == xv && to->local.same_copy_starts)) {
-        for (i=0; i<to->local.n_copies; i++) {
+      if (!(yv == xv && to->local.memcpy_plan.same_copy_starts)) {
+        for (i=to->local.memcpy_plan.copy_offsets[0]; i<to->local.memcpy_plan.copy_offsets[1]; i++) {
           /* Do we need to take care of overlaps? We could but overlaps sound more like a bug than a requirement,
              so I just leave it and let PetscMemcpy detect this bug.
            */
-          ierr = PetscMemcpy(yv + from->local.copy_starts[i],xv + to->local.copy_starts[i],to->local.copy_lengths[i]);CHKERRQ(ierr);
+          ierr = PetscMemcpy(yv + from->local.memcpy_plan.copy_starts[i],xv + to->local.memcpy_plan.copy_starts[i],to->local.memcpy_plan.copy_lengths[i]);CHKERRQ(ierr);
         }
       }
     } else {

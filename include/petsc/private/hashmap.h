@@ -423,6 +423,10 @@ M*/
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table keys
 
+  Level: developer
+
+  Concepts: hash table, map
+
 .keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetVals()
 M*/
@@ -442,6 +446,10 @@ M*/
   Output Parameter:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table values
+
+  Level: developer
+
+  Concepts: hash table, map
 
 .keywords: hash table, map, array
 .seealso: PetscHSetTGetSize(), PetscHMapTGetKeys()

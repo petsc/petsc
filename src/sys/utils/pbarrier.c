@@ -2,7 +2,7 @@
 #include <petsc/private/petscimpl.h>              /*I "petscsys.h" I*/
 
 /* Logging support */
-PetscLogEvent PETSC_Barrier=0;
+PetscLogEvent PETSC_Barrier;
 
 static int hash(const char *str)
 {

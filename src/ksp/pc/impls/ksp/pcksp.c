@@ -62,11 +62,12 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   Mat            mat;
 
   PetscFunctionBegin;
-  if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
-  ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+  if (!jac->ksp) {
+    ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+  }
   if (pc->useAmat) mat = pc->mat;
   else             mat = pc->pmat;
-
   ierr = KSPSetOperators(jac->ksp,mat,pc->pmat);CHKERRQ(ierr);
   ierr = KSPSetUp(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -79,7 +80,7 @@ static PetscErrorCode PCReset_KSP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->ksp) {ierr = KSPReset(jac->ksp);CHKERRQ(ierr);}
+  ierr = KSPReset(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,8 +90,9 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_KSP(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -120,6 +122,46 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode  PCKSPSetKSP_KSP(PC pc,KSP ksp)
+{
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
+  jac->ksp = ksp;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCKSPSetKSP - Sets the KSP context for a KSP PC.
+
+   Collective on PC
+
+   Input Parameter:
++  pc - the preconditioner context
+-  ksp - the KSP solver
+
+   Notes:
+   The PC and the KSP must have the same communicator
+
+   Level: advanced
+
+.keywords:  PC, KSP, set, context
+@*/
+PetscErrorCode  PCKSPSetKSP(PC pc,KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  PetscCheckSameComm(pc,1,ksp,2);
+  ierr = PetscTryMethod(pc,"PCKSPSetKSP_C",(PC,KSP),(pc,ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
@@ -140,12 +182,12 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 .  pc - the preconditioner context
 
    Output Parameters:
-.  ksp - the PC solver
+.  ksp - the KSP solver
 
    Notes:
    You must call KSPSetUp() before calling PCKSPGetKSP().
 
-   If the PC is not a PCKSP object then a NULL is returned
+   If the PC is not a PCKSP object it raises an error
 
    Level: advanced
 
@@ -158,8 +200,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  *ksp = NULL;
-  ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -200,10 +241,10 @@ static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,
     If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
     and pass that as the right hand side into this KSP (and hence this KSP will always have a zero initial guess). For all outer Krylov methods
     except Richardson this is neccessary since Krylov methods, even the flexible ones, need to "see" the result of the action of the preconditioner on the
-    input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For 
-    KSPRICHARDSON it is possible to provide a PCApplyRichardson_PCKSP() that short circuits returning to the KSP object at each iteration to compute the 
-    residual, see for example PCApplyRichardson_SOR(). We do not implement a PCApplyRichardson_PCKSP()  because (1) using a KSP directly inside a Richardson 
-    is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the 
+    input (current residual) vector, the action of the preconditioner cannot depend also on some other vector (the "initial guess"). For
+    KSPRICHARDSON it is possible to provide a PCApplyRichardson_PCKSP() that short circuits returning to the KSP object at each iteration to compute the
+    residual, see for example PCApplyRichardson_SOR(). We do not implement a PCApplyRichardson_PCKSP()  because (1) using a KSP directly inside a Richardson
+    is not an efficient algorithm anyways and (2) implementing it for its > 1 would essentially require that we implement Richardson (reimplementing the
     Richardson code) inside the PCApplyRichardson_PCKSP() leading to duplicate code.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
@@ -218,7 +259,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  pc->data = (void*)jac;
 
+  ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   pc->ops->apply           = PCApply_KSP;
   pc->ops->applytranspose  = PCApplyTranspose_KSP;
   pc->ops->setup           = PCSetUp_KSP;
@@ -226,13 +269,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->ops->destroy         = PCDestroy_KSP;
   pc->ops->setfromoptions  = PCSetFromOptions_KSP;
   pc->ops->view            = PCView_KSP;
-  pc->ops->applyrichardson = 0;
 
-  pc->data = (void*)jac;
-
-
-  jac->its             = 0;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",PCKSPGetKSP_KSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",PCKSPSetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

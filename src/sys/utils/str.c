@@ -382,10 +382,12 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
      Null string returns a string starting with zero
 
      If the string that is being copied is of length n or larger then the entire string is not
-     copied and the file location of s is set to NULL. This is different then the behavior of 
-     strncpy() which leaves s non-terminated.
+     copied and the final location of s is set to NULL. This is different then the behavior of 
+     strncpy() which leaves s non-terminated if there is not room for the entire string.
 
   Concepts: string copy
+
+  Developers Note: Should this be PetscStrlcpy() to reflect its behavior which is like strlcpy() not strncpy()
 
 .seealso: PetscStrcpy(), PetscStrcat(), PetscStrlcat()
 
@@ -394,6 +396,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
+  if (s && !n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Requires an output string of length at least 1 to hold the termination character");
   if (t) {
     if (n > 1) {
       strncpy(s,t,n-1);
@@ -438,7 +441,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
    Not Collective
 
    Input Parameters:
-+  s - pointer to string to be added to end
++  s - pointer to string to be added to at end
 .  t - string to be added to
 -  n - length of the original allocated string
 
@@ -462,8 +465,11 @@ PetscErrorCode  PetscStrlcat(char s[],const char t[],size_t n)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (t && !n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"String buffer length must be positive");
+  if (!t) PetscFunctionReturn(0);
   ierr = PetscStrlen(t,&len);CHKERRQ(ierr);
   strncat(s,t,n - len);
+  s[n-1] = 0;
   PetscFunctionReturn(0);
 }
 

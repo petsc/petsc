@@ -302,7 +302,7 @@ SNES Object: 5 MPI processes
             Symmetric computation of primal basis functions: 0
             Num. Procs. to map coarse adjacency list: 0
             Coarse eqs per proc (significant at the coarsest level): 1
-            Detect disconnected: 0
+            Detect disconnected: 0 (filter 0)
             Benign subspace trick: 0 (change explicit 0)
             Benign subspace trick is active: 0
             Algebraic computation of no-net-flux 0
@@ -381,4 +381,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 2.12832e-08 [7.0686e-10, 2.12715e-08]
+L_2 Error: 2.12771e-08 [7.05315e-10, 2.12655e-08]

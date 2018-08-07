@@ -6,7 +6,7 @@
 
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
-#if defined(PETSC_USE_LOG) && !defined(__MPIUNI_H)
+#if defined(PETSC_USE_LOG) && !defined(PETSC_HAVE_MPIUNI)
 
 /*@C
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that

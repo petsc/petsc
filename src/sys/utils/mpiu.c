@@ -6,7 +6,7 @@
   generated below just for these routines.
 */
 
-PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = 0;
@@ -26,7 +26,7 @@ PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = 0;

@@ -144,7 +144,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+#if !defined(PETSC_HAVE_MKL_SPARSE_SP2M)
+  /* Versions of MKL that don't have mkl_sparse_sp2m() still support the old, non-inspector-executor interfaces. For these versions,
+   * we simply exit. Versions that do have mkl_sparse_sp2m() (version 18, update 2 and later) have deprecated the old interfaces.
+   * In this case, we must use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by
+   * not calling mkl_sparse_optimize() later. */
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
+#endif
 
   if (aijmkl->sparse_optimized) {
     /* Matrix has been previously assembled and optimized. Must destroy old
@@ -939,7 +945,7 @@ PetscErrorCode MatPtAP_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat P,MatReuse scall,Pets
 PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
- * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLAIJ()
+ * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqAIJMKL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJMKL one. */
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatReuse reuse,Mat *newmat)

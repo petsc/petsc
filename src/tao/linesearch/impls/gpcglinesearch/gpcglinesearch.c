@@ -50,6 +50,8 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   /* ls->nfeval   - number of function evaluations */
   /* ls->nfeval   - number of function/gradient evaluations */
   /* ls->max_funcs  - maximum number of function evaluations */
+  
+  ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
   ls->step = ls->initstep;
@@ -73,7 +75,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   }
 
   ierr = VecDot(g,s,&gdx);CHKERRQ(ierr);
-   if (gdx > 0) {
+  if (gdx > 0) {
      ierr = PetscInfo1(ls,"Line search error: search direction is not descent direction. dot(g,s) = %g\n",(double)gdx);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
     PetscFunctionReturn(0);
@@ -120,6 +122,8 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       ierr = TaoLineSearchComputeObjectiveAndGradient(ls,neP->W2,f,g);CHKERRQ(ierr);
       g_computed=PETSC_TRUE;
     }
+    
+    ierr = TaoLineSearchMonitor(ls, i+1, *f, ls->step);CHKERRQ(ierr);
 
     if (0 == i) {
         ls->f_fullstep = *f;

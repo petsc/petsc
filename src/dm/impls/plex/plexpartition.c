@@ -1436,7 +1436,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   }
   ubvec[0] = 1.05;
   /* Weight cells by dofs on cell by default */
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     PetscInt cStart, cEnd, dof;
 
@@ -1759,7 +1759,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
     PetscSection section;
     /* Weight cells by dofs on cell by default */
     ierr = PetscMalloc1(PetscMax(nvtxs,1),&vwgt);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     if (section) {
       PetscInt vStart, vEnd, dof;
       ierr = DMPlexGetHeightStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -1991,7 +1991,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     ierr = PetscHSetIGetSize(ht, &nelems);CHKERRQ(ierr);
     ierr = PetscMalloc1(nelems, &elems);CHKERRQ(ierr);
-    ierr = PetscHSetIGetElems(ht, &off, elems);
+    ierr = PetscHSetIGetElems(ht, &off, elems);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
     ierr = PetscSortInt(nelems, elems);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, nelems, elems, PETSC_OWN_POINTER, &pointIS);CHKERRQ(ierr);

@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 
-# Note: /Applications/Free PGI.app/Contents/Resources/pgi/osx86-64/14.3/include/va_list.h
-# is edited to worarround duplicate 'typedef' warnings. And the following to avoid link warning
-# cd "/Applications/Free PGI.app/Contents/Resources/pgi/osx86-64/14.3" && ln -s lib libso
-
 configure_options = [
-  '--with-cc=pgcc',
-  '--with-fc=pgfortran',
+  # use MPICH from PGI
+  #'--with-cc=pgcc',
+  #'--with-fc=pgfortran',
   '--with-cxx=0', # osx PGI does not have c++? And autodetect code messes up -L "foo bar" paths
-
-  '--download-mpich=1',
-  '--download-mpich-device=ch3:nemesis', # socket code gives 'Error from ioctl = 6; Error is: : Device not configured'
-  '--download-cmake=1',
+  #'--download-mpich=1',
+  #'--download-mpich-device=ch3:nemesis', # socket code gives 'Error from ioctl = 6; Error is: : Device not configured'
+  #'--download-cmake=1', #use from brew
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-ptscotch=1',

@@ -74,7 +74,10 @@ row 7: (6, -8.)  (7, 16.)  (8, -8.)
 row 8: (7, -9.)  (8, 18.)  (9, -9.) 
 row 9: (0, -10.)  (8, -10.)  (9, 20.) 
 row 10: (0, 22.)  (1, -11.)  (9, -11.) 
-Test MatISGetMPIXAIJ
+Test CheckMat
+Test MatDuplicate and MatAXPY
+Test MatConvert_IS_XAIJ
+Test MatConvert_XAIJ_IS
 Test MatDiagonalScale
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
@@ -102,3 +105,4 @@ Test MatMissingDiagonal
 [3] [7,9) Missing 1, row 7 (diag zero)
 [4] [9,11) Missing 1, row 9 (diag zero)
 Test MatTranspose
+Test MatISFixLocalEmpty

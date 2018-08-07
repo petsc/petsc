@@ -203,6 +203,6 @@ int main(int argc,char **args)
       suffix: superlu_dist
       nsize: 3
       requires: superlu_dist
-      args: -test_choleskyfactor -mat_superlu_dist_rowperm NATURAL
+      args: -test_choleskyfactor -mat_superlu_dist_rowperm NOROWPERM
       output_file: output/ex127_superlu_dist.out
 TEST*/

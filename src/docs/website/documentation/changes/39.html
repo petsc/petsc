@@ -128,7 +128,7 @@
       <ul>
         <li>Added MatShellTestMultTranspose() and MatShellTestMult() for checking if user provided MATSHELL matches the Jacobian of a given function computed with differencing.</li>
         <li>MatSolverPackage is replaced with MatSolverType.</li>
-        <li>mat_solver_package is replaced with mat_solver_type.</li>
+        <li>mat_solver_package is replaced with mat_solver_type in options, e.g. <code>-pc_factor_mat_solver_type</code> should be used instead of <code>-pc_factor_mat_solver_package</code>.</li>
         <li>MatShellSetOperation() and MatShellGetOperation() can now only be used for MATSHELL matrices, use MatSetOperation() and MatGetOperation() to set an operation for any matrix type.</li>
         <li>Added MatMumpsGetInverse().</li>
         <li>MatMult() for the MATAIJ type has been optimized using AVX-512 intrinsics; must be enabled at configure time.</li>

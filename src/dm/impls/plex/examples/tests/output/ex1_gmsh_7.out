@@ -7544,4 +7544,4 @@ Process 0:
   ( 353) dim  3 offset 3813 -5. 1.75 5.5
   ( 354) dim  3 offset 3816 -5. 5.25 5.5
   ( 355) dim  3 offset 3819 -5. -5.25 5.5
-Mesh with 306 cells, shape condition numbers: min = 3.16737, max = 7.92632, mean = 4.77384, stddev = 0.869825
+Mesh with 306 cells, shape condition numbers: min = 3.16737, max = 7.92632, mean = 4.77384, stddev = 0.87125

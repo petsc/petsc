@@ -26,16 +26,17 @@ M*/
 . dm - DM on which Vec lives
 . PetscViewerVTKWriteFunction - function to write this Vec
 . fieldtype - Either PETSC_VTK_POINT_FIELD or PETSC_VTK_CELL_FIELD
+. checkdm - whether to check for identical dm arguments as fields are added
 - vec - Vec to write
-
-   Level: developer
 
    Note:
    This routine keeps exclusive ownership of the Vec. The caller should not use or destroy the Vec after adding it.
 
-.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction
+   Level: developer
+
+.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction, PetscViewerVTKGetDM()
 @*/
-PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscObject vec)
+PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
 {
   PetscErrorCode ierr;
 
@@ -43,7 +44,30 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,4);
-  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldtype,vec));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscBool,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldtype,checkdm,vec));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscViewerVTKGetDM - get the DM associated with the viewer
+
+   Collective
+
+   Input Arguments:
++ viewer - VTK viewer
+- dm - DM associated with the viewer (as PetscObject)
+
+   Level: developer
+
+.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction, PetscViewerVTKAddField()
+@*/
+PetscErrorCode PetscViewerVTKGetDM(PetscViewer viewer,PetscObject *dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKGetDM_C",(PetscViewer,PetscObject*),(viewer,dm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,6 +84,7 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerVTKAddField_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerVTKGetDM_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,10 +118,14 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
-  ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
-  ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
-  ierr = PetscStrcasecmp(name+len-4,".vtr",&isvtr);CHKERRQ(ierr);
+  if (!len) {
+    isvtk = PETSC_TRUE;
+  } else {
+    ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(name+len-4,".vtr",&isvtr);CHKERRQ(ierr);
+  }
   if (isvtk) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_ASCII_VTK;
     if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
@@ -110,7 +139,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
     if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_VTK_VTR;
     if (viewer->format != PETSC_VIEWER_VTK_VTR) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtr' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
-  ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(len ? name : "stdout",&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +169,7 @@ PetscErrorCode  PetscViewerFileGetMode_VTK(PetscViewer viewer,PetscFileMode *typ
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscObject vec)
+PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscBool checkdm,PetscObject vec)
 {
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link, tail = vtk->link;
@@ -148,7 +177,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
 
   PetscFunctionBegin;
   if (vtk->dm) {
-    if (dm != vtk->dm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
+    if (checkdm && dm != vtk->dm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Refusing to write a field from more than one grid to the same VTK file. Set checkdm = PETSC_FALSE to skip this check.");
   } else {
     ierr = PetscObjectReference(dm);CHKERRQ(ierr);
     vtk->dm = dm;
@@ -166,8 +195,17 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerVTKGetDM_VTK(PetscViewer viewer,PetscObject *dm)
+{
+  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
+
+  PetscFunctionBegin;
+  *dm = vtk->dm;
+  PetscFunctionReturn(0);
+}
+
 /*MC
-   PETSCVIEWERVTK - A viewer that writes to an VTK file
+   PETSCVIEWERVTK - A viewer that writes to a VTK file
 
 
 .seealso:  PetscViewerVTKOpen(), PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
@@ -197,6 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_VTK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerVTKAddField_C",PetscViewerVTKAddField_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerVTKGetDM_C",PetscViewerVTKGetDM_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

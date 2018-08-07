@@ -213,7 +213,6 @@ int main(int argc,char **args)
 
   PetscPreLoadStage("KSPSolve 1");
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-
   ierr = KSPGetTotalIterations(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
 
@@ -247,4 +246,5 @@ int main(int argc,char **args)
       output_file: output/ex10_1.out
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi
+
 TEST*/

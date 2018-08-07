@@ -1,12 +1,14 @@
-/* Program usage: mpiexec -n 1 rosenbrock1 [-help] [all TAO options] */
+/* Program usage: mpiexec -n 1 rosenbrock2 [-help] [all TAO options] */
 
 /*  Include "petsctao.h" so we can use TAO solvers.  */
 #include <petsctao.h>
 
-static  char help[] = "This example tests the BFGS recycling in LMVM. The Rosenbrock \n\
-problem is capped to 10 iterations, and solved in segments using repeated TaoSolve() \n\
-calls. The cumulative iteration count across all capped TaoSolve() calls with recycling should \n\
-be equal to the iteration count of a single uncapped TaoSolve() call without recycling. \n";
+static  char help[] = "This example demonstrates use of the TAO package to \n\
+solve an unconstrained minimization problem on a single processor.  We \n\
+minimize the extended Rosenbrock function: \n\
+   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n\
+or the chained Rosenbrock function:\n\
+   sum_{i=0}^{n-1} alpha*(x_{i+1} - x_i^2)^2 + (1 - x_i)^2\n";
 
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
@@ -19,9 +21,6 @@ be equal to the iteration count of a single uncapped TaoSolve() call without rec
    Routines: TaoDestroy();
    Processors: 1
 T*/
-
-
-
 
 /*
    User-defined application context - contains data needed by the
@@ -45,11 +44,11 @@ int main(int argc,char **argv)
   Vec                x;                     /* solution vector */
   Mat                H;
   Tao                tao;                   /* Tao solver context */
-  PetscBool          flg;
-  PetscInt           cycle;
+  PetscBool          flg, test_lmvm = PETSC_FALSE;
   PetscMPIInt        size,rank;                  /* number of processes running */
   AppCtx             user;                  /* user-defined application context */
   TaoConvergedReason reason;
+  PetscInt           its, recycled_its=0, oneshot_its=0;
 
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -63,6 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg);CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);
@@ -85,17 +85,31 @@ int main(int argc,char **argv)
   /* Check for TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
-  /* SOLVE THE APPLICATION */
+  /* Solve the problem */
+  ierr = TaoSetTolerances(tao, 1.e-5, 0.0, 0.0);CHKERRQ(ierr);
   ierr = TaoSetMaximumIterations(tao, 5);CHKERRQ(ierr);
-  cycle = 1;
+  ierr = TaoLMVMRecycle(tao, PETSC_TRUE);CHKERRQ(ierr);
   reason = TAO_CONTINUE_ITERATING;
   while (reason != TAO_CONVERGED_GATOL) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solve cycle: %D\n",cycle); CHKERRQ(ierr);
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
-    ++cycle;
+    ierr = TaoGetIterationNumber(tao, &its);CHKERRQ(ierr);
+    recycled_its += its;
+    ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
   }
-
+  
+  /* Disable recycling and solve again! */
+  ierr = TaoSetMaximumIterations(tao, 100);CHKERRQ(ierr);
+  ierr = TaoLMVMRecycle(tao, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecSet(x, zero);CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
+  if (reason != TAO_CONVERGED_GATOL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
+  ierr = TaoGetIterationNumber(tao, &oneshot_its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its);CHKERRQ(ierr);
+  if (recycled_its != oneshot_its) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
+  
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = MatDestroy(&H);CHKERRQ(ierr);
@@ -233,7 +247,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_type lmvm -tao_lmm_recycle -tao_monitor -tao_view -tao_gatol 1.e-3
+      args: -tao_type lmvm -tao_monitor
       requires: !single
 
 TEST*/

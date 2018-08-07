@@ -32,6 +32,7 @@ PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
   TAO_BNCG                     *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
+  if (!tao->bounded) PetscFunctionReturn(0);
   ierr = ISDestroy(&cg->inactive_old);CHKERRQ(ierr);
   if (cg->inactive_idx) {
     ierr = ISDuplicate(cg->inactive_idx, &cg->inactive_old);CHKERRQ(ierr);
@@ -65,6 +66,7 @@ PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step)
   TAO_BNCG                     *cg = (TAO_BNCG *)tao->data;
   
   PetscFunctionBegin;
+  if (!tao->bounded) PetscFunctionReturn(0);
   switch (asType) {
   case CG_AS_NONE:
     ierr = VecISSet(step, cg->active_idx, 0.0);CHKERRQ(ierr);
@@ -93,10 +95,10 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   PetscFunctionBegin;
   /*   Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
-  
-  /* Project the initial point onto the feasible region */
   ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
+  if (tao->bounded) {
+    ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
+  }
 
   if (nDiff > 0 || !cg->recycle) {
     /*  Solver is not being recycled so just compute the objective function and criteria */
@@ -120,8 +122,10 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   /* Convergence check */
   tao->niter = 0;
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoLogConvergenceHistory(tao, cg->f, gnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao, tao->niter, cg->f, gnorm, 0.0, step);CHKERRQ(ierr);
+  ierr = VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W);CHKERRQ(ierr);
+  ierr = VecNorm(cg->W, NORM_2, &resnorm);CHKERRQ(ierr);
+  ierr = TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   
@@ -207,7 +211,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       
       /* Verify that this is a descent direction */
       ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
-      ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);
+      ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);CHKERRQ(ierr);
       if (gd > -cg->rho*PetscPowReal(dnorm, cg->pow)) {
         /* Not a descent direction, so we reset back to projected gradient descent */
         ierr = VecAXPBY(tao->stepdirection, -1.0, 0.0, tao->gradient);CHKERRQ(ierr);
@@ -363,7 +367,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
     ierr = PetscOptionsReal("-tao_bncg_rho","descent direction tolerance", "", cg->rho,&cg->rho,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_bncg_pow","descent direction exponent", "", cg->pow,&cg->pow,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_bncg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-tao_bncg_as_type","active set estimation method", "", CG_AS_TYPE, CG_AS_SIZE, CG_AS_TYPE[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-tao_bncg_as_type","active set estimation method", "", CG_AS_TYPE, CG_AS_SIZE, CG_AS_TYPE[cg->as_type], &cg->as_type,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tao_bncg_recycle","enable recycling the existing solution and gradient at the start of a new solve","",cg->recycle,&cg->recycle,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_bncg_as_tol", "initial tolerance used when estimating actively bounded variables","",cg->as_tol,&cg->as_tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_bncg_as_step", "step length used when estimating actively bounded variables","",cg->as_step,&cg->as_step,NULL);CHKERRQ(ierr);

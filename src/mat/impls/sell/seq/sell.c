@@ -117,7 +117,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   b->totalslices = totalslices;
   if (!skipallocation) {
-    if (B->rmap->n & 0x07) PetscInfo1(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);
+    if (B->rmap->n & 0x07) {ierr = PetscInfo1(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);CHKERRQ(ierr);}
 
     if (!b->sliidx) { /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       ierr = PetscMalloc1(totalslices+1,&b->sliidx);CHKERRQ(ierr);
@@ -258,10 +258,6 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (A->rmap->bs > 1) {
-    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
@@ -732,22 +728,23 @@ PetscErrorCode MatMultTranspose_SeqSELL(Mat A,Vec xx,Vec yy)
 */
 PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A,PetscBool  *missing,PetscInt *d)
 {
-  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
-  PetscInt    *diag,i;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
+  PetscInt       *diag,i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
   if (A->rmap->n > 0 && !(a->colidx)) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
-    PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");
+    ierr = PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");CHKERRQ(ierr);
   } else {
     diag = a->diag;
     for (i=0; i<A->rmap->n; i++) {
       if (diag[i] == -1) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
-        PetscInfo1(A,"Matrix is missing diagonal number %D\n",i);
+        ierr = PetscInfo1(A,"Matrix is missing diagonal number %D\n",i);CHKERRQ(ierr);
         break;
       }
     }

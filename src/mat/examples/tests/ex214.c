@@ -9,8 +9,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
 #if defined(PETSC_HAVE_MUMPS)
-  Mat            A,RHS,C,F,X,AX;
-  Vec            u,x,b;
+  Mat            A,RHS,C,F,X,AX,spRHST;
   PetscInt       m,n,nrhs,M,N,i,Istart,Iend,Ii,j,J;
   PetscScalar    v;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
@@ -72,27 +71,16 @@ int main(int argc,char **args)
   ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
-  /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
-
   ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
   if (!rank && displ) {ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, size mat %D x %D\n",solver,nrhs,M,N);CHKERRQ(ierr);}
 
   /* Test LU Factorization */
   ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
-
-  ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
 
-  ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
-  ierr = VecCopy(x,u);CHKERRQ(ierr);
-
   /* (1) Test MatMatSolve(): dense RHS = A*C, C: true solutions */
+  /* ---------------------------------------------------------- */
   ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
@@ -104,7 +92,8 @@ int main(int argc,char **args)
   }
 
   /* (2) Test MatMatSolve() for inv(A) with dense RHS:
-   RHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
+   RHS = [e[0],...,e[nrhs-1]], dense X holds first nrhs columns of inv(A) */
+  /* -------------------------------------------------------------------- */
   ierr = MatZeroEntries(RHS);CHKERRQ(ierr);
   for (i=0; i<nrhs; i++) {
     v = 1.0;
@@ -115,7 +104,7 @@ int main(int argc,char **args)
 
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
   if (displ) {
-    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," (2) first %D columns of inv(A) with dense RHS:\n",nrhs);}
+    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);}
     ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -126,75 +115,66 @@ int main(int argc,char **args)
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
+  ierr = MatZeroEntries(X);CHKERRQ(ierr);
 
-  if (size == 1) {
-    /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
-     spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
-    Mat RHST,spRHST,spRHS;
-
-    ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
-    ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
-
-    /* MUMPS requres spRHS in compressed column format, which PETSc does not support.
-     PETSc can create a new matrix object that shares same data structure with A and behaves like A^T */
-    ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-    ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
-    if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," (3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
-      ierr = MatView(X,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  /* (3) Test MatMatTransposeSolve() for inv(A) with sparse RHS stored in the host:
+     spRHST = [e[0],...,e[nrhs-1]]^T, dense X holds first nrhs columns of inv(A) */
+  /* --------------------------------------------------------------------------- */
+  /* Create spRHST: PETSc does not support compressed column format which is required by MUMPS for sparse RHS matrix,
+     thus user must create spRHST=spRHS^T and call MatMatTransposeSolve() */
+  ierr = MatCreate(PETSC_COMM_WORLD,&spRHST);CHKERRQ(ierr);
+  if (!rank) {
+    /* MUMPS requirs RHS be centralized on the host! */
+    ierr = MatSetSizes(spRHST,nrhs,M,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetSizes(spRHST,0,0,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  }
+  ierr = MatSetType(spRHST,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(spRHST);CHKERRQ(ierr);
+  ierr = MatSetUp(spRHST);CHKERRQ(ierr);
+  if (!rank) {
+    v = 1.0;
+    for (i=0; i<nrhs; i++) {
+      ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
+  }
+  ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    /* Check the residual */
-    ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
-    ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
-    }
+  ierr = MatMatTransposeSolve(F,spRHST,X);CHKERRQ(ierr);
 
-    ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-    ierr = MatDestroy(&RHST);CHKERRQ(ierr);
+  if (displ) {
+    if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
+    ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  /* Check the residual */
+  ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
+
+  ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  if (norm > tol) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
   /* (4) Test MatMatSolve() for inv(A) with selected entries:
    input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
+  /* --------------------------------------------------------------------------------- */
   if (nrhs == N) { /* mumps requires nrhs = n */
     /* Create spRHS on proc[0] */
-    Mat spRHS = NULL,spRHST;
-    if (!rank) {
-      /* Create spRHST = spRHS^T in compressed row format (aij) and set its nonzero structure */
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,2,NULL,&spRHST);CHKERRQ(ierr);
-      v = 0.0;
-      for (i=0; i<N; i++) {
-        ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      for (i=1; i<N; i++) {
-        j = i - 1;
-        ierr = MatSetValues(spRHST,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    Mat spRHS = NULL;
 
-      /* Create spRHS = spRHST^T. Two matrices share internal matrix data structure */
-      ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-    }
-
+    /* Create spRHS = spRHST^T. Two matrices share internal matrix data structure */
+    ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
     ierr = MatMumpsGetInverse(F,spRHS);CHKERRQ(ierr);
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
 
-    if (!rank) {
-      if (displ) {
-      /* spRHST and spRHS share same internal data structure */
-      Mat spRHSTT;
-      ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"\nSelected entries of inv(A):\n");CHKERRQ(ierr);
-      ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
-      }
-
-      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+    ierr = MatMumpsGetInverseTranspose(F,spRHST);CHKERRQ(ierr);
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"\nSelected entries of inv(A^T):\n");CHKERRQ(ierr);
+      ierr = MatView(spRHST,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
   }
 
   /* Free data structures */
@@ -204,10 +184,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = MatDestroy(&RHS);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 #endif

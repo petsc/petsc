@@ -1,0 +1,21 @@
+
+---- Journal Bearing Problem SHB-----
+mx: 8,  my: 12,  ecc: 0.1 
+
+iter =   0, Function value 0., Residual: 1.11613 
+iter =   1, Function value -0.149218, Residual: 0.455114 
+iter =   2, Function value -0.167821, Residual: 0.557349 
+iter =   3, Function value -0.1791, Residual: 0.16639 
+iter =   4, Function value -0.182239, Residual: 0.0796394 
+iter =   5, Function value -0.18263, Residual: 0.0967457 
+iter =   6, Function value -0.183201, Residual: 0.0382163 
+iter =   7, Function value -0.18341, Residual: 0.0137817 
+iter =   8, Function value -0.183425, Residual: 0.00545939 
+iter =   9, Function value -0.18343, Residual: 0.00410833 
+iter =  10, Function value -0.183435, Residual: 0.00337663 
+iter =  11, Function value -0.183437, Residual: 0.00167909 
+iter =  12, Function value -0.183437, Residual: 0.000825296 
+iter =  13, Function value -0.183437, Residual: 0.000408606 
+iter =  14, Function value -0.183437, Residual: 0.000206789 
+iter =  15, Function value -0.183437, Residual: 0.000217013 
+iter =  16, Function value -0.183437, Residual: 8.47277e-05 

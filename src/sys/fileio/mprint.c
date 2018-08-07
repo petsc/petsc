@@ -7,7 +7,7 @@
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 /*
      Allows one to overwrite where standard out is sent. For example
      PETSC_STDOUT = fopen("/dev/ttyXX","w") will cause all standard out

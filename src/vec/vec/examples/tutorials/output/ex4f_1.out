@@ -9,16 +9,16 @@ Vec Object: initial vector: 1 MPI processes
 Vec Object: new vector 1: 1 MPI processes
   type: seq
 100.
-200.
-300.
-400.
-500.
-600.
+20.
+30.
+40.
+50.
+60.
 Vec Object: new vector 2: 1 MPI processes
   type: seq
 1000.
-2000.
-3000.
-4000.
-5000.
-6000.
+20.
+30.
+40.
+50.
+60.
