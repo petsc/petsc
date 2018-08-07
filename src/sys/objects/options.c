@@ -2787,9 +2787,13 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
   ierr = PetscOptionsFindPair(PetscOptionsObject->options,PetscOptionsObject->prefix,oldname,&value,&found);CHKERRQ(ierr);
   if (found) {
     if (newname) {
-      ierr = PetscOptionsPrefixPush(PetscOptionsObject->options,PetscOptionsObject->prefix);CHKERRQ(ierr);
+      if (PetscOptionsObject->prefix) {
+        ierr = PetscOptionsPrefixPush(PetscOptionsObject->options,PetscOptionsObject->prefix);CHKERRQ(ierr);
+      }
       ierr = PetscOptionsSetValue(PetscOptionsObject->options,newname,value);CHKERRQ(ierr);
-      ierr = PetscOptionsPrefixPop(PetscOptionsObject->options);CHKERRQ(ierr);
+      if (PetscOptionsObject->prefix) {
+        ierr = PetscOptionsPrefixPop(PetscOptionsObject->options);CHKERRQ(ierr);
+      }
       ierr = PetscOptionsClearValue(PetscOptionsObject->options,oldname);CHKERRQ(ierr);
     }
     quiet = PETSC_FALSE;
