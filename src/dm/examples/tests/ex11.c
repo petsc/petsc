@@ -76,12 +76,25 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
+      args: -dof 2
+      filter: grep -v -i Object
+      requires: x
 
+   test:
+      suffix: 2
+      nsize: 2
+      args: -dof 2
+      filter: grep -v -i Object
+      requires: x
 
+   test:
+      suffix: 3
+      nsize: 3
+      args: -dof 2
+      filter: grep -v -i Object
+      requires: x
 
-
-
-
-
-
+TEST*/

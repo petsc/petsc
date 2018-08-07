@@ -46,7 +46,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
 
   if (!cdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
-  ierr = DMDAGetReducedDMDA(dmc,2,&cdmc);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(dmc,2,&cdmc);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmc,"coefficientdm",(PetscObject)cdmc);CHKERRQ(ierr);
 
   ierr = DMGetNamedGlobalVector(cdm,"coefficient",&c);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
 
   if (!cdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
-  ierr = DMDAGetReducedDMDA(subdm,2,&csubdm);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(subdm,2,&csubdm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)subdm,"coefficientdm",(PetscObject)csubdm);CHKERRQ(ierr);
 
   ierr = DMGetNamedGlobalVector(cdm,"coefficient",&c);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
 
   /* set up the coefficient */
 
-  ierr = DMDAGetReducedDMDA(da,2,&cda);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(da,2,&cda);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)da,"coefficientdm",(PetscObject)cda);CHKERRQ(ierr);
 
   ierr = DMGetNamedGlobalVector(cda,"coefficient",&c);CHKERRQ(ierr);
@@ -292,3 +292,13 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   ierr = DMRestoreNamedLocalVector(cdm,"coefficient",&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres  -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4 
+      nsize: 16
+      requires: !single
+      output_file: output/ex29.out
+
+TEST*/

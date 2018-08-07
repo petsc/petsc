@@ -19,13 +19,15 @@
     Level: intermediate
 
     Options Database Keys:
-+   -ksp_cg_Hermitian - Indicates Hermitian matrix
++   -ksp_cg_hermitian - Indicates Hermitian matrix
 -   -ksp_cg_symmetric - Indicates symmetric matrix
 
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
+
+.seealso: KSP, KSPCG
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
@@ -52,14 +54,16 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
     Level: intermediate
 
      The algorithm used in this case is described as Method 1 in Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
-     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout creates the algorithm
+     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout credits the algorithm
      initially to Chronopoulos and Gear.
 
      It requires two extra work vectors than the conventional implementation in PETSc.
 
      See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type, KSPPGMRES
+.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
+
+.seealso: KSP, KSPCG, KSPGMRES
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 {
@@ -83,7 +87,9 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 
     Level: advanced
 
-.keywords: KSP, NASH, STCG, GLTR, set, trust region radius
+.keywords:  set, trust region radius
+
+.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
 PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
@@ -108,7 +114,9 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 
     Level: advanced
 
-.keywords: KSP, NASH, STCG, GLTR, get, norm direction
+.keywords:  get, norm direction
+
+.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
 PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
@@ -131,7 +139,9 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 
     Level: advanced
 
-.keywords: KSP, NASH, STCG, GLTR, get, objective function
+.keywords:  get, objective function
+
+.seealso: KSP, KSPCG, KSPNASH, KSPSTCG, KSPGLTR
 @*/
 PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {

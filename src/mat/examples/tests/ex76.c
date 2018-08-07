@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],block, row,Ii,J,n1,lvl;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscReal      norm2,tol=1.e-10,err[10];
+  PetscReal      norm2;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm,cperm;
   PetscRandom    rdm;
@@ -132,9 +132,7 @@ int main(int argc,char **args)
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
-  }
+  if (i-Ii || j-J) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetOwnershipRange() in MatSBAIJ format\n");
 
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
@@ -188,14 +186,13 @@ int main(int argc,char **args)
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
       ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
-      /* Check the error */
+      /* Check the residual */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
 
       if (displ) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
-      err[i++] = norm2;
     }
   }
 
@@ -224,13 +221,12 @@ int main(int argc,char **args)
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
       ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
-      /* Check the error */
+      /* Check the residual */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (displ) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
-      err[i++] = norm2;
     }
   }
 
@@ -282,14 +278,12 @@ int main(int argc,char **args)
     }
     ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
-    /* Check the error */
+    /* Check the residual */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (displ) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
-    err[i] -= norm2;
-    if (err[i] > tol) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER," level: %d, err: %g\n", lvl,(double)err[i]);
   }
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
@@ -303,3 +297,15 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8}}
+
+   test:
+      suffix: 3
+      args: -testaij
+      output_file: output/ex76_1.out
+
+TEST*/

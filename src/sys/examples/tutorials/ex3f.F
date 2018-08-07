@@ -33,6 +33,7 @@
       parameter (onefp = 1.0d0)
       PetscReal onereal,tenreal
       parameter (onereal = 1.0, tenreal = 10.0)
+      PetscInt n
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -115,6 +116,7 @@
       call PetscLogEventEnd(USER_EVENT1,ierr)
 
       call PetscInfo('PETSc info message\n'//'Another line\n',ierr)
+      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);
       call PetscFinalize(ierr)
 
       end

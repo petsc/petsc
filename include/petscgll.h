@@ -14,7 +14,8 @@
 
   The mass matrix for the element corresponds to the diagona matrix whose entries are the weights[]
 
-  Developer Notes: This may eventually get merged into a more abstract or general object for managing 
+  Developer Notes:
+    This may eventually get merged into a more abstract or general object for managing 
     integration schemes or discretization schemes.
 
   References: XXXX
@@ -50,3 +51,6 @@ PETSC_EXTERN PetscErrorCode PetscGLLElementGradientCreate(PetscGLL*,PetscReal***
 PETSC_EXTERN PetscErrorCode PetscGLLElementGradientDestroy(PetscGLL*,PetscReal***,PetscReal***);
 PETSC_EXTERN PetscErrorCode PetscGLLElementAdvectionCreate(PetscGLL*,PetscReal***);
 PETSC_EXTERN PetscErrorCode PetscGLLElementAdvectionDestroy(PetscGLL*,PetscReal***);
+
+PETSC_EXTERN PetscErrorCode PetscGLLElementMassCreate(PetscGLL*,PetscReal***);
+PETSC_EXTERN PetscErrorCode PetscGLLElementMassDestroy(PetscGLL*,PetscReal***);

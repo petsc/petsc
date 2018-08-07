@@ -178,8 +178,9 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap->bs,0,nz);CHKERRQ(ierr);
-
-  ((Mat_SeqBAIJ*)Bnew->data)->nonew = Bbaij->nonew; /* Inherit insertion error options. */
+  if (Bbaij->nonew >= 0) { /* Inherit insertion error options (if positive). */
+    ((Mat_SeqBAIJ*)Bnew->data)->nonew = Bbaij->nonew;
+  }
 
   ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   /*

@@ -34,7 +34,6 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 {
   PetscErrorCode     ierr;
   TAO_IPM            *ipmP = (TAO_IPM*)tao->data;
-  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
   PetscInt           its,i;
   PetscScalar        stepsize=1.0;
   PetscScalar        step_s,step_l,alpha,tau,sigma,phi_target;
@@ -46,9 +45,13 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = VecCopy(tao->solution,ipmP->rhs_x);CHKERRQ(ierr);
   ierr = IPMEvaluate(tao);CHKERRQ(ierr);
   ierr = IPMComputeKKT(tao);CHKERRQ(ierr);
-  ierr = TaoMonitor(tao,tao->niter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);CHKERRQ(ierr);
-
-  while (reason == TAO_CONTINUE_ITERATING) {
+  
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,1.0);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
     ierr = IPMUpdateK(tao);CHKERRQ(ierr);
     /*
@@ -187,7 +190,9 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
       alpha /= 2.0;
     }
 
-    ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,ipmP->kkt_f,ipmP->phi,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,ipmP->kkt_f,ipmP->phi,0.0,stepsize);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     tao->niter++;
   }
   PetscFunctionReturn(0);
@@ -232,7 +237,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   PetscInt       xstart,xend;
   PetscInt       ucstart,ucend; /* user ci */
   PetscInt       ucestart,uceend; /* user ce */
-  PetscInt       sstart,send;
+  PetscInt       sstart = 0 ,send = 0;
   PetscInt       bigsize;
   PetscInt       i,counter,nloc;
   PetscInt       *cind,*xind,*ucind,*uceind,*stepind;
@@ -1064,7 +1069,8 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 +   -tao_ipm_pushnu - parameter to push initial dual variables away from bounds
 .   -tao_ipm_pushs - parameter to push initial slack variables away from bounds
 
-  Notes: This algorithm is more of a place-holder for future constrained optimization algorithms and should not yet be used for large problems or production code.
+  Notes:
+    This algorithm is more of a place-holder for future constrained optimization algorithms and should not yet be used for large problems or production code.
   Level: beginner
 
 M*/
@@ -1095,8 +1101,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   ipmP->pushs = 100;
   ipmP->pushnu = 100;
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

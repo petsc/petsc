@@ -10,6 +10,7 @@ SOURCEH  =
 DIRS     = examples
 LIBBASE  = libpetscdm
 MANSEC   = DM
+SUBMANSEC= DMMOAB
 LOCDIR   = src/dm/impls/moab/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

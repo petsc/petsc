@@ -63,6 +63,22 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   return MPI_SUCCESS;
 }
 
+static int classcnt = 0;
+static int codecnt = 0;
+
+int MPI_Add_error_class(int *cl)
+{
+  *cl = classcnt++;
+  return MPI_SUCCESS;
+}
+
+int MPI_Add_error_code(int cl,int *co)
+{
+  if (cl >= classcnt) return MPI_FAILURE;
+  *co = codecnt++;
+  return MPI_SUCCESS;
+}
+
 int MPI_Type_get_envelope(MPI_Datatype datatype,int *num_integers,int *num_addresses,int *num_datatypes,int *combiner)
 {
   int comb = datatype >> 28;
@@ -125,7 +141,7 @@ static int Keyval_setup(void)
   return MPI_SUCCESS;
 }
 
-int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
+int MPI_Comm_create_keyval(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
   if (num_attr >= MAX_ATTR) return MPIUni_Abort(MPI_COMM_WORLD,1);
 
@@ -135,7 +151,7 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
   return MPI_SUCCESS;
 }
 
-int MPI_Keyval_free(int *keyval)
+int MPI_Comm_free_keyval(int *keyval)
 {
   attr_keyval[*keyval].extra_state = 0;
   attr_keyval[*keyval].del         = 0;
@@ -144,7 +160,7 @@ int MPI_Keyval_free(int *keyval)
   return MPI_SUCCESS;
 }
 
-int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
+int MPI_Comm_set_attr(MPI_Comm comm,int keyval,void *attribute_val)
 {
   if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   attr[comm-1][keyval].active        = 1;
@@ -152,7 +168,7 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
   return MPI_SUCCESS;
 }
 
-int MPI_Attr_delete(MPI_Comm comm,int keyval)
+int MPI_Comm_delete_attr(MPI_Comm comm,int keyval)
 {
   if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   if (attr[comm-1][keyval].active && attr_keyval[keyval].del) {
@@ -164,7 +180,7 @@ int MPI_Attr_delete(MPI_Comm comm,int keyval)
   return MPI_SUCCESS;
 }
 
-int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
+int MPI_Comm_get_attr(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
   if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   if (!keyval) Keyval_setup();
@@ -289,7 +305,7 @@ int MPI_Finalized(int *flag)
 /* -------------------     Fortran versions of several routines ------------------ */
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define mpiunisetcommonblock_          MPIUNISETCOMMONBLOCK
+#define mpiunisetmoduleblock_          MPIUNISETMODULEBLOCK
 #define mpiunisetfortranbasepointers_  MPIUNISETFORTRANBASEPOINTERS
 #define petsc_mpi_init_                PETSC_MPI_INIT
 #define petsc_mpi_finalize_            PETSC_MPI_FINALIZE
@@ -337,7 +353,7 @@ int MPI_Finalized(int *flag)
 #define petsc_mpi_comm_group_          PETSC_MPI_COMM_GROUP
 #define petsc_mpi_exscan_              PETSC_MPI_EXSCAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define mpiunisetcommonblock_          mpiunisetcommonblock
+#define mpiunisetmoduleblock_          mpiunisetmoduleblock
 #define mpiunisetfortranbasepointers_  mpiunisetfortranbasepointers
 #define petsc_mpi_init_                petsc_mpi_init
 #define petsc_mpi_finalize_            petsc_mpi_finalize
@@ -437,7 +453,7 @@ int MPI_Finalized(int *flag)
 /* Do not build fortran interface if MPI namespace colision is to be avoided */
 #if defined(PETSC_HAVE_FORTRAN)
 
-PETSC_EXTERN void PETSC_STDCALL mpiunisetcommonblock_(void);
+PETSC_EXTERN void PETSC_STDCALL mpiunisetmoduleblock_(void);
 
 PETSC_EXTERN void PETSC_STDCALL mpiunisetfortranbasepointers_(void *f_mpi_in_place)
 {
@@ -446,7 +462,7 @@ PETSC_EXTERN void PETSC_STDCALL mpiunisetfortranbasepointers_(void *f_mpi_in_pla
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_init_(int *ierr)
 {
-  mpiunisetcommonblock_();
+  mpiunisetmoduleblock_();
   *ierr = MPI_Init((int*)0, (char***)0);
 }
 
@@ -633,12 +649,15 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_get_count_(int *status,int *datatype,i
 }
 
 /* duplicate from fortranimpl.h */
+#ifndef PETSC_FORTRAN_CHARLEN_T
+#  define PETSC_FORTRAN_CHARLEN_T int
+#endif
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_MIXED_LEN(len) ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_END_LEN(len)
 #else
 #define PETSC_MIXED_LEN(len)
-#define PETSC_END_LEN(len)   ,int len
+#define PETSC_END_LEN(len)   ,PETSC_FORTRAN_CHARLEN_T len
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_get_processor_name_(char *name PETSC_MIXED_LEN(len),int *result_len,int *ierr PETSC_END_LEN(len))

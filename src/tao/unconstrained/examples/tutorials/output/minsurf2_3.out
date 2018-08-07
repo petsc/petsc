@@ -15,16 +15,24 @@ iter =   9, Function value 1.41848, Residual: 0.0042853
 iter =  10, Function value 1.41848, Residual: 0.00743558 
 iter =  11, Function value 1.41847, Residual: 0.00245715 
 iter =  12, Function value 1.41847, Residual: 0.00149195 
+iter =  13, Function value 1.41847, Residual: 0.00107913 
+iter =  14, Function value 1.41847, Residual: 0.000655218 
 Tao Object: 3 MPI processes
   type: cg
-      CG Type: fr
-      Gradient steps: 0
-      Reset steps: 0
+    CG Type: fr
+    Gradient steps: 0
+    Reset steps: 0
   TaoLineSearch Object: 3 MPI processes
     type: more-thuente
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
-  Residual in Function/Gradient:=0.00149195
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    Termination reason: 1
+  convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=0.000655218
   Objective value=1.41847
-  total number of iterations=12,                          (max: 2000)
-  total number of function/gradient evaluations=21,      (max: 4000)
-  Solution converged:    ||g(X)||/||g(X0)|| <= gttol
+  total number of iterations=14,                          (max: 2000)
+  total number of function/gradient evaluations=24,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

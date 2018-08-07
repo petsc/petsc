@@ -11,6 +11,9 @@
 +   ksp - the iterative context
 -   scale - the relaxation factor
 
+    Options Database Keys:
+. -ksp_richardson_self <scale> - Set the scale factor
+
     Level: intermediate
 
 .keywords: KSP, Richardson, set, scale
@@ -36,11 +39,16 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 +   ksp - the iterative context
 -   scale - PETSC_TRUE or the default of PETSC_FALSE
 
+    Options Database Keys:
+. -ksp_richardson_self_scale - Use self-scaling
+
     Level: intermediate
 
-    Notes: Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
+    Notes:
+    Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
 
-    Developer Notes: Could also minimize the 2-norm of the true residual with one less work vector
+    Developer Notes:
+    Could also minimize the 2-norm of the true residual with one less work vector
 
 
 .keywords: KSP, Richardson, set, scale

@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="39.html">3.9</a></li>
                 <li><a href="38.html">3.8</a></li>
                 <li><a href="37.html">3.7</a></li>
                 <li><a href="36.html">3.6</a></li>
@@ -99,7 +100,19 @@
       </div>
 
       <h4>General:</h4>
+      <ul>
+        <li>Removed <kbd>--with-errorchecking</kbd> configure option.</li>
+        <li>Added new command line option <kbd>-viewfromoptions</kbd> to disable <code>XXXViewFromOptions()</code> calls.</li>
+      </ul>
       <h4>Configure/Build:</h4>
+      <ul>
+        <li>Removed <kbd>--with-viewfromoptions</kbd> configure option in favor of the new command line option <kbd>-viewfromoptions</kbd>.</li>
+        <li>Following options are renamed to have more consistant names:<pre>
+          --with-packages-dir          -> --with-packages-download-dir
+          --with-external-packages-dir -> --with-packages-build-dir
+          --package-dirs               -> --with-packages-search-path
+          --search-dirs                -> --with-executables-search-path</pre></li>
+      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
@@ -107,25 +120,36 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+      <ul>
+        <li>Added MatMatTransposeSolve() to MUMPS interface.</li>
+        <li>Added MatPartitioningViewFromOptions().</li>
+        <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
+        <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
+        </ul>
       <h4>PC:</h4>
+      <ul>
+        <li> PCKSPGetKSP() now raises an error if called on a PC which is not of type PCKSP </li>
+        <li> Added PCKSPSetKSP() </li>
+      </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
+      <ul>
+        <li>SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate unlimited number of function evaluations.</li>
+        </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-      <h4>TAO:</h4>
-      <ul>
-        <li>Added VecLock{Push|Pop} calls around user callbacks; use of VecGetArray in user callbacks is now prohibited.</li>
-        <li>Added default matrix-free finite-differencing implementation for Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be selected with -tao_mf_hessian at command line.</li>
-      </ul>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>Renamed <code>DMDAGetReducedDMDA()</code> to <code>DMDACreateCompatibleDMDA()</code>.</li>
+        <li>Added DMGetCompatibility() and implementation for DMDA</li>
+      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-         PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.
+      <li> Added argument to <code>PetscViewerVTKAddField()</code> to allow skipping of DM check as fields are added</li>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-      The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.
     </div>
 
     <!--end-->

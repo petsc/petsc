@@ -26,6 +26,25 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     PetscViewerFormat format;
 
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_LOAD_BALANCE) {
+      PetscInt      i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal;
+      DMDALocalInfo info;
+      PetscMPIInt   size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      nzlocal = info.xm*info.ym;
+      ierr = PetscMalloc1(size,&nz);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+      for (i=0; i<(PetscInt)size; i++) {
+        nmax = PetscMax(nmax,nz[i]);
+        nmin = PetscMin(nmin,nz[i]);
+        navg += nz[i];
+      }
+      ierr = PetscFree(nz);CHKERRQ(ierr);
+      navg = navg/size;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -122,58 +141,6 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-      M is number of grid points
-      m is number of processors
-
-*/
-PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
-{
-  PetscErrorCode ierr;
-  PetscInt       m,n = 0,x = 0,y = 0;
-  PetscMPIInt    size,csize,rank;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  csize = 4*size;
-  do {
-    if (csize % 4) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
-    csize = csize/4;
-
-    m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)csize)/((PetscReal)N)));
-    if (!m) m = 1;
-    while (m > 0) {
-      n = csize/m;
-      if (m*n == csize) break;
-      m--;
-    }
-    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
-
-    x = M/m + ((M % m) > ((csize-1) % m));
-    y = (N + (csize-1)/m)/n;
-  } while ((x < 4 || y < 4) && csize > 1);
-  if (size != csize) {
-    MPI_Group   entire_group,sub_group;
-    PetscMPIInt i,*groupies;
-
-    ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc1(csize,&groupies);CHKERRQ(ierr);
-    for (i=0; i<csize; i++) {
-      groupies[i] = (rank/csize)*csize + i;
-    }
-    ierr = MPI_Group_incl(entire_group,csize,groupies,&sub_group);CHKERRQ(ierr);
-    ierr = PetscFree(groupies);CHKERRQ(ierr);
-    ierr = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&entire_group);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"DMDASplitComm2d:Creating redundant coarse problems of size %d\n",csize);CHKERRQ(ierr);
-  } else {
-    *outcomm = comm;
-  }
-  PetscFunctionReturn(0);
-}
 
 #if defined(new)
 /*
@@ -428,20 +395,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*dof;
   ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
-  /* generate appropriate vector scatters */
-  /* local to global inserts non-ghost point region into global */
-  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
-  left  = xs - Xs; right = left + x;
-  down  = ys - Ys; up = down + y;
-  count = 0;
-  for (i=down; i<up; i++) {
-    for (j=left; j<right; j++) {
-      idx[count++] = i*(Xe-Xs) + j;
-    }
-  }
+  /* generate global to local vector scatter and local to global mapping*/
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
+  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   if (stencil_type == DMDA_STENCIL_BOX) {
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
@@ -810,13 +768,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
    Options Database Key:
 +  -dm_view - Calls DMView() at the conclusion of DMDACreate2d()
-.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
-.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
 .  -da_processors_x <nx> - number of processors in x direction
 .  -da_processors_y <ny> - number of processors in y direction
 .  -da_refine_x <rx> - refinement ratio in x direction
 .  -da_refine_y <ry> - refinement ratio in y direction
--  -da_refine <n> - refine the DMDA n times before creating, if M or N < 0
+-  -da_refine <n> - refine the DMDA n times before creating
 
 
    Level: beginner

@@ -9,6 +9,7 @@
 #if !defined(PETSC_STDCALL)
 #define PETSC_STDCALL
 #endif
+PETSC_EXTERN PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint,MPI_Datatype*);
 
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
@@ -29,25 +30,28 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 
 
 /* --------------------------------------------------------------------*/
+#ifndef PETSC_FORTRAN_CHARLEN_T
+#  define PETSC_FORTRAN_CHARLEN_T int
+#endif
 /*
     This lets us map the str-len argument either, immediately following
     the char argument (DVF on Win32) or at the end of the argument list
     (general unix compilers)
 */
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_MIXED_LEN(len) ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_END_LEN(len)
-#define PETSC_MIXED_LEN_CALL(len) ,len
+#define PETSC_MIXED_LEN_CALL(len) ,((PETSC_FORTRAN_CHARLEN_T)(len))
 #define PETSC_END_LEN_CALL(len)
-#define PETSC_MIXED_LEN_PROTO ,int
+#define PETSC_MIXED_LEN_PROTO ,PETSC_FORTRAN_CHARLEN_T
 #define PETSC_END_LEN_PROTO
 #else
 #define PETSC_MIXED_LEN(len)
-#define PETSC_END_LEN(len)   ,int len
+#define PETSC_END_LEN(len)   ,PETSC_FORTRAN_CHARLEN_T len
 #define PETSC_MIXED_LEN_CALL(len)
-#define PETSC_END_LEN_CALL(len)   ,len
+#define PETSC_END_LEN_CALL(len)   ,((PETSC_FORTRAN_CHARLEN_T)(len))
 #define PETSC_MIXED_LEN_PROTO
-#define PETSC_END_LEN_PROTO   ,int
+#define PETSC_END_LEN_PROTO   ,PETSC_FORTRAN_CHARLEN_T
 #endif
 
 /* --------------------------------------------------------------------*/
@@ -74,7 +78,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 */
 #define FIXRETURNCHAR(flg,a,n)               \
 if (flg) {                                   \
-  int __i;                                   \
+  PETSC_FORTRAN_CHARLEN_T __i;               \
   for (__i=0; __i<n && a[__i] != 0; __i++) {};  \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }

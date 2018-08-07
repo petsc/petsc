@@ -465,7 +465,8 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   Concepts: files^opening binary
   Concepts: binary files^opening
 
-   Notes: Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
+   Notes:
+    Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
@@ -598,7 +599,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 @*/
 PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,ierrp=0;
   PetscMPIInt    rank;
   MPI_Datatype   mtype;
   char           *fname = NULL;
@@ -616,8 +617,10 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinaryRead(fd,p,n,type);CHKERRQ(ierr);
+    ierrp = PetscBinaryRead(fd,p,n,type);
   }
+  ierr = MPI_Bcast(&ierrp,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  CHKERRQ(ierrp);
   ierr = PetscDataTypeToMPIDataType(type,&mtype);CHKERRQ(ierr);
   ierr = MPI_Bcast(p,n,mtype,0,comm);CHKERRQ(ierr);
 
@@ -655,7 +658,8 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Notes: because byte-swapping may be done on the values in data it cannot be declared const
+   Notes:
+    because byte-swapping may be done on the values in data it cannot be declared const
 
    WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
    while PetscSynchronizedFPrintf() has all processes print their strings in order.

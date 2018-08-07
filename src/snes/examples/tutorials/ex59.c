@@ -190,3 +190,22 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,void *dummy)
   ierr  = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -n 14 -snes_monitor_short -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -n 15 -snes_monitor_short -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -n 14 -second_order -snes_monitor_short -snes_converged_reason
+      requires: !single
+
+TEST*/

@@ -1,3 +1,4 @@
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for lstat() */
 #include <petscsys.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_DIRECT_H)
@@ -13,21 +14,26 @@
 PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char fullname[])
 {
   PetscErrorCode ierr;
-  size_t l1,l2;
+  size_t         l1,l2;
   PetscFunctionBegin;
   ierr = PetscStrlen(dname,&l1);CHKERRQ(ierr);
   ierr = PetscStrlen(fname,&l2);CHKERRQ(ierr);
   if ((l1+l2+2)>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Path length is greater than buffer size");
-  ierr = PetscStrcpy(fullname,dname);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,"/");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,fname);CHKERRQ(ierr);
+  ierr = PetscStrncpy(fullname,dname,n);CHKERRQ(ierr);
+  ierr = PetscStrlcat(fullname,"/",n);CHKERRQ(ierr);
+  ierr = PetscStrlcat(fullname,fname,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMkdir(const char dir[])
 {
-  int err;
+  int            err;
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
   PetscFunctionBegin;
+  ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
   err = _mkdir(dir);
 #else

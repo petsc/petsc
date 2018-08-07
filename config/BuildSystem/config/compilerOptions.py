@@ -1,17 +1,20 @@
 import config.base
 import os
 import re
+import nargs
 
 class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.find('mpicc') >=0:
+    if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
 
     flags = []
     # GNU gcc
@@ -23,6 +26,9 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
+        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
+        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
+          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt == 'g':
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
@@ -85,12 +91,14 @@ class CompilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
+    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx') or compiler.endswith('mpiicxx'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPICXX_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPICXX_SHOW',"Unavailable")
 
     flags = []
     # GNU g++
@@ -101,6 +109,9 @@ class CompilerOptions(config.base.Configure):
         # flags.extend([('-x','c++')])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
+        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
+        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
+          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt in ['g']:
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
@@ -108,7 +119,7 @@ class CompilerOptions(config.base.Configure):
         flags.append('-g')
       elif bopt in ['O']:
         flags.append('-g')
-        if os.environ.has_key('USER'):
+        if 'USER' in os.environ:
           if config.setCompilers.Configure.isClang(compiler, self.log):
             flags.append('-O3')
           else:
@@ -169,12 +180,14 @@ class CompilerOptions(config.base.Configure):
 
   def getFortranFlags(self, compiler, bopt):
 
-    if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
+    if compiler.endswith('mpif77') or compiler.endswith('mpif90') or compiler.endswith('mpifort'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPIFC_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPIFC_SHOW',"Unavailable")
 
     flags = []
     if config.setCompilers.Configure.isGNU(compiler, self.log):
@@ -278,7 +291,7 @@ class CompilerOptions(config.base.Configure):
           else:
             version = output.split('\n')[0]
 
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite('Could not determine compiler version: '+str(e))
     self.logWrite('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
     return version

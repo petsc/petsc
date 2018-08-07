@@ -36,20 +36,20 @@ sleep 5
 device=`hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | head -1 | cut -f1`
 echo Created device $device
 sleep 5
-echo '
-   tell application "Finder"
-     tell disk "PETSc"
+echo "
+   tell application \"Finder\"
+     tell disk \"PETSc\"
            open
            set current view of container window to icon view
            set toolbar visible of container window to false
            set statusbar visible of container window to false
-           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc-iOS"}
-           make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
-           make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc-iOS.examples"}
+           make new alias file at container window to POSIX file \"/Library/Frameworks\" with properties {name:\"Copy in PETSc-iOS\"}
+           make new alias file at container window to POSIX file \"${HOME}/Library/Developer/Shared/Documentation/DocSets\" with properties {name:\"Copy in PETSc.docset\"}
+           make new alias file at container window to (path to home folder) with properties {name:\"Copy in PETSc-iOS.examples\"}
            eject
      end tell
    end tell
-' | osascript
+" | osascript
 sleep 8
 sync
 sync

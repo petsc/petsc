@@ -102,6 +102,45 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#define CHKERRQI(incall,ierr) if (ierr) {incall = PETSC_FALSE; CHKERRQ(ierr);}
+
+/*@C
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed.
+
+  Collective on PetscObject
+
+  Input Parameters:
++ obj   - the object
+. bobj  - optional other object that provides prefix (if NULL then the prefix in obj is used)
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+@*/
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,PetscObject bobj,const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+  const char        *prefix;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  prefix = bobj ? bobj->prefix : obj->prefix;
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQI(incall,ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
 
@@ -278,7 +317,7 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 
 #define MAXREGFIN 256
 static int PetscRegisterFinalize_Count = 0;
-static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
+static PetscErrorCode (*PetscRegisterFinalize_Functions[MAXREGFIN])(void);
 
 /*@C
    PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()

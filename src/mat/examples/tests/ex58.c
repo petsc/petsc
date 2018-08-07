@@ -3,7 +3,6 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 
 #include <petscmat.h>
 
-
 int main(int argc,char **argv)
 {
   Mat            A,B;
@@ -48,11 +47,15 @@ int main(int argc,char **argv)
 
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
-  ierr = MatEqual(A,B,&equal);
+  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
 
   eq[0] = "not equal";
   eq[1] = "equal";
   ierr  = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRQ(ierr);
+
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
+  if (!equal) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTranspose with MAT_REUSE_MATRIX failed");CHKERRQ(ierr); }
 
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -63,3 +66,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+    test:
+
+    test:
+      suffix: 2
+      nsize: 2
+      output_file: output/ex58_1.out
+
+TEST*/

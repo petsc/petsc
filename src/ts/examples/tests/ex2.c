@@ -12,7 +12,7 @@
 
 */
 
-static char help[] = "Solves a nonlinear ODE. \n\n";
+static char help[] = "Solves a linear ODE. \n\n";
 
 #include <petscts.h>
 #include <petscpc.h>
@@ -21,6 +21,7 @@ extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode Initial(Vec,void*);
+extern PetscErrorCode MyMatMult(Mat,Vec,Vec);
 
 extern PetscReal solx(PetscReal);
 extern PetscReal soly(PetscReal);
@@ -34,7 +35,7 @@ int main(int argc,char **argv)
   Vec            global;
   PetscReal      dt,ftime;
   TS             ts;
-  Mat            A = 0;
+  Mat            A = 0,S;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -52,7 +53,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,NULL,NULL);CHKERRQ(ierr);
 
-  dt = 0.1;
+  dt = 0.001;
 
   /*
     The user provides the RHS and Jacobian
@@ -65,7 +66,11 @@ int main(int argc,char **argv)
   ierr = RHSJacobian(ts,0.0,global,A,A,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);
 
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,3,3,3,3,NULL,&S);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MyMatMult);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,S,A,RHSJacobian,NULL);CHKERRQ(ierr);
+
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
@@ -83,10 +88,31 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&S);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
 }
+
+PetscErrorCode MyMatMult(Mat S,Vec x,Vec y)
+{
+  PetscErrorCode     ierr;
+  const PetscScalar  *inptr;
+  PetscScalar        *outptr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&inptr);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&outptr);CHKERRQ(ierr);
+
+  outptr[0] = 2.0*inptr[0]+inptr[1];
+  outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
+  outptr[2] = inptr[1]+2.0*inptr[2];
+
+  ierr = VecRestoreArrayRead(x,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&outptr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------*/
 /* this test problem has initial values (1,1,1).                      */
@@ -138,9 +164,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 
   ierr = VecGetArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRQ(ierr);
+                     (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
+                     (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
@@ -218,19 +244,23 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
 
   i    = 0;
   v[0] = 2.0; v[1] = 1.0; v[2] = 0.0;
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   i    = 1;
   v[0] = 1.0; v[1] = 2.0; v[2] = 1.0;
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   i    = 2;
   v[0] = 0.0; v[1] = 1.0; v[2] = 2.0;
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  if (A != BB) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArrayRead(x,&tmp);CHKERRQ(ierr);
 
   return 0;
@@ -258,4 +288,17 @@ PetscReal solz(PetscReal t)
 }
 
 
+/*TEST
+
+    test:
+      suffix: euler
+      args: -ts_type euler
+      requires: !single
+
+    test:
+      suffix: beuler
+      args:   -ts_type beuler
+      requires: !single
+
+TEST*/
 

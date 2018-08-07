@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.dir = ''
     return
 
   def __str__(self):
@@ -38,7 +39,8 @@ class Configure(config.base.Configure):
     self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
       self.dir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
-      self.addMakeMacro('PREFIXDIR',self.dir)
+      self.petscDir = self.dir
+      self.petscArch = ''
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
@@ -47,6 +49,9 @@ class Configure(config.base.Configure):
         self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+      self.petscDir = self.petscdir.dir
+      self.petscArch = self.arch.arch
+    self.addMakeMacro('PREFIXDIR',self.dir)
     self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
 
   def configureInstallDir(self):
@@ -80,7 +85,7 @@ class Configure(config.base.Configure):
       try:
         if os.path.exists(self.save_reconfigure_file): os.unlink(self.save_reconfigure_file)
         os.rename(self.reconfigure_file,self.save_reconfigure_file)
-      except Exception, e:
+      except Exception as e:
         self.save_reconfigure_file = None
         self.logPrint('error in saveReconfigure(): '+ str(e))
     return
@@ -89,7 +94,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-clean'] and self.save_reconfigure_file:
       try:
         os.rename(self.save_reconfigure_file,self.reconfigure_file)
-      except Exception, e:
+      except Exception as e:
         self.logPrint('error in restoreReconfigure(): '+ str(e))
     return
 

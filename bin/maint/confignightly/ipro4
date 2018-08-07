@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=ipro
-set USR=petsc
-set LOC=/Users/petsc/${RNAME}-4
-set CONF=arch-osx-xsdk-opt

@@ -77,7 +77,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,NULL,task,"r",&fd);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fd,NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

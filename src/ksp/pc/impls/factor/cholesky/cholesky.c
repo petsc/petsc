@@ -38,7 +38,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   PetscErrorCode         ierr;
   PetscBool              flg;
   PC_Cholesky            *dir = (PC_Cholesky*)pc->data;
-  const MatSolverPackage stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -130,11 +130,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     }
   }
 
-  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverPackage solverpackage;
-    ierr = MatFactorGetSolverPackage(((PC_Factor*)dir)->fact,&solverpackage);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
+    MatSolverType solverpackage;
+    ierr = MatFactorGetSolverType(((PC_Factor*)dir)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -232,19 +232,21 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
 
    Options Database Keys:
 +  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
-.  -pc_factor_mat_solver_package - Actives PCFactorSetMatSolverPackage() to choose the direct solver, like superlu
+.  -pc_factor_mat_solver_type - Actives PCFactorSetMatSolverType() to choose the direct solver, like superlu
 .  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
 -  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
-   Notes: Not all options work for all matrix formats
+   Notes:
+    Not all options work for all matrix formats
 
    Level: beginner
 
    Concepts: Cholesky factorization, direct solver
 
-   Notes: Usually this will compute an "exact" solution in one iteration and does
+   Notes:
+    Usually this will compute an "exact" solution in one iteration and does
           not need a Krylov method (i.e. you can use -ksp_type preonly, or
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 

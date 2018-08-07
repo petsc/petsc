@@ -14,11 +14,12 @@
 
    Contributed by: Bas van 't Hof
 
-   Notes: Since this currently hooked up to use drop tolerance it should produce the same factors and hence convergence as the PETSc ICC, for higher 
+   Notes:
+    Since this currently hooked up to use drop tolerance it should produce the same factors and hence convergence as the PETSc ICC, for higher 
      levels of fill it does not. This needs to be investigated. Unless you are interested in drop tolerance ICC and willing to work through the code
      we recommend not using this functionality.
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetDropTolerance()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, PCFactorSetLevels(), PCFactorSetDropTolerance()
 
 M*/
 

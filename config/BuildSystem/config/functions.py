@@ -135,7 +135,7 @@ builtin and then its argument prototype would still apply. */
   def checkSysinfo(self):
     '''Check whether sysinfo takes three arguments, and if it does define HAVE_SYSINFO_3ARG'''
     self.check('sysinfo')
-    if self.defines.has_key(self.getDefineName('sysinfo')):
+    if self.getDefineName('sysinfo') in self.defines:
       map(self.headers.check, ['linux/kernel.h', 'sys/sysinfo.h', 'sys/systeminfo.h'])
       includes = '''
 #ifdef HAVE_LINUX_KERNEL_H
@@ -171,12 +171,8 @@ builtin and then its argument prototype would still apply. */
 
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
-    if self.checkLink('#include <stdio.h>\n', '_vsnprintf(0,0,0,0);\n'):
-      self.addDefine('HAVE__VSNPRINTF', 1)
-      return
-    self.check('vsnprintf')
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
-      self.addDefine('HAVE_VSNPRINTF_CHAR', 1)
+    if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
+      self.addDefine('HAVE_VSNPRINTF', 1)
     return
 
   def checkSignalHandlerType(self):
@@ -209,6 +205,12 @@ builtin and then its argument prototype would still apply. */
       self.addDefine('HAVE_NANOSLEEP', 1)
     return
 
+  def checkMemmove(self):
+    '''Check for functional memmove() - as MS VC requires correct includes to for this test'''
+    if self.checkLink('#include <string.h>',' char c1[1], c2[1] = "c";\n size_t n=1;\n memmove(c1,c2,n);\n'):
+      self.addDefine('HAVE_MEMMOVE', 1)
+    return
+
   def configure(self):
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
@@ -216,6 +218,7 @@ builtin and then its argument prototype would still apply. */
     self.executeTest(self.checkVFPrintf)
     self.executeTest(self.checkVSNPrintf)
     self.executeTest(self.checkNanosleep)
+    self.executeTest(self.checkMemmove)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)

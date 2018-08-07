@@ -1,0 +1,115 @@
+0 TS dt 0.0001 time 0.
+1 TS dt 0.001 time 0.0001
+2 TS dt 0.00336172 time 0.0011
+3 TS dt 0.00535022 time 0.00446172
+4 TS dt 0.00632741 time 0.00981194
+5 TS dt 0.0074343 time 0.0161393
+6 TS dt 0.00882261 time 0.0235737
+7 TS dt 0.0104855 time 0.0323963
+8 TS dt 0.0123724 time 0.0428818
+9 TS dt 0.0144645 time 0.0552541
+10 TS dt 0.016732 time 0.0697187
+11 TS dt 0.0191487 time 0.0864507
+12 TS dt 0.0227983 time 0.105599
+13 TS dt 0.0248958 time 0.128398
+14 TS dt 0.0275969 time 0.153294
+15 TS dt 0.0293609 time 0.18089
+16 TS dt 0.0280116 time 0.210251
+17 TS dt 0.0259575 time 0.235412
+18 TS dt 0.0229431 time 0.257039
+19 TS dt 0.0199677 time 0.275392
+20 TS dt 0.0176203 time 0.291841
+21 TS dt 0.0156747 time 0.306692
+22 TS dt 0.0140327 time 0.320089
+23 TS dt 0.01266 time 0.332254
+24 TS dt 0.0115219 time 0.343404
+25 TS dt 0.0105524 time 0.353663
+26 TS dt 0.00972855 time 0.363158
+27 TS dt 0.00882254 time 0.372887
+28 TS dt 0.00819552 time 0.38171
+29 TS dt 0.00764323 time 0.389905
+30 TS dt 0.00720459 time 0.397548
+31 TS dt 0.00690931 time 0.404753
+32 TS dt 0.00680722 time 0.411662
+33 TS dt 0.00688407 time 0.418469
+34 TS dt 0.00668242 time 0.425353
+35 TS dt 0.00612822 time 0.432036
+36 TS dt 0.00604356 time 0.438164
+37 TS dt 0.00662213 time 0.444208
+38 TS dt 0.00839937 time 0.45083
+39 TS dt 0.0120775 time 0.459229
+40 TS dt 0.0112459 time 0.471307
+41 TS dt 0.0124958 time 0.482553
+42 TS dt 0.0157122 time 0.495048
+43 TS dt 0.0210589 time 0.510761
+44 TS dt 0.0284326 time 0.531819
+45 TS dt 0.03586 time 0.560252
+46 TS dt 0.0446686 time 0.596112
+47 TS dt 0.0580377 time 0.640781
+48 TS dt 0.0760534 time 0.698818
+49 TS dt 0.0860763 time 0.774872
+50 TS dt 0.0960447 time 0.860948
+51 TS dt 0.112238 time 0.956993
+52 TS dt 0.136904 time 1.06923
+TS Object: 1 MPI processes
+  type: rosw
+    Rosenbrock-W ra34pw2
+    Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
+    Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
+  maximum time=1.
+  total number of nonlinear solver iterations=248
+  total number of linear solver iterations=248
+  total number of linear solve failures=0
+  total number of rejected steps=10
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: basic
+    safety factor 0.9
+    extra safety factor after step rejection 0.5
+    clip fastest increase 10.
+    clip fastest decrease 0.1
+    maximum allowed timestep 1e+20
+    minimum allowed timestep 1e-20
+  SNES Object: 1 MPI processes
+    type: ksponly
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=1
+    total number of function evaluations=1
+    norm schedule ALWAYS
+    Jacobian is never rebuilt
+    Jacobian is built using finite differences with coloring
+    SNESLineSearch Object: 1 MPI processes
+      type: basic
+      maxstep=1.000000e+08, minlambda=1.000000e-12
+      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+      maximum iterations=1
+    KSP Object: 1 MPI processes
+      type: gmres
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: 1 MPI processes
+      type: lu
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: nd
+        factor fill ratio given 5., needed 1.47059
+          Factored matrix follows:
+            Mat Object: 1 MPI processes
+              type: seqaij
+              rows=58, cols=58, bs=2
+              package used to perform factorization: petsc
+              total: nonzeros=500, allocated nonzeros=500
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 29 nodes, limit used is 5
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaij
+        rows=58, cols=58, bs=2
+        total: nonzeros=340, allocated nonzeros=348
+        total number of mallocs used during MatSetValues calls =0
+          using I-node routines: found 29 nodes, limit used is 5

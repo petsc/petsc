@@ -7,13 +7,12 @@
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
-PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
+PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
 PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
-PetscLogEvent VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
-PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
-PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
-PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
+PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load;
+PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
+PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
@@ -196,7 +195,8 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
    Concepts: vector^pointwise multiply
@@ -237,7 +237,8 @@ PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
           For complex numbers compares only the real part
 
    Concepts: vector^pointwise multiply
@@ -277,7 +278,8 @@ PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise multiply
 
@@ -316,7 +318,8 @@ PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise divide
 
@@ -513,7 +516,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
 
-   Notes: You can pass any number of vector objects, or other PETSc objects to the same viewer.
+   Notes:
+    You can pass any number of vector objects, or other PETSc objects to the same viewer.
 
    Notes for binary viewer: If you pass multiply vectors to a binary viewer you can read them back in in the same order
 $     with VecLoad().
@@ -546,6 +550,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
+  PetscMPIInt       size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -554,11 +559,13 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  /* PetscCheckSameComm(vec,1,viewer,2); Viewing a SELF vec on a parallel viewer should be acceptable */
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRQ(ierr);
+  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
+
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscInt rows,bs;
@@ -577,7 +584,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     }
   }
   ierr = VecLockPush(vec);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_NATIVE && vec->ops->viewnative) {
+  if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
@@ -902,8 +909,8 @@ and PetscBinaryWrite() to see how this may be done.
 @*/
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool      isbinary,ishdf5;
+  PetscErrorCode    ierr;
+  PetscBool         isbinary,ishdf5,isadios,isadios2;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -911,7 +918,9 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
-  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios2);CHKERRQ(ierr);    
+  if (!isbinary && !ishdf5 && !isadios && !isadios2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
@@ -1092,7 +1101,8 @@ PetscErrorCode  VecConjugate(Vec x)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes:
+    any subset of the x, y, and w may be the same vector.
 
    Concepts: vector^pointwise multiply
 
@@ -1120,7 +1130,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Logically Collective on Vec
@@ -1250,7 +1260,8 @@ static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptionItems *PetscOptio
   Input Parameter:
 . vec - The vector
 
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+  Notes:
+    To see all options, run your program with the -help option, or consult the users manual.
           Must be called after VecCreate() but before the vector is used.
 
   Level: beginner
@@ -1457,7 +1468,8 @@ PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -1666,7 +1678,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 }
 
 /*
-  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed. 
+  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed.
 
   Collective on VecStash
 

@@ -1304,7 +1304,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
@@ -1367,3 +1367,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   }
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+      args: -viewer_binary_skip_info -tao_monitor -tao_gttol .2
+      localrunfiles: petscoptions X.bin Ybus.bin
+
+TEST*/

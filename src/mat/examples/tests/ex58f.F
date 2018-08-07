@@ -58,6 +58,10 @@
       call PetscFinalize(ierr)
       end
 
-
-
-
+!/*TEST
+!
+!     test:
+!       args: -f ${DATAFILESPATH}/matrices/tiny
+!       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+!
+!TEST*/

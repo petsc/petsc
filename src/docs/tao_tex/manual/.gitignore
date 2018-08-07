@@ -1,0 +1,11 @@
+sindex.tex
+findex.tex
+*.aux
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+*.out
+*.toc
+*.dvi

@@ -206,7 +206,20 @@ int main(int argc, char *argv[])
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = VecDestroy(&V);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
+
+/*TEST
+
+    test:
+      suffix: a
+      args: -ts_max_steps 10 -ts_view
+      requires: !single
+
+    test:
+      suffix: b
+      args: -ts_max_steps 10 -ts_rtol 0 -ts_atol 1e-5 -ts_adapt_type basic -ts_adapt_monitor
+      requires: !single
+
+TEST*/

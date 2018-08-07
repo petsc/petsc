@@ -84,13 +84,13 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, &seqval);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmBC, &gv);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
@@ -168,9 +168,9 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       } else {
         ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       }
-      ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
-      ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
+      ierr = PetscStrncpy(subname, name,sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, "_",sizeof(subname));CHKERRQ(ierr);
+      ierr = PetscStrlcat(subname, fname,sizeof(subname));CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
@@ -200,6 +200,7 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   DM             dm;
   Vec            locv;
   const char    *name;
+  PetscReal      time;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -209,9 +210,11 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+  ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
-  ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+  ierr = VecView_Plex_Local_HDF5_Internal(locv, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
@@ -336,7 +339,7 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel label, PetscInt labelId, PetscViewer viewer)
+static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
   DMLabel         cutLabel;
   PetscSection    cSection;
@@ -362,11 +365,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     PetscInt *closure = NULL;
     PetscInt  closureSize, v, Nc = 0;
 
-    if (label) {
-      PetscInt value;
-      ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
-      if (value == labelId) continue;
-    }
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++Nc;
@@ -398,11 +396,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     PetscInt  closureSize, Nc = 0, p;
     PetscBool replace = PETSC_FALSE;
 
-    if (label) {
-      PetscInt value;
-      ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
-      if (value == labelId) continue;
-    }
     if (cutLabel) {
       PetscInt value;
       ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);
@@ -614,26 +607,15 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscFunctionReturn(0);
 }
 
-/* We only write cells and vertices. Does this screw up parallel reading? */
-PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
+
+static PetscErrorCode DMPlexWriteLabels_HDF5_Static(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
-  DMLabel           label   = NULL;
-  PetscInt          labelId = 0;
-  IS                globalPointNumbers;
   const PetscInt   *gpoint;
   PetscInt          numLabels, l;
   hid_t             fileId, groupId;
-  PetscViewerFormat format;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = DMPlexWriteCoordinates_HDF5_Static(dm, viewer);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
-  ierr = DMPlexWriteTopology_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, label, labelId, viewer);CHKERRQ(ierr);}
-  /* Write Labels*/
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
@@ -700,6 +682,48 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* We only write cells and vertices. Does this screw up parallel reading? */
+PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
+{
+  IS                globalPointNumbers;
+  PetscViewerFormat format;
+  PetscBool         viz_geom=PETSC_FALSE, xdmf_topo=PETSC_FALSE, petsc_topo=PETSC_FALSE;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
+  ierr = DMPlexWriteCoordinates_HDF5_Static(dm, viewer);CHKERRQ(ierr);
+  ierr = DMPlexWriteLabels_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
+
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  switch (format) {
+    case PETSC_VIEWER_HDF5_VIZ:
+      viz_geom    = PETSC_TRUE;
+      xdmf_topo   = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_HDF5_XDMF:
+      xdmf_topo   = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_HDF5_PETSC: 
+      petsc_topo  = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_DEFAULT:
+    case PETSC_VIEWER_NATIVE:
+      viz_geom    = PETSC_TRUE;
+      xdmf_topo   = PETSC_TRUE;
+      petsc_topo  = PETSC_TRUE;
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+  }
+
+  if (viz_geom)   {ierr = DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
+  if (xdmf_topo)  {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
+  if (petsc_topo) {ierr = DMPlexWriteTopology_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);}
+
   ierr = ISDestroy(&globalPointNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -757,12 +781,30 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
   return err;
 }
 
+PetscErrorCode DMPlexLoadLabels_HDF5_Internal(DM dm, PetscViewer viewer)
+{
+  LabelCtx        ctx;
+  hid_t           fileId, groupId;
+  hsize_t         idx = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &ctx.rank);CHKERRQ(ierr);
+  ctx.dm     = dm;
+  ctx.viewer = viewer;
+  ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
+  PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, &ctx));
+  PetscStackCallHDF5(H5Gclose,(groupId));
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* The first version will read everything onto proc 0, letting the user distribute
    The next will create a naive partition, and then rebalance after reading
 */
 PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
-  LabelCtx        ctx;
   PetscSection    coordSection;
   Vec             coordinates;
   IS              orderIS, conesIS, cellsIS, orntsIS;
@@ -770,8 +812,6 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscReal       lengthScale;
   PetscInt       *cone, *ornt;
   PetscInt        dim, spatialDim, N, numVertices, vStart, vEnd, v, pEnd, p, q, maxConeSize = 0, c;
-  hid_t           fileId, groupId;
-  hsize_t         idx = 0;
   PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
@@ -870,15 +910,8 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinates(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  /* Read Labels*/
-  ctx.rank   = rank;
-  ctx.dm     = dm;
-  ctx.viewer = viewer;
-  ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, &ctx));
-  PetscStackCallHDF5(H5Gclose,(groupId));
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  /* Read Labels */
+  ierr = DMPlexLoadLabels_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

@@ -1,9 +1,8 @@
 DM Object: cubit(Rect-tri3.gen): 08/26/2013: 13:00:28 1 MPI processes
   type: plex
-Mesh 'cubit(Rect-tri3.gen): 08/26/2013: 13:00:28':
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 7
+cubit(Rect-tri3.gen): 08/26/2013: 13:00:28 in 2 dimensions:
+Supports:
+[0] Max support size: 7
 [0]: 60 ----> 0
 [0]: 60 ----> 1
 [0]: 60 ----> 2
@@ -172,7 +171,8 @@ cap --> base:
 [0]: 93 ----> 43
 [0]: 93 ----> 57
 [0]: 93 ----> 58
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 60 (0)
 [0]: 0 <---- 61 (0)
 [0]: 0 <---- 62 (0)

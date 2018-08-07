@@ -97,8 +97,11 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
-  if (!pc_gamg->repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
-  else {
+  if (!pc_gamg->repart && new_size==nactive) {
+    *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
+    /* we know that the grid structure can be reused in MatPtAP */
+  } else {
+    /* we know that the grid structure can NOT be reused in MatPtAP */
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
 
@@ -437,7 +440,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* just do Galerkin grids */
       Mat          B,dA,dB;
 
-     if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
+      if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
         ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
@@ -445,13 +448,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB);CHKERRQ(ierr);
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
-          /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2) {
-            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+          /* 2nd solve, matrix structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
+          if (pc_gamg->setup_count==2 /* && pc_gamg->repart||reduction */) {
+            ierr = PetscInfo2(pc,"new RAP after first solve level %D, %D setup\n",level,pc_gamg->setup_count);CHKERRQ(ierr);
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,2.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
-
             mglevels[level]->A = B;
           } else {
+            ierr = PetscInfo2(pc,"RAP after first solve reusing matrix level %D, %D setup\n",level,pc_gamg->setup_count);CHKERRQ(ierr);
             ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B);CHKERRQ(ierr);
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
@@ -720,7 +724,8 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
    Options Database Key:
 .  -pc_gamg_process_eq_limit <limit>
 
-   Notes: GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process 
+   Notes:
+    GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process 
           that has degrees of freedom
 
    Level: intermediate
@@ -799,7 +804,8 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_repartition <true,false>
 
-   Notes: this will generally improve the loading balancing of the work on each level
+   Notes:
+    this will generally improve the loading balancing of the work on each level
 
    Level: intermediate
 
@@ -841,7 +847,8 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 
    Level: intermediate
 
-   Notes: this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
+   Notes:
+    this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
           rebuilding the preconditioner quicker.
 
    Concepts: Unstructured multigrid preconditioner
@@ -994,14 +1001,15 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
    Options Database Key:
 .  -pc_gamg_threshold <threshold>
 
-   Notes: Before aggregating the graph GAMG will remove small values from the graph thus reducing the coupling in the graph and a different
-    (perhaps better) coarser set of points.
+   Notes:
+    Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
+    Before coarsening or aggregating the graph, GAMG removes small values from the graph with this threshold, and thus reducing the coupling in the graph and a different (perhaps better) coarser set of points.
 
    Level: intermediate
 
    Concepts: Unstructured multigrid preconditioner
 
-.seealso: PCGAMGFilterGraph()
+.seealso: PCGAMGFilterGraph(), PCGAMGSetSquareGraph()
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
@@ -1237,7 +1245,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .   -pc_gamg_process_eq_limit <limit, default=50> - GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
 .   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
--   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
+.   -pc_gamg_threshold[] <thresh,default=0> - Before aggregating the graph GAMG will remove small values from the graph on each level
 -   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for default Aggregation:
@@ -1245,18 +1253,18 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 -  -pc_gamg_square_graph <n,default=1> - number of levels to square the graph before aggregating it
 
-   Multigrid options(inherited):
-+  -pc_mg_cycles <v>: v or w (PCMGSetCycleType())
-.  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
-.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
-.  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
+   Multigrid options:
++  -pc_mg_cycles <v> - v or w, see PCMGSetCycleType()
+.  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
+.  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
 -  -pc_mg_levels <levels> - Number of levels of multigrid to use.
 
 
-  Notes: In order to obtain good performance for PCGAMG for vector valued problems you must
-$       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
-$       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
-$       See the Users Manual Chapter 4 for more details
+  Notes:
+    In order to obtain good performance for PCGAMG for vector valued problems you must
+       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
+       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
+       See the Users Manual Chapter 4 for more details
 
   Level: intermediate
 

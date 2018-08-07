@@ -34,7 +34,7 @@ extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 extern PetscErrorCode MatMult_MyShell(Mat,Vec,Vec);
 extern PetscErrorCode MatAssemblyEnd_MyShell(Mat,MatAssemblyType);
 extern PetscErrorCode PCApply_MyShell(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
+extern PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
 
 int main(int argc,char **argv)
 {
@@ -405,3 +405,45 @@ PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -snes_converged_reason -ksp_converged_reason
+
+   test:
+      suffix: 2
+      args: -snes_converged_reason -ksp_converged_reason -error_in_matmult
+
+   test:
+      suffix: 3
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcapply
+
+   test:
+      suffix: 4
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup
+
+   test:
+      suffix: 5
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type bjacobi
+
+   test:
+      suffix: 5_fieldsplit
+      args: -snes_converged_reason -ksp_converged_reason -error_in_pcsetup -pc_type fieldsplit
+      output_file: output/ex69_5.out
+
+   test:
+      suffix: 6
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domainmf -snes_mf
+
+   test:
+      suffix: 7
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domain
+
+   test:
+      suffix: 8
+      args: -snes_converged_reason -ksp_converged_reason -error_in_domain -snes_mf
+      TODO: Need to determine if deprecated
+
+TEST*/

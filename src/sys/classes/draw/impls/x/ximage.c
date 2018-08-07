@@ -7,7 +7,7 @@
 PETSC_INTERN PetscErrorCode PetscDrawGetImage_X(PetscDraw,unsigned char[][3],unsigned int*,unsigned int*,unsigned char*[]);
 
 
-PETSC_STATIC_INLINE PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[256],int idx[],int right)
+PETSC_STATIC_INLINE PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_DRAW_MAXCOLOR],int idx[],int right)
 {
   PetscDrawXiPixVal vl;
   int               i,last,tmp;
@@ -34,10 +34,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[
 /*
    Map a pixel value to PETSc color value (index in the colormap)
 */
-PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,const int arg[256],PetscDrawXiPixVal pix)
+PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,const int arg[PETSC_DRAW_MAXCOLOR],PetscDrawXiPixVal pix)
 {
   const PetscDrawXiPixVal *cmap = Xwin->cmapping;
-  int                     lo, mid, hi = 256;
+  int                     lo, mid, hi = PETSC_DRAW_MAXCOLOR;
   /* linear search the first few entries */
   for (lo=0; lo<8; lo++)
     if (pix == cmap[lo])
@@ -51,7 +51,7 @@ PETSC_STATIC_INLINE int PetscDrawXiPixelToColor(PetscDraw_X *Xwin,const int arg[
   return arg[lo];
 }
 
-PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[256][3],unsigned int *out_w,unsigned int *out_h,unsigned char *out_pixels[])
+PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DRAW_MAXCOLOR][3],unsigned int *out_w,unsigned int *out_h,unsigned char *out_pixels[])
 {
   PetscDraw_X      *Xwin = (PetscDraw_X*)draw->data;
   PetscMPIInt      rank;
@@ -74,7 +74,7 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[256][3],
   if (!rank) {
     Window        root;
     XImage        *ximage;
-    int           pmap[256];
+    int           pmap[PETSC_DRAW_MAXCOLOR];
     unsigned char *pixels = NULL;
     unsigned int  w,h,dummy;
     int           x,y,p;
@@ -85,7 +85,7 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[256][3],
     ximage = XGetImage(Xwin->disp,PetscDrawXiDrawable(Xwin),0,0,w,h,AllPlanes,ZPixmap);
     if (!ximage) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot XGetImage()");
     /* build indirect sort permutation (a.k.a argsort) of the color -> pixel mapping */
-    for (p=0; p<256; p++) pmap[p] = p; /* identity permutation */
+    for (p=0; p<PETSC_DRAW_MAXCOLOR; p++) pmap[p] = p; /* identity permutation */
     ierr = PetscArgSortPixVal(Xwin->cmapping,pmap,255);CHKERRQ(ierr);
     /* extract pixel values out of the image and map them to color indices */
     ierr = PetscMalloc1(w*h,&pixels);CHKERRQ(ierr);

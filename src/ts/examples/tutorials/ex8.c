@@ -440,3 +440,21 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      requires: !complex
+      args: -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex
+
+    test:
+      suffix: 2
+      requires: !single !complex
+      args: -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 0
+
+    test:
+      suffix: 3
+      requires: !single !complex
+      args: -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 1
+
+TEST*/

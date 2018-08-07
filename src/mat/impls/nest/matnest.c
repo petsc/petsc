@@ -1154,8 +1154,8 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       VecScatter             scat;
       IS                     isreq;
       Vec                    lvec,gvec;
+      Mat                    sub = NULL;
       union {char padding[sizeof(PetscScalar)]; PetscInt integer;} *x;
-      Mat sub;
 
       if (sizeof(*x) != sizeof(PetscScalar)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support when scalars smaller than integers");
       if (!colflg) {
@@ -1163,7 +1163,13 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       } else {
         ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
       }
-      if (sub) {ierr = MatGetLocalToGlobalMapping(sub,&smap,NULL);CHKERRQ(ierr);}
+      if (sub) {
+        if (!colflg) {
+          ierr = MatGetLocalToGlobalMapping(sub,&smap,NULL);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetLocalToGlobalMapping(sub,NULL,&smap);CHKERRQ(ierr);
+        }
+      }
       if (islocal[i]) {
         ierr = ISGetSize(islocal[i],&mi);CHKERRQ(ierr);
       } else {

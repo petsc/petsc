@@ -1,5 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#ifdef PETSC_HAVE_PRAGMATIC
+#if defined(PETSC_HAVE_PRAGMATIC)
 #include <pragmatic/cpragmatic.h>
 #endif
 
@@ -68,7 +68,7 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(coordDM, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetSection(coordDM, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   Nv   = vEnd - vStart;
   ierr = VecCreateSeq(PETSC_COMM_SELF, Nv*PetscSqr(dim), metricVec);CHKERRQ(ierr);
@@ -157,14 +157,31 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   PetscFunctionReturn(0);
 }
 
+/*
+   Contains the list of registered DMPlexGenerators routines
+*/
+extern PetscFunctionList DMPlexGenerateList;
+
+struct _n_PetscFunctionList {
+  PetscErrorCode    (*generate)(DM, PetscBool, DM*);
+  PetscErrorCode    (*refine)(DM,PetscReal*, DM*);
+  char              *name;               /* string to identify routine */
+  PetscInt          dim;
+  PetscFunctionList next;                /* next pointer */
+};
+
 PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
 {
-  PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
-  PetscReal        refinementLimit;
-  PetscInt         dim, cStart, cEnd;
-  char             genname[1024], *name = NULL;
-  PetscBool        isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg, localized;
-  PetscErrorCode   ierr;
+  PetscErrorCode    (*refinementFunc)(const PetscReal [], PetscReal *);
+  PetscReal         refinementLimit;
+  PetscInt          dim, cStart, cEnd;
+  char              genname[1024], *name = NULL;
+  PetscBool         flg, localized;
+  PetscErrorCode    ierr;
+  PetscErrorCode    (*refine)(DM,PetscReal*,DM*);
+  PetscFunctionList fl;
+  PetscReal         *maxVolumes;
+  PetscInt          c;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
@@ -175,18 +192,31 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_generator", genname, 1024, &flg);CHKERRQ(ierr);
   if (flg) name = genname;
-  if (name) {
-    ierr = PetscStrcmp(name, "triangle", &isTriangle);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "tetgen",   &isTetgen);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "ctetgen",  &isCTetgen);CHKERRQ(ierr);
-  }
-  switch (dim) {
-  case 2:
-    if (!name || isTriangle) {
-#if defined(PETSC_HAVE_TRIANGLE)
-      PetscReal *maxVolumes;
-      PetscInt  c;
 
+  fl = DMPlexGenerateList;
+  if (name) {
+    while (fl) {
+      ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        refine = fl->refine;
+        goto gotit;
+      }
+      fl = fl->next;
+    }
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %g not registered",name);CHKERRQ(ierr);
+  } else {
+    while (fl) {
+      if (dim-1 == fl->dim) {
+        refine = fl->refine;
+        goto gotit;
+      }
+      fl = fl->next;
+    }
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);CHKERRQ(ierr);
+  }
+
+  gotit: switch (dim) {
+  case 2:
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       if (adaptLabel) {
         ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
@@ -202,28 +232,10 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-#if !defined(PETSC_USE_REAL_DOUBLE)
-      {
-        double *mvols;
-        ierr = PetscMalloc1(cEnd - cStart,&mvols);CHKERRQ(ierr);
-        for (c = 0; c < cEnd-cStart; ++c) mvols[c] = (double)maxVolumes[c];
-        ierr = DMPlexRefine_Triangle(dm, mvols, dmRefined);CHKERRQ(ierr);
-        ierr = PetscFree(mvols);CHKERRQ(ierr);
-      }
-#else
-      ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#endif
+      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");
-#endif
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 2D mesh generation package %s", name);
     break;
   case 3:
-    if (!name || isCTetgen || isTetgen) {
-      PetscReal *maxVolumes;
-      PetscInt   c;
-
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       if (adaptLabel) {
         ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
@@ -237,29 +249,8 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-      if (!name) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with '--download-ctetgen' or '--with-clanguage=cxx --download-tetgen'.");
-#endif
-      } else if (isCTetgen) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
-#endif
-      } else {
-#if defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --download-tetgen.");
-#endif
-      }
+      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 3D mesh generation package %s", name);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
@@ -358,7 +349,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
 */
 PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *dmNew)
 {
-#ifdef PETSC_HAVE_PRAGMATIC
+#if defined(PETSC_HAVE_PRAGMATIC)
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
 #if 0
@@ -432,7 +423,7 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = ISRestoreIndices(globalVertexNum, &gV);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetSection(cdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
@@ -444,7 +435,7 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   /* Get boundary mesh */
   ierr = DMLabelCreate(bdName, &bdLabelFull);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, bdLabelFull);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabelFull);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(bdLabelFull, 1, &bdIS);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(bdLabelFull, 1, &numBdFaces);CHKERRQ(ierr);
   ierr = ISGetIndices(bdIS, &bdFacesFull);CHKERRQ(ierr);
@@ -474,6 +465,7 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
   /* Get metric */
+  ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = PetscRealPart(met[v]);
   ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
@@ -550,6 +542,6 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
 #else
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
-  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
 #endif
 }

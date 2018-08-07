@@ -1,4 +1,3 @@
-Vec Object: 1 MPI processes
   type: seq
 0.
 110.
@@ -36,7 +35,6 @@ Vec Object: 1 MPI processes
 430.
 440.
 0.
-Vec Object: 1 MPI processes
   type: seq
 0.
 150.
@@ -74,7 +72,6 @@ Vec Object: 1 MPI processes
 470.
 480.
 0.
-Vec Object: 1 MPI processes
   type: seq
 0.
 310.
@@ -112,7 +109,6 @@ Vec Object: 1 MPI processes
 630.
 640.
 0.
-Vec Object: 1 MPI processes
   type: seq
 0.
 350.
@@ -150,8 +146,6 @@ Vec Object: 1 MPI processes
 670.
 680.
 0.
-Vec Object: 4 MPI processes
-  type: mpi
   type: mpi
 Process [0]
 10.

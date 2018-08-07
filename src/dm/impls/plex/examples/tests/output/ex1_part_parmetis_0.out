@@ -1,0 +1,14 @@
+ParMetis Graph Partitioner:
+ParMetis Graph Partitioner:
+ParMetis Graph Partitioner:
+ParMetis Graph Partitioner:
+DM Object: Simplicial Mesh 2 MPI processes
+  type: plex
+Simplicial Mesh in 2 dimensions:
+  0-cells: 15 15
+  1-cells: 22 22
+  2-cells: 8 8
+Labels:
+  marker: 1 strata with value/size (1 (17))
+  Face Sets: 3 strata with value/size (1 (3), 2 (6), 3 (3))
+  depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))

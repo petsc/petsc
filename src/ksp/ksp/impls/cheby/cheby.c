@@ -175,7 +175,8 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
    Options Database:
 +  -ksp_chebyshev_esteig_noisy <true,false>
 
-  Notes: This alledgely works better for multigrid smoothers
+  Notes:
+    This alledgely works better for multigrid smoothers
 
   Level: intermediate
 
@@ -557,7 +558,8 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
    Level: beginner
 
-   Notes: The Chebyshev method requires both the matrix and preconditioner to
+   Notes:
+    The Chebyshev method requires both the matrix and preconditioner to
           be symmetric positive (semi) definite.
           Only support for left preconditioning.
 

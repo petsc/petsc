@@ -53,6 +53,7 @@
 #define KSPGCR 'gcr'
 #define KSPTSIRM 'tsirm'
 #define KSPCGLS 'cgls'
+#define KSPFETIDP 'fetidp'
 !
 !  Various Initial guesses for Krylov subspace methods
 !

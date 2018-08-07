@@ -1,0 +1,131 @@
+  0 SNES Function norm 14.5309 
+    0 KSP Residual norm 17.9171 
+    1 KSP Residual norm 1.23247 
+    2 KSP Residual norm 0.195634 
+    3 KSP Residual norm 0.01767 
+    4 KSP Residual norm 0.00250051 
+    5 KSP Residual norm 1.95846e-05 
+    6 KSP Residual norm 5.39113e-07 
+    7 KSP Residual norm 5.54033e-09 
+  1 SNES Function norm 1.29774e-08 
+SNES Object: 9 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=7
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 9 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 9 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 9 MPI processes
+    type: bddc
+      Use verbose output: 0
+      Use user-defined CSR: 0
+      Use local mat graph: 1
+      Connectivity graph topological dimension: 2
+      Use vertices: 1 (vertex size 1)
+      Use edges: 0
+      Use faces: 0
+      Use true near null space: 0
+      Use QR for single constraints on cc: 0
+      Use change of basis on local edge nodes: 0
+      Use change of basis on local face nodes: 0
+      User defined change of basis matrix: 0
+      Has change of basis matrix: 0
+      Eliminate dirichlet boundary dofs: 0
+      Switch on static condensation ops around the interface preconditioner: 0
+      Use exact dirichlet trick: 0
+      Multilevel max levels: 0
+      Multilevel coarsening ratio: 8
+      Use estimated eigs for coarse problem: 0
+      Use deluxe scaling: 0
+      Use deluxe zerorows: 0
+      Use deluxe singlemat: 0
+      Rebuild interface graph for Schur principal minors: 0
+      Number of dofs' layers for the computation of principal minors: -1
+      Use user CSR graph to compute successive layers: 0
+      Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+      Min constraints / connected component: 0
+      Max constraints / connected component: 0
+      Invert exact Schur complement for adaptive selection: 0
+      Symmetric computation of primal basis functions: 1
+      Num. Procs. to map coarse adjacency list: 0
+      Coarse eqs per proc (significant at the coarsest level): 1
+      Detect disconnected: 0 (filter 0)
+      Benign subspace trick: 0 (change explicit 0)
+      Benign subspace trick is active: 0
+      Algebraic computation of no-net-flux 0
+      ********************************** STATISTICS AT LEVEL 0 **********************************
+      Global dofs sizes: all 529 interface 88 coarse 12
+      Coarsening ratios: all/coarse 44 interface/coarse 7
+      Active processes : 9
+      Total subdomains : 9
+      Dofs type        :	MIN	MAX	MEAN
+      Interior  dofs   :	49	49	49
+      Interface dofs   :	15	32	20
+      Primal    dofs   :	3	4	3
+      Local     dofs   :	64	81	69
+      Local     subs   :	1	1
+      ********************************** COARSE PROBLEM DETAILS *********************************
+    KSP Object: (pc_bddc_coarse_) 9 MPI processes
+      type: preonly
+      maximum iterations=1, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (pc_bddc_coarse_) 9 MPI processes
+      type: redundant
+        First (color=0) of 9 PCs follows
+      linear system matrix = precond matrix:
+      Mat Object: 9 MPI processes
+        type: mpiaij
+        rows=12, cols=12
+        total: nonzeros=72, allocated nonzeros=92
+        total number of mallocs used during MatSetValues calls =0
+          using I-node (on process 0) routines: found 1 nodes, limit used is 5
+            KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+              type: preonly
+              maximum iterations=10000, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
+              type: lu
+                out-of-place factorization
+                tolerance for zero pivot 2.22045e-14
+                matrix ordering: nd
+                factor fill ratio given 5., needed 1.33333
+                  Factored matrix follows:
+                    Mat Object:     1 MPI processes
+                      type: seqaij
+                      rows=12, cols=12
+                      package used to perform factorization: petsc
+                      total: nonzeros=96, allocated nonzeros=96
+                      total number of mallocs used during MatSetValues calls =0
+                        using I-node routines: found 9 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:     1 MPI processes
+                type: seqaij
+                rows=12, cols=12
+                total: nonzeros=72, allocated nonzeros=72
+                total number of mallocs used during MatSetValues calls =0
+                  not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 9 MPI processes
+      type: is
+      rows=529, cols=529
+      total: nonzeros=7921, allocated nonzeros=9409
+      total number of mallocs used during MatSetValues calls =0

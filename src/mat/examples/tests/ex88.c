@@ -52,25 +52,15 @@ static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
-{
-  User           user;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(user->B,D,is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
   PetscErrorCode ierr;
-  Vec            W1,W2;
+  Vec            W1,W2,diff;
   Mat            E;
   const char     *mattypename;
   PetscViewer    viewer = PETSC_VIEWER_STDOUT_WORLD;
+  PetscScalar    diag[2] = {2.9678190300000000e+08,1.4173141580000000e+09};
+  PetscReal      nrm,norm1,norminf;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&W1);CHKERRQ(ierr);
@@ -89,7 +79,15 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,diag,&diff);CHKERRQ(ierr);
+  ierr = VecAXPY(diff,-1.0,W2);CHKERRQ(ierr);
+  ierr = VecNorm(diff,NORM_2,&nrm);CHKERRQ(ierr);
+  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
+  ierr = VecDestroy(&diff);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
+  ierr = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr = MatNorm(A,NORM_INFINITY,&norminf);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Norm_1: %g, Norm_infty %g\n",(double)norm1,(double)norminf);CHKERRQ(ierr);
   /* MATSHELL does not support MatDiagonalSet after MatScale */
   if (strncmp(mattypename, "shell", 5)) {
     ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);
@@ -143,7 +141,6 @@ int main(int argc,char **args)
   ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_DIAGONAL_SET,(void (*)(void))MatDiagonalSet_User);CHKERRQ(ierr);
 
   for (i=0; i<4; i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
@@ -166,3 +163,10 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

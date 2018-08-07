@@ -37,6 +37,8 @@ typedef struct {
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);  /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
+  PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
 
   DM dm;                                                  /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
@@ -56,6 +58,15 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
   if (!isnes) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
   ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),dmsnesvi->n,PETSC_DETERMINE,vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMHasCreateInjection_SNESVI(DM dm, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(flg,2);
+  *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +96,8 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  DMSetVI(DM,IS);
+static PetscErrorCode DMSetVI(DM,IS);
+static PetscErrorCode DMDestroyVI(DM);
 
 /*
      DMCoarsen_SNESVI - Computes the regular coarsened DM then computes additional information about its inactive set
@@ -177,6 +189,8 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   dmsnesvi->dm->ops->createinterpolation = dmsnesvi->createinterpolation;
   dmsnesvi->dm->ops->coarsen             = dmsnesvi->coarsen;
   dmsnesvi->dm->ops->createglobalvector  = dmsnesvi->createglobalvector;
+  dmsnesvi->dm->ops->getinjection        = dmsnesvi->getinjection;
+  dmsnesvi->dm->ops->hascreateinjection  = dmsnesvi->hascreateinjection;
   /* need to clear out this vectors because some of them may not have a reference to the DM
     but they are counted as having references to the DM in DMDestroy() */
   ierr = DMClearGlobalVectors(dmsnesvi->dm);CHKERRQ(ierr);
@@ -191,7 +205,7 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
                be restricted to only those variables NOT associated with active constraints.
 
 */
-PetscErrorCode  DMSetVI(DM dm,IS inactive)
+static PetscErrorCode DMSetVI(DM dm,IS inactive)
 {
   PetscErrorCode ierr;
   PetscContainer isnes;
@@ -217,6 +231,10 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
     dm->ops->coarsen              = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector  = dm->ops->createglobalvector;
     dm->ops->createglobalvector   = DMCreateGlobalVector_SNESVI;
+    dmsnesvi->getinjection        = dm->ops->getinjection;
+    dm->ops->getinjection         = NULL;
+    dmsnesvi->hascreateinjection  = dm->ops->hascreateinjection;
+    dm->ops->hascreateinjection   = DMHasCreateInjection_SNESVI;
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);
@@ -233,7 +251,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
      DMDestroyVI - Frees the DM_SNESVI object contained in the DM
          - also resets the function pointers in the DM for createinterpolation() etc to use the original DM
 */
-PetscErrorCode  DMDestroyVI(DM dm)
+static PetscErrorCode DMDestroyVI(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -283,7 +301,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   /*
   KSP                    kspnew;
   PC                     pcnew;
-  const MatSolverPackage stype;
+  MatSolverType          stype;
 
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&kspnew);CHKERRQ(ierr);
@@ -295,8 +313,8 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
   ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
   ierr = PCSetOperators(kspnew->pc,Amat,Pmat);CHKERRQ(ierr);
-  ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
-  ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(snesksp->pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverType(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)kspnew);CHKERRQ(ierr);
@@ -346,8 +364,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
-  ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
+  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   SNESCheckFunctionNorm(snes,fnorm);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -732,7 +749,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
++   -snes_type <vinewtonssls,vinewtonrsls> - a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner

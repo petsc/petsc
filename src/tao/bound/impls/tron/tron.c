@@ -51,10 +51,8 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",tron->total_gp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %g \n",(double)tron->pg_ftol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -90,7 +88,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
   PetscInt                     its;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
@@ -99,42 +96,60 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tao->trust = tao->trust0;
   /*   Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
-  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
-  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
-  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
+  /* Project the initial point onto the feasible region */
+  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
 
-  ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
+  /* Compute the objective function and gradient */
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
+  ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
   /* Project the gradient and calculate the norm */
-  ierr = VecBoundGradientProjection(tao->gradient,tao->solution, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
+  ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
 
-  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
+  /* Initialize trust region radius */
+  tao->trust=tao->trust0;
   if (tao->trust <= 0) {
     tao->trust=PetscMax(tron->gnorm*tron->gnorm,1.0);
   }
 
+  /* Initialize step sizes for the line searches */
+  tron->pgstepsize=1.0;
   tron->stepsize=tao->trust;
-  ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
-  while (reason==TAO_CONTINUE_ITERATING){
-    tao->ksp_its=0;
+
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+  while (tao->reason==TAO_CONTINUE_ITERATING){
+
+    /* Perform projected gradient iterations */
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
+
+    ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+    ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+
+    tao->ksp_its=0;
     f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
     ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
 
+    /* Generate index set (IS) of which bound constraints are active */
+    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
+    ierr = VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&tron->Free_Local);CHKERRQ(ierr);
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);CHKERRQ(ierr);
 
     /* If no free variables */
     if (tron->n_free == 0) {
-      ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
       ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-      ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
-      if (!reason) {
-        reason = TAO_CONVERGED_STEPTOL;
-        ierr = TaoSetConvergedReason(tao,reason);CHKERRQ(ierr);
+      ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+      ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,delta);CHKERRQ(ierr);
+      ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+      if (!tao->reason) {
+        tao->reason = TAO_CONVERGED_STEPTOL;
       }
       break;
     }
@@ -168,8 +183,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = VecISAXPY(tao->stepdirection,tron->Free_Local,1.0,tron->DXFree);CHKERRQ(ierr);
 
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",(double)gdx);CHKERRQ(ierr);
-
       ierr = VecCopy(tao->solution, tron->X_New);CHKERRQ(ierr);
       ierr = VecCopy(tao->gradient, tron->G_New);CHKERRQ(ierr);
 
@@ -183,7 +196,9 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = VecAYPX(tron->Work, 0.5, tao->gradient);CHKERRQ(ierr);
       ierr = VecDot(tao->stepdirection, tron->Work, &prered);CHKERRQ(ierr);
       actred = f_new - f;
-      if (actred<0) {
+      if ((PetscAbsScalar(actred) <= 1e-6) && (PetscAbsScalar(prered) <= 1e-6)) {
+        rhok = 1.0;
+      } else if (actred<0) {
         rhok=PetscAbs(-actred/prered);
       } else {
         rhok=0.0;
@@ -208,7 +223,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
         }
         ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
         ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-        ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
+        ierr = VecWhichInactive(tao->XL,tron->X_New,tao->gradient,tao->XU,PETSC_TRUE,&tron->Free_Local);CHKERRQ(ierr);
         f=f_new;
         ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
         ierr = VecCopy(tron->X_New, tao->solution);CHKERRQ(ierr);
@@ -225,7 +240,9 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
     tao->niter++;
-    ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,tron->f,tron->gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,stepsize);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
   PetscFunctionReturn(0);
 }
@@ -244,29 +261,29 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
-  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-  ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
 
-  for (i=0;i<tron->maxgpits;i++){
+  for (i=0;i<tron->maxgpits;++i){
 
-    if ( -actred <= (tron->pg_ftol)*actred_max) break;
+    if (-actred <= (tron->pg_ftol)*actred_max) break;
 
-    tron->gp_iterates++; tron->total_gp_its++;
+    ++tron->gp_iterates;
+    ++tron->total_gp_its;
     f_new=tron->f;
 
-    ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-    ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+    ierr = VecCopy(tao->gradient,tao->stepdirection);CHKERRQ(ierr);
+    ierr = VecScale(tao->stepdirection,-1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
                               &tron->pgstepsize, &ls_reason);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
+    ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
+    ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+
     /* Update the iterate */
     actred = f_new - tron->f;
     actred_max = PetscMax(actred_max,-(f_new - tron->f));
     tron->f = f_new;
-    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-    ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -357,11 +374,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   tao->subset_type = TAO_SUBSET_SUBVEC;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);

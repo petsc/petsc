@@ -85,3 +85,10 @@
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!TEST*/

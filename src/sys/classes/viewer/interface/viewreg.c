@@ -1,6 +1,6 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
-#include <petsc/private/hash.h>
+#include <petsc/private/hashtable.h>
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
@@ -71,7 +71,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
   size_t          l1,l2;
 #if !defined(PETSC_HAVE_THREADSAFETY)
   char            *both;
-  khint_t         newitem;
+  int             newitem;
 #endif
   PetscErrorCode  ierr;
 
@@ -111,7 +111,8 @@ static PetscInt  inoviewers = 0;
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPopGetViewerOff()
@@ -133,7 +134,8 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff()
@@ -156,7 +158,8 @@ PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 
   Level: developer
 
-  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+  Notes:
+    Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
    many small subsolves.
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff(), PetscOptionsPopGetViewerOff()
@@ -164,7 +167,7 @@ PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidPointer(flg,0);
+  PetscValidPointer(flg,1);
   *flg = noviewer;
   PetscFunctionReturn(0);
 }
@@ -186,12 +189,13 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 
    Level: intermediate
 
-   Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, 
+   Notes:
+    If no value is provided ascii:stdout is used
+$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab,
                                                   for example ascii::ascii_info prints just the information about the object not all details
                                                   unless :append is given filename opens in write mode, overwriting what was already there
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
-$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x 
+$       draw[:drawtype[:filename]]                for example, draw:tikz, draw:tikz:figure.tex  or draw:x
 $       socket[:port]                             defaults to the standard output port
 $       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
@@ -214,21 +218,20 @@ $       saws[:communicatorname]                    publishes object to the Scien
 @*/
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
-  char                           *value;
+  const char                     *value;
   PetscErrorCode                 ierr;
   PetscBool                      flag,hashelp;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
-  if (set) *set = PETSC_FALSE;
-#if defined(PETSC_SKIP_VIEWFROMOPTIONS)
-  PetscFunctionReturn(0);
-#endif
+  if (viewer) *viewer = NULL;
+  if (format) *format = PETSC_VIEWER_DEFAULT;
+  if (set)    *set    = PETSC_FALSE;
   ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&hashelp);CHKERRQ(ierr);
   if (hashelp) {
     PetscBool found;
 
@@ -250,7 +253,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
-  ierr = PetscOptionsFindPair_Private(NULL,pre,name,&value,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFindPair(NULL,pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (set) *set = PETSC_TRUE;
     if (!value) {
@@ -348,8 +351,13 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
       }
       if (loc2_fmt && *loc2_fmt) {
-        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)format,&flag);CHKERRQ(ierr);
+        PetscViewerFormat tfmt;
+
+        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag);CHKERRQ(ierr);
+        if (format) *format = tfmt;
         if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
+      } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
+        ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
       }
       ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
     }
@@ -567,7 +575,7 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt r
   MPI_Comm       comm;
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  while (PETSC_TRUE) { 
+  while (PETSC_TRUE) {
     if (rank < *mcnt) break;
     ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   }

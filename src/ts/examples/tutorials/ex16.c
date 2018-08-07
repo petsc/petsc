@@ -279,3 +279,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      args: -ts_type arkimex -ts_arkimex_type myark2 -ts_adapt_type none
+      requires: !single
+
+TEST*/

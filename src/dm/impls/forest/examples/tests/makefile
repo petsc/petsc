@@ -10,10 +10,6 @@ MANSEC          = DM
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
-	${RM} -f ex1.o
-
 runex2_2d:
 	-@${MPIEXEC} -n 3 ./ex2 -petscspace_poly_tensor -petscspace_order 2 -dim 2
 runex2_2d_fv:

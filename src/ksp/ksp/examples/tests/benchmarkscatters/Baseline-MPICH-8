@@ -1,0 +1,40 @@
+numProcs   = 8
+./ex1 on a arch-opt-mpich named thing05.ftm.alcf.anl.gov with 8 processors, by bsmith Thu Nov 12 23:27:09 2015
+Using Petsc Development GIT revision: v3.6.2-1540-geddb79b  GIT Date: 2015-11-11 14:39:31 -0600
+Configure options: --download-fblaslapack --download-hwloc --download-mpich --with-debugging=0 PETSC_ARCH=arch-opt-mpich
+-----------------------------------------
+Libraries compiled on Wed Nov 11 20:44:50 2015 on ftlogin1 
+Machine characteristics: Linux-2.6.32-504.3.3.el6.x86_64-x86_64-with-redhat-6.6-Santiago
+Using PETSc directory: /home/bsmith/petsc
+Using PETSc arch: arch-opt-mpich
+-----------------------------------------
+
+Using C compiler: /home/bsmith/petsc/arch-opt-mpich/bin/mpicc    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -g -O  
+Using Fortran compiler: /home/bsmith/petsc/arch-opt-mpich/bin/mpif90    -Wall -Wno-unused-variable -ffree-line-length-0 -g -O   
+-----------------------------------------
+
+Using include paths: -I/home/bsmith/petsc/arch-opt-mpich/include -I/home/bsmith/petsc/include -I/home/bsmith/petsc/include -I/home/bsmith/petsc/arch-opt-mpich/include
+-----------------------------------------
+
+Using C linker: /home/bsmith/petsc/arch-opt-mpich/bin/mpicc
+Using Fortran linker: /home/bsmith/petsc/arch-opt-mpich/bin/mpif90
+Using libraries: -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -L/home/bsmith/petsc/arch-opt-mpich/lib -lpetsc -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -L/home/bsmith/petsc/arch-opt-mpich/lib -lflapack -lfblas -lhwloc -lssl -lcrypto -Wl,-rpath,/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -L/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -lmpifort -lgfortran -lm -lmpicxx -lstdc++ -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -L/home/bsmith/petsc/arch-opt-mpich/lib -Wl,-rpath,/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -L/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -Wl,-rpath,/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -lmpicxx -lstdc++ -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -L/home/bsmith/petsc/arch-opt-mpich/lib -Wl,-rpath,/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -L/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -Wl,-rpath,/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -L/usr/lib/gcc/x86_64-redhat-linux/4.4.7 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/ipp/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/mkl/lib/intel64 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/daal/lib/intel64_lin -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/tbb/lib/intel64_lin/gcc4.4 -Wl,-rpath,/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -L/soft/compilers/intel/compilers_and_libraries_2016.0.109/linux/compiler/lib/intel64_lin -ldl -Wl,-rpath,/home/bsmith/petsc/arch-opt-mpich/lib -lmpi -lgcc_s -ldl 
+-----------------------------------------
+gcc -fPIC -g -O -I/home/bsmith/petsc/arch-opt-mpich/include -L/home/bsmith/petsc/arch-opt-mpich/lib -Wl,-rpath -Wl,/home/bsmith/petsc/arch-opt-mpich/lib -Wl,--enable-new-dtags -lmpi
+#PETSc Option Table entries:
+-f /home/bsmith/Datafiles/matrices/cfd.2.100
+-matload_block_size 5
+-pc_type asm
+#End of PETSc Option Table entries
+MPI rank 0 Process id: 50158 coreid 0
+MPI rank 1 Process id: 50159 coreid 9
+MPI rank 2 Process id: 50160 coreid 18
+MPI rank 3 Process id: 50161 coreid 27
+MPI rank 4 Process id: 50162 coreid 1
+MPI rank 5 Process id: 50163 coreid 10
+MPI rank 6 Process id: 50164 coreid 19
+MPI rank 7 Process id: 50165 coreid 28
+----------------------------------------------------
+                Time     Min to Max Range   Proportion of KSP
+VecScatterBegin 2.62e-03   - 33.3 %  29.2 %   4.21e+00 %
+VecScatterEnd   9.44e-03   - 78.6 % 116.2 %   1.52e+01 %

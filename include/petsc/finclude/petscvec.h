@@ -23,12 +23,11 @@
 #define VECMPI 'mpi'
 #define VECSTANDARD 'standard'
 #define VECSHARED 'shared'
-#define VECSEQCUSP 'seqcusp'
-#define VECMPICUSP 'mpicusp'
-#define VECCUSP 'cusp'
 #define VECSEQVIENNACL 'seqviennacl'
 #define VECMPIVIENNACL 'mpiviennacl'
 #define VECVIENNACL    'viennacl'
 #define VECNEST 'nest'
+
+#define VecScatterType character*(80)
 
 #endif

@@ -11,16 +11,16 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason --wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
 
     w = -kappa \Delta u  + u^3  - u
     u_t =  \Delta w
     -1  <= u <= 1
     Periodic boundary conditions
 
-Evolve the Cahn-Hillard equations:
+Evolve the Cahn-Hillard equations: (this fails after a few timesteps 12/17/2017)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  --wait   -ts_type beuler    -da_refine 6 -vi  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason   -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
 
 */
@@ -47,8 +47,6 @@ int main(int argc,char **argv)
   ISColoring     iscoloring;
   PetscReal      dt;
   PetscReal      vbounds[] = {-100000,100000,-1.1,1.1};
-  PetscBool      wait;
-  Vec            ul,uh;
   SNES           snes;
   UserCtx        ctx;
 
@@ -76,7 +74,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,2,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
@@ -118,21 +116,11 @@ int main(int argc,char **argv)
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
-
-  {
-    ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
-    ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
@@ -155,21 +143,12 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
-  if (wait) {
-    ierr = PetscSleep(-1);CHKERRQ(ierr);
-  }
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  {
-    ierr = VecDestroy(&ul);CHKERRQ(ierr);
-    ierr = VecDestroy(&uh);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -312,3 +291,13 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+   build:
+     requires: !complex !single
+
+   test:
+     args: -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason  -ts_type beuler  -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
+     requires: x
+
+TEST*/

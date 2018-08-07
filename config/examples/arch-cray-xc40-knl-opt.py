@@ -22,22 +22,22 @@ if __name__ == '__main__':
     # and then comment/uncomment the apprpriate stanzas below.
 
     # Flags for the Intel compilers:
-    # NOTE: We are specifying the undocumented compiler option 
-    # '-mP2OPT_hpo_vec_remainder=F', which disables generation of vectorized 
-    # remainder loops; this works around some incorrect code generation in the 
-    # Intel compiler version 17.0, up to and including version 17.0.4
-    # This option has not been tested, and should NOT be used, with later 
-    # compiler versions -- the behavior may change without warning between 
-    # versions. It is anticipated that the code generation issue will be fixed 
-    # in the version 18 compiler at release.
-    '--COPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
-    '--CXXOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
-    '--FOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
+    # NOTE: For versions of the Intel compiler < 18.x, one may need to specify
+    # the undocumented compiler option '-mP2OPT_hpo_vec_remainder=F', which 
+    # disables generation of vectorized remainder loops; this works around 
+    # some incorrect code generation. This option should NOT be used with later 
+    # compiler versions -- it is detrimental to performance, and the behavior 
+    # may change without warning because this is an undocumented option.
+    '--COPTFLAGS=-g -xMIC-AVX512 -O3',
+    '--CXXOPTFLAGS=-g -xMIC-AVX512 -O3',
+    '--FOPTFLAGS=-g -xMIC-AVX512 -O3',
     # Use  BLAS and LAPACK provided by Intel MKL.
     # (Below only works when PrgEnv-intel is loaded; it is possible, but not 
     # straightfoward, to use MKL on Cray systems with non-Intel compilers.)
     # If Cray libsci is preferred, comment out the line below.
     '--with-blaslapack-lib=-mkl -L' + os.environ['MKLROOT'] + '/lib/intel64',
+    # Prefer hand-coded kernels using AVX-512 intrinsics when available.
+    '--with-avx512-kernels=1',
 
     # Flags for the Cray compilers:
 #    '--COPTFLAGS=-g -hcpu=mic-knl'
@@ -83,6 +83,9 @@ if __name__ == '__main__':
     '--known-sdot-returns-double=0',
     '--known-snrm2-returns-double=0',
     '--known-has-attribute-aligned=1',
+    '--known-snrm2-returns-double=0',
+    '--known-sdot-returns-double=0',
+    '--known-64-bit-blas-indices=0',
     '--with-batch=1',
   ]
   configure.petsc_configure(configure_options)

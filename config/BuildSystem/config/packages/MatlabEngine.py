@@ -20,7 +20,7 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
-    if self.framework.clArgDB.has_key('with-matlabengine-lib'):
+    if 'with-matlabengine-lib' in self.framework.clArgDB:
       self.lib = self.argDB['with-matlabengine-lib']
       self.framework.packages.append(self)
       self.found = 1

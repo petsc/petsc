@@ -370,7 +370,7 @@ static PetscErrorCode AssembleStokes_A(Mat A,DM stokes_da,DM quadrature)
   ierr = DMDAGetElements(stokes_da,&nel,&npe,&element_list);CHKERRQ(ierr);
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
-  
+
     /* get coords for the element */
     ierr = GetElementCoords(_coords,element,el_coords);CHKERRQ(ierr);
 
@@ -434,7 +434,7 @@ static PetscErrorCode AssembleStokes_PC(Mat A,DM stokes_da,DM quadrature)
   ierr = DMDAGetElements(stokes_da,&nel,&npe,&element_list);CHKERRQ(ierr);
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
-    
+
     /* get coords for the element */
     ierr = GetElementCoords(_coords,element,el_coords);CHKERRQ(ierr);
 
@@ -484,54 +484,54 @@ static PetscErrorCode AssembleStokes_RHS(Vec F,DM stokes_da,DM quadrature)
   Vec                    local_F;
   PetscScalar            *LA_F;
   PetscErrorCode         ierr;
-  
+
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
-  
+
   /* setup for coefficients */
   ierr = DMSwarmGetField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs);CHKERRQ(ierr);
-  
+
   /* get acces to the vector */
   ierr = DMGetLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = VecGetArray(local_F,&LA_F);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetElements(stokes_da,&nel,&npe,&element_list);CHKERRQ(ierr);
   for (eidx = 0; eidx < nel; eidx++) {
     const PetscInt *element = &element_list[npe*eidx];
-    
+
     /* get coords for the element */
     ierr = GetElementCoords(_coords,element,el_coords);CHKERRQ(ierr);
-    
+
     /* get coefficients for the element */
     prop_fy = &q_rhs[GAUSS_POINTS * eidx];
-    
+
     /* initialise element stiffness matrix */
     ierr = PetscMemzero(Fe,sizeof(PetscScalar)*NODES_PER_EL*U_DOFS);CHKERRQ(ierr);
     ierr = PetscMemzero(He,sizeof(PetscScalar)*NODES_PER_EL*P_DOFS);CHKERRQ(ierr);
-    
+
     /* form element stiffness matrix */
     LForm_MomentumRHS(Fe,el_coords,NULL,prop_fy);
-    
+
     /* insert element matrix into global matrix */
     ierr = DMDAGetElementEqnums_up(element,u_eqn,p_eqn);CHKERRQ(ierr);
-    
+
     for (i=0; i<NODES_PER_EL*U_DOFS; i++) {
       LA_F[ u_eqn[i] ] += Fe[i];
     }
   }
   ierr = DMSwarmRestoreField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-  
+
   ierr = VecRestoreArray(local_F,&LA_F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(stokes_da,local_F,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(stokes_da,local_F,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -545,17 +545,17 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
   PetscReal         **basis,*elcoor,*xp;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
-  
+
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMDAGetElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
-  
+
   ierr = PetscMalloc1(dim*npoints,&xp);CHKERRQ(ierr);
   ierr = PetscMalloc1(dim*npe,&elcoor);CHKERRQ(ierr);
   ierr = PetscMalloc1(npoints,&basis);CHKERRQ(ierr);
   for (q=0; q<npoints; q++) {
     ierr = PetscMalloc1(npe,&basis[q]);CHKERRQ(ierr);
-    
+
     switch (dim) {
       case 1:
         basis[q][0] = 0.5*(1.0 - xi[dim*q+0]);
@@ -567,7 +567,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
         basis[q][2] = 0.25*(1.0 + xi[dim*q+0])*(1.0 + xi[dim*q+1]);
         basis[q][3] = 0.25*(1.0 - xi[dim*q+0])*(1.0 + xi[dim*q+1]);
         break;
-        
+
       case 3:
         basis[q][0] = 0.125*(1.0 - xi[dim*q+0])*(1.0 - xi[dim*q+1])*(1.0 - xi[dim*q+2]);
         basis[q][1] = 0.125*(1.0 + xi[dim*q+0])*(1.0 - xi[dim*q+1])*(1.0 - xi[dim*q+2]);
@@ -580,13 +580,13 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
         break;
     }
   }
-  
+
   ierr = DMGetCoordinatesLocal(dmc,&coor);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coor,&_coor);CHKERRQ(ierr);
   /* compute and store the coordinates for the new points */
   {
     const PetscInt *element = &element_list[npe*e];
-    
+
     for (k=0; k<npe; k++) {
       for (d=0; d<dim; d++) {
         elcoor[dim*k+d] = PetscRealPart(_coor[ dim*element[k] + d ]);
@@ -605,17 +605,17 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
   }
   ierr = VecRestoreArrayRead(coor,&_coor);CHKERRQ(ierr);
   ierr = DMDARestoreElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
-  
+
   ierr = DMSwarmGetLocalSize(dm,&ncurr);CHKERRQ(ierr);
   ierr = DMSwarmAddNPoints(dm,npoints);CHKERRQ(ierr);
-  
+
   if (proximity_initialization) {
     PetscInt  *nnlist;
-    PetscReal coor_q[2],*coor_qn;
+    PetscReal *coor_q,*coor_qn;
     PetscInt  npoints_e,*plist_e;
-    
+
     ierr = DMSwarmSortGetPointsPerCell(dm,e,&npoints_e,&plist_e);CHKERRQ(ierr);
-    
+
     ierr = PetscMalloc1(npoints,&nnlist);CHKERRQ(ierr);
     /* find nearest neighour points in this cell */
     ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
@@ -623,9 +623,8 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     for (q=0; q<npoints; q++) {
       PetscInt  qn,nearest_neighour = -1;
       PetscReal sep,min_sep = PETSC_MAX_REAL;
-      
-      coor_q[0] = xp[dim*q];
-      coor_q[1] = xp[dim*q];
+
+      coor_q = &xp[dim*q];
       for (qn=0; qn<npoints_e; qn++) {
         coor_qn = &swarm_coor[dim*plist_e[qn]];
         sep = 0.0;
@@ -642,7 +641,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     }
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-    
+
     /* copies the nearest neighbour (nnlist[q]) into the new slot (ncurr+q) */
     for (q=0; q<npoints; q++) {
       ierr = DMSwarmCopyPoint(dm,nnlist[q],ncurr+q);CHKERRQ(ierr);
@@ -659,7 +658,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     }
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-    
+
     ierr = PetscFree(plist_e);CHKERRQ(ierr);
     ierr = PetscFree(nnlist);CHKERRQ(ierr);
   } else {
@@ -676,7 +675,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscFree(xp);CHKERRQ(ierr);
   ierr = PetscFree(elcoor);CHKERRQ(ierr);
   for (q=0; q<npoints; q++) {
@@ -706,13 +705,13 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp,DM dm_mpoint)
   ierr = DMSwarmGetCellDM(dm_mpoint,&dmc);CHKERRQ(ierr);
 
   ierr = DMSwarmSortGetAccess(dm_mpoint);CHKERRQ(ierr);
-  
+
   cnt = 0;
   for (e=0; e<nel; e++) {
     PetscInt npoints_per_cell;
-    
+
     ierr = DMSwarmSortGetNumberOfPointsPerCell(dm_mpoint,e,&npoints_per_cell);CHKERRQ(ierr);
-    
+
     if (npoints_per_cell < 12) {
       ierr = DMSwarmPICInsertPointsCellwise(dm_mpoint,dm_vp,e,npoints_q,(PetscReal*)xi,PETSC_TRUE);CHKERRQ(ierr);
       cnt++;
@@ -745,12 +744,12 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp,Vec vp,PetscReal dt,DM dm_mpoint
   PetscFunctionBeginUser;
   ierr = DMGetCoordinatesLocal(dm_vp,&coor_l);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coor_l,&LA_coor);CHKERRQ(ierr);
-  
+
   ierr = DMGetLocalVector(dm_vp,&vp_l);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm_vp,vp,INSERT_VALUES,vp_l);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm_vp,vp,INSERT_VALUES,vp_l);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vp_l,&LA_vp);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetElements(dm_vp,&nel,&npe,&element_list);CHKERRQ(ierr);
   ierr = DMSwarmGetLocalSize(dm_mpoint,&npoints);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm_mpoint,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
@@ -760,44 +759,44 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp,Vec vp,PetscReal dt,DM dm_mpoint
     PetscScalar       vel_n[NSD*NODES_PER_EL],vel_p[NSD];
     const PetscScalar *x0;
     const PetscScalar *x2;
-    
+
     e       = mpfield_cell[p];
     coor_p  = &mpfield_coor[NSD*p];
     element = &element_list[NODES_PER_EL*e];
-    
+
     /* compute local coordinates: (xp-x0)/dx = (xip+1)/2 */
     x0 = &LA_coor[NSD*element[0]];
     x2 = &LA_coor[NSD*element[2]];
-    
+
     dx[0] = x2[0] - x0[0];
     dx[1] = x2[1] - x0[1];
-    
+
     xi_p[0] = 2.0 * (coor_p[0] - x0[0])/dx[0] - 1.0;
     xi_p[1] = 2.0 * (coor_p[1] - x0[1])/dx[1] - 1.0;
     if (PetscRealPart(xi_p[0]) < -1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too small %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[0]),e);
     if (PetscRealPart(xi_p[0]) >  1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too large %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[0]),e);
     if (PetscRealPart(xi_p[1]) < -1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too small %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[1]),e);
     if (PetscRealPart(xi_p[1]) >  1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too large %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[1]),e);
-    
+
     /* evaluate basis functions */
     EvaluateBasis_Q1(xi_p,Ni);
-    
+
     /* get cell nodal velocities */
     for (i=0; i<NODES_PER_EL; i++) {
       PetscInt nid;
-      
+
       nid = element[i];
       vel_n[NSD*i+0] = LA_vp[(NSD+1)*nid+0];
       vel_n[NSD*i+1] = LA_vp[(NSD+1)*nid+1];
     }
-    
+
     /* interpolate velocity */
     vel_p[0] = vel_p[1] = 0.0;
     for (i=0; i<NODES_PER_EL; i++) {
       vel_p[0] += Ni[i] * vel_n[NSD*i+0];
       vel_p[1] += Ni[i] * vel_n[NSD*i+1];
     }
-    
+
     coor_p[0] += dt * PetscRealPart(vel_p[0]);
     coor_p[1] += dt * PetscRealPart(vel_p[1]);
   }
@@ -823,7 +822,7 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
   const PetscInt *element_list;
   PetscReal      *q_eta,*q_rhs;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBeginUser;
   /* define quadrature rule */
   CreateGaussQuadrature(&nqp,qp_xi,qp_weight);
@@ -833,12 +832,12 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
 
   ierr = DMGetLocalVector(dm,&eta_l);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&rho_l);CHKERRQ(ierr);
-  
+
   ierr = DMGlobalToLocalBegin(dm,eta_v,INSERT_VALUES,eta_l);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,eta_v,INSERT_VALUES,eta_l);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,rho_v,INSERT_VALUES,rho_l);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,rho_v,INSERT_VALUES,rho_l);CHKERRQ(ierr);
-  
+
   ierr = VecGetArray(eta_l,&_eta_l);CHKERRQ(ierr);
   ierr = VecGetArray(rho_l,&_rho_l);CHKERRQ(ierr);
 
@@ -855,16 +854,16 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
       eta_field_e[k] = _eta_l[ element[k] ];
       rho_field_e[k] = _rho_l[ element[k] ];
     }
-    
+
     for (q=0; q<nqp; q++) {
       PetscScalar eta_q,rho_q;
-      
+
       eta_q = rho_q = 0.0;
       for (k=0; k<NODES_PER_EL; k++) {
         eta_q += Ni[q][k] * eta_field_e[k];
         rho_q += Ni[q][k] * rho_field_e[k];
       }
-      
+
       q_eta[nqp*e+q] = PetscRealPart(eta_q);
       q_rhs[nqp*e+q] = PetscRealPart(rho_q);
     }
@@ -890,6 +889,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   Vec                    eta_v,rho_v;
   Vec                    f,X;
   KSP                    ksp;
+  PC                     pc;
   char                   filename[PETSC_MAX_PATH_LEN];
   DM                     dms_quadrature,dms_mpoint;
   PetscInt               nel,npe,npoints;
@@ -904,7 +904,9 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   PetscReal              time,delta_eta = 1.0;
   PetscBool              randomize_coords = PETSC_FALSE;
   PetscReal              randomize_fac = 0.25;
-  
+  PetscBool              no_view = PETSC_FALSE;
+  PetscBool              isbddc;
+
   PetscFunctionBeginUser;
   /*
     Generate the DMDA for the velocity and pressure spaces.
@@ -918,6 +920,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   stencil_width = 1;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&dm_stokes);CHKERRQ(ierr);
   ierr = DMDASetElementType(dm_stokes,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
+  ierr = DMSetMatType(dm_stokes,MATAIJ);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm_stokes);CHKERRQ(ierr);
   ierr = DMSetUp(dm_stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(dm_stokes,0,"ux");CHKERRQ(ierr);
@@ -927,7 +930,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   /* unit box [0,0.9142] x [0,1] */
   ierr = DMDASetUniformCoordinates(dm_stokes,0.0,0.9142,0.0,1.0,0.,0.);CHKERRQ(ierr);
   dh = 1.0/((PetscReal)(mx));
-  
+
   /* Get local number of elements */
   {
     ierr = DMDAGetElements(dm_stokes,&nel,&npe,&element_list);CHKERRQ(ierr);
@@ -938,63 +941,63 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   }
 
   /* Create DMDA for representing scalar fields */
-  ierr = DMDAGetReducedDMDA(dm_stokes,1,&dm_coeff);CHKERRQ(ierr);
-  
+  ierr = DMDACreateCompatibleDMDA(dm_stokes,1,&dm_coeff);CHKERRQ(ierr);
+
   /* Create the swarm for storing quadrature point values */
   ierr = DMCreate(PETSC_COMM_WORLD,&dms_quadrature);CHKERRQ(ierr);
   ierr = DMSetType(dms_quadrature,DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(dms_quadrature,2);CHKERRQ(ierr);
-  
+
   /* Register fields for viscosity and density on the quadrature points */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_quadrature);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(dms_quadrature,nel_local * GAUSS_POINTS,0);CHKERRQ(ierr);
-  
+
   /* Create the material point swarm */
   ierr = DMCreate(PETSC_COMM_WORLD,&dms_mpoint);CHKERRQ(ierr);
   ierr = DMSetType(dms_mpoint,DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(dms_mpoint,2);CHKERRQ(ierr);
-  
+
   /* Configure the material point swarm to be of type Particle-In-Cell */
   ierr = DMSwarmSetType(dms_mpoint,DMSWARM_PIC);CHKERRQ(ierr);
-  
-  /* 
+
+  /*
      Specify the DM to use for point location and projections
      within the context of a PIC scheme
   */
   ierr = DMSwarmSetCellDM(dms_mpoint,dm_coeff);CHKERRQ(ierr);
-  
+
   /* Register fields for viscosity and density */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_mpoint);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(dms_mpoint,nel_local * ppcell,100);CHKERRQ(ierr);
-  
-  /* 
+
+  /*
     Layout the material points in space using the cell DM.
     Particle coordinates are defined by cell wise using different methods.
-    - DMSWARMPIC_LAYOUT_GAUSS defines particles coordinates at the positions 
-                              corresponding to a Gauss quadrature rule with 
+    - DMSWARMPIC_LAYOUT_GAUSS defines particles coordinates at the positions
+                              corresponding to a Gauss quadrature rule with
                               ppcell points in each direction.
     - DMSWARMPIC_LAYOUT_REGULAR defines particle coordinates at the centoid of
-                                ppcell x ppcell quadralaterals defined within the 
+                                ppcell x ppcell quadralaterals defined within the
                                 reference element.
     - DMSWARMPIC_LAYOUT_SUBDIVISION defines particles coordinates at the centroid
-                                    of each quadralateral obtained by sub-dividing 
+                                    of each quadralateral obtained by sub-dividing
                                     the reference element cell ppcell times.
   */
   ierr = DMSwarmInsertPointsUsingCellDM(dms_mpoint,DMSWARMPIC_LAYOUT_SUBDIVISION,ppcell);CHKERRQ(ierr);
 
-  /* 
+  /*
     Defne a high resolution layer of material points across the material interface
   */
   {
     PetscInt  npoints_dir_x[2];
     PetscReal min[2],max[2];
-    
+
     npoints_dir_x[0] = (PetscInt)(0.9142/(0.05*dh));
     npoints_dir_x[1] = (PetscInt)((0.25-0.15)/(0.05*dh));
     min[0] = 0.0;  max[0] = 0.9142;
@@ -1002,15 +1005,15 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = DMSwarmSetPointsUniformCoordinates(dms_mpoint,min,max,npoints_dir_x,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
     Define a high resolution layer of material points near the surface of the domain
-    to deal with weakly compressible Q1-Q1 elements. These elements "self compact" 
+    to deal with weakly compressible Q1-Q1 elements. These elements "self compact"
     when applied to buouyancy driven flow. The error in div(u) is O(h).
   */
   {
     PetscInt  npoints_dir_x[2];
     PetscReal min[2],max[2];
-    
+
     npoints_dir_x[0] = (PetscInt)(0.9142/(0.25*dh));
     npoints_dir_x[1] = (PetscInt)(3.0*dh/(0.25*dh));
     min[0] = 0.0;          max[0] = 0.9142;
@@ -1030,21 +1033,20 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     PetscInt    p;
     PetscRandom r;
     PetscMPIInt rank;
-    
+
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(r,PETSCRAND48);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh);CHKERRQ(ierr);
     ierr = PetscRandomSetSeed(r,(unsigned long)rank);CHKERRQ(ierr);
     ierr = PetscRandomSeed(r);CHKERRQ(ierr);
-    
+
     ierr = DMDAGetElements(dm_stokes,&nel,&npe,&element_list);CHKERRQ(ierr);
 
     /*
        Fetch the registered data from the material point DMSwarm.
        The fields "eta" and "rho" were registered by this example.
-       The field identified by the the variable DMSwarmPICField_coor 
+       The field identified by the the variable DMSwarmPICField_coor
        was registered by the DMSwarm implementation when the function
          DMSwarmSetType(dms_mpoint,DMSWARM_PIC)
        was called. The returned array defines the coordinates of each
@@ -1064,11 +1066,11 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
         array_x[2*p + 0] += rr[0];
         array_x[2*p + 1] += rr[1];
       }
-      
+
       /* Get the coordinates of point, p */
       x_p[0] = array_x[2*p + 0];
       x_p[1] = array_x[2*p + 1];
-      
+
        if (x_p[1] < (0.2 + 0.02*PetscCosReal(PETSC_PI*x_p[0]/0.9142))) {
          /* Material properties below the interface */
          array_e[p] = 1.0 * (1.0/delta_eta);
@@ -1079,8 +1081,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
          array_r[p] = 1.0;
        }
     }
-    
-    /*  
+
+    /*
        Restore the fetched data fields from the material point DMSwarm.
        Calling the Restore function invalidates the points array_r, array_e, array_x
        by setting them to NULL.
@@ -1093,16 +1095,19 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      If the particle coordinates where randomly shifted, they may have crossed into another
      element, or into another sub-domain. To account for this we call the Migrate function.
   */
   if (randomize_coords) {
     ierr = DMSwarmMigrate(dms_mpoint,PETSC_TRUE);CHKERRQ(ierr);
   }
-  
-  ierr = DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf");CHKERRQ(ierr);
-  
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-no_view",&no_view,NULL);CHKERRQ(ierr);
+  if (!no_view) {
+    ierr = DMSwarmViewXDMF(dms_mpoint,"ic_coeff_dms.xmf");CHKERRQ(ierr);
+  }
+
   /* project the swarm properties */
   ierr = DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_FALSE);CHKERRQ(ierr);
   eta_v = pfields[0];
@@ -1110,11 +1115,11 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = PetscObjectSetName((PetscObject)eta_v,"eta");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)rho_v,"rho");CHKERRQ(ierr);
   ierr = MaterialPoint_Interpolate(dm_coeff,eta_v,rho_v,dms_quadrature);CHKERRQ(ierr);
-  
+
   /* view projected coefficients eta and rho */
-  {
+  if (!no_view) {
     PetscViewer viewer;
-    
+
     ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
@@ -1123,8 +1128,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = VecView(rho_v,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  
-  ierr = DMSetMatType(dm_stokes,MATAIJ);CHKERRQ(ierr);
+
   ierr = DMCreateMatrix(dm_stokes,&A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm_stokes,&B);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm_stokes,&f);CHKERRQ(ierr);
@@ -1143,12 +1147,17 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
+  if (isbddc) {
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  }
+
   /* Define u-v-p indices for fieldsplit */
   {
     PC             pc;
     const PetscInt ufields[] = {0,1},pfields[1] = {2};
-    
+
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCFieldSplitSetBlockSize(pc,3);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"u",2,ufields,ufields);CHKERRQ(ierr);
@@ -1176,12 +1185,12 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
       ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 
       if (nsplits == 2) {
-        ierr = DMDAGetReducedDMDA(dm_stokes,2,&dm_u);CHKERRQ(ierr);
+        ierr = DMDACreateCompatibleDMDA(dm_stokes,2,&dm_u);CHKERRQ(ierr);
 
         ierr = KSPSetDM(ksp_u,dm_u);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_u,PETSC_FALSE);CHKERRQ(ierr);
         ierr = DMDestroy(&dm_u);CHKERRQ(ierr);
-        
+
         /* enforce galerkin coarse grids be used */
         ierr = KSPGetPC(ksp_u,&pc_u);CHKERRQ(ierr);
         ierr = PCMGSetGalerkin(pc_u,PC_MG_GALERKIN_PMAT);CHKERRQ(ierr);
@@ -1195,7 +1204,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = PetscOptionsGetInt(NULL,NULL,"-nt",&nt,NULL);CHKERRQ(ierr);
   time = 0.0;
   for (tk=1; tk<=nt; tk++) {
-    
+
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... assemble\n");CHKERRQ(ierr);
     ierr = AssembleStokes_A(A,dm_stokes,dms_quadrature);CHKERRQ(ierr);
     ierr = AssembleStokes_PC(B,dm_stokes,dms_quadrature);CHKERRQ(ierr);
@@ -1204,42 +1213,38 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... bc imposition\n");CHKERRQ(ierr);
     ierr = DMDAApplyBoundaryConditions(dm_stokes,A,f);CHKERRQ(ierr);
     ierr = DMDAApplyBoundaryConditions(dm_stokes,B,NULL);CHKERRQ(ierr);
-    
+
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... solve\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A, isbddc ? A : B);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,f,X);CHKERRQ(ierr);
-    
+
     ierr = VecStrideMax(X,0,NULL,&vx[1]);CHKERRQ(ierr);
     ierr = VecStrideMax(X,1,NULL,&vy[1]);CHKERRQ(ierr);
     ierr = VecStrideMin(X,0,NULL,&vx[0]);CHKERRQ(ierr);
     ierr = VecStrideMin(X,1,NULL,&vy[0]);CHKERRQ(ierr);
-    
-    dt = 1.0e-6;
+
     max_v_step = PetscMax(vx[0],vx[1]);
     max_v_step = PetscMax(max_v_step,vy[0]);
     max_v_step = PetscMax(max_v_step,vy[1]);
     max_v = PetscMax(max_v,max_v_step);
-    
-    dt = 0.5 * (dh / max_v_step);
-    dt_max = PetscMax(dt_max,dt);
+
     dt_max = 2.0;
+    dt = 0.5 * (dh / max_v_step);
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... max v %1.4e , dt %1.4e : [total] max v %1.4e , dt_max %1.4e\n",(double)max_v_step,(double)dt,(double)max_v,(double)dt_max);CHKERRQ(ierr);
-    if (dt > dt_max) {
-      dt = dt_max;
-    }
-    
+    dt = PetscMin(dt_max,dt);
+
     /* advect */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... advect\n");CHKERRQ(ierr);
     ierr = MaterialPoint_AdvectRK1(dm_stokes,X,dt,dms_mpoint);CHKERRQ(ierr);
-    
+
     /* migrate */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... migrate\n");CHKERRQ(ierr);
     ierr = DMSwarmMigrate(dms_mpoint,PETSC_TRUE);CHKERRQ(ierr);
-    
+
     /* update cell population */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... populate cells\n");CHKERRQ(ierr);
-    ierr = MaterialPoint_PopulateCell(dm_stokes,dms_mpoint);
-    
+    ierr = MaterialPoint_PopulateCell(dm_stokes,dms_mpoint);CHKERRQ(ierr);
+
     /* update coefficients on quadrature points */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... project\n");CHKERRQ(ierr);
     ierr = DMSwarmProjectFields(dms_mpoint,2,fieldnames,&pfields,PETSC_TRUE);CHKERRQ(ierr);
@@ -1254,7 +1259,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
       ierr = PetscPrintf(PETSC_COMM_WORLD,".... write XDMF, VTS\n");CHKERRQ(ierr);
       ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_coeff_dms.xmf",tk);CHKERRQ(ierr);
       ierr = DMSwarmViewXDMF(dms_mpoint,filename);CHKERRQ(ierr);
-      
+
       ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"step%.4D_vp_dm.vts",tk);CHKERRQ(ierr);
       ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
@@ -1275,7 +1280,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = VecDestroy(&eta_v);CHKERRQ(ierr);
   ierr = VecDestroy(&rho_v);CHKERRQ(ierr);
   ierr = PetscFree(pfields);CHKERRQ(ierr);
-  
+
   ierr = DMDestroy(&dms_mpoint);CHKERRQ(ierr);
   ierr = DMDestroy(&dms_quadrature);CHKERRQ(ierr);
   ierr = DMDestroy(&dm_coeff);CHKERRQ(ierr);
@@ -1552,7 +1557,7 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da,PetscInt d_idx,Mat A,Vec b)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
  Impose free slip boundary conditions on the left/right faces: u_i n_i = 0, tau_{ij} t_j = 0
  Impose no slip boundray conditions on the top/bottom faces:   u_i n_i = 0, u_i t_i = 0
 */
@@ -1569,3 +1574,37 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
   ierr = BCApplyZero_WEST(dm_stokes,0,A,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   test:
+     suffix: 1
+     args: -no_view
+     requires: !complex double
+     filter: grep -v atomic
+     filter_output: grep -v atomic
+   test:
+     suffix: 1_matis
+     requires: !complex double
+     args: -no_view -dm_mat_type is
+     filter: grep -v atomic
+     filter_output: grep -v atomic
+   testset:
+     nsize: 4
+     requires: !complex double
+     args: -no_view -dm_mat_type is -stokes_ksp_type fetidp -mx 80 -my 80 -stokes_ksp_converged_reason -stokes_ksp_rtol 1.0e-8 -ppcell 2 -nt 4 -randomize_coords -stokes_ksp_error_if_not_converged
+     filter: grep -v atomic
+     filter_output: grep -v atomic
+     test:
+       suffix: fetidp
+       args: -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
+     test:
+       suffix: fetidp_lumped
+       args: -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd -stokes_fetidp_pc_lumped -stokes_fetidp_bddc_pc_bddc_dirichlet_pc_type none -stokes_fetidp_bddc_pc_bddc_switch_static
+     test:
+       suffix: fetidp_saddlepoint
+       args: -stokes_ksp_fetidp_saddlepoint -stokes_fetidp_ksp_type cg -stokes_ksp_norm_type natural -stokes_fetidp_pc_fieldsplit_schur_fact_type diag -stokes_fetidp_fieldsplit_p_pc_type bjacobi -stokes_fetidp_fieldsplit_lag_ksp_type preonly -stokes_fetidp_fieldsplit_p_ksp_type preonly -stokes_ksp_fetidp_pressure_field 2 -stokes_fetidp_pc_fieldsplit_schur_scale -1
+     test:
+       suffix: fetidp_saddlepoint_lumped
+       args: -stokes_ksp_fetidp_saddlepoint -stokes_fetidp_ksp_type cg -stokes_ksp_norm_type natural -stokes_fetidp_pc_fieldsplit_schur_fact_type diag -stokes_fetidp_fieldsplit_p_pc_type bjacobi -stokes_fetidp_fieldsplit_lag_ksp_type preonly -stokes_fetidp_fieldsplit_p_ksp_type preonly -stokes_ksp_fetidp_pressure_field 2 -stokes_fetidp_pc_fieldsplit_schur_scale -1 -stokes_fetidp_bddc_pc_bddc_dirichlet_pc_type none -stokes_fetidp_bddc_pc_bddc_switch_static -stokes_fetidp_pc_lumped
+TEST*/

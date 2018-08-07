@@ -13,11 +13,13 @@
          PetscObjectSetName((PetscObject)mat,name);
 -  name - the name to give obj
 
+   Notes:
+    If this routine is not called then the object may end up being name by PetscObjectName().
    Level: advanced
 
    Concepts: object name^setting
 
-.seealso: PetscObjectGetName()
+.seealso: PetscObjectGetName(), PetscObjectName()
 @*/
 PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 {
@@ -39,12 +41,16 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Level: developer
 
-   Notes: If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
+   Notes:
+    If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
           so that MATLAB will treat it as a comment.
 
           If the viewer format is PETSC_VIEWER_ASCII_VTK*, PETSC_VIEWER_ASCII_LATEX, or
           PETSC_VIEWER_ASCII_MATRIXMARKET then don't print header information
           as these formats can't process it.
+
+   Developer Note: The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used
+                   to actually print the object.
 
 .seealso: PetscObjectSetName(), PetscObjectName()
 
@@ -59,6 +65,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (obj->donotPetscObjectPrintClassNamePrefixType) PetscFunctionReturn(0);
   if (!flg) PetscFunctionReturn(0);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -100,7 +107,8 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
    Concepts: object name^setting default
 
-   Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
+   Notes:
+    This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
           Use PetscObjectSetName() to set the name of an object to what you want. The SAWs viewer requires that no two published objects
           share the same name.
 
@@ -121,7 +129,7 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscValidHeader(obj,1);
   if (!obj->name) {
     union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
-    ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
     ucomm.ptr = NULL;
     ucomm.comm = obj->comm;

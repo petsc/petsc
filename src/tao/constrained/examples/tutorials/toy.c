@@ -75,7 +75,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetJacobianEqualityRoutine(tao,user.Ae,user.Ae,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ai,user.Ai,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
+  /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -86,11 +86,11 @@ PetscErrorCode main(int argc,char **argv)
       This algorithm produces matrices with zeros along the diagonal therefore we need to use
     SuperLU which does partial pivoting
   */
-  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
+  /* ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr); */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = DestroyProblem(&user);CHKERRQ(ierr);
@@ -259,3 +259,15 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
   ierr = MatAssemblyEnd(JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !define(PETSC_USE_CXX)
+
+   test:
+      requires: superlu
+      args: -tao_smonitor -tao_view -tao_gatol 1.e-5
+
+TEST*/

@@ -16,14 +16,12 @@ typedef PetscInt* PetscTablePosition;
 
 PETSC_STATIC_INLINE unsigned long PetscHash(PetscTable ta,unsigned long x)
 {
-  PetscFunctionBegin;
-  PetscFunctionReturn(x%(unsigned long)ta->tablesize);
+  return(x%(unsigned long)ta->tablesize);
 }
 
 PETSC_STATIC_INLINE unsigned long PetscHashStep(PetscTable ta,unsigned long x)
 {
-  PetscFunctionBegin;
-  PetscFunctionReturn(1+(x%(unsigned long)(ta->tablesize-1)));
+  return(1+(x%(unsigned long)(ta->tablesize-1)));
 }
 
 PETSC_EXTERN PetscErrorCode PetscTableCreate(const PetscInt,PetscInt,PetscTable*);

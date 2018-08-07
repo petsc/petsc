@@ -17,7 +17,8 @@
 .  mbs           - number of (block) rows represented by ai
 -  ratio         - ratio of (num of zero rows)/m, used to determine if the compressed row format should be used
 
-   Notes: By default PETSc will not check for compressed rows on sequential matrices. Call MatSetOption(Mat,MAT_CHECK_COMPRESSED_ROW,PETSC_TRUE); before
+   Notes:
+    By default PETSc will not check for compressed rows on sequential matrices. Call MatSetOption(Mat,MAT_CHECK_COMPRESSED_ROW,PETSC_TRUE); before
           MatAssemblyBegin() to have it check.
 
    Developer Note: The reason this takes the compressedrow, ai and mbs arguments is because it is called by both the SeqAIJ and SEQBAIJ matrices and

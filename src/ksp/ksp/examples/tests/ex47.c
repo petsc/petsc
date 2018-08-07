@@ -49,3 +49,11 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -pc_type fieldsplit
+
+TEST*/

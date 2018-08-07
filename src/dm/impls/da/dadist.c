@@ -81,7 +81,7 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(g,2);
   if (dd->natural) {
     ierr = PetscObjectGetReference((PetscObject)dd->natural,&cnt);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
     ierr = VecCreate(PetscObjectComm((PetscObject)da),g);CHKERRQ(ierr);
     ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*g, dd->w);CHKERRQ(ierr);
-    ierr = VecSetType(*g,VECMPI);CHKERRQ(ierr);
+    ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
 
     dd->natural = *g;

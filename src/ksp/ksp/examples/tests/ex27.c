@@ -105,7 +105,7 @@ int main(int argc,char **args)
   ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* Sove preconditioned system A*x = b */
+  /* Solve preconditioned system A*x = b */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
@@ -136,3 +136,11 @@ PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+    test:
+      args: -f ${DATAFILESPATH}/matrices/small
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex27.out
+
+TEST*/

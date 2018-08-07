@@ -393,7 +393,8 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool* change)
 
   Concepts: SOR, preconditioners, Gauss-Seidel, Eisenstat's trick
 
-   Notes: Only implemented for the SeqAIJ matrix format.
+   Notes:
+    Only implemented for the SeqAIJ matrix format.
           Not a true parallel SOR, in parallel this implementation corresponds to block
           Jacobi with SOR on each block.
 

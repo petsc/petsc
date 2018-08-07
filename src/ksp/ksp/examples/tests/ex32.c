@@ -194,3 +194,11 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscFunctionReturn(0);
 }
 
+
+
+/*TEST
+
+   test:
+      args: -ksp_monitor_short -dm_mat_type sbaij -ksp_monitor_short -pc_type cholesky -ksp_view
+
+TEST*/

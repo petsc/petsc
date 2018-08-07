@@ -1,22 +1,22 @@
 lid velocity = 100., prandtl # = 1., grashof # = 40000.
   0 SNES Function norm 1667.67 
   1 SNES Function norm 227.403 
-  2 SNES Function norm 94.4607 
-  3 SNES Function norm 20.4337 
-  4 SNES Function norm 17.4825 
-  5 SNES Function norm 7.36826 
-  6 SNES Function norm 3.09886 
-  7 SNES Function norm 0.802506 
-  8 SNES Function norm 0.554519 
-  9 SNES Function norm 0.317552 
- 10 SNES Function norm 0.112429 
- 11 SNES Function norm 0.0653065 
- 12 SNES Function norm 0.0269513 
- 13 SNES Function norm 0.0119604 
- 14 SNES Function norm 0.00281523 
- 15 SNES Function norm 0.00123359 
- 16 SNES Function norm 0.000380515 
- 17 SNES Function norm 0.000176141 
- 18 SNES Function norm 4.13561e-05 
- 19 SNES Function norm 7.31869e-06 
+  2 SNES Function norm 94.4608 
+  3 SNES Function norm 20.4338 
+  4 SNES Function norm 17.4824 
+  5 SNES Function norm 7.3683 
+  6 SNES Function norm 3.09882 
+  7 SNES Function norm 0.802497 
+  8 SNES Function norm 0.554518 
+  9 SNES Function norm 0.317551 
+ 10 SNES Function norm 0.112427 
+ 11 SNES Function norm 0.0653051 
+ 12 SNES Function norm 0.0269511 
+ 13 SNES Function norm 0.0119595 
+ 14 SNES Function norm 0.0028156 
+ 15 SNES Function norm 0.00123369 
+ 16 SNES Function norm 0.000380486 
+ 17 SNES Function norm 0.000176153 
+ 18 SNES Function norm 4.13595e-05 
+ 19 SNES Function norm 7.31965e-06 
 Number of SNES iterations = 19

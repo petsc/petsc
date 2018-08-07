@@ -1,3 +1,4 @@
+from __future__ import print_function
 try:
   import readline
 except ImportError: pass
@@ -154,15 +155,15 @@ tests will cause ValueError.
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
       checkInteractive(self.key)
-      if self.help: print self.help
+      if self.help: print(self.help)
       while 1:
         try:
           self.setValue(Arg.parseValue(raw_input(self.getEntryPrompt())))
           break
         except KeyboardInterrupt:
           raise KeyError('Could not find value for key '+str(self.key))
-        except TypeError, e:
-          print str(e)
+        except TypeError as e:
+          print(str(e))
     return self.value
 
   def checkKey(self):
@@ -250,7 +251,7 @@ class ArgFuzzyBool(Arg):
 
 class ArgInt(Arg):
   '''Arguments that represent integer numbers'''
-  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0, deprecated = False):
+  def __init__(self, key, value = None, help = '', min = -2147483647, max = 2147483648, isTemporary = 0, deprecated = False):
     self.min = min
     self.max = max
     Arg.__init__(self, key, value, help, isTemporary, deprecated)

@@ -1,0 +1,27 @@
+PetscQuadrature Object: Test quadrature 1 MPI processes
+  type not yet set
+Quadrature on 2 points
+  (-0.57735
+) 1.
+0.57735
+) 1.
+IS Object: FE Test Cells 1 MPI processes
+  type: general
+Number of indices in set 2
+0 0
+1 0
+B:
+ 0:   6.7366e-01   5.4699e-01   6.7366e-01
+ 3:   5.4699e-01
+D:
+ 0:  -1.0971e-01  -1.0971e-01  -1.0971e-01
+ 3:  -1.0971e-01
+H:
+ 0:   0.0000e+00   0.0000e+00   0.0000e+00
+ 3:   0.0000e+00
+rB:
+ 0:   6.7366e-01   5.4699e-01   6.7366e-01   5.4699e-01
+rD:
+ 0:  -1.0971e-01  -1.0971e-01  -1.0971e-01  -1.0971e-01
+rH:
+ 0:   0.0000e+00   0.0000e+00   0.0000e+00   0.0000e+00

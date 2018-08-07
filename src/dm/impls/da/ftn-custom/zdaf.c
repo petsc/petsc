@@ -4,9 +4,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdagetownershipranges_        DMDAGETOWNERSHIPRANGES
 #define dmdagetneighbors_              DMDAGETNEIGHBORS
+#define dmdagetrefinementfactor_       DMDAGETREFINEMENTFACTOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmdagetownershipranges_        dmdagetownershipranges
 #define dmdagetneighbors_              dmdagetneighbors
+#define dmdagetrefinementfactor_       dmdagetrefinementfactor
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
@@ -40,5 +42,13 @@ PETSC_EXTERN void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],Pet
   if (lz) {
     for (i=0; i<P; i++) lz[i] = gz[i];
   }
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmdagetrefinementfactor_(DM *da,PetscInt *lx,PetscInt *ly,PetscInt *lz,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(lx);
+  CHKFORTRANNULLINTEGER(ly);
+  CHKFORTRANNULLINTEGER(lz);
+  *ierr = DMDAGetRefinementFactor(*da,lx,ly,lz);
 }
 

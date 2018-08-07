@@ -6,8 +6,9 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
-#include <petsccusp.h>
+#include <petsccuda.h>
 
+#include <thrust/device_ptr.h>
 #include <thrust/for_each.h>
 #include <thrust/tuple.h>
 #include <thrust/iterator/constant_iterator.h>
@@ -15,7 +16,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <thrust/iterator/zip_iterator.h>
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat,Mat,void*);
-PetscBool useCUSP = PETSC_FALSE;
+PetscBool useCUDA = PETSC_FALSE;
 
 int main(int argc,char **argv)
 {
@@ -30,11 +31,11 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);
-    if (tmp) useCUSP = PETSC_TRUE;
+    ierr = PetscStrstr(typeName,"cuda",&tmp);CHKERRQ(ierr);
+    if (tmp) useCUDA = PETSC_TRUE;
   }
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
@@ -77,14 +78,15 @@ struct ApplyStencil
 
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart,lsize;
-  PetscScalar    *xx,*ff,hx;
-  DM             da = (DM) ctx;
-  Vec            xlocal;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  MPI_Comm       comm;
-  cusp::array1d<PetscScalar,cusp::device_memory> *xarray,*farray;
+  PetscInt          i,Mx,xs,xm,xstartshift,xendshift,fstart,lsize;
+  PetscScalar       *xx,*ff,hx;
+  DM                da = (DM) ctx;
+  Vec               xlocal;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size;
+  MPI_Comm          comm;
+  PetscScalar const *xarray;
+  PetscScalar       *farray;
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)(Mx-1);
@@ -92,9 +94,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
-  if (useCUSP) {
-    ierr = VecCUSPGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayWrite(f,&farray);CHKERRQ(ierr);
+  if (useCUDA) {
+    ierr = VecCUDAGetArrayRead(xlocal,&xarray);CHKERRQ(ierr);
+    ierr = VecCUDAGetArrayWrite(f,&farray);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -108,19 +110,19 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
       thrust::for_each(
         thrust::make_zip_iterator(
           thrust::make_tuple(
-            farray->begin(),
-            xarray->begin()+xstartshift,
-            xarray->begin()+xstartshift + 1,
-            xarray->begin()+xstartshift - 1,
+            thrust::device_ptr<PetscScalar>(farray),
+            thrust::device_ptr<const PetscScalar>(xarray + xstartshift),
+            thrust::device_ptr<const PetscScalar>(xarray + xstartshift + 1),
+            thrust::device_ptr<const PetscScalar>(xarray + xstartshift - 1),
             thrust::counting_iterator<int>(fstart),
             thrust::constant_iterator<int>(Mx),
             thrust::constant_iterator<PetscScalar>(hx))),
         thrust::make_zip_iterator(
           thrust::make_tuple(
-            farray->end(),
-            xarray->end()-xendshift,
-            xarray->end()-xendshift + 1,
-            xarray->end()-xendshift - 1,
+            thrust::device_ptr<PetscScalar>(farray + lsize),
+            thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift),
+            thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift + 1),
+            thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift - 1),
             thrust::counting_iterator<int>(fstart) + lsize,
             thrust::constant_iterator<int>(Mx),
             thrust::constant_iterator<PetscScalar>(hx))),
@@ -129,8 +131,8 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     catch (char *all) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
     }
-    ierr = VecCUSPRestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPRestoreArrayWrite(f,&farray);CHKERRQ(ierr);
+    ierr = VecCUDARestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);
+    ierr = VecCUDARestoreArrayWrite(f,&farray);CHKERRQ(ierr);
   } else {
     ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
@@ -180,3 +182,14 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
   return 0;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: cuda
+
+   test:
+      args: -snes_monitor_short -dm_vec_type cuda
+
+TEST*/

@@ -1,0 +1,115 @@
+DM Object: 4 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 5 
+  buffer             = 4 
+  allocated          = 9 
+  nfields registered = 4 
+    [  0]     DMSwarm_pid : Mem. usage       = 7.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 3.60e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2]       viscosity : Mem. usage       = 7.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  3]          strain : Mem. usage       = 7.20e-05 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+  Total mem. usage                           = 1.18e-03 (MB) (collective)
+DMSwarmDataEx: instance=0
+  topology status:        finalized 
+  message lengths status: finalized 
+  packer status status:   finalized 
+  communication status:   finalized 
+  Topology:
+    [0] neighbours: 1 
+    [0]   neighbour[0] = 1 
+    [1] neighbours: 2 
+    [1]   neighbour[0] = 0 
+    [1]   neighbour[1] = 3 
+    [2] neighbours: 0 
+    [3] neighbours: 1 
+    [3]   neighbour[0] = 1 
+  Message lengths:
+    [0] atomic size: 28 
+    [0] >>>>> ( 2 units :: tag = 1 ) >>>>> [1] 
+    [0] <<<<< ( 0 units :: tag = 4 ) <<<<< [1] 
+    [1] atomic size: 28 
+    [1] >>>>> ( 0 units :: tag = 4 ) >>>>> [0] 
+    [1] >>>>> ( 0 units :: tag = 7 ) >>>>> [3] 
+    [1] <<<<< ( 2 units :: tag = 1 ) <<<<< [0] 
+    [1] <<<<< ( 1 units :: tag = 13 ) <<<<< [3] 
+    [2] atomic size: 28 
+    [3] atomic size: 28 
+    [3] >>>>> ( 1 units :: tag = 13 ) >>>>> [1] 
+    [3] <<<<< ( 0 units :: tag = 7 ) <<<<< [1] 
+rank[0] before(5,26) after(3,26)
+rank[1] before(6,26) after(9,26)
+rank[2] before(7,26) after(7,26)
+rank[3] before(8,26) after(7,26)
+Vec Object: DMSwarmSharedField_viscosity 4 MPI processes
+  type: mpi
+Process [0]
+11.5
+11.2
+11.3
+Process [1]
+111.1
+111.2
+111.3
+111.4
+111.5
+111.6
+11.1
+11.4
+311.3
+Process [2]
+211.1
+211.2
+211.3
+211.4
+211.5
+211.6
+211.7
+Process [3]
+311.1
+311.2
+311.8
+311.4
+311.5
+311.6
+311.7
+Vec Object: DMSwarmSharedField_strain 4 MPI processes
+  type: mpi
+Process [0]
+0.024
+0.021
+0.022
+Process [1]
+1.02
+1.021
+1.022
+1.023
+1.024
+1.025
+0.02
+0.023
+3.022
+Process [2]
+2.02
+2.021
+2.022
+2.023
+2.024
+2.025
+2.026
+Process [3]
+3.02
+3.021
+3.027
+3.023
+3.024
+3.025
+3.026

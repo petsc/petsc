@@ -27,7 +27,8 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
   Level: beginner
 
-  Developer Notes:  TS essentially always creates a SNES object even though explicit methods do not use it. This is
+  Developer Notes:
+    TS essentially always creates a SNES object even though explicit methods do not use it. This is
                     unfortunate and should be fixed at some point. The flag snes->usessnes indicates if the
                     particular method does use SNES and regulates if the information about the SNES is printed
                     in TSView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused

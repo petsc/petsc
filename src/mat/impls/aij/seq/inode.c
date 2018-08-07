@@ -5,7 +5,7 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
-static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt *size,PetscInt **ns)
+static PetscErrorCode MatCreateColInode_Private(Mat A,PetscInt *size,PetscInt **ns)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -157,7 +157,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
   n         = A->cmap->n;
 
   /* Create The column_inode for this matrix */
-  ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
+  ierr = MatCreateColInode_Private(A,&nslim_col,&ns_col);CHKERRQ(ierr);
 
   /* allocate space for reformated column_inode structure */
   ierr = PetscMalloc1(nslim_col +1,&tns);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
   n         = A->cmap->n;
 
   /* Create The column_inode for this matrix */
-  ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
+  ierr = MatCreateColInode_Private(A,&nslim_col,&ns_col);CHKERRQ(ierr);
 
   /* allocate space for reformated column_inode structure */
   ierr = PetscMalloc1(nslim_col + 1,&tns);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBoo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = Mat_CreateColInode(A,n,NULL);CHKERRQ(ierr);
+  ierr = MatCreateColInode_Private(A,n,NULL);CHKERRQ(ierr);
   if (!ia) PetscFunctionReturn(0);
 
   if (!blockcompressed) {
@@ -2737,7 +2737,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
   if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
-  if (fshift == -1.0) fshift = 0.0; /* negative fshift indicates do not error on zero diagonal; this code never errors on zero diagonal */
   if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
 
   if (!a->inode.ibdiagvalid) {
@@ -4296,7 +4295,7 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
   if (!a->inode.size) PetscFunctionReturn(0); /* no inodes so return */
   if (a->inode.node_count == m) PetscFunctionReturn(0); /* all inodes are of size 1 */
 
-  ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
+  ierr = MatCreateColInode_Private(A,&nslim_col,&ns_col);CHKERRQ(ierr);
   ierr = PetscMalloc1(((nslim_row>nslim_col) ? nslim_row : nslim_col)+1,&tns);CHKERRQ(ierr);
   ierr = PetscMalloc2(m,&permr,n,&permc);CHKERRQ(ierr);
 
@@ -4356,7 +4355,8 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 
    Level: advanced
 
-   Notes: This routine returns some internal storage information
+   Notes:
+    This routine returns some internal storage information
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.

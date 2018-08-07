@@ -5,27 +5,21 @@ CONFIGDIR := config
 # TESTSRCDIR is always relative to gmakefile.test
 #  This must be before includes
 mkfile_path := $(abspath $(MAKEFILE_LIST))
-TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))src
 
-# If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
-include $(PETSC_ARCH)/lib/petsc/conf/petscvariables
-include ./lib/petsc/conf/variables
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+include $(PETSC_DIR)/lib/petsc/conf/variables
 
-ifeq ($(TESTDIR),)  # Default
-TESTDIR := $(PETSC_ARCH)/tests
-gmakegentest_opts=
-else
-gmakegentest_opts="-t $(TESTDIR)"
-TESTDIR := $(TESTDIR)
-endif
-MODDIR := $(PETSC_ARCH)/include
-TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
+TESTDIR ?= ./$(PETSC_ARCH)/tests
+MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
+TESTLOGFILE = $(TESTDIR)/examples_$(PETSC_ARCH).log
+EXAMPLESDIR := $(TESTSRCDIR)
 
 pkgs := sys vec mat dm ksp snes ts tao
 
-petscconf      := $(PETSC_ARCH)/include/petscconf.h
-petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
-generatedtest  := $(PETSC_ARCH)/lib/petsc/conf/testfiles
+petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
+petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+generatedtest  := $(TESTDIR)/testfiles
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -60,6 +54,9 @@ endif
 ifeq ($(REPLACE),1)
   TESTFLAGS += -m    # Replace results by passing -m to petscdiff
 endif
+ifeq ($(ALT),1)
+  TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
+endif
 ifeq ($(DIFF_NUMBERS),1)
   TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
 endif
@@ -81,7 +78,7 @@ endif
 
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-arch=$(PETSC_ARCH) $(gmakegentest_opts)
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
 -include $(generatedtest)
 
@@ -98,6 +95,8 @@ PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-dir
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 testlangs := c cu cxx F F90
+$(foreach lang, $(testlangs), $(eval \
+  testexe.$(lang) = $(foreach pkg, $(pkgs), $(testsrcs-$(pkg).$(lang):%.$(lang)=$(TESTDIR)/%))))
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
 testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
@@ -107,42 +106,60 @@ testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 $(generatedtest) : $(testsrcs)
 $(testsrcs) :
 
-$(TESTDIR)/%.o : %.c | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
 # Test modules go in a different directory
 $(TESTDIR)/%.o : MODDIR = $(@D)
 FCMOD = cd
-$(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
-	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) -I$(dir $<) $(abspath $<) -o $(abspath $@)
 else
-	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR) $(FC_MODULE_FLAG)$(MODDIR)
 endif
+	-@$(GFORTRAN_DEP_CLEANUP)
 
-$(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
-	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) -I$(dir $<) $(abspath $<) -o $(abspath $@)
 else
-	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR) $(FC_MODULE_FLAG)$(MODDIR)
+endif
+	-@$(GFORTRAN_DEP_CLEANUP)
+
+#   This is a hack to fix a broken gfortran.
+define GFORTRAN_DEP_CLEANUP
+  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | fgrep -q -v : ; then\
+    echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
+    tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
+    mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+  fi
+endef
+
+# link line constructed differently for gmakefile vs gmakefile.test invocation
+ifeq ($(libpetscall),)
+PETSC_TEST_LIB = $(PETSC_LIB)
+else
+PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
 # Test executables
-$(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
+$(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
-$(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
+$(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
-$(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $< $(PETSC_LIB)
+$(testexe.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,CXXLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
@@ -153,7 +170,8 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 test: pre-clean report_tests
 
 pre-clean:
-	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
+	@$(eval STARTTIME := $(shell date +%s))
+	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
 	@touch $(TESTLOGFILE)
 
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
@@ -250,20 +268,25 @@ print-test:
 	-@echo $(TESTTARGETS)
 
 report_tests: $(TESTTARGETS)
-	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(PETSC_ARCH)/tests/counts
+	@$(eval ENDTIME := $(shell date +%s))
+	-@elapsed_time=$$(($(ENDTIME)- $(STARTTIME))) && \
+	$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(TESTDIR)/counts -t 5 -e $${elapsed_time}
 
 # Do not how how to invoke test from makefile
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
 ifeq ($(HASGMAKEFILE),gmakefile)
 helpdeps:=help-make help-targets
 makefile="gmakefile"
+other_help="To see full test help: make -f gmakefile.test help"
 else
 helpdeps:=help-make help-targets help-test
 makefile="gmakefile.test"
+other_help=""
 endif
 
 help: ${helpdeps}
 	-@echo "Above is from: ${helpdeps}"
+	-@echo "${other_help}"
 
 help-make:
 	-@echo
@@ -287,12 +310,17 @@ help-test:
 	-@echo
 	-@echo "Options:"
 	-@echo "  NO_RM=1           Do not remove the executables after running"
-	-@echo "  REPLACE=1         Replace the output in the PETSC_DIR source tree (-m to test scripts)"
+	-@echo "  REPLACE=1         Replace the output in PETSC_DIR source tree (-m to test scripts)"
+	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
-	-@echo "  TESTDIR='tests'   Subdirectory where the tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
+	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
+	-@echo "  FORCE=1           Force SKIP or TODO tests to run"
+	-@echo "  TIMEOUT=<time>    Test timeout limit in seconds (default in config/petsc_harness.sh)"
+	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
+	-@echo "  TESTBASE='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"
 	-@echo "  EXTRA_OPTIONS='<args>'  Add options to scripts (-e to test scripts)"
 	-@echo
@@ -319,6 +347,6 @@ help-test:
 	-@echo "    make -f ${makefile} print VAR=TESTTARGETS search='sys%'"
 	-@echo
 	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/src/sys/examples/tests/ex1'
+	-@echo '    make -f ${makefile} $${PETSC_ARCH}/tests/sys/examples/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
 	-@echo

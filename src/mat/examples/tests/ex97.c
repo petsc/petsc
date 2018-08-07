@@ -38,8 +38,8 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   ierr = VecNorm(Y,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
-  if (norm < 1.e-12 && verbose < 1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference < 1e-12\n",test);CHKERRQ(ierr);
+  if (norm < PETSC_SQRT_MACHINE_EPSILON && verbose < 1) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference < sqrt(eps_machine)\n",test);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference %g\n",test,(double)norm);CHKERRQ(ierr);
   }
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRICES,NULL);CHKERRQ(ierr);
+  ierr = MatSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatSetOperation(B,MATOP_CREATE_SUBMATRICES,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&ms,NULL);CHKERRQ(ierr);
 
   idxrow[0] = ms+1;
@@ -167,3 +167,11 @@ int main(int argc, char *argv[])
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+
+TEST*/

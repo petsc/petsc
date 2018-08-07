@@ -27,3 +27,31 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -myviewer ascii:ex4w1.tmp
+      filter: cat ex4w1.tmp
+      output_file: output/ex4w.out
+
+   test:
+      suffix: 2
+      args: -myviewer ascii:ex4w2.tmp::
+      filter: cat ex4w2.tmp
+      output_file: output/ex4w.out
+
+   test:
+      suffix: 3
+      args: -myviewer ascii:ex4w3.tmp::write
+      filter: cat ex4w3.tmp
+      output_file: output/ex4w.out
+
+   test:
+      suffix: 4
+      args: -myviewer ascii:ex4a1.tmp::append
+      filter: cat ex4a1.tmp
+      output_file: output/ex4a.out
+
+TEST*/

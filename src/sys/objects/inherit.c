@@ -6,16 +6,23 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_LOG)
+PETSC_INTERN PetscObject *PetscObjects;
+PETSC_INTERN PetscInt    PetscObjectsCounts;
+PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
+PETSC_INTERN PetscBool   PetscObjectsLog;
+#endif
+
+#if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects      = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 PetscBool   PetscObjectsLog    = PETSC_FALSE;
 #endif
 
-extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
-extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
-extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
-extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
 /*
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
@@ -82,8 +89,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   PetscFunctionReturn(0);
 }
 
-extern PetscBool      PetscMemoryCollectMaximumUsage;
-extern PetscLogDouble PetscMemoryMaximumUsage;
+PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
+PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
 
 /*
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by
@@ -402,6 +409,56 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
 }
 #endif
 
+/*@
+   PetscObjectSetPrintedOptions - indicate to an object that it should behave as if it has already printed the help for its options
+
+   Input Parameters:
+.  obj  - the PetscObject
+
+   Level: developer
+
+   Developer Notes:
+   This is used, for example to prevent sequential objects that are created from a parallel object; such as the KSP created by
+   PCBJACOBI from all printing the same help messages to the screen
+
+.seealso: PetscOptionsInsert()
+@*/
+PetscErrorCode PetscObjectSetPrintedOptions(PetscObject obj)
+{
+  PetscFunctionBegin;
+  obj->optionsprinted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscObjectInheritPrintedOptions - If the child object is not on the rank 0 process of the parent object and the child is sequential then the child gets it set.
+
+   Input Parameters:
++  pobj - the parent object
+-  obj  - the PetscObject
+
+   Level: developer
+
+   Developer Notes:
+   This is used, for example to prevent sequential objects that are created from a parallel object; such as the KSP created by
+   PCBJACOBI from all printing the same help messages to the screen
+
+   This will not handle more complicated situations like with GASM where children may live on any subset of the parent's processes and overlap
+
+.seealso: PetscOptionsInsert(), PetscObjectSetPrintedOptions()
+@*/
+PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    prank,size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(pobj->comm,&prank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(obj->comm,&size);CHKERRQ(ierr);
+  if (size == 1 && prank > 0) obj->optionsprinted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*@C
     PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.
 
@@ -488,7 +545,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 }
 
 
-/*@
+/*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
    referenced by another PetscObject. This increases the reference
    count for that object by one.
@@ -512,7 +569,7 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectGetReference - Gets the current reference count for
    any PETSc object.
 
@@ -538,7 +595,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectDereference - Indicates to any PetscObject that it is being
    referenced by one less PetscObject. This decreases the reference
    count for that object by one.
@@ -549,7 +606,8 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 .  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectDereference((PetscObject)mat);
 
-   Notes: PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
+   Notes:
+    PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
 
    Level: advanced
 
@@ -677,6 +735,7 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
+  if (obj == ptr) SETERRQ(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

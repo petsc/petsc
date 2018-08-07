@@ -93,6 +93,42 @@ static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
+{
+  PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  win->written = PETSC_TRUE;
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\fill [bottom color=%s,top color=%s] (%g,%g) rectangle (%g,%g);\n",TikZColorMap(c1),TikZColorMap(c4),XTRANS(draw,xl),YTRANS(draw,yl),XTRANS(draw,xr),YTRANS(draw,yr));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw,PetscReal x1,PetscReal y1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
+{
+  PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  win->written = PETSC_TRUE;
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\fill [color=%s] (%g,%g) -- (%g,%g) -- (%g,%g) -- cycle;\n",TikZColorMap(c1),XTRANS(draw,x1),YTRANS(draw,y1),XTRANS(draw,x2),YTRANS(draw,y2),XTRANS(draw,x3),YTRANS(draw,y3));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw,PetscReal x,PetscReal y,PetscReal a,PetscReal b,int c)
+{
+  PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
+  PetscReal      rx,ry;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  win->written = PETSC_TRUE;
+  rx = a/2*(draw->port_xr-draw->port_xl)/(draw->coor_xr-draw->coor_xl);
+  ry = b/2*(draw->port_yr-draw->port_yl)/(draw->coor_yr-draw->coor_yl);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\fill [color=%s] (%g,%g) circle [x radius=%g,y radius=%g];\n",TikZColorMap(c),XTRANS(draw,x),YTRANS(draw,y),rx,ry);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -161,9 +197,9 @@ static struct _PetscDrawOps DvOps = { 0,
                                       PetscDrawStringGetSize_TikZ,
                                       0,
                                       PetscDrawClear_TikZ,
-                                      0,
-                                      0,
-                                      0,
+                                      PetscDrawRectangle_TikZ,
+                                      PetscDrawTriangle_TikZ,
+                                      PetscDrawEllipse_TikZ,
                                       0,
                                       0,
                                       0,

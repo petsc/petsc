@@ -102,3 +102,20 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+      build:
+         requires: hdf5
+
+      test:
+         nsize: 4
+
+      test:
+         nsize: 4
+         suffix: 2
+         args: -ndof 2
+         output_file: output/ex9_1.out
+
+TEST*/

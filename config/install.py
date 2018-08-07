@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os, re, shutil, sys
 
-if os.environ.has_key('PETSC_DIR'):
+if 'PETSC_DIR' in os.environ:
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
   fd = file(os.path.join('lib','petsc','conf','petscvariables'))
@@ -10,7 +11,7 @@ else:
   PETSC_DIR = a.split('=')[1][0:-1]
   fd.close()
 
-if os.environ.has_key('PETSC_ARCH'):
+if 'PETSC_ARCH' in os.environ:
   PETSC_ARCH = os.environ['PETSC_ARCH']
 else:
   fd = file(os.path.join('lib','petsc','conf','petscvariables'))
@@ -18,7 +19,7 @@ else:
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()
 
-print '*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***'
+print('*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***')
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
@@ -43,15 +44,16 @@ class Installer(script.Script):
   def setupHelp(self, help):
     import nargs
     script.Script.setupHelp(self, help)
-    help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, None, 'Destination Directory for install'))
+    help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, '', 'Destination Directory for install'))
     return
 
 
   def setupModules(self):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
-    self.arch          = self.framework.require('PETSc.options.arch',        None)
-    self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
+    self.arch          = self.framework.require('PETSc.options.arch',          None)
+    self.petscdir      = self.framework.require('PETSc.options.petscdir',      None)
     self.compilers     = self.framework.require('config.compilers',            None)
+    self.mpi           = self.framework.require('config.packages.MPI',         None)
     return
 
   def setup(self):
@@ -62,25 +64,26 @@ class Installer(script.Script):
 
   def setupDirectories(self):
     self.rootDir    = self.petscdir.dir
-    self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
+    self.destDir    = os.path.abspath(self.argDB['destDir']+self.installDir)
     self.arch       = self.arch.arch
     self.archDir           = os.path.join(self.rootDir, self.arch)
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
     self.rootConfDir       = os.path.join(self.rootDir, 'lib','petsc','conf')
     self.archConfDir       = os.path.join(self.rootDir, self.arch, 'lib','petsc','conf')
-    self.rootBinDir        = os.path.join(self.rootDir, 'bin')
+    self.rootBinDir        = os.path.join(self.rootDir, 'lib','petsc','bin')
     self.archBinDir        = os.path.join(self.rootDir, self.arch, 'bin')
     self.archLibDir        = os.path.join(self.rootDir, self.arch, 'lib')
     self.destIncludeDir    = os.path.join(self.destDir, 'include')
     self.destConfDir       = os.path.join(self.destDir, 'lib','petsc','conf')
     self.destLibDir        = os.path.join(self.destDir, 'lib')
-    self.destBinDir        = os.path.join(self.destDir, 'bin')
+    self.destBinDir        = os.path.join(self.destDir, 'lib','petsc','bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
-    self.installBinDir     = os.path.join(self.installDir, 'bin')
+    self.installBinDir     = os.path.join(self.installDir, 'lib','petsc','bin')
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
+    self.rootSrcDir        = os.path.join(self.rootDir, 'src')
 
     self.ranlib      = self.compilers.RANLIB
     self.arLibSuffix = self.compilers.AR_LIB_SUFFIX
@@ -88,34 +91,34 @@ class Installer(script.Script):
 
   def checkPrefix(self):
     if not self.installDir:
-      print '********************************************************************'
-      print 'PETSc is built without prefix option. So "make install" is not appropriate.'
-      print 'If you need a prefix install of PETSc - rerun configure with --prefix option.'
-      print '********************************************************************'
+      print('********************************************************************')
+      print('PETSc is built without prefix option. So "make install" is not appropriate.')
+      print('If you need a prefix install of PETSc - rerun configure with --prefix option.')
+      print('********************************************************************')
       sys.exit(1)
     return
 
   def checkDestdir(self):
     if os.path.exists(self.destDir):
       if os.path.samefile(self.destDir, self.rootDir):
-        print '********************************************************************'
-        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Incorrect prefix usage. Specified destDir same as current PETSC_DIR')
+        print('********************************************************************')
         sys.exit(1)
       if os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
-        print '********************************************************************'
-        print 'Incorrect prefix usage. Specified destDir same as current PETSC_DIR/PETSC_ARCH'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Incorrect prefix usage. Specified destDir same as current PETSC_DIR/PETSC_ARCH')
+        print('********************************************************************')
         sys.exit(1)
       if not os.path.isdir(os.path.realpath(self.destDir)):
-        print '********************************************************************'
-        print 'Specified destDir', self.destDir, 'is not a directory. Cannot proceed!'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Specified destDir', self.destDir, 'is not a directory. Cannot proceed!')
+        print('********************************************************************')
         sys.exit(1)
       if not os.access(self.destDir, os.W_OK):
-        print '********************************************************************'
-        print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"')
+        print('********************************************************************')
         sys.exit(1)
     return
 
@@ -126,7 +129,7 @@ class Installer(script.Script):
     if not os.path.exists(dst):
       os.makedirs(dst)
     elif not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
     srcname = src
     dstname = os.path.join(dst, os.path.basename(src))
     try:
@@ -136,22 +139,13 @@ class Installer(script.Script):
       else:
         copyFunc(srcname, dstname)
         copies.append((srcname, dstname))
-    except (IOError, os.error), why:
+    except (IOError, os.error) as why:
       errors.append((srcname, dstname, str(why)))
-    except shutil.Error, err:
+    except shutil.Error as err:
       errors.extend((srcname,dstname,str(err.args[0])))
     if errors:
-      raise shutil.Error, errors
+      raise shutil.Error(errors)
     return copies
-
-  def copyexamplefiles(self, src, dst, copyFunc = shutil.copy2):
-    """Copies all files, but not directories in a single file    """
-    names  = os.listdir(src)
-    for name in names:
-      if not name.endswith('.html'):
-        srcname = os.path.join(src, name)
-        if os.path.isfile(srcname):
-           self.copyfile(srcname,dst)
 
   def fixExamplesMakefile(self, src):
     '''Change ././${PETSC_ARCH} in makefile in root petsc directory with ${PETSC_DIR}'''
@@ -164,23 +158,14 @@ class Installer(script.Script):
     newlines+='PETSC_DIR='+self.installDir+'\n'
     newlines+='PETSC_ARCH=\n'
     for line in alllines.split('\n')[1:]:
-      if line.startswith('#'):
-        newlines+=line+'\n'
-      elif line.startswith('TESTLOGFILE'):
+      if line.startswith('TESTLOGFILE'):
         newlines+='TESTLOGFILE = $(TESTDIR)/examples-install.log\n'
       elif line.startswith('CONFIGDIR'):
         newlines+='CONFIGDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples/config\n'
-        newlines+='EXAMPLESDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples\n'
       elif line.startswith('$(generatedtest)') and 'petscvariables' in line:
         newlines+='all: test\n\n'+line+'\n'
-      elif line.startswith('$(TESTDIR)/'):
-        newlines+=re.sub(' %.',' $(EXAMPLESDIR)/%.',line)+'\n'
-      elif line.startswith('include ./lib/petsc/conf/variables'):
-        newlines+=re.sub('include ./lib/petsc/conf/variables',
-                         'include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/variables',
-                         line)+'\n'
       else:
-        newlines+=re.sub('PETSC_ARCH','PETSC_DIR)/$(PETSC_ARCH',line)+'\n'
+        newlines+=line+'\n'
     newFile = open(src, 'w')
     newFile.write(newlines)
     newFile.close()
@@ -190,45 +175,27 @@ class Installer(script.Script):
     """Recursively copy the examples directories
     """
     if not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
 
-    self.copyfile('gmakefile.test',dst)
+    self.copies.extend(self.copyfile('gmakefile.test',dst))
     newConfigDir=os.path.join(dst,'config')  # Am not renaming at present
     if not os.path.isdir(newConfigDir): os.mkdir(newConfigDir)
     testConfFiles="gmakegentest.py gmakegen.py testparse.py example_template.py".split()
-    testConfFiles+="petsc_harness.sh report_tests.py watchtime.sh".split()
+    testConfFiles+="petsc_harness.sh report_tests.py".split()
     testConfFiles+=["cmakegen.py"]
     for tf in testConfFiles:
-      self.copyfile(os.path.join('config',tf),newConfigDir)
+      self.copies.extend(self.copyfile(os.path.join('config',tf),newConfigDir))
     return
 
   def copyExamples(self, src, dst):
-    """Recursively copy the examples directories
+    """copy the examples directories
     """
-    if not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+    for root, dirs, files in os.walk(src, topdown=False):
+      if not os.path.basename(root) == "examples": continue
+      self.copies.extend(self.copytree(root, root.replace(src,dst)))
+    return
 
-    names  = os.listdir(src)
-    nret2 = 0
-    for name in names:
-      srcname = os.path.join(src, name)
-      dstname = os.path.join(dst, name)
-      if not name.startswith('arch') and os.path.isdir(srcname) and os.path.isfile(os.path.join(srcname,'makefile')):
-        os.mkdir(dstname)
-        nret = self.copyExamples(srcname,dstname)
-        if name == 'tests' or name == 'tutorials':
-          self.copyexamplefiles(srcname,dstname)
-          if os.path.isdir(os.path.join(srcname,'output')):
-            os.mkdir(os.path.join(dstname,'output'))
-            self.copyexamplefiles(os.path.join(srcname,'output'),os.path.join(dstname,'output'))
-          nret = 1
-        if not nret:
-          # prune directory branches that don't have examples under them
-          os.rmdir(dstname)
-        nret2 = nret + nret2
-    return nret2
-
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= ['.DSYM','.o','.pyc'], recurse = 1):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
        The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
@@ -246,7 +213,7 @@ class Installer(script.Script):
     if not os.path.exists(dst):
       os.makedirs(dst)
     elif not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+      raise shutil.Error('Destination is not a directory')
     errors = []
     for name in names:
       srcname = os.path.join(src, name)
@@ -255,28 +222,28 @@ class Installer(script.Script):
         if symlinks and os.path.islink(srcname):
           linkto = os.readlink(srcname)
           os.symlink(linkto, dstname)
-        elif os.path.isdir(srcname):
-          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude))
-        elif not os.path.basename(srcname) in exclude:
+        elif os.path.isdir(srcname) and recurse and not os.path.basename(srcname) in exclude:
+          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude, exclude_ext = exclude_ext))
+        elif os.path.isfile(srcname) and not os.path.basename(srcname) in exclude and os.path.splitext(name)[1] not in exclude_ext :
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
-      except (IOError, os.error), why:
+      except (IOError, os.error) as why:
         errors.append((srcname, dstname, str(why)))
       # catch the Error from the recursive copytree so that we can
       # continue with other files
-      except shutil.Error, err:
+      except shutil.Error as err:
         errors.extend((srcname,dstname,str(err.args[0])))
     try:
       shutil.copystat(src, dst)
-    except OSError, e:
+    except OSError as e:
       if WindowsError is not None and isinstance(e, WindowsError):
         # Copying file access times may fail on Windows
         pass
       else:
         errors.extend((src, dst, str(e)))
     if errors:
-      raise shutil.Error, errors
+      raise shutil.Error(errors)
     return copies
 
 
@@ -315,49 +282,50 @@ class Installer(script.Script):
     # Could use the Python AST to do this
     f.write('#!'+sys.executable+'\n')
     f.write('import os\n')
-
-    f.write('copies = '+repr(self.copies).replace(self.destDir,self.installDir))
+    f.write('prefixdir = "'+self.installDir+'"\n')
+    files = [dst.replace(self.destDir,self.installDir) for src, dst in self.copies]
+    files.append(uninstallscript.replace(self.destDir,self.installDir))
+    f.write('files = '+repr(files))
     f.write('''
-for src, dst in copies:
-  try:
-    os.remove(dst)
-  except:
-    pass
-''')
-    #TODO: need to delete libXXX.YYY.dylib.dSYM directory on Mac
-    dirs = [os.path.join('include','petsc','finclude'),os.path.join('include','petsc','mpiuni'),os.path.join('include','petsc','private'),os.path.join('bin'),os.path.join('lib','petsc','conf')]
-    newdirs = []
-    for dir in dirs: newdirs.append(os.path.join(self.installDir,dir))
-    f.write('dirs = '+str(newdirs))
-    f.write('''
-for dir in dirs:
-  import shutil
-  try:
-    shutil.rmtree(dir)
-  except:
-    pass
+for file in files:
+  if os.path.exists(file) or os.path.islink(file):
+    os.remove(file)
+    dir = os.path.dirname(file)
+    while dir not in [os.path.dirname(prefixdir),'/']:
+      try: os.rmdir(dir)
+      except: break
+      dir = os.path.dirname(dir)
 ''')
     f.close()
-    os.chmod(uninstallscript,0744)
+    os.chmod(uninstallscript,0o744)
     return
 
   def installIncludes(self):
-    # TODO: should exclude petsc-mpi.uni except for uni builds
-    # TODO: should exclude petsc/finclude except for fortran builds
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = ['makefile']))
+    exclude = ['makefile']
+    if not hasattr(self.compilers.setCompilers, 'FC'):
+      exclude.append('finclude')
+    if not self.mpi.usingMPIUni:
+      exclude.append('mpiuni')
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = exclude))
     self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
   def installConf(self):
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp']))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','files','testfiles','RDict.db']))
     return
 
   def installBin(self):
-    self.copies.extend(self.copytree(os.path.join(self.rootBinDir), os.path.join(self.destBinDir)))
-    # TODO: should copy over petsc-mpiexec.uni only for uni builds
-    self.copies.extend(self.copyfile(os.path.join(self.rootBinDir,'petsc-mpiexec.uni'), self.destBinDir))
-    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = ['bfort','bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']))
+    exclude = ['bfort','bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']
+    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = exclude ))
+    exclude = ['maint']
+    if not self.mpi.usingMPIUni:
+      exclude.append('petsc-mpiexec.uni')
+    self.setCompilers.pushLanguage('C')
+    if not self.setCompilers.isWindows(self.setCompilers.getCompiler(),self.log):
+      exclude.append('win32fe')
+    self.setCompilers.popLanguage()
+    self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir, exclude = exclude ))
     return
 
   def installShare(self):
@@ -366,7 +334,8 @@ for dir in dirs:
     if os.path.exists(examplesdir):
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
-    self.copyExamples(self.rootDir,examplesdir)
+    os.mkdir(os.path.join(examplesdir,'src'))
+    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
     self.copyConfig(self.rootDir,examplesdir)
     self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return
@@ -382,9 +351,7 @@ for dir in dirs:
         pass
       os.symlink(linkto, dst)
       return
-    # Do not install object files
-    if not os.path.splitext(src)[1] == '.o':
-      shutil.copy2(src, dst)
+    shutil.copy2(src, dst)
     if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
@@ -397,27 +364,28 @@ for dir in dirs:
     return
 
   def installLib(self):
-    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR', 'sowing']))
+    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
+    self.copies.extend(self.copytree(os.path.join(self.archLibDir,'pkgconfig'), os.path.join(self.destLibDir,'pkgconfig'), copyFunc = self.copyLib, exclude = ['.DIR'],recurse = 0))
     return
 
 
   def outputInstallDone(self):
-    print '''\
+    print('''\
 ====================================
 Install complete.
 Now to check if the libraries are working do (in current directory):
 make PETSC_DIR=%s PETSC_ARCH="" test
 ====================================\
-''' % (self.installDir)
+''' % (self.installDir))
     return
 
   def outputDestDirDone(self):
-    print '''\
+    print('''\
 ====================================
 Copy to DESTDIR %s is now complete.
 Before use - please copy/install over to specified prefix: %s
 ====================================\
-''' % (self.destDir,self.installDir)
+''' % (self.destDir,self.installDir))
     return
 
   def runsetup(self):
@@ -429,16 +397,16 @@ Before use - please copy/install over to specified prefix: %s
 
   def runcopy(self):
     if self.destDir == self.installDir:
-      print '*** Installing PETSc at prefix location:',self.destDir, ' ***'
+      print('*** Installing PETSc at prefix location:',self.destDir, ' ***')
     else:
-      print '*** Copying PETSc to DESTDIR location:',self.destDir, ' ***'
+      print('*** Copying PETSc to DESTDIR location:',self.destDir, ' ***')
     if not os.path.exists(self.destDir):
       try:
         os.makedirs(self.destDir)
       except:
-        print '********************************************************************'
-        print 'Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"'
-        print '********************************************************************'
+        print('********************************************************************')
+        print('Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"')
+        print('********************************************************************')
         sys.exit(1)
     self.installIncludes()
     self.installConf()

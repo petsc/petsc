@@ -9,39 +9,41 @@
 #include <../src/sys/classes/draw/impls/x/ximpl.h>
 #include <X11/Xatom.h>
 
-static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = {"white",
-                                                            "black",
-                                                            "red",
-                                                            "green",
-                                                            "cyan",
-                                                            "blue",
-                                                            "magenta",
-                                                            "aquamarine",
-                                                            "forestgreen",
-                                                            "orange",
-                                                            "violet",
-                                                            "brown",
-                                                            "pink",
-                                                            "coral",
-                                                            "gray",
-                                                            "yellow",
-                                                            "gold",
-                                                            "lightpink",
-                                                            "mediumturquoise",
-                                                            "khaki",
-                                                            "dimgray",
-                                                            "yellowgreen",
-                                                            "skyblue",
-                                                            "darkgreen",
-                                                            "navyblue",
-                                                            "sandybrown",
-                                                            "cadetblue",
-                                                            "powderblue",
-                                                            "deeppink",
-                                                            "thistle",
-                                                            "limegreen",
-                                                            "lavenderblush",
-                                                            "plum"};
+static const char *colornames[PETSC_DRAW_BASIC_COLORS] = {
+  "white",
+  "black",
+  "red",
+  "green",
+  "cyan",
+  "blue",
+  "magenta",
+  "aquamarine",
+  "forestgreen",
+  "orange",
+  "violet",
+  "brown",
+  "pink",
+  "coral",
+  "gray",
+  "yellow",
+  "gold",
+  "lightpink",
+  "mediumturquoise",
+  "khaki",
+  "dimgray",
+  "yellowgreen",
+  "skyblue",
+  "darkgreen",
+  "navyblue",
+  "sandybrown",
+  "cadetblue",
+  "powderblue",
+  "deeppink",
+  "thistle",
+  "limegreen",
+  "lavenderblush",
+  "plum"
+};
 
 /*
    Sets up a color map for a display. This is shared by all the windows
@@ -62,15 +64,15 @@ static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = {"white",
 
 */
 static Colormap          gColormap = 0;
-static PetscDrawXiPixVal gCmapping[256];
-static unsigned char     gCpalette[256][3];
+static PetscDrawXiPixVal gCmapping[PETSC_DRAW_MAXCOLOR];
+static unsigned char     gCpalette[PETSC_DRAW_MAXCOLOR][3];
 
 PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  int            i,k,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  unsigned char  R[256-PETSC_DRAW_BASIC_COLORS];
-  unsigned char  G[256-PETSC_DRAW_BASIC_COLORS];
-  unsigned char  B[256-PETSC_DRAW_BASIC_COLORS];
+  int            i,k,ncolors = PETSC_DRAW_MAXCOLOR - PETSC_DRAW_BASIC_COLORS;
+  unsigned char  R[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
+  unsigned char  G[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
+  unsigned char  B[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
   XColor         colordef,ecolordef;
   PetscBool      fast = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -114,15 +116,15 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   used so far; this is to allow us to try to reuse as much of the current
   colormap as possible.
 */
-static PetscBool cmap_pixvalues_used[256];
+static PetscBool cmap_pixvalues_used[PETSC_DRAW_MAXCOLOR];
 static int       cmap_base = 0;
 
 PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  int            found,i,k,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  unsigned char  R[256-PETSC_DRAW_BASIC_COLORS];
-  unsigned char  G[256-PETSC_DRAW_BASIC_COLORS];
-  unsigned char  B[256-PETSC_DRAW_BASIC_COLORS];
+  int            found,i,k,ncolors = PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS;
+  unsigned char  R[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
+  unsigned char  G[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
+  unsigned char  B[PETSC_DRAW_MAXCOLOR-PETSC_DRAW_BASIC_COLORS];
   Colormap       defaultmap = DefaultColormap(display,screen);
   XColor         colordef;
   PetscBool      fast = PETSC_FALSE;
@@ -134,7 +136,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 
   cmap_base = 0;
 
-  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = PetscMemzero(cmap_pixvalues_used,sizeof(cmap_pixvalues_used));CHKERRQ(ierr);
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
@@ -142,7 +144,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
     /* try to allocate the color in the default-map */
     found = XAllocColor(display,defaultmap,&colordef);
     /* use it, if it it exists and is not already used in the new colormap */
-    if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
+    if (found && colordef.pixel < PETSC_DRAW_MAXCOLOR  && !cmap_pixvalues_used[colordef.pixel]) {
       cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
       /* otherwise search for the next available slot */
     } else {
@@ -170,7 +172,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
       /* try to allocate the color in the default-map */
       found = XAllocColor(display,defaultmap,&colordef);
       /* use it, if it it exists and is not already used in the new colormap */
-      if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
+      if (found && colordef.pixel < PETSC_DRAW_MAXCOLOR  && !cmap_pixvalues_used[colordef.pixel]) {
         cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
         /* otherwise search for the next available slot */
       } else {
@@ -232,7 +234,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)
     ierr = PetscDrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap     = gColormap;
-  XiWin->cmapsize = fast ? PETSC_DRAW_BASIC_COLORS : 256;
+  XiWin->cmapsize = fast ? PETSC_DRAW_BASIC_COLORS : PETSC_DRAW_MAXCOLOR;
   ierr = PetscMemcpy(XiWin->cmapping,gCmapping,sizeof(XiWin->cmapping));CHKERRQ(ierr);
   ierr = PetscMemcpy(XiWin->cpalette,gCpalette,sizeof(XiWin->cpalette));CHKERRQ(ierr);
   XiWin->background = XiWin->cmapping[PETSC_DRAW_WHITE];
@@ -289,18 +291,18 @@ PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
 /*
    Get RGB color entries out of the X colormap
 */
-PetscErrorCode PetscDrawXiGetPalette(PetscDraw_X *XiWin,unsigned char palette[256][3])
+PetscErrorCode PetscDrawXiGetPalette(PetscDraw_X *XiWin,unsigned char palette[PETSC_DRAW_MAXCOLOR][3])
 {
   int    k;
-  XColor colordef[256];
+  XColor colordef[PETSC_DRAW_MAXCOLOR];
 
   PetscFunctionBegin;
-  for (k=0; k<256; k++) {
+  for (k=0; k<PETSC_DRAW_MAXCOLOR; k++) {
     colordef[k].pixel = XiWin->cmapping[k];
     colordef[k].flags = DoRed|DoGreen|DoBlue;
   }
-  XQueryColors(XiWin->disp,XiWin->cmap,colordef,256);
-  for (k=0; k<256; k++) {
+  XQueryColors(XiWin->disp,XiWin->cmap,colordef,PETSC_DRAW_MAXCOLOR);
+  for (k=0; k<PETSC_DRAW_MAXCOLOR; k++) {
     palette[k][0] = (unsigned char)(colordef[k].red   >> 8);
     palette[k][1] = (unsigned char)(colordef[k].green >> 8);
     palette[k][2] = (unsigned char)(colordef[k].blue  >> 8);

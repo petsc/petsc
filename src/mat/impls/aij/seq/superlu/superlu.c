@@ -50,6 +50,7 @@ typedef struct {
   Mat               A_dup;
   PetscScalar       *rhs_dup;
   GlobalLU_t        Glu;
+  PetscBool         needconversion;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscBool CleanUpSuperLU;
@@ -58,7 +59,7 @@ typedef struct {
 /*
     Utility function
 */
-static PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_SuperLU(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU       *lu= (Mat_SuperLU*)A->data;
   PetscErrorCode    ierr;
@@ -94,7 +95,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU       *lu = (Mat_SuperLU*)A->data;
   const PetscScalar *barray;
-  PetscScalar       *xarray;  
+  PetscScalar       *xarray;
   PetscErrorCode    ierr;
   PetscInt          info,i,n;
   PetscReal         ferr,berr;
@@ -216,7 +217,7 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
-    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    ierr = VecSetInf(x);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -233,7 +234,7 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
-    ierr = VecSetInf(x);CHKERRQ(ierr); 
+    ierr = VecSetInf(x);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -257,9 +258,10 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A);
-    if (lu->options.Equil) {
+    if (lu->A_dup) {
       ierr = MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
+
     if (lu->lwork >= 0) {
       PetscStackCall("SuperLU:Destroy_SuperNode_Matrix",Destroy_SuperNode_Matrix(&lu->L));
       PetscStackCall("SuperLU:Destroy_CompCol_Matrix",Destroy_CompCol_Matrix(&lu->U));
@@ -270,7 +272,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
   /* Create the SuperMatrix for lu->A=A^T:
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
-  if (lu->options.Equil) {
+  if (lu->A_dup) {
     aa = (Mat_SeqAIJ*)(lu->A_dup)->data;
   } else {
     aa = (Mat_SeqAIJ*)(A)->data;
@@ -344,7 +346,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     if (lu->options.ConditionNumber) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);CHKERRQ(ierr);
     }
-  } else if (sinfo > 0) { 
+  } else if (sinfo > 0) {
     if (A->erroriffailure) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
     } else {
@@ -354,7 +356,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
         }
         ierr = PetscInfo2(F,"Number of zero pivots %D, ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol);CHKERRQ(ierr);
       } else if (sinfo == lu->A.ncol + 1) {
-        /* 
+        /*
          U is nonsingular, but RCOND is less than machine
  		      precision, meaning that the matrix is singular to
  		      working precision. Nevertheless, the solution and
@@ -415,7 +417,7 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -431,7 +433,7 @@ static PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_SuperLU(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -458,12 +460,22 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 */
 static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SuperLU *lu = (Mat_SuperLU*)(F->data);
+  Mat_SuperLU    *lu = (Mat_SuperLU*)(F->data);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   lu->flg                 = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU      = PETSC_TRUE;
   F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
+
+  /* if we are here, the nonzero pattern has changed unless the user explicitly called MatLUFactorSymbolic */
+  ierr = MatDestroy(&lu->A_dup);CHKERRQ(ierr);
+  if (lu->needconversion) {
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&lu->A_dup);CHKERRQ(ierr);
+  }
+  if (lu->options.Equil == YES && !lu->A_dup) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
+    ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -505,7 +517,7 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU;
@@ -518,7 +530,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
 
-  Use -pc_type lu -pc_factor_mat_solver_package superlu to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type superlu to use this direct solver
 
   Options Database Keys:
 + -mat_superlu_equil <FALSE>            - Equil (None)
@@ -539,11 +551,12 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 . -mat_superlu_ilu_norm <0>             - ILU_Norm (None)
 - -mat_superlu_ilu_milu <0>             - ILU_MILU (None)
 
-   Notes: Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
+   Notes:
+    Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 
    Level: beginner
 
-.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
 M*/
 
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
@@ -641,10 +654,6 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   ierr = PetscOptionsInt("-mat_superlu_ilu_milu","ILU_MILU","None",lu->options.ILU_MILU,&indx,&flg);CHKERRQ(ierr);
   if (flg) lu->options.ILU_MILU = (milu_t)indx;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (lu->options.Equil == YES) {
-    /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
-    ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr);
-  }
 
   /* Allocate spaces (notice sizes are for the transpose) */
   ierr = PetscMalloc1(m,&lu->etree);CHKERRQ(ierr);
@@ -672,7 +681,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
 #endif
 #endif
 
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_superlu);CHKERRQ(ierr);
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->data  = lu;
 
@@ -680,12 +689,26 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void)
+static PetscErrorCode MatGetFactor_seqsell_superlu(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat_SuperLU    *lu;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetFactor_seqaij_superlu(A,ftype,F);CHKERRQ(ierr);
+  lu   = (Mat_SuperLU*)((*F)->data);
+  lu->needconversion = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_LU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_seqsell_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQSELL,MAT_FACTOR_ILU,MatGetFactor_seqsell_superlu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

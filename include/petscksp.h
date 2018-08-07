@@ -15,7 +15,8 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
   Concepts: Krylov methods
 
-        Notes: When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
+        Notes:
+    When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
        KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy(), KSPCG, KSPGMRES
@@ -36,6 +37,7 @@ typedef const char* KSPType;
 #define KSPGROPPCG    "groppcg"
 #define KSPPIPECG     "pipecg"
 #define KSPPIPECGRR   "pipecgrr"
+#define KSPPIPELCG     "pipelcg"
 #define   KSPCGNE       "cgne"
 #define   KSPCGNASH     "nash"
 #define   KSPCGSTCG     "stcg"
@@ -134,10 +136,12 @@ PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCKSPSetKSP(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetSubKSP(PC,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
@@ -348,7 +352,8 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match petsc/finclude/petscksp.h
+   Notes:
+    this must match petsc/finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -407,9 +412,11 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Level: beginner
 
-   Notes: See KSPGetConvergedReason() for explanation of each value
+   Notes:
+    See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match petsc/finclude/petscksp.h
+   Developer Notes:
+    this must match petsc/finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -545,7 +552,8 @@ M*/
 
    Level: beginner
 
-     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force
+     Notes:
+    This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force
   the PCICC preconditioner to generate a positive definite preconditioner
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
@@ -559,7 +567,8 @@ M*/
 
    Level: beginner
 
-    Notes: Run with -ksp_error_if_not_converged to stop the program when the error is detected and print an error message with details.
+    Notes:
+    Run with -ksp_error_if_not_converged to stop the program when the error is detected and print an error message with details.
 
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
@@ -695,6 +704,33 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementGetPmat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchurComplementAinvType,MatReuse,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
+PETSC_EXTERN PetscErrorCode MatLMVMAllocate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatLMVMResetShift(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMClearJ0(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0(Mat, Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Scale(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Diag(Mat, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0PC(Mat, PC);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0KSP(Mat, KSP);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Fwd(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatSymBrdnSetDelta(Mat, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

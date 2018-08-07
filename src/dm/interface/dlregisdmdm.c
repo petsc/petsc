@@ -1,6 +1,7 @@
 
+#include <petscao.h>
 #include <petsc/private/dmlabelimpl.h>
-#include <petsc/private/dmdaimpl.h>
+#include <petsc/private/dmfieldimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/petscdsimpl.h>
 #include <petsc/private/petscfeimpl.h>
@@ -32,6 +33,7 @@ PetscErrorCode  DMFinalizePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 #endif
 
 /*@C
@@ -47,8 +49,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
 PetscErrorCode  DMInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -61,6 +62,7 @@ PetscErrorCode  DMInitializePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
+  ierr = MatRegister(MATHYPRESSTRUCT, MatCreate_HYPRESStruct);CHKERRQ(ierr);
 #endif
   ierr = PetscSectionSymRegister(PETSCSECTIONSYMLABEL,PetscSectionSymCreate_Label);CHKERRQ(ierr);
 
@@ -75,16 +77,14 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
-
-  ierr = PetscLogEventRegister("Mesh Partition",         PETSCPARTITIONER_CLASSID,&PETSCPARTITIONER_Partition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistLabels",       DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistribSF",        DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistribOL",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistSF",           DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistOvrlp",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistField",        DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistData",         DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterpSF",         DM_CLASSID,&DMPLEX_InterpolateSF);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexInjectorFE",       DM_CLASSID,&DMPLEX_InjectorFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh);CHKERRQ(ierr);
-  
+
   ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin);CHKERRQ(ierr);
@@ -113,21 +113,21 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes);CHKERRQ(ierr);
   
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("dm",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);}
   }
+
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("dm",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(DM_CLASSID);CHKERRQ(ierr);}
   }
+
+  ierr = DMPlexGenerateRegisterAll();CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMPlexGenerateRegisterDestroy);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -171,8 +171,7 @@ PetscErrorCode PetscFEFinalizePackage(void)
 PetscErrorCode PetscFEInitializePackage(void)
 {
   char           logList[256];
-  char          *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -183,24 +182,24 @@ PetscErrorCode PetscFEInitializePackage(void)
   ierr = PetscClassIdRegister("Linear Space", &PETSCSPACE_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Dual Space",   &PETSCDUALSPACE_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("FE Space",     &PETSCFE_CLASSID);CHKERRQ(ierr);
-
   /* Register Constructors */
   ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
   ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
   ierr = PetscFERegisterAll();CHKERRQ(ierr);
   /* Register Events */
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("fe",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscLogEventDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("fe",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -242,8 +241,7 @@ PetscErrorCode PetscFVFinalizePackage(void)
 PetscErrorCode PetscFVInitializePackage(void)
 {
   char           logList[256];
-  char          *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -253,26 +251,26 @@ PetscErrorCode PetscFVInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("FV Space", &PETSCFV_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Limiter",  &PETSCLIMITER_CLASSID);CHKERRQ(ierr);
-
   /* Register Constructors */
   ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscInfoDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscInfoDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("fv",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("limiter",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscLogEventDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscLogEventDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("fv",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("limiter",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -312,8 +310,7 @@ PetscErrorCode PetscDSFinalizePackage(void)
 PetscErrorCode PetscDSInitializePackage(void)
 {
   char           logList[256];
-  char          *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -322,22 +319,22 @@ PetscErrorCode PetscDSInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Discrete System", &PETSCDS_CLASSID);CHKERRQ(ierr);
-
   /* Register Constructors */
   ierr = PetscDSRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ds", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscInfoDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("ds",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "ds", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscLogEventDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrInList("ds",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscDSFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -359,6 +356,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
+  ierr = DMFieldInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

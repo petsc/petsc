@@ -142,7 +142,7 @@ class Configure(config.package.Package):
     if self.installNeeded('Makefile.inc'):
       try:
         output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=2500, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
@@ -154,7 +154,7 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=50, log = self.log)
         if self.argDB['with-mumps-serial']:
           output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'cp -f libseq/libmpiseq.a '+libDir+'/. ', timeout=25, log = self.log)
-      except RuntimeError, e:
+      except RuntimeError as e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir

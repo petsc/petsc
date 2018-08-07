@@ -12,8 +12,8 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), &adjSec);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(adjSec,pStart,pEnd);CHKERRQ(ierr);
@@ -176,8 +176,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   doCommLocal = (size > 1) && (nroots >= 0) ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(&doCommLocal, &doComm, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   ierr = PetscSFCreateRemoteOffsets(sfDof, rootSectionAdj, leafSectionAdj, &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sfDof, rootSectionAdj, remoteOffsets, leafSectionAdj, &sfAdj);CHKERRQ(ierr);
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  if (debug) {
+  if (debug && size > 1) {
     ierr = PetscPrintf(comm, "Adjacency SF for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSFView(sfAdj, NULL);CHKERRQ(ierr);
   }
@@ -592,7 +592,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   if (rStart%bs || rEnd%bs) SETERRQ3(PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt rS, rE;
@@ -657,7 +657,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
   }
   ierr = PetscCalloc1(maxRowLen, &values);CHKERRQ(ierr);
   if (f >=0 && bs == 1) {
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt rS, rE;
@@ -720,6 +720,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   PetscInt       Nf, f, idx, locRows;
   PetscLayout    rLayout;
   PetscBool      isSymBlock, isSymSeqBlock, isSymMPIBlock, debug = PETSC_FALSE;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -729,9 +730,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   if (dnzu) PetscValidPointer(dnzu,7); if (onzu) PetscValidPointer(onzu,8);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL, "-dm_view_preallocation", &debug, NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
@@ -739,19 +741,21 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
     PetscSF      sf;
 
     ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Global Section for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(sectionGlobal, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Input SF for Preallocation:\n");CHKERRQ(ierr);
-    ierr = PetscSFView(sf, NULL);CHKERRQ(ierr);
+    if (size > 1) {
+      ierr = PetscPrintf(comm, "Input SF for Preallocation:\n");CHKERRQ(ierr);
+      ierr = PetscSFView(sf, NULL);CHKERRQ(ierr);
+    }
   }
   ierr = PetscSFCreateRemoteOffsets(sf, section, section, &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(sf, section, remoteOffsets, section, &sfDof);CHKERRQ(ierr);
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  if (debug) {
+  if (debug && size > 1) {
     ierr = PetscPrintf(comm, "Dof SF for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSFView(sfDof, NULL);CHKERRQ(ierr);
   }

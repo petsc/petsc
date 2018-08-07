@@ -199,3 +199,13 @@ PetscErrorCode FormElementRhs(PetscScalar x,PetscScalar y,PetscReal H,PetscScala
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      suffix: 1
+      nsize: 2
+      args: -ksp_monitor_short
+
+TEST*/

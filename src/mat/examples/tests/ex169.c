@@ -17,7 +17,8 @@ int main(int argc,char **args)
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
   PetscErrorCode ierr;
-  PetscInt       ns=2,np;
+  PetscInt       ns=2;
+  PetscMPIInt    size;
   PetscSubcomm   subc;
   PetscBool      flg;
  
@@ -29,8 +30,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&np);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Reading matrix with %d processors\n",np);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Reading matrix with %d processors\n",size);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
@@ -57,3 +58,14 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
+
+
+TEST*/

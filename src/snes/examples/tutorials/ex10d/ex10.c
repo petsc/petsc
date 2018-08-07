@@ -37,6 +37,8 @@ The command line options include:\n\
    Processors: n
 T*/
 
+
+
 /* ------------------------------------------------------------------------
 
    PDE Solved : L(u) + lambda*u*u + alpha*u = 0 where L(u) is the Laplacian.
@@ -190,9 +192,9 @@ int main(int argc,char **argv)
       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
         form[0]='\0';
         for (j=0; j < i+2; j++) {
-          ierr = PetscStrcat(form,"%*d ");CHKERRQ(ierr);
+          ierr = PetscStrlcat(form,"%*d ",sizeof(form));CHKERRQ(ierr);
         }
-        ierr = PetscStrcat(form,"%d");CHKERRQ(ierr);
+        ierr = PetscStrlcat(form,"%d",sizeof(form));CHKERRQ(ierr);
 
         sscanf(str,form,&dtmp);
         user.AdjM[user.Nvlocal][i] = dtmp;
@@ -720,3 +722,22 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   return 0;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: 2
+      args: -snes_monitor_short
+      localrunfiles: options.inf adj.in
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -snes_monitor_short -fd_jacobian_coloring
+      localrunfiles: options.inf adj.in
+
+TEST*/

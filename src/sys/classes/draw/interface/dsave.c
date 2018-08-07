@@ -27,7 +27,8 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
    Concepts: X windows^graphics
 
-   Notes: You should call this BEFORE creating your image and calling PetscDrawSave().
+   Notes:
+    You should call this BEFORE creating your image and calling PetscDrawSave().
    The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
    Support for .png images requires configure --with-libpng.
    Support for .gif images requires configure --with-giflib.
@@ -93,7 +94,8 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 
    Concepts: X windows^graphics
 
-   Notes: You should call this AFTER calling PetscDrawSetSave() and BEFORE creating your image with PetscDrawSave().
+   Notes:
+    You should call this AFTER calling PetscDrawSetSave() and BEFORE creating your image with PetscDrawSave().
    The ffmpeg utility must be in your path to make the movie.
 
 .seealso: PetscDrawSetSave(), PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
@@ -132,7 +134,8 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 
    Concepts: X windows^graphics
 
-   Notes: You should call this BEFORE creating your image and calling PetscDrawSave().
+   Notes:
+    You should call this BEFORE creating your image and calling PetscDrawSave().
    The supported image types are .png, .gif, and .ppm (PETSc chooses the default in that order).
    Support for .png images requires configure --with-libpng.
    Support for .gif images requires configure --with-giflib.
@@ -171,7 +174,8 @@ PetscErrorCode  PetscDrawSetSaveFinalImage(PetscDraw draw,const char filename[])
 
    Level: advanced
 
-   Notes: this is not normally called by the user.
+   Notes:
+    this is not normally called by the user.
 
 .seealso: PetscDrawSetSave()
 
@@ -240,7 +244,8 @@ finally:
 
    Level: advanced
 
-   Notes: this is not normally called by the user.
+   Notes:
+    this is not normally called by the user.
    The ffmpeg utility must be in your path to make the movie.
 
 .seealso: PetscDrawSetSave(), PetscDrawSetSaveMovie()
@@ -355,7 +360,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
     ierr = PetscStrlen(body,&len);CHKERRQ(ierr);
     image = image->next;
   }
-  ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
+  ierr = PetscStrlcat(body,"<br>\n",sizeof(body));CHKERRQ(ierr);
   if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
   PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
   PetscFunctionReturn(0);

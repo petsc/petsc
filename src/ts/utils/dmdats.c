@@ -57,7 +57,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   DM             dm;
   DMTS_DA        *dmdats = (DMTS_DA*)ctx;
   DMDALocalInfo  info;
-  Vec            Xloc;
+  Vec            Xloc,Xdotloc;
   void           *x,*f,*xdot;
 
   PetscFunctionBegin;
@@ -66,12 +66,15 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   if (!dmdats->ifunctionlocal) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm,&Xdotloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,Xdot,INSERT_VALUES,Xdotloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,Xdot,INSERT_VALUES,Xdotloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,Xdotloc,&xdot);CHKERRQ(ierr);
   switch (dmdats->ifunctionlocalimode) {
   case INSERT_VALUES: {
     ierr = DMDAVecGetArray(dm,F,&f);CHKERRQ(ierr);
@@ -98,7 +101,8 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dm,Xdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,Xdotloc,&xdot);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&Xdotloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

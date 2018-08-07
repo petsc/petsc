@@ -200,3 +200,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/

@@ -154,3 +154,31 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -splitreduction_async
+      output_file: output/ex28_1.out
+
+   test:
+      suffix: 2_cuda
+      nsize: 3
+      args: -splitreduction_async -vec_type cuda
+      requires: veccuda
+      output_file: output/ex28_1.out
+
+   test:
+      suffix: cuda
+      nsize: 3
+      args: -vec_type cuda
+      requires: veccuda
+      output_file: output/ex28_1.out
+ 
+TEST*/

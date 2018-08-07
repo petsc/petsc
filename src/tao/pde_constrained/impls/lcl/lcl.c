@@ -1,5 +1,4 @@
 #include <../src/tao/pde_constrained/impls/lcl/lcl.h>
-#include <../src/tao/matrix/lmvmmat.h>
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 static PetscErrorCode LCLScatter(TAO_LCL*,Vec,Vec,Vec);
@@ -56,6 +55,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
     ierr = VecScatterDestroy(&lclP->state_scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lclP->design_scatter);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -82,6 +82,7 @@ static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -174,7 +175,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
   PetscInt                     phase2_iter,nlocal,its;
-  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,f, descent, aldescent;
   PetscReal                    cnorm, mnorm;
@@ -186,8 +186,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   lclP->rho = lclP->rho0;
   ierr = VecGetLocalSize(lclP->U,&nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(lclP->V,&nlocal);CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,nlocal,lclP->n-lclP->m,&lclP->R);CHKERRQ(ierr);
-  ierr = MatLMVMAllocateVectors(lclP->R,lclP->V);CHKERRQ(ierr);
+  ierr = MatSetSizes(lclP->R, nlocal, nlocal, lclP->n-lclP->m, lclP->n-lclP->m);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(lclP->R,lclP->V,lclP->V);CHKERRQ(ierr);
   lclP->recompute_jacobian_flag = PETSC_TRUE;
 
   /* Scatter to U,V */
@@ -242,9 +242,12 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
 
   /* Monitor convergence */
-  ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+  tao->reason = TAO_CONTINUE_ITERATING;
+  ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+  ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+  ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
-  while (reason == TAO_CONTINUE_ITERATING) {
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)
@@ -380,8 +383,10 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     /* Check convergence */
     ierr = VecNorm(lclP->GAugL, NORM_2, &mnorm);CHKERRQ(ierr);
     ierr = VecNorm(tao->constraints, NORM_2, &cnorm);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
-    if (reason != TAO_CONTINUE_ITERATING){
+    ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    if (tao->reason != TAO_CONTINUE_ITERATING){
       break;
     }
 
@@ -438,7 +443,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* Compute the limited-memory quasi-newton direction */
       if (tao->niter > 0) {
-        ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
+        ierr = MatSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
         if (descent <= 0) {
           if (lclP->verbose) {
@@ -530,9 +535,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = VecScale(lclP->g2,-1.0);CHKERRQ(ierr);
 
       /* Update the quasi-newton approximation */
-      if (phase2_iter >= 0){
-        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);CHKERRQ(ierr);
-      }
       ierr = MatLMVMUpdate(lclP->R,lclP->V,lclP->g2);CHKERRQ(ierr);
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */
 
@@ -558,9 +560,10 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
     /* Monitor convergence */
     tao->niter++;
-    ierr = TaoMonitor(tao, tao->niter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
+    ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
+    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&lclP->R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -608,13 +611,18 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   lclP->solve_type=2;
   lclP->tau[0] = lclP->tau[1] = lclP->tau[2] = lclP->tau[3] = 1.0e-4;
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
+  
+  ierr = MatCreate(((PetscObject)tao)->comm, &lclP->R);CHKERRQ(ierr);
+  ierr = MatSetType(lclP->R, MATLMVMBFGS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

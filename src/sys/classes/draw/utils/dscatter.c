@@ -37,7 +37,8 @@ struct _p_PetscDrawSP {
 
    Level: intermediate
 
-   Notes: Add points to the plot with PetscDrawSPAddPoint() or PetscDrawSPAddPoints(); the new points are not displayed until PetscDrawSPDraw() is called.
+   Notes:
+    Add points to the plot with PetscDrawSPAddPoint() or PetscDrawSPAddPoints(); the new points are not displayed until PetscDrawSPDraw() is called.
 
    PetscDrawSPReset() removes all the points that have been added
 
@@ -188,7 +189,8 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 
    Level: intermediate
 
-   Notes: the new points will not be displayed until a call to PetscDrawSPDraw() is made
+   Notes:
+    the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
    Concepts: scatter plot^adding points
 
@@ -241,7 +243,8 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
    Level: intermediate
 
-   Notes: the new points will not be displayed until a call to PetscDrawSPDraw() is made
+   Notes:
+    the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
    Concepts: scatter plot^adding points
 

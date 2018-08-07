@@ -13,6 +13,8 @@ Input parameters include:\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -200,3 +202,19 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 6
+      args: -pc_type none
+      requires: elemental
+
+   test:
+      suffix: 2
+      nsize: 6
+      args: -pc_type lu -pc_factor_mat_solver_type elemental
+      requires: elemental
+
+TEST*/

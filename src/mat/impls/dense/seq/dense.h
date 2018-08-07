@@ -43,4 +43,7 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscRea
 PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+
 #endif

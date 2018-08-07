@@ -18,6 +18,8 @@ linear solvers on the individual blocks.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -228,3 +230,63 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ksp_view
+
+   test:
+      suffix: viennacl
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse.out
+
+   test:
+      suffix: viennacl_2
+      nsize: 2
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse_2.out
+
+   test:
+      suffix: mpiaijcusparse
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
+
+   test:
+      suffix: mpiaijcusparse_2
+      nsize: 2
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
+
+   test:
+      suffix: mpiaijcusparse_simple
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusparse_simple_2
+      nsize: 2
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusparse_3
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+
+   test:
+      suffix: mpiaijcusparse_4
+      nsize: 2
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+
+TEST*/

@@ -1,6 +1,7 @@
       program main
 #include <petsc/finclude/petscdmplex.h>
       use petscdmplex
+      use petscsys
       implicit none
 
       DM dm

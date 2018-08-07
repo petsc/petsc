@@ -177,8 +177,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscStrncpy(str,"KSP: ",sizeof(str));CHKERRQ(ierr);
+      ierr   = PetscStrlcat(str,((PetscObject)ksp)->type_name,sizeof(str));CHKERRQ(ierr);
       ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
@@ -341,7 +341,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 +  ksp - Krylov method
 .  normtype - supported norm type
 .  pcside - preconditioner side that can be used with this norm
--  preference - integer preference for this combination, larger values have higher priority
+-  priority - positive integer preference for this combination; larger values have higher priority
 
    Level: developer
 
@@ -349,10 +349,6 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    This function should be called from the implementation files KSPCreate_XXX() to declare
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
-
-   KSP_NORM_NONE is supported by default with all KSP methods and any PC side at priority 1.  If a KSP explicitly does
-   not support KSP_NORM_NONE, it should set this by setting priority=0.  Since defaulting to KSP_NORM_NONE is usually
-   undesirable, more desirable norms should usually have priority 2 or higher.
 
 .seealso: KSPSetNormType(), KSPSetPCSide()
 @*/
@@ -533,7 +529,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 
     Level: intermediate
 
-   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
+   Notes:
+    DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
@@ -750,6 +747,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -767,6 +765,8 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   }
   /* Reinitialize function pointers in KSPOps structure */
   ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
   ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);

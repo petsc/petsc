@@ -7,24 +7,46 @@
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
-#include <petsc/private/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
+PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeOverlap;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeField;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeData;
+PETSC_EXTERN PetscLogEvent DMPLEX_Migrate;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolateSF;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalToNaturalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalBegin;
+PETSC_EXTERN PetscLogEvent DMPLEX_NaturalToGlobalEnd;
+PETSC_EXTERN PetscLogEvent DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Preallocate;
+PETSC_EXTERN PetscLogEvent DMPLEX_ResidualFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_JacobianFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InterpolatorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
-PETSC_INTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
 typedef enum {REFINER_NOOP = 0,
               REFINER_SIMPLEX_1D,
               REFINER_SIMPLEX_2D,
               REFINER_HYBRID_SIMPLEX_2D,
               REFINER_SIMPLEX_TO_HEX_2D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_2D,
               REFINER_HEX_2D,
               REFINER_HYBRID_HEX_2D,
               REFINER_SIMPLEX_3D,
               REFINER_HYBRID_SIMPLEX_3D,
               REFINER_SIMPLEX_TO_HEX_3D,
+              REFINER_HYBRID_SIMPLEX_TO_HEX_3D,
               REFINER_HEX_3D,
               REFINER_HYBRID_HEX_3D} CellRefiner;
 
@@ -48,7 +70,7 @@ typedef struct {
 } PetscPartitioner_Chaco;
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt ptype;
 } PetscPartitioner_ParMetis;
 
 typedef struct {
@@ -73,6 +95,7 @@ typedef struct {
   int nodes[8];      /* Node array */
   PetscInt numTags;  /* Size of tag array */
   int tags[4];       /* Tag array */
+  PetscInt cellType; /* Cell type */
 } GmshElement;
 
 /* Utility struct to store the contents of a Fluent file in memory */
@@ -123,6 +146,7 @@ typedef struct {
   char                *tetgenOpts;
   char                *triangleOpts;
   PetscPartitioner     partitioner;
+  PetscBool            partitionBalance;  /* Evenly divide partition overlap when distributing */
   PetscBool            remeshBd;
 
   /* Submesh */
@@ -152,8 +176,6 @@ typedef struct {
   PetscSection         subdomainSection;
 
   /* Adjacency */
-  PetscBool            useCone;           /* Use cone() first when defining adjacency */
-  PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
   PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
   PetscErrorCode      (*useradjacency)(DM,PetscInt,PetscInt*,PetscInt[],void*); /* User callback for adjacency */
   void                *useradjacencyctx;  /* User context for callback */
@@ -173,6 +195,7 @@ typedef struct {
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;
+  PetscInt             printL2;
   PetscReal            printTol;
 } DM_Plex;
 
@@ -213,13 +236,25 @@ PETSC_INTERN PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscError
 PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
+PETSC_INTERN PetscErrorCode DMPlexBuildFromCellList_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt, const int[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexBuildFromCellList_Parallel_Internal(DM, PetscInt, PetscInt, PetscInt, PetscInt, const int[], PetscBool, PetscSF *);
+PETSC_INTERN PetscErrorCode DMPlexBuildCoordinates_Internal(DM, PetscInt, PetscInt, PetscInt, const double[]);
+PETSC_INTERN PetscErrorCode DMPlexBuildCoordinates_Parallel_Internal(DM, PetscInt, PetscInt, PetscInt, PetscSF, const PetscReal[]);
+PETSC_INTERN PetscErrorCode DMPlexLoadLabels_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
+/* TODO Make these INTERN */
+PETSC_EXTERN PetscErrorCode DMPlexView_ExodusII_Internal(DM, int, PetscInt);
+PETSC_EXTERN PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec, int, int);
 PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM,PetscInt,PetscInt,PetscInt*);
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
@@ -231,7 +266,7 @@ PETSC_INTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner,
 PETSC_INTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
 PETSC_INTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
-PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
+PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceTree_Union(DM,DM,const char *,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorTree(DM,DM,PetscSF,PetscInt *,Mat);
@@ -245,18 +280,6 @@ PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
-#if defined(PETSC_HAVE_TRIANGLE)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_Triangle(DM, double[], DM *);
-#endif
-#if defined(PETSC_HAVE_TETGEN)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_Tetgen(DM, double[], DM *);
-#endif
-#if defined(PETSC_HAVE_CTETGEN)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_CTetgen(DM, PetscReal[], DM *);
-#endif
 
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in
@@ -285,8 +308,8 @@ PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
   return DihedralCompose(N,DihedralInvert(N,a),b);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscInt, PetscInt, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscInt, PetscInt, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, IS , PetscReal, Vec, Vec, PetscReal, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
@@ -316,17 +339,31 @@ PETSC_STATIC_INLINE void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[
   (void)PetscLogFlops(37.0);
 }
 
-PETSC_STATIC_INLINE void DMPlex_Det2D_Internal(PetscReal *detJ, PetscReal J[])
+PETSC_STATIC_INLINE void DMPlex_Det2D_Internal(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
   (void)PetscLogFlops(3.0);
 }
 
-PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
+PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
            J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
            J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+  (void)PetscLogFlops(12.0);
+}
+
+PETSC_STATIC_INLINE void DMPlex_Det2D_Scalar_Internal(PetscReal *detJ, const PetscScalar J[])
+{
+  *detJ = PetscRealPart(J[0])*PetscRealPart(J[3]) - PetscRealPart(J[1])*PetscRealPart(J[2]);
+  (void)PetscLogFlops(3.0);
+}
+
+PETSC_STATIC_INLINE void DMPlex_Det3D_Scalar_Internal(PetscReal *detJ, const PetscScalar J[])
+{
+  *detJ = (PetscRealPart(J[0*3+0])*(PetscRealPart(J[1*3+1])*PetscRealPart(J[2*3+2]) - PetscRealPart(J[1*3+2])*PetscRealPart(J[2*3+1])) +
+           PetscRealPart(J[0*3+1])*(PetscRealPart(J[1*3+2])*PetscRealPart(J[2*3+0]) - PetscRealPart(J[1*3+0])*PetscRealPart(J[2*3+2])) +
+           PetscRealPart(J[0*3+2])*(PetscRealPart(J[1*3+0])*PetscRealPart(J[2*3+1]) - PetscRealPart(J[1*3+1])*PetscRealPart(J[2*3+0])));
   (void)PetscLogFlops(12.0);
 }
 
@@ -346,7 +383,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt 
     PetscInt       dof;
     PetscErrorCode ierr;
     *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
+    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
     ierr = PetscSectionGetOffset(dm->defaultSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultSection, point, &dof);CHKERRQ(ierr);
     *end = *start + dof;
@@ -369,7 +406,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, Pets
     PetscInt       dof;
     PetscErrorCode ierr;
     *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
+    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
     ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, start);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &dof);CHKERRQ(ierr);
     *end = *start + dof;
@@ -392,8 +429,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     PetscErrorCode ierr;
     PetscInt       dof,cdof;
     *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
-    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be created automatically by DMGetDefaultGlobalSection()");
+    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
+    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be created automatically by DMGetGlobalSection()");
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
@@ -419,8 +456,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
     PetscInt       loff, lfoff, fdof, fcdof, ffcdof, f;
     PetscErrorCode ierr;
     *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetDefaultSection()");
-    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetDefaultGlobalSection()");
+    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
+    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetGlobalSection()");
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(dm->defaultSection, point, &loff);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, &lfoff);CHKERRQ(ierr);

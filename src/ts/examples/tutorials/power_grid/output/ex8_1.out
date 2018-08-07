@@ -1,0 +1,13 @@
+Original user->mux = 0.496317, user->muy = 1.000000
+Corrected user->mux = 0.502655, user->muy = 1.000000 user->PM_min = 1.011683,user->dx = 0.031574
+0 TS dt 0.01 time 0.
+    0 SNES Function norm 0.000000000000e+00 
+    1 SNES Function norm 0.000000000000e+00 
+    0 SNES Function norm 0.000000000000e+00 
+    1 SNES Function norm 0.000000000000e+00 
+    0 SNES Function norm 0.000000000000e+00 
+    1 SNES Function norm 0.000000000000e+00 
+    0 SNES Function norm 0.000000000000e+00 
+    1 SNES Function norm 0.000000000000e+00 
+sum(p) at t = 0.010000 = 1.000000
+1 TS dt 0.01 time 0.01

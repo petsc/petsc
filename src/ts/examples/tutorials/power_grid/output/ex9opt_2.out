@@ -1,46 +1,26 @@
-Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is
-0 (1.e-8), the hand-coded gradient is probably correct.
-Finite difference gradient
+  ---------- Testing Gradient -------------
+  Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference
+    of hand-coded and finite difference gradient entries greater than <threshold>.
+  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is
+    O(1.e-8), the hand-coded Hessian is probably correct.
+  ||Gfd|| 0.0021849, ||G|| = 0.00218604, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
+  2-norm ||G - Gfd||/||G|| = 0.000520807, ||G - Gfd|| = 1.1385e-06
+  max-norm ||G - Gfd||/||G|| = 0.000520807, ||G - Gfd|| = 1.1385e-06
+  0 TAO,  Function value: -1.01855,  Residual: 0.00218604 
+  ---------- Testing Gradient -------------
+  ||Gfd|| 1., ||G|| = 1., angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
+  2-norm ||G - Gfd||/||G|| = 2.22045e-16, ||G - Gfd|| = 2.22045e-16
+  max-norm ||G - Gfd||/||G|| = 2.22045e-16, ||G - Gfd|| = 2.22045e-16
+  ---------- Testing Gradient -------------
+  ||Gfd|| 0.0736232, ||G|| = 0.0736226, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
+  2-norm ||G - Gfd||/||G|| = 8.2006e-06, ||G - Gfd|| = 6.03754e-07
+  max-norm ||G - Gfd||/||G|| = 8.2006e-06, ||G - Gfd|| = 6.03754e-07
+  ---------- Testing Gradient -------------
+  ||Gfd|| 3.42727e-07, ||G|| = 1.38751e-11, angle cosine = (Gfd'G)/||Gfd||||G|| = -1.
+  2-norm ||G - Gfd||/||G|| = 1.00004, ||G - Gfd|| = 3.42741e-07
+  max-norm ||G - Gfd||/||G|| = 1.00004, ||G - Gfd|| = 3.42741e-07
+  1 TAO,  Function value: -1.01855,  Residual: 1.38751e-11 
+TAO solve converged due to CONVERGED_GRTOL iterations 1
 Vec Object: 1 MPI processes
   type: seq
-269.684
-Hand-coded gradient
-Vec Object: 1 MPI processes
-  type: seq
-269.684
-
-ratio ||fd-hc||/||hc|| = 7.33785e-07, difference ||fd-hc|| = 0.00019789
-Finite difference gradient
-Vec Object: 1 MPI processes
-  type: seq
--1
-Hand-coded gradient
-Vec Object: 1 MPI processes
-  type: seq
--1
-
-ratio ||fd-hc||/||hc|| = 2.22045e-16, difference ||fd-hc|| = 2.22045e-16
-Finite difference gradient
-Vec Object: 1 MPI processes
-  type: seq
--1
-Hand-coded gradient
-Vec Object: 1 MPI processes
-  type: seq
--1
-
-ratio ||fd-hc||/||hc|| = 2.22045e-16, difference ||fd-hc|| = 2.22045e-16
-Tao Object: 1 MPI processes
-  type: test
-  Active Set subset type: subvec
-  convergence tolerances: fatol=1e-15,   frtol=1e-15
-  convergence tolerances: gatol=1e-15,   steptol=0,   gttol=1e-15
-  Residual in Function/Gradient:=0
-  Objective value=0
-  total number of iterations=0,                          (max: 2000)
-  total number of function evaluations=6,                  max: 4000
-  total number of gradient evaluations=3,                  max: 4000
-  Solution converged:    User Terminated
-Vec Object: 1 MPI processes
-  type: seq
-1
+1.0194

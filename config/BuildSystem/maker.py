@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 import script
 
 import os
 import cPickle
+from functools import reduce
 
 class Make(script.Script):
   '''Template for individual project makefiles. All project makes start with a local RDict.'''
@@ -137,7 +139,7 @@ class Make(script.Script):
       self.configureObj.setupPackageDependencies(framework)
       self.configureObj.setupDependencies(framework)
       framework.addChild(self.configureObj)
-    except ImportError, e:
+    except ImportError as e:
       self.configureObj = None
       self.logPrint('Configure module not present: '+str(e))
       return 0
@@ -201,7 +203,7 @@ class Make(script.Script):
     import time
 
     self.log.write(('='*80)+'\n')
-    self.logPrint('SECTION: '+str(section.im_func.func_name)+' in '+self.getRoot()+' from '+str(section.im_class.__module__)+'('+str(section.im_func.func_code.co_filename)+':'+str(section.im_func.func_code.co_firstlineno)+') at '+time.ctime(time.time()), debugSection = 'screen', indent = 0)
+    self.logPrint('SECTION: '+str(section.__func__.__name__)+' in '+self.getRoot()+' from '+str(section.__self__.__class__.__module__)+'('+str(section.__func__.__code__.co_filename)+':'+str(section.__func__.__code__.co_firstlineno)+') at '+time.ctime(time.time()), debugSection = 'screen', indent = 0)
     if section.__doc__: self.logWrite('  '+section.__doc__+'\n')
     return section(*args)
 
@@ -214,7 +216,7 @@ class Make(script.Script):
       self.executeSection(self.updateDependencies, self.builder.sourceDB)
       self.executeSection(self.install, self.builder, self.argDB)
       self.logPrint('Ending Build', debugSection = 'build')
-    except Exception, e:
+    except Exception as e:
       import sys, traceback
       self.logPrint('************************************ ERROR **************************************')
       traceback.print_tb(sys.exc_info()[2], file = self.log)

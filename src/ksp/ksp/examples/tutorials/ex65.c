@@ -212,3 +212,12 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -ksp_monitor -pc_type mg -da_refine 3
+
+TEST*/

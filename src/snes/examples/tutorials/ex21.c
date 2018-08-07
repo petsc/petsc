@@ -1,6 +1,10 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, treats state and adjoint variables separately.\n\n";
 
+/*T
+   requires: !single
+T*/
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
@@ -188,5 +192,11 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+   test:
+      nsize: 4
+      args: -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason
+      requires: !single
 
+TEST*/

@@ -99,6 +99,8 @@ space.  The command line options are:\n\
 T*/
 
 
+
+
 /*
   User-defined application context - contains data needed by the
   application-provided call-back routines, FormFunction(), and FormJacobian().
@@ -445,3 +447,45 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   return 0;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_monitor -tao_type ssils -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -tao_monitor -tao_type ssfls -tao_max_it 10 -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -tao_monitor -tao_type asils -tao_subset_type subvec -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 4
+      args: -tao_monitor -tao_type asils -tao_subset_type mask -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 5
+      args: -tao_monitor -tao_type asils -tao_subset_type matrixfree -pc_type jacobi -tao_max_it 6 -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 6
+      args: -tao_monitor -tao_type asfls -tao_subset_type subvec -tao_max_it 10 -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 7
+      args: -tao_monitor -tao_type asfls -tao_subset_type mask -tao_max_it 10 -tao_gttol 1.e-5
+      requires: !single
+
+TEST*/

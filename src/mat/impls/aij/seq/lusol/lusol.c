@@ -414,7 +414,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERLUSOL;
@@ -441,7 +441,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_lusol);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_lusol);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
@@ -450,12 +450,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -470,6 +470,6 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
 
    Level: beginner
 
-.seealso: PCLU, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, PCFactorSetMatSolverType(), MatSolverType
 
 M*/

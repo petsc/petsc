@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscDraw                 draw;
   const char *const         legend[] = {"(1 - u^2)^2","1 - u^2","-(1 - u)log(1 - u)"};
   PetscDrawAxis             axis;
-  static PetscDrawViewPorts *ports = 0;
+  PetscDrawViewPorts        *ports;
 
 
   PetscFunctionBegin;
@@ -25,9 +25,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  if (!ports) {
-    ierr = PetscDrawViewPortsCreateRect(draw,1,2,&ports);CHKERRQ(ierr);
-  }
+  ierr = PetscDrawViewPortsCreateRect(draw,1,2,&ports);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
@@ -71,5 +69,14 @@ int main(int argc,char **argv)
 
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return ierr;
 }
+
+/*TEST
+
+   test:
+     requires: x
+
+TEST*/

@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank);CHKERRQ(ierr);
   ifstream fin(infile);
   if (!fin) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
-  vector<int>  myapp;
+  vector<PetscInt>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
     tmp=-1;
@@ -63,3 +63,37 @@ int main(int argc, char** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+     requires: !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+      nsize: 12
+      requires: double !complex datafilespath
+      args: -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 2
+      nsize: 12
+      requires: double !complex datafilespath
+      args: -ao_type basic -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 3
+      nsize: 30
+      requires: double !complex datafilespath
+      args: -datafiles ${DATAFILESPATH}/ao
+
+   test:
+      suffix: 4
+      nsize: 30
+      requires: double !complex datafilespath
+      args: -ao_type basic -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_3.out
+
+TEST*/

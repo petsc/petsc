@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
 #include <petscsys.h>        /*I "petscsys.h" I*/
 #include <petsc/private/petscimpl.h>
 #include <petscconfiginfo.h>
@@ -136,7 +136,7 @@ static void PetscErrorPrintfNormal(void)
 #endif
 }
 
-extern PetscErrorCode  PetscOptionsViewError(void);
+PETSC_EXTERN PetscErrorCode  PetscOptionsViewError(void);
 
 /*@C
 

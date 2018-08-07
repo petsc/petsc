@@ -9,6 +9,7 @@
     7 KSP Residual norm 5.20043e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 7
   1 SNES Function norm 1.59735e-08 
+L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 5 MPI processes
   type: newtonls
@@ -66,7 +67,7 @@ SNES Object: 5 MPI processes
       Symmetric computation of primal basis functions: 1
       Num. Procs. to map coarse adjacency list: 0
       Coarse eqs per proc (significant at the coarsest level): 1
-      Detect disconnected: 0
+      Detect disconnected: 0 (filter 0)
       Benign subspace trick: 0 (change explicit 0)
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux 0
@@ -107,7 +108,6 @@ SNES Object: 5 MPI processes
             PC Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
               type: lu
                 out-of-place factorization
-                Reusing fill from past factorization
                 tolerance for zero pivot 2.22045e-14
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.13115
@@ -132,5 +132,3 @@ SNES Object: 5 MPI processes
       rows=225, cols=225
       total: nonzeros=1625, allocated nonzeros=1855
       total number of mallocs used during MatSetValues calls =0
-Number of SNES iterations = 1
-L_2 Error: 0.00131794

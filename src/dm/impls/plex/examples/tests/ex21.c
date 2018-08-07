@@ -52,15 +52,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 static PetscErrorCode TestInterpolate(DM dm, AppCtx *user)
 {
-  DM             idm = NULL;
-  const char    *name;
+  DM             idm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) idm, name);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(idm, NULL, "-interp_dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(&idm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

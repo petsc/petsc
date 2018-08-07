@@ -41,3 +41,12 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 12
+      args: -dm_view -dim 3 -da_grid_x 11 -da_grid_y 5 -da_grid_z 7
+
+TEST*/

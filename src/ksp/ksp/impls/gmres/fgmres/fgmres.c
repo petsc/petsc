@@ -648,13 +648,16 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 
    Level: beginner
 
-    Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
+    Notes:
+    See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
            Only right preconditioning is supported.
 
-    Notes: The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
+    Notes:
+    The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
            be bi-CG-stab with a preconditioner of Jacobi.
 
-    Developer Notes: This object is subclassed off of KSPGMRES
+    Developer Notes:
+    This object is subclassed off of KSPGMRES
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
@@ -684,7 +687,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,0);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);

@@ -25,14 +25,14 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsLeftRestore(NULL,&N,&names,&values);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*TEST
 
    test:
       args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
-      filter: grep -v malloc_dump |grep -v options_left |grep -v nox
+      filter: egrep -v \(malloc_dump\|options_left\|nox\|vecscatter_mpi1\)
 
 TEST*/

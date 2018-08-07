@@ -53,6 +53,8 @@
         Creates a dictionary in the current directory with a parent, and removes
         the given key. If "parent" is "None", no parent is assigned.
 '''
+from __future__ import print_function
+from __future__ import absolute_import
 try:
   import project          # This is necessary for us to create Project objects on load
   import build.buildGraph # This is necessary for us to create BuildGraph objects on load
@@ -185,7 +187,7 @@ Arg class, which wraps the usual value.'''
           arg = nargs.Arg(key)
         try:
           value = arg.getValue()
-        except AttributeError, e:
+        except AttributeError as e:
           self.writeLogLine('__getitem__: Parent had invalid entry: '+str(e))
           arg   = nargs.Arg(key)
           value = arg.getValue()
@@ -195,7 +197,7 @@ Arg class, which wraps the usual value.'''
     else:
       self.writeLogLine('__getitem__: Setting local type for '+key)
       dict.__setitem__(self, key, nargs.Arg(key))
-      self.save()
+      #self.save()
     self.writeLogLine('__getitem__: Setting local value for '+key)
     return dict.__getitem__(self, key).getValue()
 
@@ -212,13 +214,13 @@ Arg class, which wraps the usual value.'''
           try:
             value.setValue(v.getValue())
           except TypeError:
-            print value.__class__.__name__[3:]
-            print '-----------------------------------------------------------------------'
-            print 'Warning! Incorrect argument type specified: -'+str(key)+'='+str(v.getValue())+' - expecting type '+value.__class__.__name__[3:]+'.'
-            print '-----------------------------------------------------------------------'
+            print(value.__class__.__name__[3:])
+            print('-----------------------------------------------------------------------')
+            print('Warning! Incorrect argument type specified: -'+str(key)+'='+str(v.getValue())+' - expecting type '+value.__class__.__name__[3:]+'.')
+            print('-----------------------------------------------------------------------')
             pass
       dict.__setitem__(self, key, value)
-      self.save()
+      #self.save()
     else:
       return self.send(key, value)
     return
@@ -232,14 +234,14 @@ Arg class, which wraps the usual value.'''
         dict.__setitem__(self, key, nargs.Arg(key))
     dict.__getitem__(self, key).setValue(value)
     self.writeLogLine('__setitem__: Set value for '+key+' to '+str(dict.__getitem__(self, key)))
-    self.save()
+    #self.save()
     return
 
   def __delitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
     if dict.has_key(self, key):
       dict.__delitem__(self, key)
-      self.save()
+      #self.save()
     elif not self.parent is None:
       self.send(key)
     return
@@ -248,16 +250,12 @@ Arg class, which wraps the usual value.'''
     '''Clears both the local and parent dictionaries'''
     if dict.__len__(self):
       dict.clear(self)
-      self.save()
+      #self.save()
     if not self.parent is None:
       self.send()
     return
 
   def __contains__(self, key):
-    '''This method just calls self.has_key(key)'''
-    return self.has_key(key)
-
-  def has_key(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the value has been set'''
     if dict.has_key(self, key):
       if dict.__getitem__(self, key).isValueSet():
@@ -270,7 +268,7 @@ Arg class, which wraps the usual value.'''
     return 0
 
   def get(self, key, default=None):
-    if self.has_key(key):
+    if key in self:
       return self.__getitem__(key)
     else:
       return default
@@ -367,7 +365,7 @@ Arg class, which wraps the usual value.'''
       addr = cPickle.load(f)
       f.close()
       return addr
-    except Exception, e:
+    except Exception as e:
       self.writeLogLine('CLIENT: Exception during server address determination: '+str(e.__class__)+': '+str(e))
     raise RuntimeError('Could not get server address in '+filename)
 
@@ -406,13 +404,13 @@ Arg class, which wraps the usual value.'''
       Rebase, under the category System.  You must run /bin/rebaseall after\n \
       turning off all cygwin services -- in particular sshd, if any such services\n \
       are running.  For more information about rebase, go to http://www.cygwin.com')
-      print '\n \
+      print('\n \
       This is a typical problem on CYGWIN systems.  If you are using CYGWIN,\n \
       you can fix this problem by running /bin/rebaseall.  If you do not have\n \
       this program, you can install it with the CYGWIN installer in the package\n \
       Rebase, under the category System.  You must run /bin/rebaseall after\n \
       turning off all cygwin services -- in particular sshd, if any such services\n \
-      are running.  For more information about rebase, go to http://www.cygwin.com\n'
+      are running.  For more information about rebase, go to http://www.cygwin.com\n')
       raise
     os.chdir(oldDir)
     timeout = 1
@@ -443,7 +441,7 @@ Arg class, which wraps the usual value.'''
         s.connect(addr)
         connected = 1
         break
-      except socket.error, e:
+      except socket.error as e:
         self.writeLogLine('CLIENT: Failed to connect: '+str(e))
         if e[0] == errno.ECONNREFUSED:
           try:
@@ -459,7 +457,7 @@ Arg class, which wraps the usual value.'''
             if os.path.isfile(filename):
               os.remove(filename)
             self.startServer(filename)
-      except Exception, e:
+      except Exception as e:
         self.writeLogLine('CLIENT: Failed to connect: '+str(e.__class__)+': '+str(e))
     if not connected:
       self.writeLogLine('CLIENT: Failed to connect to parent')
@@ -521,11 +519,11 @@ Arg class, which wraps the usual value.'''
         self.sendPacket(self.parent, tuple(packet), source = 'CLIENT')
         response = self.recvPacket(self.parent, source = 'CLIENT')
         break
-      except IOError, e:
+      except IOError as e:
         self.writeLogLine('CLIENT: IOError '+str(e))
         if e.errno == 32:
           self.connectParent(self.parentAddr, self.parentDirectory)
-      except Exception, e:
+      except Exception as e:
         self.writeLogLine('CLIENT: Exception '+str(e)+' '+str(e.__class__))
     try:
       if isinstance(response, Exception):
@@ -555,17 +553,17 @@ Arg class, which wraps the usual value.'''
         while 1:
           try:
             value = self.server.rdict.recvPacket(self.rfile, source = 'SERVER')
-          except EOFError, e:
+          except EOFError as e:
             self.server.rdict.writeLogLine('SERVER: EOFError receiving packet '+str(e)+' '+str(e.__class__))
             return
-          except Exception, e:
+          except Exception as e:
             self.server.rdict.writeLogLine('SERVER: Error receiving packet '+str(e)+' '+str(e.__class__))
             self.server.rdict.sendPacket(self.wfile, e, source = 'SERVER')
             continue
           if value[0] == 'stop': break
           try:
             response = getattr(self.server.rdict, value[0])(*value[1:])
-          except Exception, e:
+          except Exception as e:
             self.server.rdict.writeLogLine('SERVER: Error executing operation '+str(e)+' '+str(e.__class__))
             self.server.rdict.sendPacket(self.wfile, e, source = 'SERVER')
           else:
@@ -587,11 +585,11 @@ Arg class, which wraps the usual value.'''
       os._exit(0) # Kill off parent, so we are not a process group leader and get a new PID
     os.setsid()   # Set session ID, so that we have no controlling terminal
     # We choose to leave cwd at RDict.py: os.chdir('/') # Make sure root directory is not on a mounted drive
-    os.umask(077) # Fix creation mask
+    os.umask(0o77) # Fix creation mask
     for i in range(3): # Crappy stopgap for closing descriptors
       try:
         os.close(i)
-      except OSError, e:
+      except OSError as e:
         if e.errno != errno.EBADF:
           raise RuntimeError('Could not close default descriptor '+str(i))
 
@@ -604,7 +602,7 @@ Arg class, which wraps the usual value.'''
       try:
         server = SocketServer.ThreadingTCPServer((socket.gethostname(), basePort+p), ProcessHandler)
         flag   = 'socket'
-      except Exception, e:
+      except Exception as e:
         p = p + 1
     if flag == 'nosocket':
       p = 1
@@ -612,11 +610,11 @@ Arg class, which wraps the usual value.'''
         try:
           server = SocketServer.ThreadingTCPServer(('localhost', basePort+p), ProcessHandler)
           flag   = 'socket'
-        except Exception, e:
+        except Exception as e:
           p = p + 1
     if flag == 'nosocket':
       self.writeLogLine('SERVER: Could not established socket server on port '+str(basePort+p))
-      raise RuntimeError,'Cannot get available socket'
+      raise RuntimeError('Cannot get available socket')
     self.writeLogLine('SERVER: Established socket server on port '+str(basePort+p))
 
     self.isServer = 1
@@ -640,13 +638,13 @@ Arg class, which wraps the usual value.'''
         self.updateTypes(data)
         dbFile.close()
         self.writeLogLine('Loaded dictionary from '+self.saveFilename)
-      except Exception, e:
+      except Exception as e:
         self.writeLogLine('Problem loading dictionary from '+self.saveFilename+'\n--> '+str(e))
     else:
       self.writeLogLine('No dictionary to load in this file: '+self.saveFilename)
     return
 
-  def save(self, force = 0):
+  def save(self, force = 1):
     '''Save the dictionary after 5 seconds, ignoring all subsequent calls until the save
        - Giving force = True will cause an immediate save'''
     if self.readonly: return
@@ -703,7 +701,7 @@ Arg class, which wraps the usual value.'''
         else:
           self.writeLogLine('SERVER: Killing server '+str(pid))
           os.kill(pid, signal.SIGTERM)
-      except Exception, e:
+      except Exception as e:
         self.writeLogLine('SERVER: Exception killing server: '+str(e))
     return
 
@@ -711,7 +709,7 @@ if __name__ ==  '__main__':
   import sys
   try:
     if len(sys.argv) < 2:
-      print 'RDict.py [server | client | clear | insert | remove] [parent]'
+      print('RDict.py [server | client | clear | insert | remove] [parent]')
     else:
       action = sys.argv[1]
       parent = None
@@ -720,25 +718,25 @@ if __name__ ==  '__main__':
       if action == 'server':
         RDict(parentDirectory = parent).serve()
       elif action == 'client':
-        print 'Entries in server dictionary'
+        print('Entries in server dictionary')
         rdict = RDict(parentDirectory = parent)
         for key in rdict.types():
           if not key.startswith('cacheKey') and not key.startswith('stamp-'):
-            print str(key)+' '+str(rdict.getType(key))
+            print(str(key)+' '+str(rdict.getType(key)))
       elif action == 'cacheClient':
-        print 'Cache entries in server dictionary'
+        print('Cache entries in server dictionary')
         rdict = RDict(parentDirectory = parent)
         for key in rdict.types():
           if key.startswith('cacheKey'):
-            print str(key)+' '+str(rdict.getType(key))
+            print(str(key)+' '+str(rdict.getType(key)))
       elif action == 'stampClient':
-        print 'Stamp entries in server dictionary'
+        print('Stamp entries in server dictionary')
         rdict = RDict(parentDirectory = parent)
         for key in rdict.types():
           if key.startswith('stamp-'):
-            print str(key)+' '+str(rdict.getType(key))
+            print(str(key)+' '+str(rdict.getType(key)))
       elif action == 'clear':
-        print 'Clearing all dictionaries'
+        print('Clearing all dictionaries')
         RDict(parentDirectory = parent).clear()
       elif action == 'insert':
         rdict = RDict(parentDirectory = parent)
@@ -748,8 +746,8 @@ if __name__ ==  '__main__':
         del rdict[sys.argv[3]]
       else:
         sys.exit('Unknown action: '+action)
-  except Exception, e:
+  except Exception as e:
     import traceback
-    print traceback.print_tb(sys.exc_info()[2])
+    print(traceback.print_tb(sys.exc_info()[2]))
     sys.exit(str(e))
   sys.exit(0)

@@ -74,3 +74,29 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      suffix: 1
+      nsize: 3
+      args: -mat_block_size 2 -test_setvaluesblocked
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -mat_block_size 2 -test_setvaluesblocked -column_oriented
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -mat_block_size 1 -test_setvaluesblocked
+
+   test:
+      suffix: 4
+      nsize: 3
+      args: -mat_block_size 1 -test_setvaluesblocked -column_oriented
+
+TEST*/
+

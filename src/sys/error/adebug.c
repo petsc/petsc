@@ -22,7 +22,7 @@ static PetscBool Xterm = PETSC_TRUE;
 
    Input Parameters:
 +  terminal - name of terminal and any flags required to execute a program.
-              For example "xterm -e", "urxvt -e".
+              For example "xterm -e", "urxvt -e", "gnome-terminal -x".
 
    Options Database Keys:
    -debug_terminal terminal - use this terminal instead of xterm
@@ -183,7 +183,8 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 
    Concepts: debugger^starting from program
 
-   Developer Notes: Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
+   Developer Notes:
+    Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
 
 .seealso: PetscSetDebugger()
 @*/
@@ -291,6 +292,7 @@ PetscErrorCode  PetscAttachDebugger(void)
         PetscBool cmp;
         char      *tmp,*tmp1;
         ierr = PetscStrncmp(DebugTerminal,"screen",6,&cmp);CHKERRQ(ierr);
+        if (!cmp) {ierr = PetscStrncmp(DebugTerminal,"gnome-terminal",6,&cmp);CHKERRQ(ierr);}
         if (cmp) display[0] = 0; /* when using screen, we never pass -display */
         args[j++] = tmp = DebugTerminal;
         if (display[0]) {
@@ -461,9 +463,11 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
 
    Level: developer
 
-   Notes: This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
+   Notes:
+    This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
 
-   Developer Notes: Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
+   Developer Notes:
+    Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
 
    Concepts: debugger^waiting for attachment
 

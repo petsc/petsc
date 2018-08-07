@@ -303,3 +303,11 @@ PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
   ierr = MatDestroy(&userctx->A);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -m 19 -n 20 -ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/

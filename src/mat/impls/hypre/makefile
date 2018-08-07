@@ -11,7 +11,7 @@ SOURCEH  = mhypre.h
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/hypre
+LOCDIR   = src/mat/impls/aij/hypre/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

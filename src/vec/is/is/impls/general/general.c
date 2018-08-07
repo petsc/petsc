@@ -208,12 +208,12 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   } else {
     /* crude, nonscalable get entire IS on each processor */
-    if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");
     ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(&istmp);CHKERRQ(ierr);
     /* get the part we need */
+    if (nlocal == PETSC_DECIDE) nlocal = n;
     ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
@@ -361,10 +361,10 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 #endif
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
-  ierr   = ISGetIndices(is, &ind);CHKERRQ(ierr);
+  ierr = ISGetIndices(is, &ind);CHKERRQ(ierr);
   PetscStackCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, plist_id, ind));
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
-  ierr   = ISGetIndices(is, &ind);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is, &ind);CHKERRQ(ierr);
 
   /* Close/release resources */
   if (group != file_id) PetscStackCallHDF5(H5Gclose,(group));
@@ -380,31 +380,56 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      skipHeader,useMPIIO;
   IS_General     *isa = (IS_General*) is->data;
   PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
   PetscInt       n,N,len,j,tr[2];
   int            fdes;
   MPI_Status     status;
   PetscInt       message_count,flowcontrolcount,*values;
-  PetscBool skip;
 
   PetscFunctionBegin;
+  /* ierr = ISGetLayout(is,&map);CHKERRQ(ierr); */
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
-
-  /* determine maximum message to arrive */
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
 
   tr[0] = IS_FILE_CLASSID;
   tr[1] = N;
 
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skip);CHKERRQ(ierr);
-  if (!skip) {
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  if (!skipHeader) {
     ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   }
-  ierr  = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_SUM,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  if (useMPIIO) {
+    MPI_File       mfdes;
+    MPI_Offset     off;
+    PetscMPIInt    lsize;
+    PetscInt       rstart;
+    const PetscInt *iarray;
+
+    ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = PetscLayoutGetRange(is->map,&rstart,NULL);CHKERRQ(ierr);
+    off += rstart*(MPI_Offset)sizeof(PetscInt); /* off is MPI_Offset, not PetscMPIInt */
+    ierr = MPI_File_set_view(mfdes,off,MPIU_INT,MPIU_INT,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
+    ierr = ISGetIndices(is,&iarray);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,(void*)iarray,lsize,MPIU_INT,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is,&iarray);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,N*(MPI_Offset)sizeof(PetscInt));CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
+
+  /* determine maximum message to arrive */
+  ierr = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 
   ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
   if (!rank) {
@@ -443,29 +468,59 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   if (iascii) {
-    MPI_Comm    comm;
-    PetscMPIInt rank,size;
+    MPI_Comm          comm;
+    PetscMPIInt       rank,size;
+    PetscViewerFormat fmt;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+    ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     if (size > 1) {
-      if (is->isperm) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %D\n",rank,n);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,idx[i]);CHKERRQ(ierr);
+      if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
+        const char* name;
+
+        ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [...\n",name,rank);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D\n",idx[i]+1);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
+      } else {
+        PetscInt st = 0;
+
+        if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
+        if (is->isperm) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %D\n",rank,n);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i + st,idx[i]);CHKERRQ(ierr);
+        }
       }
     } else {
-      if (is->isperm) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
-      }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %D\n",n);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i,idx[i]);CHKERRQ(ierr);
+      if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
+        const char* name;
+
+        ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s = [...\n",name);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D\n",idx[i]+1);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
+      } else {
+        PetscInt st = 0;
+
+        if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
+        if (is->isperm) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %D\n",n);CHKERRQ(ierr);
+        for (i=0; i<n; i++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i + st,idx[i]);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -658,7 +713,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,3);
 
-  ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(is->map,n);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
 
   if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}

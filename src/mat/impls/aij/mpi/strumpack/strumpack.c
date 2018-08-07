@@ -31,7 +31,7 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   }
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetReordering_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetColPerm_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSRelTol_C",NULL);CHKERRQ(ierr);
@@ -381,8 +381,8 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_STRUMPACK"
-static PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_Info_STRUMPACK"
+static PetscErrorCode MatView_Info_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode  ierr;
 
@@ -406,7 +406,7 @@ static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_STRUMPACK(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_STRUMPACK(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -463,8 +463,8 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_aij_strumpack"
-static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPackage *type)
+#define __FUNCT__ "MatFactorGetSolverType_aij_strumpack"
+static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSTRUMPACK;
@@ -482,9 +482,9 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSol
   to have PETSc installed with STRUMPACK
 
   Use
-    -pc_type lu -pc_factor_mat_solver_package strumpack
+    -pc_type lu -pc_factor_mat_solver_type strumpack
   to use this as an exact (direct) solver, use
-    -pc_type ilu -pc_factor_mat_solver_package strumpack
+    -pc_type ilu -pc_factor_mat_solver_type strumpack
   to enable low-rank compression (i.e, use as a preconditioner).
 
   Works with AIJ matrices
@@ -502,7 +502,7 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSol
 
  Level: beginner
 
-.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_strumpack"
@@ -546,7 +546,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   B->ops->view        = MatView_STRUMPACK;
   B->ops->destroy     = MatDestroy_STRUMPACK;
   B->ops->getdiagonal = MatGetDiagonal_STRUMPACK;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_strumpack);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_aij_strumpack);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetReordering_C",MatSTRUMPACKSetReordering_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetColPerm_C",MatSTRUMPACKSetColPerm_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSRelTol_C",MatSTRUMPACKSetHSSRelTol_STRUMPACK);CHKERRQ(ierr);
@@ -620,15 +620,15 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_STRUMPACK"
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void)
+#define __FUNCT__ "MatSolverTypeRegister_STRUMPACK"
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATMPIAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSTRUMPACK,MATSEQAIJ,MAT_FACTOR_ILU,MatGetFactor_aij_strumpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

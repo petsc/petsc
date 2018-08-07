@@ -36,7 +36,7 @@ PetscErrorCode  DMDAGetScatter(DM da,VecScatter *gtol,VecScatter *ltol)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
     if (!dd->ltol) {

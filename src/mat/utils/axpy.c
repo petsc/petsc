@@ -23,6 +23,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_CLASSID,3);
@@ -32,24 +33,17 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
+  ierr = PetscStrcmp(((PetscObject)X)->type_name,((PetscObject)Y)->type_name,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-  if (Y->ops->axpy) {
+  if (Y->ops->axpy && sametype) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (Y->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -142,16 +136,19 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
    Level: intermediate
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
+
+   To form Y = Y + diag(V) use MatDiagonalSet()
 
    Developers Note: If the local "diagonal part" of the matrix Y has no entries then the local diagonal part is
     preallocated with 1 nonzero per row for the to be added values. This allows for fast shifting of an empty matrix.
 
 .keywords: matrix, add, shift
 
-.seealso: MatDiagonalSet()
+.seealso: MatDiagonalSet(), MatScale(), MatDiagonalScale()
  @*/
 PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 {
@@ -169,17 +166,9 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (Y->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -215,7 +204,8 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
    Neighbor-wise Collective on Mat and Vec
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 
@@ -223,7 +213,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
 .keywords: matrix, add, shift, diagonal
 
-.seealso: MatShift()
+.seealso: MatShift(), MatScale(), MatDiagonalScale()
 @*/
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
@@ -289,7 +279,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 .   inmat - the matrix
 
     Output Parameter:
-.   mat - the explict preconditioned operator
+.   mat - the explict  operator
 
     Notes:
     This computation is done by applying the operators to columns of the
@@ -345,6 +335,86 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     ierr = MatMult(inmat,in,out);CHKERRQ(ierr);
+
+    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
+
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatComputeExplicitOperatorTranspose - Computes the explicit matrix representation of
+        a give matrix that can apply MatMultTranspose()
+
+    Collective on Mat
+
+    Input Parameter:
+.   inmat - the matrix
+
+    Output Parameter:
+.   mat - the explict  operator transposed
+
+    Notes:
+    This computation is done by applying the transpose of the operator to columns of the
+    identity matrix.
+
+    Currently, this routine uses a dense matrix format when 1 processor
+    is used and a sparse format otherwise.  This routine is costly in general,
+    and is recommended for use only with relatively small systems.
+
+    Level: advanced
+
+.keywords: Mat, compute, explicit, operator
+@*/
+PetscErrorCode  MatComputeExplicitOperatorTranspose(Mat inmat,Mat *mat)
+{
+  Vec            in,out;
+  PetscErrorCode ierr;
+  PetscInt       i,m,n,M,N,*rows,start,end;
+  MPI_Comm       comm;
+  PetscScalar    *array,zero = 0.0,one = 1.0;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
+  PetscValidPointer(mat,2);
+
+  ierr = PetscObjectGetComm((PetscObject)inmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateVecs(inmat,&in,&out);CHKERRQ(ierr);
+  ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
+  for (i=0; i<m; i++) rows[i] = start + i;
+
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,n,NULL,N-n,NULL);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<N; i++) {
+
+    ierr = VecSet(in,zero);CHKERRQ(ierr);
+    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
+
+    ierr = MatMultTranspose(inmat,in,out);CHKERRQ(ierr);
 
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);

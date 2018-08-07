@@ -32,6 +32,25 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_LOAD_BALANCE) {
+      PetscInt      i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal;
+      DMDALocalInfo info;
+      PetscMPIInt   size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      nzlocal = info.xm*info.ym*info.zm;
+      ierr = PetscMalloc1(size,&nz);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+      for (i=0; i<(PetscInt)size; i++) {
+        nmax = PetscMax(nmax,nz[i]);
+        nmin = PetscMin(nmin,nz[i]);
+        navg += nz[i];
+      }
+      ierr = PetscFree(nz);CHKERRQ(ierr);
+      navg = navg/size;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -433,23 +452,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
   ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
-  /* generate appropriate vector scatters */
-  /* local to global inserts non-ghost point region into global */
-  ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
-  left   = xs - Xs; right = left + x;
-  bottom = ys - Ys; top = bottom + y;
-  down   = zs - Zs; up  = down + z;
-  count  = 0;
-  for (i=down; i<up; i++) {
-    for (j=bottom; j<top; j++) {
-      for (k=left; k<right; k++) {
-        idx[count++] = (i*(Ye-Ys) + j)*(Xe-Xs) + k;
-      }
-    }
-  }
+  /* generate global to local vector scatter and local to global mapping*/
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
+  ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
   if (stencil_type == DMDA_STENCIL_BOX) {
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
@@ -1393,16 +1400,16 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
    Options Database Key:
 +  -dm_view - Calls DMView() at the conclusion of DMDACreate3d()
-.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
-.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
-.  -da_grid_z <nz> - number of grid points in z direction, if P < 0
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
+.  -da_grid_z <nz> - number of grid points in z direction
 .  -da_processors_x <MX> - number of processors in x direction
 .  -da_processors_y <MY> - number of processors in y direction
 .  -da_processors_z <MZ> - number of processors in z direction
 .  -da_refine_x <rx> - refinement ratio in x direction
 .  -da_refine_y <ry> - refinement ratio in y direction
 .  -da_refine_z <rz>- refinement ratio in z directio
--  -da_refine <n> - refine the DMDA n times before creating it, , if M, N, or P < 0
+-  -da_refine <n> - refine the DMDA n times before creating it
 
    Level: beginner
 

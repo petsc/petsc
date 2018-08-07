@@ -396,3 +396,18 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+    build:
+      requires: moab
+
+    test:
+      args: -n 20 -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none
+
+    test:
+      suffix: 2
+      nsize: 2
+      args: -n 50 -ts_type glee -ts_adapt_type none -ts_dt 0.1 -io
+      TODO:
+
+TEST*/

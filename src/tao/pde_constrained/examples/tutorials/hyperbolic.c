@@ -18,6 +18,8 @@
    Processors: 1
 T*/
 
+
+
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints */
@@ -1112,7 +1114,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = KSPCreate(PETSC_COMM_WORLD,&user->solver);CHKERRQ(ierr);
   ierr = KSPSetType(user->solver,KSPGMRES);CHKERRQ(ierr);
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE);CHKERRQ(ierr); /*  TODO: why is true slower? */
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500);CHKERRQ(ierr);
   /* ierr = KSPSetTolerances(user->solver,1e-8,1e-16,1e3,500);CHKERRQ(ierr); */
   ierr = KSPGetPC(user->solver,&user->prec);CHKERRQ(ierr);
@@ -1260,3 +1261,20 @@ PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      requires: !single
+      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl -tao_gatol 1.e-5
+
+   test:
+      suffix: guess_pod
+      requires: !single
+      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl -ksp_guess_type pod -tao_gatol 1.e-5
+
+TEST*/

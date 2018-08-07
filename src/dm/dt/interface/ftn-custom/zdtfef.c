@@ -17,11 +17,11 @@ PETSC_EXTERN void PETSC_STDCALL petscfeview_(PetscFE *fe,PetscViewer *vin,PetscE
   *ierr = PetscFEView(*fe,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfecreatedefault_(DM *dm,PetscInt *dim,PetscInt *Nc,PetscBool *isSimplex,char* prefix PETSC_MIXED_LEN(len),PetscInt *qorder, PetscFE *fe,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscfecreatedefault_(MPI_Fint *comm,PetscInt *dim,PetscInt *Nc,PetscBool *isSimplex,char* prefix PETSC_MIXED_LEN(len),PetscInt *qorder, PetscFE *fe,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tprefix;
 
   FIXCHAR(prefix,len,tprefix);
-  *ierr = PetscFECreateDefault(*dm, *dim, *Nc, *isSimplex, tprefix, *qorder, fe);
+  *ierr = PetscFECreateDefault(MPI_Comm_f2c(*comm), *dim, *Nc, *isSimplex, tprefix, *qorder, fe);
   FREECHAR(prefix,tprefix);
 }

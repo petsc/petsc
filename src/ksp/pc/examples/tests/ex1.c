@@ -1,6 +1,10 @@
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscpc.h>
 
 int main(int argc,char **args)
@@ -28,3 +32,10 @@ int main(int argc,char **args)
 
 
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

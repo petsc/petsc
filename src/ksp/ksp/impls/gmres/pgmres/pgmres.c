@@ -465,7 +465,8 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
    Reference:
    Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
-   Developer Notes: This object is subclassed off of KSPGMRES
+   Developer Notes:
+    This object is subclassed off of KSPGMRES
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES, KSPPIPECG, KSPPIPECR,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),

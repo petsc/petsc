@@ -152,7 +152,8 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 
    Level: beginner
 
-   Notes: Only implemented for the MPIAIJ matrices
+   Notes:
+    Only implemented for the MPIAIJ matrices
 
           Only works on a solver object that lives on all of PETSC_COMM_WORLD!
 

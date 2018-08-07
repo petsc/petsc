@@ -25,8 +25,8 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
   PetscScalar    Ke[16];
-  PetscReal      x,y,h;
-  IS             *is1,*is2;
+  PetscReal      h;
+  IS             *is1,*is2,*islocal1,*islocal2;
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -44,8 +44,6 @@ int main(int argc,char **args)
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -56,9 +54,9 @@ int main(int argc,char **args)
 
   for (ol=0; ol<m+2; ++ol) {
 
-    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1);CHKERRQ(ierr);
+    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1,&islocal1);CHKERRQ(ierr);
     ierr = MatIncreaseOverlap(C,Nsub1,is1,ol);CHKERRQ(ierr);
-    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2);CHKERRQ(ierr);
+    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2,&islocal2);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRQ(ierr);
     if (Nsub1 != Nsub2) {
@@ -70,15 +68,27 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg);CHKERRQ(ierr);
 
     }
-    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&&is1[i]);CHKERRQ(ierr);}
-    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&&is2[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&islocal1[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&islocal2[i]);CHKERRQ(ierr);}
 
 
     ierr = PetscFree(is1);CHKERRQ(ierr);
     ierr = PetscFree(is2);CHKERRQ(ierr);
+    ierr = PetscFree(islocal1);CHKERRQ(ierr);
+    ierr = PetscFree(islocal2);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      args: -m 7
+
+TEST*/

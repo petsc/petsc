@@ -77,7 +77,7 @@ int main(int argc,char **args)
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
     ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d], i=%D, flg =%d sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);CHKERRQ(ierr);
+    if (!flg) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d  sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);CHKERRQ(ierr);
   }
 
   /* Free Allocated Memory */
@@ -96,3 +96,17 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: 3
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      args: -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1
+
+
+TEST*/

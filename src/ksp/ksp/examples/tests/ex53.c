@@ -101,3 +101,17 @@ int main(int argc, char *argv[])
    ierr = PetscFinalize();
    return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -method 1
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -method 2
+
+TEST*/

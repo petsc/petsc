@@ -584,8 +584,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MatSetLocalToGlobalMapping(T,l2g,l2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
     ierr = MatISSetLocalMat(T,BD2);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy(&BD2);CHKERRQ(ierr);
-    ierr = MatISGetMPIXAIJ(T,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
+    ierr = MatConvert(T,MATAIJ,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
     ierr = MatDestroy(&T);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(TA,1,&is,&is,MAT_INITIAL_MATRIX,&pT);CHKERRQ(ierr);
@@ -718,7 +720,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   if (mat_ctx->deluxe_nonred) {
     PC               pc,mpc;
     BDdelta_DN       ctx;
-    MatSolverPackage solver;
+    MatSolverType    solver;
     const char       *prefix;
 
     ierr = MatShellGetContext(mat_ctx->B_Ddelta,&ctx);CHKERRQ(ierr);
@@ -726,9 +728,9 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
     ierr = KSPGetPC(ctx->kBD,&mpc);CHKERRQ(ierr);
     ierr = KSPGetPC(pcbddc->ksp_D,&pc);CHKERRQ(ierr);
     ierr = PCSetType(mpc,PCLU);CHKERRQ(ierr);
-    ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+    ierr = PCFactorGetMatSolverType(pc,(MatSolverType*)&solver);CHKERRQ(ierr);
     if (solver) {
-      ierr = PCFactorSetMatSolverPackage(mpc,solver);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverType(mpc,solver);CHKERRQ(ierr);
     }
     ierr = MatGetOptionsPrefix(fetimat,&prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(ctx->kBD,prefix);CHKERRQ(ierr);
@@ -804,15 +806,15 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = KSPGetPC(pcis->ksp_D,&pc);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
       if (!isshell) {
-        MatSolverPackage solver;
+        MatSolverType    solver;
         PCType           pctype;
 
         ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
-        ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+        ierr = PCFactorGetMatSolverType(pc,(MatSolverType*)&solver);CHKERRQ(ierr);
         ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);
         ierr = PCSetType(pc,pctype);CHKERRQ(ierr);
         if (solver) {
-          ierr = PCFactorSetMatSolverPackage(pc,solver);CHKERRQ(ierr);
+          ierr = PCFactorSetMatSolverType(pc,solver);CHKERRQ(ierr);
         }
       } else {
         ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);

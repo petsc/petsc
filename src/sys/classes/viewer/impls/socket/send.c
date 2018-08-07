@@ -86,7 +86,8 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
     Output Paramater:
 .    t - the socket number
 
-    Notes: Use close() to close the socket connection
+    Notes:
+    Use close() to close the socket connection
 
     Use read() or PetscHTTPRequest() to read from the socket
 
@@ -287,7 +288,8 @@ $    -viewer_socket_port <port>
      Currently the only socket client available is MATLAB. See
      src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
 
-   Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
+   Notes:
+    The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
           use PetscViewerBinaryRead(), PetscViewerBinaryWrite(), PetscViewerBinarWriteStringArray(), PetscViewerBinaryGetDescriptor().
 
      Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for writing output to a
@@ -517,17 +519,17 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Socket_keyval,(void**)&viewer,(int*)&flg);
+  ierr = MPI_Comm_get_attr(ncomm,Petsc_Viewer_Socket_keyval,(void**)&viewer,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerSocketOpen(ncomm,0,0,&viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
-    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Socket_keyval,(void*)viewer);
+    ierr = MPI_Comm_set_attr(ncomm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
   ierr = PetscCommDestroy(&ncomm);

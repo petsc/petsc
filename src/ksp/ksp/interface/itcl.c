@@ -97,7 +97,8 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 
    Level: developer
 
-    Notes: this is used in conjunction with KSPSetTabLevel() to manage the output from the KSP and its PC coherently.
+    Notes:
+    this is used in conjunction with KSPSetTabLevel() to manage the output from the KSP and its PC coherently.
 
 
 .seealso:  KSPSetTabLevel()
@@ -124,7 +125,8 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
 
    Level: developer
 
-    Notes: this is used to manage the output from KSP and PC objects that are imbedded in other objects,
+    Notes:
+    this is used to manage the output from KSP and PC objects that are imbedded in other objects,
            for example, the KSP object inside a SNES object. By indenting each lower level further the heirarchy
            of objects is very clear.  By setting the KSP object's tab level with KSPSetTabLevel() its PC object
            automatically receives the same tab level, so that whatever objects the pc might create are tabbed
@@ -190,7 +192,8 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 
    Level: advanced
 
-   Notes: this allows a single KSP to be used with several different initial guess generators (likely for different linear
+   Notes:
+    this allows a single KSP to be used with several different initial guess generators (likely for different linear
           solvers, see KSPSetPC()).
 
           This increases the reference count of the guess object, you must destroy the object with KSPGuessDestroy()
@@ -264,7 +267,8 @@ PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -408,14 +412,17 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
 
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
-  if (flg) goto skipoptions;
+  if (flg) {
+    ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
+    goto skipoptions;
+  }
 
   ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set && flag) {ierr = KSPConvergedDefaultSetUIRNorm(ksp);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set && flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}

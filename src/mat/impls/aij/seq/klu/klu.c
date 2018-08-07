@@ -208,7 +208,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorInfo_KLU(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_KLU(Mat A,PetscViewer viewer)
 {
   Mat_KLU       *lu= (Mat_KLU*)A->data;
   klu_K_numeric *Numeric=(klu_K_numeric*)lu->Numeric;
@@ -250,13 +250,13 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_KLU(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_KLU(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERKLU;
@@ -270,7 +270,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 
   ./configure --download-suitesparse to install PETSc to use KLU
 
-  Use -pc_type lu -pc_factor_mat_solver_package klu to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type klu to use this direct solver
 
   Consult KLU documentation for more information on the options database keys below.
 
@@ -284,7 +284,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 
    Level: beginner
 
-.seealso: PCLU, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, PCFactorSetMatSolverType(), MatSolverType
 M*/
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Mat *F)
@@ -310,7 +310,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   B->ops->destroy          = MatDestroy_KLU;
   B->ops->view             = MatView_KLU;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_klu);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_klu);CHKERRQ(ierr);
 
   B->factortype   = MAT_FACTOR_LU;
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */

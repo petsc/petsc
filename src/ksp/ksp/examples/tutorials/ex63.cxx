@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
   Mat Apetsc;
   ierr = MatCreate(PETSC_COMM_WORLD,&Apetsc);CHKERRQ(ierr);
   PetscViewer viewer;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"../../../../../share/petsc/datafiles/matrices/spd-real-int32-float64",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(Apetsc,viewer);CHKERRQ(ierr);
   Vec x,b;
   ierr = MatCreateVecs(Apetsc,&x,&b);CHKERRQ(ierr);
@@ -219,3 +219,22 @@ int main(int argc, char *argv[]) {
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: trilinos
+
+   test:
+      requires: superlu
+      args: --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLU --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_type superlu -ksp_view -ksp_converged_reason
+      filter: egrep -v "(Teuchos|Amesos2)"
+
+   test:
+      suffix: 2
+      requires: superlu_dist
+      args: --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLUDist --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_view -ksp_converged_reason
+      filter: egrep -v "(Teuchos|Amesos2)"
+
+TEST*/

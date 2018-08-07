@@ -1,0 +1,9 @@
+Initial function norm = 0.207564
+   linear solve iterations = 2, xnorm=1.21872, ynorm=0.228979
+Iteration 1, function norm = 0.0148969
+   linear solve iterations = 2, xnorm=1.23797, ynorm=0.0192509
+Iteration 2, function norm = 0.000113964
+   linear solve iterations = 2, xnorm=1.23812, ynorm=0.000149565
+Iteration 3, function norm = 0.
+Converged due to function norm 0. < 2.07564e-09 (relative tolerance)
+Number of nonlinear iterations = 2

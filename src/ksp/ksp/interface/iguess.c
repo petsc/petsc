@@ -100,6 +100,7 @@ PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
   PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
   if (--((PetscObject)(*guess))->refct > 0) {*guess = 0; PetscFunctionReturn(0);}
   if ((*guess)->ops->destroy) { ierr = (*(*guess)->ops->destroy)(*guess);CHKERRQ(ierr); }
+  ierr = MatDestroy(&(*guess)->A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(guess);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -173,6 +174,7 @@ PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
   *guess = 0;
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(tguess,KSPGUESS_CLASSID,"KSPGuess","Initial guess for Krylov Method","KSPGuess",comm,KSPGuessDestroy,KSPGuessView);CHKERRQ(ierr);
+  tguess->omatstate = -1;
   *guess = tguess;
   PetscFunctionReturn(0);
 }
@@ -320,24 +322,28 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
 {
   PetscErrorCode   ierr;
-  PetscObjectState omatstate = -1, matstate;
+  PetscObjectState matstate;
   PetscInt         oM = 0, oN = 0, M, N;
+  Mat              omat = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   if (guess->A) {
-    ierr = PetscObjectStateGet((PetscObject)guess->A,&omatstate);CHKERRQ(ierr);
+    omat = guess->A;
     ierr = MatGetSize(guess->A,&oM,&oN);CHKERRQ(ierr);
   }
   ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)guess->A);CHKERRQ(ierr);
   ierr = MatGetSize(guess->A,&M,&N);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
-  if (omatstate != matstate || M != oM || N != oN) {
-    ierr = PetscInfo6(guess,"Resetting KSPGuess since mat state or sizes have changed (%D != %D, %D != %D, %D != %D)\n",omatstate,matstate,oM,M,oN,N);CHKERRQ(ierr);
+  if (omat != guess->A || guess->omatstate != matstate || M != oM || N != oN) {
+    ierr = PetscInfo7(guess,"Resetting KSPGuess since matrix, mat state or sizes have changed (mat %d, %D != %D, %D != %D, %D != %D)\n",(PetscBool)(omat != guess->A),guess->omatstate,matstate,oM,M,oN,N);CHKERRQ(ierr);
     if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
   } else {
     ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);
   }
   if (guess->ops->setup) { ierr = (*guess->ops->setup)(guess);CHKERRQ(ierr); }
+  guess->omatstate = matstate;
+  ierr = MatDestroy(&omat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

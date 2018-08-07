@@ -1,6 +1,10 @@
 
 static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCreateToZero()\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -66,3 +70,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 4
+
+TEST*/

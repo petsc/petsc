@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscBool      reorder=PETSC_FALSE;
   MatInfo        minfo1,minfo2;
-  PetscReal      norm1,norm2,tol=1.e-10;
+  PetscReal      norm1,norm2,tol=10*PETSC_SMALL;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -26,8 +26,10 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
 
   n   = mbs*bs;
-  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &A);CHKERRQ(ierr);
-  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &sA);CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &sA);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
@@ -83,10 +85,6 @@ int main(int argc,char **args)
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
             ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
-          /*
-          ierr = MatSetValues(A,1,&I,1,&I,&four,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValues(sA,1,&I,1,&I,&four,INSERT_VALUES);CHKERRQ(ierr);
-          */
         }
       }
     }
@@ -126,16 +124,9 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /* PetscPrintf(PETSC_COMM_SELF,"\n The Matrix: \n");
-  MatView(A, VIEWER_DRAW_WORLD);
-  MatView(A, VIEWER_STDOUT_WORLD); */
 
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n");
-  MatView(sA, VIEWER_DRAW_WORLD);
-  MatView(sA, VIEWER_STDOUT_WORLD);
-  */
 
   /* Test MatNorm() */
   ierr   = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
@@ -154,10 +145,6 @@ int main(int argc,char **args)
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
   ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
-  /*
-  printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated);
-  printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated);
-  */
   i = (int) (minfo1.nz_used - minfo2.nz_used);
   j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   if (i<0 || j<0) {
@@ -246,13 +233,9 @@ int main(int argc,char **args)
 
     ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRQ(ierr);
     ierr = ISDestroy(&nip);CHKERRQ(ierr);
-    /* ierr = ISView(ip, VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-       ierr = MatView(sA,VIEWER_DRAW_SELF);CHKERRQ(ierr); */
   }
 
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  /* ierr = ISDestroy(&isrow);CHKERRQ(ierr);*/
-
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&sA);CHKERRQ(ierr);
@@ -266,3 +249,10 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8}}
+
+TEST*/

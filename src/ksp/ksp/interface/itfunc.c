@@ -38,9 +38,9 @@
 
    Level: advanced
 
-.keywords: KSP, compute, extreme, singular, values
+.keywords: compute, extreme, singular, values
 
-.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeEigenvalues()
+.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeEigenvalues(), KSP
 @*/
 PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
@@ -102,9 +102,9 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
    Level: advanced
 
-.keywords: KSP, compute, extreme, singular, values
+.keywords: compute, extreme, singular, values
 
-.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues()
+.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSP
 @*/
 PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal c[],PetscInt *neig)
 {
@@ -162,9 +162,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
    Level: advanced
 
-.keywords: KSP, compute, ritz, values
+.keywords: compute, ritz, values
 
-.seealso: KSPSetComputeRitz()
+.seealso: KSPSetComputeRitz(), KSP
 @*/
 PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal tetar[],PetscReal tetai[])
 {
@@ -197,9 +197,9 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
    Level: advanced
 
-.keywords: KSP, setup, blocks
+.keywords: setup, blocks
 
-.seealso: PCSetUpOnBlocks(), KSPSetUp(), PCSetUp()
+.seealso: PCSetUpOnBlocks(), KSPSetUp(), PCSetUp(), KSP
 @*/
 PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 {
@@ -229,9 +229,9 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 
    Level: intermediate
 
-.keywords: KSP, setup
+.keywords: setup
 
-.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), PCSetReusePreconditioner()
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), PCSetReusePreconditioner(), KSP
 @*/
 PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 {
@@ -256,9 +256,9 @@ PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 
    Level: intermediate
 
-.keywords: KSP, setup
+.keywords: setup
 
-.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), PCSetReusePreconditioner()
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), PCSetReusePreconditioner(), KSP
 @*/
 PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
 {
@@ -279,9 +279,9 @@ PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
 
    Level: developer
 
-.keywords: KSP, setup
+.keywords: setup
 
-.seealso: KSPCreate(), KSPSolve(), KSPDestroy()
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), KSP
 @*/
 PetscErrorCode KSPSetUp(KSP ksp)
 {
@@ -411,10 +411,10 @@ PetscErrorCode KSPSetUp(KSP ksp)
 
    Level: beginner
 
-.keywords: KSP, solve, linear system
+.keywords: solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber()
+          KSPSolveTranspose(), KSPGetIterationNumber(), KSP
 @*/
 PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
 {
@@ -548,10 +548,10 @@ $    If nullspace(A) != nullspace(A') then left preconditioning will work but ri
 
    Level: beginner
 
-.keywords: KSP, solve, linear system
+.keywords: solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace()
+          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace(), KSP
 @*/
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
@@ -603,7 +603,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     if (state != ostate) {
       ksp->guess_zero = PETSC_FALSE;
     } else {
-      PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");
+      ierr = PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");CHKERRQ(ierr);
       ksp->guess_zero = PETSC_TRUE;
     }
   }
@@ -869,18 +869,20 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 .  b - right hand side vector
 -  x - solution vector
 
-   Notes: For complex numbers this solve the non-Hermitian transpose system.
+   Notes:
+    For complex numbers this solve the non-Hermitian transpose system.
 
    This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
 
-   Developer Notes: We need to implement a KSPSolveHermitianTranspose()
+   Developer Notes:
+    We need to implement a KSPSolveHermitianTranspose()
 
    Level: developer
 
-.keywords: KSP, solve, linear system
+.keywords: solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolve()
+          KSPSolve(), KSP
 @*/
 
 PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
@@ -908,6 +910,21 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ksp->vec_sol         = x;
   ksp->transpose_solve = PETSC_TRUE;
 
+  if (ksp->guess) {
+    PetscObjectState ostate,state;
+
+    ierr = KSPGuessSetUp(ksp->guess);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&ostate);CHKERRQ(ierr);
+    ierr = KSPGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&state);CHKERRQ(ierr);
+    if (state != ostate) {
+      ksp->guess_zero = PETSC_FALSE;
+    } else {
+      ierr = PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");CHKERRQ(ierr);
+      ksp->guess_zero = PETSC_TRUE;
+    }
+  }
+
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
@@ -929,6 +946,10 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
+
+  if (ksp->guess) {
+    ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+  }
 
   ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
   ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
@@ -953,9 +974,9 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
    Level: beginner
 
-.keywords: KSP, destroy
+.keywords: destroy
 
-.seealso: KSPCreate(), KSPSetUp(), KSPSolve()
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve(), KSP
 @*/
 PetscErrorCode  KSPReset(KSP ksp)
 {
@@ -992,9 +1013,9 @@ PetscErrorCode  KSPReset(KSP ksp)
 
    Level: beginner
 
-.keywords: KSP, destroy
+.keywords: destroy
 
-.seealso: KSPCreate(), KSPSetUp(), KSPSolve()
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve(), KSP
 @*/
 PetscErrorCode  KSPDestroy(KSP *ksp)
 {
@@ -1007,6 +1028,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*ksp);CHKERRQ(ierr);
+
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
@@ -1016,8 +1038,9 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   (*ksp)->pc = NULL;
   ierr       = KSPReset((*ksp));CHKERRQ(ierr);
   (*ksp)->pc = pc;
-    if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
+  if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
 
+  ierr = KSPGuessDestroy(&(*ksp)->guess);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
   ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
   ierr = PetscFree((*ksp)->res_hist_alloc);CHKERRQ(ierr);
@@ -1062,9 +1085,9 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
 
     Level: intermediate
 
-.keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
+.keywords: set, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPGetPCSide(), KSPSetNormType(), KSPGetNormType()
+.seealso: KSPGetPCSide(), KSPSetNormType(), KSPGetNormType(), KSP
 @*/
 PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
 {
@@ -1093,9 +1116,9 @@ PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
 
     Level: intermediate
 
-.keywords: KSP, get, right, left, symmetric, side, preconditioner, flag
+.keywords: get, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPSetPCSide()
+.seealso: KSPSetPCSide(), KSP
 @*/
 PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
 {
@@ -1129,10 +1152,10 @@ PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
 
    Level: intermediate
 
-.keywords: KSP, get, tolerance, absolute, relative, divergence, convergence,
+.keywords: get, tolerance, absolute, relative, divergence, convergence,
            maximum, iterations
 
-.seealso: KSPSetTolerances()
+.seealso: KSPSetTolerances(), KSP
 @*/
 PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,PetscInt *maxits)
 {
@@ -1172,10 +1195,10 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 
    Level: intermediate
 
-.keywords: KSP, set, tolerance, absolute, relative, divergence,
+.keywords: set, tolerance, absolute, relative, divergence,
            convergence, maximum, iterations
 
-.seealso: KSPGetTolerances(), KSPConvergedDefault(), KSPSetConvergenceTest()
+.seealso: KSPGetTolerances(), KSPConvergedDefault(), KSPSetConvergenceTest(), KSP
 @*/
 PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 {
@@ -1224,9 +1247,9 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
    Notes:
     If this is not called the X vector is zeroed in the call to KSPSolve().
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: set, initial guess, nonzero
 
-.seealso: KSPGetInitialGuessNonzero(), KSPSetGuessType(), KSPGuessType
+.seealso: KSPGetInitialGuessNonzero(), KSPSetGuessType(), KSPGuessType, KSP
 @*/
 PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
 {
@@ -1251,9 +1274,9 @@ PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
 
    Level: intermediate
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: set, initial guess, nonzero
 
-.seealso: KSPSetInitialGuessNonzero()
+.seealso: KSPSetInitialGuessNonzero(), KSP
 @*/
 PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
 {
@@ -1283,9 +1306,8 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
     Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
 
-.keywords: KSP
 
-.seealso: KSPGetErrorIfNotConverged()
+.seealso: KSPGetErrorIfNotConverged(), KSP
 @*/
 PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
 {
@@ -1309,9 +1331,7 @@ PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
 
    Level: intermediate
 
-.keywords: KSP
-
-.seealso: KSPSetErrorIfNotConverged()
+.seealso: KSPSetErrorIfNotConverged(), KSP
 @*/
 PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 {
@@ -1335,9 +1355,9 @@ PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 
    Developer Note: the Knoll trick is not currently implemented using the KSPGuess class
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: set, initial guess, nonzero
 
-.seealso: KSPGetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
+.seealso: KSPGetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero(), KSP
 @*/
 PetscErrorCode  KSPSetInitialGuessKnoll(KSP ksp,PetscBool flg)
 {
@@ -1362,9 +1382,9 @@ PetscErrorCode  KSPSetInitialGuessKnoll(KSP ksp,PetscBool flg)
 
    Level: advanced
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: set, initial guess, nonzero
 
-.seealso: KSPSetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
+.seealso: KSPSetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero(), KSP
 @*/
 PetscErrorCode  KSPGetInitialGuessKnoll(KSP ksp,PetscBool  *flag)
 {
@@ -1400,9 +1420,9 @@ PetscErrorCode  KSPGetInitialGuessKnoll(KSP ksp,PetscBool  *flag)
 
    Level: advanced
 
-.keywords: KSP, set, compute, singular values
+.keywords: set, compute, singular values
 
-.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
+.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue(), KSP
 @*/
 PetscErrorCode  KSPGetComputeSingularValues(KSP ksp,PetscBool  *flg)
 {
@@ -1436,9 +1456,9 @@ PetscErrorCode  KSPGetComputeSingularValues(KSP ksp,PetscBool  *flg)
 
    Level: advanced
 
-.keywords: KSP, set, compute, singular values
+.keywords: set, compute, singular values
 
-.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
+.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue(), KSP
 @*/
 PetscErrorCode  KSPSetComputeSingularValues(KSP ksp,PetscBool flg)
 {
@@ -1467,9 +1487,9 @@ PetscErrorCode  KSPSetComputeSingularValues(KSP ksp,PetscBool flg)
 
    Level: advanced
 
-.keywords: KSP, set, compute, eigenvalues
+.keywords: set, compute, eigenvalues
 
-.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
+.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly(), KSP
 @*/
 PetscErrorCode  KSPGetComputeEigenvalues(KSP ksp,PetscBool  *flg)
 {
@@ -1496,9 +1516,9 @@ PetscErrorCode  KSPGetComputeEigenvalues(KSP ksp,PetscBool  *flg)
 
    Level: advanced
 
-.keywords: KSP, set, compute, eigenvalues
+.keywords: set, compute, eigenvalues
 
-.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
+.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly(), KSP
 @*/
 PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
 {
@@ -1525,9 +1545,9 @@ PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
 
    Level: advanced
 
-.keywords: KSP, set, compute, ritz
+.keywords: set, compute, ritz
 
-.seealso: KSPComputeRitz()
+.seealso: KSPComputeRitz(), KSP
 @*/
 PetscErrorCode  KSPSetComputeRitz(KSP ksp, PetscBool flg)
 {
@@ -1552,9 +1572,9 @@ PetscErrorCode  KSPSetComputeRitz(KSP ksp, PetscBool flg)
 
    Level: developer
 
-.keywords: KSP, get, right-hand-side, rhs
+.keywords: get, right-hand-side, rhs
 
-.seealso: KSPGetSolution(), KSPSolve()
+.seealso: KSPGetSolution(), KSPSolve(), KSP
 @*/
 PetscErrorCode  KSPGetRhs(KSP ksp,Vec *r)
 {
@@ -1580,9 +1600,9 @@ PetscErrorCode  KSPGetRhs(KSP ksp,Vec *r)
 
    Level: developer
 
-.keywords: KSP, get, solution
+.keywords: get, solution
 
-.seealso: KSPGetRhs(),  KSPBuildSolution(), KSPSolve()
+.seealso: KSPGetRhs(),  KSPBuildSolution(), KSPSolve(), KSP
 @*/
 PetscErrorCode  KSPGetSolution(KSP ksp,Vec *v)
 {
@@ -1609,9 +1629,9 @@ PetscErrorCode  KSPGetSolution(KSP ksp,Vec *v)
 
    Level: developer
 
-.keywords: KSP, set, precondition, Binv
+.keywords: set, precondition, Binv
 
-.seealso: KSPGetPC()
+.seealso: KSPGetPC(), KSP
 @*/
 PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
 {
@@ -1642,9 +1662,9 @@ PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
 
    Level: developer
 
-.keywords: KSP, get, preconditioner, Binv
+.keywords: get, preconditioner, Binv
 
-.seealso: KSPSetPC()
+.seealso: KSPSetPC(), KSP
 @*/
 PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
 {
@@ -1762,13 +1782,14 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
    KSPMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each KSP object
+   Fortran Notes:
+    Only a single monitor function can be set for each KSP object
 
    Level: beginner
 
-.keywords: KSP, set, monitor
+.keywords: set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorCancel()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorCancel(), KSP
 @*/
 PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -1804,9 +1825,9 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
 
    Level: intermediate
 
-.keywords: KSP, set, monitor
+.keywords: set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorSet()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorSet(), KSP
 @*/
 PetscErrorCode  KSPMonitorCancel(KSP ksp)
 {
@@ -1838,9 +1859,9 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
 
    Level: intermediate
 
-.keywords: KSP, get, monitor, context
+.keywords: get, monitor, context
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSP
 @*/
 PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 {
@@ -1866,15 +1887,16 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 
    Level: advanced
 
-   Notes: The array is NOT freed by PETSc so the user needs to keep track of
+   Notes:
+    The array is NOT freed by PETSc so the user needs to keep track of
            it and destroy once the KSP object is destroyed.
 
    If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
    default array of length 10000 is allocated.
 
-.keywords: KSP, set, residual, history, norm
+.keywords: set, residual, history, norm
 
-.seealso: KSPGetResidualHistory()
+.seealso: KSPGetResidualHistory(), KSP
 
 @*/
 PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBool reset)
@@ -1924,9 +1946,9 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
     to access the residual values from this Fortran array you provided. Only the na (number of
     residual norms currently held) is set.
 
-.keywords: KSP, get, residual, history, norm
+.keywords: get, residual, history, norm
 
-.seealso: KSPGetResidualHistory()
+.seealso: KSPGetResidualHistory(), KSP
 
 @*/
 PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
@@ -1976,9 +1998,9 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
    Level: advanced
 
-.keywords: KSP, set, convergence, test, context
+.keywords: set, convergence, test, context
 
-.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances()
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances(), KSP
 @*/
 PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -2009,9 +2031,9 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 
    Level: advanced
 
-.keywords: KSP, get, convergence, test, context
+.keywords: get, convergence, test, context
 
-.seealso: KSPConvergedDefault(), KSPSetConvergenceTest()
+.seealso: KSPConvergedDefault(), KSPSetConvergenceTest(), KSP
 @*/
 PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
 {
@@ -2055,9 +2077,9 @@ PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
 
    Level: advanced
 
-.keywords: KSP, build, solution
+.keywords: build, solution
 
-.seealso: KSPGetSolution(), KSPBuildResidual()
+.seealso: KSPGetSolution(), KSPBuildResidual(), KSP
 @*/
 PetscErrorCode  KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 {
@@ -2131,7 +2153,8 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 -   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
 
 
-    Notes: Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
+    Notes:
+    Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
        where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
 
     BE CAREFUL with this routine: it actually scales the matrix and right
@@ -2147,9 +2170,9 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
    Level: intermediate
 
-.keywords: KSP, set, options, prefix, database
+.keywords: set, options, prefix, database
 
-.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScaleFix()
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScaleFix(), KSP
 @*/
 PetscErrorCode  KSPSetDiagonalScale(KSP ksp,PetscBool scale)
 {
@@ -2179,9 +2202,9 @@ PetscErrorCode  KSPSetDiagonalScale(KSP ksp,PetscBool scale)
 
    Level: intermediate
 
-.keywords: KSP, set, options, prefix, database
+.keywords: set, options, prefix, database
 
-.seealso: KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
+.seealso: KSPSetDiagonalScale(), KSPSetDiagonalScaleFix(), KSP
 @*/
 PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
 {
@@ -2213,9 +2236,9 @@ PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
 
    Level: intermediate
 
-.keywords: KSP, set, options, prefix, database
+.keywords: set, options, prefix, database
 
-.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPGetDiagonalScaleFix()
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPGetDiagonalScaleFix(), KSP
 @*/
 PetscErrorCode  KSPSetDiagonalScaleFix(KSP ksp,PetscBool fix)
 {
@@ -2249,9 +2272,9 @@ PetscErrorCode  KSPSetDiagonalScaleFix(KSP ksp,PetscBool fix)
 
    Level: intermediate
 
-.keywords: KSP, set, options, prefix, database
+.keywords: set, options, prefix, database
 
-.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
+.seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPSetDiagonalScaleFix(), KSP
 @*/
 PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 {
@@ -2280,7 +2303,8 @@ $  func(KSP ksp,Mat A,Mat B,void *ctx)
 .  B - preconditioning matrix
 -  ctx - optional user-provided context
 
-   Notes: The user provided func() will be called automatically at the very next call to KSPSolve(). It will not be called at future KSPSolve() calls
+   Notes:
+    The user provided func() will be called automatically at the very next call to KSPSolve(). It will not be called at future KSPSolve() calls
           unless either KSPSetComputeOperators() or KSPSetOperators() is called before that KSPSolve() is called.
 
           To reuse the same preconditioner for the next KSPSolve() and not compute a new one based on the most recently computed matrix call KSPSetReusePreconditioner()
@@ -2319,7 +2343,8 @@ $  func(KSP ksp,Vec b,void *ctx)
 .  b - right hand side of linear system
 -  ctx - optional user-provided context
 
-   Notes: The routine you provide will be called EACH you call KSPSolve() to prepare the new right hand side for that solve
+   Notes:
+    The routine you provide will be called EACH you call KSPSolve() to prepare the new right hand side for that solve
 
    Level: beginner
 

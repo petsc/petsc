@@ -38,7 +38,7 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 
@@ -86,7 +86,7 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   AO             ao;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 

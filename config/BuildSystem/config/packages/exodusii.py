@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '208a03eae9b1f384e199e78c765a5300aa2d4873'
+    self.gitcommit         = 'd04c0c86152f2f0beb0c1f122d2e5d56ee31f34d'
     self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
@@ -14,16 +14,11 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.netcdf = framework.require('config.packages.netcdf', self)
-    self.hdf5   = framework.require('config.packages.hdf5', self)
-    self.deps   = [self.netcdf, self.hdf5]
+    self.pnetcdf = framework.require('config.packages.pnetcdf', self)
+    self.netcdf  = framework.require('config.packages.netcdf', self)
+    self.hdf5    = framework.require('config.packages.hdf5', self)
+    self.deps = [self.hdf5,self.netcdf,self.pnetcdf]
     return
-
-  def configureLibrary(self):
-    self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
-    if hasattr(self.compilers, 'FC'):
-      self.liblist.append(['libexoIIv2for.a'])
-    config.package.Package.configureLibrary(self)
 
   def formCMakeConfigureArgs(self):
     import os
@@ -45,16 +40,19 @@ class Configure(config.package.CMakePackage):
       self.setCompilers.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER:FILEPATH="'+self.setCompilers.getCompiler()+'"')
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=ON')
+      args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=ON')
       self.setCompilers.popLanguage()
     else:
       args.append('-DSEACASProj_ENABLE_SEACASExodus_for=OFF')
+      args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=OFF')
     args.append('-DSEACASProj_ENABLE_SEACASExodus=ON')
-    args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=OFF')
     args.append('-DSEACASProj_ENABLE_TESTS=ON')
     args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
     args.append('-DTPL_ENABLE_Matio:BOOL=OFF')
     args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
-    args.append('-DTPL_ENABLE_MPI=OFF')
+    args.append('-DTPL_ENABLE_Pnetcdf:BOOL=ON')
+    args.append('-DTPL_Netcdf_Enables_PNetcdf:BOOL=ON')
+    args.append('-DTPL_ENABLE_MPI=ON')
     args.append('-DTPL_ENABLE_Pamgen=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
     args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)

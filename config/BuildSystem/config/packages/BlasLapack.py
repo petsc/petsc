@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.defaultPrecision    = 'double'
     self.f2c                 = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
+    self.has64bitindices     = 0
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.separateBlas        = 1
     self.required            = 1
@@ -37,15 +38,26 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
-    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
+#    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
   def getPrefix(self):
-    if self.defaultPrecision == 'single': return 's'
-    if self.defaultPrecision == 'double': return 'd'
-    if self.defaultPrecision == '__float128': return 'q'
-    if self.defaultPrecision == '__fp16': return 'h'
-    return 'Unknown precision'
+    if self.compilers.fortranMangling == 'caps':
+      if self.defaultPrecision == 'single': return 'S'
+      if self.defaultPrecision == 'double': return 'D'
+      if self.defaultPrecision == '__float128': return 'Q'
+      if self.defaultPrecision == '__fp16': return 'H'
+      return 'Unknown precision'
+    else:
+      if self.defaultPrecision == 'single': return 's'
+      if self.defaultPrecision == 'double': return 'd'
+      if self.defaultPrecision == '__float128': return 'q'
+      if self.defaultPrecision == '__fp16': return 'h'
+      return 'Unknown precision'
+
+  def getType(self):
+    if self.defaultPrecision == 'single': return 'float'
+    return self.defaultPrecision
 
   def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
     if foundBlas is None:
@@ -196,13 +208,15 @@ class Configure(config.package.Package):
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
-      self.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
+      self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0
       usePardiso=0
       if self.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.argDB or 'with-mkl_cpardiso-lib' in self.argDB:
         useCPardiso=1
+        #  the free version of MKL on MacOS doesn't appear to have the blacs libraries
+        #  TODO: this is hardwared to blacs_intelmpi when it should also support blacs_mpich, but how to determine which one to use based on the MPI.
         mkl_blacs_64=['mkl_blacs_intelmpi_lp64']
         mkl_blacs_32=['mkl_blacs_intelmpi']
       elif self.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.argDB or 'with-mkl_pardiso-lib' in self.argDB:
@@ -216,7 +230,9 @@ class Configure(config.package.Package):
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
+            #  iomp5 is provided by the Intel compilers on MacOS. Run source /opt/intel/bin/compilervars.sh intel64 to have it added to LIBRARY_PATH
             yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread'])
+            #   mkl_gnu_thread does not exist on MacOS
             yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread'])
             yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread'])
             yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread'])
@@ -227,6 +243,10 @@ class Configure(config.package.Package):
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
       # Check MATLAB [ILP64] MKL
       yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'])
+      oldFlags = self.setCompilers.LDFLAGS
+      self.setCompilers.LDFLAGS += '-Wl,-rpath,'+os.path.join(dir,'bin','maci64')
+      yield ('User specified MATLAB [ILP64] MKL MacOS lib dir', None, [os.path.join(dir,'bin','maci64','mkl.dylib'), os.path.join(dir,'sys','os','maci64','libiomp5.dylib'), 'pthread'])
+      self.setCompilers.LDFLAGS = oldFlags
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
@@ -391,7 +411,6 @@ class Configure(config.package.Package):
         self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
 
     self.found = 1
-    self.executeTest(self.check64BitBLASIndices)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMKL)
@@ -405,7 +424,9 @@ class Configure(config.package.Package):
         symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
-    self.executeTest(self.checksdotreturnsdouble)
+    self.executeTest(self.checkRuntimeIssues)
+    if self.mkl and self.has64bitindices:
+      self.addDefine('HAVE_LIBMKL_INTEL_ILP64',1)
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
@@ -477,9 +498,9 @@ class Configure(config.package.Package):
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
     routines = ['geev','gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','getrs','gges',
-                'hetrf','hetri','hetrs','hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
+                'hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
                 'stebz','stein','steqr','syev','syevx','sygvx','sytrf','sytri','sytrs',
-                'tgsen','trsen','trtrs','ungqr']
+                'tgsen','trsen','trtrs','orgqr']  # skip these: 'hetrf','hetri','hetrs',
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
@@ -517,22 +538,18 @@ class Configure(config.package.Package):
     self.logWrite(self.libraries.restoreLog())
     return ret
 
-  def check64BitBLASIndices(self):
-    '''Check for and use 64bit integer blas'''
-    if 'known-64-bit-blas-indices' in self.argDB:
-      if int(self.argDB['known-64-bit-blas-indices']):
-        self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
-    return
-
-  def runTimeTest(self,name,includes,body,lib = None):
+  def runTimeTest(self,name,includes,body,lib = None,nobatch=0):
     '''Either runs a test or adds it to the batch of runtime tests'''
     if name in self.argDB: return self.argDB[name]
     if self.argDB['with-batch']:
-      self.framework.addBatchInclude(includes)
-      self.framework.addBatchBody(body)
-      if lib: self.framework.addBatchLib(lib)
-      if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
-      return None
+      if nobatch:
+        raise RuntimeError('In batch mode you must provide the value for --'+name)
+      else:
+        self.framework.addBatchInclude(includes)
+        self.framework.addBatchBody(body)
+        if lib: self.framework.addBatchLib(lib)
+        if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
+        return None
     else:
       result = None
       self.pushLanguage('C')
@@ -541,7 +558,7 @@ class Configure(config.package.Package):
       if lib:
         if not isinstance(lib, list): lib = [lib]
         oldLibs  = self.compilers.LIBS
-        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(lib)+' '+self.compilers.LIBS
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
         out  = f.read()
@@ -553,28 +570,85 @@ class Configure(config.package.Package):
         self.compilers.LIBS = oldLibs
       return result
 
-  def checksdotreturnsdouble(self):
-    '''Determines if BLAS sdot routine returns a float or a double'''
+  def checkRuntimeIssues(self):
+    '''Determines if BLAS/LAPACK routines use 32 or 64 bit integers'''
+    self.log.write('Checking if BLAS/LAPACK routines use 32 or 64 bit integers')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    t = self.getType()
+    body     = '''extern '''+t+''' '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+                  '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
+                  int one1mkl = 1,nmkl = 2;
+                  '''+t+''' dotresultmkl = 0;
+                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
+    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
+    if result:
+      self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
+      result = int(result)
+      if result:
+        if self.defaultPrecision == 'single':
+          self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
+          # On Apple single precision sdot() returns a double so we need to test that case
+          body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+                  '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
+                  int one1mkl = 1,nmkl = 2;
+                  double dotresultmkl = 0;
+                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
+          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
+          result = int(result)
+      if result:
+        self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+        self.has64bitindices = 1
+        self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
+    else:
+      self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+      self.has64bitindices = 1
+      self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
+    if not self.defaultPrecision == 'single': return
     self.log.write('Checking if sdot() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(int*,float*,int *,float*,int*);\n
-                  float x1[1] = {3.0};\n
-                  int one1 = 1;\n
-                  float sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''(&one1,x1,&one1,x1,&one1);\n
-                  fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
-    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
+    body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
+                  float x1[1] = {3.0};
+                  int one1 = 1;
+                  long long int ione1 = 1;
+                  float sdotresult = 0;
+                  int blasint64 = '''+str(self.has64bitindices)+''';\n
+                  if (!blasint64) {
+                       sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''(&one1,x1,&one1,x1,&one1);
+                     } else {
+                       sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
+                     }
+                  fprintf(output, "--known-sdot-returns-doubl=%d",sdotresult != 9);\n'''
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
+      self.log.write('Checking for sdot return double: result ' +str(result)+'\n')
       result = int(result)
-      if result: self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+      if result:
+        self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+        self.log.write('Checking sdot(): Program did return with not 1 for output so assume returns double\n')
+    else:
+      self.log.write('Checking sdot(): Program did not return with output so assume returns single\n')
     self.log.write('Checking if snrm() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(int*,float*,int*);\n
-                  float x2[1] = {3.0};\n
-                  int one2 = 1;\n
-                  float normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''(&one2,x2,&one2);\n
-                  fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
-    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
+    body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);
+                  float x2[1] = {3.0};
+                  int one2 = 1;
+                  long long int ione2 = 1;
+                  float normresult = 0;
+                  int blasint64 = '''+str(self.has64bitindices)+''';\n
+                  if (!blasint64) {
+                       normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''(&one2,x2,&one2);
+                     } else {
+                       normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
+                     }
+                  fprintf(output, "--known-snrm2-returns-double=%d",normresult != 3);\n'''
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
+      self.log.write('Checking for snrm2 return double: result ' +str(result)+'\n')
       result = int(result)
-      if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
-
+      if result:
+        self.log.write('Checking sdot(): Program did eturn with 1 for output so assume returns double\n')
+        self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+    else:
+      self.log.write('Checking snrm(): Program did not return with output so assume returns single\n')

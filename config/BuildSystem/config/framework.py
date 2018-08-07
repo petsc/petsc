@@ -40,6 +40,7 @@ self.mpi so that we may interogate it later. HYPRE can initially test whether
 MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
+from __future__ import print_function
 import user
 import script
 import config.base
@@ -49,6 +50,7 @@ import tempfile
 import os
 import re
 import platform
+from functools import reduce
 # workarround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
@@ -133,8 +135,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     dirs     = []
     nextDirs = variable.split(os.sep)
     if os.path.isdir(base):
-      files = os.listdir(base)
-      files.sort()
+      try:
+        files = os.listdir(base)
+        files.sort()
+      except: pass
       for dir in files:
         if re.match(nextDirs[0], dir):
           if nextDirs[1:]:
@@ -176,19 +180,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help        = config.base.Configure.setupHelp(self, help)
     searchdirs  = []
     packagedirs = []
-    home = os.getenv('HOME')
-    if home and os.path.isdir(home):
-      packagedirs.append(home)
-      searchdirs.append(home)
-    list = self.listDirs('/opt/ibmcmp/vacpp/','[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/','intel_cc_[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-    list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
-    if list: searchdirs.append(list[-1])
-
 
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
     help.addArgument('Framework', '-ignoreCompileOutput=<bool>', nargs.ArgBool(None, 1, 'Ignore compiler output'))
@@ -196,9 +187,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-ignoreWarnings=<bool>',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     help.addArgument('Framework', '-doCleanup=<bool>',           nargs.ArgBool(None, 1, 'Delete any configure generated files (turn off for debugging)'))
     help.addArgument('Framework', '-with-alternatives=<bool>',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
-    help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
-    help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
+    help.addArgument('Framework', '-with-executables-search-path', nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
+    help.addArgument('Framework', '-with-packages-search-path',  nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
+    help.addArgument('Framework', '-with-packages-build-dir=<dir>', nargs.Arg(None, None, 'Location to unpack and run the build process for downloaded packages'))
     help.addArgument('Framework', '-with-batch=<bool>',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
     help.addArgument('Framework', '-with-file-create-pause=<bool>', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help
@@ -216,7 +207,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Change titles and setup all children'''
     argDB = script.Script.setupArguments(self, argDB)
 
-    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-external-packages-dir=/Users/bsmith/external\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
+    self.help.title = 'Configure Help\n   Comma separated lists should be given between [] (use \[ \] in tcsh/csh)\n      For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]\n   Options beginning with --known- are to provide values you already know\n      For example:--known-endian=big\n   Options beginning with --with- indicate that you are requesting something\n      For example: --with-clanguage=c++\n   <prog> means a program name or a full path to a program\n      For example:--with-cmake=/Users/bsmith/bin/cmake\n   <bool> means a boolean, use either 0 or 1\n   <dir> means a directory\n      For example: --with-packages-download-dir=/Users/bsmith/Downloads\n   For packages use --with-PACKAGE-dir=<dir> OR\n      --with-PACKAGE-include=<dir> --with-PACKAGE-lib=<lib> OR --download-PACKAGE'
     self.actions.title = 'Configure Actions\n   These are the actions performed by configure on the filesystem'
 
     for child in self.childGraph.vertices:
@@ -425,9 +416,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterCompileOutput(self, output):
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    if output.find('PGC-W-0129-Floating point overflow') >= 0: return output
+    if output.find('warning #264: floating-point value does not fit in required floating-point type') >= 0: return output
     if output.find('warning: ISO C90 does not support') >= 0: return output
     if output.find('warning: ISO C does not support') >= 0: return output
     if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
+    if output.find('(E) Invalid statement found within an interface block. Executable statement, statement function or syntax error encountered.') >= 0: return output
     elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
@@ -461,7 +455,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterLinkOutput(self, output):
-    if self.argDB['ignoreLinkOutput']:
+    if output.find('relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol') >= 0: return output
+    elif self.argDB['ignoreLinkOutput']:
       output = ''
     elif output:
       hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
@@ -529,9 +524,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def substituteName(self, match, prefix = None):
     '''Return the substitution value for a given name, or return "@name_UNKNOWN@"'''
     name = match.group('name')
-    if self.subst.has_key(name):
+    if name in self.subst:
       return self.subst[name]
-    elif self.argSubst.has_key(name):
+    elif name in self.argSubst:
       return self.argDB[self.argSubst[name]]
     else:
       for child in self.childGraph.vertices:
@@ -549,9 +544,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             continue
         else:
           childName = name
-        if child.subst.has_key(childName):
+        if childName in child.subst:
           return child.subst[childName]
-        elif child.argSubst.has_key(childName):
+        elif childName in child.argSubst:
           return self.argDB[child.argSubst[childName]]
     return '@'+name+'_UNKNOWN@'
 
@@ -563,7 +558,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         os.makedirs(os.path.dirname(outName))
     if self.file_create_pause: time.sleep(1)
     outFile = file(outName, 'w')
-    for line in inFile.xreadlines():
+    for line in inFile:
       outFile.write(self.substRE.sub(self.substituteName, line))
     outFile.close()
     inFile.close()
@@ -578,22 +573,22 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def dumpSubstitutions(self):
     for pair in self.subst.items():
-      print pair[0]+'  --->  '+pair[1]
+      print(pair[0]+'  --->  '+pair[1])
     for pair in self.argSubst.items():
-      print pair[0]+'  --->  '+self.argDB[pair[1]]
+      print(pair[0]+'  --->  '+self.argDB[pair[1]])
     for child in self.childGraph.vertices:
       if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       for pair in child.subst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+str(pair[1])
+          print(substPrefix+'_'+pair[0]+'  --->  '+str(pair[1]))
         else:
-          print pair[0]+'  --->  '+str(pair[1])
+          print(pair[0]+'  --->  '+str(pair[1]))
       for pair in child.argSubst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+str(self.argDB[pair[1]])
+          print(substPrefix+'_'+pair[0]+'  --->  '+str(self.argDB[pair[1]]))
         else:
-          print pair[0]+'  --->  '+str(self.argDB[pair[1]])
+          print(pair[0]+'  --->  '+str(self.argDB[pair[1]]))
     return
 
 
@@ -684,7 +679,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = {}
     for pair in child.defines.items():
       if not pair[1]: continue
-      if help.has_key(pair[0]):
+      if pair[0] in help:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
       else:
         self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
@@ -830,7 +825,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import time, sys
     self.log.write(('='*80)+'\n')
     self.log.write(('='*80)+'\n')
-    self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
+    self.log.write('Starting configure run at '+time.strftime('%a, %d %b %Y %H:%M:%S %z')+'\n')
     self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
     self.log.write('Machine platform:\n' + str(platform.uname())+'\n')
@@ -839,8 +834,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def configureExternalPackagesDir(self):
-    if 'with-external-packages-dir' in self.argDB:
-      self.externalPackagesDir = self.argDB['with-external-packages-dir']
+    if 'with-packages-build-dir' in self.argDB:
+      self.externalPackagesDir = self.argDB['with-packages-build-dir']
     else:
       self.externalPackagesDir = None
     return
@@ -929,16 +924,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       self.logClear()
-      print '=================================================================================\r'
-      print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
-      print '\r'
-      print ' 1) cd '+os.getcwd()+'\r'
-      print '\r'
-      print ' 2) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r'
-      print '    cross-compiling for; this will generate the file '+reconfname+'              \r'
-      print '\r'
-      print ' 3) Run ./'+reconfname+' (to complete the configure process).                    \r'
-      print '=================================================================================\r'
+      print('=================================================================================\r')
+      print('    Since your compute nodes require use of a batch system or mpiexec you must:  \r')
+      print('\r')
+      print(' 1) cd '+os.getcwd()+'\r')
+      print('\r')
+      print(' 2) Submit ./'+confname+' to 1 processor of your batch system or system you are  \r')
+      print('    cross-compiling for; this will generate the file '+reconfname+'              \r')
+      print('\r')
+      print(' 3) Run ./'+reconfname+' (to complete the configure process).                    \r')
+      print('=================================================================================\r')
       sys.exit(0)
     return
 
@@ -969,7 +964,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           else:
             child.no_configure()
           ret = 0
-        except (RuntimeError, config.base.ConfigureSetupError), e:
+        except (RuntimeError, config.base.ConfigureSetupError) as e:
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -977,7 +972,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -985,7 +980,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except ImportError, e :
+        except ImportError as e :
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -993,7 +988,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except OSError, e :
+        except OSError as e :
           emsg = str(e)
           if not emsg.endswith('\n'): emsg = emsg+'\n'
           msg ='*******************************************************************************\n'\
@@ -1001,14 +996,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'-------------------------------------------------------------------------------\n'  \
               +emsg+'*******************************************************************************\n'
           se = ''
-        except SystemExit, e:
+        except SystemExit as e:
           if e.code is None or e.code == 0:
             return
           msg ='*******************************************************************************\n'\
               +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'
           se  = str(e)
-        except Exception, e:
+        except Exception as e:
           msg ='*******************************************************************************\n'\
               +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
               +'*******************************************************************************\n'

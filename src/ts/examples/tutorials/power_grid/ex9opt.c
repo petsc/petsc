@@ -31,6 +31,7 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petsctao.h>
 #include <petscts.h>
 
@@ -489,7 +490,7 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
@@ -513,3 +514,18 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
 
   return 0;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason
+
+   test:
+      suffix: 2
+      args: -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason -tao_test_gradient
+
+TEST*/

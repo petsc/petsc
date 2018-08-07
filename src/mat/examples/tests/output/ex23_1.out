@@ -9,8 +9,48 @@ Mat Object: 1 MPI processes
     type: seqaij
 row 0: (0, 2.)  (1, -2.) 
 row 1: (0, -4.)  (1, 4.) 
-Test MatISGetMPIXAIJ
+Test CheckMat
+Test MatDuplicate and MatAXPY
+Test MatConvert_IS_XAIJ
+Test MatConvert_XAIJ_IS
+Test MatConvert_IS_XAIJ special case (0 0, bs 1 1)
+Test MatConvert_IS_XAIJ special case (0 0, bs 1 2)
+Test MatConvert_IS_XAIJ special case (0 0, bs 1 3)
+Test MatConvert_IS_XAIJ special case (0 0, bs 2 1)
+Test MatConvert_IS_XAIJ special case (0 0, bs 2 2)
+Test MatConvert_IS_XAIJ special case (0 0, bs 2 3)
+Test MatConvert_IS_XAIJ special case (0 0, bs 3 1)
+Test MatConvert_IS_XAIJ special case (0 0, bs 3 2)
+Test MatConvert_IS_XAIJ special case (0 0, bs 3 3)
+Test MatConvert_IS_XAIJ special case (0 1, bs 1 1)
+Test MatConvert_IS_XAIJ special case (0 1, bs 1 2)
+Test MatConvert_IS_XAIJ special case (0 1, bs 1 3)
+Test MatConvert_IS_XAIJ special case (0 1, bs 2 1)
+Test MatConvert_IS_XAIJ special case (0 1, bs 2 2)
+Test MatConvert_IS_XAIJ special case (0 1, bs 2 3)
+Test MatConvert_IS_XAIJ special case (0 1, bs 3 1)
+Test MatConvert_IS_XAIJ special case (0 1, bs 3 2)
+Test MatConvert_IS_XAIJ special case (0 1, bs 3 3)
+Test MatConvert_IS_XAIJ special case (1 0, bs 1 1)
+Test MatConvert_IS_XAIJ special case (1 0, bs 1 2)
+Test MatConvert_IS_XAIJ special case (1 0, bs 1 3)
+Test MatConvert_IS_XAIJ special case (1 0, bs 2 1)
+Test MatConvert_IS_XAIJ special case (1 0, bs 2 2)
+Test MatConvert_IS_XAIJ special case (1 0, bs 2 3)
+Test MatConvert_IS_XAIJ special case (1 0, bs 3 1)
+Test MatConvert_IS_XAIJ special case (1 0, bs 3 2)
+Test MatConvert_IS_XAIJ special case (1 0, bs 3 3)
+Test MatConvert_IS_XAIJ special case (1 1, bs 1 1)
+Test MatConvert_IS_XAIJ special case (1 1, bs 1 2)
+Test MatConvert_IS_XAIJ special case (1 1, bs 1 3)
+Test MatConvert_IS_XAIJ special case (1 1, bs 2 1)
+Test MatConvert_IS_XAIJ special case (1 1, bs 2 2)
+Test MatConvert_IS_XAIJ special case (1 1, bs 2 3)
+Test MatConvert_IS_XAIJ special case (1 1, bs 3 1)
+Test MatConvert_IS_XAIJ special case (1 1, bs 3 2)
+Test MatConvert_IS_XAIJ special case (1 1, bs 3 3)
 Test MatDiagonalScale
+Test MatPtAP
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
 Test MatCreateSubMatrix
@@ -35,3 +75,4 @@ Test MatZeroRowsColumns (diag zero)
 Test MatMissingDiagonal
 [0] [0,2) Missing 1, row 0 (diag zero)
 Test MatTranspose
+Test MatISFixLocalEmpty

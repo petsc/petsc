@@ -2,6 +2,7 @@
 from __future__ import generators
 import user
 import config.base
+from functools import reduce
 
 class Configure(config.base.Configure):
   def __init__(self, framework):

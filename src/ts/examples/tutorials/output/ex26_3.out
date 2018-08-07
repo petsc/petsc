@@ -1,46 +1,46 @@
 13x13 grid, lid velocity = 100., prandtl # = 1., grashof # = 1000.
 0 TS dt 0.0384615 time 0.
     0 SNES Function norm 3315.94 
-    1 SNES Function norm 2.38013 
-    2 SNES Function norm 0.000327161 
-    3 SNES Function norm 2.56426e-09 
+    1 SNES Function norm 2.38011 
+    2 SNES Function norm 0.00032716 
+    3 SNES Function norm 2.56541e-09 
 1 TS dt 0.0384615 time 0.0384615
     0 SNES Function norm 97.202 
     1 SNES Function norm 0.223636 
-    2 SNES Function norm 1.59643e-06 
+    2 SNES Function norm 1.59623e-06 
     3 SNES Function norm < 1.e-11
 2 TS dt 0.0384615 time 0.0769231
     0 SNES Function norm 91.9215 
-    1 SNES Function norm 0.0323541 
-    2 SNES Function norm 2.34637e-07 
+    1 SNES Function norm 0.0323546 
+    2 SNES Function norm 2.34601e-07 
 3 TS dt 0.0384615 time 0.115385
     0 SNES Function norm 87.3808 
-    1 SNES Function norm 0.0153467 
-    2 SNES Function norm 6.22573e-08 
+    1 SNES Function norm 0.0153468 
+    2 SNES Function norm 6.22235e-08 
 4 TS dt 0.0384615 time 0.153846
     0 SNES Function norm 83.4023 
     1 SNES Function norm 0.116663 
-    2 SNES Function norm 3.56207e-07 
+    2 SNES Function norm 3.56251e-07 
 5 TS dt 0.0384615 time 0.192308
     0 SNES Function norm 79.8595 
-    1 SNES Function norm 0.0688436 
-    2 SNES Function norm 2.20792e-07 
+    1 SNES Function norm 0.0688442 
+    2 SNES Function norm 2.20885e-07 
 6 TS dt 0.0384615 time 0.230769
     0 SNES Function norm 76.6667 
     1 SNES Function norm 0.0165637 
-    2 SNES Function norm 9.89195e-08 
+    2 SNES Function norm 9.89437e-08 
 7 TS dt 0.0384615 time 0.269231
     0 SNES Function norm 73.7798 
-    1 SNES Function norm 0.0180406 
-    2 SNES Function norm 5.53077e-08 
+    1 SNES Function norm 0.0180403 
+    2 SNES Function norm 5.5259e-08 
 8 TS dt 0.0384615 time 0.307692
     0 SNES Function norm 71.1175 
-    1 SNES Function norm 0.0861586 
-    2 SNES Function norm 8.55637e-07 
+    1 SNES Function norm 0.0861585 
+    2 SNES Function norm 8.55732e-07 
     3 SNES Function norm < 1.e-11
 9 TS dt 0.0384615 time 0.346154
     0 SNES Function norm 68.6491 
-    1 SNES Function norm 0.0546355 
-    2 SNES Function norm 1.31249e-07 
+    1 SNES Function norm 0.0546354 
+    2 SNES Function norm 1.31283e-07 
 10 TS dt 0.0384615 time 0.384615
 CONVERGED_ITS at time 0.384615 after 10 steps

@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
   MLINK link;
   int   ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = processPackets(link);CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = cleanupConnection(env, link);CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = PetscFinalize();CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  return(0);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return(ierr);
+  ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);CHKERRQ(ierr);
+  ierr = processPackets(link);CHKERRQ(ierr);
+  ierr = cleanupConnection(env, link);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return(ierr);
 }

@@ -1,4 +1,3 @@
-
 #if !defined(__is_h)
 #define __is_h
 
@@ -18,7 +17,7 @@ typedef struct {
   IS         getsub_ris,getsub_cis;       /* row and column ISs for MatCreateSubMatrix and MAT_REUSE_MATRIX */
   PetscBool  islocalref;                  /* is a reference to a local submatrix? */
   PetscBool  locempty;                    /* adapt local matrices for empty rows/cols during MatAssemblyEnd_IS */
-  PetscBool  usesetlocal;                 /* use MatSetValuesLocal on local matrices */
+  PetscBool  storel2l;                    /* carry over local-to-local inherited in MatPtAP */
 } Mat_IS;
 
 struct _MatISLocalFields {
@@ -27,9 +26,12 @@ struct _MatISLocalFields {
 };
 typedef struct _MatISLocalFields *MatISLocalFields;
 
+struct _MatISPtAP {
+  PetscReal fill;
+  IS        cis0,cis1,ris0,ris1;
+  Mat       *lP;
+};
+typedef struct _MatISPtAP *MatISPtAP;
+
 PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat,Mat,PetscBool);
 #endif
-
-
-
-

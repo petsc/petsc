@@ -3,6 +3,7 @@
 # include <math.h>
 # include <limits.h>
 # include <float.h>
+#include <petscsys.h>
 
 /*
 * Program: Stream
@@ -73,8 +74,6 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-#include <mpi.h>
-
 int main(int argc,char **args)
 {
   int            quantum, checktick(void);
@@ -85,7 +84,7 @@ int main(int argc,char **args)
   MPI_Status     status;
   int            ierr;
 
-  ierr = MPI_Init(&argc,&args);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);if (ierr) return ierr;
   if (!rank) printf("Number of MPI processes %d ",size);
@@ -191,7 +190,7 @@ int main(int argc,char **args)
     printf("%s  %11.4f   Rate (MB/s) \n", label[3],rate[3]);
     /* for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);*/
   }
-  MPI_Finalize();
+  PetscFinalize();
   return 0;
 }
 

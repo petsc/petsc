@@ -65,6 +65,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -76,7 +77,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  
+
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) red->useparallelmat = PETSC_FALSE;
@@ -86,7 +87,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (!red->psubcomm) { /* create red->psubcomm, new ksp and pc over subcomm */
       KSP ksp;
       ierr = PCRedundantGetKSP(pc,&ksp);CHKERRQ(ierr);
-    } 
+    }
     subcomm = PetscSubcommChild(red->psubcomm);
 
     if (red->useparallelmat) {
@@ -101,12 +102,12 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
           ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
         } else {
-          ierr = PCFactorSetMatSolverPackage(red->pc,NULL);CHKERRQ(ierr);
+          ierr = PCFactorSetMatSolverType(red->pc,NULL);CHKERRQ(ierr);
         }
       }
 
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
-       
+
       /* get working vectors xsub and ysub */
       ierr = MatCreateVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
 
@@ -493,11 +494,13 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
    Level: intermediate
 
-   Notes: The default KSP is preonly and the default PC is LU.
+   Notes:
+    The default KSP is preonly and the default PC is LU.
 
    PCFactorSetShiftType() applied to this PC will convey they shift type into the inner PC if it is factorization based.
 
-   Developer Notes: Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
+   Developer Notes:
+    Note that PCSetInitialGuessNonzero()  is not used by this class but likely should be.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()

@@ -71,7 +71,6 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %D dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(PetscInt64), t, d);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Expected spacing collisions per process %f (%f total).\n", (double) lambda, N * lambda);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&random);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(random,PETSCRANDER48);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(random);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(random,0.0,1.0);CHKERRQ(ierr);
   ierr = PetscRandomView(random,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -116,15 +115,6 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    suffix: rander48_failure
-  test:
-    suffix: sprng_failure
-    requires: sprng
-    args: -random_type sprng
-  test:
-    suffix: random123
-    nsize: 8
-    requires: random123
-    args: -random_type random123
+    args: -t 4 -log2d 7 -log2n 10
 
 TEST*/

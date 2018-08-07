@@ -77,7 +77,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
       This version saves only the solutions at each timestep, it does not save the solution at each stage,
       see TSTRAJECTORYBASIC that saves all stages
 
-      $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m and $PETSC_DIR/bin/PetscBinaryIOTrajectory.py
+      $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m and $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py
       can read in files created with this format into MATLAB and Python.
 
   Level: intermediate

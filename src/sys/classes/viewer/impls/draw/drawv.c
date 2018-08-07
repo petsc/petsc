@@ -326,6 +326,55 @@ PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v,PetscDrawType *drawtype)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  *drawtype = vdraw->drawtype;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v,const char title[])
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) PetscFunctionReturn(0);
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  ierr = PetscFree(vdraw->title);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(title,&vdraw->title);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  vdraw = (PetscViewer_Draw*)v->data;
+
+  *title = vdraw->title;
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscViewerDrawOpen - Opens a window for use as a PetscViewer. If you want to
    do graphics in this window, you must call PetscViewerDrawGetDraw() and
@@ -395,7 +444,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscFunctionBegin;
   if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
-  if (*sviewer) *sviewer = NULL;
+  if (sviewer) *sviewer = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
@@ -716,17 +765,17 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Draw_keyval,(void**)&viewer,&flag);
+  ierr = MPI_Comm_get_attr(ncomm,Petsc_Viewer_Draw_keyval,(void**)&viewer,&flag);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flag) { /* PetscViewer not yet created */
     ierr = PetscViewerDrawOpen(ncomm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
-    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Draw_keyval,(void*)viewer);
+    ierr = MPI_Comm_set_attr(ncomm,Petsc_Viewer_Draw_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
   ierr = PetscCommDestroy(&ncomm);
@@ -750,7 +799,8 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 
     Level: intermediate
 
-    Notes: this determines the colors used in 2d contour plots generated with VecView() for DMDA in 2d. Any values in the vector below or above the
+    Notes:
+    this determines the colors used in 2d contour plots generated with VecView() for DMDA in 2d. Any values in the vector below or above the
       bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
       this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 

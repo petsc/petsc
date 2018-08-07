@@ -113,7 +113,7 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
   ierr = VecGetArrayRead(u, &array);CHKERRQ(ierr);
   ierr = DMPlexPointLocalRead(dm, point, array, &a);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(s, point, &dof);CHKERRQ(ierr);
@@ -359,9 +359,9 @@ int main(int argc, char **argv)
     ierr = SetSymmetries(dm, s, &user);CHKERRQ(ierr);
     ierr = PetscFree(numDof);CHKERRQ(ierr);
   }
-  ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
+  ierr = DMSetSection(dm, s);CHKERRQ(ierr);
   /* Create spectral ordering and load in data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, NULL);CHKERRQ(ierr);
+  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, NULL);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &u);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = LoadData2D(dm, 2, 2, size, u, &user);CHKERRQ(ierr);break;
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
     break;
   }
   /* Recreate spectral ordering and read out data */
-  ierr = DMPlexCreateSpectralClosurePermutation(dm, s);CHKERRQ(ierr);
+  ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);
   switch (user.dim) {
   case 2: ierr = ReadData2D(dm, u, &user);CHKERRQ(ierr);break;
   case 3: ierr = ReadData3D(dm, u, &user);CHKERRQ(ierr);break;

@@ -39,7 +39,6 @@ typedef struct {
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
   Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage */
   Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage */
-  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose */
   Vec          VecCostIntegral0; /* backup for roll-backs due to events */
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
@@ -447,9 +446,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
-      if (ts->vec_costintegral && ts->costintegralfwd) {
-        ierr = VecCopy(rk->VecCostIntegral0,ts->vec_costintegral);CHKERRQ(ierr);
-      }
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -475,7 +471,7 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   ierr = VecCopy(ts->vec_costintegral,rk->VecCostIntegral0);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,rk->ptime+rk->time_step*c[i],Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,rk->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -494,7 +490,7 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
   PetscFunctionBegin;
   for (i=s-1; i>=0; i--) {
     /* Evolve ts->vec_costintegral to compute integrals */
-    ierr = TSComputeCostIntegrand(ts,ts->ptime-ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
+    ierr = TSComputeCostIntegrand(ts,ts->ptime+ts->time_step*(1.0-c[i]),Y[i],ts->vec_costintegrand);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_costintegral,-ts->time_step*b[i],ts->vec_costintegrand);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -610,7 +606,6 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
   if(ts->vecs_sensip) {
     ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numcost,&rk->VecDeltaMu);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -621,57 +616,72 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   const PetscInt   s    = tab->s;
   const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
   PetscScalar     *w    = rk->work;
-  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu,*VecSensiTemp = rk->VecSensiTemp;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu;
   PetscInt         i,j,nadj;
   PetscReal        t = ts->ptime;
   PetscErrorCode   ierr;
   PetscReal        h = ts->time_step;
-  Mat              J,Jp;
 
   PetscFunctionBegin;
   rk->status = TS_STEP_INCOMPLETE;
   for (i=s-1; i>=0; i--) {
-    rk->stage_time = t + h*(1.0-c[i]);
-    for (nadj=0; nadj<ts->numcost; nadj++) {
-      ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);CHKERRQ(ierr);
-      for (j=i+1; j<s; j++) {
-        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);CHKERRQ(ierr);
+    Mat       J;
+    PetscReal stage_time = t + h*(1.0-c[i]);
+    PetscBool zero = PETSC_FALSE;
+
+    ierr = TSGetRHSJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,stage_time,Y[i],J,J);CHKERRQ(ierr);
+    if (ts->vec_costintegral) {
+      ierr = TSAdjointComputeDRDYFunction(ts,stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
+    }
+    /* Stage values of mu */
+    if (ts->vecs_sensip) {
+      ierr = TSAdjointComputeRHSJacobian(ts,stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      if (ts->vec_costintegral) {
+        ierr = TSAdjointComputeDRDPFunction(ts,stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
       }
     }
-    /* Stage values of lambda */
-    ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-    ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
-    if (ts->vec_costintegral) {
-      ierr = TSAdjointComputeDRDYFunction(ts,rk->stage_time,Y[i],ts->vecs_drdy);CHKERRQ(ierr);
-    }
+
+    if (b[i] == 0 && i == s-1) zero = PETSC_TRUE;
     for (nadj=0; nadj<ts->numcost; nadj++) {
-      ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      DM  dm;
+      Vec VecSensiTemp;
+
+      ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
+      /* Stage values of lambda */
+      if (!zero) {
+        ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp);CHKERRQ(ierr);
+        ierr = VecScale(VecSensiTemp,-h*b[i]);CHKERRQ(ierr);
+        for (j=i+1; j<s; j++) w[j-i-1]  = -h*A[j*s+i];
+        ierr = VecMAXPY(VecSensiTemp,s-i-1,w,&VecDeltaLam[nadj*s+i+1]);CHKERRQ(ierr);
+        ierr = MatMultTranspose(J,VecSensiTemp,VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+      } else {
+        ierr = VecSet(VecDeltaLam[nadj*s+i],0);CHKERRQ(ierr);
+      }
       if (ts->vec_costintegral) {
         ierr = VecAXPY(VecDeltaLam[nadj*s+i],-h*b[i],ts->vecs_drdy[nadj]);CHKERRQ(ierr);
       }
-    }
 
-    /* Stage values of mu */
-    if(ts->vecs_sensip) {
-      ierr = TSAdjointComputeRHSJacobian(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
-      if (ts->vec_costintegral) {
-        ierr = TSAdjointComputeDRDPFunction(ts,rk->stage_time,Y[i],ts->vecs_drdp);CHKERRQ(ierr);
-      }
-
-      for (nadj=0; nadj<ts->numcost; nadj++) {
-        ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+      /* Stage values of mu */
+      if (ts->vecs_sensip) {
+        if (!zero) {
+          ierr = MatMultTranspose(ts->Jacp,VecSensiTemp,VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+        } else {
+          ierr = VecSet(VecDeltaMu[nadj*s+i],0);CHKERRQ(ierr);
+        }
         if (ts->vec_costintegral) {
           ierr = VecAXPY(VecDeltaMu[nadj*s+i],-h*b[i],ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
       }
+      ierr = DMRestoreGlobalVector(dm,&VecSensiTemp);CHKERRQ(ierr);
     }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
   for (nadj=0; nadj<ts->numcost; nadj++) {
     ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
-    if(ts->vecs_sensip) {
+    if (ts->vecs_sensip) {
       ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
     }
   }
@@ -745,7 +755,6 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSRKTableauReset(ts);CHKERRQ(ierr);
   ierr = VecDestroy(&rk->VecCostIntegral0);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numcost,&rk->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -855,25 +864,6 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     ierr = PetscFree(namelist);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  size_t         left,count;
-  char           *p;
-
-  PetscFunctionBegin;
-  for (i=0,p=buf,left=len; i<n; i++) {
-    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
-    if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
-    left -= count;
-    p    += count;
-    *p++  = ' ';
-  }
-  p[i ? 0 : -1] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -998,11 +988,11 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 
 static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 {
-  TS_RK          *rk = (TS_RK*)ts->data;
+  TS_RK *rk = (TS_RK*)ts->data;
 
   PetscFunctionBegin;
   *ns = rk->tableau->s;
-  if(Y) *Y  = rk->Y;
+  if (Y) *Y = rk->Y;
   PetscFunctionReturn(0);
 }
 

@@ -7,6 +7,9 @@ typedef struct {
   PetscReal initstep;
   Vec x; /* used to see if work needs to be reformed */
   Vec work;
+  
+  PetscReal stx, fx, dgx;
+  PetscReal sty, fy, dgy;
 
 } TaoLineSearch_MT;
 

@@ -13,9 +13,11 @@ The command line options include:\n\
    Processors: n
 T*/
 
+
+
 /*
-   Include "petscdraw.h" so that we can use distributed arrays (DMDAs).
-   Include "petscdraw.h" so that we can use PETSc drawing routines.
+   Include "petscdm.h" so that we can use data management objects (DMs)
+   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h    - base PETSc routines
@@ -675,3 +677,25 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -nox -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -nox -pc_type asm -mat_type mpiaij -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -nox -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 4
+      args: -nox -pre_check_iterates -post_check_iterates
+
+TEST*/

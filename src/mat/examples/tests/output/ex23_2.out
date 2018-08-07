@@ -48,8 +48,12 @@ row 4: (3, -5.)  (4, 10.)  (5, -5.)
 row 5: (4, -6.)  (5, 12.)  (6, -6.) 
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
-Test MatISGetMPIXAIJ
+Test CheckMat
+Test MatDuplicate and MatAXPY
+Test MatConvert_IS_XAIJ
+Test MatConvert_XAIJ_IS
 Test MatDiagonalScale
+Test MatPtAP
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
 Test MatCreateSubMatrix
@@ -94,3 +98,4 @@ Test MatMissingDiagonal
 [2] [4,6) Missing 1, row 4 (diag zero)
 [3] [6,8) Missing 1, row 6 (diag zero)
 Test MatTranspose
+Test MatISFixLocalEmpty

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logger
 
 import os
@@ -72,7 +73,7 @@ class Retriever(logger.Logger):
 
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.git+' clone '+dir+' '+newgitrepo, log = self.log)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -80,7 +81,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -96,7 +97,7 @@ Unable to download package %s from: %s
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url[5:]+' '+newgitrepo)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -104,7 +105,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -120,7 +121,7 @@ Unable to download package %s from: %s
       if os.path.isfile(newgitrepo): os.unlink(newgitrepo)
       try:
         config.base.Configure.executeShellCommand(self.sourceControl.hg+' clone '+url+' '+newgitrepo)
-      except  RuntimeError, e:
+      except  RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err = str(e)
         failureMessage = '''\
@@ -128,7 +129,7 @@ Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation
   and use the configure option:
   --download-%s=/yourselectedlocation
@@ -151,14 +152,14 @@ Unable to download package %s from: %s
       socket.setdefaulttimeout(30)
       urllib.urlretrieve(url, localFile)
       socket.setdefaulttimeout(sav_timeout)
-    except Exception, e:
+    except Exception as e:
       socket.setdefaulttimeout(sav_timeout)
       failureMessage = '''\
 Unable to download package %s from: %s
 * If URL specified manually - perhaps there is a typo?
 * If your network is disconnected - please reconnect and rerun ./configure
 * Or perhaps you have a firewall blocking the download
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
@@ -176,7 +177,7 @@ Downloaded package %s from: %s is not a tarball.
 [or installed python cannot process compressed files]
 * If you are behind a firewall - please fix your proxy and rerun ./configure
   For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov
-* You can run with --with-packages-dir=/adirectory and ./configure will instruct you what packages to download manually
+* You can run with --with-packages-download-dir=/adirectory and ./configure will instruct you what packages to download manually
 * or you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
@@ -184,7 +185,7 @@ Downloaded package %s from: %s is not a tarball.
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))
-      except tarfile.ReadError, e:
+      except tarfile.ReadError as e:
         raise RuntimeError(str(e)+'\n'+failureMessage)
       if not tf: raise RuntimeError(failureMessage)
       #git puts 'pax_global_header' as the first entry and some tar utils process this as a file
@@ -212,7 +213,7 @@ Downloaded package %s from: %s is not a tarball.
         config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
       else:
         self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error changing permissions for '+dirname+' obtained from '+localFile+ ' : '+str(e))
     os.unlink(localFile)
     return

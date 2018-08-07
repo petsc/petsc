@@ -26,7 +26,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   PetscMPIInt     rank, size;
 #if defined(PETSC_HAVE_MED)
   PetscInt        i, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
-  PetscInt        numVertices = 0, numCells = 0, numCorners, numCellsLocal, numVerticesLocal;
+  PetscInt        numVertices = 0, numCells = 0, c, numCorners, numCellsLocal, numVerticesLocal;
   med_int        *medCellList;
   int            *cellList;
   med_float      *coordinates = NULL;
@@ -128,6 +128,25 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   } else {
     ierr = PetscMalloc1(numVerticesLocal*spaceDim, &vertcoords);CHKERRQ(ierr);
     for (i = 0; i < numVerticesLocal*spaceDim; i++) vertcoords[i] = coordinates[i];
+  }
+  /* Account for cell inversion */
+  for (c = 0; c < numCellsLocal; ++c) {
+    PetscInt *pcone = &cellList[c*numCorners];
+
+    if (meshDim == 3) {
+      /* Tetrahedra are inverted */
+      if (numCorners == 4) {
+        PetscInt tmp = pcone[0];
+        pcone[0] = pcone[1];
+        pcone[1] = tmp;
+      }
+      /* Hexahedra are inverted */
+      if (numCorners == 8) {
+        PetscInt tmp = pcone[4+1];
+        pcone[4+1] = pcone[4+3];
+        pcone[4+3] = tmp;
+      }
+    }
   }
   ierr = DMPlexCreateFromCellListParallel(comm, meshDim, numCellsLocal, numVerticesLocal, numCorners, interpolate, cellList, spaceDim, coordinates, &sfVertices, dm);CHKERRQ(ierr);
   if (sizeof(med_float) == sizeof(PetscReal)) {

@@ -12,11 +12,14 @@
 #define DMType character*(80)
 #define DMBoundaryType      PetscEnum
 #define DMPointLocationType PetscEnum
+#define DMAdaptationType    PetscEnum
 #define DMAdaptFlag         PetscEnum
 #define PetscUnit           PetscEnum
+#define DMAdaptationStrategy PetscEnum
 
 #define DM               type(tDM)
 
+#define DMAdaptor        PetscFortranAddr
 #define PetscQuadrature  PetscFortranAddr
 #define PetscDS          PetscFortranAddr
 #define PetscFE          PetscFortranAddr
@@ -25,6 +28,7 @@
 #define PetscFV          PetscFortranAddr
 #define PetscLimiter     PetscFortranAddr
 #define PetscPartitioner PetscFortranAddr
+#define DMField          PetscFortranAddr
 
 
 #define DMDA        'da'
@@ -32,7 +36,6 @@
 #define DMSLICED    'sliced'
 #define DMSHELL     'shell'
 #define DMPLEX      'plex'
-#define DMCARTESIAN 'cartesian'
 #define DMREDUNDANT 'redundant'
 #define DMPATCH     'patch'
 #define DMMOAB      'moab'

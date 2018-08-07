@@ -142,7 +142,7 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   if (dim) *dim = da->dim;
   if (M) {
     if (dd->Mo < 0) *M = dd->M;
@@ -181,11 +181,14 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
    Level: beginner
 
-   Notes: See DMDALocalInfo for the information that is returned
+   Notes:
+    See DMDALocalInfo for the information that is returned
 
-   Fortran Notes: In Fortran the routine is DMDAGetLocalInfoF90(), see DMDALocalInfo for how to access the values
+   Fortran Notes:
+    In Fortran the routine is DMDAGetLocalInfoF90(), see DMDALocalInfo for how to access the values
 
-   Developer Notes: Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
+   Developer Notes:
+    Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
 
 .keywords: distributed array, get, information
 
@@ -197,7 +200,7 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   DM_DA    *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(info,2);
   info->da  = da;
   info->dim = da->dim;

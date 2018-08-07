@@ -31,8 +31,11 @@ const char *const PetscViewerFormats[] = {
   "VTK_VTU",
   "BINARY_MATLAB",
   "NATIVE",
+  "HDF5_PETSC",
   "HDF5_VIZ",
+  "HDF5_XDMF",
   "NOFORMAT",
+  "LOAD_BALANCE",
   "PetscViewerFormat",
   "PETSC_VIEWER_",
   0
@@ -128,7 +131,8 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
        matrices are stored as dense), for DMDA vectors displays vectors in DMDA ordering, not natural
 .    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
 .    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
--    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
+.    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
+-    PETSC_VIEWER_ASCII_XML - saves the data in XML format, needed for PetscLogView() when viewing with PetscLogNestedBegin()
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the MATLAB format.

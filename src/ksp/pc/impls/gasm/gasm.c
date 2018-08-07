@@ -1249,8 +1249,8 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
       will get a different convergence rate due to the default option of -pc_gasm_type restrict. Use
       -pc_gasm_type basic to use the standard GASM.
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Defaults to one block per processor.
+   Notes:
+    Blocks can be shared by multiple processes.
 
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
@@ -1334,9 +1334,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
 {
   MatPartitioning mpart;
   const char      *prefix;
-  void            (*f)(void);
   PetscInt        i,j,rstart,rend,bs;
-  PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
+  PetscBool       hasop, isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat             Ad     = NULL, adj;
   IS              ispart,isnumb,*is;
   PetscErrorCode  ierr;
@@ -1351,8 +1350,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
   if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  ierr = MatShellGetOperation(A,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);  
-  if (f) {
+  ierr = MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+  if (hasop) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
   }
   if (Ad) {
@@ -1550,7 +1549,8 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
 
    Level: intermediate
 
-   Notes: this is merely a convenience subroutine that walks each list,
+   Notes:
+    this is merely a convenience subroutine that walks each list,
    destroys each IS on the list, and then frees the list. At the end the
    list pointers are set to NULL.
 
@@ -1863,7 +1863,8 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
 +   n   - the number of matrices for this processor (default value = 1)
 -   mat - the matrices
 
-    Notes: matrices returned by this routine have the same communicators as the index sets (IS)
+    Notes:
+    matrices returned by this routine have the same communicators as the index sets (IS)
            used to define subdomains in PCGASMSetSubdomains()
     Level: advanced
 

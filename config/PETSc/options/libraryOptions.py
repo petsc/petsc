@@ -21,21 +21,22 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-avx512-kernels=<bool>',   nargs.ArgBool(None, 0, 'Use AVX-512 intrinsics for linear algebra kernels when available'))
     help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'short', 'char, short can store 256, 65536 colors'))
     return
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.debugging   = framework.require('PETSc.options.debugging', self)
     self.compilers   = framework.require('config.compilers', self)
     self.libraries   = framework.require('config.libraries', self)
     self.types       = framework.require('config.types', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     return
 
 
 
   def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE, PETSC_USE_FORTRAN_KERNELS, and PETSC_USE_AVX512_KERNELS'''
     '''Also sets PETSC_AssertAlignx() in Fortran and PETSC_Alignx() in C for IBM BG/P compiler '''
     if self.framework.argDB['with-threadsafety']:
       self.addDefine('HAVE_THREADSAFETY',1)
@@ -49,7 +50,7 @@ class Configure(config.base.Configure):
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
-    if self.debugging.debugging:
+    if self.compilerFlags.debugging:
       if self.useThreadSafety:
         raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
       self.addDefine('USE_DEBUG',1)
@@ -81,6 +82,10 @@ class Configure(config.base.Configure):
         self.addDefine('AssertAlignx(a,b)','call ALIGNX(a,b)')
       else:
         self.addDefine('AssertAlignx(a,b)','  ')
+
+    self.useAVX512Kernels = self.framework.argDB['with-avx512-kernels']
+    if self.useAVX512Kernels:
+      self.addDefine('USE_AVX512_KERNELS', 1)
 
     if self.libraries.isBGL():
       self.addDefine('Alignx(a,b)','__alignx(a,b)')

@@ -1,6 +1,0 @@
-#! /bin/csh
-#
-set MACH=wii
-set USR=balay
-set LOC=/home/balay/${RNAME}-3
-set CONF=arch-freebsd-pkgs-opt

@@ -562,6 +562,32 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
   PetscFunctionReturn(0);
 }
 
+/*TEST
 
+    test:
+      args: -ts_view -nox
+
+    test:
+      suffix: 2
+      args: -ts_view -nox
+      nsize: 3
+
+    test:
+      suffix: 3
+      args: -ts_view -nox -nonlinear
+
+    test:
+      suffix: 4
+      args: -ts_view -nox -nonlinear
+      nsize: 3
+      timeoutfactor: 3
+
+    test:
+      suffix: sundials
+      requires: sundials
+      args: -nox -ts_type sundials -ts_max_steps 5 -nonlinear
+      nsize: 4
+
+TEST*/
 
 

@@ -194,7 +194,8 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
 -  refresh_token - can be used for ever to obtain new access_tokens with PetscGoogleDriveRefresh(), guard this like a password
                    it gives access to your Google Drive
 
-   Notes: This call requires stdout and stdin access from process 0 on the MPI communicator
+   Notes:
+    This call requires stdout and stdin access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/examples/tutorials/googleobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -google_refresh_token XXX

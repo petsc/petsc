@@ -19,28 +19,28 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 
   PetscFunctionBegin;
   if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_keyval);CHKERRQ(ierr);
   }
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
   }
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
   }
   if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Binary_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval);CHKERRQ(ierr);
   }
   if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_HDF5)
   if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_HDF5_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_HDF5_keyval);CHKERRQ(ierr);
   }
 #endif
 #if defined(PETSC_USE_SOCKETVIEWER)
   if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
@@ -60,8 +60,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 PetscErrorCode  PetscViewerInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -69,29 +68,24 @@ PetscErrorCode  PetscViewerInitializePackage(void)
   PetscViewerPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Viewer",&PETSC_VIEWER_CLASSID);CHKERRQ(ierr);
-
   /* Register Constructors */
   ierr = PetscViewerRegisterAll();CHKERRQ(ierr);
-
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("viewer",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("viewer",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
   }
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
 #endif
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscViewerFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -140,7 +134,8 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
    Output Parameter:
 .   vf - viewer and format object
 
-   Notes: This increases the reference count of the viewer so you can destroy the viewer object after this call
+   Notes:
+    This increases the reference count of the viewer so you can destroy the viewer object after this call
    Level: developer
 
    This is used as the context variable for many of the TS, SNES, and KSP monitor functions
@@ -293,7 +288,8 @@ PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char pre
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced

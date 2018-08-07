@@ -1,25 +1,13 @@
 mu 1e+06, steps 512, ftime 0.5
 
- ode solution 
+ ode solution
 Vec Object: 1 MPI processes
   type: seq
 1.59677
 -1.03039
 
- sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[z(tf)]/d[y0]
-Vec Object: 1 MPI processes
-  type: seq
-1.54559
-1.86629
-
- sensitivity wrt initial conditions: d[y(tf)]/d[z0]  d[z(tf)]/d[z0]
-Vec Object: 1 MPI processes
-  type: seq
-8.29645e-08
-0.752886
-
- sensitivity wrt parameters: d[y(tf)]/d[mu] d[z(tf)]/d[mu]
-Vec Object: 1 MPI processes
-  type: seq
--2.13131e-13
--1.20489e-12
+ forward sensitivity: d[y(tf) z(tf)]/d[y0 z0 mu]
+Mat Object: 1 MPI processes
+  type: seqdense
+1.5455887737005489e+00 8.2964526164656577e-08 -2.1313140253978350e-13
+1.8662857233939536e+00 7.5288629604219237e-01 -1.2048891982961686e-12

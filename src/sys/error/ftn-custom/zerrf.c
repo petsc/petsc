@@ -33,17 +33,12 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,con
 {
   PetscErrorCode ierr = 0;
   size_t         len1,len2,len3;
-  int            l1,l2,l3;
 
-  PetscStrlen(fun,&len1); l1 = (int)len1;
-  PetscStrlen(file,&len2);l2 = (int)len2;
-  PetscStrlen(mess,&len3);l3 = (int)len3;
+  PetscStrlen(fun,&len1);
+  PetscStrlen(file,&len2);
+  PetscStrlen(mess,&len3);
 
-#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-  (*f2)(&comm,&line,fun,l1,file,l2,&n,&p,mess,l3,ctx,&ierr);
-#else
-  (*f2)(&comm,&line,fun,file,&n,&p,mess,ctx,&ierr,l1,l2,l3);
-#endif
+  (*f2)(&comm,&line,fun PETSC_MIXED_LEN_CALL(len1),file PETSC_MIXED_LEN_CALL(len2),&n,&p,mess PETSC_MIXED_LEN_CALL(len3),ctx,&ierr PETSC_END_LEN_CALL(len1) PETSC_END_LEN_CALL(len2) PETSC_END_LEN_CALL(len3));
   return ierr;
 }
 

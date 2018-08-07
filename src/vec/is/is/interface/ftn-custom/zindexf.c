@@ -3,6 +3,8 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petsclayoutfindowner_                      PETSCLAYOUTFINDOWNER
+#define petsclayoutfindownerindex_                 PETSCLAYOUTFINDOWNERINDEX
 #define isview_                                    ISVIEW
 #define isgetindices_                              ISGETINDICES
 #define isrestoreindices_                          ISRESTOREINDICES
@@ -15,6 +17,8 @@
 #define islocaltoglobalmappinggetblockindices_     ISLOCALTOGLOBALMAPPINGGETBLOCKINDICES
 #define islocaltoglobalmappingrestoreblockindices_ ISLOCALTOGLOBALMAPPINGRESTOREBLOCKINDICES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petsclayoutfindowner_                      petsclayoutfindowner
+#define petsclayoutfindownerindex_                 petsclayoutfindownerindex
 #define isview_                                    isview
 #define isgetindices_                              isgetindices
 #define isrestoreindices_                          isrestoreindices
@@ -27,6 +31,16 @@
 #define islocaltoglobalmappinggetblockindices_     islocaltoglobalmappinggetblockindices
 #define islocaltoglobalmappingrestoreblockindices_ islocaltoglobalmappingrestoreblockindices
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL petsclayoutfindowner_(PetscLayout *map,PetscInt *idx,PetscInt *owner, int *ierr)
+{
+  *ierr = PetscLayoutFindOwner(*map,*idx,owner);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petsclayoutfindownerindex_(PetscLayout *map,PetscInt *idx,PetscInt *owner, PetscInt *ridx,int *ierr)
+{
+  *ierr = PetscLayoutFindOwnerIndex(*map,*idx,owner,ridx);
+}
 
 PETSC_EXTERN void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
 {

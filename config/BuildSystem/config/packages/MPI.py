@@ -75,11 +75,14 @@ class Configure(config.package.Package):
     if self.mpich.found:
       yield (self.mpich.installDir)
       raise RuntimeError('--download-mpich libraries cannot be used')
+    if self.openmpi.found:
+      yield (self.openmpi.installDir)
+      raise RuntimeError('--download-openmpi libraries cannot be used')
 
     yield ''
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
-    for packageDir in self.argDB['package-dirs']:
+    for packageDir in self.argDB['with-packages-search-path']:
       packageDir = os.path.abspath(packageDir)
       if not os.path.isdir(packageDir):
         raise RuntimeError('Invalid package directory: '+packageDir)
@@ -131,7 +134,7 @@ class Configure(config.package.Package):
     self.executeTest(self.configureMPIEXEC)
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
-    except RuntimeError, e:
+    except RuntimeError as e:
       if self.argDB['with-shared-libraries']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared-libraries=0 or rebuild MPI with shared library support')
       self.logPrint('MPI libraries cannot be used with shared libraries')
@@ -172,6 +175,8 @@ class Configure(config.package.Package):
       if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
         raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
     self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)')
+    if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
+      self.mpiexec = self.mpiexec + ' --oversubscribe'
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
 
@@ -209,6 +214,32 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_REDUCE_LOCAL',1)
     if self.checkLink('#include <mpi.h>\n', 'char version[MPI_MAX_LIBRARY_VERSION_STRING];int verlen;if (MPI_Get_library_version(version,&verlen));\n'):
       self.addDefine('HAVE_MPI_GET_LIBRARY_VERSION', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    return
+
+  def configureMPI3(self):
+    '''Check for functions added to the interface in MPI-3'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+    if self.libraries.check(self.dlib, "MPI_Win_create"):
+      self.addDefine('HAVE_MPI_WIN_CREATE',1)
+      self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Comm scomm; if (MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &scomm));\n'):
+      self.haveMPISharedComm = 1
+      self.addDefine('HAVE_MPI_SHARED_COMM', 1)
+    else: self.haveMPISharedComm = 0
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Win win; if (MPI_Win_allocate_shared(100,10,MPI_INFO_NULL,MPI_COMM_WORLD, 0, &win));\n'):
+      self.addDefine('HAVE_MPI_WIN_ALLOCATE_SHARED', 1)
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Win_shared_query(MPI_WIN_NULL,0,0,0,0));\n'):
+      self.addDefine('HAVE_MPI_WIN_SHARED_QUERY', 1)
+    if 'HAVE_MPI_WIN_CREATE' in self.defines and 'HAVE_MPI_WIN_ALLOCATE_SHARED' in self.defines and 'HAVE_MPI_WIN_SHARED_QUERY' in self.defines:
+      if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
+        self.addDefine('HAVE_MPI_WIN_CREATE_FEATURE',1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -293,14 +324,9 @@ class Configure(config.package.Package):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
     self.addMakeMacro('MPI_IS_MPIUNI', 1)
-    #
-    #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
-    #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
-    #  use MPI-Uni can find them.
-    self.include = [os.path.abspath(os.path.join('include', 'petsc','mpiuni'))]
     self.framework.packages.append(self)
-    self.mpiexec = '${PETSC_DIR}/bin/petsc-mpiexec.uni'
-    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/petsc-mpiexec.uni')
+    self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
+    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
@@ -443,6 +469,7 @@ class Configure(config.package.Package):
         try:
           mpich_numversion = re.compile('\nint mpich_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
           self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
+          if mpichpkg == 'mpich': self.mpich_numversion = mpich_numversion
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
         self.compilers.CPPFLAGS = oldFlags
@@ -458,6 +485,7 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
         self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
+        self.ompi_major_version = ompi_major_version
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
     self.compilers.CPPFLAGS = oldFlags
@@ -476,7 +504,7 @@ class Configure(config.package.Package):
     argIter = iter(output.split())
     try:
       while 1:
-        arg = argIter.next()
+        arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         m = re.match(r'^-I.*$', arg)
         if m:
@@ -495,7 +523,9 @@ class Configure(config.package.Package):
       self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
     self.executeTest(self.configureConversion)
+    self.executeTest(self.checkMPICHorOpenMPI)
     self.executeTest(self.configureMPI2)
+    self.executeTest(self.configureMPI3) #depends on checkMPICHorOpenMPI for self.mpich_numversion
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.configureMissingPrototypes)
@@ -504,12 +534,8 @@ class Configure(config.package.Package):
     self.executeTest(self.FortranMPICheck)
     self.executeTest(self.configureIO)
     self.executeTest(self.findMPIInc)
-    self.executeTest(self.checkMPICHorOpenMPI)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
-    if self.libraries.check(self.dlib, "MPI_Win_create"):
-      self.addDefine('HAVE_MPI_WIN_CREATE',1)
-      self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
     funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
       MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)

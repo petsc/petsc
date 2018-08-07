@@ -163,25 +163,19 @@ def build(dry_run=False):
         status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
 
-def install(dest_dir, dry_run=False):
+def install(dry_run=False):
     log.info('PETSc: install')
-    options = [
-        '--destDir=' + dest_dir,
-        ]
-    log.info('install options:')
-    for opt in options:
-        log.info(' '*4 + opt)
     # Run PETSc installer
     if dry_run: return
     use_install_py = False
     if use_install_py:
         import install
-        install.Installer(options).run()
+        install.Installer().run()
         import logger
         logger.Logger.defaultLog = None
     else:
         make = find_executable('make')
-        command = [make, 'install', 'DESTDIR='+dest_dir]
+        command = [make, 'install']
         status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
 
@@ -211,18 +205,18 @@ class cmd_install(_install):
 
     def run(self):
         root_dir = os.path.abspath(self.install_lib)
-        dest_dir = prefix = os.path.join(root_dir, 'petsc')
+        prefix = os.path.join(root_dir, 'petsc')
         #
         ctx = context().enter()
         try:
             config(prefix, self.dry_run)
             build(self.dry_run)
-            install(dest_dir, self.dry_run)
+            install(self.dry_run)
         finally:
             ctx.exit()
         #
         self.outputs = []
-        for dirpath, _, filenames in os.walk(dest_dir):
+        for dirpath, _, filenames in os.walk(prefix):
             for fn in filenames:
                 self.outputs.append(os.path.join(dirpath, fn))
         #
@@ -239,7 +233,7 @@ def version():
         'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
         'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
         'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
-        'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
+        'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+([-]*\d+)"),
         }
     petscversion_h = os.path.join('include','petscversion.h')
     data = open(petscversion_h, 'r').read()
@@ -247,7 +241,7 @@ def version():
     minor = int(version_re['minor'].search(data).groups()[0])
     micro = int(version_re['micro'].search(data).groups()[0])
     release = int(version_re['release'].search(data).groups()[0])
-    if release:
+    if release > 0 :
         v = "%d.%d.%d" % (major, minor, micro)
     else:
         v = "%d.%d.0.dev%d" % (major, minor+1, 0)

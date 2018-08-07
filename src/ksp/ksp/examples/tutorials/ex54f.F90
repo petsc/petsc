@@ -13,9 +13,12 @@
 !
 !    User can change anisotropic shape with function ex54_psi().  Negative theta will switch to a circular anisotropy.
 !
-!/*T
+!!/*T
 !   Concepts: KSP^solving a system of linear equations
+!!   requires: !single
 !T*/
+
+
 ! -----------------------------------------------------------------------
       program main
 #include <petsc/finclude/petscksp.h>
@@ -29,7 +32,7 @@
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
-      PetscInt f2,f9,f6, one
+      PetscInt f2,f9,f6,one
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
       PetscMPIInt size,rank
@@ -51,6 +54,7 @@
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      one = 1
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,30 +63,24 @@
       f9 = 9
       f6 = 6
       ne = 9
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
-     &                        '-ne',ne,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-ne',ne,flg,ierr)
       h = 2.0/real(ne)
       M = (ne+1)*(ne+1)
       theta = 90.0
 !     theta is input in degrees
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                         '-theta',theta,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-theta',theta,flg,ierr)
       theta = theta / 57.2957795
       eps = 1.0
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                         '-epsilon',eps,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-epsilon',eps,flg,ierr)
       ki = 2
-      call PetscOptionsGetRealArray(PETSC_NULL_OPTIONS,                     &
-     &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
+      call PetscOptionsGetRealArray(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
          blb(1) = 0.0
          blb(2) = 0.0
       else if ( ki .ne. 2 ) then
-         print *, 'error: ', ki,                                            &
-     &        ' arguments read for -blob_center.  Needs to be two.'
+         print *, 'error: ', ki,' arguments read for -blob_center.  Needs to be two.'
       endif
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
-     &                         '-out_matlab',out_matlab,flg,ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-out_matlab',out_matlab,flg,ierr)
       if (.not.flg) out_matlab = PETSC_FALSE;
 
       ev(1) = 1.0
@@ -100,8 +98,7 @@
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
       endif
-      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,                   &
-     &     PETSC_NULL_INTEGER, ierr)
+      call MatMPIAIJSetPreallocation(Amat,f9,PETSC_NULL_INTEGER,f6,PETSC_NULL_INTEGER, ierr)
       call MatSetFromOptions( Amat, ierr )
       call MatSetUp( Amat, ierr )
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
@@ -171,10 +168,7 @@
             endif               ! BC
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
-
-            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*                            &
-     &           exp(-100*((y+h/2)-blb(2))**2)
-            one = 1
+            val = h*h*exp(-100*((x+h/2)-blb(1))**2)*exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
@@ -216,26 +210,22 @@
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if ( out_matlab ) then
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',                &
-     &        FILE_MODE_WRITE,viewer,ierr)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',                &
-     &        FILE_MODE_WRITE,viewer,ierr)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Bvec',FILE_MODE_WRITE,viewer,ierr)
          call VecView(bvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',                &
-     &        FILE_MODE_WRITE,viewer,ierr)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Xvec',FILE_MODE_WRITE,viewer,ierr)
          call VecView(xvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
          call MatMult(Amat,xvec,uvec,ierr)
          val = -1.0
          call VecAXPY(uvec,val,bvec,ierr)
-         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',                &
-     &        FILE_MODE_WRITE,viewer,ierr)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Rvec',FILE_MODE_WRITE,viewer,ierr)
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
@@ -452,3 +442,16 @@
          endif
       endif
       end
+
+!
+!/*TEST
+!
+!   build:
+!      requires: !libpgf90
+!
+!   test:
+!      nsize: 4
+!      args: -ne 39 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph 0 -ksp_monitor_short -mg_levels_esteig_ksp_type cg
+!      requires: !single
+!
+!TEST*/

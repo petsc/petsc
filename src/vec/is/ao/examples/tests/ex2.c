@@ -49,3 +49,18 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+
+   test:
+      suffix: 3
+      nsize: 3
+
+TEST*/

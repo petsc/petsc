@@ -18,7 +18,7 @@ typedef enum {
     TAOLINESEARCH_HALTED_USER = 8
 } TaoLineSearchConvergedReason;
 
-#define TaoLineSearchType  char*
+typedef const char *TaoLineSearchType;
 #define TAOLINESEARCHUNIT     "unit"
 #define TAOLINESEARCHMT       "more-thuente"
 #define TAOLINESEARCHGPCG     "gpcg"
@@ -35,6 +35,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchDestroy(TaoLineSearch*);
+PETSC_EXTERN PetscErrorCode TaoLineSearchMonitor(TaoLineSearch,PetscInt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 
@@ -51,8 +52,8 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscRe
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetNumberFunctionEvaluations(TaoLineSearch, PetscInt*, PetscInt*, PetscInt*);
 
-PETSC_EXTERN PetscErrorCode TaoLineSearchGetType(TaoLineSearch, const TaoLineSearchType *);
-PETSC_EXTERN PetscErrorCode TaoLineSearchSetType(TaoLineSearch, const TaoLineSearchType);
+PETSC_EXTERN PetscErrorCode TaoLineSearchGetType(TaoLineSearch, TaoLineSearchType *);
+PETSC_EXTERN PetscErrorCode TaoLineSearchSetType(TaoLineSearch, TaoLineSearchType);
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch, PetscBool *);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, Vec, PetscReal*, PetscReal*, void*), void*);

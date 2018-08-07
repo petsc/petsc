@@ -8,35 +8,12 @@ chk_petscdir:
           printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make test             ";\
+          echo "Ignore this if you are running make check             ";\
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
         fi
 
 chk_upgrade:
-	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
-
-chk_makej:
-	@parallel=false;\
-        mflags=`echo _${MFLAGS}_ | sed "s+ +_+g"`;\
-        mflags_j=`echo $${mflags} | sed "s+_-j_+DUMMY+g"`;\
-        mflags_j1=`echo $${mflags} | sed "s+_-j_1_+DUMMY+g"`;\
-        if [ "$${mflags_j}" != "$${mflags}" -a "$${mflags_j1}" = "$${mflags}" ]; then parallel=true; fi;\
-        makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
-        makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
-        if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
-        if [ "$${parallel}" = "true" ]; then \
-          printf ${PETSC_TEXT_HILIGHT}"********************* ERROR **********************\n" ; \
-          if [ "${PETSC_BUILD_USING_CMAKE}" != "" -o "${MAKE_IS_GNUMAKE}" != "" ]; then \
-             echo "PETSc toplevel makefile does not support -j option.";\
-             echo "Instead - use: \"make MAKE_NP=<np>\". Current value of MAKE_NP is ${MAKE_NP}.";\
-          else \
-             echo "Parallel build with 'make -j' is not supported    ";\
-             echo "for PETSc legacy builds. Run without -j <np>      ";\
-             echo "or configure PETSc with gnumake using --download-make";\
-             echo "to enable parallel builds with PETSc              ";\
-          fi;\
-          printf "**************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
-          exit 1; fi;
+	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/petscnagupgrade.py
 
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
@@ -56,7 +33,7 @@ lssrc:
 	  ls ${SOURCEALL} | cat;\
 	 fi
 
-chklib_dir: chk_makej
+chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
@@ -89,23 +66,19 @@ chkopts: chk_upgrade
 
 #
 # uses the cmake infrastructure to build/rebuild the libraries
-ccmake: chk_makej
-	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
+ccmake:
 	@echo "=========================================="
-	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=${VERBOSE}
+	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
-cmake: chk_makej
-	@${OMAKE} ccmake VERBOSE=1
+cmake:
+	+@MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
 
-gnumake: chk_makej
-	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
-	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} ${MAKE_PAR_OUT_FLG} V=${V}
-	@echo "========================================="
+gnumake:
+	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -211,29 +184,14 @@ clean:: clean-legacy
 tree: ${ACTION}
 	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
             if [ -d $$dir ]; then \
-	      r=`grep -w requirespackage $$dir/makefile`; \
+	      r=`egrep '#(requirespackage|requiresfunction|requiresdefine)' $$dir/makefile | cut -d \' -f2`; \
               if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresfunction $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresdefine $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
+                flg=0; \
+                for PKGFLG in $$r; do \
+                  grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                  if [ "$$?" = 1 ]; then flg=1; break; fi; \
+                done; \
+                if [ "$$flg" = 1 ]; then continue; fi; \
               fi; \
               r=`grep -w requireslanguage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
@@ -361,7 +319,7 @@ getautoconfargs:
 	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
 
 .tex.mtex:
-	PYTHONPATH=${PETSC_DIR}/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/bin/maint/mapnameslatex.py > $*.mtex
+	PYTHONPATH=${PETSC_DIR}/lib/petsc/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/mapnameslatex.py > $*.mtex
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
@@ -398,31 +356,18 @@ getautoconfargs:
 	fi
 
 .c.o .ad.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
 
 .cpp.o .cxx.o .cc.o .C.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
-
 #
 #   Compiles CUDA code
 .cu.o:
@@ -453,9 +398,8 @@ getautoconfargs:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
 .cu.PETSc .c.PETSc .cxx.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
-          grep -v "warning: linker scope was specified more than once:" | \
           grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
           grep -v "(aka 'long \*') doesn't match specified 'MPI' type tag that requires 'long long \*'" | \
           grep -v "note: expanded from macro" |\
@@ -505,7 +449,7 @@ getautoconfargs:
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
           grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
@@ -687,8 +631,51 @@ manconcepts:
               ${RM} ltmp; \
           done
 
+#
+#    Goes through all manual pages adding links to implementations of the method
+# or class, at the end of the file. 
+# 
+# To find functions implementing methods, we use git grep to look for
+# functions with a single underscore following the items's name, in paths
+# including /impls/ . We exclude any line with a semicolon to avoid matching
+# prototypes.
+#
+# Efficiency note: this runs git grep for each man page. It may be more efficient
+#  to run it once for all possible implementation functions and store the results, 
+#  sorted, in a temporary file.
+#
+# To find class implementations, we populate implsClassAll.txt with candidates,
+# and then match any lines similar to "struct _p_itemName {", not containing a semicolon,
+# which likely define data for class itemName.
+#
+manimplementations:
+	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
+  for i in docs/manualpages/*/*.html; do \
+          printf "manimplementations in: $$i\n"; \
+          itemName=`basename $$i .html`; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
+          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
+          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
+            printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
+          fi ; \
+          if [ -s implsFunc.txt ] ; then \
+            sed "s?\(.*\.cx*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
+          fi ; \
+          if [ -s implsClass.txt ] ; then \
+            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
+          fi ; \
+          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
+            grep -v /BODY $$i > tmp; \
+            printf "</BODY></HTML>" >> tmp; \
+            mv tmp $$i ; \
+            ${RM} tmp ; \
+          fi ; \
+          ${RM} implsFunc.txt implsClass.txt; \
+  done ; \
+  ${RM} implsClassAll.txt
+
 getexlist:
-	-@${PETSC_DIR}/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
+	-@${PETSC_DIR}/lib/petsc/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
 	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran
@@ -719,7 +706,7 @@ html: chk_c2html
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
-              awk '{ sub(/<pre width=\"80\">/,"<pre width=\"80\">\n"); print }'  | ${PETSC_DIR}/bin/maint/fixinclude $$i $${PETSC_DIR} | \
+              awk '{ sub(/<pre width=\"80\">/,"<pre width=\"80\">\n"); print }'  | ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
@@ -734,7 +721,7 @@ html: chk_c2html
 		if [ -f $$file ]; then \
                    cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
                    echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
-                   ${PYTHON} ${PETSC_DIR}/bin/maint/latexinexamples.py $${file}.html;\
+                   ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${file}.html;\
 		fi; \
                done ;\
             else \
@@ -767,7 +754,7 @@ cleanhtml:
 # Removes files generated by gcov
 #
 cleangcov:
-	@-${RM}  *.bb *.bbg *.da *.gcov *.lines *.gcno *.gcda
+	@-find src -name \*.gcov -delete
 #
 #----------------------------------------------------------------------------------
 checkbadPetscFunctionBegin:
@@ -926,7 +913,7 @@ shared: shared_nomesg
 	    echo "Shared libraries disabled"; \
           fi
 
-shared_nomesg: chk_makej
+shared_nomesg:
 	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
             cwd=`pwd`; \

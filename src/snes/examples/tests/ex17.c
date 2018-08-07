@@ -6,6 +6,8 @@ Concepts: SNES^basic uniprocessor example, block objects
 Processors: 1
 T*/
 
+
+
 /*
 Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 file automatically includes:
@@ -678,6 +680,15 @@ int main(int argc,char **argv)
 
   ierr = block_system();CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -snes_monitor_short
+      requires: !single
+
+TEST*/

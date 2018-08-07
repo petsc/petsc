@@ -57,6 +57,10 @@
       end module assert_mod
 
       program tpetsc
+!/*T
+!   TODO: Need to determine if deprecated
+!T*/
+
 #include <petsc/finclude/petsc.h>
       use assert_mod
       use omp_module
@@ -110,7 +114,6 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call assert(ierr.eq.0,'PetscInitialize return ',ierr)
 
       nrow = n*n
       ncol = nrow
@@ -270,7 +273,7 @@
 !        ------------
 !        check answer
 !        ------------
-         err(icase) = maxval(abs(x(:)-1.0d0))
+         err(icase) = maxval(abs(x(:)-1))
 
 !$omp    critical
          call VecResetArray(col_f_vecx,ierr)
@@ -324,3 +327,14 @@
        call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
 
        end program tpetsc
+
+!/*TEST
+!
+!   build:
+!      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+!
+!   test:
+!      output_file: output/ex61f_1.out
+!      TODO: Need to determine how to test OpenMP code
+!
+!TEST*/

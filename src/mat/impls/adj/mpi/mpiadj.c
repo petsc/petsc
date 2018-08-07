@@ -703,6 +703,51 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
+{
+  PetscErrorCode ierr;
+  PetscInt       M,N,*II,*J,NZ,nz,m,nzstart,i;
+  PetscInt       *Values = NULL;
+  Mat_MPIAdj     *adj = (Mat_MPIAdj*)A->data;
+  PetscMPIInt    mnz,mm,*allnz,*allm,size,*dispnz,*dispm;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+  nz   = adj->nz;
+  if (adj->i[m] != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %D not correct i[m] %d",nz,adj->i[m]);
+  ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+
+  ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);
+  ierr = PetscCalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  dispnz[0] = 0; for (i=1; i<size; i++) dispnz[i] = dispnz[i-1]+ allnz[i-1];
+  if (adj->values) {
+    ierr = PetscMalloc1(NZ,&Values);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(adj->values,mnz,MPIU_INT,Values,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc1(NZ,&J);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(adj->j,mnz,MPIU_INT,J,allnz,dispnz,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = PetscFree2(allnz,dispnz);CHKERRQ(ierr);
+  ierr = MPI_Scan(&nz,&nzstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  nzstart -= nz;
+  /* shift the i[] values so they will be correct after being received */
+  for (i=0; i<m; i++) adj->i[i] += nzstart;
+  ierr = PetscMalloc1(M+1,&II);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(m,&mm);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&allm,size,&dispm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mm,1,MPI_INT,allm,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  dispm[0] = 0; for (i=1; i<size; i++) dispm[i] = dispm[i-1]+ allm[i-1];
+  ierr = MPI_Allgatherv(adj->i,mm,MPIU_INT,II,allm,dispm,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = PetscFree2(allm,dispm);CHKERRQ(ierr);
+  II[M] = NZ;
+  /* shift the i[] values back */
+  for (i=0; i<m; i++) adj->i[i] -= nzstart;
+  ierr = MatCreateMPIAdj(PETSC_COMM_SELF,M,N,II,J,Values,B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatMPIAdjCreateNonemptySubcommMat - create the same MPIAdj matrix on a subcommunicator containing only processes owning a positive number of rows
 
@@ -755,7 +800,32 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjToSeq_C",MatMPIAdjToSeq_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatMPIAdjToSeq - Converts an parallel MPIAdj matrix to complete MPIAdj on each process (needed by sequential preconditioners)
+
+   Logically Collective on MPI_Comm
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameter:
+.  B - the same matrix on all processes
+
+   Level: intermediate
+
+.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
+@*/
+PetscErrorCode  MatMPIAdjToSeq(Mat A,Mat *B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatMPIAdjToSeq_C",(Mat,Mat*),(A,B));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -805,7 +875,8 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
 
    Level: intermediate
 
-   Notes: This matrix object does not support most matrix operations, include
+   Notes:
+    This matrix object does not support most matrix operations, include
    MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
    when the matrix is destroyed; you must allocate them with PetscMalloc(). If you

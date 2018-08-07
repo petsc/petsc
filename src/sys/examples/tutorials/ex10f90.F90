@@ -7,6 +7,7 @@
       PetscErrorCode                            :: ierr
       Character(len=256)                        :: filename
       PetscBool                                 :: flg
+      PetscInt                                  :: n
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -18,6 +19,7 @@
          call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,filename,PETSC_TRUE,ierr);CHKERRA(ierr)
       end if
       call PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);CHKERRQ(ierr);
       Call PetscFinalize(ierr)
       end program ex10f90
 

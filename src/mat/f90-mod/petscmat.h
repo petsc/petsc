@@ -6,20 +6,22 @@
 
       type tMat
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMat
       type tMatNullSpace
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatNullSpace
       type tMatFDColoring
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatFDColoring
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(-1)
       MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING               &
      &               = tMatFDColoring(-1)
+      MatNullSpace, parameter :: PETSC_NULL_MATNULLSPACE                 &
+     &               = tMatNullSpace(-1)
 !
 !  Flag for matrix assembly
 !
@@ -578,26 +580,6 @@
       PetscEnum PETSC_SCALAR_LONG_DOUBLE
       parameter (PETSC_SCALAR_DOUBLE=0,PETSC_SCALAR_SINGLE=1)
       parameter (PETSC_SCALAR_LONG_DOUBLE=2)
-
-
-!
-!     CUSP enumerated types
-!
-#if defined(PETSC_HAVE_CUSP)
-      PetscEnum MAT_CUSP_CSR
-      PetscEnum MAT_CUSP_DIA
-      PetscEnum MAT_CUSP_ELL
-      parameter(MAT_CUSP_CSR=0,MAT_CUSP_DIA=1)
-      parameter(MAT_CUSP_ELL=2)
-      PetscEnum MAT_CUSP_MULT_DIAG
-      PetscEnum MAT_CUSP_MULT_OFFDIAG
-      PetscEnum MAT_CUSP_MULT
-      PetscEnum MAT_CUSP_ALL
-      parameter(MAT_CUSP_MULT_DIAG=0)
-      parameter(MAT_CUSP_MULT_OFFDIAG=1)
-      parameter(MAT_CUSP_MULT=2)
-      parameter(MAT_CUSP_ALL=3)
-#endif
 
 
 !

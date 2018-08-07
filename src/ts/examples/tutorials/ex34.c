@@ -46,9 +46,9 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &C);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(dm,  U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  U, (void*)&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,  F, &f);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm, C, &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cdm, C, (void*)&x);CHKERRQ(ierr);
   for (i = info.xs; i < info.xs+info.xm; ++i) {
     const PetscScalar hx = i+1 == info.xs+info.xm ? x[i] - x[i-1] : x[i+1] - x[i];
 
@@ -56,9 +56,9 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
     f[i].v  = -hx*(PetscSqr(user->gammaTilde)*u[i].u + (PetscSqr(user->gamma) / user->xi)*(u[i].th + log(u[i].v + 1)));
     f[i].th = -hx*(u[i].v + 1)*(u[i].th + (1 + user->epsilon)*log(u[i].v + 1));
   }
-  ierr = DMDAVecRestoreArrayRead(dm,  U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  U, (void*)&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,  F, &f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cdm, C, &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cdm, C, (void*)&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +186,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts, &dm);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &C);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 11, 3, 1, NULL, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
@@ -268,3 +268,13 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    build:
+      requires: !single  !complex c99
+
+    test:
+      TODO: broken, was not nightly tested
+
+TEST*/

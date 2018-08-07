@@ -6,7 +6,7 @@
   generated below just for these routines.
 */
 
-PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = 0;
@@ -26,7 +26,7 @@ PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
+PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = 0;
@@ -101,7 +101,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   *addr_local_comm = local_comm;
 
-  ierr = MPI_Attr_put(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_set_attr(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void**)&addr_local_comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Seq_keyval,(void**)&addr_local_comm,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
   local_comm = *addr_local_comm;
 
@@ -152,6 +152,60 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 
   ierr = PetscFree(addr_local_comm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
-  ierr = MPI_Attr_delete(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
+  ierr = MPI_Comm_delete_attr(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscGlobalMinMaxInt - Get the global min/max from local min/max input
+
+  Collective on comm
+
+  Input Parameter:
+. minMaxVal - An array with the local min and max
+
+  Output Parameter:
+. minMaxValGlobal - An array with the global min and max
+
+  Level: beginner
+
+.keywords: minimum, maximum
+.seealso: PetscSplitOwnership()
+@*/
+PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm comm, PetscInt minMaxVal[2], PetscInt minMaxValGlobal[2])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  minMaxVal[1] = -minMaxVal[1];
+  ierr = MPI_Allreduce(minMaxVal, minMaxValGlobal, 2, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  minMaxValGlobal[1] = -minMaxValGlobal[1];
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscGlobalMinMaxReal - Get the global min/max from local min/max input
+
+  Collective on comm
+
+  Input Parameter:
+. minMaxVal - An array with the local min and max
+
+  Output Parameter:
+. minMaxValGlobal - An array with the global min and max
+
+  Level: beginner
+
+.keywords: minimum, maximum
+.seealso: PetscSplitOwnership()
+@*/
+PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm comm, PetscReal minMaxVal[2], PetscReal minMaxValGlobal[2])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  minMaxVal[1] = -minMaxVal[1];
+  ierr = MPI_Allreduce(minMaxVal, minMaxValGlobal, 2, MPIU_REAL, MPI_MIN, comm);CHKERRQ(ierr);
+  minMaxValGlobal[1] = -minMaxValGlobal[1];
   PetscFunctionReturn(0);
 }

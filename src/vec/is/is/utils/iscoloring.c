@@ -54,7 +54,7 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 }
 
 /*
-  ISColoringViewFromOptions - Processes command line options to determine if/how an ISColoring object is to be viewed. 
+  ISColoringViewFromOptions - Processes command line options to determine if/how an ISColoring object is to be viewed.
 
   Collective on ISColoring
 
@@ -250,7 +250,8 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 
    Level: advanced
 
-    Notes: By default sets coloring type to  IS_COLORING_GLOBAL
+    Notes:
+    By default sets coloring type to  IS_COLORING_GLOBAL
 
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
@@ -325,7 +326,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     Collective on IS
 
     Input Parameters
-.   to - an IS describes where we will go. Negative target rank will be ignored
+.   ito - an IS describes where we will go. Negative target rank will be ignored
 .   toindx - an IS describes what indices should send. NULL means sending natural numbering
 
     Output Parameter:
@@ -338,15 +339,15 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 @*/
 PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 {
-   const PetscInt       *ito_indices,*toindx_indices;
-   PetscInt             *send_indices,rstart,*recv_indices,nrecvs,nsends;
-   PetscInt             *tosizes,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
-   PetscMPIInt          *toranks,*fromranks,size,target_rank,*fromperm_newtoold,nto,nfrom;
-   PetscLayout           isrmap;
-   MPI_Comm              comm;
-   PetscSF               sf;
-   PetscSFNode          *iremote;
-   PetscErrorCode        ierr;
+   const PetscInt *ito_indices,*toindx_indices;
+   PetscInt       *send_indices,rstart,*recv_indices,nrecvs,nsends;
+   PetscInt       *tosizes,*fromsizes,i,j,*tosizes_tmp,*tooffsets_tmp,ito_ln;
+   PetscMPIInt    *toranks,*fromranks,size,target_rank,*fromperm_newtoold,nto,nfrom;
+   PetscLayout     isrmap;
+   MPI_Comm        comm;
+   PetscSF         sf;
+   PetscSFNode    *iremote;
+   PetscErrorCode  ierr;
 
    PetscFunctionBegin;
    ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
@@ -357,60 +358,56 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscLayoutGetRange(isrmap,&rstart,NULL);CHKERRQ(ierr);
    ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
-   for(i=0; i<ito_ln; i++){
-     if(ito_indices[i]<0) continue;
+   for (i=0; i<ito_ln; i++) {
+     if (ito_indices[i]<0) continue;
 #if defined(PETSC_USE_DEBUG)
-     if(ito_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",ito_indices[i],size);
+     if (ito_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",ito_indices[i],size);
 #endif
      tosizes_tmp[ito_indices[i]]++;
    }
    nto = 0;
-   for(i=0; i<size; i++){
-	 tooffsets_tmp[i+1] = tooffsets_tmp[i]+tosizes_tmp[i];
-     if(tosizes_tmp[i]>0) nto++;
-    }
+   for (i=0; i<size; i++) {
+     tooffsets_tmp[i+1] = tooffsets_tmp[i]+tosizes_tmp[i];
+     if (tosizes_tmp[i]>0) nto++;
+   }
    ierr = PetscCalloc2(nto,&toranks,2*nto,&tosizes);CHKERRQ(ierr);
-   nto = 0;
-   for(i=0; i<size; i++){
-     if(tosizes_tmp[i]>0){
-        toranks[nto]      = i;
-        tosizes[2*nto]    = tosizes_tmp[i];/* size */
-        tosizes[2*nto+1]  = tooffsets_tmp[i];/* offset */
-        nto++;
+   nto  = 0;
+   for (i=0; i<size; i++) {
+     if (tosizes_tmp[i]>0) {
+       toranks[nto]     = i;
+       tosizes[2*nto]   = tosizes_tmp[i];/* size */
+       tosizes[2*nto+1] = tooffsets_tmp[i];/* offset */
+       nto++;
      }
    }
    nsends = tooffsets_tmp[size];
-   ierr = PetscCalloc1(nsends,&send_indices);CHKERRQ(ierr);
-   if(toindx){
-	 ierr = ISGetIndices(toindx,&toindx_indices);CHKERRQ(ierr);
+   ierr   = PetscCalloc1(nsends,&send_indices);CHKERRQ(ierr);
+   if (toindx) {
+     ierr = ISGetIndices(toindx,&toindx_indices);CHKERRQ(ierr);
    }
-   for(i=0; i<ito_ln; i++){
-	 if(ito_indices[i]<0) continue;
-	 target_rank = ito_indices[i];
-	 send_indices[tooffsets_tmp[target_rank]] = toindx? toindx_indices[i]:(i+rstart);
-	 tooffsets_tmp[target_rank]++;
+   for (i=0; i<ito_ln; i++) {
+     if (ito_indices[i]<0) continue;
+     target_rank = ito_indices[i];
+     send_indices[tooffsets_tmp[target_rank]] = toindx? toindx_indices[i]:(i+rstart);
+     tooffsets_tmp[target_rank]++;
    }
-   if(toindx){
-   	 ierr = ISRestoreIndices(toindx,&toindx_indices);CHKERRQ(ierr);
+   if (toindx) {
+     ierr = ISRestoreIndices(toindx,&toindx_indices);CHKERRQ(ierr);
    }
    ierr = ISRestoreIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscFree2(tosizes_tmp,tooffsets_tmp);CHKERRQ(ierr);
    ierr = PetscCommBuildTwoSided(comm,2,MPIU_INT,nto,toranks,tosizes,&nfrom,&fromranks,&fromsizes);CHKERRQ(ierr);
    ierr = PetscFree2(toranks,tosizes);CHKERRQ(ierr);
    ierr = PetscCalloc1(nfrom,&fromperm_newtoold);CHKERRQ(ierr);
-   for(i=0; i<nfrom; i++){
-	 fromperm_newtoold[i] = i;
-   }
-   ierr = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
-   nrecvs   = 0;
-   for(i=0; i<nfrom; i++){
-	 nrecvs += fromsizes[i*2];
-   }
-   ierr = PetscCalloc1(nrecvs,&recv_indices);CHKERRQ(ierr);
-   ierr = PetscCalloc1(nrecvs,&iremote);CHKERRQ(ierr);
+   for (i=0; i<nfrom; i++) fromperm_newtoold[i] = i;
+   ierr   = PetscSortMPIIntWithArray(nfrom,fromranks,fromperm_newtoold);CHKERRQ(ierr);
    nrecvs = 0;
-   for(i=0; i<nfrom; i++){
-     for(j=0; j<fromsizes[2*fromperm_newtoold[i]]; j++){
+   for (i=0; i<nfrom; i++) nrecvs += fromsizes[i*2];
+   ierr   = PetscCalloc1(nrecvs,&recv_indices);CHKERRQ(ierr);
+   ierr   = PetscCalloc1(nrecvs,&iremote);CHKERRQ(ierr);
+   nrecvs = 0;
+   for (i=0; i<nfrom; i++) {
+     for (j=0; j<fromsizes[2*fromperm_newtoold[i]]; j++) {
        iremote[nrecvs].rank    = fromranks[i];
        iremote[nrecvs++].index = fromsizes[2*fromperm_newtoold[i]+1]+j;
      }
@@ -427,11 +424,11 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscFree(fromsizes);CHKERRQ(ierr);
    ierr = PetscFree(fromperm_newtoold);CHKERRQ(ierr);
    ierr = PetscFree(send_indices);CHKERRQ(ierr);
-   if(rows){
-	 ierr = PetscSortInt(nrecvs,recv_indices);CHKERRQ(ierr);
-     ierr = ISCreateGeneral(comm, nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
-   }else{
-	 ierr = PetscFree(recv_indices);CHKERRQ(ierr);
+   if (rows) {
+     ierr = PetscSortInt(nrecvs,recv_indices);CHKERRQ(ierr);
+     ierr = ISCreateGeneral(comm,nrecvs,recv_indices,PETSC_OWN_POINTER,rows);CHKERRQ(ierr);
+   } else {
+     ierr = PetscFree(recv_indices);CHKERRQ(ierr);
    }
    PetscFunctionReturn(0);
 }
@@ -446,6 +443,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 
     Input Parameters
 .   partitioning - a partitioning as generated by MatPartitioningApply()
+                   or MatPartitioningApplyND()
 
     Output Parameter:
 .   is - on each processor the index set that defines the global numbers
@@ -460,13 +458,23 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
+  IS             ndorder;
   PetscInt       i,np,npt,n,*starts = NULL,*sums = NULL,*lsizes = NULL,*newi = NULL;
   const PetscInt *indices = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(part,IS_CLASSID,1);
+  PetscValidPointer(is,2);
+  /* see if the partitioning comes from nested dissection */
+  ierr = PetscObjectQuery((PetscObject)part,"_petsc_matpartitioning_ndorder",(PetscObject*)&ndorder);CHKERRQ(ierr);
+  if (ndorder) {
+    ierr = PetscObjectReference((PetscObject)ndorder);CHKERRQ(ierr);
+    *is  = ndorder;
+    PetscFunctionReturn(0);
+  }
 
+  ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   /* count the number of partitions, i.e., virtual processors */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
@@ -511,7 +519,8 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
     Collective on IS
 
     Input Parameters:
-+   partitioning - a partitioning as generated by MatPartitioningApply()
++   partitioning - a partitioning as generated by MatPartitioningApply() or
+                   MatPartitioningApplyND()
 -   len - length of the array count, this is the total number of partitions
 
     Output Parameter:
@@ -526,10 +535,11 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         of count) is the size of the communicator associated with IS,
         but it can be set by MatPartitioningSetNParts. The resulting array
         of lengths can for instance serve as input of PCBJacobiSetTotalBlocks.
-
+        If the partitioning has been obtained by MatPartitioningApplyND(),
+        the returned count does not include the separators.
 
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering(),
-        MatPartitioningSetNParts(), MatPartitioningApply()
+        MatPartitioningSetNParts(), MatPartitioningApply(), MatPartitioningApplyND()
 
 @*/
 PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
@@ -567,7 +577,9 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
         starts - global number of first element in each partition on this processor
   */
   ierr = PetscCalloc1(len,&lsizes);CHKERRQ(ierr);
-  for (i=0; i<n; i++) lsizes[indices[i]]++;
+  for (i=0; i<n; i++) {
+    if (indices[i] > -1) lsizes[indices[i]]++;
+  }
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(len,&npp);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -716,7 +728,8 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
     Output Parameter:
 .   isout - the complement
 
-    Notes:  The communicator for this new IS is the same as for the input IS
+    Notes:
+    The communicator for this new IS is the same as for the input IS
 
       For a parallel IS, this will generate the local part of the complement on each process
 

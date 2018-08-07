@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import config.base
 
 class Configure(config.base.Configure):

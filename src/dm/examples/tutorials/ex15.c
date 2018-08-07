@@ -5,6 +5,7 @@ static char help[] = "Tests VecView() functionality with DMDA objects when using
 #include <petscdm.h>
 #include <petscdmda.h>
 
+
 #define DMDA_I 5
 #define DMDA_J 4
 #define DMDA_K 6
@@ -72,22 +73,22 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
 PetscErrorCode DMDAVecGenerateEntries(DM dm,Vec a)
 {
   PetscScalar    ****LA_v;
-  PetscInt       i,j,k,si,sj,sk,ni,nj,nk,M,N;
+  PetscInt       i,j,k,l,si,sj,sk,ni,nj,nk,M,N,dof;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(dm,a,&LA_v);CHKERRQ(ierr);
   for (k=sk; k<sk+nk; k++) {
     for (j=sj; j<sj+nj; j++) {
       for (i=si; i<si+ni; i++) {
         PetscScalar test_value_s;
-                
+
         test_value_s = dmda_i_val[i]*((PetscScalar)i) + dmda_j_val[j]*((PetscScalar)(i+j*M)) + dmda_k_val[k]*((PetscScalar)(i + j*M + k*M*N));
-        LA_v[k][j][i][0] = 3.0 * test_value_s;
-        LA_v[k][j][i][1] = 3.0 * test_value_s + 1.0;
-        LA_v[k][j][i][2] = 3.0 * test_value_s + 2.0;
+        for (l=0; l<dof; l++) {
+          LA_v[k][j][i][l] = (PetscScalar)dof * test_value_s + (PetscScalar)l;
+        }
       }
     }
   }
@@ -99,15 +100,15 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
 {
   PetscErrorCode ierr;
   int            fdes;
-  PetscScalar    buffer[DMDA_I*DMDA_J*DMDA_K*3];
-  PetscInt       len,d,i,j,k,M,N;
+  PetscScalar    buffer[DMDA_I*DMDA_J*DMDA_K*10];
+  PetscInt       len,d,i,j,k,M,N,dof;
   PetscMPIInt    rank;
   PetscBool      dataverified = PETSC_TRUE;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  len = DMDA_I*DMDA_J*DMDA_K*3;
+  ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  len = DMDA_I*DMDA_J*DMDA_K*dof;
   if (!rank) {
     ierr = PetscBinaryOpen(name,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fdes,buffer,len,PETSC_SCALAR);CHKERRQ(ierr);
@@ -116,14 +117,14 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
     for (k=0; k<DMDA_K; k++) {
       for (j=0; j<DMDA_J; j++) {
         for (i=0; i<DMDA_I; i++) {
-          for (d=0; d<3; d++) {
+          for (d=0; d<dof; d++) {
             PetscScalar v,test_value_s,test_value;
             PetscInt    index;
 
             test_value_s = dmda_i_val[i]*((PetscScalar)i) + dmda_j_val[j]*((PetscScalar)(i+j*M)) + dmda_k_val[k]*((PetscScalar)(i + j*M + k*M*N));
-            test_value = 3.0 * test_value_s + (PetscScalar)d;
+            test_value = (PetscScalar)dof * test_value_s + (PetscScalar)d;
 
-            index = 3*(i + j*M + k*M*N) + d;
+            index = dof*(i + j*M + k*M*N) + d;
             v = PetscAbsScalar(test_value-buffer[index]);
 #if defined(PETSC_USE_COMPLEX)
             if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
@@ -247,7 +248,14 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
 /*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 12
 
    test:
       suffix: 3
@@ -256,3 +264,4 @@ int main(int argc,char **args)
       args: -usempiio
 
 TEST*/
+

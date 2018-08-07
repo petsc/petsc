@@ -1171,7 +1171,8 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
  Level: beginner
 
- Notes: Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not yet supported
+ Notes:
+    Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not yet supported
 
  References:
 +  1. - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
@@ -1223,7 +1224,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESImproveEig_C", KSPDGMRESImproveEig_DGMRES);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("DGMRESComputeDefl", KSP_CLASSID, &KSP_DGMRESComputeDeflationData);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DGMRESCompDefl",  KSP_CLASSID, &KSP_DGMRESComputeDeflationData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation);CHKERRQ(ierr);
 
   dgmres->haptol         = 1.0e-30;

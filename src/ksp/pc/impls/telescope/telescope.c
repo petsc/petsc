@@ -307,7 +307,7 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
           break;
         case TELESCOPE_DMDA:
           ierr = PetscViewerASCIIPrintf(subviewer,"  DMDA detected\n");CHKERRQ(ierr);
-          ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
+          ierr = DMView_DA_Short(subdm,subviewer);CHKERRQ(ierr);
           break;
         case TELESCOPE_DMPLEX:
           ierr = PetscViewerASCIIPrintf(subviewer,"  DMPLEX detected\n");CHKERRQ(ierr);
@@ -378,13 +378,13 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       /* check for dmplex */
       ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&same);CHKERRQ(ierr);
       if (same) {
-        PetscInfo(pc,"PCTelescope: found DMPLEX\n");
+        ierr = PetscInfo(pc,"PCTelescope: found DMPLEX\n");CHKERRQ(ierr);
         sr_type = TELESCOPE_DMPLEX;
       }
     }
 
     if (sred->ignore_dm) {
-      PetscInfo(pc,"PCTelescope: ignore DM\n");
+      ierr = PetscInfo(pc,"PCTelescope: ignore DM\n");CHKERRQ(ierr);
       sr_type = TELESCOPE_DEFAULT;
     }
     sred->sr_type = sr_type;

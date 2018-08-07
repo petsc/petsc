@@ -33,8 +33,8 @@ if __name__ == '__main__':
   '--with-mkl_pardiso-dir=/LIBS64/ICS2015SP0/Intel/mkl',
   '--with-mkl_cpardiso-dir=/LIBS64/ICS2015SP0/Intel/mkl',
   '--pc-type lu',
-  '--pc_factor_mat_solver_package mkl_pardiso',
-  '--pc_factor_mat_solver_package mkl_cpardiso',
+  '--pc_factor_mat_solver_type mkl_pardiso',
+  '--pc_factor_mat_solver_type mkl_cpardiso',
   'PETSC_ARCH=arch-ms-msvc2012-intelmpi-cudano-nomumps-cpardiso-indexes64-mklilp64-debug'
  ]
  configure.petsc_configure(configure_options)

@@ -209,7 +209,7 @@ int main(int argc, char **argv)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if(size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only");
 
   /*
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
   user.D_a = 0.;
   user.D_h = 30.;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Problem settings", "PROBLEM");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Problem settings", "PROBLEM");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-nb_cells", "Number of cells", "ex42.c",user.nb_cells, &user.nb_cells,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-alpha", "Autocatalysis factor", "ex42.c",user.alpha, &user.alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-beta", "Inhibition factor", "ex42.c",user.beta, &user.beta,NULL);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-rho_h", "Default production of the inhibitor", "ex42.c",user.rho_h, &user.rho_h,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu_h", "Degradation rate of the inhibitor", "ex42.c",user.mu_h, &user.mu_h,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-D_h", "Diffusion rate of the inhibitor", "ex42.c",user.D_h, &user.D_h,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "nb_cells: %D\n", user.nb_cells);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "alpha: %5.5g\n", user.alpha);CHKERRQ(ierr);
@@ -298,8 +298,8 @@ int main(int argc, char **argv)
    * Set a large number of timesteps and final duration time to insure
    * convergenge to steady state
    */
-  ierr = TSSetMaxSteps(ts, 1e12);
-  ierr = TSSetMaxTime(ts, 1e12);
+  ierr = TSSetMaxSteps(ts, 2147483647);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts, 1.e12);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*
@@ -348,5 +348,16 @@ int main(int argc, char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
-    return 0;
+  return ierr;
 }
+
+/*TEST
+    build:
+      requires: !single !complex c99
+
+    test:
+      args: -ts_max_steps 8 
+      output_file: output/ex42.out 
+      TODO: broken
+
+TEST*/

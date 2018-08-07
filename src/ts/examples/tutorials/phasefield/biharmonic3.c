@@ -11,7 +11,7 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason --wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
+./biharmonic3 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
 
     w = -kappa \Delta u  + u^3  - u
     u_t =  \Delta w
@@ -20,7 +20,7 @@ Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 
 Evolve the Cahn-Hillard equations:
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  --wait   -ts_type beuler    -da_refine 6 -vi  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic3 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
 
 */
@@ -40,15 +40,13 @@ int main(int argc,char **argv)
   TS             ts;                           /* nonlinear solver */
   Vec            x,r;                          /* solution, residual vectors */
   Mat            J;                            /* Jacobian matrix */
-  PetscInt       steps,Mx,maxsteps = 10000000;
+  PetscInt       steps,Mx;
   PetscErrorCode ierr;
   DM             da;
   MatFDColoring  matfdcoloring;
   ISColoring     iscoloring;
   PetscReal      dt;
   PetscReal      vbounds[] = {-100000,100000,-1.1,1.1};
-  PetscBool      wait;
-  Vec            ul,uh;
   SNES           snes;
   UserCtx        ctx;
 
@@ -57,25 +55,24 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ctx.kappa       = 1.0;
-  ierr            = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
   ierr            = PetscOptionsGetBool(NULL,NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy      = 1;
-  /* ierr = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
   ierr        = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
-  ierr        = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta   = .001;
   ctx.theta_c = 1.0;
-  ierr        = PetscOptionsGetReal(NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,2,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
@@ -113,25 +110,16 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);
   ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
-
-  {
-    ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
-    ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
@@ -154,21 +142,12 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
-  if (wait) {
-    ierr = PetscSleep(-1);CHKERRQ(ierr);
-  }
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  {
-    ierr = VecDestroy(&ul);CHKERRQ(ierr);
-    ierr = VecDestroy(&uh);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -177,7 +156,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 typedef struct {PetscScalar w,u;} Field;
@@ -208,8 +187,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localXdot);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
 
@@ -289,8 +267,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   PetscReal      hx,xx,r,sx;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx;
   sx = 1.0/(hx*hx);
@@ -324,3 +301,13 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+   build:
+     requires: !complex !single
+
+   test:
+     args: -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason  -ts_type beuler  -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
+     requires: x
+
+TEST*/

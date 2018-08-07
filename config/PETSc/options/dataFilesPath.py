@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
     parentloc =  os.path.join(self.petscdir.dir,'..','datafiles')
     self.datafilespath = None
 
-    if self.framework.argDB.has_key('DATAFILESPATH'):
+    if 'DATAFILESPATH' in self.framework.argDB:
       if os.path.isdir(self.framework.argDB['DATAFILESPATH']) and os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'], 'matrices')):
         self.datafilespath = str(self.framework.argDB['DATAFILESPATH'])
       else:

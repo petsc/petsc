@@ -14,7 +14,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   Mat            mat  = pc->mat,pmat = pc->pmat;
   PetscErrorCode ierr;
-  void           (*f)(void);
+  PetscBool      hasop;
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
@@ -109,8 +109,8 @@ end_1:
   /* -------------------------
       Determines mat and pmat
   ---------------------------*/
-  ierr = MatShellGetOperation(pc->mat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
-  if (!f && size == 1) {
+  ierr = MatHasOperation(pc->mat,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+  if (!hasop && size == 1) {
     mat  = pc->mat;
     pmat = pc->pmat;
   } else {
@@ -164,9 +164,9 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObj
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Block Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
-  }
+  if (flg) {ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-pc_bjacobi_local_blocks","Local number of blocks","PCBJacobiSetLocalBlocks",jac->n_local,&blocks,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PCBJacobiSetLocalBlocks(pc,blocks,NULL);CHKERRQ(ierr);}
   if (jac->ksp) {
     /* The sub-KSP has already been set up (e.g., PCSetUp_BJacobi_Singleblock), but KSPSetFromOptions was not called
      * unless we had already been called. */
@@ -339,7 +339,7 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
    PCBJacobiGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
 
-   Note Collective
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -453,6 +453,9 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 .  blocks - the number of blocks
 -  lens - [optional] integer array containing size of each block
 
+   Options Database Key:
+.  -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
+
    Note:
    Currently only a limited number of blocking configurations are supported.
 
@@ -511,10 +514,11 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
            its own KSP object.
 
    Options Database Keys:
-.  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
++  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
+-  -pc_bjacobi_blocks <n> - use n total blocks
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Defaults to one block per processor.
+   Notes:
+    Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
@@ -523,14 +527,17 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
          and set the options directly on the resulting KSP object (you can access its PC
          KSPGetPC())
 
-     For GPU-based vectors (CUDA, CUSP, ViennaCL) it is recommended to use exactly one block per MPI process for best
+     For GPU-based vectors (CUDA, ViennaCL) it is recommended to use exactly one block per MPI process for best
          performance.  Different block partitioning may lead to additional data transfers
          between host and GPU that lead to degraded performance.
+
+     The options prefix for each block is sub_, for example -sub_pc_type lu.
+
+     When multiple processes share a single block, each block encompasses exactly all the unknowns owned its set of processes.
 
    Level: beginner
 
    Concepts: block Jacobi
-
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
@@ -740,7 +747,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   KSP                    ksp;
   PC_BJacobi_Singleblock *bjac;
   PetscBool              wasSetup = PETSC_TRUE;
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
   PetscBool              is_gpumatrix = PETSC_FALSE;
 #endif
 
@@ -788,19 +795,14 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = MatGetSize(pmat,&m,&m);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->x);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->y);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-    ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(bjac->x,VECCUSP);CHKERRQ(ierr);
-      ierr = VecSetType(bjac->y,VECCUSP);CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VECCUDA)
     ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(bjac->x,VECCUDA);CHKERRQ(ierr);
       ierr = VecSetType(bjac->y,VECCUDA);CHKERRQ(ierr);
     }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
     ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(bjac->x,VECVIENNACL);CHKERRQ(ierr);
@@ -979,7 +981,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC                    subpc;
   IS                    is;
   MatReuse              scall;
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
   PetscBool              is_gpumatrix = PETSC_FALSE;
 #endif
 
@@ -1045,19 +1047,14 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&y);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-      ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP,"");CHKERRQ(ierr);
-      if (is_gpumatrix) {
-        ierr = VecSetType(x,VECCUSP);CHKERRQ(ierr);
-        ierr = VecSetType(y,VECCUSP);CHKERRQ(ierr);
-      }
-#elif defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VECCUDA)
       ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
       if (is_gpumatrix) {
         ierr = VecSetType(x,VECCUDA);CHKERRQ(ierr);
         ierr = VecSetType(y,VECCUDA);CHKERRQ(ierr);
       }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)pmat,&is_gpumatrix,MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
       if (is_gpumatrix) {
         ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
@@ -1093,7 +1090,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
   ierr = MatCreateSubMatrices(pmat,n_local,bjac->is,bjac->is,scall,&bjac->pmat);CHKERRQ(ierr);
   if (pc->useAmat) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(mat,n_local,bjac->is,bjac->is,scall,&bjac->mat);CHKERRQ(ierr);
   }
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -1106,6 +1102,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->pmat[i],pprefix);CHKERRQ(ierr);
     if (pc->useAmat) {
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->mat[i]);CHKERRQ(ierr);
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->mat[i],mprefix);CHKERRQ(ierr);
       ierr = KSPSetOperators(jac->ksp[i],bjac->mat[i],bjac->pmat[i]);CHKERRQ(ierr);
     } else {
@@ -1170,9 +1167,9 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
 
   /* apply preconditioner on each matrix block */
-  ierr = PetscLogEventBegin(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],mpjac->xsub,mpjac->ysub);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_ApplyOnMproc,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyOnBlocks,jac->ksp[0],mpjac->xsub,mpjac->ysub,0);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(jac->ksp[0],&reason);CHKERRQ(ierr);
   if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
@@ -1194,7 +1191,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   MPI_Comm             comm,subcomm=0;
   const char           *prefix;
   PetscBool            wasSetup = PETSC_TRUE;
-#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
   PetscBool              is_gpumatrix = PETSC_FALSE;
 #endif
 
@@ -1250,19 +1247,14 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&mpjac->xsub);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&mpjac->ysub);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-    ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJCUSP,MATMPIAIJCUSP,"");CHKERRQ(ierr);
-    if (is_gpumatrix) {
-      ierr = VecSetType(mpjac->xsub,VECMPICUSP);CHKERRQ(ierr);
-      ierr = VecSetType(mpjac->ysub,VECMPICUSP);CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VECCUDA)
     ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(mpjac->xsub,VECMPICUDA);CHKERRQ(ierr);
       ierr = VecSetType(mpjac->ysub,VECMPICUDA);CHKERRQ(ierr);
     }
-#elif defined(PETSC_HAVE_VIENNACL)
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
     ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(mpjac->xsub,VECMPIVIENNACL);CHKERRQ(ierr);

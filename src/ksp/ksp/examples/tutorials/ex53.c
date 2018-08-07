@@ -65,7 +65,7 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
   if (size > 1) {
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
   }
 #endif
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -124,3 +124,17 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      requires: mumps
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: mumps
+      output_file: output/ex53.out
+
+TEST*/

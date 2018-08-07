@@ -5,9 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/* Logging support */
-PetscLogEvent DMDA_LocalADFunction;
-
 /*
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
 
@@ -98,6 +95,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofillcols);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
+  ierr = ISDestroy(&dd->ecorners);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
 

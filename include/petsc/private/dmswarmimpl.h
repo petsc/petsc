@@ -7,20 +7,23 @@
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
 #include <petsc/private/dmimpl.h>
 
-PETSC_EXTERN PetscLogEvent DMSWARM_Migrate,
-                           DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints,
-                           DMSWARM_Sort,
-                           DMSWARM_DataExchangerTopologySetup,
-                           DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd,
-                           DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
+PETSC_EXTERN PetscLogEvent DMSWARM_Migrate;
+PETSC_EXTERN PetscLogEvent DMSWARM_SetSizes;
+PETSC_EXTERN PetscLogEvent DMSWARM_AddPoints;
+PETSC_EXTERN PetscLogEvent DMSWARM_RemovePoints;
+PETSC_EXTERN PetscLogEvent DMSWARM_Sort;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerTopologySetup;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerBegin;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerEnd;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerSendCount;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 
-
-typedef struct _p_DataField* DataField;
-typedef struct _p_DataBucket* DataBucket;
+typedef struct _p_DMSwarmDataField* DMSwarmDataField;
+typedef struct _p_DMSwarmDataBucket* DMSwarmDataBucket;
 typedef struct _p_DMSwarmSort* DMSwarmSort;
 
 typedef struct {
-  DataBucket db;
+  DMSwarmDataBucket db;
 
   PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;

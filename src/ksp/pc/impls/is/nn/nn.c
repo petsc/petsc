@@ -22,7 +22,7 @@ static PetscErrorCode PCSetUp_NN(PC pc)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
-    ierr = PCISSetUp(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
     /* Create the coarse matrix. */
     ierr = PCNNCreateCoarseMatrix(pc);CHKERRQ(ierr);
   }
@@ -148,7 +148,8 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Level: intermediate
 
-   Notes: The matrix used with this preconditioner must be of type MATIS
+   Notes:
+    The matrix used with this preconditioner must be of type MATIS
 
           Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
           degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
@@ -522,7 +523,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplyCoarse,pc,0,0,0);CHKERRQ(ierr);
   if (u) {
     if (!vec3_B) vec3_B = u;
     ierr = VecPointwiseMult(vec1_B,pcis->D,u);CHKERRQ(ierr);
@@ -572,7 +573,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   }
   ierr = VecScatterBegin(pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplyCoarse,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

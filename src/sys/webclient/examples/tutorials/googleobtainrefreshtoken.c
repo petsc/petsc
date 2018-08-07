@@ -22,4 +22,14 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   build:
+     requires: ssl
+
+   test:
+     TODO: determine how to run this test without going through the browser
+
+TEST*/
+
 

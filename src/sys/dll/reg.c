@@ -13,20 +13,20 @@ PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
 
-static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
+PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}/libpetsc");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+  ierr = PetscStrncpy(libs,"${PETSC_LIB_DIR}/libpetsc",sizeof(libs));CHKERRQ(ierr);
+  ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
   if (*found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrcpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc");CHKERRQ(ierr);
-    ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+    ierr = PetscStrncpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc",sizeof(libs));CHKERRQ(ierr);
+    ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
     if (*found) {
       ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
@@ -38,19 +38,19 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscErrorCode AOInitializePackage(void);
-extern PetscErrorCode PetscSFInitializePackage(void);
+PETSC_EXTERN PetscErrorCode AOInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 #if !defined(PETSC_USE_COMPLEX)
-extern PetscErrorCode CharacteristicInitializePackage(void);
+PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 #endif
-extern PetscErrorCode ISInitializePackage(void);
-extern PetscErrorCode VecInitializePackage(void);
-extern PetscErrorCode MatInitializePackage(void);
-extern PetscErrorCode DMInitializePackage(void);
-extern PetscErrorCode PCInitializePackage(void);
-extern PetscErrorCode KSPInitializePackage(void);
-extern PetscErrorCode SNESInitializePackage(void);
-extern PetscErrorCode TSInitializePackage(void);
+PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
+PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
+PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
+PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
+PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 #endif
 
@@ -58,12 +58,12 @@ static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
 */
-PetscErrorCode  PetscInitialize_DynamicLibraries(void)
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscBool      preload;
 #endif
 
@@ -75,7 +75,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES) || !defined(PETSC_USE_SHARED_LIBRARIES)
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES) || !defined(PETSC_USE_SHARED_LIBRARIES)
   /*
       This just initializes the most basic PETSc stuff.
 
@@ -141,7 +141,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */
-PetscErrorCode PetscFinalize_DynamicLibraries(void)
+PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
@@ -460,8 +460,8 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
   PetscFunctionBegin;
   if (!fd) fd = PETSC_STDOUT;
 
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
+  ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
+  if (prefix) {ierr = PetscStrlcat(p,prefix,sizeof(p));CHKERRQ(ierr);}
   ierr = PetscFPrintf(comm,fd,"  %s%s <%s>: %s (one of)",p,name+1,def,text);CHKERRQ(ierr);
 
   while (list) {

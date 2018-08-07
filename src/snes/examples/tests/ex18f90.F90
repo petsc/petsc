@@ -3,6 +3,7 @@
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
 module Base_module
+
 #include "petsc/finclude/petscsnes.h"
       implicit none
   private
@@ -127,3 +128,9 @@ end interface
   print *, 'End of Fortran2003 test program'
 
 end program ex18f90
+
+!/*TEST
+!
+!   test:
+!
+!TEST*/

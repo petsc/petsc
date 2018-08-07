@@ -619,7 +619,7 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOp
 .  1. - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
    HPCC'05 Proceedings of the First international conference on High Performance Computing and Communications
 
-.seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MatColoringType
 M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
 {

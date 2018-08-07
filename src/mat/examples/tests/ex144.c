@@ -1,5 +1,6 @@
 /* This program illustrates use of parallel real FFT */
 static char help[]="This program illustrates the use of parallel real 2D fft using fftw without PETSc interface";
+
 #include <petscmat.h>
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -17,7 +18,8 @@ int main(int argc,char **args)
   int             n,N,N_factor,NM;
   PetscScalar     one=2.0,zero=0.5;
   PetscScalar     two=4.0,three=8.0,four=16.0;
-  PetscScalar     a,*x_arr,*y_arr,*z_arr,enorm;
+  PetscScalar     a,*x_arr,*y_arr,*z_arr;
+  PetscReal       enorm;
   Vec             fin,fout,fout1;
   Vec             ini,final;
   PetscRandom     rnd;
@@ -185,3 +187,19 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   build:
+      requires: fftw !complex
+
+   test:
+      output_file: output/ex144.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      output_file: output/ex144.out
+
+TEST*/

@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen() */
 
 #include <petsc/private/viewerimpl.h> /*I   "petscviewer.h" I*/
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
@@ -116,12 +116,12 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 .  ctx        - User context to store the relevant data to apply g2lfields
 -  destroyctx - Destroy function for userctx
 
-  Notes: g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
+  Notes:
+    g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
 .vb
   g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
   For vector spaces, the block size of Vfield[i] represents the vector dimension. It misses the Fortran bindings.
-  PETSc will take ownership of the work vectors.
   The names of the Vfield vectors will be displayed in the window title.
 
   Level: intermediate
@@ -278,12 +278,20 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
     if (socket->type == PETSC_VIEWER_GLVIS_SOCKET) {
       ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->meshwindow);CHKERRQ(ierr);
     } else {
-      PetscMPIInt rank;
-      char        filename[PETSC_MAX_PATH_LEN];
+      size_t    len;
+      PetscBool isstdout;
 
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
+      ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
+      ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+      if (!socket->name || !len || isstdout) {
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->meshwindow);CHKERRQ(ierr);
+      } else {
+        PetscMPIInt rank;
+        char        filename[PETSC_MAX_PATH_LEN];
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
+      }
     }
     if (socket->meshwindow) {
       ierr = PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
@@ -374,12 +382,21 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
     case PETSCVIEWERGLVIS_DISCONNECTED:
       if (socket->window[wid]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"This should not happen");
       if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
-        PetscMPIInt rank;
-        char        filename[PETSC_MAX_PATH_LEN];
+        size_t    len;
+        PetscBool isstdout;
 
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%d.%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
+        ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
+        ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+        if (!socket->name || !len || isstdout) {
+          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->window[wid]);CHKERRQ(ierr);
+        } else {
+          PetscMPIInt rank;
+          char        filename[PETSC_MAX_PATH_LEN];
+
+          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%d.%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
+        }
       } else {
         ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->window[wid]);CHKERRQ(ierr);
       }
@@ -570,7 +587,8 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
   Output Parameters:
 -  viewer    - the PetscViewer object
 
-  Notes: misses Fortran binding
+  Notes:
+    misses Fortran binding
 
   Level: beginner
 
@@ -586,10 +604,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERGLVIS);CHKERRQ(ierr);
 
   socket       = (PetscViewerGLVis)((*viewer)->data);
-  ierr         = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr         = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
   socket->type = type;
-  socket->port = port;
+  if (type == PETSC_VIEWER_GLVIS_DUMP || name) {
+    ierr = PetscFree(socket->name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
+  }
+  socket->port = (!port || port == PETSC_DETERMINE || port == PETSC_DECIDE) ? 19916 : port;
 
   ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -605,7 +625,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
 
   Level: intermediate
 
-  Notes: misses Fortran bindings
+  Notes:
+    misses Fortran bindings
 
   Environmental variables:
 + PETSC_VIEWER_GLVIS_FILENAME : output filename (if specified dump to disk, and takes precedence on PETSC_VIEWER_GLVIS_HOSTNAME)

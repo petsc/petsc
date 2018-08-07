@@ -24,28 +24,28 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
-#define PetscRoundReal(a)   round(a)
-#define PetscSqrtReal(a)    sqrt(a)
-#define PetscExpReal(a)     exp(a)
-#define PetscLogReal(a)     log(a)
-#define PetscLog10Real(a)   log10(a)
+#define PetscRoundReal(a)   roundf(a)
+#define PetscSqrtReal(a)    sqrtf(a)
+#define PetscExpReal(a)     expf(a)
+#define PetscLogReal(a)     logf(a)
+#define PetscLog10Real(a)   log10f(a)
 #ifdef PETSC_HAVE_LOG2
-#define PetscLog2Real(a)    log2(a)
+#define PetscLog2Real(a)    log2f(a)
 #endif
-#define PetscSinReal(a)     sin(a)
-#define PetscCosReal(a)     cos(a)
-#define PetscTanReal(a)     tan(a)
-#define PetscAsinReal(a)    asin(a)
-#define PetscAcosReal(a)    acos(a)
-#define PetscAtanReal(a)    atan(a)
-#define PetscAtan2Real(a,b) atan2(a,b)
-#define PetscSinhReal(a)    sinh(a)
-#define PetscCoshReal(a)    cosh(a)
-#define PetscTanhReal(a)    tanh(a)
-#define PetscPowReal(a,b)   pow(a,b)
-#define PetscCeilReal(a)    ceil(a)
-#define PetscFloorReal(a)   floor(a)
-#define PetscFmodReal(a,b)  fmod(a,b)
+#define PetscSinReal(a)     sinf(a)
+#define PetscCosReal(a)     cosf(a)
+#define PetscTanReal(a)     tanf(a)
+#define PetscAsinReal(a)    asinf(a)
+#define PetscAcosReal(a)    acosf(a)
+#define PetscAtanReal(a)    atanf(a)
+#define PetscAtan2Real(a,b) atan2f(a,b)
+#define PetscSinhReal(a)    sinhf(a)
+#define PetscCoshReal(a)    coshf(a)
+#define PetscTanhReal(a)    tanhf(a)
+#define PetscPowReal(a,b)   powf(a,b)
+#define PetscCeilReal(a)    ceilf(a)
+#define PetscFloorReal(a)   floorf(a)
+#define PetscFmodReal(a,b)  fmodf(a,b)
 #define PetscTGamma(a)      tgammaf(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
@@ -111,7 +111,7 @@ typedef __float128 PetscReal;
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #define MPIU_REAL MPIU___FP16
 typedef __fp16 PetscReal;
-#define PetscRound(a)       roundf(a)
+#define PetscRoundReal(a)   roundf(a)
 #define PetscSqrtReal(a)    sqrtf(a)
 #define PetscExpReal(a)     expf(a)
 #define PetscLogReal(a)     logf(a)
@@ -143,10 +143,7 @@ typedef __fp16 PetscReal;
 #if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
-#if defined(PETSC_HAVE_CUSP)
-#define complexlib cusp
-#include <cusp/complex.h>
-#elif defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
+#if defined(PETSC_HAVE_VECCUDA) && __CUDACC_VER_MAJOR__ > 6
 /* complex headers in thrust only available in CUDA 7.0 and above */
 #define complexlib thrust
 #include <thrust/complex.h>
@@ -322,8 +319,48 @@ PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(pet
 
 #if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 typedef PetscComplex PetscScalar;
+
+/*MC
+   PetscRealPart - Returns the real part of a PetscScalar
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscScalar PetscRealPart(PetscScalar v)
+
+   Not Collective
+
+   Input Parameter:
+.  v - value to find the real part of
+
+   Level: beginner
+
+.seealso: PetscScalar, PetscImaginaryPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscRealPart(a)      PetscRealPartComplex(a)
+
+/*MC
+   PetscImaginaryPart - Returns the imaginary part of a PetscScalar
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscScalar PetscImaginaryPart(PetscScalar v)
+
+   Not Collective
+
+   Input Parameter:
+.  v - value to find the imaginary part of
+
+   Level: beginner
+
+   Notes:
+       If PETSc was configured for real numbers then this always returns the value 0
+
+.seealso: PetscScalar, PetscRealPart(), PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
 #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
+
 #define PetscAbsScalar(a)     PetscAbsComplex(a)
 #define PetscConj(a)          PetscConjComplex(a)
 #define PetscSqrtScalar(a)    PetscSqrtComplex(a)
@@ -454,7 +491,8 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -476,7 +514,8 @@ M*/
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -499,7 +538,8 @@ M*/
 .  a - lower end of interval
 -  b - upper end of interval
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -567,7 +607,8 @@ M*/
    Input Parameter:
 .   v1 - the value
 
-   Notes: type can be integer or floating point value
+   Notes:
+    type can be integer or floating point value
 
    Level: beginner
 
@@ -589,14 +630,8 @@ M*/
 /*
      Basic constants
 */
-#if defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_PI                 M_PIq
-#elif defined(M_PI)
-#define PETSC_PI                 M_PI
-#else
-#define PETSC_PI                 3.14159265358979323846264338327950288419716939937510582
-#endif
-#define PETSC_PHI                1.6180339887498948482
+#define PETSC_PI   PetscRealConstant(3.1415926535897932384626433832795029)
+#define PETSC_PHI  PetscRealConstant(1.6180339887498948482045868343656381)
 
 #if !defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_MAX_INT            2147483647

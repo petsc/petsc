@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os, sys
 
 extraLogs = []
@@ -9,10 +10,10 @@ if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
 if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 6:
-  print '*******************************************************************************'
-  print '*       Python2 version 2.6 or higher is required to run ./configure          *'
-  print '*          Try: "python2.7 ./configure" or "python2.6 ./configure"            *'
-  print '*******************************************************************************'
+  print('*******************************************************************************')
+  print('*       Python2 version 2.6 or higher is required to run ./configure          *')
+  print('*          Try: "python2.7 ./configure" or "python2.6 ./configure"            *')
+  print('*******************************************************************************')
   sys.exit(4)
 
 def check_for_option_mistakes(opts):
@@ -20,7 +21,7 @@ def check_for_option_mistakes(opts):
     name = opt.split('=')[0]
     if name.find('_') >= 0:
       exception = False
-      for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'superlu_mt', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:
+      for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:
@@ -37,7 +38,7 @@ def check_for_unsupported_combinations(opts):
 
 def check_for_option_changed(opts):
 # Document changes in command line options here.
-  optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack')]
+  optMap = [('with-64bit-indices','with-64-bit-indices'),('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse'),('f-blas-lapack','fblaslapack'),('with-cuda-arch','CUDAFLAGS=-arch'),('with-packages-dir','with-packages-download-dir'),('with-external-packages-dir','with-packages-build-dir'),('package-dirs','with-packages-search-path'),('search-dirs','with-executables-search-path')]
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:
@@ -199,22 +200,22 @@ def chkwinf90():
 
 def chkdosfiles():
   # cygwin - but not a hg clone - so check one of files in bin dir
-  if "\r\n" in open(os.path.join('bin','petscmpiexec'),"rb").read():
-    print '==============================================================================='
-    print ' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****'
-    print ' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****'
-    print '==============================================================================='
+  if "\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
+    print('===============================================================================')
+    print(' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****')
+    print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
+    print('===============================================================================')
     sys.exit(3)
   return
 
 def chkcygwinlink():
   if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwinf90():
       if '--ignore-cygwin-link' in sys.argv: return 0
-      print '==============================================================================='
-      print ' *** Cygwin /usr/bin/link detected! Compiles with CVF/Intel f90 can break!  **'
-      print ' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **'
-      print ' *** Or to ignore this check, use configure option: --ignore-cygwin-link    **'
-      print '==============================================================================='
+      print('===============================================================================')
+      print(' *** Cygwin /usr/bin/link detected! Compiles with CVF/Intel f90 can break!  **')
+      print(' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **')
+      print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link    **')
+      print('===============================================================================')
       sys.exit(3)
   return 0
 
@@ -222,19 +223,19 @@ def chkbrokencygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
     if buf.find('1.5.11-1') > -1:
-      print '==============================================================================='
-      print ' *** cygwin-1.5.11-1 detected. ./configure fails with this version ***'
-      print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
-      print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
-      print '==============================================================================='
+      print('===============================================================================')
+      print(' *** cygwin-1.5.11-1 detected. ./configure fails with this version ***')
+      print(' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***')
+      print(' *** be done by running cygwin-setup, selecting "next" all the way.***')
+      print('===============================================================================')
       sys.exit(3)
   return 0
 
 def chkusingwindowspython():
   if sys.platform == 'win32':
-    print '==============================================================================='
-    print ' *** Windows python detected. Please rerun ./configure with cygwin-python. ***'
-    print '==============================================================================='
+    print('===============================================================================')
+    print(' *** Windows python detected. Please rerun ./configure with cygwin-python. ***')
+    print('===============================================================================')
     sys.exit(3)
   return 0
 
@@ -320,7 +321,7 @@ def move_configure_log(framework):
 def print_final_timestamp(framework):
   import time
   framework.log.write(('='*80)+'\n')
-  framework.log.write('Finishing Configure Run at '+time.ctime(time.time())+'\n')
+  framework.log.write('Finishing configure run at '+time.strftime('%a, %d %b %Y %H:%M:%S %z')+'\n')
   framework.log.write(('='*80)+'\n')
   return
 
@@ -330,23 +331,23 @@ def petsc_configure(configure_options):
     if petscdir.find(' ') > -1:
       raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
     try:
-      sys.path.append(os.path.join(petscdir,'bin'))
+      sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
       import petscnagupgrade
       file     = os.path.join(petscdir,'.nagged')
       if not petscnagupgrade.naggedtoday(file):
         petscnagupgrade.currentversion(petscdir)
     except:
       pass
-  print '==============================================================================='
-  print '             Configuring PETSc to compile on your system                       '
-  print '==============================================================================='
+  print('===============================================================================')
+  print('             Configuring PETSc to compile on your system                       ')
+  print('===============================================================================')
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
     sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
     check_for_option_mistakes(sys.argv)
     check_for_option_changed(sys.argv)
-  except (TypeError, ValueError), e:
+  except (TypeError, ValueError) as e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -404,7 +405,7 @@ def petsc_configure(configure_options):
       # perhaps print an error about unable to shuffle logs?
       pass
     return 0
-  except (RuntimeError, config.base.ConfigureSetupError), e:
+  except (RuntimeError, config.base.ConfigureSetupError) as e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -412,7 +413,7 @@ def petsc_configure(configure_options):
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
-  except (TypeError, ValueError), e:
+  except (TypeError, ValueError) as e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -420,7 +421,7 @@ def petsc_configure(configure_options):
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
-  except ImportError, e :
+  except ImportError as e :
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -428,7 +429,7 @@ def petsc_configure(configure_options):
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
-  except OSError, e :
+  except OSError as e :
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
@@ -436,7 +437,7 @@ def petsc_configure(configure_options):
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
-  except SystemExit, e:
+  except SystemExit as e:
     if e.code is None or e.code == 0:
       return
     if e.code is 10:
@@ -445,13 +446,13 @@ def petsc_configure(configure_options):
     +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'
     se  = str(e)
-  except Exception, e:
+  except Exception as e:
     msg ='*******************************************************************************\n'\
     +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*******************************************************************************\n'
     se  = str(e)
 
-  print msg
+  print(msg)
   if not framework is None:
     framework.logClear()
     if hasattr(framework, 'log'):
@@ -462,7 +463,7 @@ def petsc_configure(configure_options):
         if hasattr(framework,'compilerFixes'):
           framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
           framework.outputCHeader(framework.log)
-      except Exception, e:
+      except Exception as e:
         framework.log.write('Problem writing headers to log: '+str(e))
       import traceback
       try:
@@ -475,7 +476,7 @@ def petsc_configure(configure_options):
         pass
       sys.exit(1)
   else:
-    print se
+    print(se)
     import traceback
     traceback.print_tb(sys.exc_info()[2])
   if hasattr(framework,'log'): framework.log.close()

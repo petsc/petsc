@@ -49,9 +49,10 @@ struct _KSPGuessOps {
 */
 struct _p_KSPGuess {
   PETSCHEADER(struct _KSPGuessOps);
-  KSP  ksp;     /* the parent KSP */
-  Mat  A;       /* the current linear operator */
-  void *data;   /* pointer to the specific implementation */
+  KSP              ksp;       /* the parent KSP */
+  Mat              A;         /* the current linear operator */
+  PetscObjectState omatstate; /* previous linear operator state */
+  void             *data;     /* pointer to the specific implementation */
 };
 
 PETSC_EXTERN PetscErrorCode KSPGuessCreate_Fischer(KSPGuess);
@@ -321,8 +322,17 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
-PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0,KSP_Solve_FS_1,KSP_Solve_FS_2,KSP_Solve_FS_3,KSP_Solve_FS_4,KSP_Solve_FS_S,KSP_Solve_FS_L,KSP_Solve_FS_U;
+PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization;
+PETSC_EXTERN PetscLogEvent KSP_SetUp;
+PETSC_EXTERN PetscLogEvent KSP_Solve;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_1;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_2;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_3;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_4;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_S;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_L;
+PETSC_EXTERN PetscLogEvent KSP_Solve_FS_U;
 
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);

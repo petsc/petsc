@@ -12,11 +12,14 @@
          PetscObjectGetName((PetscObject)mat,&name);
 -  name - the name associated with obj
 
+   Notes:
+    Calls PetscObjectName() if a name has not yet been provided to the object.
+
    Level: intermediate
 
    Concepts: object name
 
-.seealso: PetscObjectSetName()
+.seealso: PetscObjectSetName(), PetscObjectName()
 @*/
 PetscErrorCode  PetscObjectGetName(PetscObject obj,const char *name[])
 {

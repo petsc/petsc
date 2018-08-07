@@ -409,6 +409,7 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFReset_Window(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowSetSyncType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowGetSyncType_C",NULL);CHKERRQ(ierr);
@@ -565,7 +566,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
-  ierr     = PetscNewLog(sf,&w);CHKERRQ(ierr);
+  ierr = PetscNewLog(sf,&w);CHKERRQ(ierr);
   sf->data = (void*)w;
   w->sync  = PETSCSF_WINDOW_SYNC_FENCE;
 

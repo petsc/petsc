@@ -12,6 +12,8 @@ if __name__ == '__main__':
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
+    '--download-cmake',   # for exodus as it breaks with cmake version 2.8.12.2
+    '--download-pnetcdf',
     '--download-generator',
     '--download-hdf5',
     '--download-zlib=1',

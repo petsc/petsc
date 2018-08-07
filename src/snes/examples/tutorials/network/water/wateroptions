@@ -1,0 +1,18 @@
+# SNES (nonlinear solver) options
+# Newton method
+-waternet_snes_type newtonls
+# Absolute and relative tolerances
+-waternet_snes_atol 1e-8
+-waternet_snes_rtol 1e-20
+# Line search method (bt and l2 lead to converge, basic diverges)
+-waternet_snes_linesearch_type l2
+# Finite differenced Jacobian
+-waternet_snes_fd
+
+# KSP (linear solver) options
+-waternet_ksp_type gmres
+
+# PC (preconditioner) options
+-waternet_pc_type bjacobi
+-waternet_sub_pc_type lu
+-waternet_sub_pc_factor_mat_ordering_type qmd

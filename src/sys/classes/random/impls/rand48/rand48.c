@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for drand48 with c89 */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for drand48() */
 #include <../src/sys/classes/random/randomimpl.h>
 
 PetscErrorCode  PetscRandomSeed_Rand48(PetscRandom r)

@@ -20,7 +20,6 @@
 !     gxs, gys - local starting grid indices (including ghost points)
 !     gxm, gym - widths of local grid (including ghost points)
 
-      DM      da
       PetscInt xs,xe,xm,gxs,gxe,gxm
       PetscInt ys,ye,ym,gys,gye,gym
       PetscInt mx,my
@@ -30,6 +29,6 @@
       common /params/ lambda,mx,my
       common /pdata/  xs,xe,xm,gxs,gxe,gxm
       common /pdata/  ys,ye,ym,gys,gye,gym
-      common /pdata/  da,rank,size
+      common /pdata/  rank,size
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

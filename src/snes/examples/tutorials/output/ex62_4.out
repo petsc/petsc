@@ -11,7 +11,7 @@ Vec Object: 1 MPI processes
 2.
 0.
 0.25
-0.
+-2.77556e-17
 -0.5
 0.5
 0.
@@ -20,7 +20,7 @@ Vec Object: 1 MPI processes
 1.
 0.5
 1.
-0.
+-1.11022e-16
 0.
 1.25
 -0.5
@@ -31,13 +31,13 @@ Vec Object: 1 MPI processes
 0.0625
 0.125
 0.125
-0.
+2.77556e-17
 0.0625
 0.
 0.625
 -0.25
 0.5625
-0.
+-2.08167e-17
 0.3125
 -0.125
 0.3125
@@ -51,7 +51,7 @@ Vec Object: 1 MPI processes
 0.5625
 1.125
 1.125
-0.
+-2.22045e-16
 1.5625
 0.5
 1.5625
@@ -61,7 +61,7 @@ Vec Object: 1 MPI processes
 1.0625
 -0.375
 Initial guess
-Vec Object: 1 MPI processes
+Vec Object: Solution 1 MPI processes
   type: seq
 -1.
 -0.5
@@ -75,7 +75,7 @@ Vec Object: 1 MPI processes
 0.5
 1.
 0.125
-0.
+2.77556e-17
 0.625
 -0.25
 0.3125
@@ -87,7 +87,7 @@ Vec Object: 1 MPI processes
 0.8125
 0.375
 1.125
-0.
+-2.22045e-16
 0.8125
 -0.25
 L_2 Error: < 1.0e-11
@@ -154,7 +154,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Initial Residual
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.
 0.
@@ -277,7 +277,7 @@ Vec Object: 1 MPI processes
 0.
 0.
 Au - b = Au + F(0)
-Vec Object: 1 MPI processes
+Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.
 0.

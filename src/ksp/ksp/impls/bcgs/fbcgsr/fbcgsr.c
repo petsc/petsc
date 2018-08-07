@@ -110,9 +110,9 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
       ierr      = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
       insums[0] = tau;
       insums[1] = sigma;
-      ierr      = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr      = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
       ierr      = MPIU_Allreduce(insums,outsums,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-      ierr      = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+      ierr      = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
       tau       = outsums[0];
       sigma     = outsums[1];
     }
@@ -144,9 +144,9 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     insums[2] = xi3;
     insums[3] = xi4;
 
-    ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(insums,outsums,4,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-    ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(VEC_ReduceCommunication,0,0,0,0);CHKERRQ(ierr);
     xi1  = outsums[0];
     xi2  = outsums[1];
     xi3  = outsums[2];
@@ -197,7 +197,8 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 
    Level: beginner
 
-   Notes: Only allow right preconditioning
+   Notes:
+    Only allow right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/

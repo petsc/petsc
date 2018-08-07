@@ -224,7 +224,8 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
 
   Level: beginner
 
-    Notes: the arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
+    Notes:
+    the arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
        Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
 
 .keywords: AO, create
@@ -342,7 +343,8 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 
   Level: beginner
 
-    Notes: the index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
+    Notes:
+    the index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
        Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
 
 .keywords: AO, create

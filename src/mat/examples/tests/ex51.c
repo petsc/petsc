@@ -79,7 +79,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"i=%D, flg =%d\n",i,(int)flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, flg =%d\n",i,(int)flg);CHKERRQ(ierr);
   }
 
   for (i=0; i<nd; ++i) {
@@ -156,3 +156,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -mat_block_size {{1 2  5 7 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}}
+
+TEST*/

@@ -25,7 +25,7 @@
 
    This is called by MPI, not by users.
 
-   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+   Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
 */
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
@@ -33,8 +33,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = PetscFree(count_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscFree(count_val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -150,16 +150,16 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
   }
 
   if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_Tmp_keyval,0);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_Tmp_keyval,0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
     ierr = PetscMalloc1(1,&tagvalp);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
@@ -271,16 +271,16 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
   }
 
   if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_WD_keyval,0);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_WD_keyval,0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
     ierr = PetscMalloc1(1,&tagvalp);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscGetWorkingDirectory(filename,240);CHKERRQ(ierr);
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
@@ -337,7 +337,8 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 +   localname - name of local copy of file - valid on only process zero
 -   found - if found or retrieved the file - valid on all processes
 
-    Notes: if the file already exists local this function just returns without downloading it.
+    Notes:
+    if the file already exists local this function just returns without downloading it.
 
     Level: intermediate
 @*/
@@ -349,9 +350,6 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
   PetscMPIInt    rank;
   size_t         len = 0;
   PetscBool      flg1,flg2,flg3,flg4,download,compressed = PETSC_FALSE;
-#if defined(PETSC_HAVE_POPEN)
-  int            rval;
-#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -409,7 +407,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrcat(buffer,localname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -448,7 +446,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrcat(buffer,name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

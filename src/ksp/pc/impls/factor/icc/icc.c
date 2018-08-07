@@ -7,7 +7,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   IS                     perm,cperm;
   PetscErrorCode         ierr;
   MatInfo                info;
-  const MatSolverPackage stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -43,11 +43,11 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     pc->failedreason = (PCFailedReason)err;
   }
 
-  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverPackage solverpackage;
-    ierr = MatFactorGetSolverPackage(((PC_Factor*)icc)->fact,&solverpackage);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
+    MatSolverType solverpackage;
+    ierr = MatFactorGetSolverType(((PC_Factor*)icc)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -155,7 +155,8 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
 
   Concepts: incomplete Cholesky factorization
 
-   Notes: Only implemented for some matrix formats. Not implemented in parallel.
+   Notes:
+    Only implemented for some matrix formats. Not implemented in parallel.
 
           For BAIJ matrices this implements a point block ICC.
 

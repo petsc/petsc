@@ -98,3 +98,15 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -reverse
+
+   test:
+      suffix: 2
+      args: -reverse -pc_type cholesky
+
+TEST*/

@@ -6,17 +6,9 @@
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
-PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED","STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
-
-struct _n_TSMonitorDrawCtx {
-  PetscViewer   viewer;
-  Vec           initialsolution;
-  PetscBool     showinitial;
-  PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscBool     showtimestepandtime;
-};
 
 /*@C
    TSMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
@@ -62,72 +54,6 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
   PetscFunctionReturn(0);
 }
 
-/*@C
-   TSAdjointMonitorSensi - monitors the first lambda sensitivity
-
-   Level: intermediate
-
-.keywords: TS, set, monitor
-
-.seealso: TSAdjointMonitorSet()
-@*/
-PetscErrorCode TSAdjointMonitorSensi(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
-{
-  PetscErrorCode ierr;
-  PetscViewer    viewer = vf->viewer;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
-  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = VecView(lambda[0],viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
-
-   Collective on TS
-
-   Input Parameters:
-+  ts - TS object you wish to monitor
-.  name - the monitor type one is seeking
-.  help - message indicating what monitoring is done
-.  manual - manual page for the monitor
-.  monitor - the monitor function
--  monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the TS or PetscViewer objects
-
-   Level: developer
-
-.seealso: PetscOptionsGetViewer(), PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
-@*/
-PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const char help[], const char manual[],PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,PetscViewerAndFormat*),PetscErrorCode (*monitorsetup)(TS,PetscViewerAndFormat*))
-{
-  PetscErrorCode    ierr;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscBool         flg;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewerAndFormat *vf;
-    ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
-    if (monitorsetup) {
-      ierr = (*monitorsetup)(ts,vf);CHKERRQ(ierr);
-    }
-    ierr = TSAdjointMonitorSet(ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*))monitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_type)
 {
   PetscErrorCode ierr;
@@ -163,11 +89,14 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_error_if_step_fails <true,false> - Error if no step succeeds
 .  -ts_rtol <rtol> - relative tolerance for local truncation error
 .  -ts_atol <atol> Absolute tolerance for local truncation error
+.  -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - test the Jacobian at each iteration against finite difference with RHS function
+.  -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - test the Jacobian at each iteration against finite difference with RHS function
 .  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
+.  -ts_monitor_error - Monitors norm of error
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_timestep_log - Monitor log timestep size graphically
 .  -ts_monitor_lg_snes_iterations - Monitor number nonlinear iterations for each timestep graphically
@@ -179,8 +108,6 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
 .  -ts_monitor_solution_vtk <filename.vts,filename.vtu> - Save each time step to a binary file, use filename-%%03D.vts (filename-%%03D.vtu)
 .  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
-.  -ts_adjoint_monitor - print information at each adjoint time step
--  -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
 
    Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
@@ -235,6 +162,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,NULL);CHKERRQ(ierr);
 
+  ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult","Test the RHS Jacobian for consistency with RHS at each solve ","None",ts->testjacobian,&ts->testjacobian,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_rhs_jacobian_test_mult_transpose","Test the RHS Jacobian transpose for consistency with RHS at each solve ","None",ts->testjacobiantranspose,&ts->testjacobiantranspose,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
@@ -248,9 +177,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   /* Monitor options */
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor time and timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_extreme","Monitor extreme values of the solution","TSMonitorExtreme",TSMonitorExtreme,NULL);CHKERRQ(ierr);  
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
-  ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault",TSAdjointMonitorDefault,NULL);CHKERRQ(ierr);
-  ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor_sensi","Monitor sensitivity in the adjoint computation","TSAdjointMonitorSensi",TSAdjointMonitorSensi,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
@@ -274,6 +202,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_error","View the error at each timestep","TSMonitorError",TSMonitorError,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
   if (opt) {
@@ -329,18 +258,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Computed Solution",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
-  }
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsName("-ts_adjoint_monitor_draw_sensi","Monitor adjoint sensitivities (lambda only) graphically","TSAdjointMonitorDrawSensi",&opt);CHKERRQ(ierr);
-  if (opt) {
-    TSMonitorDrawCtx ctx;
-    PetscInt         howoften = 1;
-
-    ierr = PetscOptionsInt("-ts_adjoint_monitor_draw_sensi","Monitor adjoint sensitivities (lambda only) graphically","TSAdjointMonitorDrawSensi",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
-    ierr = TSAdjointMonitorSet(ts,TSAdjointMonitorDrawSensi,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
   ierr = PetscOptionsName("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",&opt);CHKERRQ(ierr);
@@ -367,8 +286,18 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Error",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_monitor_draw_solution_function","Monitor solution provided by TSMonitorSetSolutionFunction() graphically","TSMonitorDrawSolutionFunction",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscInt         howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_draw_solution_function","Monitor solution provided by TSMonitorSetSolutionFunction() graphically","TSMonitorDrawSolutionFunction",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Solution provided by user function",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDrawSolutionFunction,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
 
   opt  = PETSC_FALSE;
@@ -473,12 +402,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (tflg) {
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   }
-  tflg = ts->adjoint_solve ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-    ts->adjoint_solve = tflg;
-  }
+
+  ierr = TSAdjointSetFromOptions(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ts);CHKERRQ(ierr);
@@ -535,7 +460,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
 Note: This routine should be called after all TS options have been set
 
-    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
@@ -1076,7 +1001,8 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
     Level: beginner
 
-    Notes: You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+    Notes:
+    You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
 
 .keywords: TS, timestep, set, right-hand-side, function
 
@@ -1123,6 +1049,10 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 .   u - output vector
 -   ctx - [optional] user-defined function context
 
+    Options Database:
++  -ts_monitor_lg_error - create a graphical monitor of error history, requires user to have provided TSSetSolutionFunction()
+-  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
     Notes:
     This routine is used for testing accuracy of time integration schemes when you already know the solution.
     If analytic solutions are not known for your system, consider using the Method of Manufactured Solutions to
@@ -1134,7 +1064,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction(), TSSetSolution(), TSGetSolution(), TSMonitorLGError(), TSMonitorDrawError()
 @*/
 PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
@@ -1628,7 +1558,8 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 . jac - The function to compute the Jacobian matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
-  Notes: You can pass in NULL for any return argument you do not need.
+  Notes:
+    You can pass in NULL for any return argument you do not need.
 
   Level: advanced
 
@@ -2003,8 +1934,14 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  using absolute error tolerance of %g\n",(double)ts->atol);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);
-    if (ts->snes && ts->usessnes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (ts->snes && ts->usessnes)  {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
     ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
   } else if (isstring) {
@@ -2087,7 +2024,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 +  ts - the TS context obtained from TSCreate()
 -  usrP - optional user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
    Level: intermediate
@@ -2116,7 +2054,8 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
     Output Parameter:
 .   usrP - user context
 
-   Fortran Notes: To use this from Fortran you must write a Fortran interface definition for this
+   Fortran Notes:
+    To use this from Fortran you must write a Fortran interface definition for this
     function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
 
     Level: intermediate
@@ -2320,7 +2259,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents()
+.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents(), TSSetSolutionFunction()
 
 .keywords: TS, timestep, get, solution
 @*/
@@ -2459,34 +2398,6 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   if (ts->ops->settimeerror) {
     ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSGetCostGradients - Returns the gradients from the TSAdjointSolve()
-
-   Not Collective, but Vec returned is parallel if TS is parallel
-
-   Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-
-   Output Parameter:
-+  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
--  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
-
-   Level: intermediate
-
-.seealso: TSGetTimeStep()
-
-.keywords: TS, timestep, get, sensitivity
-@*/
-PetscErrorCode  TSGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (numcost) *numcost = ts->numcost;
-  if (lambda)  *lambda  = ts->vecs_sensi;
-  if (mu)      *mu      = ts->vecs_sensip;
   PetscFunctionReturn(0);
 }
 
@@ -2661,45 +2572,6 @@ PetscErrorCode  TSSetUp(TS ts)
 }
 
 /*@
-   TSAdjointSetUp - Sets up the internal data structures for the later use
-   of an adjoint solver
-
-   Collective on TS
-
-   Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-
-   Level: advanced
-
-.keywords: TS, timestep, setup
-
-.seealso: TSCreate(), TSAdjointStep(), TSSetCostGradients()
-@*/
-PetscErrorCode  TSAdjointSetUp(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
-  if (ts->vecs_sensip && !ts->Jacp) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetRHSJacobian() first");
-
-  if (ts->vec_costintegral) { /* if there is integral in the cost function */
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-    if (ts->vecs_sensip){
-      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
-    }
-  }
-
-  if (ts->ops->adjointsetup) {
-    ierr = (*ts->ops->adjointsetup)(ts);CHKERRQ(ierr);
-  }
-  ts->adjointsetupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-/*@
    TSReset - Resets a TS context and removes any allocated Vecs and Mats.
 
    Collective on TS
@@ -2741,8 +2613,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
-
-  ierr = PetscFree(ts->vecs_fwdsensipacked);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -3111,6 +2982,8 @@ PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(t
    Level: beginner
 
 .keywords: TS, timestep, set, solution, initial values
+
+.seealso: TSSetSolutionFunction(), TSGetSolution(), TSCreate()
 @*/
 PetscErrorCode  TSSetSolution(TS ts,Vec u)
 {
@@ -3126,334 +2999,6 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  steps - number of steps to use
-
-   Level: intermediate
-
-   Notes: Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
-          so as to integrate back to less than the original timestep
-
-.keywords: TS, timestep, set, maximum, iterations
-
-.seealso: TSSetExactFinalTime()
-@*/
-PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidLogicalCollectiveInt(ts,steps,2);
-  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back a negative number of steps");
-  if (steps > ts->steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
-  ts->adjoint_max_steps = steps;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
-      for use by the TSAdjoint routines.
-
-   Logically Collective on TS and Vec
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  lambda - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
--  mu - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
-
-   Level: beginner
-
-   Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
-
-.keywords: TS, timestep, set, sensitivity, initial values
-@*/
-PetscErrorCode  TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(lambda,2);
-  ts->vecs_sensi  = lambda;
-  ts->vecs_sensip = mu;
-  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
-  ts->numcost  = numcost;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  TSAdjointSetRHSJacobian - Sets the function that computes the Jacobian of G w.r.t. the parameters p where y_t = G(y,p,t), as well as the location to store the matrix.
-
-  Logically Collective on TS
-
-  Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
-
-  Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
-+   t - current timestep
-.   y - input vector (current ODE solution)
-.   A - output matrix
--   ctx - [optional] user-defined function context
-
-  Level: intermediate
-
-  Notes: Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
-
-.keywords: TS, sensitivity
-.seealso:
-@*/
-PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
-
-  ts->rhsjacobianp    = func;
-  ts->rhsjacobianpctx = ctx;
-  if(Amat) {
-    ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
-    ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
-    ts->Jacp = Amat;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-  TSAdjointComputeRHSJacobian - Runs the user-defined Jacobian function.
-
-  Collective on TS
-
-  Input Parameters:
-. ts   - The TS context obtained from TSCreate()
-
-  Level: developer
-
-.keywords: TS, sensitivity
-.seealso: TSAdjointSetRHSJacobian()
-@*/
-PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
-  PetscValidPointer(Amat,4);
-
-  PetscStackPush("TS user JacobianP function for sensitivity analysis");
-  ierr = (*ts->rhsjacobianp)(ts,t,X,Amat,ts->rhsjacobianpctx); CHKERRQ(ierr);
-  PetscStackPop;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-    TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
-
-    Logically Collective on TS
-
-    Input Parameters:
-+   ts - the TS context obtained from TSCreate()
-.   numcost - number of gradients to be computed, this is the number of cost functions
-.   costintegral - vector that stores the integral values
-.   rf - routine for evaluating the integrand function
-.   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
-.   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
-.   fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
--   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
-
-    Calling sequence of rf:
-$   PetscErrorCode rf(TS ts,PetscReal t,Vec y,Vec f,void *ctx);
-
-    Calling sequence of drdyf:
-$   PetscErroCode drdyf(TS ts,PetscReal t,Vec y,Vec *drdy,void *ctx);
-
-    Calling sequence of drdpf:
-$   PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
-
-    Level: intermediate
-
-    Notes: For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
-
-.keywords: TS, sensitivity analysis, timestep, set, quadrature, function
-
-.seealso: TSAdjointSetRHSJacobian(),TSGetCostGradients(), TSSetCostGradients()
-@*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
-                                                          PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
-                                                          PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),
-                                                          PetscBool fwd,void *ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (costintegral) PetscValidHeaderSpecific(costintegral,VEC_CLASSID,3);
-  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients() or TSForwardSetIntegralGradients()");
-  if (!ts->numcost) ts->numcost=numcost;
-
-  if (costintegral) {
-    ierr = PetscObjectReference((PetscObject)costintegral);CHKERRQ(ierr);
-    ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
-    ts->vec_costintegral = costintegral;
-  } else {
-    if (!ts->vec_costintegral) { /* Create a seq vec if user does not provide one */
-      ierr = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
-    } else {
-      ierr = VecSet(ts->vec_costintegral,0.0);CHKERRQ(ierr);
-    }
-  }
-  if (!ts->vec_costintegrand) {
-    ierr = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
-  } else {
-    ierr = VecSet(ts->vec_costintegrand,0.0);CHKERRQ(ierr);
-  }
-  ts->costintegralfwd  = fwd; /* Evaluate the cost integral in forward run if fwd is true */
-  ts->costintegrand    = rf;
-  ts->costintegrandctx = ctx;
-  ts->drdyfunction     = drdyf;
-  ts->drdpfunction     = drdpf;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSGetCostIntegral - Returns the values of the integral term in the cost functions.
-   It is valid to call the routine after a backward run.
-
-   Not Collective
-
-   Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-
-   Output Parameter:
-.  v - the vector containing the integrals for each cost function
-
-   Level: intermediate
-
-.seealso: TSSetCostIntegrand()
-
-.keywords: TS, sensitivity analysis
-@*/
-PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(v,2);
-  *v = ts->vec_costintegral;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
-
-   Input Parameters:
-+  ts - the TS context
-.  t - current time
--  y - state vector, i.e. current solution
-
-   Output Parameter:
-.  q - vector of size numcost to hold the outputs
-
-   Note:
-   Most users should not need to explicitly call this routine, as it
-   is used internally within the sensitivity analysis context.
-
-   Level: developer
-
-.keywords: TS, compute
-
-.seealso: TSSetCostIntegrand()
-@*/
-PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(q,VEC_CLASSID,4);
-
-  ierr = PetscLogEventBegin(TS_FunctionEval,ts,y,q,0);CHKERRQ(ierr);
-  if (ts->costintegrand) {
-    PetscStackPush("TS user integrand in the cost function");
-    ierr = (*ts->costintegrand)(ts,t,y,q,ts->costintegrandctx);CHKERRQ(ierr);
-    PetscStackPop;
-  } else {
-    ierr = VecZeroEntries(q);CHKERRQ(ierr);
-  }
-
-  ierr = PetscLogEventEnd(TS_FunctionEval,ts,y,q,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  TSAdjointComputeDRDYFunction - Runs the user-defined DRDY function.
-
-  Collective on TS
-
-  Input Parameters:
-. ts   - The TS context obtained from TSCreate()
-
-  Notes:
-  TSAdjointComputeDRDYFunction() is typically used for sensitivity implementation,
-  so most users would not generally call this routine themselves.
-
-  Level: developer
-
-.keywords: TS, sensitivity
-.seealso: TSAdjointComputeDRDYFunction()
-@*/
-PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec y,Vec *drdy)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-
-  PetscStackPush("TS user DRDY function for sensitivity analysis");
-  ierr = (*ts->drdyfunction)(ts,t,y,drdy,ts->costintegrandctx); CHKERRQ(ierr);
-  PetscStackPop;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  TSAdjointComputeDRDPFunction - Runs the user-defined DRDP function.
-
-  Collective on TS
-
-  Input Parameters:
-. ts   - The TS context obtained from TSCreate()
-
-  Notes:
-  TSDRDPFunction() is typically used for sensitivity implementation,
-  so most users would not generally call this routine themselves.
-
-  Level: developer
-
-.keywords: TS, sensitivity
-.seealso: TSAdjointSetDRDPFunction()
-@*/
-PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-
-  PetscStackPush("TS user DRDP function for sensitivity analysis");
-  ierr = (*ts->drdpfunction)(ts,t,y,drdp,ts->costintegrandctx); CHKERRQ(ierr);
-  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -3808,7 +3353,8 @@ $    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx
    This routine adds an additional monitor to the list of monitors that
    already has been loaded.
 
-   Fortran notes: Only a single monitor function can be set for each TS object
+   Fortran Notes:
+    Only a single monitor function can be set for each TS object
 
    Level: intermediate
 
@@ -3917,116 +3463,33 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
 }
 
 /*@C
-   TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
-   timestep to display the iteration's  progress.
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  adjointmonitor - monitoring routine
-.  adjointmctx - [optional] user-defined context for private data for the
-             monitor routine (use NULL if no context is desired)
--  adjointmonitordestroy - [optional] routine that frees monitor context
-          (may be NULL)
-
-   Calling sequence of monitor:
-$    int adjointmonitor(TS ts,PetscInt steps,PetscReal time,Vec u,PetscInt numcost,Vec *lambda, Vec *mu,void *adjointmctx)
-
-+    ts - the TS context
-.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
-                               been interpolated to)
-.    time - current time
-.    u - current iterate
-.    numcost - number of cost functionos
-.    lambda - sensitivities to initial conditions
-.    mu - sensitivities to parameters
--    adjointmctx - [optional] adjoint monitoring context
-
-   Notes:
-   This routine adds an additional monitor to the list of monitors that
-   already has been loaded.
-
-   Fortran notes: Only a single monitor function can be set for each TS object
-
-   Level: intermediate
-
-.keywords: TS, timestep, set, adjoint, monitor
-
-.seealso: TSAdjointMonitorCancel()
-@*/
-PetscErrorCode  TSAdjointMonitorSet(TS ts,PetscErrorCode (*adjointmonitor)(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*),void *adjointmctx,PetscErrorCode (*adjointmdestroy)(void**))
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscBool      identical;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  for (i=0; i<ts->numbermonitors;i++) {
-    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))adjointmonitor,adjointmctx,adjointmdestroy,(PetscErrorCode (*)(void))ts->adjointmonitor[i],ts->adjointmonitorcontext[i],ts->adjointmonitordestroy[i],&identical);CHKERRQ(ierr);
-    if (identical) PetscFunctionReturn(0);
-  }
-  if (ts->numberadjointmonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many adjoint monitors set");
-  ts->adjointmonitor[ts->numberadjointmonitors]          = adjointmonitor;
-  ts->adjointmonitordestroy[ts->numberadjointmonitors]   = adjointmdestroy;
-  ts->adjointmonitorcontext[ts->numberadjointmonitors++] = (void*)adjointmctx;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
-
-   Logically Collective on TS
-
-   Input Parameters:
-.  ts - the TS context obtained from TSCreate()
-
-   Notes:
-   There is no way to remove a single, specific monitor.
-
-   Level: intermediate
-
-.keywords: TS, timestep, set, adjoint, monitor
-
-.seealso: TSAdjointMonitorSet()
-@*/
-PetscErrorCode  TSAdjointMonitorCancel(TS ts)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  for (i=0; i<ts->numberadjointmonitors; i++) {
-    if (ts->adjointmonitordestroy[i]) {
-      ierr = (*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i]);CHKERRQ(ierr);
-    }
-  }
-  ts->numberadjointmonitors = 0;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   TSAdjointMonitorDefault - the default monitor of adjoint computations
+   TSMonitorExtreme - Prints the extreme values of the solution at each timestep
 
    Level: intermediate
 
 .keywords: TS, set, monitor
 
-.seealso: TSAdjointMonitorSet()
+.seealso:  TSMonitorSet()
 @*/
-PetscErrorCode TSAdjointMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
+PetscErrorCode TSMonitorExtreme(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscViewerAndFormat *vf)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer = vf->viewer;
+  PetscViewer    viewer =  vf->viewer;
+  PetscBool      iascii;
+  PetscReal      max,min;
 
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = VecMax(v,NULL,&max);CHKERRQ(ierr);
+    ierr = VecMin(v,NULL,&min);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s max %g min %g\n",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)" : "",(double)max,(double)min);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  }
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4136,52 +3599,6 @@ PetscErrorCode  TSStep(TS ts)
 }
 
 /*@
-   TSAdjointStep - Steps one time step backward in the adjoint run
-
-   Collective on TS
-
-   Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-
-   Level: intermediate
-
-.keywords: TS, adjoint, step
-
-.seealso: TSAdjointSetUp(), TSAdjointSolve()
-@*/
-PetscErrorCode  TSAdjointStep(TS ts)
-{
-  DM               dm;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
-
-  ierr = VecViewFromOptions(ts->vec_sol,(PetscObject)ts,"-ts_view_solution");CHKERRQ(ierr);
-
-  ts->reason = TS_CONVERGED_ITERATING;
-  ts->ptime_prev = ts->ptime;
-  if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
-  ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-  ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-  ts->adjoint_steps++; ts->steps--;
-
-  if (ts->reason < 0) {
-    if (ts->errorifstepfailed) {
-      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      else if (ts->reason == TS_DIVERGED_STEP_REJECTED) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
-    }
-  } else if (!ts->reason) {
-    if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
    TSEvaluateWLTE - Evaluate the weighted local truncation error norm
    at the end of a time step with a given order of accuracy.
 
@@ -4253,30 +3670,6 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   if (!ts->ops->evaluatestep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->evaluatestep)(ts,order,U,done);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSForwardCostIntegral - Evaluate the cost integral in the forward run.
-
-   Collective on TS
-
-   Input Arguments:
-.  ts - time stepping context
-
-   Level: advanced
-
-   Notes:
-   This function cannot be called until TSStep() has been completed.
-
-.seealso: TSSolve(), TSAdjointCostIntegral()
-@*/
-PetscErrorCode TSForwardCostIntegral(TS ts)
-{
-  PetscErrorCode ierr;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
-  ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4370,6 +3763,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
       ierr = TSStep(ts);CHKERRQ(ierr);
+      if (ts->testjacobian) {
+        ierr = TSRHSJacobianTest(ts,NULL);CHKERRQ(ierr);
+      }
+      if (ts->testjacobiantranspose) {
+        ierr = TSRHSJacobianTestTranspose(ts,NULL);CHKERRQ(ierr);
+      }
       if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
@@ -4406,88 +3805,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-/*@
- TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
-
- Collective on TS
-
- Input Arguments:
- .  ts - time stepping context
-
- Level: advanced
-
- Notes:
- This function cannot be called until TSAdjointStep() has been completed.
-
- .seealso: TSAdjointSolve(), TSAdjointStep
- @*/
-PetscErrorCode TSAdjointCostIntegral(TS ts)
-{
-    PetscErrorCode ierr;
-    PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-    if (!ts->ops->adjointintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the adjoint run",((PetscObject)ts)->type_name);
-    ierr = (*ts->ops->adjointintegral)(ts);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-}
-
-/*@
-   TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
-
-   Collective on TS
-
-   Input Parameter:
-.  ts - the TS context obtained from TSCreate()
-
-   Options Database:
-. -ts_adjoint_view_solution <viewerinfo> - views the first gradient with respect to the initial values
-
-   Level: intermediate
-
-   Notes:
-   This must be called after a call to TSSolve() that solves the forward problem
-
-   By default this will integrate back to the initial time, one can use TSAdjointSetSteps() to step back to a later time
-
-.keywords: TS, timestep, solve
-
-.seealso: TSCreate(), TSSetCostGradients(), TSSetSolution(), TSAdjointStep()
-@*/
-PetscErrorCode TSAdjointSolve(TS ts)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
-
-  /* reset time step and iteration counters */
-  ts->adjoint_steps     = 0;
-  ts->ksp_its           = 0;
-  ts->snes_its          = 0;
-  ts->num_snes_failures = 0;
-  ts->reject            = 0;
-  ts->reason            = TS_CONVERGED_ITERATING;
-
-  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->steps;
-  if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
-
-  while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
-    ierr = TSAdjointEventHandler(ts);CHKERRQ(ierr);
-    ierr = TSAdjointStep(ts);CHKERRQ(ierr);
-    if (ts->vec_costintegral && !ts->costintegralfwd) {
-      ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);
-    }
-  }
-  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
-  ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
-  ts->solvetime = ts->ptime;
-  ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4528,44 +3845,6 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   ierr = VecLockPush(u);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
-  }
-  ierr = VecLockPop(u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using TSAdjointMonitorSet()
-
-   Collective on TS
-
-   Input Parameters:
-+  ts - time stepping context obtained from TSCreate()
-.  step - step number that has just completed
-.  ptime - model time of the state
-.  u - state at the current model time
-.  numcost - number of cost functions (dimension of lambda  or mu)
-.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
--  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
-
-   Notes:
-   TSAdjointMonitor() is typically used automatically within the time stepping implementations.
-   Users would almost never call this routine directly.
-
-   Level: developer
-
-.keywords: TS, timestep
-@*/
-PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscInt numcost,Vec *lambda, Vec *mu)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,n = ts->numberadjointmonitors;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,4);
-  ierr = VecLockPush(u);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    ierr = (*ts->adjointmonitor[i])(ts,step,ptime,u,numcost,lambda,mu,ts->adjointmonitorcontext[i]);CHKERRQ(ierr);
   }
   ierr = VecLockPop(u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4854,7 +4133,8 @@ PetscErrorCode  TSAppendOptionsPrefix(TS ts,const char prefix[])
    Output Parameter:
 .  prefix - A pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prifix' of
    sufficient length to hold the prefix.
 
    Level: intermediate
@@ -4888,7 +4168,8 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 .  func - Function to compute the Jacobian of the RHS  (or NULL)
 -  ctx - User-defined context for Jacobian evaluation routine  (or NULL)
 
-   Notes: You can pass in NULL for any return argument you do not need.
+   Notes:
+    You can pass in NULL for any return argument you do not need.
 
    Level: intermediate
 
@@ -4927,7 +4208,8 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 .  f   - The function to compute the matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
-   Notes: You can pass in NULL for any return argument you do not need.
+   Notes:
+    You can pass in NULL for any return argument you do not need.
 
    Level: advanced
 
@@ -4967,7 +4249,8 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **c
    Options Database:
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
 
-   Notes: the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   Notes:
+    the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
        will look bad
 
    Level: intermediate
@@ -5015,49 +4298,6 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
   if (ictx->showinitial) {
     ierr = PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   TSAdjointMonitorDrawSensi - Monitors progress of the adjoint TS solvers by calling
-   VecView() for the sensitivities to initial states at each timestep
-
-   Collective on TS
-
-   Input Parameters:
-+  ts - the TS context
-.  step - current time-step
-.  ptime - current time
-.  u - current state
-.  numcost - number of cost functions
-.  lambda - sensitivities to initial conditions
-.  mu - sensitivities to parameters
--  dummy - either a viewer or NULL
-
-   Level: intermediate
-
-.keywords: TS,  vector, adjoint, monitor, view
-
-.seealso: TSAdjointMonitorSet(), TSAdjointMonitorDefault(), VecView()
-@*/
-PetscErrorCode  TSAdjointMonitorDrawSensi(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscInt numcost,Vec *lambda,Vec *mu,void *dummy)
-{
-  PetscErrorCode   ierr;
-  TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
-  PetscDraw        draw;
-  PetscReal        xl,yl,xr,yr,h;
-  char             time[32];
-
-  PetscFunctionBegin;
-  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
-
-  ierr = VecView(lambda[0],ictx->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
-  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-  h    = yl + .95*(yr - yl);
-  ierr = PetscDrawStringCentered(draw,.5*(xl+xr),h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5189,6 +4429,43 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 }
 
 /*@C
+   TSMonitorDrawSolutionFunction - Monitors progress of the TS solvers by calling
+   VecView() for the solution provided by TSSetSolutionFunction() at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  dummy - either a viewer or NULL
+
+   Options Database:
+.  -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode   ierr;
+  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
+  PetscViewer      viewer = ctx->viewer;
+  Vec              work;
+
+  PetscFunctionBegin;
+  if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
+  ierr = VecDuplicate(u,&work);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,work);CHKERRQ(ierr);
+  ierr = VecView(work,viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    TSMonitorDrawError - Monitors progress of the TS solvers by calling
    VecView() for the error at each timestep
 
@@ -5200,11 +4477,14 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 .  ptime - current time
 -  dummy - either a viewer or NULL
 
+   Options Database:
+.  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
 PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
 {
@@ -7152,7 +6432,8 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
    Level: intermediate
 
-   Notes: Each process in a parallel run displays its component solutions in a separate window
+   Notes:
+    Each process in a parallel run displays its component solutions in a separate window
 
 .keywords: TS,  vector, monitor, view
 
@@ -7260,7 +6541,8 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
    Level: intermediate
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
 .keywords: TS,  vector, monitor, view
 
@@ -7319,7 +6601,8 @@ PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * c
 
    Level: intermediate
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
 .keywords: TS,  vector, monitor, view
 
@@ -7395,7 +6678,8 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
 +  ts - the TS context
 .  displaynames - the names of the components, final string must be NULL
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -7429,7 +6713,8 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 .  destroy - function to destroy the optional context
 -  ctx - optional context used by transform function
 
-   Notes: If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
+   Notes:
+    If the TS object does not have a TSMonitorLGCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -7492,7 +6777,8 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 
    Level: intermediate
 
-   Notes: Each process in a parallel run displays its component errors in a separate window
+   Notes:
+    Each process in a parallel run displays its component errors in a separate window
 
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
@@ -7543,6 +6829,53 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
     ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSMonitorError - Monitors progress of the TS solvers by printing the 2 norm of the error at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  u - current solution
+-  dctx - unused context
+
+   Level: intermediate
+
+   The user must provide the solution using TSSetSolutionFunction() to use this monitor.
+
+   Options Database Keys:
+.  -ts_monitor_error - create a graphical monitor of error history
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
+{
+  PetscErrorCode    ierr;
+  Vec               y;
+  PetscReal         nrm;
+  PetscBool         flg;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7674,7 +7007,8 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 
    Level: intermediate
 
-   Notes: after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
+   Notes:
+    after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
 
 .keywords: TS,  vector, monitor, view
 
@@ -7710,7 +7044,8 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
 +  max - the maximum values
 -  min - the minimum values
 
-   Notes: If the TS does not have a TSMonitorEnvelopeCtx associated with it then this function is ignored
+   Notes:
+    If the TS does not have a TSMonitorEnvelopeCtx associated with it then this function is ignored
 
    Level: intermediate
 
@@ -8078,5 +7413,85 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
     }
   }
   *tsout = t;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void* ctx,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  TS             ts = (TS) ctx;
+
+  PetscFunctionBegin;
+  ierr = TSComputeRHSFunction(ts,0,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    TSRHSJacobianTest - Compares the multiply routine provided to the MATSHELL with differencing on the TS given RHS function.
+
+   Logically Collective on TS and Mat
+
+    Input Parameters:
+    TS - the time stepping routine
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+ .   -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - run the test at each timestep of the integrator
+
+   Level: advanced
+
+   Notes:
+    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose(), TSRHSJacobianTestTranspose()
+@*/
+PetscErrorCode  TSRHSJacobianTest(TS ts,PetscBool *flg)
+{
+  Mat            J,B;
+  PetscErrorCode ierr;
+  TSRHSJacobian  func;
+  void*          ctx;
+
+  PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
+  ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
+  ierr = MatShellTestMult(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    TSRHSJacobianTestTranspose - Compares the multiply transpose routine provided to the MATSHELL with differencing on the TS given RHS function.
+
+   Logically Collective on TS and Mat
+
+    Input Parameters:
+    TS - the time stepping routine
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+.   -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - run the test at each timestep of the integrator
+
+   Notes:
+    This only works for problems defined only the RHS function and Jacobian NOT IFunction and IJacobian
+
+   Level: advanced
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose(), TSRHSJacobianTest()
+@*/
+PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
+{
+  Mat            J,B;
+  PetscErrorCode ierr;
+  void           *ctx;
+  TSRHSJacobian  func;
+
+  PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,&J,&B,&func,&ctx);CHKERRQ(ierr);
+  ierr = (*func)(ts,0.0,ts->vec_sol,J,B,ctx);CHKERRQ(ierr);
+  ierr = MatShellTestMultTranspose(J,RHSWrapperFunction_TSRHSJacobianTest,ts->vec_sol,ts,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -7,7 +7,8 @@
 +     a - first real number
 -     b - second real number
 
-    Notes: Equivalent to "a == b". Should be used to prevent compilers from
+    Notes:
+    Equivalent to "a == b". Should be used to prevent compilers from
     emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
     in PETSc header files or user code.
 
@@ -25,7 +26,8 @@ PetscBool PetscEqualReal(PetscReal a,PetscReal b)
 +     a - first scalar value
 -     b - second scalar value
 
-    Notes: Equivalent to "a == b". Should be used to prevent compilers from
+    Notes:
+    Equivalent to "a == b". Should be used to prevent compilers from
     emitting floating point comparison warnings (e.g. GCC's -Wfloat-equal flag)
     in PETSc header files or user code.
 

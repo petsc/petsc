@@ -23,6 +23,10 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  * without copying values to extract submatrices.
  */
 
+/*T
+   TODO: Need to determine if deprecated
+T*/
+
 #include <petscsnes.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -263,7 +267,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     ierr = PetscObjectTypeCompare((PetscObject)B,MATNEST,&nest);CHKERRQ(ierr);
     if (!nest) {
       /*
-         DMCreateMatrix_Composite()  for a nested matrix does not generate off-block matrices that one can call MatSetValuesLocal() on, it just creates dummy 
+         DMCreateMatrix_Composite()  for a nested matrix does not generate off-block matrices that one can call MatSetValuesLocal() on, it just creates dummy
          matrices with no entries; there cannot insert values into them. Commit b6480e041dd2293a65f96222772d68cdb4ed6306
          changed Mat_Nest() from returning NULL pointers for these submatrices to dummy matrices because PCFIELDSPLIT could not
          handle the returned null matrices.
@@ -472,3 +476,40 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   build:
+      requires: c99
+
+   test:
+      suffix: 0
+      nsize: 3
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0
+
+   test:
+      suffix: 1
+      nsize: 3
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -u_da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type {{aij nest}} -pc_type fieldsplit -pc_fieldsplit_dm_splits -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi
+
+   test:
+      suffix: 4
+      nsize: 6
+      args: -u_da_grid_x 257 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_u_ksp_type gmres -fieldsplit_u_ksp_pc_side right -fieldsplit_u_pc_type mg -fieldsplit_u_pc_mg_levels 4 -fieldsplit_u_mg_levels_ksp_type richardson -fieldsplit_u_mg_levels_ksp_max_it 1 -fieldsplit_u_mg_levels_pc_type sor -fieldsplit_u_pc_mg_galerkin pmat -fieldsplit_u_ksp_converged_reason -fieldsplit_k_pc_type jacobi
+      requires: !single
+
+   test:
+      suffix: glvis_composite_da_1d
+      args: -u_da_grid_x 20 -problem_type 0 -snes_monitor_solution glvis:
+
+TEST*/

@@ -116,6 +116,7 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
+PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_12_NaturalOrdering(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_13_NaturalOrdering(Mat,Vec,Vec);
@@ -202,6 +203,7 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat,Mat,const MatFactor
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 
+PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat,Mat,const MatFactorInfo*);
 
@@ -212,6 +214,7 @@ PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_4(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_5(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_6(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_11(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat,Vec,Vec);
@@ -228,6 +231,7 @@ PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
@@ -677,6 +681,345 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
     A[47] -=  B[5]*C[42]   + B[12]*C[43]  + B[19]*C[44]   + B[26]*C[45]  + B[33]*C[46]  + B[40]*C[47]  + B[47]*C[48]; \
     A[48] -=  B[6]*C[42]   + B[13]*C[43]   + B[20]*C[44]   + B[27]*C[45]  + B[34]*C[46] + B[41]*C[47]  + B[48]*C[48]; \
   }
+
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#define PetscKernel_A_gets_A_times_B_9(A,B,W) 0; \
+  {  \
+     PetscInt __i; \
+    __m256d S0,S1,S2,S3,S4,S5,S6,S7,S8,B0,B1,B2,B6,B7,B8,A0,A1,A2,A3,A4,A5,A6,A7,A8; \
+\
+    PetscMemcpy(W,A,81*sizeof(MatScalar)); \
+    for (__i=0; __i<3; __i++) {\
+\
+      S0 = _mm256_setzero_pd(); S1 = _mm256_setzero_pd(); S2 = _mm256_setzero_pd(); \
+      S3 = _mm256_setzero_pd(); S4 = _mm256_setzero_pd(); S5 = _mm256_setzero_pd(); \
+      S6 = _mm256_setzero_pd(); S7 = _mm256_setzero_pd(); S8 = _mm256_setzero_pd(); \
+\
+      A0 = _mm256_loadu_pd    (W+ 0); A1 = _mm256_loadu_pd    (W+ 4); A2 = _mm256_loadu_pd    (W+ 8); \
+      B0 = _mm256_broadcast_sd(B+ 0); B1 = _mm256_broadcast_sd(B+ 9); B2 = _mm256_broadcast_sd(B+18); \
+      S0 = _mm256_fmadd_pd(A0,B0,S0); S1 = _mm256_fmadd_pd(A1,B0,S1); S2 = _mm256_fmadd_pd(A2,B0,S2); \
+      S3 = _mm256_fmadd_pd(A0,B1,S3); S4 = _mm256_fmadd_pd(A1,B1,S4); S5 = _mm256_fmadd_pd(A2,B1,S5); \
+      S6 = _mm256_fmadd_pd(A0,B2,S6); S7 = _mm256_fmadd_pd(A1,B2,S7); S8 = _mm256_fmadd_pd(A2,B2,S8); \
+\
+      A3 = _mm256_loadu_pd    (W+ 9); A4 = _mm256_loadu_pd    (W+13); A5 = _mm256_loadu_pd    (W+17); \
+      B6 = _mm256_broadcast_sd(B+ 1); B7 = _mm256_broadcast_sd(B+10); B8 = _mm256_broadcast_sd(B+19); \
+      S0 = _mm256_fmadd_pd(A3,B6,S0); S1 = _mm256_fmadd_pd(A4,B6,S1); S2 = _mm256_fmadd_pd(A5,B6,S2); \
+      S3 = _mm256_fmadd_pd(A3,B7,S3); S4 = _mm256_fmadd_pd(A4,B7,S4); S5 = _mm256_fmadd_pd(A5,B7,S5); \
+      S6 = _mm256_fmadd_pd(A3,B8,S6); S7 = _mm256_fmadd_pd(A4,B8,S7); S8 = _mm256_fmadd_pd(A5,B8,S8); \
+\
+      A6 = _mm256_loadu_pd    (W+18); A7 = _mm256_loadu_pd    (W+22); A8 = _mm256_loadu_pd    (W+26); \
+      B0 = _mm256_broadcast_sd(B+ 2); B1 = _mm256_broadcast_sd(B+11); B2 = _mm256_broadcast_sd(B+20); \
+      S0 = _mm256_fmadd_pd(A6,B0,S0); S1 = _mm256_fmadd_pd(A7,B0,S1); S2 = _mm256_fmadd_pd(A2,B0,S2); \
+      S3 = _mm256_fmadd_pd(A6,B1,S3); S4 = _mm256_fmadd_pd(A7,B1,S4); S5 = _mm256_fmadd_pd(A2,B1,S5); \
+      S6 = _mm256_fmadd_pd(A6,B2,S6); S7 = _mm256_fmadd_pd(A7,B2,S7); S8 = _mm256_fmadd_pd(A5,B2,S8); \
+\
+      A0 = _mm256_loadu_pd    (W+27); A1 = _mm256_loadu_pd    (W+31); A2 = _mm256_loadu_pd    (W+35); \
+      B6 = _mm256_broadcast_sd(B+ 3); B7 = _mm256_broadcast_sd(B+12); B8 = _mm256_broadcast_sd(B+21); \
+      S0 = _mm256_fmadd_pd(A0,B6,S0); S1 = _mm256_fmadd_pd(A1,B6,S1); S2 = _mm256_fmadd_pd(A2,B6,S2); \
+      S3 = _mm256_fmadd_pd(A0,B7,S3); S4 = _mm256_fmadd_pd(A1,B7,S4); S5 = _mm256_fmadd_pd(A2,B7,S5); \
+      S6 = _mm256_fmadd_pd(A0,B8,S6); S7 = _mm256_fmadd_pd(A1,B8,S7); S8 = _mm256_fmadd_pd(A2,B8,S8); \
+\
+      A3 = _mm256_loadu_pd    (W+36); A4 = _mm256_loadu_pd    (W+40); A5 = _mm256_loadu_pd    (W+44); \
+      B0 = _mm256_broadcast_sd(B+ 4); B1 = _mm256_broadcast_sd(B+13); B2 = _mm256_broadcast_sd(B+22); \
+      S0 = _mm256_fmadd_pd(A3,B0,S0); S1 = _mm256_fmadd_pd(A4,B0,S1); S2 = _mm256_fmadd_pd(A5,B0,S2); \
+      S3 = _mm256_fmadd_pd(A3,B1,S3); S4 = _mm256_fmadd_pd(A4,B1,S4); S5 = _mm256_fmadd_pd(A5,B1,S5); \
+      S6 = _mm256_fmadd_pd(A3,B2,S6); S7 = _mm256_fmadd_pd(A4,B2,S7); S8 = _mm256_fmadd_pd(A5,B2,S8); \
+\
+      A0 = _mm256_loadu_pd    (W+45); A1 = _mm256_loadu_pd    (W+49); A2 = _mm256_loadu_pd    (W+53); \
+      B6 = _mm256_broadcast_sd(B+ 5); B7 = _mm256_broadcast_sd(B+14); B8 = _mm256_broadcast_sd(B+23); \
+      S0 = _mm256_fmadd_pd(A0,B6,S0); S1 = _mm256_fmadd_pd(A1,B6,S1); S2 = _mm256_fmadd_pd(A2,B6,S2); \
+      S3 = _mm256_fmadd_pd(A0,B7,S3); S4 = _mm256_fmadd_pd(A1,B7,S4); S5 = _mm256_fmadd_pd(A2,B7,S5); \
+      S6 = _mm256_fmadd_pd(A0,B8,S6); S7 = _mm256_fmadd_pd(A1,B8,S7); S8 = _mm256_fmadd_pd(A2,B8,S8); \
+\
+      A3 = _mm256_loadu_pd    (W+54); A4 = _mm256_loadu_pd    (W+58); A5 = _mm256_loadu_pd    (W+62); \
+      B0 = _mm256_broadcast_sd(B+ 6); B1 = _mm256_broadcast_sd(B+15); B2 = _mm256_broadcast_sd(B+24); \
+      S0 = _mm256_fmadd_pd(A3,B0,S0); S1 = _mm256_fmadd_pd(A4,B0,S1); S2 = _mm256_fmadd_pd(A5,B0,S2); \
+      S3 = _mm256_fmadd_pd(A3,B1,S3); S4 = _mm256_fmadd_pd(A4,B1,S4); S5 = _mm256_fmadd_pd(A5,B1,S5); \
+      S6 = _mm256_fmadd_pd(A3,B2,S6); S7 = _mm256_fmadd_pd(A4,B2,S7); S8 = _mm256_fmadd_pd(A5,B2,S8); \
+\
+      A6 = _mm256_loadu_pd    (W+63); A7 = _mm256_loadu_pd    (W+67); A8 = _mm256_loadu_pd    (W+71); \
+      B6 = _mm256_broadcast_sd(B+ 7); B7 = _mm256_broadcast_sd(B+16); B8 = _mm256_broadcast_sd(B+25); \
+      S0 = _mm256_fmadd_pd(A6,B6,S0); S1 = _mm256_fmadd_pd(A7,B6,S1); S2 = _mm256_fmadd_pd(A8,B6,S2); \
+      S3 = _mm256_fmadd_pd(A6,B7,S3); S4 = _mm256_fmadd_pd(A7,B7,S4); S5 = _mm256_fmadd_pd(A8,B7,S5); \
+      S6 = _mm256_fmadd_pd(A6,B8,S6); S7 = _mm256_fmadd_pd(A7,B8,S7); S8 = _mm256_fmadd_pd(A8,B8,S8); \
+\
+      A0 = _mm256_loadu_pd    (W+72); A1 = _mm256_loadu_pd    (W+76); A2 = _mm256_broadcast_sd(W+80); \
+      B0 = _mm256_broadcast_sd(B+ 8); B1 = _mm256_broadcast_sd(B+17); B2 = _mm256_broadcast_sd(B+26); \
+      S0 = _mm256_fmadd_pd(A0,B0,S0); S1 = _mm256_fmadd_pd(A1,B0,S1); S2 = _mm256_fmadd_pd(A2,B0,S2); \
+      S3 = _mm256_fmadd_pd(A0,B1,S3); S4 = _mm256_fmadd_pd(A1,B1,S4); S5 = _mm256_fmadd_pd(A2,B1,S5); \
+      S6 = _mm256_fmadd_pd(A0,B2,S6); S7 = _mm256_fmadd_pd(A1,B2,S7); S8 = _mm256_fmadd_pd(A2,B2,S8); \
+\
+           _mm256_storeu_pd(&A[ 0+__i*27], S0); _mm256_storeu_pd(&A[ 4+__i*27], S1); _mm256_maskstore_pd(&A[ 8+__i*27], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), S2); \
+           _mm256_storeu_pd(&A[ 9+__i*27], S3); _mm256_storeu_pd(&A[13+__i*27], S4); _mm256_maskstore_pd(&A[17+__i*27], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), S5); \
+           _mm256_storeu_pd(&A[18+__i*27], S6); _mm256_storeu_pd(&A[22+__i*27], S7); _mm256_maskstore_pd(&A[26+__i*27], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), S8); \
+\
+      B += 27; \
+    } \
+  }
+#else
+#define PetscKernel_A_gets_A_times_B_9(A,B,W) 0; \
+  { \
+    PetscMemcpy(W,A,81*sizeof(MatScalar)); \
+    A[ 0] = W[0]*B[ 0] + W[ 9]*B[ 1] + W[18]*B[ 2] + W[27]*B[ 3] + W[36]*B[ 4] + W[45]*B[ 5] + W[54]*B[ 6] + W[63]*B[ 7] + W[72]*B[ 8]; \
+    A[ 1] = W[1]*B[ 0] + W[10]*B[ 1] + W[19]*B[ 2] + W[28]*B[ 3] + W[37]*B[ 4] + W[46]*B[ 5] + W[55]*B[ 6] + W[64]*B[ 7] + W[73]*B[ 8]; \
+    A[ 2] = W[2]*B[ 0] + W[11]*B[ 1] + W[20]*B[ 2] + W[29]*B[ 3] + W[38]*B[ 4] + W[47]*B[ 5] + W[56]*B[ 6] + W[65]*B[ 7] + W[74]*B[ 8]; \
+    A[ 3] = W[3]*B[ 0] + W[12]*B[ 1] + W[21]*B[ 2] + W[30]*B[ 3] + W[39]*B[ 4] + W[48]*B[ 5] + W[57]*B[ 6] + W[66]*B[ 7] + W[75]*B[ 8]; \
+    A[ 4] = W[4]*B[ 0] + W[13]*B[ 1] + W[22]*B[ 2] + W[31]*B[ 3] + W[40]*B[ 4] + W[49]*B[ 5] + W[58]*B[ 6] + W[67]*B[ 7] + W[76]*B[ 8]; \
+    A[ 5] = W[5]*B[ 0] + W[14]*B[ 1] + W[23]*B[ 2] + W[32]*B[ 3] + W[41]*B[ 4] + W[50]*B[ 5] + W[59]*B[ 6] + W[68]*B[ 7] + W[77]*B[ 8]; \
+    A[ 6] = W[6]*B[ 0] + W[15]*B[ 1] + W[24]*B[ 2] + W[33]*B[ 3] + W[42]*B[ 4] + W[51]*B[ 5] + W[60]*B[ 6] + W[69]*B[ 7] + W[78]*B[ 8]; \
+    A[ 7] = W[7]*B[ 0] + W[16]*B[ 1] + W[25]*B[ 2] + W[34]*B[ 3] + W[43]*B[ 4] + W[52]*B[ 5] + W[61]*B[ 6] + W[70]*B[ 7] + W[79]*B[ 8]; \
+    A[ 8] = W[8]*B[ 0] + W[17]*B[ 1] + W[26]*B[ 2] + W[35]*B[ 3] + W[44]*B[ 4] + W[53]*B[ 5] + W[62]*B[ 6] + W[71]*B[ 7] + W[80]*B[ 8]; \
+\
+    A[ 9] = W[0]*B[ 9] + W[ 9]*B[10] + W[18]*B[11] + W[27]*B[12] + W[36]*B[13] + W[45]*B[14] + W[54]*B[15] + W[63]*B[16] + W[72]*B[17]; \
+    A[10] = W[1]*B[ 9] + W[10]*B[10] + W[19]*B[11] + W[28]*B[12] + W[37]*B[13] + W[46]*B[14] + W[55]*B[15] + W[64]*B[16] + W[73]*B[17]; \
+    A[11] = W[2]*B[ 9] + W[11]*B[10] + W[20]*B[11] + W[29]*B[12] + W[38]*B[13] + W[47]*B[14] + W[56]*B[15] + W[65]*B[16] + W[74]*B[17]; \
+    A[12] = W[3]*B[ 9] + W[12]*B[10] + W[21]*B[11] + W[30]*B[12] + W[39]*B[13] + W[48]*B[14] + W[57]*B[15] + W[66]*B[16] + W[75]*B[17]; \
+    A[13] = W[4]*B[ 9] + W[13]*B[10] + W[22]*B[11] + W[31]*B[12] + W[40]*B[13] + W[49]*B[14] + W[58]*B[15] + W[67]*B[16] + W[76]*B[17]; \
+    A[14] = W[5]*B[ 9] + W[14]*B[10] + W[23]*B[11] + W[32]*B[12] + W[41]*B[13] + W[50]*B[14] + W[59]*B[15] + W[68]*B[16] + W[77]*B[17]; \
+    A[15] = W[6]*B[ 9] + W[15]*B[10] + W[24]*B[11] + W[33]*B[12] + W[42]*B[13] + W[51]*B[14] + W[60]*B[15] + W[69]*B[16] + W[78]*B[17]; \
+    A[16] = W[7]*B[ 9] + W[16]*B[10] + W[25]*B[11] + W[34]*B[12] + W[43]*B[13] + W[52]*B[14] + W[61]*B[15] + W[70]*B[16] + W[79]*B[17]; \
+    A[17] = W[8]*B[ 9] + W[17]*B[10] + W[26]*B[11] + W[35]*B[12] + W[44]*B[13] + W[53]*B[14] + W[62]*B[15] + W[71]*B[16] + W[80]*B[17]; \
+\
+    A[18] = W[0]*B[18] + W[ 9]*B[19] + W[18]*B[20] + W[27]*B[21] + W[36]*B[22] + W[45]*B[23] + W[54]*B[24] + W[63]*B[25] + W[72]*B[26]; \
+    A[19] = W[1]*B[18] + W[10]*B[19] + W[19]*B[20] + W[28]*B[21] + W[37]*B[22] + W[46]*B[23] + W[55]*B[24] + W[64]*B[25] + W[73]*B[26]; \
+    A[20] = W[2]*B[18] + W[11]*B[19] + W[20]*B[20] + W[29]*B[21] + W[38]*B[22] + W[47]*B[23] + W[56]*B[24] + W[65]*B[25] + W[74]*B[26]; \
+    A[21] = W[3]*B[18] + W[12]*B[19] + W[21]*B[20] + W[30]*B[21] + W[39]*B[22] + W[48]*B[23] + W[57]*B[24] + W[66]*B[25] + W[75]*B[26]; \
+    A[22] = W[4]*B[18] + W[13]*B[19] + W[22]*B[20] + W[31]*B[21] + W[40]*B[22] + W[49]*B[23] + W[58]*B[24] + W[67]*B[25] + W[76]*B[26]; \
+    A[23] = W[5]*B[18] + W[14]*B[19] + W[23]*B[20] + W[32]*B[21] + W[41]*B[22] + W[50]*B[23] + W[59]*B[24] + W[68]*B[25] + W[77]*B[26]; \
+    A[24] = W[6]*B[18] + W[15]*B[19] + W[24]*B[20] + W[33]*B[21] + W[42]*B[22] + W[51]*B[23] + W[60]*B[24] + W[69]*B[25] + W[78]*B[26]; \
+    A[25] = W[7]*B[18] + W[16]*B[19] + W[25]*B[20] + W[34]*B[21] + W[43]*B[22] + W[52]*B[23] + W[61]*B[24] + W[70]*B[25] + W[79]*B[26]; \
+    A[26] = W[8]*B[18] + W[17]*B[19] + W[26]*B[20] + W[35]*B[21] + W[44]*B[22] + W[53]*B[23] + W[62]*B[24] + W[71]*B[25] + W[80]*B[26]; \
+\
+    A[27] = W[0]*B[27] + W[ 9]*B[28] + W[18]*B[29] + W[27]*B[30] + W[36]*B[31] + W[45]*B[32] + W[54]*B[33] + W[63]*B[34] + W[72]*B[35]; \
+    A[28] = W[1]*B[27] + W[10]*B[28] + W[19]*B[29] + W[28]*B[30] + W[37]*B[31] + W[46]*B[32] + W[55]*B[33] + W[64]*B[34] + W[73]*B[35]; \
+    A[29] = W[2]*B[27] + W[11]*B[28] + W[20]*B[29] + W[29]*B[30] + W[38]*B[31] + W[47]*B[32] + W[56]*B[33] + W[65]*B[34] + W[74]*B[35]; \
+    A[30] = W[3]*B[27] + W[12]*B[28] + W[21]*B[29] + W[30]*B[30] + W[39]*B[31] + W[48]*B[32] + W[57]*B[33] + W[66]*B[34] + W[75]*B[35]; \
+    A[31] = W[4]*B[27] + W[13]*B[28] + W[22]*B[29] + W[31]*B[30] + W[40]*B[31] + W[49]*B[32] + W[58]*B[33] + W[67]*B[34] + W[76]*B[35]; \
+    A[32] = W[5]*B[27] + W[14]*B[28] + W[23]*B[29] + W[32]*B[30] + W[41]*B[31] + W[50]*B[32] + W[59]*B[33] + W[68]*B[34] + W[77]*B[35]; \
+    A[33] = W[6]*B[27] + W[15]*B[28] + W[24]*B[29] + W[33]*B[30] + W[42]*B[31] + W[51]*B[32] + W[60]*B[33] + W[69]*B[34] + W[78]*B[35]; \
+    A[34] = W[7]*B[27] + W[16]*B[28] + W[25]*B[29] + W[34]*B[30] + W[43]*B[31] + W[52]*B[32] + W[61]*B[33] + W[70]*B[34] + W[79]*B[35]; \
+    A[35] = W[8]*B[27] + W[17]*B[28] + W[26]*B[29] + W[35]*B[30] + W[44]*B[31] + W[53]*B[32] + W[62]*B[33] + W[71]*B[34] + W[80]*B[35]; \
+\
+    A[36] = W[0]*B[36] + W[ 9]*B[37] + W[18]*B[38] + W[27]*B[39] + W[36]*B[40] + W[45]*B[41] + W[54]*B[42] + W[63]*B[43] + W[72]*B[44]; \
+    A[37] = W[1]*B[36] + W[10]*B[37] + W[19]*B[38] + W[28]*B[39] + W[37]*B[40] + W[46]*B[41] + W[55]*B[42] + W[64]*B[43] + W[73]*B[44]; \
+    A[38] = W[2]*B[36] + W[11]*B[37] + W[20]*B[38] + W[29]*B[39] + W[38]*B[40] + W[47]*B[41] + W[56]*B[42] + W[65]*B[43] + W[74]*B[44]; \
+    A[39] = W[3]*B[36] + W[12]*B[37] + W[21]*B[38] + W[30]*B[39] + W[39]*B[40] + W[48]*B[41] + W[57]*B[42] + W[66]*B[43] + W[75]*B[44]; \
+    A[40] = W[4]*B[36] + W[13]*B[37] + W[22]*B[38] + W[31]*B[39] + W[40]*B[40] + W[49]*B[41] + W[58]*B[42] + W[67]*B[43] + W[76]*B[44]; \
+    A[41] = W[5]*B[36] + W[14]*B[37] + W[23]*B[38] + W[32]*B[39] + W[41]*B[40] + W[50]*B[41] + W[59]*B[42] + W[68]*B[43] + W[77]*B[44]; \
+    A[42] = W[6]*B[36] + W[15]*B[37] + W[24]*B[38] + W[33]*B[39] + W[42]*B[40] + W[51]*B[41] + W[60]*B[42] + W[69]*B[43] + W[78]*B[44]; \
+    A[43] = W[7]*B[36] + W[16]*B[37] + W[25]*B[38] + W[34]*B[39] + W[43]*B[40] + W[52]*B[41] + W[61]*B[42] + W[70]*B[43] + W[79]*B[44]; \
+    A[44] = W[8]*B[36] + W[17]*B[37] + W[26]*B[38] + W[35]*B[39] + W[44]*B[40] + W[53]*B[41] + W[62]*B[42] + W[71]*B[43] + W[80]*B[44]; \
+\
+    A[45] = W[0]*B[45] + W[ 9]*B[46] + W[18]*B[47] + W[27]*B[48] + W[36]*B[49] + W[45]*B[50] + W[54]*B[51] + W[63]*B[52] + W[72]*B[53]; \
+    A[46] = W[1]*B[45] + W[10]*B[46] + W[19]*B[47] + W[28]*B[48] + W[37]*B[49] + W[46]*B[50] + W[55]*B[51] + W[64]*B[52] + W[73]*B[53]; \
+    A[47] = W[2]*B[45] + W[11]*B[46] + W[20]*B[47] + W[29]*B[48] + W[38]*B[49] + W[47]*B[50] + W[56]*B[51] + W[65]*B[52] + W[74]*B[53]; \
+    A[48] = W[3]*B[45] + W[12]*B[46] + W[21]*B[47] + W[30]*B[48] + W[39]*B[49] + W[48]*B[50] + W[57]*B[51] + W[66]*B[52] + W[75]*B[53]; \
+    A[49] = W[4]*B[45] + W[13]*B[46] + W[22]*B[47] + W[31]*B[48] + W[40]*B[49] + W[49]*B[50] + W[58]*B[51] + W[67]*B[52] + W[76]*B[53]; \
+    A[50] = W[5]*B[45] + W[14]*B[46] + W[23]*B[47] + W[32]*B[48] + W[41]*B[49] + W[50]*B[50] + W[59]*B[51] + W[68]*B[52] + W[77]*B[53]; \
+    A[51] = W[6]*B[45] + W[15]*B[46] + W[24]*B[47] + W[33]*B[48] + W[42]*B[49] + W[51]*B[50] + W[60]*B[51] + W[69]*B[52] + W[78]*B[53]; \
+    A[52] = W[7]*B[45] + W[16]*B[46] + W[25]*B[47] + W[34]*B[48] + W[43]*B[49] + W[52]*B[50] + W[61]*B[51] + W[70]*B[52] + W[79]*B[53]; \
+    A[53] = W[8]*B[45] + W[17]*B[46] + W[26]*B[47] + W[35]*B[48] + W[44]*B[49] + W[53]*B[50] + W[62]*B[51] + W[71]*B[52] + W[80]*B[53]; \
+\
+    A[54] = W[0]*B[54] + W[ 9]*B[55] + W[18]*B[56] + W[27]*B[57] + W[36]*B[58] + W[45]*B[59] + W[54]*B[60] + W[63]*B[61] + W[72]*B[62]; \
+    A[55] = W[1]*B[54] + W[10]*B[55] + W[19]*B[56] + W[28]*B[57] + W[37]*B[58] + W[46]*B[59] + W[55]*B[60] + W[64]*B[61] + W[73]*B[62]; \
+    A[56] = W[2]*B[54] + W[11]*B[55] + W[20]*B[56] + W[29]*B[57] + W[38]*B[58] + W[47]*B[59] + W[56]*B[60] + W[65]*B[61] + W[74]*B[62]; \
+    A[57] = W[3]*B[54] + W[12]*B[55] + W[21]*B[56] + W[30]*B[57] + W[39]*B[58] + W[48]*B[59] + W[57]*B[60] + W[66]*B[61] + W[75]*B[62]; \
+    A[58] = W[4]*B[54] + W[13]*B[55] + W[22]*B[56] + W[31]*B[57] + W[40]*B[58] + W[49]*B[59] + W[58]*B[60] + W[67]*B[61] + W[76]*B[62]; \
+    A[59] = W[5]*B[54] + W[14]*B[55] + W[23]*B[56] + W[32]*B[57] + W[41]*B[58] + W[50]*B[59] + W[59]*B[60] + W[68]*B[61] + W[77]*B[62]; \
+    A[60] = W[6]*B[54] + W[15]*B[55] + W[24]*B[56] + W[33]*B[57] + W[42]*B[58] + W[51]*B[59] + W[60]*B[60] + W[69]*B[61] + W[78]*B[62]; \
+    A[61] = W[7]*B[54] + W[16]*B[55] + W[25]*B[56] + W[34]*B[57] + W[43]*B[58] + W[52]*B[59] + W[61]*B[60] + W[70]*B[61] + W[79]*B[62]; \
+    A[62] = W[8]*B[54] + W[17]*B[55] + W[26]*B[56] + W[35]*B[57] + W[44]*B[58] + W[53]*B[59] + W[62]*B[60] + W[71]*B[61] + W[80]*B[62]; \
+\
+    A[63] = W[0]*B[63] + W[ 9]*B[64] + W[18]*B[65] + W[27]*B[66] + W[36]*B[67] + W[45]*B[68] + W[54]*B[69] + W[63]*B[70] + W[72]*B[71]; \
+    A[64] = W[1]*B[63] + W[10]*B[64] + W[19]*B[65] + W[28]*B[66] + W[37]*B[67] + W[46]*B[68] + W[55]*B[69] + W[64]*B[70] + W[73]*B[71]; \
+    A[65] = W[2]*B[63] + W[11]*B[64] + W[20]*B[65] + W[29]*B[66] + W[38]*B[67] + W[47]*B[68] + W[56]*B[69] + W[65]*B[70] + W[74]*B[71]; \
+    A[66] = W[3]*B[63] + W[12]*B[64] + W[21]*B[65] + W[30]*B[66] + W[39]*B[67] + W[48]*B[68] + W[57]*B[69] + W[66]*B[70] + W[75]*B[71]; \
+    A[67] = W[4]*B[63] + W[13]*B[64] + W[22]*B[65] + W[31]*B[66] + W[40]*B[67] + W[49]*B[68] + W[58]*B[69] + W[67]*B[70] + W[76]*B[71]; \
+    A[68] = W[5]*B[63] + W[14]*B[64] + W[23]*B[65] + W[32]*B[66] + W[41]*B[67] + W[50]*B[68] + W[59]*B[69] + W[68]*B[70] + W[77]*B[71]; \
+    A[69] = W[6]*B[63] + W[15]*B[64] + W[24]*B[65] + W[33]*B[66] + W[42]*B[67] + W[51]*B[68] + W[60]*B[69] + W[69]*B[70] + W[78]*B[71]; \
+    A[70] = W[7]*B[63] + W[16]*B[64] + W[25]*B[65] + W[34]*B[66] + W[43]*B[67] + W[52]*B[68] + W[61]*B[69] + W[70]*B[70] + W[79]*B[71]; \
+    A[71] = W[8]*B[63] + W[17]*B[64] + W[26]*B[65] + W[35]*B[66] + W[44]*B[67] + W[53]*B[68] + W[62]*B[69] + W[71]*B[70] + W[80]*B[71]; \
+\
+    A[72] = W[0]*B[72] + W[ 9]*B[73] + W[18]*B[74] + W[27]*B[75] + W[36]*B[76] + W[45]*B[77] + W[54]*B[78] + W[63]*B[79] + W[72]*B[80]; \
+    A[73] = W[1]*B[72] + W[10]*B[73] + W[19]*B[74] + W[28]*B[75] + W[37]*B[76] + W[46]*B[77] + W[55]*B[78] + W[64]*B[79] + W[73]*B[80]; \
+    A[74] = W[2]*B[72] + W[11]*B[73] + W[20]*B[74] + W[29]*B[75] + W[38]*B[76] + W[47]*B[77] + W[56]*B[78] + W[65]*B[79] + W[74]*B[80]; \
+    A[75] = W[3]*B[72] + W[12]*B[73] + W[21]*B[74] + W[30]*B[75] + W[39]*B[76] + W[48]*B[77] + W[57]*B[78] + W[66]*B[79] + W[75]*B[80]; \
+    A[76] = W[4]*B[72] + W[13]*B[73] + W[22]*B[74] + W[31]*B[75] + W[40]*B[76] + W[49]*B[77] + W[58]*B[78] + W[67]*B[79] + W[76]*B[80]; \
+    A[77] = W[5]*B[72] + W[14]*B[73] + W[23]*B[74] + W[32]*B[75] + W[41]*B[76] + W[50]*B[77] + W[59]*B[78] + W[68]*B[79] + W[77]*B[80]; \
+    A[78] = W[6]*B[72] + W[15]*B[73] + W[24]*B[74] + W[33]*B[75] + W[42]*B[76] + W[51]*B[77] + W[60]*B[78] + W[69]*B[79] + W[78]*B[80]; \
+    A[79] = W[7]*B[72] + W[16]*B[73] + W[25]*B[74] + W[34]*B[75] + W[43]*B[76] + W[52]*B[77] + W[61]*B[78] + W[70]*B[79] + W[79]*B[80]; \
+    A[80] = W[8]*B[72] + W[17]*B[73] + W[26]*B[74] + W[35]*B[75] + W[44]*B[76] + W[53]*B[77] + W[62]*B[78] + W[71]*B[79] + W[80]*B[80]; \
+  }
+#endif
+
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#define PetscKernel_A_gets_A_minus_B_times_C_9(A,B,C) 0; \
+  {  \
+    PetscInt __i; \
+    __m256d A0,A1,A2,A3,A4,A5,A6,A7,A8,B0,B1,B2,B3,B4,B5,B6,B7,B8,C0,C1,C2,C3,C4,C5,C6,C7,C8; \
+\
+    for (__i=0; __i<3; __i++) {\
+\
+      A0 = _mm256_loadu_pd    (A+ 0); A1 = _mm256_loadu_pd    (A+ 4); A2 = _mm256_loadu_pd(A+ 8); \
+      A3 = _mm256_loadu_pd    (A+ 9); A4 = _mm256_loadu_pd    (A+13); A5 = _mm256_loadu_pd(A+17); \
+      A6 = _mm256_loadu_pd    (A+18); A7 = _mm256_loadu_pd    (A+22); A8 = _mm256_loadu_pd(A+26); \
+\
+      B0 = _mm256_loadu_pd     (B+ 0); B1 = _mm256_loadu_pd     (B+ 4); B2 = _mm256_loadu_pd     (B+ 8); \
+      C0 = _mm256_broadcast_sd (C+ 0); C1 = _mm256_broadcast_sd (C+ 9); C2 = _mm256_broadcast_sd (C+18); \
+      A0 = _mm256_fnmadd_pd(B0,C0,A0); A1 = _mm256_fnmadd_pd(B1,C0,A1); A2 = _mm256_fnmadd_pd(B2,C0,A2); \
+      A3 = _mm256_fnmadd_pd(B0,C1,A3); A4 = _mm256_fnmadd_pd(B1,C1,A4); A5 = _mm256_fnmadd_pd(B2,C1,A5); \
+      A6 = _mm256_fnmadd_pd(B0,C2,A6); A7 = _mm256_fnmadd_pd(B1,C2,A7); A8 = _mm256_fnmadd_pd(B2,C2,A8); \
+\
+      B3 = _mm256_loadu_pd     (B+ 9); B4 = _mm256_loadu_pd     (B+13); B5 = _mm256_loadu_pd     (B+17); \
+      C3 = _mm256_broadcast_sd (C+ 1); C4 = _mm256_broadcast_sd (C+10); C5 = _mm256_broadcast_sd (C+19); \
+      A0 = _mm256_fnmadd_pd(B3,C3,A0); A1 = _mm256_fnmadd_pd(B4,C3,A1); A2 = _mm256_fnmadd_pd(B5,C3,A2); \
+      A3 = _mm256_fnmadd_pd(B3,C4,A3); A4 = _mm256_fnmadd_pd(B4,C4,A4); A5 = _mm256_fnmadd_pd(B5,C4,A5); \
+      A6 = _mm256_fnmadd_pd(B3,C5,A6); A7 = _mm256_fnmadd_pd(B4,C5,A7); A8 = _mm256_fnmadd_pd(B5,C5,A8); \
+\
+      B6 = _mm256_loadu_pd     (B+18); B7 = _mm256_loadu_pd     (B+22); B8 = _mm256_loadu_pd     (B+26); \
+      C6 = _mm256_broadcast_sd (C+ 2); C7 = _mm256_broadcast_sd (C+11); C8 = _mm256_broadcast_sd (C+20); \
+      A0 = _mm256_fnmadd_pd(B6,C6,A0); A1 = _mm256_fnmadd_pd(B7,C6,A1); A2 = _mm256_fnmadd_pd(B8,C6,A2); \
+      A3 = _mm256_fnmadd_pd(B6,C7,A3); A4 = _mm256_fnmadd_pd(B7,C7,A4); A5 = _mm256_fnmadd_pd(B8,C7,A5); \
+      A6 = _mm256_fnmadd_pd(B6,C8,A6); A7 = _mm256_fnmadd_pd(B7,C8,A7); A8 = _mm256_fnmadd_pd(B8,C8,A8); \
+\
+      B0 = _mm256_loadu_pd     (B+27); B1 = _mm256_loadu_pd     (B+31); B2 = _mm256_loadu_pd     (B+35); \
+      C0 = _mm256_broadcast_sd (C+ 3); C1 = _mm256_broadcast_sd (C+12); C2 = _mm256_broadcast_sd (C+21); \
+      A0 = _mm256_fnmadd_pd(B0,C0,A0); A1 = _mm256_fnmadd_pd(B1,C0,A1); A2 = _mm256_fnmadd_pd(B2,C0,A2); \
+      A3 = _mm256_fnmadd_pd(B0,C1,A3); A4 = _mm256_fnmadd_pd(B1,C1,A4); A5 = _mm256_fnmadd_pd(B2,C1,A5); \
+      A6 = _mm256_fnmadd_pd(B0,C2,A6); A7 = _mm256_fnmadd_pd(B1,C2,A7); A8 = _mm256_fnmadd_pd(B2,C2,A8); \
+\
+      B3 = _mm256_loadu_pd     (B+36); B4 = _mm256_loadu_pd     (B+40); B5 = _mm256_loadu_pd     (B+44); \
+      C3 = _mm256_broadcast_sd (C+ 4); C4 = _mm256_broadcast_sd (C+13); C5 = _mm256_broadcast_sd (C+22); \
+      A0 = _mm256_fnmadd_pd(B3,C3,A0); A1 = _mm256_fnmadd_pd(B4,C3,A1); A2 = _mm256_fnmadd_pd(B5,C3,A2); \
+      A3 = _mm256_fnmadd_pd(B3,C4,A3); A4 = _mm256_fnmadd_pd(B4,C4,A4); A5 = _mm256_fnmadd_pd(B5,C4,A5); \
+      A6 = _mm256_fnmadd_pd(B3,C5,A6); A7 = _mm256_fnmadd_pd(B4,C5,A7); A8 = _mm256_fnmadd_pd(B5,C5,A8); \
+\
+      B6 = _mm256_loadu_pd     (B+45); B7 = _mm256_loadu_pd     (B+49); B8 = _mm256_loadu_pd     (B+53); \
+      C6 = _mm256_broadcast_sd (C+ 5); C7 = _mm256_broadcast_sd (C+14); C8 = _mm256_broadcast_sd (C+23); \
+      A0 = _mm256_fnmadd_pd(B6,C6,A0); A1 = _mm256_fnmadd_pd(B7,C6,A1); A2 = _mm256_fnmadd_pd(B8,C6,A2); \
+      A3 = _mm256_fnmadd_pd(B6,C7,A3); A4 = _mm256_fnmadd_pd(B7,C7,A4); A5 = _mm256_fnmadd_pd(B8,C7,A5); \
+      A6 = _mm256_fnmadd_pd(B6,C8,A6); A7 = _mm256_fnmadd_pd(B7,C8,A7); A8 = _mm256_fnmadd_pd(B8,C8,A8); \
+\
+      B0 = _mm256_loadu_pd     (B+54); B1 = _mm256_loadu_pd     (B+58); B2 = _mm256_loadu_pd     (B+62); \
+      C0 = _mm256_broadcast_sd (C+ 6); C1 = _mm256_broadcast_sd (C+15); C2 = _mm256_broadcast_sd (C+24); \
+      A0 = _mm256_fnmadd_pd(B0,C0,A0); A1 = _mm256_fnmadd_pd(B1,C0,A1); A2 = _mm256_fnmadd_pd(B2,C0,A2); \
+      A3 = _mm256_fnmadd_pd(B0,C1,A3); A4 = _mm256_fnmadd_pd(B1,C1,A4); A5 = _mm256_fnmadd_pd(B2,C1,A5); \
+      A6 = _mm256_fnmadd_pd(B0,C2,A6); A7 = _mm256_fnmadd_pd(B1,C2,A7); A8 = _mm256_fnmadd_pd(B2,C2,A8); \
+\
+      B3 = _mm256_loadu_pd     (B+63); B4 = _mm256_loadu_pd     (B+67); B5 = _mm256_loadu_pd     (B+71); \
+      C3 = _mm256_broadcast_sd (C+ 7); C4 = _mm256_broadcast_sd( C+16); C5 = _mm256_broadcast_sd (C+25); \
+      A0 = _mm256_fnmadd_pd(B3,C3,A0); A1 = _mm256_fnmadd_pd(B4,C3,A1); A2 = _mm256_fnmadd_pd(B5,C3,A2); \
+      A3 = _mm256_fnmadd_pd(B3,C4,A3); A4 = _mm256_fnmadd_pd(B4,C4,A4); A5 = _mm256_fnmadd_pd(B5,C4,A5); \
+      A6 = _mm256_fnmadd_pd(B3,C5,A6); A7 = _mm256_fnmadd_pd(B4,C5,A7); A8 = _mm256_fnmadd_pd(B5,C5,A8); \
+\
+      B6 = _mm256_loadu_pd     (B+72); B7 = _mm256_loadu_pd     (B+76); B8 = _mm256_broadcast_sd (B+80); \
+      C6 = _mm256_broadcast_sd (C+ 8); C7 = _mm256_broadcast_sd (C+17); C8 = _mm256_broadcast_sd (C+26); \
+      A0 = _mm256_fnmadd_pd(B6,C6,A0); A1 = _mm256_fnmadd_pd(B7,C6,A1); A2 = _mm256_fnmadd_pd(B8,C6,A2); \
+      A3 = _mm256_fnmadd_pd(B6,C7,A3); A4 = _mm256_fnmadd_pd(B7,C7,A4); A5 = _mm256_fnmadd_pd(B8,C7,A5); \
+      A6 = _mm256_fnmadd_pd(B6,C8,A6); A7 = _mm256_fnmadd_pd(B7,C8,A7); A8 = _mm256_fnmadd_pd(B8,C8,A8); \
+\
+           _mm256_storeu_pd(&A[ 0], A0); _mm256_storeu_pd(&A[ 4], A1); _mm256_maskstore_pd(&A[ 8], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), A2); \
+           _mm256_storeu_pd(&A[ 9], A3); _mm256_storeu_pd(&A[13], A4); _mm256_maskstore_pd(&A[17], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), A5); \
+           _mm256_storeu_pd(&A[18], A6); _mm256_storeu_pd(&A[22], A7); _mm256_maskstore_pd(&A[26], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63), A8); \
+\
+      A += 27; C += 27; \
+    } \
+  }
+#else
+#define PetscKernel_A_gets_A_minus_B_times_C_9(A,B,C) 0; \
+  { \
+    A[ 0] -= B[0]*C[ 0] + B[ 9]*C[ 1] + B[18]*C[ 2] + B[27]*C[ 3] + B[36]*C[ 4] + B[45]*C[ 5] + B[54]*C[ 6] + B[63]*C[ 7] + B[72]*C[ 8]; \
+    A[ 1] -= B[1]*C[ 0] + B[10]*C[ 1] + B[19]*C[ 2] + B[28]*C[ 3] + B[37]*C[ 4] + B[46]*C[ 5] + B[55]*C[ 6] + B[64]*C[ 7] + B[73]*C[ 8]; \
+    A[ 2] -= B[2]*C[ 0] + B[11]*C[ 1] + B[20]*C[ 2] + B[29]*C[ 3] + B[38]*C[ 4] + B[47]*C[ 5] + B[56]*C[ 6] + B[65]*C[ 7] + B[74]*C[ 8]; \
+    A[ 3] -= B[3]*C[ 0] + B[12]*C[ 1] + B[21]*C[ 2] + B[30]*C[ 3] + B[39]*C[ 4] + B[48]*C[ 5] + B[57]*C[ 6] + B[66]*C[ 7] + B[75]*C[ 8]; \
+    A[ 4] -= B[4]*C[ 0] + B[13]*C[ 1] + B[22]*C[ 2] + B[31]*C[ 3] + B[40]*C[ 4] + B[49]*C[ 5] + B[58]*C[ 6] + B[67]*C[ 7] + B[76]*C[ 8]; \
+    A[ 5] -= B[5]*C[ 0] + B[14]*C[ 1] + B[23]*C[ 2] + B[32]*C[ 3] + B[41]*C[ 4] + B[50]*C[ 5] + B[59]*C[ 6] + B[68]*C[ 7] + B[77]*C[ 8]; \
+    A[ 6] -= B[6]*C[ 0] + B[15]*C[ 1] + B[24]*C[ 2] + B[33]*C[ 3] + B[42]*C[ 4] + B[51]*C[ 5] + B[60]*C[ 6] + B[69]*C[ 7] + B[78]*C[ 8]; \
+    A[ 7] -= B[7]*C[ 0] + B[16]*C[ 1] + B[25]*C[ 2] + B[34]*C[ 3] + B[43]*C[ 4] + B[52]*C[ 5] + B[61]*C[ 6] + B[70]*C[ 7] + B[79]*C[ 8]; \
+    A[ 8] -= B[8]*C[ 0] + B[17]*C[ 1] + B[26]*C[ 2] + B[35]*C[ 3] + B[44]*C[ 4] + B[53]*C[ 5] + B[62]*C[ 6] + B[71]*C[ 7] + B[80]*C[ 8]; \
+\
+    A[ 9] -= B[0]*C[ 9] + B[ 9]*C[10] + B[18]*C[11] + B[27]*C[12] + B[36]*C[13] + B[45]*C[14] + B[54]*C[15] + B[63]*C[16] + B[72]*C[17]; \
+    A[10] -= B[1]*C[ 9] + B[10]*C[10] + B[19]*C[11] + B[28]*C[12] + B[37]*C[13] + B[46]*C[14] + B[55]*C[15] + B[64]*C[16] + B[73]*C[17]; \
+    A[11] -= B[2]*C[ 9] + B[11]*C[10] + B[20]*C[11] + B[29]*C[12] + B[38]*C[13] + B[47]*C[14] + B[56]*C[15] + B[65]*C[16] + B[74]*C[17]; \
+    A[12] -= B[3]*C[ 9] + B[12]*C[10] + B[21]*C[11] + B[30]*C[12] + B[39]*C[13] + B[48]*C[14] + B[57]*C[15] + B[66]*C[16] + B[75]*C[17]; \
+    A[13] -= B[4]*C[ 9] + B[13]*C[10] + B[22]*C[11] + B[31]*C[12] + B[40]*C[13] + B[49]*C[14] + B[58]*C[15] + B[67]*C[16] + B[76]*C[17]; \
+    A[14] -= B[5]*C[ 9] + B[14]*C[10] + B[23]*C[11] + B[32]*C[12] + B[41]*C[13] + B[50]*C[14] + B[59]*C[15] + B[68]*C[16] + B[77]*C[17]; \
+    A[15] -= B[6]*C[ 9] + B[15]*C[10] + B[24]*C[11] + B[33]*C[12] + B[42]*C[13] + B[51]*C[14] + B[60]*C[15] + B[69]*C[16] + B[78]*C[17]; \
+    A[16] -= B[7]*C[ 9] + B[16]*C[10] + B[25]*C[11] + B[34]*C[12] + B[43]*C[13] + B[52]*C[14] + B[61]*C[15] + B[70]*C[16] + B[79]*C[17]; \
+    A[17] -= B[8]*C[ 9] + B[17]*C[10] + B[26]*C[11] + B[35]*C[12] + B[44]*C[13] + B[53]*C[14] + B[62]*C[15] + B[71]*C[16] + B[80]*C[17]; \
+\
+    A[18] -= B[0]*C[18] + B[ 9]*C[19] + B[18]*C[20] + B[27]*C[21] + B[36]*C[22] + B[45]*C[23] + B[54]*C[24] + B[63]*C[25] + B[72]*C[26]; \
+    A[19] -= B[1]*C[18] + B[10]*C[19] + B[19]*C[20] + B[28]*C[21] + B[37]*C[22] + B[46]*C[23] + B[55]*C[24] + B[64]*C[25] + B[73]*C[26]; \
+    A[20] -= B[2]*C[18] + B[11]*C[19] + B[20]*C[20] + B[29]*C[21] + B[38]*C[22] + B[47]*C[23] + B[56]*C[24] + B[65]*C[25] + B[74]*C[26]; \
+    A[21] -= B[3]*C[18] + B[12]*C[19] + B[21]*C[20] + B[30]*C[21] + B[39]*C[22] + B[48]*C[23] + B[57]*C[24] + B[66]*C[25] + B[75]*C[26]; \
+    A[22] -= B[4]*C[18] + B[13]*C[19] + B[22]*C[20] + B[31]*C[21] + B[40]*C[22] + B[49]*C[23] + B[58]*C[24] + B[67]*C[25] + B[76]*C[26]; \
+    A[23] -= B[5]*C[18] + B[14]*C[19] + B[23]*C[20] + B[32]*C[21] + B[41]*C[22] + B[50]*C[23] + B[59]*C[24] + B[68]*C[25] + B[77]*C[26]; \
+    A[24] -= B[6]*C[18] + B[15]*C[19] + B[24]*C[20] + B[33]*C[21] + B[42]*C[22] + B[51]*C[23] + B[60]*C[24] + B[69]*C[25] + B[78]*C[26]; \
+    A[25] -= B[7]*C[18] + B[16]*C[19] + B[25]*C[20] + B[34]*C[21] + B[43]*C[22] + B[52]*C[23] + B[61]*C[24] + B[70]*C[25] + B[79]*C[26]; \
+    A[26] -= B[8]*C[18] + B[17]*C[19] + B[26]*C[20] + B[35]*C[21] + B[44]*C[22] + B[53]*C[23] + B[62]*C[24] + B[71]*C[25] + B[80]*C[26]; \
+\
+    A[27] -= B[0]*C[27] + B[ 9]*C[28] + B[18]*C[29] + B[27]*C[30] + B[36]*C[31] + B[45]*C[32] + B[54]*C[33] + B[63]*C[34] + B[72]*C[35]; \
+    A[28] -= B[1]*C[27] + B[10]*C[28] + B[19]*C[29] + B[28]*C[30] + B[37]*C[31] + B[46]*C[32] + B[55]*C[33] + B[64]*C[34] + B[73]*C[35]; \
+    A[29] -= B[2]*C[27] + B[11]*C[28] + B[20]*C[29] + B[29]*C[30] + B[38]*C[31] + B[47]*C[32] + B[56]*C[33] + B[65]*C[34] + B[74]*C[35]; \
+    A[30] -= B[3]*C[27] + B[12]*C[28] + B[21]*C[29] + B[30]*C[30] + B[39]*C[31] + B[48]*C[32] + B[57]*C[33] + B[66]*C[34] + B[75]*C[35]; \
+    A[31] -= B[4]*C[27] + B[13]*C[28] + B[22]*C[29] + B[31]*C[30] + B[40]*C[31] + B[49]*C[32] + B[58]*C[33] + B[67]*C[34] + B[76]*C[35]; \
+    A[32] -= B[5]*C[27] + B[14]*C[28] + B[23]*C[29] + B[32]*C[30] + B[41]*C[31] + B[50]*C[32] + B[59]*C[33] + B[68]*C[34] + B[77]*C[35]; \
+    A[33] -= B[6]*C[27] + B[15]*C[28] + B[24]*C[29] + B[33]*C[30] + B[42]*C[31] + B[51]*C[32] + B[60]*C[33] + B[69]*C[34] + B[78]*C[35]; \
+    A[34] -= B[7]*C[27] + B[16]*C[28] + B[25]*C[29] + B[34]*C[30] + B[43]*C[31] + B[52]*C[32] + B[61]*C[33] + B[70]*C[34] + B[79]*C[35]; \
+    A[35] -= B[8]*C[27] + B[17]*C[28] + B[26]*C[29] + B[35]*C[30] + B[44]*C[31] + B[53]*C[32] + B[62]*C[33] + B[71]*C[34] + B[80]*C[35]; \
+\
+    A[36] -= B[0]*C[36] + B[ 9]*C[37] + B[18]*C[38] + B[27]*C[39] + B[36]*C[40] + B[45]*C[41] + B[54]*C[42] + B[63]*C[43] + B[72]*C[44]; \
+    A[37] -= B[1]*C[36] + B[10]*C[37] + B[19]*C[38] + B[28]*C[39] + B[37]*C[40] + B[46]*C[41] + B[55]*C[42] + B[64]*C[43] + B[73]*C[44]; \
+    A[38] -= B[2]*C[36] + B[11]*C[37] + B[20]*C[38] + B[29]*C[39] + B[38]*C[40] + B[47]*C[41] + B[56]*C[42] + B[65]*C[43] + B[74]*C[44]; \
+    A[39] -= B[3]*C[36] + B[12]*C[37] + B[21]*C[38] + B[30]*C[39] + B[39]*C[40] + B[48]*C[41] + B[57]*C[42] + B[66]*C[43] + B[75]*C[44]; \
+    A[40] -= B[4]*C[36] + B[13]*C[37] + B[22]*C[38] + B[31]*C[39] + B[40]*C[40] + B[49]*C[41] + B[58]*C[42] + B[67]*C[43] + B[76]*C[44]; \
+    A[41] -= B[5]*C[36] + B[14]*C[37] + B[23]*C[38] + B[32]*C[39] + B[41]*C[40] + B[50]*C[41] + B[59]*C[42] + B[68]*C[43] + B[77]*C[44]; \
+    A[42] -= B[6]*C[36] + B[15]*C[37] + B[24]*C[38] + B[33]*C[39] + B[42]*C[40] + B[51]*C[41] + B[60]*C[42] + B[69]*C[43] + B[78]*C[44]; \
+    A[43] -= B[7]*C[36] + B[16]*C[37] + B[25]*C[38] + B[34]*C[39] + B[43]*C[40] + B[52]*C[41] + B[61]*C[42] + B[70]*C[43] + B[79]*C[44]; \
+    A[44] -= B[8]*C[36] + B[17]*C[37] + B[26]*C[38] + B[35]*C[39] + B[44]*C[40] + B[53]*C[41] + B[62]*C[42] + B[71]*C[43] + B[80]*C[44]; \
+\
+    A[45] -= B[0]*C[45] + B[ 9]*C[46] + B[18]*C[47] + B[27]*C[48] + B[36]*C[49] + B[45]*C[50] + B[54]*C[51] + B[63]*C[52] + B[72]*C[53]; \
+    A[46] -= B[1]*C[45] + B[10]*C[46] + B[19]*C[47] + B[28]*C[48] + B[37]*C[49] + B[46]*C[50] + B[55]*C[51] + B[64]*C[52] + B[73]*C[53]; \
+    A[47] -= B[2]*C[45] + B[11]*C[46] + B[20]*C[47] + B[29]*C[48] + B[38]*C[49] + B[47]*C[50] + B[56]*C[51] + B[65]*C[52] + B[74]*C[53]; \
+    A[48] -= B[3]*C[45] + B[12]*C[46] + B[21]*C[47] + B[30]*C[48] + B[39]*C[49] + B[48]*C[50] + B[57]*C[51] + B[66]*C[52] + B[75]*C[53]; \
+    A[49] -= B[4]*C[45] + B[13]*C[46] + B[22]*C[47] + B[31]*C[48] + B[40]*C[49] + B[49]*C[50] + B[58]*C[51] + B[67]*C[52] + B[76]*C[53]; \
+    A[50] -= B[5]*C[45] + B[14]*C[46] + B[23]*C[47] + B[32]*C[48] + B[41]*C[49] + B[50]*C[50] + B[59]*C[51] + B[68]*C[52] + B[77]*C[53]; \
+    A[51] -= B[6]*C[45] + B[15]*C[46] + B[24]*C[47] + B[33]*C[48] + B[42]*C[49] + B[51]*C[50] + B[60]*C[51] + B[69]*C[52] + B[78]*C[53]; \
+    A[52] -= B[7]*C[45] + B[16]*C[46] + B[25]*C[47] + B[34]*C[48] + B[43]*C[49] + B[52]*C[50] + B[61]*C[51] + B[70]*C[52] + B[79]*C[53]; \
+    A[53] -= B[8]*C[45] + B[17]*C[46] + B[26]*C[47] + B[35]*C[48] + B[44]*C[49] + B[53]*C[50] + B[62]*C[51] + B[71]*C[52] + B[80]*C[53]; \
+\
+    A[54] -= B[0]*C[54] + B[ 9]*C[55] + B[18]*C[56] + B[27]*C[57] + B[36]*C[58] + B[45]*C[59] + B[54]*C[60] + B[63]*C[61] + B[72]*C[62]; \
+    A[55] -= B[1]*C[54] + B[10]*C[55] + B[19]*C[56] + B[28]*C[57] + B[37]*C[58] + B[46]*C[59] + B[55]*C[60] + B[64]*C[61] + B[73]*C[62]; \
+    A[56] -= B[2]*C[54] + B[11]*C[55] + B[20]*C[56] + B[29]*C[57] + B[38]*C[58] + B[47]*C[59] + B[56]*C[60] + B[65]*C[61] + B[74]*C[62]; \
+    A[57] -= B[3]*C[54] + B[12]*C[55] + B[21]*C[56] + B[30]*C[57] + B[39]*C[58] + B[48]*C[59] + B[57]*C[60] + B[66]*C[61] + B[75]*C[62]; \
+    A[58] -= B[4]*C[54] + B[13]*C[55] + B[22]*C[56] + B[31]*C[57] + B[40]*C[58] + B[49]*C[59] + B[58]*C[60] + B[67]*C[61] + B[76]*C[62]; \
+    A[59] -= B[5]*C[54] + B[14]*C[55] + B[23]*C[56] + B[32]*C[57] + B[41]*C[58] + B[50]*C[59] + B[59]*C[60] + B[68]*C[61] + B[77]*C[62]; \
+    A[60] -= B[6]*C[54] + B[15]*C[55] + B[24]*C[56] + B[33]*C[57] + B[42]*C[58] + B[51]*C[59] + B[60]*C[60] + B[69]*C[61] + B[78]*C[62]; \
+    A[61] -= B[7]*C[54] + B[16]*C[55] + B[25]*C[56] + B[34]*C[57] + B[43]*C[58] + B[52]*C[59] + B[61]*C[60] + B[70]*C[61] + B[79]*C[62]; \
+    A[62] -= B[8]*C[54] + B[17]*C[55] + B[26]*C[56] + B[35]*C[57] + B[44]*C[58] + B[53]*C[59] + B[62]*C[60] + B[71]*C[61] + B[80]*C[62]; \
+\
+    A[63] -= B[0]*C[63] + B[ 9]*C[64] + B[18]*C[65] + B[27]*C[66] + B[36]*C[67] + B[45]*C[68] + B[54]*C[69] + B[63]*C[70] + B[72]*C[71]; \
+    A[64] -= B[1]*C[63] + B[10]*C[64] + B[19]*C[65] + B[28]*C[66] + B[37]*C[67] + B[46]*C[68] + B[55]*C[69] + B[64]*C[70] + B[73]*C[71]; \
+    A[65] -= B[2]*C[63] + B[11]*C[64] + B[20]*C[65] + B[29]*C[66] + B[38]*C[67] + B[47]*C[68] + B[56]*C[69] + B[65]*C[70] + B[74]*C[71]; \
+    A[66] -= B[3]*C[63] + B[12]*C[64] + B[21]*C[65] + B[30]*C[66] + B[39]*C[67] + B[48]*C[68] + B[57]*C[69] + B[66]*C[70] + B[75]*C[71]; \
+    A[67] -= B[4]*C[63] + B[13]*C[64] + B[22]*C[65] + B[31]*C[66] + B[40]*C[67] + B[49]*C[68] + B[58]*C[69] + B[67]*C[70] + B[76]*C[71]; \
+    A[68] -= B[5]*C[63] + B[14]*C[64] + B[23]*C[65] + B[32]*C[66] + B[41]*C[67] + B[50]*C[68] + B[59]*C[69] + B[68]*C[70] + B[77]*C[71]; \
+    A[69] -= B[6]*C[63] + B[15]*C[64] + B[24]*C[65] + B[33]*C[66] + B[42]*C[67] + B[51]*C[68] + B[60]*C[69] + B[69]*C[70] + B[78]*C[71]; \
+    A[70] -= B[7]*C[63] + B[16]*C[64] + B[25]*C[65] + B[34]*C[66] + B[43]*C[67] + B[52]*C[68] + B[61]*C[69] + B[70]*C[70] + B[79]*C[71]; \
+    A[71] -= B[8]*C[63] + B[17]*C[64] + B[26]*C[65] + B[35]*C[66] + B[44]*C[67] + B[53]*C[68] + B[62]*C[69] + B[71]*C[70] + B[80]*C[71]; \
+\
+    A[72] -= B[0]*C[72] + B[ 9]*C[73] + B[18]*C[74] + B[27]*C[75] + B[36]*C[76] + B[45]*C[77] + B[54]*C[78] + B[63]*C[79] + B[72]*C[80]; \
+    A[73] -= B[1]*C[72] + B[10]*C[73] + B[19]*C[74] + B[28]*C[75] + B[37]*C[76] + B[46]*C[77] + B[55]*C[78] + B[64]*C[79] + B[73]*C[80]; \
+    A[74] -= B[2]*C[72] + B[11]*C[73] + B[20]*C[74] + B[29]*C[75] + B[38]*C[76] + B[47]*C[77] + B[56]*C[78] + B[65]*C[79] + B[74]*C[80]; \
+    A[75] -= B[3]*C[72] + B[12]*C[73] + B[21]*C[74] + B[30]*C[75] + B[39]*C[76] + B[48]*C[77] + B[57]*C[78] + B[66]*C[79] + B[75]*C[80]; \
+    A[76] -= B[4]*C[72] + B[13]*C[73] + B[22]*C[74] + B[31]*C[75] + B[40]*C[76] + B[49]*C[77] + B[58]*C[78] + B[67]*C[79] + B[76]*C[80]; \
+    A[77] -= B[5]*C[72] + B[14]*C[73] + B[23]*C[74] + B[32]*C[75] + B[41]*C[76] + B[50]*C[77] + B[59]*C[78] + B[68]*C[79] + B[77]*C[80]; \
+    A[78] -= B[6]*C[72] + B[15]*C[73] + B[24]*C[74] + B[33]*C[75] + B[42]*C[76] + B[51]*C[77] + B[60]*C[78] + B[69]*C[79] + B[78]*C[80]; \
+    A[79] -= B[7]*C[72] + B[16]*C[73] + B[25]*C[74] + B[34]*C[75] + B[43]*C[76] + B[52]*C[77] + B[61]*C[78] + B[70]*C[79] + B[79]*C[80]; \
+    A[80] -= B[8]*C[72] + B[17]*C[73] + B[26]*C[74] + B[35]*C[75] + B[44]*C[76] + B[53]*C[77] + B[62]*C[78] + B[71]*C[79] + B[80]*C[80]; \
+    C += 81; \
+  }
+#endif
 
 /*
   PetscKernel_A_gets_A_times_B_11: A = A * B with size bs=11

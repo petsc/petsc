@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for getpagesize() with c89 */
 #include <petscsys.h>           /*I "petscsys.h" I*/
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -110,6 +110,9 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #endif
   PetscFunctionReturn(0);
 }
+
+PETSC_INTERN PetscBool      PetscMemoryCollectMaximumUsage;
+PETSC_INTERN PetscLogDouble PetscMemoryMaximumUsage;
 
 PetscBool      PetscMemoryCollectMaximumUsage = PETSC_FALSE;
 PetscLogDouble PetscMemoryMaximumUsage        = 0;

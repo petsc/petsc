@@ -1,0 +1,38 @@
+Failed to load RHS, so use a vector of all ones.
+Failed to load initial guess, so use a vector of all zeros.
+  0 KSP Residual norm 1.78849e+12 
+  1 KSP Residual norm 3.38372e+11 
+  2 KSP Residual norm 2.43134e+11 
+  3 KSP Residual norm 7.43625e+10 
+  4 KSP Residual norm 3.49525e+10 
+  5 KSP Residual norm 1.99134e+10 
+  6 KSP Residual norm 1.1494e+10 
+  7 KSP Residual norm 6.54079e+09 
+  8 KSP Residual norm 3.55723e+09 
+  9 KSP Residual norm 1.99426e+09 
+ 10 KSP Residual norm 1.16166e+09 
+ 11 KSP Residual norm 6.5299e+08 
+ 12 KSP Residual norm 3.57531e+08 
+ 13 KSP Residual norm 1.91894e+08 
+ 14 KSP Residual norm 1.01989e+08 
+ 15 KSP Residual norm 5.63899e+07 
+ 16 KSP Residual norm 3.24215e+07 
+ 17 KSP Residual norm 1.89227e+07 
+ 18 KSP Residual norm 1.0917e+07 
+KSP Object: 2 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=100, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 2 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: 2 MPI processes
+    type: normal
+    rows=81920, cols=81920
+KSP type: gmres
+Number of iterations =  18
+Residual norm 0.00141417

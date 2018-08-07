@@ -3,6 +3,7 @@ static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
 
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -30,8 +31,8 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
-  ierr = VecDot(x,y,&v);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Vector inner product %16.12e\n",v);CHKERRQ(ierr);
+  ierr = VecDot(x,y,&v);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Vector inner product %16.12e\n",(double)PetscRealPart(v));CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
@@ -40,3 +41,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

@@ -37,14 +37,21 @@
       call VecDestroy(f,ierr);CHKERRA(ierr)
       call KSPDestroy(ksp,ierr);CHKERRA(ierr)
       call DMDestroy(da,ierr);CHKERRA(ierr)
-      call PetscFinalize(ierr);CHKERRA(ierr)
+      call PetscFinalize(ierr)
       end
 
 ! AVX512 crashes without this..
-      subroutine knl_workarround(xx)
-      PetscScalar xx,sd
+      block data init
+      implicit none
+      PetscScalar sd
       common /cb/ sd
       data sd /0/
+      end
+      subroutine knl_workarround(xx)
+      implicit none
+      PetscScalar xx
+      PetscScalar sd
+      common /cb/ sd
       sd = sd+xx
       end
 
@@ -58,8 +65,8 @@
       PetscScalar hx
       PetscScalar, pointer :: xx(:)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-     &     PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+     &                 PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       call DMDAVecGetArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
@@ -83,8 +90,8 @@
 
       one = 1.0
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-     &  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,   &
-     &  PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,   &
+     &                 PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       do i=xs,xs+xm-1
@@ -100,3 +107,10 @@
       call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       return
       end
+
+!/*TEST
+!
+!   test:
+!      args: -ksp_converged_reason
+!
+!TEST*/

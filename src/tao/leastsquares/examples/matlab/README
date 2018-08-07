@@ -1,0 +1,11 @@
+
+Here is the list of problems where we have issues:
+
+  24 - fails on destroy with an object in an invalid state; succeeds with nf_const = 50
+  33, 34, 35, 40, 42, 49 - fails due to inf -- the matlab function evaluation is not causing it.
+  18, 27, 28, 36, 47, 50, 51 - slow convergence
+
+History vectors are not properly sized (they are too big) and the code does not check if
+there is room prior to adding more vectors.  This can lead to memory corruption errors.
+
+

@@ -70,3 +70,31 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      requires: parmetis
+      args: -mat_partitioning_type parmetis
+
+   test:
+      suffix: 2
+      nsize: 3
+      requires: ptscotch
+      args: -mat_partitioning_type ptscotch
+
+   test:
+      suffix: 3
+      nsize: 4
+      requires: party
+      args: -mat_partitioning_type party
+
+   test:
+      suffix: 4
+      nsize: 3
+      requires: chaco
+      args: -mat_partitioning_type chaco
+
+TEST*/

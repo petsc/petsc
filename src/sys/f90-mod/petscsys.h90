@@ -1,4 +1,35 @@
-
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
+      Interface
+       subroutine PetscObjectReference(obj,ierr)
+          use petscsysdef
+          type(*) :: obj
+          PetscErrorCode :: ierr
+       end Subroutine PetscObjectReference
+       subroutine PetscObjectDereference(obj,ierr)
+          use petscsysdef
+          type(*) :: obj
+          PetscErrorCode :: ierr
+        end Subroutine PetscObjectDereference
+       subroutine PetscObjectGetReference(obj,c,ierr)
+          use petscsysdef
+          type(*) :: obj
+          PetscInt c
+          PetscErrorCode :: ierr
+        end Subroutine PetscObjectGetReference
+       subroutine PetscObjectCompose(obj,str,obj2,ierr)
+          use petscsysdef
+          type(*) :: obj,obj2
+          character(*) :: str
+          PetscErrorCode :: ierr
+        end Subroutine PetscObjectCompose
+       subroutine PetscObjectQuery(obj,str,obj2,ierr)
+          use petscsysdef
+          type(*) :: obj,obj2
+          character(*) :: str
+          PetscErrorCode :: ierr
+        end Subroutine PetscObjectQuery
+        end Interface
+#endif
 
       Interface 
         Subroutine PetscOptionsGetInt(o,p,n,v,s,ierr)
@@ -92,3 +123,47 @@
           PetscErrorCode ierr
         End Subroutine
       End Interface
+
+      Interface
+      subroutine PetscRandomSetType(a,b,z)
+      use petscsysdef
+       PetscRandom a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine PetscRandomView(a,b,z)
+      use petscsysdef
+       PetscRandom a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface
+
+#if defined(PETSC_USE_LOG)
+      Interface
+      function PetscASend(c, d) bind(c,name='PetscASend') result(i)
+          use iso_c_binding
+          implicit none
+          integer(c_int), value :: c
+          integer(c_int), value :: d
+          integer(c_int)        :: i
+      end function PetscASend
+
+      function PetscARecv(c, d) bind(c,name='PetscARecv') result(i)
+          use iso_c_binding
+          implicit none
+          integer(c_int), value :: c
+          integer(c_int), value :: d
+          integer(c_int)        :: i
+      end function PetscARecv
+
+      function PetscAReduce() bind(c,name='PetscAReduce') result(i)
+          use iso_c_binding
+          implicit none
+          integer(c_int)        :: i
+      end function PetscAReduce
+      end Interface
+#endif

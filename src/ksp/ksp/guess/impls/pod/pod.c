@@ -45,6 +45,7 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
   PetscBool      cong;
 
   PetscFunctionBegin;
+  pod->nen  = 0;
   pod->n    = 0;
   pod->curr = 0;
   /* need to wait for completion of outstanding requests */
@@ -171,7 +172,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   ierr = VecRestoreArrayRead(b,(const PetscScalar**)&array);CHKERRQ(ierr);
   ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
   ierr = VecResetArray(pod->bsnap[pod->curr]);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(pod->swork,pod->swork + pod->n,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(pod->swork,pod->swork + pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
   ierr = PetscBLASIntCast(pod->n,&bN);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(pod->nen,&bNen);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork+pod->n,&ione,&zero,pod->swork,&ione));
@@ -188,9 +189,25 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   }
   /* A_low x_low = b_low */
   if (!pod->Aspd) { /* A is spd -> LOW = Identity */
+    KSP       pksp = guess->ksp;
+    PetscBool tsolve,symm;
+
+    if (pod->monitor) {
+      PetscMPIInt rank;
+      Mat         L;
+
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)guess),&rank);CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,pod->nen,pod->nen,pod->low,&L);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = MatView(L,NULL);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&L);CHKERRQ(ierr);
+    }
+    ierr   = MatGetOption(guess->A,MAT_SYMMETRIC,&symm);CHKERRQ(ierr);
+    tsolve = symm ? PETSC_FALSE : pksp->transpose_solve;
     PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&bNen,&bNen,pod->low,&bNen,pod->iwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)lierr);
-    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
+    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(tsolve ? "T" : "N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)lierr);
   }
   /* x = X * V * S * x_low */
@@ -238,36 +255,40 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   if (pod->Aspd) {
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
-    ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
 #else
-    ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+    ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
     pod->ndots_iallreduce = 1;
 #endif
   } else {
+    PetscInt  off;
     PetscBool herm;
 
-    /* TODO: we may want to use a user-defined dot for the correlation matrix */
-    ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
-    ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork + pod->n);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = MatGetOption(guess->A,MAT_HERMITIAN,&herm);CHKERRQ(ierr);
 #else
     ierr = MatGetOption(guess->A,MAT_SYMMETRIC,&herm);CHKERRQ(ierr);
 #endif
+    off = (guess->ksp->transpose_solve && !herm) ? 2*pod->n : pod->n;
+
+    /* TODO: we may want to use a user-defined dot for the correlation matrix */
+    ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
+    ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork + off);CHKERRQ(ierr);
     if (!herm) {
-      ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + 2*pod->n);CHKERRQ(ierr);
+      off  = (off == pod->n) ? 2*pod->n : pod->n;
+      ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + off);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
-      ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
 #else
-      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
       pod->ndots_iallreduce = 3;
 #endif
     } else {
 #if !defined(PETSC_HAVE_MPI_IALLREDUCE)
-      ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
       for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->swork[4*pod->n + i];
 #else
-      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
       pod->ndots_iallreduce = 2;
 #endif
     }
@@ -328,15 +349,17 @@ complete_request:
   else if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
 
   /* dimension of lower dimensional system */ 
+  pod->st = -1;
   for (i=0,toten=0;i<pod->n;i++) {
-    pod->eigs[i] = PetscAbsReal(pod->eigs[i]);
+    pod->eigs[i] = PetscMax(pod->eigs[i],0.0);
     toten += pod->eigs[i];
+    if (!pod->eigs[i]) pod->st = i;
   }
   pod->nen = 0;
-  for (i=pod->n-1,parten=0;i>=0 && toten > 0;i--) {
+  for (i=pod->n-1,parten=0;i>pod->st && toten > 0;i--) {
     pod->nen++;
     parten += pod->eigs[i];
-    if (parten/toten > 1.0 - pod->tol) break;
+    if (parten + toten*pod->tol >= toten) break;
   }
   pod->st = pod->n - pod->nen;
 
@@ -379,7 +402,7 @@ complete_request:
       for (j=0;j<pod->n;j++) pod->swork[j] = -pod->swork[pod->n+j];
       ierr = VecMAXPY(v,pod->n,pod->swork,pod->xsnap);CHKERRQ(ierr);
       ierr = VecDot(v,v,pod->swork);CHKERRQ(ierr);
-      ierr = MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
       ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten));CHKERRQ(ierr);
       ierr = VecDestroy(&v);CHKERRQ(ierr);
     }

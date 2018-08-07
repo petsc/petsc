@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><a href="dev.html">dev</a></li>
+                <li><a href="39.html">3.9</a></li>
                 <li><span class="current">3.8</span></li>
                 <li><a href="37.html">3.7</a></li>
                 <li><a href="36.html">3.6</a></li>
@@ -157,6 +158,7 @@
         <li>Added KSPFETIDP, a linear system solver based on the FETI-DP method.</li>
         <li>Added the KSPGuess class: available methods are KSPGUESSFISCHER and KSPGUESSPOD. The new KSPGUESSPOD computes an initial guess using the Proper Orthogonal Decomposition technique.</li>
         <li>KSPFischerGuessCreate has been removed: see the man page of KSPGUESSFISCHER for how to create a Fischer type initial guess.</li>
+        <li> KSPCHEBYSHEV: replace KSPChebyshevEstEigSetUseRandom() with KSPChebyshevEstEigSetUseNoisy(), using a deterministic algorithm to generate noisy vectors.
       </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
@@ -200,7 +202,8 @@
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
       <ul>
-        <li>New shorter calling sequence for PetscError() from Fortran</li>
+        <li>PETSC_NULL_INTEGER, PETSC_NULL_REAL etc are now declared as arrays of size one instead of as scalar values.</li>
+        <li>New shorter calling sequence for PetscError() from Fortran</li>        
         <li>SETERRQ(), and CHKERRQ from Fortran now have the same behavior as in C and automatically return on errors, they do not abort.
             Correspondingly SERERRA() and CHKERRA() should be used in 'program main' - as return is not possible from it.
             These macros should be used from .F90 files because they require long lines</li>

@@ -43,6 +43,8 @@ class Configure(config.base.Configure):
         raise RuntimeError('C Compiler provided doest not support C99 complex')
       if self.languages.clanguage == 'Cxx' and not self.types.cxx_complex:
         raise RuntimeError('Cxx compiler provided does not support std::complex')
+      if self.languages.clanguage == 'Cxx':
+        self.addDefine('USE_CXXCOMPLEX',1)
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
     self.addDefine('USE_SCALAR_'+self.scalartype.upper(), '1')

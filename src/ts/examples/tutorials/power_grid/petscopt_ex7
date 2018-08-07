@@ -7,8 +7,8 @@
 -Pmax 2.1
 -PM_min 1.0
 -rho 0.0
--t0 0.0
--tmax 4.0
+#-t0 0.0
+#-tmax 4.0
 -ymin -10
 -ymax 10
 -da_grid_x 210

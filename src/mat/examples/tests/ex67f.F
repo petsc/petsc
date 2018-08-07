@@ -22,12 +22,12 @@
 
 #if defined(PETSC_USE_64BIT_INDICES)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
-     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & '${PETSC_DIR}/share/petsc/datafiles/matrices/' //                       &
      & 'ns-real-int64-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
 #else
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
-     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & '${PETSC_DIR}/share/petsc/datafiles/matrices/' //                       &
      & 'ns-real-int32-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
 #endif
@@ -65,6 +65,13 @@
 
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!     test:
+!        requires: double !complex
+!
+!TEST*/
 
 
 

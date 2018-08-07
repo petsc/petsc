@@ -84,6 +84,7 @@ struct _p_TSTrajectory {
   char           **names;                 /* the name of each variable; each process has only the local names */
   PetscBool      keepfiles;               /* keep the files generated during the run after the run is complete */
   char           *dirname,*filetemplate;  /* directory name and file name template for disk checkpoints */
+  char           *dirfiletemplate;        /* complete directory and file name template for disk checkpoints */
   PetscErrorCode (*transform)(void*,Vec,Vec*);
   PetscErrorCode (*transformdestroy)(void*);
   void*          transformctx;
@@ -143,12 +144,10 @@ struct _p_TS {
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */
-  Vec       *vecs_fwdsensipacked;    /* packed vector array for forward sensitivitis */
-  Vec       *vecs_integral_sensi;    /* one vector for each integral */
+  Mat       mat_sensip;              /* matrix storing forward sensitivities */
   Vec       *vecs_integral_sensip;   /* one vector for each integral */
   PetscInt  num_parameters;
   PetscInt  num_initialvalues;
-  Vec       *vecs_jacp;
   void      *vecsrhsjacobianpctx;
   PetscInt  forwardsetupcalled;
   PetscBool forward_solve;
@@ -216,6 +215,8 @@ struct _p_TS {
   Vec       vatol,vrtol;            /* Relative and absolute tolerance in vector form */
   PetscReal cfltime,cfltime_local;
 
+  PetscBool testjacobian;
+  PetscBool testjacobiantranspose;
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
   Vec      *work;
@@ -353,7 +354,12 @@ PETSC_EXTERN PetscErrorCode TSEventDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSEventHandler(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointEventHandler(TS);
 
-PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval, TS_ForwardStep;
+PETSC_EXTERN PetscLogEvent TS_AdjointStep;
+PETSC_EXTERN PetscLogEvent TS_Step;
+PETSC_EXTERN PetscLogEvent TS_PseudoComputeTimeStep;
+PETSC_EXTERN PetscLogEvent TS_FunctionEval;
+PETSC_EXTERN PetscLogEvent TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_ForwardStep;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
@@ -395,6 +401,16 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
+PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
+PETSC_EXTERN PetscLogEvent TSTrajectory_DiskWrite;
+PETSC_EXTERN PetscLogEvent TSTrajectory_DiskRead;
 
+struct _n_TSMonitorDrawCtx {
+  PetscViewer   viewer;
+  Vec           initialsolution;
+  PetscBool     showinitial;
+  PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool     showtimestepandtime;
+};
 #endif

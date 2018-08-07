@@ -292,7 +292,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,user_ptr);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user_ptr->A,user_ptr->A,IJacobian,user_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobianP(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set time
@@ -340,3 +340,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+    build:
+      requires: !complex !single
+    test:
+      args:  -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -tao_view  -ts_trajectory_dirname ex20opt_pdir -tao_blmvm_mat_lmvm_scale_type none
+      output_file: output/ex20opt_p_1.out
+
+TEST*/

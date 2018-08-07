@@ -320,5 +320,11 @@
       return
       end
 
-
-
+!/*TEST
+!
+!   test:
+!      nsize: 2
+!      args: -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short
+!      output_file: output/ex12_1.out
+!
+!TEST*/

@@ -6,7 +6,7 @@
 #define __PETSCIS_H
 #include <petscsys.h>
 #include <petscsftypes.h>
-#include <petscistypes.h>
+#include <petscistypes.h>    /*I  "petscis.h" I*/
 
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
@@ -64,6 +64,7 @@ PETSC_EXTERN PetscErrorCode ISView(IS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode ISLoad(IS,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
+PETSC_EXTERN PetscErrorCode ISEqualUnsorted(IS,IS,PetscBool *);
 PETSC_EXTERN PetscErrorCode ISSort(IS);
 PETSC_EXTERN PetscErrorCode ISSortRemoveDups(IS);
 PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);
@@ -133,6 +134,8 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLo
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A,PetscObject B,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,B,name);}
+
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
@@ -141,6 +144,8 @@ PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,I
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt**[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt**[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
@@ -307,6 +312,7 @@ PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCopy(PetscSection, PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionCompare(PetscSection, PetscSection, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
@@ -350,7 +356,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt [], PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, const PetscInt [], PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSupersection(PetscSection[], PetscInt, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
@@ -370,7 +377,8 @@ PETSC_EXTERN PetscClassId PETSC_SECTION_SYM_CLASSID;
 
   Level: developer
 
-  Notes: PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
+  Notes:
+    PetscSectionSym has no default implementation, but is used by DM in PetscSectionSymCreateLabel().
 
 .seealso: PetscSectionSymSetType(), PetscSectionSym, PetscSectionSymCreate(), PetscSectionSymRegister()
 J*/

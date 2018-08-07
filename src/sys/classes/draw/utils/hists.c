@@ -41,7 +41,8 @@ struct _p_PetscDrawHG {
    Output Parameters:
 .  hist - The histogram context
 
-   Notes: The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+   Notes:
+    The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
 
    The histogram is only displayed when PetscDrawHGDraw() is called.
 

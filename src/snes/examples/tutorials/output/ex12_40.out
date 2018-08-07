@@ -11,6 +11,5 @@
  10 SNES Function norm 0.0674946 
  11 SNES Function norm 0.00488759 
  12 SNES Function norm 3.28103e-05 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
-Number of SNES iterations = 12
 L_2 Error: 7.75891e-07
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12

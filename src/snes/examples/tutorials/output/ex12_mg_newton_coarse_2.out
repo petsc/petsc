@@ -8,35 +8,35 @@ Labels:
   marker: 4 strata with value/size (4 (129), 1 (127), 2 (129), 3 (127))
   Face Sets: 4 strata with value/size (1 (126), 4 (126), 2 (126), 3 (126))
   depth: 3 strata with value/size (0 (4225), 1 (12416), 2 (8192))
-  DM_0x84000000_0 in 2 dimensions:
+  DM_0x84000000_1 in 2 dimensions:
     0-cells:   1224  
     1-cells:   3543  
     2-cells:   2320  
   Labels:
     _boundary_: 1 strata with value/size (1 (126))
     depth: 3 strata with value/size (0 (1224), 1 (3543), 2 (2320))
-    DM_0x84000000_1 in 2 dimensions:
+    DM_0x84000000_2 in 2 dimensions:
       0-cells:     408    
       1-cells:     1154    
       2-cells:     747    
     Labels:
       _boundary_: 1 strata with value/size (1 (67))
       depth: 3 strata with value/size (0 (408), 1 (1154), 2 (747))
-      DM_0x84000000_2 in 2 dimensions:
+      DM_0x84000000_3 in 2 dimensions:
         0-cells:       136      
         1-cells:       369      
         2-cells:       234      
       Labels:
         _boundary_: 1 strata with value/size (1 (36))
         depth: 3 strata with value/size (0 (136), 1 (369), 2 (234))
-        DM_0x84000000_3 in 2 dimensions:
+        DM_0x84000000_4 in 2 dimensions:
           0-cells:         55        
           1-cells:         137        
           2-cells:         83        
         Labels:
           _boundary_: 1 strata with value/size (1 (25))
           depth: 3 strata with value/size (0 (55), 1 (137), 2 (83))
-          DM_0x84000000_4 in 2 dimensions:
+          DM_0x84000000_5 in 2 dimensions:
             0-cells:           26          
             1-cells:           55          
             2-cells:           30          
@@ -9656,5 +9656,5 @@ PC Object: 1 MPI processes
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
   1 SNES Function norm 4.078726123735e-13 
-Number of SNES iterations = 1
 L_2 Error: 1.8925
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

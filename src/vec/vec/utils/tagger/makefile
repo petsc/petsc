@@ -4,7 +4,7 @@ ALL: lib
 SOURCEH = ../../../../../include/petsc/private/vecimpl.h \
           ../../../../../include/petscvec.h
 DIRS    = interface impls examples
-LOCDIR  = src/vec/vec/utils/tagger
+LOCDIR  = src/vec/vec/utils/tagger/
 MANSEC  = Vec
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

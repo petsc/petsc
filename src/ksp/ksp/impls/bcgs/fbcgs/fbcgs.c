@@ -157,7 +157,8 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Only allow right preconditioning
+   Notes:
+    Only allow right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/

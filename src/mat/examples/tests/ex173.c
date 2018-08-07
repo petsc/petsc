@@ -1,6 +1,4 @@
-
 static char help[] = "Test MatrixMarket outputing.\n\n";
-
 
 /*
   Include "petscmat.h" so that we can use matrices.
@@ -9,6 +7,10 @@ static char help[] = "Test MatrixMarket outputing.\n\n";
      petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers
 */
+/*T
+   TODO: Need to determine if deprecated
+T*/
+
 #include <petscmat.h>
 
 int main(int argc,char **args)
@@ -18,7 +20,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
   PetscErrorCode ierr;
   PetscBool      flg;
- 
+
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
@@ -34,3 +36,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

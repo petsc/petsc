@@ -1,6 +1,8 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 if not hasattr(sys, 'version_info'):
-  print '*** Python version 1 is not supported. Please get the latest version from www.python.org ***'
+  print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
   sys.exit(4)
 
 import cPickle
@@ -66,7 +68,7 @@ class Script(logger.Logger):
 
     if not self.showHelp:
       return 0
-    if nargs.Arg.findArgument('with-packages-dir', self.clArgs) is None:
+    if nargs.Arg.findArgument('with-packages-download-dir', self.clArgs) is None:
       return 0
     return 1
 
@@ -89,9 +91,9 @@ class Script(logger.Logger):
     '''This method should be overidden to provide help for arguments'''
     import nargs
 
-    help.addArgument('Script', '-help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
-    help.addArgument('Script', '-with-packages-dir', nargs.ArgDir(None,None, 'Directory to store downloaded external package tarballs', isTemporary = 1), ignoreDuplicates = 1)
     help.addArgument('Script', '-h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
+    help.addArgument('Script', '-help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1), ignoreDuplicates = 1)
+    help.addArgument('Script', '-with-packages-download-dir=<dir>', nargs.ArgDir(None,None, 'Skip network download of package tarballs and locate them in specified dir. If not found in dir, print package URL - so it can be obtained manually.', isTemporary = 1), ignoreDuplicates = 1)
     return help
 
   def setup(self):
@@ -109,7 +111,6 @@ class Script(logger.Logger):
       self.help.output(sections = sections)
       sys.exit()
     if self.hasListFlag():
-      self.argDB.readonly = True
       self.help.outputDownload()
     return
 
@@ -197,7 +198,7 @@ class Script(logger.Logger):
         while 1:
           try:
             ready = select.select(lst, [], [])
-          except Exception, e:
+          except Exception as e:
             if log: log.write('** Error calling select() : '+str(e)+'\n')
             continue
           if len(ready[0]):
@@ -299,7 +300,7 @@ class Script(logger.Logger):
       framework.framework = framework
       framework.argDB = argDB
       self.logPrint('Loaded configure to cache: size '+str(len(cache)))
-    except cPickle.UnpicklingError, e:
+    except cPickle.UnpicklingError as e:
       framework = None
       self.logPrint('Invalid cached configure: '+str(e))
     return framework
@@ -411,13 +412,13 @@ class LanguageProcessor(args.ArgumentProcessor):
         if moduleName is None:
           moduleName = self.modulePath+'.'+language
         module     = __import__(moduleName)
-      except ImportError, e:
+      except ImportError as e:
         if not moduleName is None:
           self.logPrint('Failure to find language module: '+str(e))
         try:
           moduleName = self.modulePath+'.'+language
           module     = __import__(moduleName)
-        except ImportError, e:
+        except ImportError as e:
           self.logPrint('Failure to find language module: '+str(e))
           moduleName = 'config.compile.'+language
           module     = __import__(moduleName)

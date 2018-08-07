@@ -6,15 +6,15 @@
 
       type tVec
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tVec
       type tVecScatter
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tVecScatter
       type tVecTagger
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tVecTagger
 
       Vec, parameter :: PETSC_NULL_VEC = tVec(-1)

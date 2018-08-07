@@ -69,8 +69,8 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(str,"PetscDraw: ");CHKERRQ(ierr);
-    ierr   = PetscStrcat(str,((PetscObject)indraw)->type_name);CHKERRQ(ierr);
+    ierr   = PetscStrncpy(str,"PetscDraw: ",sizeof(str));CHKERRQ(ierr);
+    ierr   = PetscStrlcat(str,((PetscObject)indraw)->type_name,sizeof(str));CHKERRQ(ierr);
     ierr   = PetscDrawStringBoxed(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
           PetscDrawOpenX(), PetscDrawOpenImage(), PetscDrawIsNull(), PetscDrawGetPopup(), PetscDrawCheckResizedWindow(), PetscDrawResizeWindow(),
           PetscDrawGetWindowSize(), PetscDrawLine(), PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawMarker(),
           PetscDrawPoint(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(), PetscDrawString(), PetscDrawStringCentered(),
-          PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringVertical(), PetscDrawSetViewPort(), PetscDrawGetViewPort(),
+          PetscDrawStringBoxed(), PetscDrawStringBoxed(), PetscDrawStringVertical(), PetscDrawSetViewPort(), PetscDrawGetViewPort(),
           PetscDrawSplitViewPort(), PetscDrawSetTitle(), PetscDrawAppendTitle(), PetscDrawGetTitle(), PetscDrawSetPause(), PetscDrawGetPause(),
           PetscDrawPause(), PetscDrawSetDoubleBuffer(), PetscDrawClear(), PetscDrawFlush(), PetscDrawGetSingleton(), PetscDrawGetMouseButton(),
           PetscDrawZoom(), PetscDrawGetBoundingBox()
@@ -237,6 +237,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_virtual",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_fast",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_ports",NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-draw_coordinates",NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"tikz",&flg);CHKERRQ(ierr);
     if (!flg) type = PETSC_DRAW_NULL;
   }
@@ -362,7 +363,8 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
    Level: intermediate
 
-   Notes: Must be called after PetscDrawCreate() before the PetscDraw is used.
+   Notes:
+    Must be called after PetscDrawCreate() before the PetscDraw is used.
 
    Concepts: drawing^setting options
    Concepts: graphics^setting options

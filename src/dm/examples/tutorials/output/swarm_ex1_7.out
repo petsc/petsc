@@ -1,0 +1,145 @@
+DM Object: 4 MPI processes
+  type: swarm
+DMSwarmDataBucketView: 
+  L                  = 196 
+  buffer             = 4 
+  allocated          = 200 
+  nfields registered = 5 
+    [  0]     DMSwarm_pid : Mem. usage       = 1.60e-03 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  1]    DMSwarm_rank : Mem. usage       = 8.00e-04 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 4 
+    [  2]       viscosity : Mem. usage       = 1.60e-03 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  3]           coorx : Mem. usage       = 1.60e-03 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+    [  4]           coory : Mem. usage       = 1.60e-03 (MB) [rank0]
+                            blocksize        = 1 
+                            atomic size      = 8 
+  Total mem. usage                           = 2.49e-02 (MB) (collective)
+rank[0] before(196,676)
+rank[1] before(168,676)
+rank[2] before(168,676)
+rank[3] before(144,676)
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 0]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 1]: box from 0 : range[+4.0106e-312,+0.0000e+00]x[+8.5967e-322,+0.0000e+00]
+[rank 1]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+[rank 1]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 2]: box from 0 : range[+4.0106e-312,+0.0000e+00]x[+8.5967e-322,+0.0000e+00]
+[rank 2]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 2]: box from 3 : range[+0.0000e+00,+0.0000e+00]x[+1.2479e-315,+0.0000e+00]
+[rank 3]: box from 0 : range[+4.0106e-312,+0.0000e+00]x[+8.5967e-322,+0.0000e+00]
+[rank 3]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
+[rank 3]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
+DMSwarmDataEx: instance=0
+  topology status:        finalized 
+  message lengths status: finalized 
+  packer status status:   finalized 
+  communication status:   finalized 
+  Topology:
+    [0] neighbours: 3 
+    [0]   neighbour[0] = 1 
+    [0]   neighbour[1] = 2 
+    [0]   neighbour[2] = 3 
+    [1] neighbours: 3 
+    [1]   neighbour[0] = 0 
+    [1]   neighbour[1] = 2 
+    [1]   neighbour[2] = 3 
+    [2] neighbours: 3 
+    [2]   neighbour[0] = 0 
+    [2]   neighbour[1] = 1 
+    [2]   neighbour[2] = 3 
+    [3] neighbours: 3 
+    [3]   neighbour[0] = 0 
+    [3]   neighbour[1] = 1 
+    [3]   neighbour[2] = 2 
+  Message lengths:
+    [0] atomic size: 36 
+    [0] >>>>> ( 0 units :: tag = 1 ) >>>>> [1] 
+    [0] >>>>> ( 0 units :: tag = 2 ) >>>>> [2] 
+    [0] >>>>> ( 0 units :: tag = 3 ) >>>>> [3] 
+    [0] <<<<< ( 0 units :: tag = 4 ) <<<<< [1] 
+    [0] <<<<< ( 0 units :: tag = 8 ) <<<<< [2] 
+    [0] <<<<< ( 0 units :: tag = 12 ) <<<<< [3] 
+    [1] atomic size: 36 
+    [1] >>>>> ( 0 units :: tag = 4 ) >>>>> [0] 
+    [1] >>>>> ( 0 units :: tag = 6 ) >>>>> [2] 
+    [1] >>>>> ( 0 units :: tag = 7 ) >>>>> [3] 
+    [1] <<<<< ( 0 units :: tag = 1 ) <<<<< [0] 
+    [1] <<<<< ( 0 units :: tag = 9 ) <<<<< [2] 
+    [1] <<<<< ( 0 units :: tag = 13 ) <<<<< [3] 
+    [2] atomic size: 36 
+    [2] >>>>> ( 0 units :: tag = 8 ) >>>>> [0] 
+    [2] >>>>> ( 0 units :: tag = 9 ) >>>>> [1] 
+    [2] >>>>> ( 0 units :: tag = 11 ) >>>>> [3] 
+    [2] <<<<< ( 0 units :: tag = 2 ) <<<<< [0] 
+    [2] <<<<< ( 0 units :: tag = 6 ) <<<<< [1] 
+    [2] <<<<< ( 0 units :: tag = 14 ) <<<<< [3] 
+    [3] atomic size: 36 
+    [3] >>>>> ( 0 units :: tag = 12 ) >>>>> [0] 
+    [3] >>>>> ( 0 units :: tag = 13 ) >>>>> [1] 
+    [3] >>>>> ( 0 units :: tag = 14 ) >>>>> [2] 
+    [3] <<<<< ( 0 units :: tag = 3 ) <<<<< [0] 
+    [3] <<<<< ( 0 units :: tag = 7 ) <<<<< [1] 
+    [3] <<<<< ( 0 units :: tag = 11 ) <<<<< [2] 
+rank[0] after(196,676)
+rank[1] after(168,676)
+rank[2] after(168,676)
+rank[3] after(144,676)

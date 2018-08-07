@@ -192,6 +192,35 @@ static PetscErrorCode PCApply_PBJacobi_7(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(91*m);CHKERRQ(ierr); /* 2*bs2 - bs */
   PetscFunctionReturn(0);
 }
+static PetscErrorCode PCApply_PBJacobi_N(PC pc,Vec x,Vec y)
+{
+  PC_PBJacobi       *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,ib,jb;
+  const PetscInt    m = jac->mbs;
+  const PetscInt    bs = jac->bs;
+  const MatScalar   *diag = jac->diag;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    for (ib=0; ib<bs; ib++){
+      PetscScalar rowsum = 0;
+      for (jb=0; jb<bs; jb++){
+        rowsum += diag[ib+jb*bs] * xx[bs*i+jb];
+      }
+      yy[bs*i+ib] = rowsum;
+    }
+    diag += bs*bs;
+  }
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*bs*bs-bs);CHKERRQ(ierr); /* 2*bs2 - bs */
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
@@ -232,7 +261,8 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
     pc->ops->apply = PCApply_PBJacobi_7;
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
+    pc->ops->apply = PCApply_PBJacobi_N;
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -268,14 +298,16 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
      PCPBJACOBI - Point block Jacobi preconditioner
 
 
-   Notes: See PCJACOBI for point Jacobi preconditioning
+   Notes:
+    See PCJACOBI for point Jacobi preconditioning
 
    This works for AIJ and BAIJ matrices and uses the blocksize provided to the matrix
 
    Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
    is detected a PETSc error is generated.
 
-   Developer Notes: This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+   Developer Notes:
+    This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
    the factorization to continue even after a zero pivot is found resulting in a Nan and hence
    terminating KSP with a KSP_DIVERGED_NANORIF allowing
    a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.

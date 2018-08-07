@@ -85,7 +85,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PC_ILU                 *ilu = (PC_ILU*)pc->data;
   MatInfo                info;
   PetscBool              flg;
-  const MatSolverPackage stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&flg);CHKERRQ(ierr);
       if (!flg) {
         ((PC_Factor*)ilu)->info.shifttype = (PetscReal)MAT_SHIFT_INBLOCKS;
-        PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n");CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n");CHKERRQ(ierr);
       }
     }
   }
@@ -180,11 +180,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     }
   }
 
-  ierr = PCFactorGetMatSolverPackage(pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverPackage solverpackage;
-    ierr = MatFactorGetSolverPackage(((PC_Factor*)ilu)->fact,&solverpackage);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc,solverpackage);CHKERRQ(ierr);
+    MatSolverType solverpackage;
+    ierr = MatFactorGetSolverType(((PC_Factor*)ilu)->fact,&solverpackage);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -263,7 +263,8 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
   Concepts: incomplete factorization
 
-   Notes: Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
+   Notes:
+    Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
           For BAIJ matrices this implements a point block ILU
 

@@ -61,6 +61,7 @@ import script
 
 import os
 import time
+import contextlib
 
 class ConfigureSetupError(Exception):
   pass
@@ -118,8 +119,8 @@ class Configure(script.Script):
     import time
 
     self.logWrite('================================================================================\n')
-    self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
-    self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
+    self.logWrite('TEST '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')\n')
+    self.logPrint('TESTING: '+str(test.__func__.__name__)+' from '+str(test.__self__.__class__.__module__)+'('+str(test.__func__.__code__.co_filename)+':'+str(test.__func__.__code__.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     #t = time.time()
     if not isinstance(args, list): args = [args]
@@ -255,7 +256,7 @@ class Configure(script.Script):
             break
         if found: break
     if not found:
-      dirs = self.argDB['search-dirs']
+      dirs = self.argDB['with-executables-search-path']
       if not isinstance(dirs, list): dirs = [dirs]
       for d in dirs:
         for name in names:
@@ -298,6 +299,15 @@ class Configure(script.Script):
     self.language.pop()
     return self.language[-1]
 
+  @contextlib.contextmanager
+  def Language(self, lang):
+    if lang is None:
+      yield
+    else:
+      self.pushLanguage(lang)
+      yield
+      self.popLanguage()
+
   def getHeaders(self):
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')
     self.compilerFixes   = os.path.join(self.tmpDir, 'conffix.h')
@@ -309,13 +319,14 @@ class Configure(script.Script):
     preprocessor.checkSetup()
     return preprocessor.getProcessor()
 
-  def getCompiler(self):
-    self.getHeaders()
-    compiler            = self.framework.getCompilerObject(self.language[-1])
-    compiler.checkSetup()
-    self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
-    self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
-    return compiler.getProcessor()
+  def getCompiler(self, lang=None):
+    with self.Language(lang):
+      self.getHeaders()
+      compiler            = self.framework.getCompilerObject(self.language[-1])
+      compiler.checkSetup()
+      self.compilerSource = os.path.join(self.tmpDir, 'conftest'+compiler.sourceExtension)
+      self.compilerObj    = os.path.join(self.tmpDir, compiler.getTarget(self.compilerSource))
+      return compiler.getProcessor()
 
   def getCompilerFlags(self):
     return self.framework.getCompilerObject(self.language[-1]).getFlags()
@@ -406,13 +417,15 @@ class Configure(script.Script):
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'FC':
-      if not includes is None:
+      if not includes is None and body is None:
         codeStr = includes
       else:
         codeStr = ''
       if not body is None:
         if codeBegin is None:
           codeBegin = '      program main\n'
+          if not includes is None:
+            codeBegin = codeBegin+includes
         if codeEnd is None:
           codeEnd   = '\n      end\n'
         codeStr += codeBegin+body+codeEnd
@@ -581,8 +594,8 @@ class Configure(script.Script):
     '''Return the name of the argument which holds the linker flags for the current language'''
     return self.getLinkerFlagsName(self.language[-1])
 
-  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
-    if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
+  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None,linkLanguage=None):
+    if not self.checkLink(includes, body, cleanup = 0, linkLanguage=linkLanguage): return ('', 1)
     self.logWrite('Testing executable '+self.linkerObj+' to see if it can be run\n')
     if not os.path.isfile(self.linkerObj):
       self.logWrite('ERROR executable '+self.linkerObj+' does not exist\n')
@@ -609,23 +622,23 @@ class Configure(script.Script):
     self.logWrite('Executing: '+command+'\n')
     try:
       (output, error, status) = Configure.executeShellCommand(command, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite('ERROR while removing object file: '+str(e)+'\n')
     if cleanup and os.path.isfile(self.linkerObj):
       try:
         if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 
-  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None):
-    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor)
+  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None, linkLanguage=None):
+    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor,linkLanguage=linkLanguage)
     return not returnCode
 
   def splitLibs(self,libArgs):

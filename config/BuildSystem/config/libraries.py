@@ -77,6 +77,9 @@ class Configure(config.base.Configure):
   def getDefineName(self, library):
     return 'HAVE_LIB'+self.getLibName(library).upper().replace('-','_').replace('=','_').replace('+','_').replace('.', '_').replace('/','_')
 
+  def getDefineNameFunc(self, funcName):
+    return 'HAVE_'+ funcName.upper()
+
   def haveLib(self, library):
     return self.getDefineName(library) in self.defines
 
@@ -124,19 +127,16 @@ class Configure(config.base.Configure):
     newldflags = []
     newlibs = []
     frame = 0
+    dupflags = ['-L']
+    flagName  = self.language[-1]+'SharedLinkerFlag'
+    if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+      dupflags.append(getattr(self.setCompilers, flagName))
     for j in libs:
-      # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
-      if frame:
-        newlibs.append(j)
-        frame = 0
-        continue
-      if j in newldflags: continue
+      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l optipons
+      if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
       if j.startswith('-l'):
         newlibs.append(j)
-      elif j == '-framework':
-        newlibs.append(j)
-        frame = 1
       else:
         newldflags.append(j)
     return ' '.join(newldflags + newlibs)
@@ -155,7 +155,7 @@ class Configure(config.base.Configure):
     # no match - assuming the given name is already in short notation
     return lib
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, examineOutput=lambda ret,out,err:None):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, functionDefine = 0, examineOutput=lambda ret,out,err:None):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
@@ -239,8 +239,10 @@ extern "C" {
     found = 0
     if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       found = 1
+      # define the symbol as found
+      if functionDefine: self.addDefine(self.getDefineNameFunc(fname), 1)
       # add to list of found libraries
-      if libName:
+      elif libName:
         for lib in libName:
           shortlib = self.getShortLibName(lib)
           if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
@@ -349,7 +351,7 @@ extern "C" {
       configObj = self
     else:
       if hasattr(checkLink, 'im_self'):
-        configObj = checkLink.im_self
+        configObj = checkLink.__self__
       else:
         configObj = self
 

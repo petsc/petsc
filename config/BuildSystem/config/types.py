@@ -298,7 +298,7 @@ void (*signal())();
           if otherInclude == 'mpi.h':
             self.framework.addBatchInclude(mpiFix)
           self.framework.addBatchInclude('#include <'+otherInclude+'>')
-        self.framework.addBatchBody('fprintf(output, "  \'--known-sizeof-'+typename+'=%d\',\\n", sizeof('+typeName+'));')
+        self.framework.addBatchBody('fprintf(output, "  \'--known-sizeof-'+typename+'=%d\',\\n", (int)sizeof('+typeName+'));')
         # dummy value
         size = 4
     else:

@@ -3,25 +3,28 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
-#define petscsetcommonblock_          PETSCSETCOMMONBLOCK
+#define petscsetmoduleblock_          PETSCSETMODULEBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
-#define petscsetcommonblocknumeric_   PETSCSETCOMMONBLOCKNUMERIC
+#define petscsetmoduleblocknumeric_   PETSCSETMODULEBLOCKNUMERIC
+#define petscsetcomm_                 PETSCSETCOMM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
-#define petscsetcommonblock_          petscsetcommonblock
+#define petscsetmoduleblock_          petscsetmoduleblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
-#define petscsetcommonblocknumeric_   petscsetcommonblocknumeric
+#define petscsetmoduleblocknumeric_   petscsetmoduleblocknumeric
+#define petscsetcomm_                 petscsetcomm
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(MPI_Fint*,MPI_Fint*);
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblock_();
+PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -49,7 +52,8 @@ PetscErrorCode PetscInitializeFortran(void)
 
   if (PETSC_COMM_WORLD) c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
   c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
-  petscsetcommonblock_(&c1,&c2);
+  petscsetmoduleblock_();
+  petscsetcomm_(&c1,&c2);
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   {
@@ -57,7 +61,7 @@ PetscErrorCode PetscInitializeFortran(void)
     freal   = MPI_Type_c2f(MPIU_REAL);
     fscalar = MPI_Type_c2f(MPIU_SCALAR);
     fsum    = MPI_Op_c2f(MPIU_SUM);
-    petscsetcommonblockmpi_(&freal,&fscalar,&fsum);
+    petscsetmoduleblockmpi_(&freal,&fscalar,&fsum);
   }
 #endif
 
@@ -70,7 +74,7 @@ PetscErrorCode PetscInitializeFortran(void)
     PetscReal small = PETSC_SMALL;
     PetscReal pinf = PETSC_INFINITY;
     PetscReal pninf = PETSC_NINFINITY;
-    petscsetcommonblocknumeric_(&pi,&maxreal,&minreal,&eps,&seps,&small,&pinf,&pninf);
+    petscsetmoduleblocknumeric_(&pi,&maxreal,&minreal,&eps,&seps,&small,&pinf,&pninf);
   }
   return 0;
 }

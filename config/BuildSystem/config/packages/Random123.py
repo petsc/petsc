@@ -27,7 +27,7 @@ class Configure(config.package.Package):
       destDir = os.path.join(self.includeDir,'Random123')
       import shutil
       shutil.copytree(packageIncludeDir,destDir)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error installing '+self.PACKAGE+' headers: '+str(e))
     self.postInstall('Headers successfully copied\n',conffile)
     return self.installDir

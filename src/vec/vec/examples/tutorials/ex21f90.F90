@@ -5,12 +5,11 @@
 !/*T
 !   Concepts: vectors^basic routines;
 !   Processors: n
-!   depends: ex21.c
 !T*/
 !
 ! -----------------------------------------------------------------------
 
-      module mymodule
+      module mymoduleex21f90
 #include <petsc/finclude/petscsys.h>
       type MyStruct
         sequence
@@ -26,7 +25,7 @@
       subroutine F90Array1dCreateMyStruct(array,start,len,ptr)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use mymodule
+      use mymoduleex21f90
       implicit none
       PetscInt start,len
       type(MyStruct), target :: array(start:start+len-1)
@@ -38,7 +37,7 @@
       subroutine F90Array1dAccessMyStruct(ptr,address)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use mymodule
+      use mymoduleex21f90
       implicit none
       type(MyStruct), pointer :: ptr(:)
       PetscFortranAddr address
@@ -51,7 +50,7 @@
       subroutine F90Array1dDestroyMyStruct(ptr)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use mymodule
+      use mymoduleex21f90
       implicit none
       type(MyStruct), pointer :: ptr(:)
 
@@ -62,7 +61,7 @@
       program main
 #include <petsc/finclude/petscvec.h>
       use petscvec
-      use mymodule
+      use mymoduleex21f90
       implicit none
 
 !
@@ -72,7 +71,7 @@
       Interface
         Subroutine VecGetArrayMyStruct(v,array,ierr)
           use petscvec
-          use mymodule
+          use mymoduleex21f90
           type(MyStruct), pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -82,7 +81,7 @@
       Interface
         Subroutine VecRestoreArrayMyStruct(v,array,ierr)
           use petscvec
-          use mymodule
+          use mymoduleex21f90
           type(MyStruct), pointer :: array(:)
           PetscErrorCode ierr
           Vec     v
@@ -144,3 +143,10 @@
 
       end
 
+!/*TEST
+!   build:
+!     depends: ex21.c
+!
+!   test:
+!
+!TEST*/
