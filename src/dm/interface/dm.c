@@ -769,7 +769,9 @@ PetscErrorCode  DMDestroy(DM *dm)
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*dm);CHKERRQ(ierr);
 
-  ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
+  if ((*dm)->ops->destroy) {
+    ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
+  }
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
