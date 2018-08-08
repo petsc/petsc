@@ -269,7 +269,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
   }
 
   /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-  ierr = PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9");CHKERRQ(ierr);
+  ierr = PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
