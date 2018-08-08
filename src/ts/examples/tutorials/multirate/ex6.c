@@ -1113,11 +1113,33 @@ int main(int argc,char *argv[])
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
   ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
-    PetscInt steps;
+    PetscInt          steps;
+    PetscScalar       mass_initial,mass_final,mass_difference;
+    const PetscScalar *ptr_X,*ptr_X0;
+    const PetscReal   hs  = (ctx.xmax - ctx.xmin)/2.0*(ctx.hratio+1.0)/Mx;
+    const PetscReal   hf  = (ctx.xmax - ctx.xmin)/2.0*(1.0+1.0/ctx.hratio)/Mx;
+
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
     ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-
+    /* calculate the total mass at initial time and final time */
+    mass_initial = 0.0;
+    mass_final   = 0.0;
+    ierr = VecGetArrayRead(X0,&ptr_X0);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
+    for(i=0;i<Mx;i++) {
+      if(i<count_slow/2 || i>count_slow/2+count_fast-1){
+        mass_initial = mass_initial + hs*ptr_X0[i];
+        mass_final = mass_final + hs*ptr_X[i];
+      } else {
+        mass_initial = mass_initial + hf*ptr_X0[i];
+        mass_final = mass_final + hf*ptr_X[i];
+      }
+    }
+    ierr = VecRestoreArrayRead(X0,&ptr_X0);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
+    mass_difference = mass_final - mass_initial;
+    ierr = PetscPrintf(comm,"mass difference %.6g\n",mass_difference);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {
       PetscReal nrm1=0;
@@ -1130,15 +1152,13 @@ int main(int argc,char *argv[])
       char         filename[PETSC_MAX_PATH_LEN] = "binaryoutput";
       Vec          XR;
       PetscBool    flg;
-      const PetscScalar *ptr_X, *ptr_XR;
+      const PetscScalar  *ptr_XR;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-      const PetscReal hs  = (ctx.xmax - ctx.xmin)/2.0*(ctx.hratio+1.0)/Mx;
-      const PetscReal hf  = (ctx.xmax - ctx.xmin)/2.0*(1.0+1.0/ctx.hratio)/Mx;
       ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
       ierr = VecGetArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
       for(i=0;i<Mx;i++) {

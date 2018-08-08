@@ -828,12 +828,20 @@ int main(int argc,char *argv[])
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
   ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
-    PetscInt  steps;
+    PetscInt    steps;
+    PetscScalar mass_initial,mass_final,mass_difference;
 
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
     ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
+    /* calculate the total mass at initial time and final time */
+    mass_initial = 0.0;
+    mass_final   = 0.0;
+    ierr = VecSum(X0,&mass_initial);CHKERRQ(ierr);
+    ierr = VecSum(X,&mass_final);CHKERRQ(ierr);
+    mass_difference = (ctx.xmax-ctx.xmin)/(PetscScalar)Mx*(mass_final - mass_initial);
+    ierr = PetscPrintf(comm,"mass difference %.6g\n",mass_difference);CHKERRQ(ierr);
     if (ctx.simulation) {
       PetscViewer  fd;
       char         filename[PETSC_MAX_PATH_LEN] = "binaryoutput";
