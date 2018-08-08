@@ -9,17 +9,18 @@ Mat Object: 4 MPI processes
 1.0000000000000000e+00 3.0000000000000000e+00 0.0000000000000000e+00 
 1.0000000000000000e+00 3.0000000000000000e+00 1.0000000000000000e+00 
   0 KSP unpreconditioned resid norm 1.436871601779e+01 true resid norm 1.436871601779e+01 ||r(i)||/||b|| 1.000000000000e+00
-  0 KSP Residual norm 1.436871601779e+01
+  0 KSP resid norm 1.436871601779e+01
   1 KSP unpreconditioned resid norm 1.041665527896e+00 true resid norm 1.041665527896e+00 ||r(i)||/||b|| 7.249538000513e-02
-  1 KSP Residual norm 1.041665527896e+00 Residual norm normal equations 1.779051673287e+00
+  1 KSP resid norm 1.041665527896e+00 normal eq resid norm 1.779051673287e+00 matrix norm 5.935671531818e+00
   2 KSP unpreconditioned resid norm 3.779337909047e-01 true resid norm 3.779337909047e-01 ||r(i)||/||b|| 2.630254439135e-02
-  2 KSP Residual norm 3.779337909047e-01 Residual norm normal equations 1.974389464813e-01
+  2 KSP resid norm 3.779337909047e-01 normal eq resid norm 1.974389464813e-01 matrix norm 6.213427009749e+00
   3 KSP unpreconditioned resid norm 3.376388603227e-01 true resid norm 3.376388603227e-01 ||r(i)||/||b|| 2.349819287294e-02
-  3 KSP Residual norm 3.376388603227e-01 Residual norm normal equations 1.050904279037e-12
+  3 KSP resid norm 3.376388603227e-01 normal eq resid norm 5.118023382942e-13 matrix norm 6.324555320337e+00
 Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 3
 KSP Object: 4 MPI processes
   type: lsqr
-    Norm of Standard Error 0.156557, Iterations 3
+    norm of standard error 0.156557, iterations 3
+    using inexact matrix norm
   maximum iterations=10, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning

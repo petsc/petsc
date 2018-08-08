@@ -1,0 +1,40 @@
+Mat Object: 2 MPI processes
+  type: mpidense
+1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00 
+  0 KSP unpreconditioned resid norm 5.697367668152e+00 true resid norm 5.697367668152e+00 ||r(i)||/||b|| 1.000000000000e+00
+  0 KSP resid norm 5.697367668152e+00
+  1 KSP unpreconditioned resid norm 6.747226119041e-01 true resid norm 6.747224926949e-01 ||r(i)||/||b|| 1.184270605445e-01
+  1 KSP resid norm 6.747226119041e-01 normal eq resid norm 5.424084663391e-01 matrix norm 2.828427076340e+00
+  2 KSP unpreconditioned resid norm 2.418355196714e-01 true resid norm 2.418355047703e-01 ||r(i)||/||b|| 4.244688525796e-02
+  2 KSP resid norm 2.418355196714e-01 normal eq resid norm 1.251932531595e-01 matrix norm 2.828427076340e+00
+  3 KSP unpreconditioned resid norm 2.000001072884e-01 true resid norm 2.000000476837e-01 ||r(i)||/||b|| 3.510393947363e-02
+  3 KSP resid norm 2.000001072884e-01 normal eq resid norm 9.193614096148e-05 matrix norm 2.828427076340e+00
+  4 KSP unpreconditioned resid norm 2.000001072884e-01 true resid norm 1.999998688698e-01 ||r(i)||/||b|| 3.510390594602e-02
+  4 KSP resid norm 2.000001072884e-01 normal eq resid norm 1.373741476129e-08 matrix norm 2.828427076340e+00
+Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 4
+KSP Object: 2 MPI processes
+  type: lsqr
+    norm of standard error 0.340995, iterations 4
+    using exact matrix norm
+  maximum iterations=10, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 2 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: 2 MPI processes
+    type: mpidense
+    rows=4, cols=3
+    total: nonzeros=12, allocated nonzeros=12
+    total number of mallocs used during MatSetValues calls =0
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+0.183537
+0.203213
+Process [1]
+0.203214

@@ -383,7 +383,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       indx;
-  const char     *convtests[] = {"default","skip"};
+  const char     *convtests[] = {"default","skip","lsqr"};
   char           type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscBool      flg,flag,reuse,set;
   PetscInt       model[2]={0,0},nmax;
@@ -450,7 +450,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     }
   }
 
-  ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,3,"default",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -458,6 +458,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
       break;
     case 1: ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
+    case 2:
+      ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
+      break;
     }
   }
 
