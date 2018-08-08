@@ -68,6 +68,7 @@ typedef struct _TSTrajectoryOps *TSTrajectoryOps;
 
 struct _TSTrajectoryOps {
   PetscErrorCode (*view)(TSTrajectory,PetscViewer);
+  PetscErrorCode (*reset)(TSTrajectory);
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
