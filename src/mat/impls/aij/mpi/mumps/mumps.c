@@ -863,7 +863,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (flgT) { /* input B is transpose of actural RHS matrix,
                  because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
       ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+    } else SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATTRANSPOSEMAT matrix");
     mumps->id.ICNTL(20)= 1; /* sparse RHS */
   }
 
