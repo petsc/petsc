@@ -926,9 +926,9 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
   sol_loc_save  = mumps->id.sol_loc;
 
-  lsol_loc  = mumps->id.INFO(23);
+  lsol_loc  = mumps->id.lsol_loc;
   nlsol_loc = nrhs*lsol_loc;     /* length of sol_loc */
-  ierr = PetscMalloc2(nlsol_loc,&sol_loc,nlsol_loc,&isol_loc);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nlsol_loc,&sol_loc,lsol_loc,&isol_loc);CHKERRQ(ierr);
   mumps->id.sol_loc  = (MumpsScalar*)sol_loc;
   mumps->id.isol_loc = isol_loc;
 
