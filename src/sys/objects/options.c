@@ -2740,3 +2740,84 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options,const char pre[],
   *nmax = n;
   PetscFunctionReturn(0);
 }
+
+/*@C
+   PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with a new one
+
+   Prints a deprecation warning, unless an option is supplied to suppress.
+
+   Not Collective
+
+   Input Parameters:
++  pre - string to prepend to name or NULL
+.  oldname - the old, deprecated option
+.  newname - the new option, or NULL if option is purely removed
+.  version - a string describing the version of first deprecation, e.g. "3.9"
+-  info - additional information string, or NULL.
+
+   Options Database Keys:
+. -options_suppress_deprecated_warnings - do not print deprecation warnings
+
+   Notes:
+   Must be called between PetscOptionsBegin() and PetscOptionsEnd().
+   If newname is provided, the old option is replaced. Otherwise, it remains
+   in the options database.
+   If an option is not replaced, the info argument should be used to advise the user
+   on how to proceed.
+   There is a limit on the length of the warning printed, so very long strings
+   provided as info may be truncated.
+
+   Level: developer
+
+.seealso: PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsScalar(), PetscOptionsBool(), PetscOptionsString(), PetscOptionsSetValue()
+
+@*/
+PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObject,const char oldname[],const char newname[],const char version[],const char info[])
+{
+  PetscErrorCode     ierr;
+  PetscBool          found,quiet;
+  const char         *value;
+  const char * const quietopt="-options_suppress_deprecated_warnings";
+  char               msg[4096];
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(oldname,2);
+  PetscValidCharPointer(version,4);
+
+  ierr = PetscOptionsFindPair(PetscOptionsObject->options,PetscOptionsObject->prefix,oldname,&value,&found);CHKERRQ(ierr);
+  if (found) {
+    if (newname) {
+      if (PetscOptionsObject->prefix) {
+        ierr = PetscOptionsPrefixPush(PetscOptionsObject->options,PetscOptionsObject->prefix);CHKERRQ(ierr);
+      }
+      ierr = PetscOptionsSetValue(PetscOptionsObject->options,newname,value);CHKERRQ(ierr);
+      if (PetscOptionsObject->prefix) {
+        ierr = PetscOptionsPrefixPop(PetscOptionsObject->options);CHKERRQ(ierr);
+      }
+      ierr = PetscOptionsClearValue(PetscOptionsObject->options,oldname);CHKERRQ(ierr);
+    }
+    quiet = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PetscOptionsObject->options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
+    if (!quiet) {
+      ierr = PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option ");CHKERRQ(ierr);
+      ierr = PetscStrcat(msg,newname);CHKERRQ(ierr);
+      ierr = PetscStrcat(msg," is deprecated as of version ");
+      ierr = PetscStrcat(msg,version);CHKERRQ(ierr);
+      ierr = PetscStrcat(msg," and will be removed in a future release.");CHKERRQ(ierr);
+      if (newname) {
+        ierr = PetscStrcat(msg," Please use the option ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,newname);CHKERRQ(ierr);
+        ierr = PetscStrcat(msg," instead.");CHKERRQ(ierr);
+      }
+      if (info) {
+        ierr = PetscStrcat(msg," ");CHKERRQ(ierr);
+        ierr = PetscStrcat(msg,info);CHKERRQ(ierr);
+      }
+      ierr = PetscStrcat(msg," (Silence this warning with");CHKERRQ(ierr);
+      ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
+      ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscOptionsObject->comm,msg);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}

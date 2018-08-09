@@ -187,10 +187,7 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI1(VecScatter ctx)
   ierr = PetscFree4(to->values,to->indices,to->starts,to->procs);CHKERRQ(ierr);
   ierr = PetscFree2(to->sstatus,to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree4(from->values,from->indices,from->starts,from->procs);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&to->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&from->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&to->local.memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanDestroy(&from->local.memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy_PtoP(to,from);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -324,11 +321,7 @@ PetscErrorCode VecScatterCopy_PtoP_X_MPI1(VecScatter in,VecScatter out)
     }
   }
 
-  ierr = VecScatterMemcpyPlanCopy(&in_to->local.memcpy_plan,&out_to->local.memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&in_from->local.memcpy_plan,&out_from->local.memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&in_to->memcpy_plan,&out_to->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&in_from->memcpy_plan,&out_from->memcpy_plan);CHKERRQ(ierr);
-
+  ierr = VecScatterMemcpyPlanCopy_PtoP(in_to,in_from,out_to,out_from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -408,23 +401,43 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll_MPI1(VecScatter in,VecScatter out)
   ierr = PetscMemcpy(out_from->counts,in_from->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_from->displs,in_from->displs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
-  ierr = VecScatterMemcpyPlanCopy(&out_to->local.memcpy_plan,&in_to->local.memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&out_from->local.memcpy_plan,&in_from->local.memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&out_to->memcpy_plan,&in_to->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCopy(&out_from->memcpy_plan,&in_from->memcpy_plan);CHKERRQ(ierr);
-
+  ierr = VecScatterMemcpyPlanCopy_PtoP(in_to,in_from,out_to,out_from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* Optimize a parallel vector to parallel vector vecscatter with memory copies */
-PetscErrorCode VecScatterMemcpyPlanCreate_PtoP(PetscInt bs,VecScatter_MPI_General *to,VecScatter_MPI_General *from)
+PetscErrorCode VecScatterMemcpyPlanCreate_PtoP(VecScatter_MPI_General *to,VecScatter_MPI_General *from)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecScatterMemcpyPlanCreate_Index(to->n,to->starts,to->indices,bs,&to->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCreate_Index(from->n,from->starts,from->indices,bs,&from->memcpy_plan);CHKERRQ(ierr);
-  ierr = VecScatterMemcpyPlanCreate_SGToSG(bs,&to->local,&from->local);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCreate_Index(to->n,to->starts,to->indices,to->bs,&to->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCreate_Index(from->n,from->starts,from->indices,to->bs,&from->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCreate_SGToSG(to->bs,&to->local,&from->local);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterMemcpyPlanCopy_PtoP(const VecScatter_MPI_General *in_to,const VecScatter_MPI_General *in_from,VecScatter_MPI_General *out_to,VecScatter_MPI_General *out_from)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterMemcpyPlanCopy(&in_to->memcpy_plan,&out_to->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCopy(&in_from->memcpy_plan,&out_from->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCopy(&in_to->local.memcpy_plan,&out_to->local.memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCopy(&in_from->local.memcpy_plan,&out_from->local.memcpy_plan);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterMemcpyPlanDestroy_PtoP(VecScatter_MPI_General *to,VecScatter_MPI_General *from)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterMemcpyPlanDestroy(&to->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy(&from->memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy(&to->local.memcpy_plan);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanDestroy(&from->local.memcpy_plan);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2565,7 +2578,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
   }
   ctx->ops->view = VecScatterView_MPI_MPI1;
   /* try to optimize PtoP vecscatter with memcpy's */
-  ierr = VecScatterMemcpyPlanCreate_PtoP(bs,to,from);CHKERRQ(ierr);
+  ierr = VecScatterMemcpyPlanCreate_PtoP(to,from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

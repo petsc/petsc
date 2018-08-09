@@ -262,7 +262,7 @@ PETSC_EXTERN PetscErrorCode TSComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 
   Concepts: ODE solvers, trajectory
 
-.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy(), TSTrajectoryReset()
 S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
@@ -286,6 +286,7 @@ PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryView(TSTrajectory,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,TSTrajectoryType);
@@ -350,6 +351,7 @@ PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTi
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
+PETSC_EXTERN PetscErrorCode TSMonitorExtreme(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 
 typedef struct _n_TSMonitorDrawCtx*  TSMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorDrawCtx *);

@@ -1,4 +1,4 @@
-static const char help[] = "Tests MatCreateSubMatrix with MatSubMatrix versus MatAIJ, non-square\n";
+static const char help[] = "Tests MatCreateSubMatrix with MatSubMatrix versus MatAIJ, square, shifted (copied from ex97)\n";
 
 #include <petscmat.h>
 
@@ -10,14 +10,14 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm,Mat *A)
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,5,6,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,6,6,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(B,&ms,&me);CHKERRQ(ierr);
   for (i=ms; i<me; i++) {
     ierr = MatSetValue(B,i,i,1.0*i,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatSetValue(B,me-1,me,me*me,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(B,me-1,me-1,me*me,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *A   = B;
@@ -64,6 +64,8 @@ static PetscErrorCode CheckMatrices(Mat A,Mat B,Vec left,Vec right,Vec X,Vec Y,V
   ierr = MatScale(B,PETSC_PI);CHKERRQ(ierr);
   ierr = MatDiagonalScale(A,left,right);CHKERRQ(ierr);
   ierr = MatDiagonalScale(B,left,right);CHKERRQ(ierr);
+  ierr = MatShift(A,PETSC_PI);CHKERRQ(ierr);
+  ierr = MatShift(B,PETSC_PI);CHKERRQ(ierr);
 
   ierr = MatMult(A,X,ltmp[0]);CHKERRQ(ierr);
   ierr = MatMult(B,X,ltmp[1]);CHKERRQ(ierr);
@@ -102,7 +104,7 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   Mat            A,B,Asub,Bsub;
-  PetscInt       ms,idxrow[3],idxcol[4];
+  PetscInt       ms,idxrow[3],idxcol[3];
   Vec            left,right,X,Y,X1,Y1;
   IS             isrow,iscol;
   PetscBool      random = PETSC_TRUE;
@@ -122,8 +124,7 @@ int main(int argc, char *argv[])
   idxcol[0] = ms+1;
   idxcol[1] = ms+2;
   idxcol[2] = ms+4;
-  idxcol[3] = ms+5;
-  ierr      = ISCreateGeneral(PETSC_COMM_WORLD,4,idxcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
+  ierr      = ISCreateGeneral(PETSC_COMM_WORLD,3,idxcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
 
   ierr = MatCreateSubMatrix(A,isrow,iscol,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix(B,isrow,iscol,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);

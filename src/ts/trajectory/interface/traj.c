@@ -285,6 +285,36 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 }
 
 /*@
+   TSTrajectoryReset - Resets a trajectory context
+
+   Collective on TSTrajectory
+
+   Input Parameter:
+.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
+
+   Level: developer
+
+.keywords: TS, trajectory, timestep, reset
+
+.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
+@*/
+PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+
+  if (tj->ops->reset) {
+    ierr = (*tj->ops->reset)(tj);CHKERRQ(ierr);
+  }
+  tj->setupcalled = PETSC_FALSE;
+  ierr = PetscFree(tj->dirfiletemplate);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSTrajectoryDestroy - Destroys a trajectory context
 
    Collective on TSTrajectory
@@ -298,7 +328,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 
 .seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
 @*/
-PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
+PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscErrorCode ierr;
 
@@ -307,13 +337,14 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
+  ierr = TSTrajectoryReset((*tj));CHKERRQ(ierr);
+
   if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);CHKERRQ(ierr);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->dirname);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->filetemplate);CHKERRQ(ierr);
-  ierr = PetscFree((*tj)->dirfiletemplate);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
