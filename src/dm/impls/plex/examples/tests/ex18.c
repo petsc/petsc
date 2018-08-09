@@ -422,12 +422,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, user->interpolate, dm);CHKERRQ(ierr);
     ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
   } else if (useGenerator) {
     const PetscInt cells[3] = {2, 2, 2};
 
-    ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, cells, NULL, NULL, NULL, PETSC_FALSE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, cells, NULL, NULL, NULL, user->interpolate, dm);CHKERRQ(ierr);
   } else {
     switch (dim) {
     case 2:
