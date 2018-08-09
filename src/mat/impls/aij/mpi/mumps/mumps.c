@@ -78,10 +78,10 @@ typedef struct {
 #endif
 
   MatStructure matstruc;
-  PetscMPIInt  myid,size;
+  PetscMPIInt  myid,petsc_size;
   PetscInt     *irn,*jcn,nz,sym;
   PetscScalar  *val;
-  MPI_Comm     comm_mumps;
+  MPI_Comm     mumps_comm;
   PetscInt     ICNTL9_pre;           /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
@@ -713,7 +713,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
   mumps->id.job = JOB_END;
   PetscMUMPS_c(&mumps->id);
-  ierr = MPI_Comm_free(&mumps->comm_mumps);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -757,7 +757,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   mumps->id.ICNTL(20)= 0; /* dense RHS */
   mumps->id.nrhs     = 1;
   b_seq          = mumps->b_seq;
-  if (mumps->size > 1) {
+  if (mumps->petsc_size > 1) {
     /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
     ierr = VecScatterBegin(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -779,7 +779,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
      This requires an extra call to PetscMUMPS_c and the computation of the factors for S
   */
   if (mumps->id.size_schur > 0 && (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2)) {
-    if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
+    if (mumps->petsc_size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
     second_solve = PETSC_TRUE;
     ierr = MatMumpsHandleSchur_Private(A,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -794,7 +794,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = MatMumpsHandleSchur_Private(A,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  if (mumps->size > 1) { /* convert mumps distributed solution to petsc mpi x */
+  if (mumps->petsc_size > 1) { /* convert mumps distributed solution to petsc mpi x */
     if (mumps->scat_sol && mumps->ICNTL9_pre != mumps->id.ICNTL(9)) {
       /* when id.ICNTL(9) changes, the contents of lsol_loc may change (not its size, lsol_loc), recreates scat_sol */
       ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
@@ -872,7 +872,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.lrhs = M;
   mumps->id.rhs  = NULL;
 
-  if (mumps->size == 1) {
+  if (mumps->petsc_size == 1) {
     PetscScalar *aa;
     PetscInt    spnr,*ia,*ja;
     PetscBool   second_solve = PETSC_FALSE;
@@ -920,7 +920,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   }
 
   /*--------- parallel case: MUMPS requires rhs B to be centralized on the host! --------*/
-  if (mumps->size > 1 && mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
+  if (mumps->petsc_size > 1 && mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
 
   /* create x_seq to hold mumps local solution */
   isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
@@ -950,7 +950,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!mumps->myid) {
       ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
       k = 0;
-      for (proc=0; proc<mumps->size; proc++){
+      for (proc=0; proc<mumps->petsc_size; proc++){
         for (j=0; j<nrhs; j++){
           for (i=rstart[proc]; i<rstart[proc+1]; i++){
             idx[k++]      = j*M + i;
@@ -1019,7 +1019,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   /* iidx: inverse of idx computed above, used for scattering mumps x_seq to petsc X */
   iidx = idx;
   k    = 0;
-  for (proc=0; proc<mumps->size; proc++){
+  for (proc=0; proc<mumps->petsc_size; proc++){
     for (j=0; j<nrhs; j++){
       for (i=rstart[proc]; i<rstart[proc+1]; i++) iidx[j*M + i] = k++;
     }
@@ -1177,7 +1177,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   /* just to be sure that ICNTL(19) value returned by a call from MatMumpsGetIcntl is always consistent */
   if (!mumps->sym && mumps->id.ICNTL(19) && mumps->id.ICNTL(19) != 1) mumps->id.ICNTL(19) = 3;
 
-  if (mumps->size > 1) {
+  if (mumps->petsc_size > 1) {
     PetscInt    lsol_loc;
     PetscScalar *sol_loc;
 
@@ -1225,7 +1225,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_7","ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis","None",mumps->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (icntl== 1 && mumps->size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
+    if (icntl== 1 && mumps->petsc_size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
     else mumps->id.ICNTL(7) = icntl;
   }
 
@@ -1292,10 +1292,10 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &mumps->myid);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&mumps->size);CHKERRQ(ierr);
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mumps->comm_mumps));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&mumps->petsc_size);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mumps->mumps_comm));CHKERRQ(ierr);
 
-  mumps->id.comm_fortran = MPI_Comm_c2f(mumps->comm_mumps);
+  mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
 
   mumps->id.job = JOB_INIT;
   mumps->id.par = 1;  /* host participates factorizaton and solve */
@@ -1308,7 +1308,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   /* set PETSc-MUMPS default options - override MUMPS default */
   mumps->id.ICNTL(3) = 0;
   mumps->id.ICNTL(4) = 0;
-  if (mumps->size == 1) {
+  if (mumps->petsc_size == 1) {
     mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {
     mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
@@ -1723,11 +1723,11 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
-  if (mumps->size > 1) {
+  if (mumps->petsc_size > 1) {
     PetscBool ls,gs;
 
     ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE;
-    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->comm_mumps);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->mumps_comm);CHKERRQ(ierr);
     if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
   }
   if (mumps->id.size_schur != size) {
@@ -1748,7 +1748,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   ierr = PetscMemcpy(mumps->id.listvar_schur,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
-  if (mumps->size > 1) {
+  if (mumps->petsc_size > 1) {
     mumps->id.ICNTL(19) = 1; /* MUMPS returns Schur centralized on the host */
   } else {
     if (F->factortype == MAT_FACTOR_LU) {
@@ -2054,7 +2054,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
 
   ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
 
-  if (mumps->size > 1) {
+  if (mumps->petsc_size > 1) {
     Mat_MPIAIJ *b = (Mat_MPIAIJ*)Bt->data;
     Btseq = b->A;
   } else {
