@@ -136,6 +136,7 @@ typedef struct {
   PetscInt  testNum;                      /* Indicates the mesh to create */
   PetscInt  dim;                          /* The topological mesh dimension */
   PetscBool cellSimplex;                  /* Use simplices or hexes */
+  PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Interpolate mesh */
   PetscBool useGenerator;                 /* Construct mesh with a mesh generator */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
@@ -146,10 +147,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  options->dm           = NULL;
   options->debug        = 0;
   options->testNum      = 0;
   options->dim          = 2;
   options->cellSimplex  = PETSC_TRUE;
+  options->distribute   = PETSC_FALSE;
   options->interpolate  = PETSC_FALSE;
   options->useGenerator = PETSC_FALSE;
   options->filename[0]  = '\0';
@@ -159,6 +162,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex18.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex18.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
@@ -444,21 +448,29 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", dim);
     }
   }
-  /* TODO: Turn on redistribution */
-  if (0) {
-    DM distributedMesh = NULL;
+  ierr = PetscObjectSetName((PetscObject) *dm, "Original Mesh");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
 
-    /* Redistribute mesh over processes */
+  if (user->distribute) {
+    DM distributedMesh = NULL;
+    PetscPartitioner part;
+
+    /* Set partitioner options */
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+
+    /* Redistribute mesh over processes using that partitioner */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
+      ierr = PetscObjectSetName((PetscObject) *dm, "Redistributed Mesh");CHKERRQ(ierr);
+      ierr = DMViewFromOptions(*dm, NULL, "-dist_dm_view");CHKERRQ(ierr);
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  user->dm = *dm;
   PetscFunctionReturn(0);
 }
 
