@@ -136,13 +136,15 @@ typedef struct {
   PetscInt  dim;                          /* The topological mesh dimension */
   PetscBool cellSimplex;                  /* Use simplices or hexes */
   PetscBool distribute;                   /* Distribute the mesh */
-  PetscBool interpolate;                  /* Interpolate mesh */
+  PetscBool iad;                          /* Interpolate the mesh after DMPlexDistribute() */
+  PetscBool ibd;                          /* Interpolate the mesh before DMPlexDistribute() */
   PetscBool useGenerator;                 /* Construct mesh with a mesh generator */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  PetscBool interpolate = PETSC_FALSE;    /* Interpolate mesh */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -151,7 +153,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim          = 2;
   options->cellSimplex  = PETSC_TRUE;
   options->distribute   = PETSC_FALSE;
-  options->interpolate  = PETSC_FALSE;
+  options->iad          = PETSC_FALSE;
   options->useGenerator = PETSC_FALSE;
   options->filename[0]  = '\0';
 
@@ -161,9 +163,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex18.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex18.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex18.c", interpolate, &interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate_after_distribute", "Interpolate the mesh only after DMPlexDistribute()", "ex18.c", options->iad, &options->iad, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  if (interpolate) {
+    options->iad = options->iad && options->distribute;
+    options->ibd = !options->iad;
+  } else {
+    options->ibd = PETSC_FALSE;
+    options->iad = PETSC_FALSE;
+  }
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -411,7 +421,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   PetscInt       dim          = user->dim;
   PetscBool      cellSimplex  = user->cellSimplex;
   PetscBool      useGenerator = user->useGenerator;
-  PetscBool      interpolate  = user->interpolate;
+  PetscBool      interpolate  = user->ibd;
+  PetscBool      iad          = user->iad;
   const char    *filename     = user->filename;
   size_t         len;
   PetscMPIInt    rank;
@@ -467,6 +478,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       ierr = PetscObjectSetName((PetscObject) *dm, "Redistributed Mesh");CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm, NULL, "-dist_dm_view");CHKERRQ(ierr);
     }
+
+    if (iad) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm = idm;
+      ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Redistributed Mesh");CHKERRQ(ierr);
+      ierr = DMViewFromOptions(*dm, NULL, "-intp_dm_view");CHKERRQ(ierr);
+    }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -484,7 +505,7 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSkeleton(dm, user.cellSimplex, 0);CHKERRQ(ierr);
-  if (user.interpolate) {ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);}
+  if (user.ibd || user.iad) {ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);}
   ierr = CheckMesh(dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
