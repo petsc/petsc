@@ -194,7 +194,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
 }
 
 /*
-  MatConvertToTriples_A_B - convert Petsc matrix to triples: row[nz], col[nz], val[nz] 
+  MatConvertToTriples_A_B - convert Petsc matrix to triples: row[nz], col[nz], val[nz]
 
   input:
     A       - matrix in aij,baij or sbaij (bs=1) format
@@ -207,7 +207,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
 
   The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
   freed with PetscFree(mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
-  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
+  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3().
 
  */
 
@@ -1105,7 +1105,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && mumps->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",mumps->id.INFOG(13));
 
-  if (nneg) *nneg = mumps->id.INFOG(12); 
+  if (nneg) *nneg = mumps->id.INFOG(12);
   if (nzero || npos) {
     if (mumps->id.ICNTL(24) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-mat_mumps_icntl_24 must be set as 1 for null pivot row detection");
     if (nzero) *nzero = mumps->id.INFOG(28);
@@ -1345,7 +1345,7 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
         ierr = PetscInfo2(F,"Error reported by MUMPS in analysis phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
         F->factorerrortype = MAT_FACTOR_OTHER;
       }
-    } 
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1874,7 +1874,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
 PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidType(F,1);
   if (!F->factortype) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
@@ -2305,39 +2305,39 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   Use -pc_type cholesky or lu -pc_factor_mat_solver_type mumps to use this direct solver
 
   Options Database Keys:
-+  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages 
-.  -mat_mumps_icntl_2 - ICNTL(2): output stream for diagnostic printing, statistics, and warning 
-.  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host 
-.  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4) 
-.  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7) 
-.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis 
-.  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77) 
-.  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements 
-.  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view) 
-.  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3) 
-.  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting 
-.  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space 
-.  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement 
-.  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1) 
-.  -mat_mumps_icntl_23  - ICNTL(23): max size of the working memory (MB) that can allocate per processor 
-.  -mat_mumps_icntl_24  - ICNTL(24): detection of null pivot rows (0 or 1) 
-.  -mat_mumps_icntl_25  - ICNTL(25): compute a solution of a deficient matrix and a null space basis 
-.  -mat_mumps_icntl_26  - ICNTL(26): drives the solution phase if a Schur complement matrix 
-.  -mat_mumps_icntl_28  - ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering 
-.  -mat_mumps_icntl_29 - ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis 
-.  -mat_mumps_icntl_30 - ICNTL(30): compute user-specified set of entries in inv(A) 
-.  -mat_mumps_icntl_31 - ICNTL(31): indicates which factors may be discarded during factorization 
-.  -mat_mumps_icntl_33 - ICNTL(33): compute determinant 
-.  -mat_mumps_cntl_1  - CNTL(1): relative pivoting threshold 
-.  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement 
-.  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold 
-.  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting 
--  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots 
++  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages
+.  -mat_mumps_icntl_2 - ICNTL(2): output stream for diagnostic printing, statistics, and warning
+.  -mat_mumps_icntl_3 -  ICNTL(3): output stream for global information, collected on the host
+.  -mat_mumps_icntl_4 -  ICNTL(4): level of printing (0 to 4)
+.  -mat_mumps_icntl_6 - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
+.  -mat_mumps_icntl_7 - ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis
+.  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77)
+.  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements
+.  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view)
+.  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)
+.  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting
+.  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space
+.  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement
+.  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)
+.  -mat_mumps_icntl_23  - ICNTL(23): max size of the working memory (MB) that can allocate per processor
+.  -mat_mumps_icntl_24  - ICNTL(24): detection of null pivot rows (0 or 1)
+.  -mat_mumps_icntl_25  - ICNTL(25): compute a solution of a deficient matrix and a null space basis
+.  -mat_mumps_icntl_26  - ICNTL(26): drives the solution phase if a Schur complement matrix
+.  -mat_mumps_icntl_28  - ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering
+.  -mat_mumps_icntl_29 - ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis
+.  -mat_mumps_icntl_30 - ICNTL(30): compute user-specified set of entries in inv(A)
+.  -mat_mumps_icntl_31 - ICNTL(31): indicates which factors may be discarded during factorization
+.  -mat_mumps_icntl_33 - ICNTL(33): compute determinant
+.  -mat_mumps_cntl_1  - CNTL(1): relative pivoting threshold
+.  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement
+.  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold
+.  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting
+-  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots
 
   Level: beginner
 
     Notes:
-    When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PCSETUP_FAILED, one can find the MUMPS information about the failure by calling 
+    When a MUMPS factorization fails inside a KSP solve, for example with a KSP_DIVERGED_PCSETUP_FAILED, one can find the MUMPS information about the failure by calling
 $          KSPGetPC(ksp,&pc);
 $          PCFactorGetMatrix(pc,&mat);
 $          MatMumpsGetInfo(mat,....);
