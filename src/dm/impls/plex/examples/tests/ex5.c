@@ -816,12 +816,6 @@ int main(int argc, char **argv)
   test:
     suffix: quad_t1_0
     args: -dim 2 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
-  test:
-    # This is a future test for truly parallel submesh creation
-    suffix: quad_t2_0
-    requires: broken
-    nsize: 2
-    args: -dim 2 -cell_simplex 0 -test_num 2 -dm_view ascii::ascii_info_detail
   # 3D Simplex
   test:
     suffix: tet_0
