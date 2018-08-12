@@ -554,7 +554,7 @@ int main(int argc,char **args)
       TODO: Need to determine goal of this test
       suffix: 11
       nsize: 2
-      args: -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz
+      args: -f0 http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/testmatrix.gz
 
    testset:
       suffix: 12
