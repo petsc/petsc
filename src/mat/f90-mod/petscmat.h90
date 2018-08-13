@@ -419,7 +419,7 @@
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
           PetscInt e ! PetscInt
-          PetscScalar f(1,1)  ! PetscScalar
+          PetscScalar, pointer :: f (:,:)
           InsertMode g ! InsertMode
           integer z
         end subroutine
