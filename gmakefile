@@ -188,7 +188,7 @@ $(OBJDIR)/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/snes/f90-mod/petscsnesmod.o
 $(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
 # F2003 interface
-$(OBJDIR)/sys/objects/f2003-foptionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
