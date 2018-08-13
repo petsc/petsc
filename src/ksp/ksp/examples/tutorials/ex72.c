@@ -554,7 +554,7 @@ int main(int argc,char **args)
       TODO: Need to determine goal of this test
       suffix: 11
       nsize: 2
-      args: -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz
+      args: -f0 http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/testmatrix.gz
 
    testset:
       suffix: 12
@@ -688,7 +688,7 @@ int main(int argc,char **args)
          args: -mat_type mpiaijperm
 
    testset:
-      nsize: 8
+      nsize: 4
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -ksp_monitor_short -ksp_view
       test:
@@ -696,7 +696,7 @@ int main(int argc,char **args)
          args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs
       test:
          suffix: xyt
-         args: -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs
+         args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type gmres -pc_type tfs
 
    testset:
       # The output file here is the same as mumps

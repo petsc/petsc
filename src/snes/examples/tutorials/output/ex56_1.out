@@ -4,8 +4,4 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 [0] 441 global equations, 147 vertices
 [0] 441 equations in vector, 147 vertices
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-[0] 4725 global equations, 1575 vertices
-[0] 4725 equations in vector, 1575 vertices
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 [0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
-[0] 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7
