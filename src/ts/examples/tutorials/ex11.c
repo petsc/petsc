@@ -2578,13 +2578,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: 8
     requires: exodusii
     nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 9
     requires: exodusii
     nsize: 8
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 10

@@ -63,42 +63,4 @@ Labels:
   Face Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 6 (9))
   boundary: 1 strata with value/size (1 (77))
   depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
-[0] 4725 global equations, 1575 vertices
-[0] 4725 equations in vector, 1575 vertices
-  0 SNES Function norm 17.9091 
-    0 KSP Residual norm 17.9091 
-    1 KSP Residual norm 15.9933 
-    2 KSP Residual norm 3.9178 
-    3 KSP Residual norm 0.799222 
-    4 KSP Residual norm 0.162604 
-    5 KSP Residual norm 0.0339528 
-    6 KSP Residual norm 0.00760747 
-    7 KSP Residual norm 0.00178203 
-    8 KSP Residual norm 0.000425854 
-    9 KSP Residual norm 9.55375e-05 
-   10 KSP Residual norm 2.06021e-05 
-   11 KSP Residual norm 4.39556e-06 
-   12 KSP Residual norm 8.89029e-07 
-   13 KSP Residual norm 1.83612e-07 
-   14 KSP Residual norm 3.90809e-08 
-   15 KSP Residual norm 9.12622e-09 
-   16 KSP Residual norm 2.22357e-09 
-   17 KSP Residual norm 4.982e-10 
-   18 KSP Residual norm 1.076e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 18
-  1 SNES Function norm 1.076e-10 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 4 MPI processes
-  type: plex
-Mesh in 3 dimensions:
-  0-cells: 125 125 125 125
-  1-cells: 300 300 300 300
-  2-cells: 240 240 240 240
-  3-cells: 64 64 64 64
-Labels:
-  boundary: 1 strata with value/size (1 (281))
-  Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
-  marker: 1 strata with value/size (1 (273))
-  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
 [0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
-[0] 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7

@@ -398,21 +398,21 @@ int main(int argc,char **args)
       suffix: axpy_mpiaij
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 8
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY
+      args: -f0 ${DATAFILESPATH}/matrices/poisson_2d5p -f1 ${DATAFILESPATH}/matrices/poisson_2d13p -test_MatAXPY
       output_file: output/ex94_1.out
 
    test:
       suffix: axpy_mpibaij
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 8
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type baij
+      args: -f0 ${DATAFILESPATH}/matrices/poisson_2d5p -f1 ${DATAFILESPATH}/matrices/poisson_2d13p -test_MatAXPY -mat_type baij
       output_file: output/ex94_1.out
 
    test:
       suffix: axpy_mpisbaij
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 8
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type sbaij
+      args: -f0 ${DATAFILESPATH}/matrices/poisson_2d5p -f1 ${DATAFILESPATH}/matrices/poisson_2d13p -test_MatAXPY -mat_type sbaij
       output_file: output/ex94_1.out
 
    test:
