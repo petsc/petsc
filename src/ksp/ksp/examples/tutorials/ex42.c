@@ -5,7 +5,7 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
      -my : number elements in y-direction \n\
      -mz : number elements in z-direction \n\
      -stokes_ksp_monitor_blocks : active monitor for each component u,v,w,p \n\
-     -model : defines viscosity and forcing function. Choose either: 0 (isoviscous), 1 (manufactured-broken), 2 (solcx-2d), 3 (sinker) \n";
+     -model : defines viscosity and forcing function. Choose either: 0 (isoviscous), 1 (manufactured-broken), 2 (solcx-2d), 3 (sinker), 4 (subdomain jumps) \n";
 
 /* Contributed by Dave May */
 
@@ -46,8 +46,6 @@ struct _p_CellProperties {
   GaussPointCoefficients *gpc;
 };
 
-static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,PetscInt *sz,PetscInt *mx,PetscInt *my,PetscInt *mz);
-
 /* elements */
 PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
 {
@@ -58,8 +56,8 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   PetscFunctionBeginUser;
   ierr = PetscNew(&cells);CHKERRQ(ierr);
 
-  ierr = DMDAGetElementCorners(da_stokes,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
-
+  ierr = DMDAGetElementsCorners(da_stokes,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(da_stokes,&mx,&my,&mz);CHKERRQ(ierr);
   cells->mx     = mx;
   cells->my     = my;
   cells->mz     = mz;
@@ -245,56 +243,6 @@ static void ConstructGaussQuadrature3D(PetscInt *ngp,PetscScalar gp_xi[][NSD],Pe
   gp_weight[5] = 1.0;
   gp_weight[6] = 1.0;
   gp_weight[7] = 1.0;
-}
-
-/* procs to the left claim the ghost node as their element */
-static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,PetscInt *mzl)
-{
-  PetscInt       m,n,p,M,N,P;
-  PetscInt       sx,sy,sz;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
-
-  if (mxl) {
-    *mxl = m;
-    if ((sx+m) == M) *mxl = m-1;  /* last proc */
-  }
-  if (myl) {
-    *myl = n;
-    if ((sy+n) == N) *myl = n-1;  /* last proc */
-  }
-  if (mzl) {
-    *mzl = p;
-    if ((sz+p) == P) *mzl = p-1;  /* last proc */
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,PetscInt *sz,PetscInt *mx,PetscInt *my,PetscInt *mz)
-{
-  PetscInt       si,sj,sk;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,0,0,0);CHKERRQ(ierr);
-
-  if (sx) {
-    *sx = si;
-    if (si != 0) *sx = si+1;
-  }
-  if (sy) {
-    *sy = sj;
-    if (sj != 0) *sy = sj+1;
-  }
-  if (sz) {
-    *sz = sk;
-    if (sk != 0) *sz = sk+1;
-  }
-  ierr = DMDAGetLocalElementSize(da,mx,my,mz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
 }
 
 /*
@@ -821,8 +769,8 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
-
-  ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
+  ierr = DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(stokes_da,&mx,&my,&mz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -910,7 +858,8 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
+  ierr = DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(stokes_da,&mx,&my,&mz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -999,8 +948,8 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
   ierr = DMGetLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(stokes_da,local_F,&ff);CHKERRQ(ierr);
-
-  ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
+  ierr = DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(stokes_da,&mx,&my,&mz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -1219,8 +1168,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   tp_L2     = tu_L2 = tu_H1 = 0.0;
   tint_p_ms = tint_p = 0.0;
 
-  ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
-
+  ierr = DMDAGetElementsCorners(stokes_da,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(stokes_da,&mx,&my,&mz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -1711,21 +1660,21 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   DM             da_Stokes;
   PetscInt       u_dof,p_dof,dof,stencil_width;
   Mat            A,B;
-  PetscInt       mxl,myl,mzl;
   DM             vel_cda;
   Vec            vel_coords;
   PetscInt       p;
-  Vec            f,X;
+  Vec            f,X,X1;
   DMDACoor3d     ***_vel_coords;
   PetscInt       its;
   KSP            ksp_S;
   PetscInt       model_definition = 0;
   PetscInt       ei,ej,ek,sex,sey,sez,Imx,Jmy,Kmz;
   CellProperties cell_properties;
-  PetscBool      write_output = PETSC_FALSE;
+  PetscBool      write_output = PETSC_FALSE,resolve= PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-resolve",&resolve,NULL);CHKERRQ(ierr);
   /* Generate the da for velocity and pressure */
   /* Num nodes in each direction is mx+1, my+1, mz+1 */
   u_dof         = U_DOFS; /* Vx, Vy - velocities */
@@ -1734,6 +1683,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   stencil_width = 1;
   ierr          = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
+  ierr = DMSetMatType(da_Stokes,MATAIJ);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da_Stokes);CHKERRQ(ierr);
   ierr = DMSetUp(da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
@@ -1744,9 +1694,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* unit box [0,1] x [0,1] x [0,1] */
   ierr = DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
-  /* local number of elements */
-  ierr = DMDAGetLocalElementSize(da_Stokes,&mxl,&myl,&mzl);CHKERRQ(ierr);
-
   /* create quadrature point info for PDE coefficients */
   ierr = CellPropertiesCreate(da_Stokes,&cell_properties);CHKERRQ(ierr);
 
@@ -1754,7 +1701,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = DMGetCoordinateDM(da_Stokes,&vel_cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da_Stokes,&vel_coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
-  ierr = DMDAGetElementCorners(da_Stokes,&sex,&sey,&sez,&Imx,&Jmy,&Kmz);CHKERRQ(ierr);
+  ierr = DMDAGetElementsCorners(da_Stokes,&sex,&sey,&sez);CHKERRQ(ierr);
+  ierr = DMDAGetElementsSizes(da_Stokes,&Imx,&Jmy,&Kmz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+Kmz; ek++) {
     for (ej = sey; ej < sey+Jmy; ej++) {
       for (ei = sex; ei < sex+Imx; ei++) {
@@ -1902,6 +1850,42 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
     break;
 
+  case 4: /* subdomain jumps */
+    for (ek = sez; ek < sez+Kmz; ek++) {
+      for (ej = sey; ej < sey+Jmy; ej++) {
+        for (ei = sex; ei < sex+Imx; ei++) {
+          PetscReal              opts_mag,opts_eta0;
+          PetscInt               px,py,pz;
+          PetscBool              jump;
+          PetscMPIInt            rr;
+          GaussPointCoefficients *cell;
+
+          opts_mag  = 1.0;
+          opts_eta0 = 1.e-2;
+
+          ierr = PetscOptionsGetReal(NULL,NULL,"-jump_eta0",&opts_eta0,NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(NULL,NULL,"-jump_magnitude",&opts_mag,NULL);CHKERRQ(ierr);
+          ierr = DMDAGetInfo(da_Stokes,NULL,NULL,NULL,NULL,&px,&py,&pz,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+          rr   = PetscGlobalRank%(px*py);
+          if (px%2) jump = (PetscBool)(rr%2);
+          else jump = (PetscBool)((rr/px)%2 ? rr%2 : !(rr%2));
+          rr = PetscGlobalRank/(px*py);
+          if (rr%2) jump = (PetscBool)!jump;
+          ierr = CellPropertiesGetCell(cell_properties,ei,ej,ek,&cell);CHKERRQ(ierr);
+          for (p = 0; p < GAUSS_POINTS; p++) {
+            PetscReal xp = PetscRealPart(cell->gp_coords[NSD*p]);
+            PetscReal yp = PetscRealPart(cell->gp_coords[NSD*p+1]);
+
+            cell->eta[p] = jump ? PetscPowReal(10.0,opts_mag) : opts_eta0;
+            cell->fx[p]  = 0.0;
+            cell->fy[p]  = -PetscSinReal(2.2*PETSC_PI*yp)*PetscCosReal(1.0*PETSC_PI*xp);
+            cell->fz[p]  = 0.0;
+            cell->hc[p]  = 0.0;
+          }
+        }
+      }
+    }
+    break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No default model is supported. Choose either -model {0,1,2,3}");
     break;
@@ -1910,7 +1894,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = DMDAVecRestoreArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DMSetMatType(da_Stokes,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,&A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,&B);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
@@ -1922,7 +1905,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = VecZeroEntries(f);CHKERRQ(ierr);
 
   ierr = AssembleA_Stokes(A,da_Stokes,cell_properties);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(A,NULL,"-amat_view");CHKERRQ(ierr);
   ierr = AssembleA_PCStokes(B,da_Stokes,cell_properties);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(B,NULL,"-bmat_view");CHKERRQ(ierr);
   /* build force vector */
   ierr = AssembleF_Stokes(f,da_Stokes,cell_properties);CHKERRQ(ierr);
 
@@ -1952,13 +1937,37 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   }
 
   {
+    PC        pc;
+    PetscBool same = PETSC_FALSE;
+    ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&same);CHKERRQ(ierr);
+    if (same) {
+      ierr = KSPSetOperators(ksp_S,A,A);CHKERRQ(ierr);
+    }
+  }
+
+  {
     PetscBool stokes_monitor = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
     if (stokes_monitor) {
       ierr = KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL);CHKERRQ(ierr);
     }
   }
+
+  if (resolve) {
+    /* Test changing matrix data structure and resolve */
+    ierr = VecDuplicate(X,&X1);CHKERRQ(ierr);
+  }
+
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
+  if (resolve) {
+    Mat C;
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp_S,C,C);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp_S,f,X1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-write_pvts",&write_output,NULL);CHKERRQ(ierr);
   if (write_output) {ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);}
@@ -2030,5 +2039,44 @@ int main(int argc,char **args)
       suffix: 2
       nsize: 3
       args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type redundant -stokes_redundant_pc_type lu
+
+   test:
+      suffix: bddc_stokes
+      nsize: 6
+      args: -mx 5 -my 4 -mz 3 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_dirichlet_pc_type svd -stokes_pc_bddc_neumann_pc_type svd -stokes_pc_bddc_coarse_redundant_pc_type svd
+
+   test:
+      suffix: bddc_stokes_deluxe
+      nsize: 6
+      args: -mx 5 -my 4 -mz 3 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_dirichlet_pc_type svd -stokes_pc_bddc_neumann_pc_type svd -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc
+
+   test:
+      requires: !single
+      suffix: bddc_stokes_subdomainjump_deluxe
+      nsize: 9
+      args: -model 4 -jump_magnitude 4 -mx 6 -my 6 -mz 2 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc -stokes_pc_bddc_schur_layers 1
+
+   test:
+      requires: !single
+      suffix: 3
+      args: -stokes_ksp_converged_reason -stokes_pc_type fieldsplit -resolve
+
+   test:
+      suffix: tut_1
+      nsize: 4
+      requires: !single
+      args: -stokes_ksp_monitor
+
+   test:
+      suffix: tut_2
+      nsize: 4
+      requires: !single
+      args: -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
+
+   test:
+      suffix: tut_3
+      nsize: 4
+      requires: !single
+      args: -mx 20 -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
 
 TEST*/

@@ -218,7 +218,8 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   owners - an array of size 'no-of-procs' which gives the ownership range
            for each node.
 
-  Notes: The 'owners' array in the cased of the blocked-stash has the
+  Notes:
+    The 'owners' array in the cased of the blocked-stash has the
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */

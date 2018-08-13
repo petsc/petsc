@@ -2,8 +2,8 @@
 #include <petscdmswarm.h>
 #include <petscdmda.h>
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
-#include "data_bucket.h"
-#include "data_ex.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
+#include "../src/dm/impls/swarm/data_ex.h"
 
 /*
  User loads desired location (MPI rank) into field DMSwarm_rank
@@ -12,7 +12,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataEx         de;
+  DMSwarmDataEx  de;
   PetscInt       p,npoints,*rankval,n_points_recv;
   PetscMPIInt    rank,nrank;
   void           *point_buffer,*recv_points;
@@ -21,78 +21,78 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0, &de);CHKERRQ(ierr);
-  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm),0, &de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyInitialize(de);CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
     nrank = rankval[p];
     if (nrank != rank) {
-      ierr = DataExTopologyAddNeighbour(de,nrank);CHKERRQ(ierr);
+      ierr = DMSwarmDataExTopologyAddNeighbour(de,nrank);CHKERRQ(ierr);
     }
   }
-  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     nrank = rankval[p];
     if (nrank != rank) {
-      ierr = DataExAddToSendCount(de,nrank,1);CHKERRQ(ierr);
+      ierr = DMSwarmDataExAddToSendCount(de,nrank,1);CHKERRQ(ierr);
     }
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
-  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     nrank = rankval[p];
     if (nrank != rank) {
       /* copy point into buffer */
-      ierr = DataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
-      /* insert point buffer into DataExchanger */
-      ierr = DataExPackData(de,nrank,1,point_buffer);CHKERRQ(ierr);
+      ierr = DMSwarmDataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
+      /* insert point buffer into DMSwarmDataExchanger */
+      ierr = DMSwarmDataExPackData(de,nrank,1,point_buffer);CHKERRQ(ierr);
     }
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
 
   if (remove_sent_points) {
-    DataField gfield;
+    DMSwarmDataField gfield;
 
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&gfield);CHKERRQ(ierr);
-    ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&gfield);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetAccess(gfield);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
 
     /* remove points which left processor */
-    ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {
       nrank = rankval[p];
       if (nrank != rank) {
         /* kill point */
-        ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
+        ierr = DMSwarmDataFieldRestoreAccess(gfield);CHKERRQ(ierr);
         
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
 
-        ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
-        ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DMSwarmDataFieldGetAccess(gfield);CHKERRQ(ierr);
+        ierr = DMSwarmDataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
         p--; /* check replacement point */
       }
     }
-    ierr = DataFieldRestoreEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
-    ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldRestoreEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldRestoreAccess(gfield);CHKERRQ(ierr);
   }
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
-  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketSetSizes(swarm->db,npoints + n_points_recv,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
-    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
-  ierr = DataExView(de);CHKERRQ(ierr);
-  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExView(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
 {
   DM_Swarm          *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode    ierr;
-  DataEx            de;
+  DMSwarmDataEx     de;
   PetscInt          r,p,npoints,*rankval,n_points_recv;
   PetscMPIInt       rank,_rank;
   const PetscMPIInt *neighbourranks;
@@ -111,74 +111,74 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
   ierr = DMGetNeighbors(dmcell,&nneighbors,&neighbourranks);CHKERRQ(ierr);
-  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyInitialize(de);CHKERRQ(ierr);
   for (r=0; r<nneighbors; r++) {
     _rank = neighbourranks[r];
     if ((_rank != rank) && (_rank > 0)) {
-      ierr = DataExTopologyAddNeighbour(de,_rank);CHKERRQ(ierr);
+      ierr = DMSwarmDataExTopologyAddNeighbour(de,_rank);CHKERRQ(ierr);
     }
   }
-  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-  ierr = DataExTopologyGetNeighbours(de,&mynneigh,&myneigh);CHKERRQ(ierr);
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyGetNeighbours(de,&mynneigh,&myneigh);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r=0; r<mynneigh; r++) {
         _rank = myneigh[r];
-        ierr = DataExAddToSendCount(de,_rank,1);CHKERRQ(ierr);
+        ierr = DMSwarmDataExAddToSendCount(de,_rank,1);CHKERRQ(ierr);
       }
     }
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
-  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (r=0; r<mynneigh; r++) {
         _rank = myneigh[r];
         /* copy point into buffer */
-        ierr = DataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
-        /* insert point buffer into DataExchanger */
-        ierr = DataExPackData(de,_rank,1,point_buffer);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
+        /* insert point buffer into DMSwarmDataExchanger */
+        ierr = DMSwarmDataExPackData(de,_rank,1,point_buffer);CHKERRQ(ierr);
       }
     }
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   if (remove_sent_points) {
-    DataField PField;
+    DMSwarmDataField PField;
 
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
     /* remove points which left processor */
-    ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {
       if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        ierr = DMSwarmDataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
         p--; /* check replacement point */
       }
     }
   }
-  ierr = DataBucketGetSizes(swarm->db,npoints_prior_migration,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
-  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,npoints_prior_migration,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketSetSizes(swarm->db,npoints + n_points_recv,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
-    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
-  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -208,7 +208,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     PetscSFNode *sf_cells;
 
     
-    ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(npoints_curr, &sf_cells);CHKERRQ(ierr);
 
     ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   if (error_check) {
     ierr = DMSwarmGetSize(dm,&npointsg);CHKERRQ(ierr);
   }
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
@@ -249,20 +249,20 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   if (size > 1) {
     ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
   } else {
-    DataField PField;
+    DMSwarmDataField PField;
     PetscInt npoints_curr;
     
     /* remove points which the domain */
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
     
-    ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints_curr; p++) {
       if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        ierr = DMSwarmDataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
         p--; /* check replacement point */
       }
     }
@@ -271,13 +271,13 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   }
 
   /* locate points newly recevied */
-  ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
   
 #if 0
   { /* safe alternative - however this performs two point locations on: (i) the intial points set and; (ii) the (intial + recieved) point set */
     PetscScalar *LA_coor;
     PetscInt bs;
-    DataField PField;
+    DMSwarmDataField PField;
 
     ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*npoints2,(const PetscScalar*)LA_coor,&pos);CHKERRQ(ierr);
@@ -295,16 +295,16 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
 
     /* remove points which left processor */
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
 
-    ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints2; p++) {
       if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        ierr = DMSwarmDataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
         p--; /* check replacement point */
       }
     }
@@ -312,9 +312,9 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 #endif
 
   { /* this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points */
-    PetscScalar *LA_coor;
-    PetscInt    npoints_from_neighbours,bs;
-    DataField   PField;
+    PetscScalar      *LA_coor;
+    PetscInt         npoints_from_neighbours,bs;
+    DMSwarmDataField PField;
     
     npoints_from_neighbours = npoints2 - npoints_prior_migration;
     
@@ -335,16 +335,16 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
     
     /* remove points which left processor */
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
     
-    ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
     for (p=npoints_prior_migration; p<npoints2; p++) {
       if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
         /* kill point */
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        ierr = DMSwarmDataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DMSwarmDataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
         p--; /* check replacement point */
       }
     }
@@ -353,7 +353,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   {
     PetscInt *p_cellid;
     
-    ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&p_cellid);CHKERRQ(ierr);
     for (p=0; p<npoints2; p++) {
@@ -384,7 +384,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataEx         de;
+  DMSwarmDataEx  de;
   PetscInt       p,npoints,*rankval,n_points_recv;
   PetscMPIInt    rank,nrank,negrank;
   void           *point_buffer,*recv_points;
@@ -392,57 +392,57 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   *globalsize = npoints;
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
-  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyInitialize(de);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     negrank = rankval[p];
     if (negrank < 0) {
       nrank = -negrank - 1;
-      ierr = DataExTopologyAddNeighbour(de,nrank);CHKERRQ(ierr);
+      ierr = DMSwarmDataExTopologyAddNeighbour(de,nrank);CHKERRQ(ierr);
     }
   }
-  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     negrank = rankval[p];
     if (negrank < 0) {
       nrank = -negrank - 1;
-      ierr = DataExAddToSendCount(de,nrank,1);CHKERRQ(ierr);
+      ierr = DMSwarmDataExAddToSendCount(de,nrank,1);CHKERRQ(ierr);
     }
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
-  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     negrank = rankval[p];
     if (negrank < 0) {
       nrank = -negrank - 1;
       rankval[p] = nrank;
       /* copy point into buffer */
-      ierr = DataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
-      /* insert point buffer into DataExchanger */
-      ierr = DataExPackData(de,nrank,1,point_buffer);CHKERRQ(ierr);
+      ierr = DMSwarmDataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
+      /* insert point buffer into DMSwarmDataExchanger */
+      ierr = DMSwarmDataExPackData(de,nrank,1,point_buffer);CHKERRQ(ierr);
       rankval[p] = negrank;
     }
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
-  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketSetSizes(swarm->db,npoints + n_points_recv,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
-    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
-  ierr = DataExView(de);CHKERRQ(ierr);
-  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExView(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +455,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
 {
   DM_Swarm *        swarm = (DM_Swarm*)dm->data;
   PetscErrorCode    ierr;
-  DataEx            de;
+  DMSwarmDataEx     de;
   PetscInt          p,pk,npoints,*rankval,n_points_recv,n_bbox_recv,dim,neighbour_cells;
   PetscMPIInt       rank,nrank;
   void              *point_buffer,*recv_points;
@@ -497,10 +497,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
       ierr = VecStrideMax(lcoor,2,NULL,&bbox->max[2]);CHKERRQ(ierr);
     }
   }
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   *globalsize = npoints;
   ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
   /* use DMDA neighbours */
   ierr = DMDAGetNeighbors(dmcell,&dmneighborranks);CHKERRQ(ierr);
   if (dim == 1) {
@@ -510,34 +510,34 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   } else {
     neighbour_cells = 27;
   }
-  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyInitialize(de);CHKERRQ(ierr);
   for (p=0; p<neighbour_cells; p++) {
     if ( (dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank) ) {
-      ierr = DataExTopologyAddNeighbour(de,dmneighborranks[p]);CHKERRQ(ierr);
+      ierr = DMSwarmDataExTopologyAddNeighbour(de,dmneighborranks[p]);CHKERRQ(ierr);
     }
   }
-  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (p=0; p<neighbour_cells; p++) {
     if ( (dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank) ) {
-      ierr = DataExAddToSendCount(de,dmneighborranks[p],1);CHKERRQ(ierr);
+      ierr = DMSwarmDataExAddToSendCount(de,dmneighborranks[p],1);CHKERRQ(ierr);
     }
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
   /* send bounding boxes */
-  ierr = DataExPackInitialize(de,sizeof_bbox_ctx);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_bbox_ctx);CHKERRQ(ierr);
   for (p=0; p<neighbour_cells; p++) {
     nrank = dmneighborranks[p];
     if ( (nrank >= 0) && (nrank != rank) ) {
-      /* insert bbox buffer into DataExchanger */
-      ierr = DataExPackData(de,nrank,1,bbox);CHKERRQ(ierr);
+      /* insert bbox buffer into DMSwarmDataExchanger */
+      ierr = DMSwarmDataExPackData(de,nrank,1,bbox);CHKERRQ(ierr);
     }
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   /* recv bounding boxes */
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
-  ierr = DataExGetRecvData(de,&n_bbox_recv,(void**)&recv_bbox);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_bbox_recv,(void**)&recv_bbox);CHKERRQ(ierr);
   /*  Wrong, should not be using PETSC_COMM_WORLD */
   for (p=0; p<n_bbox_recv; p++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
@@ -545,7 +545,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   /* of course this is stupid as this "generic" function should have a better way to know what the coordinates are called */
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (pk=0; pk<n_bbox_recv; pk++) {
     PetscReal *array_x,*array_y;
 
@@ -554,16 +554,16 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
     for (p=0; p<npoints; p++) {
       if ((array_x[p] >= recv_bbox[pk].min[0]) && (array_x[p] <= recv_bbox[pk].max[0]) ) {
         if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1]) ) {
-          ierr = DataExAddToSendCount(de,recv_bbox[pk].owner_rank,1);CHKERRQ(ierr);
+          ierr = DMSwarmDataExAddToSendCount(de,recv_bbox[pk].owner_rank,1);CHKERRQ(ierr);
         }
       }
     }
     ierr = DMSwarmRestoreField(dm,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
-  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (pk=0; pk<n_bbox_recv; pk++) {
     PetscReal *array_x,*array_y;
 
@@ -573,31 +573,31 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
       if ((array_x[p] >= recv_bbox[pk].min[0]) && (array_x[p] <= recv_bbox[pk].max[0]) ) {
         if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1]) ) {
           /* copy point into buffer */
-          ierr = DataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
-          /* insert point buffer into DataExchanger */
-          ierr = DataExPackData(de,recv_bbox[pk].owner_rank,1,point_buffer);CHKERRQ(ierr);
+          ierr = DMSwarmDataBucketFillPackedArray(swarm->db,p,point_buffer);CHKERRQ(ierr);
+          /* insert point buffer into DMSwarmDataExchanger */
+          ierr = DMSwarmDataExPackData(de,recv_bbox[pk].owner_rank,1,point_buffer);CHKERRQ(ierr);
         }
       }
     }
     ierr = DMSwarmRestoreField(dm,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
-  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketSetSizes(swarm->db,npoints + n_points_recv,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
-    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
-  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
   PetscFree(bbox);
-  ierr = DataExView(de);CHKERRQ(ierr);
-  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExView(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -615,7 +615,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataEx         de;
+  DMSwarmDataEx         de;
   PetscInt       p,r,npoints,n_points_recv;
   PetscMPIInt    size,rank;
   void           *point_buffer,*recv_points;
@@ -626,7 +626,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   *globalsize = npoints;
   /* Broadcast user context */
   PetscMalloc(ctx_size*size,&ctxlist);
@@ -647,45 +647,45 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
     n2collect[r]   = _n2collect;
     collectlist[r] = _collectlist;
   }
-  ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
   /* Define topology */
-  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyInitialize(de);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     if (n2collect[r] > 0) {
-      ierr = DataExTopologyAddNeighbour(de,(PetscMPIInt)r);CHKERRQ(ierr);
+      ierr = DMSwarmDataExTopologyAddNeighbour(de,(PetscMPIInt)r);CHKERRQ(ierr);
     }
   }
-  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExTopologyFinalize(de);CHKERRQ(ierr);
   /* Define send counts */
-  ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExInitializeSendCount(de);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     if (n2collect[r] > 0) {
-      ierr = DataExAddToSendCount(de,r,n2collect[r]);CHKERRQ(ierr);
+      ierr = DMSwarmDataExAddToSendCount(de,r,n2collect[r]);CHKERRQ(ierr);
     }
   }
-  ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExFinalizeSendCount(de);CHKERRQ(ierr);
   /* Pack data */
-  ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     for (p=0; p<n2collect[r]; p++) {
-      ierr = DataBucketFillPackedArray(swarm->db,collectlist[r][p],point_buffer);CHKERRQ(ierr);
+      ierr = DMSwarmDataBucketFillPackedArray(swarm->db,collectlist[r][p],point_buffer);CHKERRQ(ierr);
       /* insert point buffer into the data exchanger */
-      ierr = DataExPackData(de,r,1,point_buffer);CHKERRQ(ierr);
+      ierr = DMSwarmDataExPackData(de,r,1,point_buffer);CHKERRQ(ierr);
     }
   }
-  ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExPackFinalize(de);CHKERRQ(ierr);
   /* Scatter */
-  ierr = DataExBegin(de);CHKERRQ(ierr);
-  ierr = DataExEnd(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExBegin(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExEnd(de);CHKERRQ(ierr);
   /* Collect data in DMSwarm container */
-  ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
-  ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = DMSwarmDataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketSetSizes(swarm->db,npoints + n_points_recv,DMSWARM_DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
-    ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
   /* Release memory */
   for (r=0; r<size; r++) {
@@ -694,9 +694,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   ierr = PetscFree(collectlist);CHKERRQ(ierr);
   ierr = PetscFree(n2collect);CHKERRQ(ierr);
   ierr = PetscFree(ctxlist);CHKERRQ(ierr);
-  ierr = DataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
-  ierr = DataExView(de);CHKERRQ(ierr);
-  ierr = DataExDestroy(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataBucketDestroyPackedArray(swarm->db,&point_buffer);CHKERRQ(ierr);
+  ierr = DMSwarmDataExView(de);CHKERRQ(ierr);
+  ierr = DMSwarmDataExDestroy(de);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

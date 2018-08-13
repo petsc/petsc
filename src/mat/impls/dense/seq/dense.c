@@ -51,23 +51,31 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       ierr = PetscMalloc1(mat->lfwork,&mat->fwork);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt));CHKERRQ(ierr);
     }
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr); /* TODO CHECK FLOPS */
   } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
     if (A->spd) {
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&n,mat->v,&mat->lda,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = MatSeqDenseSymmetrize_Private(A,PETSC_TRUE);CHKERRQ(ierr);
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     } else if (A->hermitian) {
       if (!mat->pivots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
       if (!mat->fwork) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKhetri",LAPACKhetri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = MatSeqDenseSymmetrize_Private(A,PETSC_TRUE);CHKERRQ(ierr);
 #endif
     } else { /* symmetric case */
       if (!mat->pivots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
       if (!mat->fwork) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = MatSeqDenseSymmetrize_Private(A,PETSC_FALSE);CHKERRQ(ierr);
     }
     if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad Inversion: zero pivot in row %D",(PetscInt)info-1);
@@ -405,7 +413,9 @@ static PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
 #endif
   } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
@@ -413,15 +423,21 @@ static PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     if (A->spd) {
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     } else if (A->hermitian) {
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKhetrs",LAPACKhetrs_("L",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"HETRS Bad solve");
 #endif
     } else { /* symmetric case */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SYTRS Bad solve");
     }
 #endif
@@ -459,7 +475,9 @@ static PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
 #if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
 #endif
   } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
@@ -467,15 +485,21 @@ static PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     if (A->spd) {
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     } else if (A->hermitian) {
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKhetrs",LAPACKhetrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"HETRS Bad solve");
 #endif
     } else { /* symmetric case */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SYTRS Bad solve");
     }
 #endif
@@ -486,6 +510,8 @@ static PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
   ierr = PetscLogFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+static PetscErrorCode MatConjugate_SeqDense(Mat);
 
 static PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
@@ -504,7 +530,9 @@ static PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS - Bad solve");
 #endif
   } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
@@ -512,14 +540,28 @@ static PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     if (A->spd) {
+#if defined(PETSC_USE_COMPLEX)
+      ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);
+#endif
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+      ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);
+#endif
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     } else if (A->hermitian) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSolveTranspose with Cholesky/Hermitian not available");
+      ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      PetscStackCallBLAS("LAPACKhetrs",LAPACKhetrs_("L",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);
 #endif
     } else { /* symmetric case */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SYTRS Bad solve");
     }
 #endif
@@ -646,8 +688,10 @@ static PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorIn
   ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   if (A->spd) {
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info));
-#if defined (PETSC_USE_COMPLEX)
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
   } else if (A->hermitian) {
     if (!mat->pivots) {
       ierr = PetscMalloc1(A->rmap->n,&mat->pivots);CHKERRQ(ierr);
@@ -657,12 +701,16 @@ static PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorIn
       PetscScalar dummy;
 
       mat->lfwork = -1;
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       mat->lfwork = (PetscInt)PetscRealPart(dummy);
       ierr = PetscMalloc1(mat->lfwork,&mat->fwork);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt));CHKERRQ(ierr);
     }
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKhetrf",LAPACKhetrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
   } else { /* symmetric case */
     if (!mat->pivots) {
@@ -673,12 +721,16 @@ static PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorIn
       PetscScalar dummy;
 
       mat->lfwork = -1;
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,&dummy,&mat->lfwork,&info));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       mat->lfwork = (PetscInt)PetscRealPart(dummy);
       ierr = PetscMalloc1(mat->lfwork,&mat->fwork);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt));CHKERRQ(ierr);
     }
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
 
@@ -1427,15 +1479,12 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 
   PetscFunctionBegin;
   v = mat->v; m = A->rmap->n; M = mat->lda; n = A->cmap->n;
-  if (reuse == MAT_INPLACE_MATRIX) { /* in place transpose */
-    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
-    else {
-      for (j=0; j<m; j++) {
-        for (k=0; k<j; k++) {
-          tmp        = v[j + k*M];
-          v[j + k*M] = v[k + j*M];
-          v[k + j*M] = tmp;
-        }
+  if (reuse == MAT_INPLACE_MATRIX && m == n) { /* in place transpose */
+    for (j=0; j<m; j++) {
+      for (k=0; k<j; k++) {
+        tmp        = v[j + k*M];
+        v[j + k*M] = v[k + j*M];
+        v[k + j*M] = tmp;
       }
     }
   } else { /* out-of-place transpose */
@@ -1444,7 +1493,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     PetscScalar  *v2;
     PetscInt     M2;
 
-    if (reuse == MAT_INITIAL_MATRIX) {
+    if (reuse != MAT_REUSE_MATRIX) {
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&tmat);CHKERRQ(ierr);
       ierr = MatSetSizes(tmat,A->cmap->n,A->rmap->n,A->cmap->n,A->rmap->n);CHKERRQ(ierr);
       ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -1459,7 +1508,10 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
     }
     ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    *matout = tmat;
+    if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) *matout = tmat;
+    else {
+      ierr = MatHeaderMerge(A,&tmat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -2425,7 +2477,10 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         0,
                                 /*139*/ 0,
                                         0,
-                                        0
+                                        0,
+                                        0,
+                                        0,
+                                /*144*/ MatCreateMPIMatConcatenateSeqMat_SeqDense
 };
 
 /*@C
@@ -2602,6 +2657,25 @@ PetscErrorCode  MatSeqDenseSetLDA(Mat B,PetscInt lda)
   b->lda       = lda;
   b->changelda = PETSC_FALSE;
   b->Mmax      = PetscMax(b->Mmax,lda);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(inmat,MAT_COPY_VALUES,outmat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat_MPIDense(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

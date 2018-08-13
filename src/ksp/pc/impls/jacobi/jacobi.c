@@ -375,7 +375,8 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
 
   Concepts: Jacobi, diagonal scaling, preconditioners
 
-  Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
+  Notes:
+    By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
          can scale each side of the matrix by the square root of the diagonal entries.
 
          Zero entries along the diagonal are replaced with the value 1.0
@@ -447,7 +448,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
    Options Database Key:
 .  -pc_jacobi_abs
 
-   Notes: This takes affect at the next construction of the preconditioner
+   Notes:
+    This takes affect at the next construction of the preconditioner
 
    Level: intermediate
 

@@ -2,7 +2,7 @@
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 #include <petsc/private/dmswarmimpl.h>
-#include "data_bucket.h"
+#include "../src/dm/impls/swarm/data_bucket.h"
 
 PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm,const char filename[],PetscViewer *v)
 {
@@ -417,7 +417,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
   ierr = private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm),filename,&viewer);CHKERRQ(ierr);
   ierr = private_DMSwarmView_XDMF(dm,viewer);CHKERRQ(ierr);
   for (f=4; f<swarm->db->nfields; f++) { /* only examine user defined fields - the first 4 are internally created by DMSwarmPIC */
-    DataField field;
+    DMSwarmDataField field;
     
     /* query field type - accept all those of type PETSC_DOUBLE */
     field = swarm->db->field[f];

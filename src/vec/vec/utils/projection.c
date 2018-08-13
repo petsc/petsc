@@ -12,7 +12,8 @@
   OutputParameter:
 . S - The index set containing the indices i where vec1[i] == vec2[i]
 
-  Notes: the two vectors must have the same parallel layout
+  Notes:
+    the two vectors must have the same parallel layout
 
   Level: advanced
 @*/
@@ -611,6 +612,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   PetscScalar    *v;
 
   PetscFunctionBegin;
+  if (!S) PetscFunctionReturn(0); /* simply return with no-op if the index set is NULL */
   PetscValidHeaderSpecific(V,VEC_CLASSID,1);
   PetscValidHeaderSpecific(S,IS_CLASSID,2);
   PetscValidType(V,3);
@@ -644,7 +646,8 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   Output Parameter:
 . GP - gradient projection vector
 
-  Notes: GP may be the same vector as G
+  Notes:
+    GP may be the same vector as G
 
   Level: advanced
 @*/
@@ -674,7 +677,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 
   for (i=0; i<n; ++i){
     gpval = gptr[i]; xval = xptr[i];
-
     if (gpval>0.0 && xval<=xlptr[i]){
       gpval = 0.0;
     } else if (gpval<0.0 && xval>=xuptr[i]){
@@ -757,7 +759,8 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 .     wolfemin -  (may be NULL this it is not computed)
 -     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
 
-     Notes: For complex numbers only compares the real part
+     Notes:
+    For complex numbers only compares the real part
 
   Level: advanced
 @*/
@@ -833,7 +836,8 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
      Output Parameter:
 .    step - largest value such that x[i] + step*DX[i] >= 0 for all i
 
-     Notes: For complex numbers only compares the real part
+     Notes:
+    For complex numbers only compares the real part
 
   Level: advanced
  @*/

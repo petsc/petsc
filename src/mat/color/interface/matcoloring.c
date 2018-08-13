@@ -54,11 +54,13 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
--   -mat_coloring_valid - debugging option that prints all coloring incompatibilities
+.   -mat_coloring_test - debugging option that prints all coloring incompatibilities
+-   -mat_is_coloring_test - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
 
    Level: beginner
 
-   Notes: A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
+   Notes:
+    A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
           (see MatFDColoringCreate()).
 
           Some coloring types only support distance two colorings
@@ -133,7 +135,8 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 
    Level: beginner
 
-   Notes:  Possible types include the sequential types MATCOLORINGLF,
+   Notes:
+    Possible types include the sequential types MATCOLORINGLF,
    MATCOLORINGSL, and MATCOLORINGID from the MINPACK package as well
    as a parallel MATCOLORINGMIS algorithm.
 
@@ -217,7 +220,8 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   if (mc->ops->setfromoptions) {
     ierr = (*mc->ops->setfromoptions)(PetscOptionsObject,mc);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_coloring_test","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_is_coloring_test","Check that a valid iscoloring has been produced","",mc->valid_iscoloring,&mc->valid_iscoloring,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -235,7 +239,8 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
    Level: beginner
 
-   Notes: The distance of the coloring denotes the minimum number
+   Notes:
+    The distance of the coloring denotes the minimum number
    of edges in the graph induced by the matrix any two vertices
    of the same color are.  Distance-1 colorings are the classical
    coloring, where no two vertices of the same color are adjacent.
@@ -289,7 +294,8 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
    Level: beginner
 
-   Notes:  This may be used to compute a certain number of
+   Notes:
+    This may be used to compute a certain number of
    independent sets from the graph.  For instance, while using
    MATCOLORINGMIS and maxcolors = 1, one gets out an MIS.  Vertices
    not in a color are set to have color maxcolors+1, which is not
@@ -364,10 +370,15 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   ierr = PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
+
   /* valid */
   if (mc->valid) {
-    ierr = MatColoringTestValid(mc,*coloring);CHKERRQ(ierr);
+    ierr = MatColoringTest(mc,*coloring);CHKERRQ(ierr);
   }
+  if (mc->valid_iscoloring) {
+    ierr = MatISColoringTest(mc->mat,*coloring);CHKERRQ(ierr);
+  }
+
   /* view */
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {

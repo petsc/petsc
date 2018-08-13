@@ -1,11 +1,8 @@
-setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
-  0 SNES Function norm 6.87047 
-  1 SNES Function norm 2.6194 
-  2 SNES Function norm 0.636712 
-  3 SNES Function norm 0.139165 
-  4 SNES Function norm 0.0183007 
-  5 SNES Function norm 0.00229479 
-  6 SNES Function norm 7.6287e-05 
-  7 SNES Function norm 9.40178e-08 
-  8 SNES Function norm < 1.e-11
-errors:     av |u-uexact|  = 1.287e-03    |u-uexact|_inf = 7.882e-03
+  0 SNES Function norm 5.36093 
+  1 SNES Function norm 2.18599 
+  2 SNES Function norm 0.248149 
+  3 SNES Function norm 0.0337716 
+  4 SNES Function norm 0.00113078 
+  5 SNES Function norm 1.39276e-06 
+  6 SNES Function norm < 1.e-11
+errors on 9 x 9 grid:  av |u-uexact|  = 3.076e-03,  |u-uexact|_inf = 1.334e-02

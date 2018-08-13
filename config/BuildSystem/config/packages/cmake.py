@@ -4,10 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://cmake.org/files/v3.7/cmake-3.7.0.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.7.0.tar.gz']
-    self.download_30       = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.0.1.tar.gz']
+    self.download          = ['https://cmake.org/files/v3.9/cmake-3.9.6.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.9.6.tar.gz']
+    self.download_311      = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.4.tar.gz']
     self.downloadonWindows = 1
     self.lookforbydefault  = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
@@ -26,7 +26,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     '''Does not use the standard arguments at all since this does not use the MPI compilers etc
        Cmake will chose its own compilers if they are not provided explicitly here'''
-    args = ['--prefix='+self.confDir]
+    args = ['--prefix='+self.confDir,'--parallel='+str(self.make.make_np)]
     if 'download-cmake-cc' in self.argDB and self.argDB['download-cmake-cc']:
       args.append('CC="'+self.argDB['download-cmake-cc']+'"')
     if 'download-cmake-configure-options' in self.argDB and self.argDB['download-cmake-configure-options']:
@@ -56,7 +56,7 @@ class Configure(config.package.GNUPackage):
     if self.argDB['download-cmake']:
       self.log.write('Building CMake\n')
       if config.setCompilers.Configure.isSolaris(self.log):
-        self.download = self.download_30
+        self.download = self.download_311
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for Cmake in '+os.path.join(self.installDir,'bin')+'\n')
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)

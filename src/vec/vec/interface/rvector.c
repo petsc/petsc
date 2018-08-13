@@ -14,12 +14,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
-#elif defined(PETSC_HAVE_VECCUDA)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
-#elif defined(PETSC_HAVE_VIENNACL)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_VIENNACL_CPU || vec->valid_GPU_array == PETSC_VIENNACL_BOTH)) {
+#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_OFFLOAD_CPU || vec->valid_GPU_array == PETSC_OFFLOAD_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -53,7 +49,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 
    Level: advanced
 
-   Notes: x and y may be the same vector
+   Notes:
+    x and y may be the same vector
           if a particular y_i is zero, it is treated as 1 in the above formula
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
@@ -121,9 +118,9 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Dot,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,9 +223,9 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Norm,x,0,0,0);CHKERRQ(ierr);
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -331,7 +328,7 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 }
 
 /*@C
-   VecMax - Determines the maximum vector component and its location.
+   VecMax - Determines the vector component with maximum real part and its location.
 
    Collective on Vec
 
@@ -339,8 +336,8 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 .  x - the vector
 
    Output Parameters:
-+  val - the maximum component
--  p - the location of val (pass NULL if you don't want this)
++  p - the location of val (pass NULL if you don't want this)
+-  val - the maximum component
 
    Notes:
    Returns the value PETSC_MIN_REAL and p = -1 if the vector is of length 0.
@@ -368,7 +365,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 }
 
 /*@C
-   VecMin - Determines the minimum vector component and its location.
+   VecMin - Determines the vector component with minimum real part and its location.
 
    Collective on Vec
 
@@ -376,8 +373,8 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 .  x - the vector
 
    Output Parameter:
-+  val - the minimum component
--  p - the location of val (pass NULL if you don't want this location)
++  p - the location of val (pass NULL if you don't want this location)
+-  val - the minimum component
 
    Level: intermediate
 
@@ -585,7 +582,8 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -630,7 +628,8 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: BLAS
    Concepts: vector^BLAS
@@ -673,7 +672,8 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 
    Level: intermediate
 
-   Notes: x, y and z must be different vectors
+   Notes:
+    x, y and z must be different vectors
 
    Developer Note:   alpha = 1 or gamma = 1 or gamma = 0.0 are handled as special cases
 
@@ -724,7 +724,8 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
 
    Level: intermediate
 
-   Notes: x and y MUST be different vectors
+   Notes:
+    x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -767,7 +768,8 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: w cannot be either x or y, but x and y can be the same
+   Notes:
+    w cannot be either x or y, but x and y can be the same
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -1181,9 +1183,9 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscCheckSameTypeAndComm(x,2,*y,3);
   VecCheckSameSize(x,1,*y,3);
 
-  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_MDot,x,*y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1200,7 +1202,8 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 
    Level: intermediate
 
-   Notes: y cannot be any of the x vectors
+   Notes:
+    y cannot be any of the x vectors
 
    Concepts: BLAS
 
@@ -1381,7 +1384,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 .  w - Upon exit this contains the local vector.
 
    Level: beginner
-   
+
    Notes:
    This function is similar to VecGetArrayRead() which maps the local
    portion into a raw pointer.  VecGetLocalVectorRead() is usually
@@ -1391,7 +1394,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    array representing the vector data required by VecGetArrayRead() can
    be an expensive operation for certain vector types.  For example, for
    GPU vectors VecGetArrayRead() requires that the data between device
-   and host is synchronized.  
+   and host is synchronized.
 
    Unlike VecGetLocalVector(), this routine is not collective and
    preserves cached information.
@@ -1570,28 +1573,39 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscBool      is_viennacltype = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   VecLocked(x,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    } else if (x->valid_GPU_array == PETSC_CUSP_UNALLOCATED) {
-      ierr = VecCUSPAllocateCheckHost(x); CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VIENNACL)
-    if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
-      ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
-    } else if (x->valid_GPU_array == PETSC_VIENNACL_UNALLOCATED) {
-      ierr = VecViennaCLAllocateCheckHost(x); CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VECCUDA)
-    if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
-    } else if (x->valid_GPU_array == PETSC_CUDA_UNALLOCATED) {
-      ierr = VecCUDAAllocateCheckHost(x); CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+    if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+#if defined(PETSC_HAVE_VIENNACL)
+      ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
+      if (is_viennacltype) {
+        ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+      } else
+#endif
+      {
+#if defined(PETSC_HAVE_VECCUDA)
+        ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+      }
+    } else if (x->valid_GPU_array == PETSC_OFFLOAD_UNALLOCATED) {
+#if defined(PETSC_HAVE_VIENNACL)
+      ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
+      if (is_viennacltype) {
+        ierr = VecViennaCLAllocateCheckHost(x);CHKERRQ(ierr);
+      } else
+#endif
+      {
+#if defined(PETSC_HAVE_VECCUDA)
+        ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
+#endif
+      }
     }
 #endif
     *a = *((PetscScalar**)x->data);
@@ -1628,21 +1642,26 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscBool      is_viennacltype = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VIENNACL)
-    if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
-      ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
-    }
-#elif defined(PETSC_HAVE_VECCUDA)
-    if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-      ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+    if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
+#if defined(PETSC_HAVE_VIENNACL)
+      ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
+      if (is_viennacltype) {
+        ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+      } else
+#endif
+      {
+#if defined(PETSC_HAVE_VECCUDA)
+        ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+      }
     }
 #endif
     *a = *((PetscScalar **)x->data);
@@ -1785,12 +1804,8 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_CUSP)
-    x->valid_GPU_array = PETSC_CUSP_CPU;
-#elif defined(PETSC_HAVE_VIENNACL)
-    x->valid_GPU_array = PETSC_VIENNACL_CPU;
-#elif defined(PETSC_HAVE_VECCUDA)
-    x->valid_GPU_array = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+    x->valid_GPU_array = PETSC_OFFLOAD_CPU;
 #endif
   } else {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
@@ -1820,9 +1835,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL)
-    x->valid_GPU_array = PETSC_VIENNACL_CPU;
-#endif
+    /* nothing */
   } else if (x->ops->restorearrayread) {
     ierr = (*x->ops->restorearrayread)(x,a);CHKERRQ(ierr);
   } else {
@@ -1924,7 +1937,8 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     Vec x
     Vec, pointer :: y(:)
@@ -1965,7 +1979,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2024,7 +2039,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2061,7 +2077,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2096,7 +2113,8 @@ M*/
 
     Example of Usage:
 .vb
-#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscvec.h>
+    use petscvec
 
     PetscScalar, pointer :: xx_v(:)
     ....
@@ -2936,7 +2954,8 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
    Input Parameter:
 .  x - the vector
 
-   Notes: If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
+   Notes:
+    If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
 
     Call VecLockPop() to remove the latest lock
 

@@ -1,6 +1,10 @@
 import config.package
 import os
 
+def noCheck(command, status, output, error):
+  ''' Do no check result'''
+  return
+
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
@@ -47,8 +51,23 @@ class Configure(config.package.GNUPackage):
   def alternateConfigureLibrary(self):
     self.checkDownload()
 
+  def checkBfortVersion(self,mmajor,mminor,msubminor):
+    try:
+      import re
+      (output, error, status) = config.base.Configure.executeShellCommand(self.bfort+' -version', checkCommand=noCheck, log = self.log)
+      ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
+      major    = int(ver.group(1))
+      minor    = int(ver.group(2))
+      subminor = int(ver.group(3))
+    except RuntimeError as e:
+      self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
+      return
+    if (major < mmajor) or (major == mmajor and minor < mminor) or (major == mmajor and minor == mminor and subminor < msubminor):
+      raise RuntimeError(self.bfort+' version '+str(major)+'.'+str(minor)+'.'+str(subminor)+' is older than required '+str(mmajor)+'.'+str(mminor)+'.'+str(msubminor)+'. Perhaps a stale install of sowing?')
+    return
+
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+    if ('with-sowing' in self.framework.clArgDB and not self.argDB['with-sowing']):
       if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings'] and self.petscclone.isClone:
         raise RuntimeError('Cannot use --with-sowing=0 if using Fortran (bindings) and git repository for PETSc')
       self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
@@ -58,11 +77,11 @@ class Configure(config.package.GNUPackage):
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or ('download-sowing' in self.framework.clArgDB and self.argDB['download-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
-      if self.framework.clArgDB.has_key('with-sowing-dir') and self.argDB['with-sowing-dir']:
+      if 'with-sowing-dir' in self.framework.clArgDB and self.argDB['with-sowing-dir']:
         installDir = os.path.join(self.argDB['with-sowing-dir'],'bin')
 
         self.getExecutable('bfort',    path=installDir, getFullPath = 1)
@@ -94,6 +113,7 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
 
+      self.checkBfortVersion(1,1,25)
       self.buildFortranStubs()
     else:
       self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
@@ -115,6 +135,6 @@ class Configure(config.package.GNUPackage):
           if self.compilers.fortranIsF90:
             generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
-        except RuntimeError, e:
+        except RuntimeError as e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return

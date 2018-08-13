@@ -40,21 +40,13 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
 #endif
-  } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
-#if defined(PETSC_MISSING_LAPACK_POTRS)
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
-#else
-    PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info));
-    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
-#endif
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only LU factor supported");
 
   ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_vector, Vec global_vector)
 {
@@ -265,9 +257,16 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
   ierr = VecDuplicate(pcis->vec1_B,&pcbddc->work_scaling);CHKERRQ(ierr);
   /* always rebuild pcis->D */
   if (pcis->use_stiffness_scaling) {
+    PetscScalar *a;
+    PetscInt    i,n;
+
     ierr = MatGetDiagonal(pcbddc->local_mat,pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(pcis->D,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->D,&a);CHKERRQ(ierr);
+    for (i=0;i<n;i++) if (PetscAbsScalar(a[i])<PETSC_SMALL) a[i] = 1.0;
+    ierr = VecRestoreArray(pcis->D,&a);CHKERRQ(ierr);
   }
   ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
@@ -483,9 +482,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if (!sub_schurs->n_subs) {
-    PetscFunctionReturn(0);
-  }
+  if (!sub_schurs) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Missing PCBDDCSubSchurs");
+  if (!sub_schurs->n_subs) PetscFunctionReturn(0);
 
   /* Allocate arrays for subproblems */
   if (!deluxe_ctx->seq_n) {
@@ -536,22 +534,23 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
     /* \sum_k S^k_E_j */
     ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata2+cum2,&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
-
-    if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+    ierr = MatSetOption(deluxe_ctx->seq_mat_inv_sum[i],MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
+    ierr = MatSetOption(deluxe_ctx->seq_mat_inv_sum[i],MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
+    if (sub_schurs->is_hermitian) {
       ierr = MatCholeskyFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL);CHKERRQ(ierr);
     } else {
       ierr = MatLUFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL,NULL);CHKERRQ(ierr);
     }
     if (pcbddc->deluxe_singlemat) {
       Mat X,Y;
-      if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
+      if (!sub_schurs->is_hermitian) {
         ierr = MatTranspose(deluxe_ctx->seq_mat[i],MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
       } else {
         ierr = PetscObjectReference((PetscObject)deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
         X    = deluxe_ctx->seq_mat[i];
       }
       ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&Y);CHKERRQ(ierr);
-      if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
+      if (!sub_schurs->is_hermitian) {
         ierr = PCBDDCMatTransposeMatSolve_SeqDense(deluxe_ctx->seq_mat_inv_sum[i],X,Y);CHKERRQ(ierr);
       } else {
         ierr = MatMatSolve(deluxe_ctx->seq_mat_inv_sum[i],X,Y);CHKERRQ(ierr);

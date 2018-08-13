@@ -722,7 +722,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       PetscMPIInt          size;
       p4est_connectivity_t *conn = NULL;
       DMFTopology_pforest  *topo;
-      PetscInt             *tree_face_to_uniq;
+      PetscInt             *tree_face_to_uniq = NULL;
       PetscErrorCode       ierr;
 
       ierr = DMPlexGetDepth(base,&depth);CHKERRQ(ierr);
@@ -792,7 +792,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
 
       ierr = DMGetNumLabels(base,&numLabels);CHKERRQ(ierr);
       for (l = 0; l < numLabels; l++) {
-        PetscBool  isDepth, isGhost, isVTK;
+        PetscBool  isDepth, isGhost, isVTK, isDim;
         DMLabel    label, labelNew;
         PetscInt   defVal;
         const char *name;
@@ -801,6 +801,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         ierr = DMGetLabelByNum(base, l, &label);CHKERRQ(ierr);
         ierr = PetscStrcmp(name,"depth",&isDepth);CHKERRQ(ierr);
         if (isDepth) continue;
+        ierr = PetscStrcmp(name,"dim",&isDim);CHKERRQ(ierr);
+        if (isDim) continue;
         ierr = PetscStrcmp(name,"ghost",&isGhost);CHKERRQ(ierr);
         if (isGhost) continue;
         ierr = PetscStrcmp(name,"vtk",&isVTK);CHKERRQ(ierr);
@@ -4127,9 +4129,9 @@ static PetscErrorCode DMCreateInterpolation_pforest(DM dmCoarse, DM dmFine, Mat 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), interpolation);CHKERRQ(ierr);
@@ -4168,9 +4170,9 @@ static PetscErrorCode DMCreateInjection_pforest(DM dmCoarse, DM dmFine, Mat *inj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &n);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &m);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject) dmFine), injection);CHKERRQ(ierr);
@@ -4451,8 +4453,8 @@ static PetscErrorCode DMCreateDefaultSection_pforest(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(plex,&section);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dm,section);CHKERRQ(ierr);
+  ierr = DMGetSection(plex,&section);CHKERRQ(ierr);
+  ierr = DMSetSection(dm,section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -11,9 +11,8 @@ Labels:
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 6
+Supports:
+[0] Max support size: 6
 [0]: 23 ----> 43
 [0]: 23 ----> 44
 [0]: 23 ----> 47
@@ -165,7 +164,7 @@ cap --> base:
 [0]: 81 ----> 22
 [0]: 82 ----> 20
 [0]: 82 ----> 22
-[1] Max sizes cone: 3 support: 6
+[1] Max support size: 6
 [1]: 23 ----> 42
 [1]: 23 ----> 47
 [1]: 24 ----> 43
@@ -317,7 +316,8 @@ cap --> base:
 [1]: 81 ----> 22
 [1]: 82 ----> 20
 [1]: 82 ----> 22
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 73 (0)
 [0]: 0 <---- 58 (-2)
 [0]: 0 <---- 45 (0)
@@ -469,6 +469,7 @@ base <-- cap:
 [0]: 81 <---- 41 (0)
 [0]: 82 <---- 41 (0)
 [0]: 82 <---- 40 (0)
+[1] Max cone size: 3
 [1]: 0 <---- 42 (0)
 [1]: 0 <---- 62 (-2)
 [1]: 0 <---- 47 (0)

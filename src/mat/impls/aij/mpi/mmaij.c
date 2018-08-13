@@ -123,7 +123,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   /* generate the scatter context */
   if (aij->Mvctx_mpi1_flg) {
     ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterCreate_MPI1(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr = VecScatterSetType(aij->Mvctx_mpi1,VECSCATTERMPI1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
   } else {
     ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
@@ -189,7 +190,10 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
 
-  ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */
+  if (Baij->nonew >= 0) { /* Inherit insertion error options (if positive). */
+    ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew;
+  }
+
   /*
    Ensure that B's nonzerostate is monotonically increasing.
    Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?

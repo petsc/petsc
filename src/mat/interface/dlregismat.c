@@ -82,9 +82,6 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
-#if defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSP(void);
-#endif
 #if defined(PETSC_HAVE_VECCUDA)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
@@ -147,8 +144,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 PetscErrorCode  MatInitializePackage(void)
 {
   char           logList[256];
-  char           *className;
-  PetscBool      opt;
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -211,6 +207,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatPartitioningND",MAT_PARTITIONING_CLASSID,&MAT_PartitioningND);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCoarsen",       MAT_COARSEN_CLASSID,&MAT_Coarsen);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatZeroEntries",   MAT_CLASSID,&MAT_ZeroEntries);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLoad",          MAT_CLASSID,&MAT_Load);CHKERRQ(ierr);
@@ -223,6 +220,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatTranspose",     MAT_CLASSID,&MAT_Transpose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMult",       MAT_CLASSID,&MAT_MatMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatSolve",      MAT_CLASSID,&MAT_MatSolve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatTrSolve",    MAT_CLASSID,&MAT_MatTrSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultSym",    MAT_CLASSID,&MAT_MatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultNum",    MAT_CLASSID,&MAT_MatMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMatMult",    MAT_CLASSID,&MAT_MatMatMult);CHKERRQ(ierr);
@@ -263,14 +261,9 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetSymTrans",MAT_CLASSID,&MAT_Getsymtranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPCopyTo",MAT_CLASSID,&MAT_CUSPCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSECopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatViennaCLCopyTo",MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch1",MAT_CLASSID,&MAT_SetValuesBatchI);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch2",MAT_CLASSID,&MAT_SetValuesBatchII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&MATCOLORING_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&MATCOLORING_Comm);CHKERRQ(ierr);
@@ -279,23 +272,39 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&MATCOLORING_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&MATCOLORING_Weights);CHKERRQ(ierr);
 
+  /* Mark non-collective events */
+  ierr = PetscLogEventSetCollective(MAT_SetValues,      PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(MAT_SetValuesBatch, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetCollective(MAT_GetRow,         PETSC_FALSE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(MAT_GetValues, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(MAT_GetRow,    PETSC_FALSE);CHKERRQ(ierr);
+
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("mat",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscInfoDeactivateClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
   }
+
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL, "-log_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("mat",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_COLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_COARSEN_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);}
   }
 
   /* Register the PETSc built in factorization based solvers */
@@ -320,8 +329,8 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
 #endif
-    /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use 
-     * some of the MKL-provided ones instead. */ 
+    /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use
+     * some of the MKL-provided ones instead. */
 
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
@@ -347,9 +356,6 @@ PetscErrorCode  MatInitializePackage(void)
   */
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverTypeRegister_MUMPS();CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = MatSolverTypeRegister_CUSP();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);
@@ -396,7 +402,7 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = MatSolverTypeRegister_SparseElemental();CHKERRQ(ierr);
 #endif
-
+  /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

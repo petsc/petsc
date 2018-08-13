@@ -4,7 +4,7 @@
 #include <petscbt.h>
 #include <petscblaslapack.h>
 
-#if defined(PETSC_HAVE_IMMINTRIN_H)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 #include <immintrin.h>
 #endif
 
@@ -663,7 +663,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -673,11 +673,11 @@ PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
   PetscErrorCode ierr;
   PetscInt       mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
   const PetscInt *idx,*ii,*ridx=NULL;
-  PetscInt       ncols,k;
+  PetscInt       k;
   PetscBool      usecprow=a->compressedrow.use;
 
   __m256d a0,a1,a2,a3,a4,a5;
-  __m256d w0,w1,w2,w3,w4,w5;
+  __m256d w0,w1,w2,w3;
   __m256d z0,z1,z2;
   __m256i mask1 = _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63);
 
@@ -706,7 +706,6 @@ PetscErrorCode MatMult_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec zz)
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
-    ncols       = n*bs;
     workt       = work;
     for (j=0; j<n; j++) {
       xb = x + bs*(*idx++);
@@ -1682,7 +1681,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
@@ -1691,12 +1690,12 @@ PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
   const MatScalar   *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
-  PetscInt       ncols,k;
+  PetscInt       k;
   PetscBool      usecprow=a->compressedrow.use;
   const PetscInt *idx,*ii,*ridx=NULL;
 
   __m256d a0,a1,a2,a3,a4,a5;
-  __m256d w0,w1,w2,w3,w4,w5;
+  __m256d w0,w1,w2,w3;
   __m256d z0,z1,z2;
   __m256i mask1 = _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL<<63);
 
@@ -1725,7 +1724,6 @@ PetscErrorCode MatMultAdd_SeqBAIJ_9_AVX2(Mat A,Vec xx,Vec yy,Vec zz)
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
-    ncols       = n*bs;
     workt       = work;
     for (j=0; j<n; j++) {
       xb = x + bs*(*idx++);

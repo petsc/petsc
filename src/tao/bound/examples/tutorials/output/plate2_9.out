@@ -1,0 +1,48 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:6, bmx:3, bmy:3, height:0.2
+iter =   0, Function value 1.67039, Residual: 0.47529 
+iter =   1, Function value 1.58436, Residual: 0.551899 
+iter =   2, Function value 1.52511, Residual: 0.255694 
+iter =   3, Function value 1.51512, Residual: 0.142772 
+iter =   4, Function value 1.5106, Residual: 0.111683 
+iter =   5, Function value 1.50846, Residual: 0.0913953 
+iter =   6, Function value 1.50745, Residual: 0.0792274 
+iter =   7, Function value 1.50726, Residual: 0.118016 
+iter =   8, Function value 1.50644, Residual: 0.0518771 
+iter =   9, Function value 1.50594, Residual: 0.0286771 
+iter =  10, Function value 1.50583, Residual: 0.0195885 
+iter =  11, Function value 1.50575, Residual: 0.0133579 
+iter =  12, Function value 1.50571, Residual: 0.00878734 
+iter =  13, Function value 1.50568, Residual: 0.00812764 
+iter =  14, Function value 1.50567, Residual: 0.00500175 
+iter =  15, Function value 1.50566, Residual: 0.00326016 
+iter =  16, Function value 1.50566, Residual: 0.00147621 
+iter =  17, Function value 1.50566, Residual: 0.000611284 
+iter =  18, Function value 1.50566, Residual: 0.00041912 
+iter =  19, Function value 1.50566, Residual: 0.000232742 
+iter =  20, Function value 1.50566, Residual: 0.000192863 
+iter =  21, Function value 1.50566, Residual: 9.77095e-05 
+Tao Object: 1 MPI processes
+  type: bncg
+    CG Type: dy
+    Resets: 1
+      Broken ortho: 2
+      Not a descent dir.: 0
+    Line search fails: 1
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=2
+    using variable bounds
+    Termination reason: 1
+  Active Set subset type: subvec
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=9.77095e-05
+  Objective value=1.50566
+  total number of iterations=21,                          (max: 2000)
+  total number of function/gradient evaluations=41,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

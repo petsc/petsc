@@ -2,7 +2,7 @@
   DMSWARM_PIC: Using method CellDM->GetNeigbors
 DM Object: 1 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 4290 
   buffer             = 100 
   allocated          = 4390 

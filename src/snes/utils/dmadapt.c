@@ -327,7 +327,7 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   ierr = DMIsForest(adaptor->idm, &isForest);CHKERRQ(ierr);
   if (adaptor->adaptCriterion == DM_ADAPTATION_NONE) {
     if (isForest) {adaptor->adaptCriterion = DM_ADAPTATION_LABEL;}
-#ifdef PETSC_HAVE_PRAGMATIC
+#if defined(PETSC_HAVE_PRAGMATIC)
     else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
 #else
     else          {adaptor->adaptCriterion = DM_ADAPTATION_REFINE;}
@@ -801,9 +801,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscQuadratureGetOrder(q, &qorder);CHKERRQ(ierr);
         ierr = PetscObjectGetOptionsPrefix((PetscObject) fe, &prefix);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmGrad, dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmGrad), dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probGrad, f, (PetscObject) feGrad);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmHess, dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmHess), dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probHess, f, (PetscObject) feHess);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feGrad);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feHess);CHKERRQ(ierr);
@@ -818,7 +818,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = VecViewFromOptions(xHess, NULL, "-adapt_hessian_view");CHKERRQ(ierr);
       /*     Compute metric */
       ierr = DMClone(dm, &dmMetric);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(dm, &sec);CHKERRQ(ierr);
+      ierr = DMGetSection(dm, &sec);CHKERRQ(ierr);
       ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
       ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
@@ -829,7 +829,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscSectionSetFieldDof(msec, v, 0, Nd);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
-      ierr = DMSetDefaultSection(dmMetric, msec);CHKERRQ(ierr);
+      ierr = DMSetSection(dmMetric, msec);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
       ierr = DMGetLocalVector(dmMetric, &metric);CHKERRQ(ierr);
       /*       N is the target size */

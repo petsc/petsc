@@ -542,30 +542,32 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscDS         prob, probAux;
   PetscInt        Nf = 5, NfAux = 3, f;
   PetscBool       cell_simplex = ctx->cell_simplex;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "density");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "vorticity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &fe[2]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "flux");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &fe[3]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[3]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[3], "potential");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &fe[4]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &fe[4]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[4], "current");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &feAux[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "n_0");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &feAux[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[1], &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "vorticity_0");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, cell_simplex, NULL, -1, &feAux[2]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, cell_simplex, NULL, -1, &feAux[2]);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[2], &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[2], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[2], "flux_0");CHKERRQ(ierr);

@@ -1,3 +1,5 @@
+Failed to load RHS, so use a vector of all ones.
+Failed to load initial guess, so use a vector of all zeros.
   0 KSP Residual norm 1.78849e+12 
   1 KSP Residual norm 3.38372e+11 
   2 KSP Residual norm 2.43134e+11 
@@ -31,5 +33,6 @@ PC Object: 2 MPI processes
   Mat Object: 2 MPI processes
     type: normal
     rows=81920, cols=81920
+KSP type: gmres
 Number of iterations =  18
 Residual norm 0.00141417

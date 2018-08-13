@@ -41,7 +41,7 @@ Input parameters include:\n\
    -- = [                                      ]
    du   [ -2 \mu u_1*u_2 - 1;  \mu (1 - u_1^2) ]
 
-   and the JacobainP (the Jacobian w.r.t. parameter) function
+   and the JacobianP (the Jacobian w.r.t. parameter) function
 
    dF      [       0          ]
    ---   = [                  ]

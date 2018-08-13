@@ -15,7 +15,8 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
    Level: beginner
 
-   Notes: The two approaches provided are
+   Notes:
+    The two approaches provided are
 $     PETSCSFBASIC which uses MPI 1 message passing to perform the communication and
 $     PETSCSFWINDOW which uses MPI 2 one-sided operations to perform the communication, this may be more efficient,
 $                   but may not be available for all MPI distributions. In particular OpenMPI has bugs in its one-sided
@@ -63,6 +64,7 @@ PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFSetType(PetscSF,PetscSFType);
+PETSC_EXTERN PetscErrorCode PetscSFGetType(PetscSF,PetscSFType*);
 PETSC_EXTERN PetscErrorCode PetscSFView(PetscSF,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode PetscSFViewFromOptions(PetscSF A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode PetscSFSetUp(PetscSF);

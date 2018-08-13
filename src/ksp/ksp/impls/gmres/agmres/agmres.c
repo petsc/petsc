@@ -719,9 +719,11 @@ There are  many ongoing work that aim at avoiding (or minimizing) the communicat
 
  Level: beginner
 
- Notes : Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
+ Notes:
+    Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not supported
 
- Developer Notes: This object is subclassed off of KSPDGMRES
+ Developer Notes:
+    This object is subclassed off of KSPDGMRES
 
  Contributed by Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr>
  Inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
@@ -774,10 +776,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("AGMRESComputeDefl", KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AGMRESCompDefl",   KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AGMRESBuildBasis", KSP_CLASSID, &KSP_AGMRESBuildBasis);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AGMRESCompShifts", KSP_CLASSID, &KSP_AGMRESComputeShifts);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("AGMRESOrthog", KSP_CLASSID, &KSP_AGMRESRoddec);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AGMRESOrthog",     KSP_CLASSID, &KSP_AGMRESRoddec);CHKERRQ(ierr);
 
   agmres->haptol         = 1.0e-30;
   agmres->q_preallocate  = 0;

@@ -31,6 +31,8 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERSAWS         "saws"
 #define PETSCVIEWERGLVIS        "glvis"
+#define PETSCVIEWERADIOS        "adios"
+#define PETSCVIEWERADIOS2       "adios2"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
@@ -44,6 +46,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscVie
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIISetFILE(PetscViewer,FILE*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerADIOSOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerADIOS2Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer,PetscBool);
@@ -58,6 +62,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,Pets
 PETSC_EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],size_t,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer,PetscDrawType);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer,PetscDrawType*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawSetTitle(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetTitle(PetscViewer,const char*[]);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer,PetscInt);
@@ -100,9 +107,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer,const char*[
 
    Level: beginner
 
-   The values below are also listed in petsc/finclude/petscviewer.h. If another values is added below it
-   must also be added there.
-
 .seealso: PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
 typedef enum {
@@ -135,7 +139,9 @@ typedef enum {
   PETSC_VIEWER_VTK_VTU,
   PETSC_VIEWER_BINARY_MATLAB,
   PETSC_VIEWER_NATIVE,
+  PETSC_VIEWER_HDF5_PETSC,
   PETSC_VIEWER_HDF5_VIZ,
+  PETSC_VIEWER_HDF5_XDMF,
   PETSC_VIEWER_NOFORMAT,
   PETSC_VIEWER_LOAD_BALANCE
   } PetscViewerFormat;
@@ -228,7 +234,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer, const char [
 PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
 
 typedef enum {PETSC_VTK_POINT_FIELD, PETSC_VTK_POINT_VECTOR_FIELD, PETSC_VTK_CELL_FIELD, PETSC_VTK_CELL_VECTOR_FIELD} PetscViewerVTKFieldType;
-PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscBool,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscViewerVTKGetDM(PetscViewer,PetscObject*);
 PETSC_EXTERN PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*

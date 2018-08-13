@@ -10,6 +10,8 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
 
   PetscFunctionBegin;
   if (!da->e) {
+    PetscInt corners[2];
+
     if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
     ierr   = DMDAGetCorners(dm,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
     ierr   = DMDAGetGhostCorners(dm,&Xs,0,0,&Xe,0,0);CHKERRQ(ierr);
@@ -20,9 +22,14 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
       da->e[cnt++] = (i-Xs);
       da->e[cnt++] = (i-Xs+1);
     }
+    da->nen = 2;
+
+    corners[0] = (xs  -Xs);
+    corners[1] = (xe-1-Xs);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,2,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
   }
   *nel = da->ne;
-  *nen = 2;
+  *nen = da->nen;
   *e   = da->e;
   PetscFunctionReturn(0);
 }
@@ -33,15 +40,29 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
   DM_DA          *da = (DM_DA*)dm->data;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
-  PetscInt       cnt=0, cell[4], ns=2, nn=3;
+  PetscInt       cnt=0, cell[4], ns=2;
   PetscInt       c, split[] = {0,1,3,
                                2,3,1};
 
   PetscFunctionBegin;
-  if (da->elementtype == DMDA_ELEMENT_P1) {nn=3;}
-  if (da->elementtype == DMDA_ELEMENT_Q1) {nn=4;}
   if (!da->e) {
+    PetscInt corners[4],nn = 0;
+
     if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
+
+    switch (da->elementtype) {
+    case DMDA_ELEMENT_Q1:
+      da->nen = 4;
+      break;
+    case DMDA_ELEMENT_P1:
+      da->nen = 3;
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
+      break;
+    }
+    nn = da->nen;
+
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=2;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
@@ -64,9 +85,15 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
         }
       }
     }
+
+    corners[0] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs);
+    corners[1] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs);
+    corners[2] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs);
+    corners[3] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,4,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
   }
   *nel = da->ne;
-  *nen = nn;
+  *nen = da->nen;
   *e   = da->e;
   PetscFunctionReturn(0);
 }
@@ -78,7 +105,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       k,zs,ze,Zs,Ze;
-  PetscInt       cnt=0, cell[8], ns=6, nn=4;
+  PetscInt       cnt=0, cell[8], ns=6;
   PetscInt       c, split[] = {0,1,3,7,
                                0,1,7,4,
                                1,2,3,7,
@@ -87,10 +114,24 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
                                1,5,6,7};
 
   PetscFunctionBegin;
-  if (da->elementtype == DMDA_ELEMENT_P1) {nn=4;}
-  if (da->elementtype == DMDA_ELEMENT_Q1) {nn=8;}
   if (!da->e) {
+    PetscInt corners[8],nn = 0;
+
     if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
+
+    switch (da->elementtype) {
+    case DMDA_ELEMENT_Q1:
+      da->nen = 8;
+      break;
+    case DMDA_ELEMENT_P1:
+      da->nen = 4;
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
+      break;
+    }
+    nn = da->nen;
+
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=6;}
     if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
@@ -120,10 +161,123 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
         }
       }
     }
+
+    corners[0] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
+    corners[1] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
+    corners[2] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
+    corners[3] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs) + (zs-Zs  )*(Xe-Xs)*(Ye-Ys);
+    corners[4] = (xs  -Xs) + (ys  -Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[5] = (xe-1-Xs) + (ys  -Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[6] = (xs  -Xs) + (ye-1-Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
+    corners[7] = (xe-1-Xs) + (ye-1-Ys)*(Xe-Xs) + (ze-1-Zs)*(Xe-Xs)*(Ye-Ys);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,8,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
   }
   *nel = da->ne;
-  *nen = nn;
+  *nen = da->nen;
   *e   = da->e;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   DMDAGetElementsCorners - Returns the global (x,y,z) indices of the lower left
+   corner of the non-overlapping decomposition identified by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DM object
+
+   Output Parameters:
++     gx - the x index
+.     gy - the y index
+-     gz - the z index
+
+   Level: intermediate
+
+   Notes:
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
+@*/
+PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz)
+{
+  PetscInt       xs,Xs;
+  PetscInt       ys,Ys;
+  PetscInt       zs,Zs;
+  PetscBool      isda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  if (gx) PetscValidIntPointer(gx,2);
+  if (gy) PetscValidIntPointer(gy,3);
+  if (gz) PetscValidIntPointer(gz,4);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  if (xs != Xs) xs -= 1;
+  if (ys != Ys) ys -= 1;
+  if (zs != Zs) zs -= 1;
+  if (gx) *gx  = xs;
+  if (gy) *gy  = ys;
+  if (gz) *gz  = zs;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      DMDAGetElementsSizes - Gets the local number of elements per direction for the non-overlapping decomposition identified by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DM object
+
+   Output Parameters:
++     mx - number of local elements in x-direction
+.     my - number of local elements in y-direction
+-     mz - number of local elements in z-direction
+
+   Level: intermediate
+
+   Notes:
+    It returns the same number of elements, irrespective of the DMDAElementType
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements
+@*/
+PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz)
+{
+  PetscInt       xs,xe,Xs;
+  PetscInt       ys,ye,Ys;
+  PetscInt       zs,ze,Zs;
+  PetscInt       dim;
+  PetscBool      isda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  if (mx) PetscValidIntPointer(mx,2);
+  if (my) PetscValidIntPointer(my,3);
+  if (mz) PetscValidIntPointer(mz,4);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
+  xe  += xs; if (xs != Xs) xs -= 1;
+  ye  += ys; if (ys != Ys) ys -= 1;
+  ze  += zs; if (zs != Zs) zs -= 1;
+  if (mx) *mx  = 0;
+  if (my) *my  = 0;
+  if (mz) *mz  = 0;
+  ierr = DMGetDimension(da,&dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 3:
+    if (mz) *mz = ze - zs - 1;
+  case 2:
+    if (my) *my = ye - ys - 1;
+  case 1:
+    if (mx) *mx = xe - xs - 1;
+    break;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -146,15 +300,20 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
+  PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,etype,2);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) PetscFunctionReturn(0);
   if (dd->elementtype != etype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
+    ierr = ISDestroy(&dd->ecorners);CHKERRQ(ierr);
 
     dd->elementtype = etype;
     dd->ne          = 0;
+    dd->nen         = 0;
     dd->e           = NULL;
   }
   PetscFunctionReturn(0);
@@ -177,11 +336,15 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 @*/
 PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+  PetscBool      isda;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(etype,2);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
   *etype = dd->elementtype;
   PetscFunctionReturn(0);
 }
@@ -218,10 +381,23 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   PetscInt       dim;
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
+  PetscBool      isda;
 
   PetscFunctionBegin;
-  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
+  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElements() requires you use a stencil type of DMDA_STENCIL_BOX");
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dd->e) {
+    *nel = dd->ne;
+    *nen = dd->nen;
+    *e   = dd->e;
+    PetscFunctionReturn(0);
+  }
   if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
   } else if (dim==1) {
@@ -231,6 +407,48 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   } else if (dim==3) {
     ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
+  PetscFunctionReturn(0);
+}
+
+/*@
+      DMDAGetSubdomainCornersIS - Gets an index set containing the corner indices (in local coordinates)
+                                 of the non-overlapping decomposition identified by DMDAGetElements
+
+    Not Collective
+
+   Input Parameter:
+.     dm - the DM object
+
+   Output Parameters:
+.     is - the index set
+
+   Level: intermediate
+
+   Notes:
+    Call DMDARestoreSubdomainCornersIS() once you have finished accessing the index set.
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements(), DMDARestoreElementsCornersIS()
+@*/
+PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)dm->data;
+  PetscBool      isda;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
+  PetscValidPointer(is,2);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
+  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
+  if (!dd->ecorners) { /* compute elements if not yet done */
+    const PetscInt *e;
+    PetscInt       nel,nen;
+
+    ierr = DMDAGetElements(dm,&nel,&nen,&e);CHKERRQ(ierr);
+    ierr = DMDARestoreElements(dm,&nel,&nen,&e);CHKERRQ(ierr);
+  }
+  *is = dd->ecorners;
   PetscFunctionReturn(0);
 }
 
@@ -258,12 +476,36 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidIntPointer(nel,2);
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
   *nel = 0;
   *nen = -1;
   *e = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      DMDARestoreSubdomainCornersIS - Restores the IS obtained with DMDAGetSubdomainCornersIS()
+
+    Not Collective
+
+   Input Parameter:
++     dm - the DM object
+-     is - the index set
+
+   Level: intermediate
+
+   Note:
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetSubdomainCornersIS()
+@*/
+PetscErrorCode  DMDARestoreSubdomainCornersIS(DM dm,IS *is)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecific(*is,IS_CLASSID,2);
+  *is = NULL;
   PetscFunctionReturn(0);
 }

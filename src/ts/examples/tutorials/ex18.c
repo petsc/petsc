@@ -805,14 +805,16 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2];
   PetscFV         fv;
   PetscDS         prob = NULL;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "porosity");CHKERRQ(ierr);
 
@@ -921,7 +923,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(Nf*2, &xnorms);CHKERRQ(ierr);
@@ -967,7 +969,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       ierr = PetscSectionClone(s, &fs);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 0, NULL);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 1, name);CHKERRQ(ierr);
-      ierr = DMSetDefaultSection(fdm[f], fs);CHKERRQ(ierr);
+      ierr = DMSetSection(fdm[f], fs);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&fs);CHKERRQ(ierr);
       ierr = DMGetGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);

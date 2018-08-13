@@ -53,9 +53,9 @@ echo "Starting build run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b 
 # Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
 echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
-(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q --prune) >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
-rm -rf ./${nPETSC_ARCH}
+rm -rf ./${nPETSC_ARCH} ./arch-*
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& build.log
 
@@ -112,10 +112,11 @@ set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 #
 # check for prefix install
 set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`
-if ( "${PREFIXDIR}" != "" ) then
-  set INSTALLTARGET="install"
-else
+grep 'Now to install the libraries do' $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscrules > /dev/null
+if ( $? ) then
   set INSTALLTARGET=""
+else
+  set INSTALLTARGET="install"
 endif
 #
 # do build/install
@@ -126,7 +127,7 @@ echo "Finishing build run on $MACH $PETSC_ARCH at `date +'%a, %d %b %Y %H:%M:%S 
 if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
 #
 # change PETSC_DIR/PETSC_ARCH for prefix install
-if ( "${PREFIXDIR}" != "" ) then
+if ( "${INSTALLTARGET}" == "install" ) then
   set PETSC_DIR="${PREFIXDIR}"
   set PETSC_ARCH=""
 endif
@@ -160,6 +161,9 @@ if ( "${GCOV}" != "" ) then
   rm -f gcov.log
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
+
+#cleanup some generated files to reduce disk usage
+find ${nPETSC_ARCH} -type f \( -name "*.pdb" -o -name "*.ilk" \) -exec rm {} \;
 
 echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log

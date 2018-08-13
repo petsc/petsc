@@ -241,7 +241,8 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
 . fieldName - the field (component) name
 
   Level: intermediate
-  Notes: Can only be called after DMMoabSetFields supplied with correct numFields
+  Notes:
+    Can only be called after DMMoabSetFields supplied with correct numFields
 
 .keywords: discretization manager, set, component name
 

@@ -24,6 +24,8 @@
         regular expression.
 
 '''
+from __future__ import print_function
+from __future__ import absolute_import
 import logger
 
 import errno
@@ -220,13 +222,13 @@ class SourceDB (dict, logger.Logger):
       newDep = []
       try:
         file = file(source)
-      except IOError, e:
+      except IOError as e:
         if e.errno == errno.ENOENT:
           del self[source]
         else:
           raise e
       comps  = source.split('/')
-      for line in file.xreadlines():
+      for line in file:
         m = self.includeRE.match(line)
         if m:
           filename  = m.group('includeFile')
@@ -310,7 +312,7 @@ class DependencyAnalyzer (logger.Logger):
   def getNeighbors(self, source):
     file = file(source)
     adj  = []
-    for line in file.xreadlines():
+    for line in file:
       match = self.includeRE.match(line)
       if match:
         adj.append(self.resolveDependency(source, m.group('includeFile')))
@@ -328,7 +330,7 @@ class DependencyAnalyzer (logger.Logger):
     for source in self.sourceDB:
       try:
         dag[source] = self.getNeighbors(self, source)
-      except IOError, e:
+      except IOError as e:
         if e.errno == errno.ENOENT:
           del self[source]
         else:
@@ -339,7 +341,7 @@ if __name__ == '__main__':
   import sys
   try:
     if len(sys.argv) < 3:
-      print 'sourceDatabase.py <database filename> [insert | remove] <filename>'
+      print('sourceDatabase.py <database filename> [insert | remove] <filename>')
     else:
       if os.path.exists(sys.argv[1]):
         dbFile   = file(sys.argv[1])
@@ -367,8 +369,8 @@ if __name__ == '__main__':
       else:
         sys.exit('Unknown source database action: '+sys.argv[2])
       sourceDB.save()
-  except Exception, e:
+  except Exception as e:
     import traceback
-    print traceback.print_tb(sys.exc_info()[2])
+    print(traceback.print_tb(sys.exc_info()[2]))
     sys.exit(str(e))
   sys.exit(0)

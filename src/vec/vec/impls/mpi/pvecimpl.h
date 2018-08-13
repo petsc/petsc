@@ -40,7 +40,9 @@ typedef struct {
   PetscSegBuffer segrecvframe;
 } Vec_MPI;
 
+PETSC_INTERN PetscErrorCode VecDot_MPI(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
+PETSC_INTERN PetscErrorCode VecTDot_MPI(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
 PETSC_INTERN PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMax_MPI(Vec,PetscInt*,PetscReal*);
@@ -50,6 +52,8 @@ PETSC_INTERN PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS(Vec,PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS2(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecGetSize_MPI(Vec,PetscInt*);
 PETSC_INTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [], PetscScalar []);

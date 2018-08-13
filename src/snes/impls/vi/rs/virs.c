@@ -96,7 +96,8 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  DMSetVI(DM,IS);
+static PetscErrorCode DMSetVI(DM,IS);
+static PetscErrorCode DMDestroyVI(DM);
 
 /*
      DMCoarsen_SNESVI - Computes the regular coarsened DM then computes additional information about its inactive set
@@ -204,7 +205,7 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
                be restricted to only those variables NOT associated with active constraints.
 
 */
-PetscErrorCode  DMSetVI(DM dm,IS inactive)
+static PetscErrorCode DMSetVI(DM dm,IS inactive)
 {
   PetscErrorCode ierr;
   PetscContainer isnes;
@@ -250,7 +251,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
      DMDestroyVI - Frees the DM_SNESVI object contained in the DM
          - also resets the function pointers in the DM for createinterpolation() etc to use the original DM
 */
-PetscErrorCode  DMDestroyVI(DM dm)
+static PetscErrorCode DMDestroyVI(DM dm)
 {
   PetscErrorCode ierr;
 

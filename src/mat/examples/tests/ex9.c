@@ -68,9 +68,9 @@ int main(int argc,char **args)
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global sums):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
     ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"matrix information (global max):\nnonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   }
   
   ierr = PetscOptionsHasName(NULL,NULL,"-view_mat",&flg_mat);CHKERRQ(ierr);
@@ -145,6 +145,11 @@ int main(int argc,char **args)
       args: -mat_type sbaij -nsubcomms 2 -view_mat
 
    test:
+      suffix: 3_dense
+      nsize: 3
+      args: -mat_type dense -nsubcomms 2 -view_mat
+
+   test:
       suffix: 4_baij
       nsize: 3
       args: -mat_type baij -nsubcomms 2 -view_mat -psubcomm_type interlaced
@@ -153,5 +158,10 @@ int main(int argc,char **args)
       suffix: 4_sbaij
       nsize: 3
       args: -mat_type sbaij -nsubcomms 2 -view_mat -psubcomm_type interlaced
+
+   test:
+      suffix: 4_dense
+      nsize: 3
+      args: -mat_type dense -nsubcomms 2 -view_mat -psubcomm_type interlaced
 
 TEST*/

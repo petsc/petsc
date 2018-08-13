@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from __future__ import print_function
 import user
 import os
 import re
@@ -176,7 +177,6 @@ class BuildChecker(script.Script):
   def addLineBlameDict(self,line,filename,ln,petscdir,commit,arch,logfile):
     # avoid solaris compiler errors
     if re.search(r'warning: loop not entered at top',line): return
-    if re.search(r'linker scope was specified more than once',line): return
     if re.search(r'warning: statement not reached',line): return
     # avoid C++ instantiation sequences
     if re.search(r'instantiated from here',line):      return
@@ -215,7 +215,7 @@ class BuildChecker(script.Script):
     petscdir = ''
     filelinedict = {}
 
-    print 'Checking',filename
+    print('Checking',filename)
     if self.isLocal and not os.path.exists(filename):
       raise RuntimeError('Invalid filename: '+filename)
     m = re.match(logRE, os.path.basename(filename))
@@ -241,7 +241,7 @@ class BuildChecker(script.Script):
 
     if self.isLocal:
       f     = file(filename)
-      lines = f.xreadlines()
+      lines = f
     else:
       import tempfile
 
@@ -260,7 +260,7 @@ class BuildChecker(script.Script):
           petscdir = matchPetscdir.group('petscdir')
       m = configureRE.search(line)
       if m:
-        print 'From '+filename+': configure error: '+m.group('errorMsg')
+        print('From '+filename+': configure error: '+m.group('errorMsg'))
         continue
       for regExp in regExps:
         m = regExp.match(line)
@@ -278,12 +278,12 @@ class BuildChecker(script.Script):
           try:
             type = m.group('type')
             if not type: type = 'Error'
-            print 'From '+filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
+            print('From '+filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line'))
             if addBlameDict and commit and petscdir:
               self.addLineBlameDict(line,m.group('filename'),m.group('line'),petscdir,commit,arch,os.path.basename(filename))
           except IndexError:
             # For win32fe
-            print 'From '+filename+': '+m.group('type')+' for '+m.group('filename')
+            print('From '+filename+': '+m.group('type')+' for '+m.group('filename'))
     if self.isLocal:
       f.close()
     return
@@ -297,8 +297,8 @@ class BuildChecker(script.Script):
     else:
       (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
       files = output.split('\n')
-    print files
-    print filter(lambda fname: buildRE.match(fname) and not buildExcludeRE.match(fname), files)
+    print(files)
+    print(filter(lambda fname: buildRE.match(fname) and not buildExcludeRE.match(fname), files))
     return filter(lambda fname: buildRE.match(fname) and not buildExcludeRE.match(fname), files)
 
   def blameMail(self):
@@ -311,7 +311,7 @@ class BuildChecker(script.Script):
         git_blame_cmd = 'git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1]
         (output, error, status) = self.executeShellCommand(git_blame_cmd)
       except:
-        print 'Error running:',git_blame_cmd
+        print('Error running:',git_blame_cmd)
       if output:
         blamelines = output.split('\n')
         current = -1
@@ -401,7 +401,7 @@ Thanks,
       msg['Subject'] = "PETSc blame digest (%s) %s\n\n" % (self.argDB['buildBranch'], today)
 
       if author in ['Peter Brune <brune@mcs.anl.gov>']:
-        print 'Skipping sending e-mail to:',author
+        print('Skipping sending e-mail to:',author)
       elif self.argDB['blameMailPost']:
         server = smtplib.SMTP('localhost')
         server.sendmail(FROM, TO, msg.as_string())
@@ -421,7 +421,7 @@ Thanks,
       self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/')
     else:
       self.logurl=''
-    print self.isLocal
+    print(self.isLocal)
     map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
     if self.argDB['blameMail']:
       self.blameMail()
@@ -429,7 +429,7 @@ Thanks,
     return
 
 if __name__ == '__main__':
-  print ''
-  print 'Logs located at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs'
-  print ''
+  print('')
+  print('Logs located at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs')
+  print('')
   BuildChecker().run()

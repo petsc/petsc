@@ -28,6 +28,81 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TaoTestGradient(Tao tao,Vec x,Vec g1)
+{
+  Vec               g2,g3;
+  PetscBool         complete_print = PETSC_FALSE,test = PETSC_FALSE;
+  PetscReal         hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
+  PetscScalar       dot;
+  MPI_Comm          comm;
+  PetscViewer       viewer,mviewer;
+  PetscViewerFormat format;
+  PetscInt          tabs;
+  static PetscBool  directionsprinted = PETSC_FALSE;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-tao_test_gradient","Compare hand-coded and finite difference Gradients","None",&test);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-tao_test_gradient_view","View difference between hand-coded and finite difference Gradients element entries","None",&mviewer,&format,&complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (!test) PetscFunctionReturn(0);
+
+  ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ---------- Testing Gradient -------------\n");CHKERRQ(ierr);
+  if (!complete_print && !directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Run with -tao_test_gradient_view and optionally -tao_test_gradient <threshold> to show difference\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    of hand-coded and finite difference gradient entries greater than <threshold>.\n");CHKERRQ(ierr);
+  }
+  if (!directionsprinted) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Testing hand-coded Gradient, if (for double precision runs) ||G - Gfd||_F/||G||_F is\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    O(1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
+    directionsprinted = PETSC_TRUE;
+  }
+  if (complete_print) {
+    ierr = PetscViewerPushFormat(mviewer,format);CHKERRQ(ierr);
+  }
+
+  ierr = VecDuplicate(x,&g2);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&g3);CHKERRQ(ierr);
+
+  /* Compute finite difference gradient, assume the gradient is already computed by TaoComputeGradient() and put into g1 */
+  ierr = TaoDefaultComputeGradient(tao,x,g2,NULL);CHKERRQ(ierr);
+
+  ierr = VecNorm(g2,NORM_2,&fdnorm);CHKERRQ(ierr);
+  ierr = VecNorm(g1,NORM_2,&hcnorm);CHKERRQ(ierr);
+  ierr = VecNorm(g2,NORM_INFINITY,&fdmax);CHKERRQ(ierr);
+  ierr = VecNorm(g1,NORM_INFINITY,&hcmax);CHKERRQ(ierr);
+  ierr = VecDot(g1,g2,&dot);CHKERRQ(ierr);
+  ierr = VecCopy(g1,g3);CHKERRQ(ierr);
+  ierr = VecAXPY(g3,-1.0,g2);CHKERRQ(ierr);
+  ierr = VecNorm(g3,NORM_2,&diffnorm);CHKERRQ(ierr);
+  ierr = VecNorm(g3,NORM_INFINITY,&diffmax);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ||Gfd|| %g, ||G|| = %g, angle cosine = (Gfd'G)/||Gfd||||G|| = %g\n", (double)fdnorm, (double)hcnorm, (double)(PetscRealPart(dot)/(fdnorm*hcnorm)));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  2-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffnorm/PetscMax(hcnorm,fdnorm)),(double)diffnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  max-norm ||G - Gfd||/||G|| = %g, ||G - Gfd|| = %g\n",(double)(diffmax/PetscMax(hcmax,fdmax)),(double)diffmax);CHKERRQ(ierr);
+
+  if (complete_print) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded gradient ----------\n");CHKERRQ(ierr);
+    ierr = VecView(g1,mviewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Finite difference gradient ----------\n");CHKERRQ(ierr);
+    ierr = VecView(g2,mviewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Hand-coded minus finite-difference gradient ----------\n");CHKERRQ(ierr);
+    ierr = VecView(g3,mviewer);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&g2);CHKERRQ(ierr);
+  ierr = VecDestroy(&g3);CHKERRQ(ierr);
+
+  if (complete_print) {
+    ierr = PetscViewerPopFormat(mviewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   TaoComputeGradient - Computes the gradient of the objective function
 
@@ -40,7 +115,12 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
   Output Parameter:
 . G - gradient vector
 
-  Notes: TaoComputeGradient() is typically used within minimization implementations,
+  Options Database Keys:
++    -tao_test_gradient - compare the user provided gradient with one compute via finite differences to check for errors
+-    -tao_test_gradient_view - display the user provided gradient, the finite difference gradient and the difference between them to help users detect the location of errors in the user provided gradient
+
+  Notes:
+    TaoComputeGradient() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -60,21 +140,23 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscCheckSameComm(tao,1,G,3);
   ierr = VecLockPush(X);CHKERRQ(ierr);
   if (tao->ops->computegradient) {
-    ierr = PetscLogEventBegin(Tao_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user gradient evaluation routine");
     ierr = (*tao->ops->computegradient)(tao,X,G,tao->user_gradP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->ngrads++;
   } else if (tao->ops->computeobjectiveandgradient) {
-    ierr = PetscLogEventBegin(Tao_ObjGradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective/gradient evaluation routine");
     ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_ObjGradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->nfuncgrads++;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetGradientRoutine() has not been called");
   ierr = VecLockPop(X);CHKERRQ(ierr);
+
+  ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -90,7 +172,8 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   Output Parameter:
 . f - Objective value at X
 
-  Notes: TaoComputeObjective() is typically used within minimization implementations,
+  Notes:
+    TaoComputeObjective() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -108,20 +191,20 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   PetscCheckSameComm(tao,1,X,2);
   ierr = VecLockPush(X);CHKERRQ(ierr);
   if (tao->ops->computeobjective) {
-    ierr = PetscLogEventBegin(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective evaluation routine");
     ierr = (*tao->ops->computeobjective)(tao,X,f,tao->user_objP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
   } else if (tao->ops->computeobjectiveandgradient) {
     ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine\n");CHKERRQ(ierr);
     ierr = VecDuplicate(X,&temp);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(Tao_ObjGradientEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjGradEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective/gradient evaluation routine");
     ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_ObjGradientEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjGradEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     ierr = VecDestroy(&temp);CHKERRQ(ierr);
     tao->nfuncgrads++;
   }  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() has not been called");
@@ -143,7 +226,8 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 + f - Objective value at X
 - g - Gradient vector at X
 
-  Notes: TaoComputeObjectiveAndGradient() is typically used within minimization implementations,
+  Notes:
+    TaoComputeObjectiveAndGradient() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -162,7 +246,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscCheckSameComm(tao,1,G,4);
   ierr = VecLockPush(X);CHKERRQ(ierr);
   if (tao->ops->computeobjectiveandgradient) {
-    ierr = PetscLogEventBegin(Tao_ObjGradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjGradEval,tao,X,G,NULL);CHKERRQ(ierr);
     if (tao->ops->computegradient == TaoDefaultComputeGradient) {
       ierr = TaoComputeObjective(tao,X,f);CHKERRQ(ierr);
       ierr = TaoDefaultComputeGradient(tao,X,G,NULL);CHKERRQ(ierr);
@@ -171,24 +255,26 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
       ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP);CHKERRQ(ierr);
       PetscStackPop;
     }
-    ierr = PetscLogEventEnd(Tao_ObjGradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjGradEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->nfuncgrads++;
   } else if (tao->ops->computeobjective && tao->ops->computegradient) {
-    ierr = PetscLogEventBegin(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user objective evaluation routine");
     ierr = (*tao->ops->computeobjective)(tao,X,f,tao->user_objP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
-    ierr = PetscLogEventBegin(Tao_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user gradient evaluation routine");
     ierr = (*tao->ops->computegradient)(tao,X,G,tao->user_gradP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->ngrads++;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
   ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockPop(X);CHKERRQ(ierr);
+
+  ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -322,7 +408,8 @@ PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n,
   Output Parameter:
 . f - Objective vector at X
 
-  Notes: TaoComputeSeparableObjective() is typically used within minimization implementations,
+  Notes:
+    TaoComputeSeparableObjective() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
@@ -340,11 +427,11 @@ PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F)
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,F,3);
   if (tao->ops->computeseparableobjective) {
-    ierr = PetscLogEventBegin(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     PetscStackPush("Tao user separable objective evaluation routine");
     ierr = (*tao->ops->computeseparableobjective)(tao,X,F,tao->user_sepobjP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(Tao_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetSeparableObjectiveRoutine() has not been called");
   ierr = PetscInfo(tao,"TAO separable function evaluation.\n");CHKERRQ(ierr);

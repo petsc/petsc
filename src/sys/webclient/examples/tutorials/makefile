@@ -8,7 +8,7 @@ EXAMPLESC = googledriveupload.c urlshorten.c googleobtainrefreshtoken.c boxobtai
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = src/sys/webclient/examples/tutorials
+LOCDIR	  = src/sys/webclient/examples/tutorials/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

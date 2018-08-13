@@ -1,4 +1,6 @@
 '''This module is meant to provide support for information and help systems based upon RDict.'''
+from __future__ import print_function
+from __future__ import absolute_import
 import logger
 
 class Info(logger.Logger):
@@ -141,7 +143,7 @@ class Help(Info):
 
 
   def outputDownload(self):
-    ''' Looks for downloaded packages in --with-packages-dir
+    ''' Looks for downloaded packages in --with-packages-download-dir
         For any it finds it updates the --download-xxx= argument to point to this local copy
         If it does not find some needed packages then prints the packages that need to be downloaded and exits'''
     import nargs
@@ -150,7 +152,7 @@ class Help(Info):
     global _outputDownloadDone
     if _outputDownloadDone: return
     _outputDownloadDone = 1
-    pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-dir', self.clArgs)))
+    pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-download-dir', self.clArgs)))
     missing = 0
     for i in self.argDB.dlist.keys():
       if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
@@ -164,7 +166,7 @@ class Help(Info):
         if not found:
           missing = 1
     if missing:
-      print 'Download the following packages to '+pkgdir+' \n'
+      print('Download the following packages to '+pkgdir+' \n')
     for i in self.argDB.dlist.keys():
       if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
         dlist = self.argDB.dlist[i]
@@ -179,8 +181,8 @@ class Help(Info):
                 self.argDB.insertArgs([self.clArgs[k]])
             break
         if not found:
-          print i + ' ' + str(self.argDB.dlist[i])
+          print(i + ' ' + str(self.argDB.dlist[i]))
     if missing:
-      print '\nThen run the script again\n'
+      print('\nThen run the script again\n')
       sys.exit(10)
 

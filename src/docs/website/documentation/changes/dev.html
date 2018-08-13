@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="39.html">3.9</a></li>
                 <li><a href="38.html">3.8</a></li>
                 <li><a href="37.html">3.7</a></li>
                 <li><a href="36.html">3.6</a></li>
@@ -99,11 +100,18 @@
       </div>
 
       <h4>General:</h4>
-      <li>The scripts in $PETSC_DIR/bin are now in $PETSC_DIR/lib/petsc/bin</li>
-      <li>PetscStrncat() renamed to PetscStrlcat() now takes the length of the original allocated space in the string instead of the part left after strings have been copied or concatenated in</li>
+      <ul>
+        <li>Removed <kbd>--with-errorchecking</kbd> configure option.</li>
+        <li>Added new command line option <kbd>-viewfromoptions</kbd> to disable <code>XXXViewFromOptions()</code> calls.</li>
+      </ul>
       <h4>Configure/Build:</h4>
       <ul>
-        <li>option --with-cuda-arch is removed. Use CUDAFLAGS to directly specify relavent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]</li>
+        <li>Removed <kbd>--with-viewfromoptions</kbd> configure option in favor of the new command line option <kbd>-viewfromoptions</kbd>.</li>
+        <li>Following options are renamed to have more consistant names:<pre>
+          --with-packages-dir          -> --with-packages-download-dir
+          --with-external-packages-dir -> --with-packages-build-dir
+          --package-dirs               -> --with-packages-search-path
+          --search-dirs                -> --with-executables-search-path</pre></li>
       </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
@@ -113,53 +121,52 @@
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
-        <li>Added MatShellTestMultTranspose() and MatShellTestMult() for checking if user provided MATSHELL matches the Jacobian of a given function computed with diffencing.</li>
-        <li>MatSolverPackage is replaced with MatSolverType.</li>
-        <li>mat_solver_package is replaced with mat_solver_type.</li>
-        <li>MatShellSetOperation() can now only be used for MATSHELL matrices, use MatSetOperation() to set an operation for any matrix type.</li>
-        <li>Added MatMumpsGetInverse().</li>
-      </ul>
+        <li>Added MatMatTransposeSolve() to MUMPS interface.</li>
+        <li>Added MatPartitioningViewFromOptions().</li>
+        <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
+        <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
+        </ul>
       <h4>PC:</h4>
-      <li> Added -pc_mg_distinct_smoothup and
-      PCMGSetDistinctSmoothUp() so that one can control the down and
-        up smoothers options seperately from the options database</li>
-      <li> Removed -pc_mg_smoothup and -pc_mg_smoothdown and
-      PCMGSetNumberSmoothUp() and PCMGSetNumberSmoothDown().  Instead,
-      configure the solvers on the levels with -mg_levels_ksp_max_it
-      n.  If separate numbers of smoothing steps are required for up
-      and down smoothers, use -pc_mg_distinct_smoothup
-      -mg_levels_ksp_max_it n -mg_levels_up_ksp_max_it m.</li>
+      <ul>
+        <li> PCKSPGetKSP() now raises an error if called on a PC which is not of type PCKSP </li>
+        <li> Added PCKSPSetKSP() </li>
+      </ul>
       <h4>KSP:</h4>
+      <ul>
+        <li><code>KSPLSQR</code>
+          <ul>
+            <li>Computes now an estimate of the operator's norm in the same way as Saunders and MATLAB, and uses it in the type-specific stopping criterion <code>KSPLSQRConvergedDefault()</code>; this now gives the same number of iterations as MATLAB's <code>lsqr()</code>.</li>
+            <li>Added <code>-ksp_lsqr_exact_mat_norm</code> and <code>KSPLSQRSetExactMatNorm()</code> to optionally compute and use the exact Frobenius norm instead of the estimate.</li>
+            <li><code>KSPLSQRMonitorDefault()</code> and <code>-ksp_lsqr_monitor</code> now additionally print the (estimate of) the operator's norm.</li>
+            <li>Allow setting <code>-ksp_convergence_test lsqr</code> (it's a default for <code>KSPLSQR</code>, though).</li>
+            <li><code>KSPLSQRSetStandardErrorVec()</code> is replaced by <code>KSPLSQRSetComputeStandardErrorVec()</code> which now specifies whether standard error vector should be computed instead of setting the vector;</li>
+            <li>likewise, option <code>-ksp_lsqr_set_standard_error</code> is replaced by <code>-ksp_lsqr_compute_standard_error</code>.</li>
+            <li>Renamed <code>KSPLSQRGetArnorm()</code> to <code>KSPLSQRGetNorms()</code> and removed its <code>rhs_norm</code> argument.</li>
+            <li>Renamed <code>KSPLSQRDefaultConverged()</code> to <code>KSPLSQRConvergedDefault()</code> merged with <code>KSPConvergedLSQR()</code>.</li>
+          </ul>
+        </li>
+      </ul>
       <h4>SNES:</h4>
       <ul>
-        <li>Removed SNESHasDM() because there is always a DM in SNES.</li>
-      </ul>
+        <li>SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate unlimited number of function evaluations.</li>
+        </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-      <li>Added TSRHSJacobianTestTranspose() and TSRHSJacobianTest() checking if user provide MATSHELL Jacobian with TSSetRHSJacobian() matches the Jacobian of the function provided to TSSetRHSFunction() computed with finite differencing. Command line options -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view  and -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view </li>
-      <h4>TAO:</h4>
-      <ul>
-        <li>Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other PETSc default monitor names, also now print with the same format as other monitors %3D Tao ....</li>
-        <li>Added VecLock{Push|Pop} calls around user callbacks; use of VecGetArray in user callbacks is now prohibited.</li>
-        <li>Added default matrix-free finite-differencing implementation for Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be selected with -tao_mf_hessian at command line.</li>
-      </ul>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>Renamed <code>DMDAGetReducedDMDA()</code> to <code>DMDACreateCompatibleDMDA()</code>.</li>
+        <li>Added DMGetCompatibility() and implementation for DMDA</li>
+      </ul>
       <h4>DMPlex:</h4>
+      <ul>
+        <li>Added an interface DM and boundary label to DMPlexCreateHybridMesh()</li>
+      </ul>
       <h4>PetscViewer:</h4>
-      <ul>
-        <li>PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.</li>
-      </ul>
+      <li> Added argument to <code>PetscViewerVTKAddField()</code> to allow skipping of DM check as fields are added</li>
       <h4>SYS:</h4>
-      <ul>
-        <li>PetscPClose() no longer returns error code from pclose() because some systems cannot reliably deliver it</li>
-        <li>PetscPopUpSelect() has been removed.</li>
-      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-      <ul>
-        <li>The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.</li>
-      </ul>
     </div>
 
     <!--end-->

@@ -235,7 +235,7 @@ Process [6]
 1.53125
 L_2 Error: < 1.0e-11
 Initial Residual
-Vec Object: 7 MPI processes
+Vec Object: Residual, Iterate 0 7 MPI processes
   type: mpi
 Process [0]
 0.
@@ -471,7 +471,7 @@ Process [6]
 0.
 L_2 Residual: 0.
 Au - b = Au + F(0)
-Vec Object: 7 MPI processes
+Vec Object: Residual, Iterate 0 7 MPI processes
   type: mpi
 Process [0]
 0.

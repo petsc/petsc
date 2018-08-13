@@ -92,7 +92,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = PetscCalloc1(PetscMax(3, dim),&lambda);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, &csec);CHKERRQ(ierr);
+  ierr = DMGetSection(cdm, &csec);CHKERRQ(ierr);
 
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     ierr = PetscSectionSetFieldDof(msec, p, 0, Nd);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(mdm, msec);CHKERRQ(ierr);
+  ierr = DMSetSection(mdm, msec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -175,15 +175,17 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   Vec              u, ua, scaling, ones, massLumped, rhs, uproj;
   PetscReal        error;
   PetscInt         dim;
+  MPI_Comm         comm;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dma, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dma, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -211,7 +213,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error);CHKERRQ(ierr);
 
   ierr = VecSet(ones, 1.0);CHKERRQ(ierr);
-  ierr = DMPlexSNESComputeJacobianActionFEM(dma, ua, ones, massLumped, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobianAction(dma, NULL, 0, 0, ua, NULL, ones, massLumped, user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) massLumped, "Lumped mass");CHKERRQ(ierr);
   ierr = VecViewFromOptions(massLumped, NULL, "-mass_vec_view");CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(dm, dma, &mass);CHKERRQ(ierr);

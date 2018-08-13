@@ -382,7 +382,8 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptions
 .   -snes_linesearch_monitor - print information about progress of line searches
 -   -snes_linesearch_damping - damping factor used for basic line search
 
-    Notes: This is the default nonlinear solver in SNES
+    Notes:
+    This is the default nonlinear solver in SNES
 
    Level: beginner
 

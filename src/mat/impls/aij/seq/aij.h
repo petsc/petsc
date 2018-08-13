@@ -278,6 +278,7 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,Pe
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,Mat);
@@ -379,8 +380,11 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 .  sum - negative the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -   don't use this; it changes nnz and hence is WRONG
--   PETSC_KERNEL_USE_UNROLL_2 -
++   PETSC_KERNEL_USE_UNROLL_4
+-   PETSC_KERNEL_USE_UNROLL_2
+
+  Developer Notes:
+    The macro changes sum but not other parameters
 
 .seealso: PetscSparseDensePlusDot()
 
@@ -388,15 +392,20 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
     if (nnz > 0) { \
-      switch (nnz & 0x3) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
       case 3: sum -= *xv++ *r[*xi++]; \
       case 2: sum -= *xv++ *r[*xi++]; \
       case 1: sum -= *xv++ *r[*xi++]; \
-        nnz       -= 4;} \
-      while (nnz > 0) { \
-        sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] - \
-               xv[2] * r[xi[2]] - xv[3] * r[xi[3]]; \
-        xv += 4; xi += 4; nnz -= 4; }}}
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
+        sum -=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
@@ -426,8 +435,11 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 .  sum - the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -  don't use this; it changes nnz and hence is WRONG
--   PETSC_KERNEL_USE_UNROLL_2 -
++   PETSC_KERNEL_USE_UNROLL_4
+-   PETSC_KERNEL_USE_UNROLL_2
+
+  Developer Notes:
+    The macro changes sum but not other parameters
 
 .seealso: PetscSparseDenseMinusDot()
 
@@ -435,15 +447,20 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
     if (nnz > 0) { \
-      switch (nnz & 0x3) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
       case 3: sum += *xv++ *r[*xi++]; \
       case 2: sum += *xv++ *r[*xi++]; \
       case 1: sum += *xv++ *r[*xi++]; \
-        nnz       -= 4;} \
-      while (nnz > 0) { \
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
         sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
-               xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-        xv += 4; xi += 4; nnz -= 4; }}}
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
@@ -452,12 +469,55 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat,IS,IS,PetscInt,MatReus
                                     sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);} \
     if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
+#elif defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) PetscSparseDensePlusDot_AVX512_Private(&(sum),(r),(xv),(xi),(nnz))
+
 #else
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
     PetscInt __i; \
     for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
+#if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+  #include <immintrin.h>
+  #if !defined(_MM_SCALE_8)
+  #define _MM_SCALE_8    8
+  #endif
+
+PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
+{
+  __m512d  vec_x,vec_y,vec_vals;
+  __m256i  vec_idx;
+  __mmask8 mask;
+  PetscInt j;
+
+  vec_y = _mm512_setzero_pd();
+  for (j=0; j<(n>>3); j++) {
+    vec_idx  = _mm256_loadu_si256((__m256i const*)aj);
+    vec_vals = _mm512_loadu_pd(aa);
+    vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+    vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
+    aj += 8; aa += 8;
+  }
+  /* masked load does not work on KNL, it requires avx512vl */
+  if ((n&0x07)>2) {
+    mask     = (__mmask8)(0xff >> (8-(n&0x07)));
+    vec_idx  = _mm256_loadu_si256((__m256i const*)aj);
+    vec_vals = _mm512_loadu_pd(aa);
+    vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8);
+    vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask);
+  } else if ((n&0x07)==2) {
+    *sum += aa[0]*x[aj[0]];
+    *sum += aa[1]*x[aj[1]];
+  } else if ((n&0x07)==1) {
+    *sum += aa[0]*x[aj[0]];
+  }
+  if (n>2) *sum += _mm512_reduce_add_pd(vec_y);
+/*
+  for(j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
+*/
+}
+#endif
 
 /*
     PetscSparseDenseMaxDot - The inner kernel of a modified matrix-vector product \max_i xv[i] * r[xi[i]] for CSR storage

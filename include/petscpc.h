@@ -120,6 +120,12 @@ PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC,MatSolverType);
 PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC,MatSolverType*);
 PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
+PETSC_DEPRECATED("Use PCFactorSetMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorSetMatSolverPackage(PC pc,MatSolverType stype)
+{ return PCFactorSetMatSolverType(pc,stype); }
+PETSC_DEPRECATED("Use PCFactorGetMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorGetMatSolverPackage(PC pc,MatSolverType *stype)
+{ return PCFactorGetMatSolverType(pc,stype); }
+PETSC_DEPRECATED("Use PCFactorSetUpMatSolverType") PETSC_STATIC_INLINE PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+{ return PCFactorSetUpMatSolverType(pc); }
 
 PETSC_EXTERN PetscErrorCode PCFactorSetFill(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetColumnPivot(PC,PetscReal);
@@ -225,6 +231,8 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurScale(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
@@ -239,15 +247,6 @@ PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
 
 PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
 PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
-
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
-
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetDropTolerance(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPUseScaling(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetNonzeros(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCAINVCUSPSetLinParameter(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
@@ -343,5 +342,10 @@ PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
+
+PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
+PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat*);
+PETSC_EXTERN PetscErrorCode PCLMVMSetIS(PC, IS);
+PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 
 #endif /* __PETSCPC_H */

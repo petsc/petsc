@@ -128,7 +128,8 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
    Level: beginner
 
-   Notes: Supports left and right preconditioning, but not symmetric
+   Notes:
+    Supports left and right preconditioning, but not symmetric
 
           The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
           That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning

@@ -19,7 +19,8 @@ typedef struct _p_PC* PC;
 
    Level: beginner
 
-   Notes: Click on the links above to see details on a particular solver
+   Notes:
+    Click on the links above to see details on a particular solver
 
           PCRegister() is used to register preconditioners that are then accessible via PCSetType()
 
@@ -62,16 +63,13 @@ typedef const char* PCType;
 #define PCREDISTRIBUTE    "redistribute"
 #define PCSVD             "svd"
 #define PCGAMG            "gamg"
-#define PCSACUSP          "sacusp"        /* these four run on NVIDIA GPUs using CUSP */
-#define PCSACUSPPOLY      "sacusppoly"
-#define PCBICGSTABCUSP    "bicgstabcusp"
-#define PCAINVCUSP        "ainvcusp"
 #define PCCHOWILUVIENNACL "chowiluviennacl"
 #define PCROWSCALINGVIENNACL "rowscalingviennacl"
 #define PCSAVIENNACL      "saviennacl"
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
 #define PCTELESCOPE       "telescope"
+#define PCLMVM            "lmvm"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -90,7 +88,8 @@ PETSC_EXTERN const char *const *const PCSides;
 
    Level: advanced
 
-   Notes: this must match petsc/finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
+   Notes:
+    this must match petsc/finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
 
 .seealso: PCApplyRichardson()
 E*/

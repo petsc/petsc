@@ -1,6 +1,7 @@
 #include <petsc/private/kspimpl.h> /*I <petscksp.h> I*/
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petscdm.h>
 
 static PetscBool  cited  = PETSC_FALSE;
 static PetscBool  cited2 = PETSC_FALSE;
@@ -85,7 +86,8 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
 
    Level: advanced
 
-   Notes: The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
+   Notes:
+    The operator can be either passed in a) monolithic global ordering, b) pressure-only global ordering
           or c) interface pressure ordering (if -ksp_fetidp_pressure_all false).
           In cases b) and c), the pressure ordering of dofs needs to satisfy
              pid_1 < pid_2  iff  gid_1 < gid_2
@@ -519,6 +521,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PC_BDDC          *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
   Mat              A,Ap;
   PetscInt         fid = -1;
+  PetscMPIInt      size;
   PetscBool        ismatis,pisz,allp;
   PetscBool        flip; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
@@ -531,17 +534,18 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  pisz = PETSC_TRUE;
+  pisz = PETSC_FALSE;
   flip = PETSC_FALSE;
   allp = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_fetidp_pressure_iszero","Zero pressure block",NULL,pisz,&pisz,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
   fetidp->saddlepoint = (fid >= 0 ? PETSC_TRUE : fetidp->saddlepoint);
+  if (size == 1) fetidp->saddlepoint = PETSC_FALSE;
 
   ierr = KSPGetOperators(ksp,&A,&Ap);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
@@ -557,12 +561,24 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   fetidp->matnnzstate  = matnnzstate;
   fetidp->statechanged = fetidp->saddlepoint;
 
-  /* see if MATIS has same fields attached */
+  /* see if we have some fields attached */
   if (!pcbddc->n_ISForDofsLocal && !pcbddc->n_ISForDofs) {
+    DM             dm;
     PetscContainer c;
 
+    ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)A,"_convert_nest_lfields",(PetscObject*)&c);CHKERRQ(ierr);
-    if (c) {
+    if (dm) {
+      IS      *fields;
+      PetscInt nf,i;
+
+      ierr = DMCreateFieldDecomposition(dm,&nf,NULL,&fields,NULL);CHKERRQ(ierr);
+      ierr = PCBDDCSetDofsSplitting(fetidp->innerbddc,nf,fields);CHKERRQ(ierr);
+      for (i=0;i<nf;i++) {
+        ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(fields);CHKERRQ(ierr);
+    } else if (c) {
       MatISLocalFields lf;
       ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
       ierr = PCBDDCSetDofsSplittingLocal(fetidp->innerbddc,lf->nr,lf->rf);CHKERRQ(ierr);
@@ -862,7 +878,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     /* non-zero rhs on interior dofs when applying the preconditioner */
     if (totP) pcbddc->switch_static = PETSC_TRUE;
 
-    /* if there are no pressures, set inner bddc flag for benign saddle point */
+    /* if there are no interface pressures, set inner bddc flag for benign saddle point */
     if (!totP) {
       pcbddc->benign_saddle_point = PETSC_TRUE;
       pcbddc->compute_nonetflux   = PETSC_TRUE;
@@ -884,14 +900,24 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
     /* Operators for pressure preconditioner */
     if (totP) {
-
-      /* Extract pressure block */
+      /* Extract pressure block if needed */
       if (!pisz) {
         Mat C;
+        IS  nzrows = NULL;
 
         ierr = MatCreateSubMatrix(A,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-        ierr = MatScale(C,-1.);CHKERRQ(ierr);
-        ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject)C);CHKERRQ(ierr);
+        ierr = MatFindNonzeroRows(C,&nzrows);CHKERRQ(ierr);
+        if (nzrows) {
+          PetscInt i;
+
+          ierr = ISGetSize(nzrows,&i);CHKERRQ(ierr);
+          ierr = ISDestroy(&nzrows);CHKERRQ(ierr);
+          if (!i) pisz = PETSC_TRUE;
+        }
+        if (!pisz) {
+          ierr = MatScale(C,-1.);CHKERRQ(ierr); /* i.e. Almost Incompressible Elasticity, Stokes discretized with Q1xQ1_stabilized */
+          ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject)C);CHKERRQ(ierr);
+        }
         ierr = MatDestroy(&C);CHKERRQ(ierr);
       }
       if (A != Ap) { /* user has provided a different Pmat, use it to extract the pressure preconditioner */
@@ -912,7 +938,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
         ierr = PetscObjectTypeCompare((PetscObject)PPmat,MATIS,&ismatis);CHKERRQ(ierr);
         if (ismatis) {
-          ierr = MatISGetMPIXAIJ(PPmat,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          ierr = MatConvert(PPmat,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
           ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
           ierr = MatDestroy(&C);CHKERRQ(ierr);
           ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
@@ -1196,12 +1222,12 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
                                            |-B 0   | | p | = |-g |
 .   -ksp_fetidp_pressure_field <-1>      : activates support for saddle point problems, and identifies the pressure field id.
                                            If this information is not provided, the pressure field is detected by using MatFindZeroDiagonals().
-.   -ksp_fetidp_pressure_iszero <true>   : if false, extracts the pressure block from the matrix (i.e. for Almost Incompressible Elasticity)
 -   -ksp_fetidp_pressure_all <false>     : if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
 
    Level: Advanced
 
-   Notes: Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
+   Notes:
+    Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
 .vb
       -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
@@ -1217,14 +1243,15 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
    In order to use the deluxe version of FETI-DP, you must customize the inner BDDC operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
    non-redundant multipliers, i.e. -ksp_fetidp_fullyredundant false. Options for the scaling solver are prefixed by -fetidp_bddelta_, E.g.
 .vb
-      -fetidp_bddelta_pc_factor_mat_solver_type mumps -my_fetidp_bddelta_pc_type lu
+      -fetidp_bddelta_pc_factor_mat_solver_type mumps -fetidp_bddelta_pc_type lu
 .ve
 
-   Some of the basic options such as maximum number of iterations and tolerances are automatically passed from this KSP to the inner KSP that actually performs the iterations.
+   Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this KSP to the inner KSP that actually performs the iterations.
 
    The converged reason and number of iterations computed are passed from the inner KSP to this KSP at the end of the solution.
 
-   Developer Notes: Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
+   Developer Notes:
+    Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
     This is so users do not have to change KSPNormType options when they switch from other KSP methods to this one.
 
    References:

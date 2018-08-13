@@ -1,6 +1,5 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
-#include <petscdmda.h>
 #include <petsc/private/vecimpl.h>
 
 PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)
@@ -328,10 +327,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   dm->data = network;
 
   network->refct     = 1;
-  network->NVertices = -1;
-  network->NEdges    = -1;
-  network->nVertices = -1;
-  network->nEdges    = -1;
+  network->NVertices = 0;
+  network->NEdges    = 0;
+  network->nVertices = 0;
+  network->nEdges    = 0;
+  network->nsubnet   =  0;
 
 
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);

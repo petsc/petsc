@@ -74,7 +74,8 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
   Output Parameters:
 .   p - the buffer
 
-  Notes: does byte swapping to work on all machines.
+  Notes:
+    does byte swapping to work on all machines.
 */
 PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
@@ -124,7 +125,8 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 .   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
 
-  Notes: does byte swapping to work on all machines.
+  Notes:
+    does byte swapping to work on all machines.
 */
 PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBool dummy)
 {

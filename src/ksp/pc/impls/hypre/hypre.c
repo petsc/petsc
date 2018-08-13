@@ -1171,7 +1171,8 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 
    Level: intermediate
 
-   Notes: G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
+   Notes:
+    G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
           Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
 
 .seealso:
@@ -1218,7 +1219,8 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 
    Level: intermediate
 
-   Notes: C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
+   Notes:
+    C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
           Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
 .seealso:
@@ -1312,7 +1314,8 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 -  ND_PiFull - Nedelec interpolation matrix
 -  ND_Pi - x/y/z component of Nedelec interpolation matrix
 
-   Notes: For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
+   Notes:
+    For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
           For ADS, both type of interpolation matrices are needed.
    Level: intermediate
 
@@ -1405,7 +1408,8 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
 
    Level: intermediate
 
-   Notes: A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
+   Notes:
+    A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
 
 .seealso:
 @*/
@@ -1432,7 +1436,8 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 
    Level: intermediate
 
-   Notes: A should be obtained by discretizing the Poisson problem with linear finite elements.
+   Notes:
+    A should be obtained by discretizing the Poisson problem with linear finite elements.
           Following HYPRE convention, the scalar Poisson solver of AMS can be turned off by passing NULL.
 
 .seealso:
@@ -1577,6 +1582,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 
   ierr = PetscStrcmp("pilut",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_ParCSRPilutCreate,(jac->comm_hypre,&jac->hsolver));
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Pilut;
     pc->ops->view           = PCView_HYPRE_Pilut;
@@ -1588,6 +1594,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   ierr = PetscStrcmp("parasails",jac->hypre_type,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_ParaSailsCreate,(jac->comm_hypre,&jac->hsolver));
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_ParaSails;
     pc->ops->view           = PCView_HYPRE_ParaSails;
@@ -1886,7 +1893,8 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 
    Level: intermediate
 
-   Notes: Apart from pc_hypre_type (for which there is PCHYPRESetType()),
+   Notes:
+    Apart from pc_hypre_type (for which there is PCHYPRESetType()),
           the many hypre options can ONLY be set via the options database (e.g. the command line
           or with PetscOptionsSetValue(), there are no functions to set them)
 
@@ -1937,8 +1945,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
   jac->comm_hypre         = MPI_COMM_NULL;
-  /* duplicate communicator for hypre */
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_HYPRE);CHKERRQ(ierr);
@@ -2118,7 +2124,8 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 . -pc_pfmg_relax_type -relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
 - -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
 
-   Notes:  This is for CELL-centered descretizations
+   Notes:
+    This is for CELL-centered descretizations
 
            This must be used with the MATHYPRESTRUCT matrix type.
            This is less general than in hypre, it supports only one block per process defined by a PETSc DMDA.
@@ -2350,7 +2357,8 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 . -pc_syspfmg_tol <tol> tolerance of SysPFMG
 . -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
 
-   Notes:  This is for CELL-centered descretizations
+   Notes:
+    This is for CELL-centered descretizations
 
            This must be used with the MATHYPRESSTRUCT matrix type.
            This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DMDA.

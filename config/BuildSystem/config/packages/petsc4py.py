@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '305be54'  #master+
+    self.gitcommit              = 'db1e17a' #3.9.1+ master
     self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -63,6 +63,7 @@ class Configure(config.package.Package):
       import sys
       self.pyexe = sys.executable
 
+    self.addDefine('PYTHON_EXE','"'+self.pyexe+'"')
     self.addDefine('HAVE_PETSC4PY',1)
     self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
@@ -101,24 +102,6 @@ class Configure(config.package.Package):
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
-    if self.setCompilers.isDarwin(self.log):
-      # The name of the Python library on Apple is Python which does not end in the expected .dylib
-      # Thus see if the python library in the standard locations points to the Python version
-      import sys
-      import os
-      prefix = sys.exec_prefix
-      if os.path.isfile(os.path.join(prefix,'Python')):
-        for i in ['/usr/lib/libpython.dylib','/usr/lib/libpython'+sys.version[:3]+'.dylib','/opt/local/lib/libpython.dylib','/opt/local/lib/libpython'+sys.version[:3]+'.dylib']:
-          if os.path.realpath(i) == os.path.join(prefix,'Python'):
-            self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
-            return
-      if os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
-        self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython.dylib')+'"')
-        return
-      if os.path.isfile(os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')):
-        self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')+'"')
-        return
-      raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('petsc4py-build','')

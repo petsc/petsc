@@ -103,37 +103,37 @@ class Configure(config.base.Configure):
     return
 
   # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
-  # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
+  # checkCInline & checkCxxInline are pretty much the same code right now.
   # but they could be different (later) - and they also check/set different flags - hence
   # code duplication.
-  def checkCStaticInline(self):
-    '''Check for C keyword: static inline'''
-    self.cStaticInlineKeyword = 'static'
+  def checkCInline(self):
+    '''Check for C inline keyword'''
+    self.cInlineKeyword = ' '
     self.pushLanguage('C')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cStaticInlineKeyword = kw
-        self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cInlineKeyword = kw
+        self.logPrint('Set C Inline keyword to '+self.cInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cStaticInlineKeyword == 'static':
-      self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
+    if self.cInlineKeyword == ' ':
+      self.logPrint('No C Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('C_INLINE', self.cInlineKeyword)
     return
 
-  def checkCxxStaticInline(self):
-    '''Check for C++ keyword: static inline'''
-    self.cxxStaticInlineKeyword = 'static'
+  def checkCxxInline(self):
+    '''Check for C++ inline keyword'''
+    self.cxxInlineKeyword = ' '
     self.pushLanguage('C++')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cxxStaticInlineKeyword = kw
-        self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cxxInlineKeyword = kw
+        self.logPrint('Set Cxx Inline keyword to '+self.cxxInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cxxStaticInlineKeyword == 'static':
-      self.logPrint('No Cxx StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
+    if self.cxxInlineKeyword == ' ':
+      self.logPrint('No Cxx Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('CXX_INLINE', self.cxxInlineKeyword)
     return
 
   def checkRestrict(self,language):
@@ -213,7 +213,7 @@ class Configure(config.base.Configure):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
           skipclibraries = 0
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
@@ -228,7 +228,7 @@ class Configure(config.base.Configure):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
           skipclibraries = 0
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
@@ -264,7 +264,7 @@ class Configure(config.base.Configure):
     rpathflags = []
     try:
       while 1:
-        arg = argIter.next()
+        arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
 
         # Intel compiler sometimes puts " " around an option like "-lsomething"
@@ -279,11 +279,11 @@ class Configure(config.base.Configure):
           continue
         # if options of type -L foobar
         if arg == '-lto_library':
-          lib = argIter.next()
+          lib = next(argIter)
           self.logPrint('Skipping Apple LLVM linker option -lto_library '+lib)
           continue
         if arg == '-L':
-          lib = argIter.next()
+          lib = next(argIter)
           self.logPrint('Found -L '+lib, 4, 'compilers')
           clibs.append('-L'+lib)
           continue
@@ -308,7 +308,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -333,7 +333,7 @@ class Configure(config.base.Configure):
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
-          lib = argIter.next()
+          lib = next(argIter)
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
@@ -376,12 +376,12 @@ class Configure(config.base.Configure):
       self.setCompilers.saveLog()
       try:
         self.setCompilers.checkCompiler('FC')
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         raise RuntimeError('C libraries cannot directly be used from Fortran')
-      except OSError, e:
+      except OSError as e:
         self.setCompilers.LIBS = oldLibs
         self.logWrite(self.setCompilers.restoreLog())
         raise e
@@ -516,7 +516,7 @@ class Configure(config.base.Configure):
           self.setCompilers.LIBS = oldLibs
           self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
           skipcxxlibraries = 0
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
@@ -537,7 +537,7 @@ class Configure(config.base.Configure):
             self.setCompilers.LIBS = oldLibs
             self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
             skipcxxlibraries = 0
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
@@ -573,7 +573,7 @@ class Configure(config.base.Configure):
     rpathflags = []
     try:
       while 1:
-        arg = argIter.next()
+        arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
 
         # Intel compiler sometimes puts " " around an option like "-lsomething"
@@ -589,12 +589,12 @@ class Configure(config.base.Configure):
 
         # if options of type -L foobar
         if arg == '-L':
-          lib = argIter.next()
+          lib = next(argIter)
           self.logPrint('Found -L '+lib, 4, 'compilers')
           cxxlibs.append('-L'+lib)
           continue
         if arg == '-lto_library':
-          lib = argIter.next()
+          lib = next(argIter)
           self.logPrint('Skipping Apple LLVM linker option -lto_library '+lib)
           continue
         # Check for full library name
@@ -618,7 +618,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -649,7 +649,7 @@ class Configure(config.base.Configure):
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
-          lib = argIter.next()
+          lib = next(argIter)
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
@@ -690,7 +690,7 @@ class Configure(config.base.Configure):
     self.setCompilers.saveLog()
     try:
       self.setCompilers.checkCompiler('C')
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logPrint('Cxx libraries cannot directly be used from C', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
     self.setCompilers.LIBS = oldLibs
@@ -703,7 +703,7 @@ class Configure(config.base.Configure):
       self.setCompilers.saveLog()
       try:
         self.setCompilers.checkCompiler('FC')
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logPrint('Cxx libraries cannot directly be used from Fortran', 4, 'compilers')
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       self.setCompilers.LIBS = oldLibs
@@ -805,6 +805,10 @@ class Configure(config.base.Configure):
       self.addDefine('STDCALL', '__stdcall')
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
       self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
+    if config.setCompilers.Configure.isGfortran8plus(self.getCompiler('FC'), self.log):
+      self.addDefine('FORTRAN_CHARLEN_T', 'size_t')
+    else:
+      self.addDefine('FORTRAN_CHARLEN_T', 'int')
     return
 
   def checkFortranNameManglingDouble(self):
@@ -902,7 +906,7 @@ class Configure(config.base.Configure):
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Fortran code cannot directly be linked with C linker, therefor will determine needed Fortran libraries')
         skipfortranlibraries = 0
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       self.logPrint('Fortran code cannot directly be linked with C linker, therefor will determine needed Fortran libraries')
@@ -917,7 +921,7 @@ class Configure(config.base.Configure):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('Fortran code cannot directly be linked with C++ linker, therefor will determine needed Fortran libraries')
           skipfortranlibraries = 0
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('Fortran code cannot directly be linked with CXX linker, therefor will determine needed Fortran libraries')
@@ -989,7 +993,7 @@ class Configure(config.base.Configure):
     rpathflags = []
     try:
       while 1:
-        arg = argIter.next()
+        arg = next(argIter)
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         # Intel compiler sometimes puts " " around an option like "-lsomething"
         if arg.startswith('"') and arg.endswith('"'):
@@ -1000,7 +1004,7 @@ class Configure(config.base.Configure):
           arg = arg[:-1]
 
         if arg == '-lto_library':
-          lib = argIter.next()
+          lib = next(argIter)
           self.logPrint('Skipping Apple LLVM linker option -lto_library '+lib)
           continue
         # Check for full library name
@@ -1046,14 +1050,14 @@ class Configure(config.base.Configure):
             self.logPrint('Already in lflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Found system library therefor skipping: '+arg, 4, 'compilers')
           continue
         # Check for canonical library argument
         m = re.match(r'^-[lL]$', arg)
         if m:
-          lib = arg+argIter.next()
+          lib = arg+next(argIter)
           self.logPrint('Found canonical library: '+lib, 4, 'compilers')
           if not lib == '-LLTO' or not self.setCompilers.isDarwin(self.log):
             flibs.append(lib)
@@ -1101,8 +1105,8 @@ class Configure(config.base.Configure):
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
-          lib = argIter.next()
-          if lib == '\\': lib = argIter.next()
+          lib = next(argIter)
+          if lib == '\\': lib = next(argIter)
           if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
@@ -1134,7 +1138,7 @@ class Configure(config.base.Configure):
         # This probably only applies to Solaris systems, and then will only
         # work with gcc...
         if arg == '-Y':
-          libs = argIter.next()
+          libs = next(argIter)
           if libs.startswith('"') and libs.endswith('"'):
             libs = libs[1:-1]
           for lib in libs.split(':'):
@@ -1206,7 +1210,7 @@ class Configure(config.base.Configure):
     self.setCompilers.saveLog()
     try:
       self.setCompilers.checkCompiler('C')
-    except RuntimeError, e:
+    except RuntimeError as e:
       self.logPrint('Fortran libraries cannot directly be used from C, try without -lcrt2.o', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
@@ -1214,7 +1218,7 @@ class Configure(config.base.Configure):
       self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C')
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logPrint('Fortran libraries still cannot directly be used from C, try without pgi.ld files', 4, 'compilers')
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         tmpflibs = self.flibs
@@ -1238,14 +1242,14 @@ class Configure(config.base.Configure):
       try:
         self.setCompilers.checkCompiler('Cxx')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
-      except RuntimeError, e:
+      except RuntimeError as e:
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
         self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
         try:
           self.setCompilers.checkCompiler('Cxx')
-        except RuntimeError, e:
+        except RuntimeError as e:
           self.logPrint(str(e), 4, 'compilers')
           if str(e).find('INTELf90_dclock') >= 0:
             self.logPrint('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!', 2, 'compilers')
@@ -1291,11 +1295,20 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
+  def configureFortranFlush(self):
+    self.pushLanguage('FC')
+    for baseName in ['flush','flush_']:
+      if self.checkLink(body='      call '+baseName+'(6)'):
+        self.addDefine('HAVE_FORTRAN_'+baseName.upper(), 1)
+        break
+    self.popLanguage()
+    return
+
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', 1)
-      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = 1')
+      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', 0)
+      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = 0')
       self.logPrint('Initializing Fortran objects')
     else:
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' ')
@@ -1343,7 +1356,7 @@ class Configure(config.base.Configure):
   def checkFortran2003(self):
     '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
-    if self.fortranIsF90 and self.checkLink(includes = '''
+    if self.fortranIsF90 and self.checkLink(codeBegin = '''
       module Base_module
         type, public :: base_type
            integer :: A
@@ -1355,7 +1368,8 @@ class Configure(config.base.Configure):
           class(base_type) :: this
         end subroutine BasePrint
       end module Base_module
-    ''',body = '''
+
+      program main''',body = '''
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()
@@ -1653,7 +1667,7 @@ class Configure(config.base.Configure):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
-      self.executeTest(self.checkCStaticInline)
+      self.executeTest(self.checkCInline)
       self.executeTest(self.checkDynamicLoadFlag)
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
@@ -1666,7 +1680,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkRestrict,['Cxx'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
-      self.executeTest(self.checkCxxStaticInline)
+      self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       self.executeTest(self.checkCxx11)
@@ -1690,6 +1704,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranModuleOutput)
       self.executeTest(self.checkFortranTypeStar)
       self.executeTest(self.checkFortranTypeInitialize)
+      self.executeTest(self.configureFortranFlush)
     self.no_configure()
     return
 

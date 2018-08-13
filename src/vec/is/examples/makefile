@@ -3,7 +3,7 @@ ALL: lib
 
 SOURCEH   =
 DIRS      = tests
-LOCDIR    = src/vec/is/examples
+LOCDIR    = src/vec/is/examples/
 MANSEC    = Vec
 SUBMANSEC = IS
 

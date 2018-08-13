@@ -181,7 +181,6 @@ int main(int argc,char **argv)
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
 
   ierr         = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);

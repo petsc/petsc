@@ -63,7 +63,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf901_(DM *da,Vec *v,F90Array1d *a
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
   *ierr = F90Array1dCreate(aa,MPIU_SCALAR,gxs,gxm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -74,7 +74,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayf901_(DM *da,Vec *v,F90Array1
   PetscScalar *fa;
   *ierr = F90Array1dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
-  *ierr = F90Array1dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf902_(DM *da,Vec *v,F90Array2d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -96,7 +96,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf902_(DM *da,Vec *v,F90Array2d *a
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   if (dim == 1) {
     gys = gxs;
@@ -113,7 +113,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayf902_(DM *da,Vec *v,F90Array2
   PetscScalar *fa;
   *ierr = F90Array2dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
-  *ierr = F90Array2dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf903_(DM *da,Vec *v,F90Array3d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -135,7 +135,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf903_(DM *da,Vec *v,F90Array3d *a
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   if (dim == 2) {
     gzs = gys;
@@ -154,7 +154,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayf903_(DM *da,Vec *v,F90Array3
   PetscScalar *fa;
   *ierr = F90Array3dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
-  *ierr = F90Array3dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -176,7 +176,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayf904_(DM *da,Vec *v,F90Array4d *a
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
   *ierr = F90Array4dCreate(aa,MPIU_SCALAR,zero,dof,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -190,7 +190,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayf904_(DM *da,Vec *v,F90Array4
   */
   *ierr = F90Array4dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
-  *ierr = F90Array4dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf901_(DM *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -212,7 +212,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf901_(DM *da,Vec *v,F90Array1
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   *ierr = VecGetArrayRead(*v,&aa);if (*ierr) return;
   *ierr = F90Array1dCreate((void*)aa,MPIU_SCALAR,gxs,gxm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -223,7 +223,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayreadf901_(DM *da,Vec *v,F90Ar
   const PetscScalar *fa;
   *ierr = F90Array1dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArrayRead(*v,&fa);if (*ierr) return;
-  *ierr = F90Array1dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf902_(DM *da,Vec *v,F90Array2d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -245,7 +245,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf902_(DM *da,Vec *v,F90Array2
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   if (dim == 1) {
     gys = gxs;
@@ -262,7 +262,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayreadf902_(DM *da,Vec *v,F90Ar
   const PetscScalar *fa;
   *ierr = F90Array2dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArrayRead(*v,&fa);if (*ierr) return;
-  *ierr = F90Array2dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf903_(DM *da,Vec *v,F90Array3d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -284,7 +284,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf903_(DM *da,Vec *v,F90Array3
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   if (dim == 2) {
     gzs = gys;
@@ -303,7 +303,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayreadf903_(DM *da,Vec *v,F90Ar
   const PetscScalar *fa;
   *ierr = F90Array3dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArrayRead(*v,&fa);if (*ierr) return;
-  *ierr = F90Array3dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -325,7 +325,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecgetarrayreadf904_(DM *da,Vec *v,F90Array4
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    *ierr = PETSC_ERR_ARG_INCOMP;
+    *ierr = PETSC_ERR_ARG_INCOMP; return;
   }
   *ierr = VecGetArrayRead(*v,&aa);if (*ierr) return;
   *ierr = F90Array4dCreate((void*)aa,MPIU_SCALAR,zero,dof,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -339,5 +339,5 @@ PETSC_EXTERN void PETSC_STDCALL dmdavecrestorearrayreadf904_(DM *da,Vec *v,F90Ar
   */
   *ierr = F90Array4dAccess(a,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
   *ierr = VecRestoreArrayRead(*v,&fa);if (*ierr) return;
-  *ierr = F90Array4dDestroy(&a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dDestroy(a,MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }

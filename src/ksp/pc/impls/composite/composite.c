@@ -336,7 +336,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
-  ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);
+  ierr        = PetscObjectIncrementTabLevel((PetscObject)ilink->pc,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;
@@ -541,7 +541,8 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 
    Level: Developer
 
-    Notes: To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+    Notes:
+    To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
             call PCSetOperators() on that PC.
 
 .keywords: PC, get, composite preconditioner, sub preconditioner
@@ -573,7 +574,8 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
    Concepts: composing solvers
 
-   Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
+   Notes:
+    To use a Krylov method inside the composite preconditioner, set the PCType of one or more
           inner PCs to be PCKSP.
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the outer Krylov method

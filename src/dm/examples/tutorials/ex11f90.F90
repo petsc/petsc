@@ -147,7 +147,6 @@
       call DMDestroy(ada,ierr);CHKERRA(ierr)
 
       CALL PetscFinalize(ierr)
-      stop
       END PROGRAM
 
 !
@@ -157,6 +156,6 @@
 !     requires: !complex
 !
 !   test:
-!     filter: Error: grep -v "Vec Object" | grep -v "Warning: ieee_inexact is signaling" | grep -v "FORTRAN STOP"
+!     filter: Error: grep -v "Vec Object" | grep -v "Warning: ieee_inexact is signaling"
 !
 !TEST*/

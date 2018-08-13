@@ -33,6 +33,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
   ierr = VecDestroy(&tao->XU);CHKERRQ(ierr);
   tao->XL = XL;
   tao->XU = XU;
+  tao->bounded = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -68,6 +69,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   tao->user_boundsP = ctx;
   tao->ops->computebounds = func;
+  tao->bounded = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -104,16 +106,17 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (!tao->ops->computebounds) PetscFunctionReturn(0);
+  PetscStackPush("Tao compute variable bounds");
   if (!tao->XL || !tao->XU) {
-    if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeVariableBounds");
+    if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"TaoSetInitialVector must be called before TaoComputeVariableBounds");
     ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
     ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
     ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
   }
-  PetscStackPush("Tao compute variable bounds");
-  ierr = (*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP);CHKERRQ(ierr);
+  if (tao->ops->computebounds) {
+    ierr = (*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP);CHKERRQ(ierr);
+  }
   PetscStackPop;
   PetscFunctionReturn(0);
 }
@@ -195,11 +198,11 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
 
   if (!tao->ops->computeconstraints) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
   if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeConstraints");
-  ierr = PetscLogEventBegin(Tao_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao constraints evaluation routine");
   ierr = (*tao->ops->computeconstraints)(tao,X,C,tao->user_conP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(Tao_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -422,11 +425,11 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 
   if (!tao->ops->computeequalityconstraints) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
   if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeEqualityConstraints");
-  ierr = PetscLogEventBegin(Tao_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao equality constraints evaluation routine");
   ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(Tao_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
@@ -459,11 +462,11 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
 
   if (!tao->ops->computeinequalityconstraints) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
   if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeInequalityConstraints");
-  ierr = PetscLogEventBegin(Tao_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao inequality constraints evaluation routine");
   ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(Tao_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TAO_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }

@@ -91,12 +91,12 @@ class Configure(config.package.Package):
     try:
       self.logPrintBox('Compiling FBLASLAPACK; this may take several minutes')
       output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
       self.installDirProvider.printSudoPasswordMessage()
       output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'mkdir -p '+libdir+' && '+self.installSudo+'cp -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=300, log = self.log)
-    except RuntimeError, e:
+    except RuntimeError as e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
     self.postInstall(output1+err1+output2+err2,'tmpmakefile')
     return self.installDir

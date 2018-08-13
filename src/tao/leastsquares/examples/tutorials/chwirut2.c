@@ -13,7 +13,6 @@
 T*/
 
 #include <petsctao.h>
-#include <mpi.h>
 
 
 /*
@@ -135,7 +134,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
     /* Multiprocessor master */
     PetscMPIInt tag;
     PetscInt    finishedtasks,next_task,checkedin;
-    PetscReal   f_i;
+    PetscReal   f_i=0.0;
     MPI_Status  status;
 
     next_task=0;
@@ -468,7 +467,6 @@ PetscErrorCode StopWorkers(AppCtx *user)
 
    test:
       nsize: 3
-      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
-      TODO: too many inconsistent results across machines
+      args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
 
 TEST*/

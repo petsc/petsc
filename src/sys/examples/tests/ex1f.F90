@@ -4,7 +4,7 @@
       subroutine GenerateErr(line,ierr)
 
 #include <petsc/finclude/petscsys.h>
-      use petscsysdef
+      use petscsys
       PetscErrorCode  ierr
       integer line
 
@@ -26,7 +26,7 @@
       end
 
       program main
-      use petscsysdef
+      use petscsys
       PetscErrorCode ierr
       external       MyErrHandler
 
@@ -58,6 +58,6 @@
 !/*TEST
 !
 !   test:
-!     filter: grep  "My error handler" | wc -l
+!     filter: egrep  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
 !
 !TEST*/

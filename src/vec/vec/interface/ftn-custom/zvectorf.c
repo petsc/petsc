@@ -164,7 +164,8 @@ PETSC_EXTERN void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode 
 
      Not Collective
 
-     Notes: Allows code such as
+     Notes:
+    Allows code such as
 
 $     type  :: Field
 $        PetscScalar :: p1

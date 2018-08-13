@@ -97,7 +97,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&flg);CHKERRQ(ierr);
       if (!flg) {
         ((PC_Factor*)ilu)->info.shifttype = (PetscReal)MAT_SHIFT_INBLOCKS;
-        PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n");CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO\n");CHKERRQ(ierr);
       }
     }
   }
@@ -263,7 +263,8 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
   Concepts: incomplete factorization
 
-   Notes: Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
+   Notes:
+    Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
           For BAIJ matrices this implements a point block ILU
 

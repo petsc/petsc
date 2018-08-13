@@ -1,0 +1,2 @@
+  Linear solve converged due to CONVERGED_ATOL iterations 2
+errors on 5 x 5 grid:  av |u-uexact|  = 4.531e-02,  |u-uexact|_inf = 1.635e-01

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 Sorted = ["PetscBarrier",
 
          "ThreadCommRunKer",
@@ -74,11 +75,12 @@ Sorted = ["PetscBarrier",
          "DMPlexInterpolate",
          "DMPlexPartition",
          "DMPlexDistribute",
-         "DMPlexDistribCones",
-         "DMPlexDistribLabels",
-         "DMPlexDistribSF",
-         "DMPlexDistribField",
-         "DMPlexDistribData",
+         "DMPlexDistCones",
+         "DMPlexDistLabels",
+         "DMPlexDistSF",
+         "DMPlexDistOvrlp",
+         "DMPlexDistField",
+         "DMPlexDistData",
          "DMPlexStratify",
          "DMPlexPreallocate",
          "DMPlexResidualFEM",
@@ -170,14 +172,10 @@ Sorted = ["PetscBarrier",
          "VecView",
          "VecMax",
          "VecMin",
-         "VecDotBarrier",
          "VecDot",
-         "VecDotNormBarr",
          "VecDotNorm2",
-         "VecMDotBarrier",
          "VecTDot",
          "VecMTDot",
-         "VecNormBarrier",
          "VecNorm",
          "VecScale",
          "VecCopy",
@@ -193,12 +191,10 @@ Sorted = ["PetscBarrier",
          "VecPointwiseMult",
          "VecSetValues",
          "VecLoad",
-         "VecScatterBarrie",
          "VecScatterBegin",
          "VecScatterEnd",
          "VecSetRandom",
          "VecReduceArith",
-         "VecReduceBarrier",
          "VecReduceComm",
          "VecReduceBegin",
          "VecReduceEnd",
@@ -257,24 +253,24 @@ def ObjectsCompare(a,b):
 def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,localReductions,Stages,Latex = False):
   ''' Prints a simple table that displays the percent of time, flops, etc for each event in each stage'''
   if Latex:
-    print "\documentclass{article}"
-    print "\\begin{document}"
-    print "\\begin{table}[!htbp]"
-    print "\centering"
+    print("\documentclass{article}")
+    print("\\begin{document}")
+    print("\\begin{table}[!htbp]")
+    print("\centering")
     if len(localTimes) > 1:
-      print "\\begin{tabular}{lcccccc}"
-      print " &  & \multicolumn{4}{c}{--------------- Percent of -------------} &  \\\\"
-      print "Event & Count & Time & Flops & Messages & Reductions & Flop rate \\\\"
-      print "\hline"
+      print("\\begin{tabular}{lcccccc}")
+      print(" &  & \multicolumn{4}{c}{--------------- Percent of -------------} &  \\\\")
+      print("Event & Count & Time & Flops & Messages & Reductions & Flop rate \\\\")
+      print("\hline")
   else:
     if len(localTimes) > 1:
-       print "                                       ---------  Percent of  ------"
-       print "Event                       Count     Time  Flops Messages Reductions     Flop rate"
-       print "============================================================================"
+       print("                                       ---------  Percent of  ------")
+       print("Event                       Count     Time  Flops Messages Reductions     Flop rate")
+       print("============================================================================")
     else:
-       print "                                      Percent of"
-       print "Event                       Count     Time  Flops      Flop rate"
-       print "========================================================="
+       print("                                      Percent of")
+       print("Event                       Count     Time  Flops      Flop rate")
+       print("=========================================================")
 
   time,flops,numMessages,numMessageLen,numReductions  = ComputeTotals(localTimes,localFlops,localMessages,localMessageLens,localReductions)
   if not numMessages: numMessages = 1
@@ -304,30 +300,30 @@ def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,local
         space = 2
         if not seperatoradded: 
           if Latex:
-            print "--Overlapping events---\\\\"
+            print("--Overlapping events---\\\\")
           else:
-            print "--Overlapping events---"
+            print("--Overlapping events---")
           seperatoradded = True
 
       if len(localTimes) > 1:
         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops,100*sumStages[stage][event]["numMessages"]/numMessages,100*sumStages[stage][event]["numReductions"]/numReductions]
         if max(values) > .5:
           if Latex:
-            print '\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%5.0f' % values[2],"&",'%5.0f' % values[3],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\"
+            print('\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%5.0f' % values[2],"&",'%5.0f' % values[3],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\")
           else:
-            print "            "[0:space],event.ljust(26-space),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],'%5.0f' % values[2],'%5.0f' % values[3],"        ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
+            print("            "[0:space],event.ljust(26-space),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],'%5.0f' % values[2],'%5.0f' % values[3],"        ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0))
       else:
         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops]
         if max(values) > .5:
           if Latex:
-            print '\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\"
+            print('\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\")
           else:
-            print "  ",event.ljust(24),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],"   ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
+            print("  ",event.ljust(24),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],"   ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0))
 
   if Latex:
-    print "\end{tabular}"
-    print "\end{table}"
-    print "\end{document}"
+    print("\end{tabular}")
+    print("\end{table}")
+    print("\end{document}")
 
 if __name__ == '__main__':
   import sys

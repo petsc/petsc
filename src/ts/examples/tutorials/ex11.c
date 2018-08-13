@@ -937,7 +937,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   pEnd += user->numSplitFaces;
   ierr  = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
   ierr  = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr  = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr  = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
@@ -1018,6 +1017,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
+  ierr = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -1038,11 +1038,13 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for (l = 0; l < numLabels; ++l) {
     const char *lname;
-    PetscBool  isDepth;
+    PetscBool  isDepth, isDim;
 
     ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = PetscStrcmp(lname, "dim", &isDim);CHKERRQ(ierr);
+    if (isDim) continue;
     ierr = DMCreateLabel(sdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
@@ -1128,7 +1130,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
     ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
@@ -1170,7 +1172,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = DMSetSection(dmMass, sectionMass);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
@@ -1430,6 +1432,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
         p = buffer;
       }
       ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]);CHKERRQ(ierr);
+      countused--;
       countused += p - buffer;
       if (countused > ftablealloc-ftableused-1) { /* reallocate */
         char *ftablenew;
@@ -2575,13 +2578,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: 8
     requires: exodusii
     nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 9
     requires: exodusii
     nsize: 8
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 10
@@ -2657,5 +2660,29 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: glvis_adv_2d_quad
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+
+  test:
+    suffix: tut_1
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+
+  test:
+    suffix: tut_2
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+
+  test:
+    suffix: tut_3
+    requires: exodusii
+    nsize: 4
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
+
+  test:
+    suffix: tut_4
+    requires: exodusii
+    nsize: 4
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
 TEST*/

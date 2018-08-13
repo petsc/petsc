@@ -68,10 +68,6 @@
 #define PCREDISTRIBUTE 'redistribute'
 #define PCSVD 'svd'
 #define PCGAMG 'gamg'
-#define PCSACUSP 'sacusp'
-#define PCSACUSPPOLY 'sacusppoly'
-#define PCBICGSTABCUSP 'bicgstabcusp'
-#define PCAINVCUSP 'ainvcusp'
 #define PCBDDC 'bddc'
 
 #define PCMGType PetscEnum

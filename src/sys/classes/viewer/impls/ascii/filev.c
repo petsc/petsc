@@ -233,7 +233,7 @@ PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode m
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
 /*@
     PetscViewerASCIISetTab - Causes PetscViewer to tab in a number of times
@@ -690,6 +690,7 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(name,2);
   ierr = PetscUseMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,const char**),(viewer,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -889,7 +890,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 
     Level: intermediate
 
-    Notes: You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
+    Notes:
+    You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
 
     Fortran Note:
       Can only print a single character* string
@@ -986,6 +988,20 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     va_start(Argp,format);
     ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
+    if (fullLength > (size_t) (next->size-2*vascii->tab)) {
+      ierr       = PetscFree(next->string);CHKERRQ(ierr);
+      next->size = fullLength + 2*vascii->tab;
+      ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
+      ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      string     = next->string;
+      tab        = 2*vascii->tab;
+      while (tab--) {
+        *string++ = ' ';
+      }
+      va_start(Argp,format);
+      ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,NULL,Argp);CHKERRQ(ierr);
+      va_end(Argp);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1010,7 +1026,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,PetscInt *count,PetscDataType dtype)
 {

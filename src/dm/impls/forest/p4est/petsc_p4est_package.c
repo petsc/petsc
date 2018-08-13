@@ -17,7 +17,7 @@ static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno
 }
 
 /* p4est tries to abort: if possible, use setjmp to enable at least a little unwinding */
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_ERRORCHECKING)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
 #include <setjmp.h>
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
 PETSC_INTERN void PetscScAbort_longjmp(void)
@@ -54,21 +54,27 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscBool      psc_print_backtrace  = PETSC_TRUE;
   int            psc_log_threshold    = SC_LP_DEFAULT;
   int            pp4est_log_threshold = SC_LP_DEFAULT;
-  char           logList[256], *className;
-  PetscBool      opt;
+  char           logList[256];
+  PetscBool      opt,pkg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscP4estInitialized) PetscFunctionReturn(0);
   PetscP4estInitialized = PETSC_TRUE;
 
+  /* Register Classes */
   ierr = PetscClassIdRegister("p4est logging",&P4ESTLOGGING_CLASSID);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(NULL,NULL,"-info_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "p4est", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrInList("p4est",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscInfoDeactivateClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);}
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrInList("p4est",logList,',',&pkg);CHKERRQ(ierr);
+    if (pkg) {ierr = PetscLogEventExcludeClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);}
   }
   ierr = PetscHeaderCreate(P4estLoggingObject,P4ESTLOGGING_CLASSID,"p4est","p4est logging","DM",PETSC_COMM_WORLD,NULL,PetscObjectView);CHKERRQ(ierr);
   if (sc_package_id == -1) {

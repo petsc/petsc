@@ -28,7 +28,6 @@ typedef const char* DMType;
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
 #define DMPLEX      "plex"
-#define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
@@ -135,6 +134,8 @@ PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate(DM, const PetscScalar[], PetscB
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinates(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalized(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM,PetscInt*,const PetscMPIInt**);
+PETSC_EXTERN PetscErrorCode DMGetCoordinateField(DM,DMField*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateField(DM,DMField);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -148,6 +149,8 @@ PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
 PETSC_EXTERN PetscErrorCode DMGetVecType(DM,VecType*);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
 PETSC_EXTERN PetscErrorCode DMGetMatType(DM,MatType*);
+PETSC_EXTERN PetscErrorCode DMSetISColoringType(DM,ISColoringType);
+PETSC_EXTERN PetscErrorCode DMGetISColoringType(DM,ISColoringType*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);
@@ -184,17 +187,23 @@ PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt,
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char [], PetscReal, Vec);
 
-PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMSetSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
-PETSC_EXTERN PetscErrorCode DMGetDefaultGlobalSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultGlobalSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMSetGlobalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
+
+PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
+PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
+PETSC_STATIC_INLINE PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
+PETSC_STATIC_INLINE PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
+
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
@@ -270,4 +279,6 @@ PETSC_EXTERN PetscErrorCode DMProjectFieldLabelLocal(DM,PetscReal,DMLabel,PetscI
 PETSC_EXTERN PetscErrorCode DMComputeL2Diff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2GradientDiff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComputeL2FieldDiff(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
+
+PETSC_EXTERN PetscErrorCode DMGetCompatibility(DM,DM,PetscBool*,PetscBool*);
 #endif

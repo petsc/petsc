@@ -18,7 +18,8 @@
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes:
+    Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -121,9 +122,11 @@ PetscErrorCode  MatDiagonalSet_MPIAIJ(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*) Y->data;
+  PetscBool         cong;
 
   PetscFunctionBegin;
-  if (Y->assembled && Y->rmap->rstart == Y->cmap->rstart && Y->rmap->rend == Y->cmap->rend) {
+  ierr = MatHasCongruentLayouts(Y,&cong);CHKERRQ(ierr);
+  if (Y->assembled && cong) {
     ierr = MatDiagonalSet(aij->A,D,is);CHKERRQ(ierr);
   } else {
     ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
@@ -604,7 +607,11 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               high2 = nrow2;
               bm    = aij->B->rmap->n;
               ba    = b->a;
-            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", im[i], in[j]);
+            } else if (col < 0) {
+              if (1 == ((Mat_SeqAIJ*)(aij->B->data))->nonew) {
+                ierr = PetscInfo3(mat,"Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%D,%D)\n",(double)PetscRealPart(value),im[i],in[j]);CHKERRQ(ierr);
+              } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", im[i], in[j]);
+            }
           } else col = in[j];
           nonew = b->nonew;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv,im[i],in[j]);
@@ -621,6 +628,41 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         }
       }
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+    This function sets the j-arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
+{
+  Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
+  Mat            A      = aij->A; /* diagonal part of the matrix */
+  Mat            B      = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b     = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
+  PetscInt       *ailen = a->ilen,*aj = a->j;
+  PetscInt       *bilen = b->ilen,*bj = b->j;
+  PetscInt       am     = aij->A->rmap->n,i,j;
+  PetscInt       col, diag_so_far=0, offd_so_far=0;
+
+  PetscFunctionBegin;
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    for (i=0; i<dnz[j]+onz[j]; i++) {
+      col = i + mat_i[j];
+      /* If column is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        aj[diag_so_far++] = mat_j[col] - cstart;
+      } else { /* off-diagonal entries */
+        bj[offd_so_far++] = mat_j[col];
+      }
+    }
+    ailen[j] = dnz[j];
+    bilen[j] = onz[j];
   }
   PetscFunctionReturn(0);
 }
@@ -769,6 +811,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
   PetscInt      *lrows;
   PetscInt       r, len;
+  PetscBool      cong;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -787,13 +830,8 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   }
   /* Must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
-  if (A->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
-    PetscBool cong;
-    ierr = PetscLayoutCompare(A->rmap,A->cmap,&cong);CHKERRQ(ierr);
-    if (cong) A->congruentlayouts = 1;
-    else      A->congruentlayouts = 0;
-  }
-  if ((diag != 0.0) && A->congruentlayouts) {
+  ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
+  if ((diag != 0.0) && cong) {
     ierr = MatZeroRows(mat->A, len, lrows, diag, NULL, NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
@@ -1137,6 +1175,8 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMatMult_transpose_mpiaij_mpiaij_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_is_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPtAP_is_mpiaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1931,8 +1971,6 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   MatScalar      *array;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-
   ma = A->rmap->n; na = A->cmap->n; mb = a->B->rmap->n; nb = a->B->cmap->n;
   ai = Aloc->i; aj = Aloc->j;
   bi = Bloc->i; bj = Bloc->j;
@@ -2445,12 +2483,12 @@ PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJ options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)A);
-    if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
-    ierr = PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
-    }
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+  if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
+  ierr = PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3866,8 +3904,8 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
    Level: developer
 
    Notes:
-       The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
-     thus you CANNOT change the matrix entries by changing the values of a[] after you have
+       The i, j, and v arrays ARE copied by this routine into the internal format used by PETSc;
+     thus you CANNOT change the matrix entries by changing the values of v[] after you have
      called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
@@ -4317,7 +4355,7 @@ PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[]
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscBool      flg;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
@@ -5042,7 +5080,10 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  if (!col) { /* attach global id of condensed columns */
+    ierr = PetscObjectCompose((PetscObject)aloc[0],"_petsc_GetLocalMatCondensed_iscol",(PetscObject)iscola);CHKERRQ(ierr);
+  }
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
@@ -5154,14 +5195,14 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   MPI_Comm               comm;
   PetscMPIInt            *rprocs,*sprocs,tag,rank;
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap->n,row,*b_othi,*b_othj;
-  PetscInt               *rvalues,*svalues;
-  MatScalar              *b_otha,*bufa,*bufA;
+  PetscInt               *rvalues,*svalues,*cols,sbs,rbs;
+  PetscScalar              *b_otha,*bufa,*bufA,*vals;
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             *sstatus,rstatus;
   PetscMPIInt            jj,size;
-  PetscInt               *cols,sbs,rbs;
-  PetscScalar            *vals;
+  VecScatterType         type;
+  PetscBool              mpi1;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -5181,11 +5222,15 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   }
 
   ctx = a->Mvctx;
-  if (a->Mvctx->mpi3 && !a->Mvctx_mpi1) { 
-    /* a->Mvctx is type of MPI3 which is not implemented for Mat-Mat ops,
+  ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"mpi1",&mpi1);CHKERRQ(ierr);
+  if (!mpi1) {
+    /* a->Mvctx is not type MPI1 which is not implemented for Mat-Mat ops,
      thus create a->Mvctx_mpi1 */
-    a->Mvctx_mpi1_flg = PETSC_TRUE;
-    ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+    if (!a->Mvctx_mpi1) {
+      a->Mvctx_mpi1_flg = PETSC_TRUE;
+      ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+    }
     ctx = a->Mvctx_mpi1;
   }
   tag = ((PetscObject)ctx)->tag;
@@ -5425,8 +5470,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /*
     Computes (B'*A')' since computing B*A directly is untenable
@@ -5561,7 +5607,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_MPIAIJ_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_is_C",MatConvert_XAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisell_C",MatConvert_MPIAIJ_MPISELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
@@ -5569,6 +5615,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_mpiaij_mpiaij_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_mpiaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

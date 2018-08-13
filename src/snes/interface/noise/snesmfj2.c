@@ -3,9 +3,13 @@
 /* matimpl.h is needed only for logging of matrix operation */
 #include <petsc/private/matimpl.h>
 
-extern PetscErrorCode SNESDiffParameterCreate_More(SNES,Vec,void**);
-extern PetscErrorCode SNESDiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
-extern PetscErrorCode SNESDiffParameterDestroy_More(void*);
+PETSC_INTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES);
+PETSC_INTERN PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
+PETSC_INTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,PetscReal,PetscReal,PetscReal);
+
+PETSC_INTERN PetscErrorCode SNESDiffParameterCreate_More(SNES,Vec,void**);
+PETSC_INTERN PetscErrorCode SNESDiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
+PETSC_INTERN PetscErrorCode SNESDiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES         snes;             /* SNES context */
@@ -240,7 +244,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
     ierr = SNESDiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;
 
-  ierr = PetscOptionsHasName(((PetscObject)snes)->options,NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(((PetscObject)snes)->options,&flg);CHKERRQ(ierr);
   ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
   if (((PetscObject)snes)->prefix) {ierr = PetscStrlcat(p,((PetscObject)snes)->prefix,sizeof(p));CHKERRQ(ierr);}
   if (flg) {

@@ -5,7 +5,6 @@
 #include <petscdmforest.h> /*I      "petscdmforest.h"    I*/
 #include <petscbt.h>
 #include <petsc/private/dmimpl.h>
-#include <petsc/private/hash.h>
 
 typedef struct {
   PetscInt                   refct;

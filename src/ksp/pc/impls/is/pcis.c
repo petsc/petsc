@@ -114,14 +114,13 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 /*
    PCISSetUp -
 */
-PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
+PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolvers)
 {
   PC_IS          *pcis  = (PC_IS*)(pc->data);
   Mat_IS         *matis;
   MatReuse       reuse;
   PetscErrorCode ierr;
   PetscBool      flg,issbaij;
-  Vec            counter;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&flg);CHKERRQ(ierr);
@@ -215,48 +214,59 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     A = [------+------]
         [ A_BI | A_BB ]
   */
-  reuse = MAT_INITIAL_MATRIX;
-  if (pcis->reusesubmatrices && pc->setupcalled) {
-    if (pc->flag == SAME_NONZERO_PATTERN) {
-      reuse = MAT_REUSE_MATRIX;
-    } else {
-      reuse = MAT_INITIAL_MATRIX;
+  if (computematrices) {
+    reuse = MAT_INITIAL_MATRIX;
+    if (pcis->reusesubmatrices && pc->setupcalled) {
+      if (pc->flag == SAME_NONZERO_PATTERN) {
+        reuse = MAT_REUSE_MATRIX;
+      } else {
+        reuse = MAT_INITIAL_MATRIX;
+      }
     }
-  }
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
-  }
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+      ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
+      ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+      ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
+    }
 
-  ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
-  if (!issbaij) {
-    ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
-  } else {
-    Mat newmat;
-    ierr = MatConvert(matis->A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
-    ierr = MatDestroy(&newmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+    if (!issbaij) {
+      ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
+    } else {
+      Mat newmat;
+
+      ierr = MatConvert(matis->A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
+      ierr = MatDestroy(&newmat);CHKERRQ(ierr);
+    }
   }
 
   /* Creating scaling vector D */
   ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
   if (pcis->use_stiffness_scaling) {
-    ierr = MatGetDiagonal(pcis->A_BB,pcis->D);CHKERRQ(ierr);
+    PetscScalar *a;
+    PetscInt    i,n;
+
+    if (pcis->A_BB) {
+      ierr = MatGetDiagonal(pcis->A_BB,pcis->D);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcis->N_to_D,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->N_to_D,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    }
+    ierr = VecGetLocalSize(pcis->D,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->D,&a);CHKERRQ(ierr);
+    for (i=0;i<n;i++) if (PetscAbsScalar(a[i])<PETSC_SMALL) a[i] = 1.0;
+    ierr = VecRestoreArray(pcis->D,&a);CHKERRQ(ierr);
   }
-  ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
-  ierr = VecSet(counter,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,matis->counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->N_to_B,matis->counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-  ierr = VecDestroy(&counter);CHKERRQ(ierr);
 
   /* See historical note 01, at the bottom of this file. */
 
@@ -339,7 +349,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
     ierr = KSPSetUp(pcis->ksp_N);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -580,12 +589,3 @@ PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   ierr = VecScatterEnd  (pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-

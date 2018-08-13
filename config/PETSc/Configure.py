@@ -51,7 +51,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
-    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
     help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     return
 
@@ -84,7 +83,6 @@ class Configure(config.base.Configure):
     self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
@@ -98,13 +96,13 @@ class Configure(config.base.Configure):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','options')):
+    for utility in sorted(os.listdir(os.path.join('config','PETSc','options'))):
       self.registerPythonFile(utility,'PETSc.options')
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+    for utility in sorted(os.listdir(os.path.join('config','BuildSystem','config','utilities'))):
       self.registerPythonFile(utility,'config.utilities')
 
-    for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+    for package in sorted(os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages'))):
       obj = self.registerPythonFile(package,'config.packages')
       if obj:
         obj.archProvider                = self.framework.requireModule(obj.archProvider, obj)
@@ -144,9 +142,9 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes','immintrin','zmmintrin'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
+                 'gettimeofday', 'getwd', 'memalign', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
@@ -175,19 +173,19 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
-    fd.write('cflags_dep="'+self.compilers.dependenciesGenerationFlag.get('C','')+'"\n')
-    fd.write('ldflag_rpath="'+self.setCompilers.CSharedLinkerFlag+'"\n')
+    fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
+    fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
+    fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('cxxflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
+      fd.write('fflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
       self.setCompilers.popLanguage()
 
     fd.write('\n')
@@ -270,6 +268,9 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      cxx_linker = self.setCompilers.getLinker()
+      self.addMakeMacro('CXX_LINKER',cxx_linker)
+      self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
 
     # C preprocessor values
@@ -413,7 +414,6 @@ prepend-path PATH "%s"
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
 
-    self.addMakeMacro('DESTDIR',self.installdir.dir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
@@ -471,6 +471,7 @@ prepend-path PATH "%s"
 
   def dumpMachineInfo(self):
     import platform
+    import datetime
     import time
     import script
     def escape(s):
@@ -478,7 +479,11 @@ prepend-path PATH "%s"
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
-    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
+    buildhost = platform.node()
+    if os.environ.get('SOURCE_DATE_EPOCH'):
+      buildhost = "reproducible"
+    buildtime = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
+    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (buildtime, buildhost))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.installdir.petscDir)))
     fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.installdir.petscArch)))
@@ -633,7 +638,7 @@ prepend-path PATH "%s"
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
     else:
       self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
@@ -647,9 +652,9 @@ prepend-path PATH "%s"
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
-      except (OSError), e:
+      except (OSError) as e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
-      except (ImportError, KeyError), e:
+      except (ImportError, KeyError) as e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       self.argDB.readonly = oldRead
       if self.cmakeboot_success:
@@ -822,7 +827,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     def getFunctionName(lang):
       name = '"unknown"'
       self.pushLanguage(lang)
-      for fname in ['__func__','__FUNCTION__']:
+      for fname in ['__func__','__FUNCTION__','__extension__ __func__']:
         code = "if ("+fname+"[0] != 'm') return 1;"
         if self.checkCompile('',code) and self.checkLink('',code):
           name = fname
@@ -977,7 +982,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
-      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc','conf','petscvariables')+'\n')
+      fd.write('include '+os.path.join('$(PETSC_DIR)','$(PETSC_ARCH)','lib','petsc','conf','petscvariables')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
     elif os.path.isfile(conffile):
@@ -1019,8 +1024,8 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     try:
-      os.chmod(scriptName, 0775)
-    except OSError, e:
+      os.chmod(scriptName, 0o775)
+    except OSError as e:
       self.framework.logPrint('Unable to make reconfigure script executable:\n'+str(e))
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
@@ -1033,7 +1038,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
                                               '-@echo "========================================="'])
     else:
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} check"',\
                                               '-@echo "========================================="'])
       return
 
@@ -1041,17 +1046,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     if self.framework.argDB['with-gcov']:
       self.addDefine('USE_GCOV','1')
     return
-
-  def configureFortranFlush(self):
-    if hasattr(self.compilers, 'FC'):
-      for baseName in ['flush','flush_']:
-        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
-          self.addDefine('HAVE_'+baseName.upper(), 1)
-          return
-
-  def configureViewFromOptions(self):
-    if not self.framework.argDB['with-viewfromoptions']:
-      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
 
   def postProcessPackages(self):
     postPackages=[]
@@ -1106,9 +1100,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
-    self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
-    self.executeTest(self.configureViewFromOptions)
 
     self.Dump()
     self.dumpConfigInfo()

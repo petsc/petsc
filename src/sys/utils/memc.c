@@ -109,7 +109,8 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
 
   Level: intermediate
 
-  Notes: Requires that PETSc be installed with hwloc, for example using --download-hwloc
+  Notes:
+    Requires that PETSc be installed with hwloc, for example using --download-hwloc
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
 {

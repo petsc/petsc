@@ -6,7 +6,7 @@
 
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
-#if defined(PETSC_USE_LOG) && !defined(__MPIUNI_H)
+#if defined(PETSC_USE_LOG) && !defined(PETSC_HAVE_MPIUNI)
 
 /*@C
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
@@ -67,7 +67,38 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
 
 #endif
 
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
+/*
+    OpenMPI version of MPI_Win_allocate_shared() does not provide __float128 alignment so we provide
+    a utility that insures alignment up to data item size.
+*/
+PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz,PetscMPIInt szind,MPI_Info info,MPI_Comm comm,void *ptr,MPI_Win *win)
+{
+  PetscErrorCode ierr;
+  float          *tmp;
 
+  PetscFunctionBegin;
+  ierr = MPI_Win_allocate_shared(16+sz,szind,info,comm,&tmp,win);CHKERRQ(ierr);
+  tmp += ((size_t)tmp) % szind ? szind/4 - ((((size_t)tmp) % szind)/4) : 0;
+  *(void**)ptr = (void*)tmp;
+  PetscFunctionReturn(0);
+  return 0;
+}
+
+PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,MPI_Aint *sz,PetscMPIInt *szind,void *ptr)
+{
+  PetscErrorCode ierr;
+  float          *tmp;
+
+  PetscFunctionBegin;
+  ierr = MPI_Win_shared_query(win,rank,sz,szind,&tmp);CHKERRQ(ierr);
+  if (*szind <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive\n",*szind);
+  tmp += ((size_t)tmp) % *szind ? *szind/4 - ((((size_t)tmp) % *szind)/4) : 0;
+  *(void**)ptr = (void*)tmp;
+  PetscFunctionReturn(0);
+}
+
+#endif
 
 
 

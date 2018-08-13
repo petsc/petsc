@@ -547,7 +547,8 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* Only out-of-place supported */
-  if (reuse == MAT_INITIAL_MATRIX){
+  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(comm,PETSC_ERR_SUP,"Only out-of-place supported");
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
     ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(Be,MATELEMENTAL);CHKERRQ(ierr);

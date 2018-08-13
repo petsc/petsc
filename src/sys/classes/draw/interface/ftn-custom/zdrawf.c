@@ -13,7 +13,7 @@
 
 PETSC_EXTERN void PETSC_STDCALL petscdrawgettitle_(PetscDraw *draw,char* title PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *t;
+  const char *t;
   *ierr = PetscDrawGetTitle(*draw,&t);
   *ierr = PetscStrncpy(title,t,len);
   FIXRETURNCHAR(PETSC_TRUE,title,len);

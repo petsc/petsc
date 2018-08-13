@@ -904,48 +904,93 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
       requires: !complex
 
    test:
-      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type tron -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 2
       nsize: 2
-      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_type blmvm -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_type blmvm -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 3
       nsize: 3
-      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_type tron -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 4
       nsize: 3
-      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask -tao_type tron -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type mask -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 5
       nsize: 3
-      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none -tao_type tron -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -pc_type none -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 6
       nsize: 3
-      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -tao_type blmvm -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -matrixfree -tao_type blmvm -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 7
       nsize: 3
-      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -pc_type none -tao_type gpcg -tao_gttol 1.e-5
+      args: -tao_smonitor -mx 8 -my 12 -bmx 4 -bmy 10 -bheight 0.1 -tao_subset_type matrixfree -pc_type none -tao_type gpcg -tao_gatol 1.e-5
       requires: !single
       
    test:
       suffix: 8
-      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type pgd -tao_gttol 1.e-3 -tao_gatol 1e-4
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bncg -tao_bncg_type gd -tao_gatol 1e-4
       requires: !single
+      
+   test:
+      suffix: 9
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bncg -tao_gatol 1e-4
+      requires: !single
+      
+   test:
+      suffix: 10
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bnls -tao_gatol 1e-5
+      requires: !single
+      
+   test:
+      suffix: 11
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntr -tao_gatol 1e-5
+      requires: !single
+      
+   test:
+      suffix: 12
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntl -tao_gatol 1e-5
+      requires: !single
+      
+   test:
+      suffix: 13
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bnls -tao_gatol 1e-5 -tao_bnk_max_cg_its 3
+      requires: !single
+
+   test:
+      suffix: 14
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntr -tao_gatol 1e-5 -tao_bnk_max_cg_its 3
+      requires: !single
+
+   test:
+      suffix: 15
+      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntl -tao_gatol 1e-5 -tao_bnk_max_cg_its 3
+      requires: !single
+      
+   test:
+     suffix: 16
+     args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnls
+     requires: !single
+
+   test:
+     suffix: 17
+     args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
+     requires: !single
 
 TEST*/

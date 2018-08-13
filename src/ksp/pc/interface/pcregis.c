@@ -29,6 +29,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC);
 
 #if defined(PETSC_HAVE_ML)
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
@@ -44,12 +45,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
-#endif
-#if defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC);
@@ -126,12 +121,6 @@ PetscErrorCode  PCRegisterAll(void)
 #if !defined(PETSC_USE_COMPLEX)
   ierr = PCRegister(PCTFS          ,PCCreate_TFS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PCRegister(PCSACUSP       ,PCCreate_SACUSP);CHKERRQ(ierr);
-  ierr = PCRegister(PCAINVCUSP     ,PCCreate_AINVCUSP);CHKERRQ(ierr);
-  ierr = PCRegister(PCBICGSTABCUSP ,PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PCRegister(PCSACUSPPOLY   ,PCCreate_SACUSPPoly);CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_VIENNACL)
   ierr = PCRegister(PCCHOWILUVIENNACL,PCCreate_CHOWILUVIENNACL);CHKERRQ(ierr);
   ierr = PCRegister(PCROWSCALINGVIENNACL,PCCreate_ROWSCALINGVIENNACL);CHKERRQ(ierr);
@@ -141,5 +130,6 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
 #endif
   ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
+  ierr = PCRegister(PCLMVM         ,PCCreate_LMVM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

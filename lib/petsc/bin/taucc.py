@@ -12,6 +12,7 @@
 #           -leave_tmp       : do not delete temporary files
 #           -E               : run preprocessor only
 #
+from __future__ import print_function
 import commands
 import sys
 import os
@@ -19,12 +20,12 @@ import string
 import tempfile
 def runcmd(cmd,verbose):
   if verbose:
-    print cmd
+    print(cmd)
   (status, output) = commands.getstatusoutput(cmd)
   if status:
     raise RuntimeError('Unable to run '+cmd+':\n'+output)
   elif output:
-    print output
+    print(output)
 
 def getTauFlags(tau_lib_dir):
   fd,name=tempfile.mkstemp(prefix='taucc-')
@@ -161,5 +162,5 @@ def main():
 if __name__ ==  '__main__':
   try:
     main()
-  except Exception, e:
+  except Exception as e:
     sys.exit('ERROR: '+str(e))

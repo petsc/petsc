@@ -91,8 +91,8 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
     ierr = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-    if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED) {
-      v->valid_GPU_array = PETSC_CUDA_CPU;
+    if (v->valid_GPU_array == PETSC_OFFLOAD_UNALLOCATED) {
+      v->valid_GPU_array = PETSC_OFFLOAD_CPU;
     }
   }
   PetscFunctionReturn(0);
@@ -214,7 +214,7 @@ PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 
   PetscFunctionBegin;
   ierr = VecSetRandom_SeqCUDA_Private(xin,r);CHKERRQ(ierr);
-  xin->valid_GPU_array = PETSC_CUDA_CPU;
+  xin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +225,7 @@ PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_SeqCUDA_Private(vin);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -236,7 +236,7 @@ PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -247,7 +247,7 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  vin->valid_GPU_array = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
@@ -304,7 +304,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(V);CHKERRQ(ierr);
-  V->valid_GPU_array = PETSC_CUDA_GPU;
+  V->valid_GPU_array = PETSC_OFFLOAD_GPU;
   ierr = VecCreate_SeqCUDA_Private(V,((Vec_CUDA*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -413,7 +413,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
       err = cudaStreamCreate(&veccuda->stream);CHKERRCUDA(err);
       veccuda->GPUarray_allocated = 0;
       veccuda->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      V->valid_GPU_array = PETSC_CUDA_UNALLOCATED;
+      V->valid_GPU_array = PETSC_OFFLOAD_UNALLOCATED;
     }
     veccuda = (Vec_CUDA*)V->spptr;
     veccuda->GPUarray = (PetscScalar*)array;

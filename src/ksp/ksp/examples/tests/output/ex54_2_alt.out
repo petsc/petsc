@@ -9,19 +9,20 @@ Mat Object: 4 MPI processes
 1.0000000000000000e+00 3.0000000000000000e+00 0.0000000000000000e+00 
 1.0000000000000000e+00 3.0000000000000000e+00 1.0000000000000000e+00 
   0 KSP unpreconditioned resid norm 1.436871528625e+01 true resid norm 1.436871528625e+01 ||r(i)||/||b|| 1.000000000000e+00
-  0 KSP Residual norm 1.436871528625e+01
+  0 KSP resid norm 1.436871528625e+01
   1 KSP unpreconditioned resid norm 1.041665792465e+00 true resid norm 1.041665792465e+00 ||r(i)||/||b|| 7.249540090561e-02
-  1 KSP Residual norm 1.041665792465e+00 Residual norm normal equations 1.779052376747e+00
+  1 KSP resid norm 1.041665792465e+00 normal eq resid norm 1.779052376747e+00 matrix norm 5.935671329498e+00
   2 KSP unpreconditioned resid norm 3.779335618019e-01 true resid norm 3.779336512089e-01 ||r(i)||/||b|| 2.630253508687e-02
-  2 KSP Residual norm 3.779335618019e-01 Residual norm normal equations 1.974391043186e-01
+  2 KSP resid norm 3.779335618019e-01 normal eq resid norm 1.974391043186e-01 matrix norm 6.213426589966e+00
   3 KSP unpreconditioned resid norm 3.376385867596e-01 true resid norm 3.376388847828e-01 ||r(i)||/||b|| 2.349819615483e-02
-  3 KSP Residual norm 3.376385867596e-01 Residual norm normal equations 1.151992706582e-03
+  3 KSP resid norm 3.376385867596e-01 normal eq resid norm 1.151992706582e-03 matrix norm 6.324554920197e+00
   4 KSP unpreconditioned resid norm 3.376385271549e-01 true resid norm 3.376388549805e-01 ||r(i)||/||b|| 2.349819429219e-02
-  4 KSP Residual norm 3.376385271549e-01 Residual norm normal equations 3.116804805359e-07
+  4 KSP resid norm 3.376385271549e-01 normal eq resid norm 3.116804805359e-07 matrix norm 8.674631118774e+00
 Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 4
 KSP Object: 4 MPI processes
   type: lsqr
-    Norm of Standard Error 0.158609, Iterations 4
+    norm of standard error 0.158609, iterations 4
+    using inexact matrix norm
   maximum iterations=10, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
   left preconditioning

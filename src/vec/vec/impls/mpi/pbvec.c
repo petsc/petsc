@@ -5,7 +5,7 @@
 #include <petscoptions.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;
@@ -904,9 +904,10 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
   /* set local to global mapping for ghosted vector */
-  nb   = n/bs;
-  ierr = PetscMalloc1(nb+nghost,&indices);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
+  nb     = n/bs;
+  ierr   = PetscMalloc1(nb+nghost,&indices);CHKERRQ(ierr);
+  ierr   = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
+  rstart = rstart/bs;
 
   for (i=0; i<nb; i++)      indices[i]    = rstart + i;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];

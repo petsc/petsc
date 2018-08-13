@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import fnmatch
 import glob
 import optparse
@@ -75,8 +76,8 @@ class logParse(object):
       for ext in ['c','cxx']:
         guess=os.path.join(filedir,base+"."+ext)
         if os.path.exists(guess): return guess
-    print filedir, namepart
-    print "Warning: Cannot find file for "+testname
+    print(filedir, namepart)
+    print("Warning: Cannot find file for "+testname)
     return None
 
   def getGitPerson(self,fullFileName):
@@ -171,13 +172,13 @@ class logParse(object):
     for fname in testDict:
       if fname=='info': continue
       for test in testDict[fname]:
-        print "\n ----------------------------------------------------"
-        print test
-        print indent+testDict[fname][test]['gitPerson']
+        print("\n ----------------------------------------------------")
+        print(test)
+        print(indent+testDict[fname][test]['gitPerson'])
         for error in testDict[fname][test]['errors']:
-          print "\n ----- "
-          print 2*indent+" ".join(testDict[fname][test]['errors'][error])
-          print 2*indent+error
+          print("\n ----- ")
+          print(2*indent+" ".join(testDict[fname][test]['errors'][error]))
+          print(2*indent+error)
 
     return testDict
 
@@ -423,8 +424,8 @@ class logParse(object):
           lDict[test]=errors
     if printDict:
       for lkey in lDict:
-        print lkey
-        print "  "+lDict[lkey].replace("\n","\n  ")
+        print(lkey)
+        print("  "+lDict[lkey].replace("\n","\n  "))
     return lDict
 
 
@@ -469,7 +470,7 @@ def main():
         petsc_dir=os.path.dirname(os.path.dirname(currentdir))
 
     if not options.logdir: 
-      print "Use -l to specify makefile"
+      print("Use -l to specify makefile")
       return
 
     logP=logParse(petsc_dir,options.logdir,verbosity)

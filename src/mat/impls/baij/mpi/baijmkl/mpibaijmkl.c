@@ -147,7 +147,7 @@ PetscErrorCode  MatCreateBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE  
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = MatSetType(*A,MATMPIBAIJMKL);CHKERRQ(ierr);
 #else    
     ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");  
@@ -155,7 +155,7 @@ PetscErrorCode  MatCreateBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 #endif
     ierr = MatMPIBAIJSetPreallocation(*A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   } else {
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE 
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
     ierr = MatSetType(*A,MATSEQBAIJMKL);CHKERRQ(ierr);
 #else
     ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");  
@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE    
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   ierr = MatConvert_MPIBAIJ_MPIBAIJMKL(A,MATMPIBAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
 #else
   ierr = PetscInfo(A,"MKL baij routines are not supported for used version of MKL. Using PETSc default routines. \n Please use version of MKL 11.3 and higher. \n");

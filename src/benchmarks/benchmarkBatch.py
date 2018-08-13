@@ -25,7 +25,7 @@ mpiexec -np $NPROCS ex%d %s
       f = file(filename)
       f.close()
       n += 1
-    except IOError, e:
+    except IOError as e:
       if e.errno == 2:
         break
       else:

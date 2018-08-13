@@ -3,7 +3,6 @@
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES);
-PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES);
@@ -53,7 +52,6 @@ PetscErrorCode  SNESRegisterAll(void)
 
   ierr = SNESRegister(SNESNEWTONLS,     SNESCreate_NEWTONLS);CHKERRQ(ierr);
   ierr = SNESRegister(SNESNEWTONTR,     SNESCreate_NEWTONTR);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESTEST,         SNESCreate_Test);CHKERRQ(ierr);
   ierr = SNESRegister(SNESNRICHARDSON,  SNESCreate_NRichardson);CHKERRQ(ierr);
   ierr = SNESRegister(SNESKSPONLY,      SNESCreate_KSPONLY);CHKERRQ(ierr);
   ierr = SNESRegister(SNESVINEWTONRSLS, SNESCreate_VINEWTONRSLS);CHKERRQ(ierr);

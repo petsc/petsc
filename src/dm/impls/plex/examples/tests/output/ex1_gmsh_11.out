@@ -1,9 +1,8 @@
 DM Object: Simplicial Mesh 1 MPI processes
   type: plex
 Simplicial Mesh in 2 dimensions:
-orientation is missing
-cap --> base:
-[0] Max sizes cone: 3 support: 10
+Supports:
+[0] Max support size: 10
 [0]: 720 ----> 1184
 [0]: 720 ----> 1189
 [0]: 720 ----> 1190
@@ -4324,7 +4323,8 @@ cap --> base:
 [0]: 2158 ----> 719
 [0]: 2159 ----> 716
 [0]: 2159 ----> 719
-base <-- cap:
+Cones:
+[0] Max cone size: 3
 [0]: 0 <---- 1080 (0)
 [0]: 0 <---- 1622 (-2)
 [0]: 0 <---- 1085 (0)
@@ -9728,4 +9728,4 @@ Process 0:
   (1077) dim  2 offset 2490 0. 0.343822
   (1078) dim  2 offset 2492 9.79929 0.74235
   (1079) dim  2 offset 2494 9.79929 0.925496
-Mesh with 720 cells, shape condition numbers: min = 2.0113, max = 24.5694, mean = 2.78635, stddev = 2.01671
+Mesh with 720 cells, shape condition numbers: min = 2.0113, max = 24.5694, mean = 2.78635, stddev = 2.01811

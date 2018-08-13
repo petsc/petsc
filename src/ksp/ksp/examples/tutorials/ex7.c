@@ -244,34 +244,47 @@ int main(int argc,char **args)
       args: -ksp_view
 
    test:
-      suffix: mpiaijcusp
-      requires: cusp
-      args: -ksp_monitor_short -mat_type aijcusp -vec_type cusp
+      suffix: viennacl
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse.out
 
    test:
-      suffix: mpiaijcusp_2
+      suffix: viennacl_2
       nsize: 2
-      requires: cusp
-      args: -ksp_monitor_short -mat_type aijcusp -vec_type cusp
-
-   test:
-      suffix: mpiaijcusp_simple
-      requires: veccuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
-
-   test:
-      suffix: mpiaijcusp_simple_2
-      nsize: 2
-      requires: veccuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+      requires: viennacl
+      args: -ksp_monitor_short -mat_type aijviennacl -vec_type viennacl
+      output_file: output/ex7_mpiaijcusparse_2.out
 
    test:
       suffix: mpiaijcusparse
       requires: veccuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
 
    test:
       suffix: mpiaijcusparse_2
+      nsize: 2
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
+
+   test:
+      suffix: mpiaijcusparse_simple
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusparse_simple_2
+      nsize: 2
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusparse_3
+      requires: veccuda
+      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
+
+   test:
+      suffix: mpiaijcusparse_4
       nsize: 2
       requires: veccuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda

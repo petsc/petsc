@@ -44,6 +44,8 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
    Level: advanced
 
 .keywords: MG, multigrid, get, coarse grid
+
+.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetSmoother()
 @*/
 PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 {
@@ -434,7 +436,7 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 
 .keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
 
-.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
+.seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown(), PCMGGetCoarseSolve()
 @*/
 PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 {
@@ -462,7 +464,8 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 
    Level: advanced
 
-   Notes: calling this will result in a different pre and post smoother so you may need to
+   Notes:
+    calling this will result in a different pre and post smoother so you may need to
          set options on the pre smoother also
 
 .keywords: MG, multigrid, get, smoother, up, post-smoother, level
@@ -532,7 +535,8 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 
    Level: advanced
 
-   Notes: calling this will result in a different pre and post smoother so you may need to
+   Notes:
+    calling this will result in a different pre and post smoother so you may need to
          set options on the post smoother also
 
 .keywords: MG, multigrid, get, smoother, down, pre-smoother, level
@@ -598,7 +602,8 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 
    Level: advanced
 
-   Notes: If this is not provided PETSc will automatically generate one.
+   Notes:
+    If this is not provided PETSc will automatically generate one.
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
@@ -637,7 +642,8 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
 
    Level: advanced
 
-   Notes: If this is not provided PETSc will automatically generate one.
+   Notes:
+    If this is not provided PETSc will automatically generate one.
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.
@@ -676,7 +682,8 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
 
    Level: advanced
 
-   Notes: If this is not provided PETSc will automatically generate one.
+   Notes:
+    If this is not provided PETSc will automatically generate one.
 
           You do not need to keep a reference to this vector if you do
           not need it PCDestroy() will properly free it.

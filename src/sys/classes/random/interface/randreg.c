@@ -104,7 +104,8 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
     -random_type my_random_name
 .ve
 
-  Notes: For an example of the code needed to interface your own random number generator see
+  Notes:
+    For an example of the code needed to interface your own random number generator see
          src/sys/random/impls/rand/rand.c
 
   Level: advanced

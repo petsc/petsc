@@ -1873,7 +1873,8 @@ PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
   Options Database Keys:
   . -mat_type seqsbaij - sets the matrix type to "seqsbaij" during a call to MatSetFromOptions()
 
-  Notes: By default if you insert values into the lower triangular part of the matrix they are simply ignored (since they are not
+  Notes:
+    By default if you insert values into the lower triangular part of the matrix they are simply ignored (since they are not
      stored and it is assumed they symmetric to the upper triangular). If you call MatSetOption(Mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_FALSE) or use
      the options database -mat_ignore_lower_triangular false it will generate an error if you try to set a value in the lower triangular portion.
 

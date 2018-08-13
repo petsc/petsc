@@ -15,13 +15,12 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscBool      flg1,flg2,set,flg3;
+  PetscBool      hasop,flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    void (*f)(void);
-    ierr = MatShellGetOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
+    ierr = MatHasOperation(pc->pmat,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
@@ -30,13 +29,13 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
         *type = PCICC;
       } else if (flg2) {
         *type = PCILU;
-      } else if (f) { /* likely is a parallel matrix run on one processor */
+      } else if (hasop) { /* likely is a parallel matrix run on one processor */
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
       }
     } else {
-       if (f) {
+       if (hasop) {
         *type = PCBJACOBI;
       } else {
         *type = PCNONE;
@@ -62,7 +61,8 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
 
    Level: developer
 
-   Notes: This allows a PC to be reused for a different sized linear system but using the same options that have been previously set in the PC
+   Notes:
+    This allows a PC to be reused for a different sized linear system but using the same options that have been previously set in the PC
 
 .keywords: PC, destroy
 
@@ -133,7 +133,8 @@ PetscErrorCode  PCDestroy(PC *pc)
 
    Level: developer
 
-   Notes: If this returns PETSC_TRUE then the system solved via the Krylov method is
+   Notes:
+    If this returns PETSC_TRUE then the system solved via the Krylov method is
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
@@ -162,7 +163,8 @@ PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
 
    Level: intermediate
 
-   Notes: The system solved via the Krylov method is
+   Notes:
+    The system solved via the Krylov method is
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
@@ -204,7 +206,8 @@ PetscErrorCode  PCSetDiagonalScale(PC pc,Vec s)
 
    Level: intermediate
 
-   Notes: The system solved via the Krylov method is
+   Notes:
+    The system solved via the Krylov method is
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
@@ -244,7 +247,8 @@ PetscErrorCode  PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
 
    Level: intermediate
 
-   Notes: The system solved via the Krylov method is
+   Notes:
+    The system solved via the Krylov method is
 $           D M A D^{-1} y = D M b  for left preconditioning or
 $           D A M D^{-1} z = D b for right preconditioning
 
@@ -558,9 +562,11 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
-   Notes: For complex numbers this applies the non-Hermitian transpose.
+   Notes:
+    For complex numbers this applies the non-Hermitian transpose.
 
-   Developer Notes: We need to implement a PCApplyHermitianTranspose()
+   Developer Notes:
+    We need to implement a PCApplyHermitianTranspose()
 
    Level: developer
 
@@ -632,7 +638,8 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 
    Level: developer
 
-   Notes: If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
+   Notes:
+    If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
    specific KSPSolve() method must also be written to handle the post-solve "correction" for the diagonal scaling.
 
 .keywords: PC, apply, operator
@@ -711,7 +718,8 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 .  y - output vector
 
 
-   Notes: this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
+   Notes:
+    this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
       defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
 
     Level: developer
@@ -775,7 +783,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(exists,2);
+  PetscValidPointer(exists,2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1180,7 +1188,8 @@ PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
 
    Level: intermediate
 
-   Notes: Does not increase the reference count of the matrices, so you should not destroy them
+   Notes:
+    Does not increase the reference count of the matrices, so you should not destroy them
 
    Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
       are created in PC and returned to the user. In this case, if both operators
@@ -1306,7 +1315,8 @@ PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
 
    Level: advanced
 
-   Notes: Does not increase the reference count for the matrix so DO NOT destroy it
+   Notes:
+    Does not increase the reference count for the matrix so DO NOT destroy it
 
 .keywords: PC, get, factored, matrix
 @*/
@@ -1397,7 +1407,8 @@ PetscErrorCode  PCAppendOptionsPrefix(PC pc,const char prefix[])
    Output Parameters:
 .  prefix - pointer to the prefix string used, is returned
 
-   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prifix' of
    sufficient length to hold the prefix.
 
    Level: advanced
@@ -1607,12 +1618,11 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 @*/
 PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
-  PCType            cstr;
-  PetscErrorCode    ierr;
-  PetscBool         iascii,isstring,isbinary,isdraw;
-  PetscViewerFormat format;
+  PCType         cstr;
+  PetscErrorCode ierr;
+  PetscBool      iascii,isstring,isbinary,isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         issaws;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -1632,10 +1642,6 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 #endif
 
   if (iascii) {
-    PetscInt    tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)pc)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
@@ -1663,7 +1669,6 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
         if (pc->pmat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
@@ -1857,7 +1862,8 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 
    Level: intermediate
 
-   Notes: coords is an array of the 3D coordinates for the nodes on
+   Notes:
+    coords is an array of the 3D coordinates for the nodes on
    the local processor.  So if there are 108 equation on a processor
    for a displacement finite element discretization of elasticity (so
    that there are 36 = 108/3 nodes) then the array must have 108
@@ -1872,6 +1878,8 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,dim,2);
   ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscInt,PetscReal*),(pc,dim,nloc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

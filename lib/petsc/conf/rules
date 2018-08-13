@@ -8,7 +8,7 @@ chk_petscdir:
           printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make test             ";\
+          echo "Ignore this if you are running make check             ";\
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
         fi
 
@@ -68,17 +68,17 @@ chkopts: chk_upgrade
 # uses the cmake infrastructure to build/rebuild the libraries
 ccmake:
 	@echo "=========================================="
-	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
+	+@cd ${PETSC_DIR}/${PETSC_ARCH} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} VERBOSE=${VERBOSE}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
 cmake:
-	+@MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
+	+@MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} ccmake VERBOSE=1
 
 gnumake:
-	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
+	+@cd ${PETSC_DIR} && MAKEFLAGS="-j$(MAKE_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE_PRINTDIR} -f gmakefile ${MAKE_PAR_OUT_FLG} V=${V}
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -184,29 +184,14 @@ clean:: clean-legacy
 tree: ${ACTION}
 	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
             if [ -d $$dir ]; then \
-	      r=`grep -w requirespackage $$dir/makefile`; \
+	      r=`egrep '#(requirespackage|requiresfunction|requiresdefine)' $$dir/makefile | cut -d \' -f2`; \
               if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresfunction $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresdefine $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
+                flg=0; \
+                for PKGFLG in $$r; do \
+                  grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                  if [ "$$?" = 1 ]; then flg=1; break; fi; \
+                done; \
+                if [ "$$flg" = 1 ]; then continue; fi; \
               fi; \
               r=`grep -w requireslanguage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
@@ -371,31 +356,18 @@ getautoconfargs:
 	fi
 
 .c.o .ad.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
 
 .cpp.o .cxx.o .cc.o .C.o:
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
-        fi
-	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-+@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
-	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
-        fi
-
 #
 #   Compiles CUDA code
 .cu.o:
@@ -426,9 +398,8 @@ getautoconfargs:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
 .cu.PETSc .c.PETSc .cxx.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
-          grep -v "warning: linker scope was specified more than once:" | \
           grep -v "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_" | \
           grep -v "(aka 'long \*') doesn't match specified 'MPI' type tag that requires 'long long \*'" | \
           grep -v "note: expanded from macro" |\
@@ -478,7 +449,7 @@ getautoconfargs:
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-+@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
           grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
@@ -680,8 +651,9 @@ manconcepts:
 manimplementations:
 	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
   for i in docs/manualpages/*/*.html; do \
+          printf "manimplementations in: $$i\n"; \
           itemName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
           grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \

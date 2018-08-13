@@ -1,0 +1,21 @@
+Basic Finite Element:
+  dimension:       1
+  components:      3
+  num quad points: 2
+  PetscSpace Object: 1 MPI processes
+    type: subspace
+    Space in 1 variables of order 1 with 3 components
+    Subspace-to-space domain shift:
+
+     0.
+     -1.
+    Subspace-to-space domain transform:
+
+     1.
+     0.
+    Original space:
+      PetscSpace Object: 1 MPI processes
+        type: poly
+        Space in 2 variables of order 1 with 3 components
+        Polynomial space of degree 1
+  Continuous Lagrange dual space of order 1   with 3 components  

@@ -44,6 +44,7 @@ PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt       nt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,6 +59,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   /* Primal space customization */
   ierr = PetscOptionsBool("-pc_bddc_use_local_mat_graph","Use or not adjacency graph of local mat for interface analysis","none",pcbddc->use_local_adj,&pcbddc->use_local_adj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_graph_maxcount","Maximum number of shared subdomains for a connected component","none",pcbddc->graphmaxcount,&pcbddc->graphmaxcount,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_corner_selection","Activates face-based corner selection","none",pcbddc->corner_selection,&pcbddc->corner_selection,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_vertices","Use or not corner dofs in coarse space","none",pcbddc->use_vertices,&pcbddc->use_vertices,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_faces","Use or not face constraints in coarse space","none",pcbddc->use_faces,&pcbddc->use_faces,NULL);CHKERRQ(ierr);
@@ -84,7 +86,9 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_deluxe_zerorows","Zero rows and columns of deluxe operators associated with primal dofs","none",pcbddc->deluxe_zerorows,&pcbddc->deluxe_zerorows,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_deluxe_singlemat","Collapse deluxe operators","none",pcbddc->deluxe_singlemat,&pcbddc->deluxe_singlemat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_adaptive_userdefined","Use user-defined constraints (should be attached via MatSetNearNullSpace to pmat) in addition to those adaptively generated","none",pcbddc->adaptive_userdefined,&pcbddc->adaptive_userdefined,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
+  nt   = 2;
+  ierr = PetscOptionsRealArray("-pc_bddc_adaptive_threshold","Thresholds to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&nt,NULL);CHKERRQ(ierr);
+  if (nt == 1) pcbddc->adaptive_threshold[1] = pcbddc->adaptive_threshold[0];
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_symmetric","Symmetric computation of primal basis functions","none",pcbddc->symmetric_primal,&pcbddc->symmetric_primal,NULL);CHKERRQ(ierr);
@@ -94,6 +98,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptionItems *PetscOptionsObject,PC pc)
   ierr = PetscOptionsBool("-pc_bddc_benign_compute_correction","Compute the benign correction during PreSolve","none",pcbddc->benign_compute_correction,&pcbddc->benign_compute_correction,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_nonetflux","Automatic computation of no-net-flux quadrature weights","none",pcbddc->compute_nonetflux,&pcbddc->compute_nonetflux,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_detect_disconnected","Detects disconnected subdomains","none",pcbddc->detect_disconnected,&pcbddc->detect_disconnected,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_detect_disconnected_filter","Filters out small entries in the local matrix when detecting disconnected subdomains","none",pcbddc->detect_disconnected_filter,&pcbddc->detect_disconnected_filter,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_eliminate_dirichlet","Whether or not we want to eliminate dirichlet dofs during presolve","none",pcbddc->eliminate_dirdofs,&pcbddc->eliminate_dirdofs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -104,14 +109,12 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   PC_BDDC              *pcbddc = (PC_BDDC*)pc->data;
   PC_IS                *pcis = (PC_IS*)pc->data;
   PetscErrorCode       ierr;
-  PetscBool            isascii,isstring;
+  PetscBool            isascii;
   PetscSubcomm         subcomm;
   PetscViewer          subviewer;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  /* Nothing printed for the String viewer */
   /* ASCII viewer */
   if (isascii) {
     PetscMPIInt   color,rank,size;
@@ -155,14 +158,18 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Rebuild interface graph for Schur principal minors: %d\n",pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of dofs' layers for the computation of principal minors: %D\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use user CSR graph to compute successive layers: %d\n",pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection threshold (active %d, userdefined %d): %g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold);CHKERRQ(ierr);
+    if (pcbddc->adaptive_threshold[1] != pcbddc->adaptive_threshold[0]) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection thresholds (active %d, userdefined %d): %g,%g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold[0],pcbddc->adaptive_threshold[1]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection threshold (active %d, userdefined %d): %g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,pcbddc->adaptive_threshold[0]);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  Min constraints / connected component: %D\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Max constraints / connected component: %D\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Invert exact Schur complement for adaptive selection: %d\n",pcbddc->sub_schurs_exact_schur);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Symmetric computation of primal basis functions: %d\n",pcbddc->symmetric_primal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Num. Procs. to map coarse adjacency list: %D\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Coarse eqs per proc (significant at the coarsest level): %D\n",pcbddc->coarse_eqs_per_proc);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Detect disconnected: %d\n",pcbddc->detect_disconnected);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Detect disconnected: %d (filter %d)\n",pcbddc->detect_disconnected,pcbddc->detect_disconnected_filter);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick: %d (change explicit %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_change_explicit);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Algebraic computation of no-net-flux %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
@@ -265,7 +272,8 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 
    Level: advanced
 
-   Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
+   Notes:
+    The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
           If global is true, the rows of G should be given in global ordering for the whole dofs;
           if false, the ordering should be global for the Nedelec field.
@@ -318,11 +326,13 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 +  pc - the preconditioning context
 .  divudotp - the matrix (must be of type MATIS)
 .  trans - if trans if false (resp. true), then pressures are in the test (trial) space and velocities are in the trial (test) space.
--  vl2l - optional IS describing the local (wrt the local mat in divudotp) to local (wrt the local mat in pc->pmat) map for the velocities
+-  vl2l - optional index set describing the local (wrt the local matrix in divudotp) to local (wrt the local matrix in the preconditioning matrix) map for the velocities
 
    Level: advanced
 
-   Notes: This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+   Notes:
+    This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+          If vl2l is NULL, the local ordering for velocities in divudotp should match that of the preconditioning matrix
 
 .seealso: PCBDDC
 @*/
@@ -411,6 +421,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
   if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
 /*@
  PCBDDCSetPrimalVerticesIS - Set additional user defined primal vertices in PCBDDC
 
@@ -1002,7 +1013,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 
    Level: intermediate
 
-   Notes: A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
+   Notes:
+    A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
 
 .seealso: PCBDDC,PetscCopyMode
 @*/
@@ -1303,13 +1315,14 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* compute initial vector in benign space if needed
      and remove non-benign solution from the rhs */
   benign_correction_computed = PETSC_FALSE;
-  if (rhs && pcbddc->benign_compute_correction && pcbddc->benign_have_null) {
+  if (rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
     /* compute u^*_h using ideas similar to those in Xuemin Tu's PhD thesis (see Section 4.8.1)
        Recursively apply BDDC in the multilevel case */
     if (!pcbddc->benign_vec) {
       ierr = VecDuplicate(rhs,&pcbddc->benign_vec);CHKERRQ(ierr);
     }
-    pcbddc->benign_apply_coarse_only = PETSC_TRUE;
+    /* keep applying coarse solver unless we no longer have benign subdomains */
+    pcbddc->benign_apply_coarse_only = pcbddc->benign_have_null ? PETSC_TRUE : PETSC_FALSE;
     if (!pcbddc->benign_skip_correction) {
       ierr = PCApply_BDDC(pc,rhs,pcbddc->benign_vec);CHKERRQ(ierr);
       benign_correction_computed = PETSC_TRUE;
@@ -1334,11 +1347,17 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* dbg output */
   if (pcbddc->dbg_flag && benign_correction_computed) {
     Vec v;
+
     ierr = VecDuplicate(pcis->vec1_global,&v);CHKERRQ(ierr);
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
+    if (pcbddc->ChangeOfBasisMatrix) {
+      ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,rhs,v);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(rhs,v);CHKERRQ(ierr);
+    }
     ierr = PCBDDCBenignGetOrSetP0(pc,v,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"LEVEL %D: is the correction benign?\n",pcbddc->current_level);CHKERRQ(ierr);
-    ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc)));CHKERRQ(ierr);
+    ierr = PetscScalarView(pcbddc->benign_n,pcbddc->benign_p0,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
   }
 
@@ -1444,6 +1463,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   Mat             lA;
   IS              lP,zerodiag = NULL;
   PetscInt        nrows,ncols;
+  PetscMPIInt     size;
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
   PetscBool       new_nearnullspace_provided,ismatis;
@@ -1454,6 +1474,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
   if (nrows != ncols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+
   matis = (Mat_IS*)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
@@ -1468,13 +1490,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
+  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && size > 1);
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && size > 1);
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
   computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
   if (pcbddc->switch_static) {
     PetscBool ismatis;
+
     ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&ismatis);CHKERRQ(ierr);
     if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"When the static switch is one, the iteration matrix should be of type MATIS");
   }
@@ -1482,47 +1507,22 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* activate all connected components if the netflux has been requested */
   if (pcbddc->compute_nonetflux) {
     pcbddc->use_vertices = PETSC_TRUE;
-    pcbddc->use_edges = PETSC_TRUE;
-    pcbddc->use_faces = PETSC_TRUE;
+    pcbddc->use_edges    = PETSC_TRUE;
+    pcbddc->use_faces    = PETSC_TRUE;
   }
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
       pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
-      ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
   /* process topology information */
   if (pcbddc->recompute_topography) {
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
-    /* detect local disconnected subdomains if requested (use matis->A) */
-    if (pcbddc->detect_disconnected) {
-      IS       primalv;
-      PetscInt i;
-
-      for (i=0;i<pcbddc->n_local_subs;i++) {
-        ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-      ierr = PCBDDCDetectDisconnectedComponents(pc,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
-      if (primalv) {
-        if (pcbddc->user_primal_vertices_local) {
-          IS list[2], newp;
-
-          list[0] = primalv;
-          list[1] = pcbddc->user_primal_vertices_local;
-          ierr = ISConcatenate(PetscObjectComm((PetscObject)pc),2,list,&newp);CHKERRQ(ierr);
-          ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
-          ierr = ISDestroy(&list[1]);CHKERRQ(ierr);
-          pcbddc->user_primal_vertices_local = newp;
-        } else {
-          pcbddc->user_primal_vertices_local = primalv;
-        }
-      }
-    }
     if (pcbddc->discretegradient) {
       ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
     }
@@ -1564,12 +1564,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     }
   }
 
-  /* propagate relevant information -> TODO remove*/
-#if !defined(PETSC_USE_COMPLEX) /* workaround for reals */
-  if (matis->A->symmetric_set) {
-    ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,matis->A->symmetric);CHKERRQ(ierr);
-  }
-#endif
+  /* propagate relevant information */
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);
   }
@@ -1583,7 +1578,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
-    ierr = PCISSetUp(pc,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCISSetUp(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
   }
@@ -1601,8 +1596,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       if (!pcbddc->divudotp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       /* TODO what if a nearnullspace is already attached? */
-      ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
+      if (nnfnnsp) {
+        ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nnfnnsp);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -1753,6 +1750,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2159,7 +2157,24 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCSetCoordinates_BDDC(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PCBDDCGraph    mat_graph = pcbddc->mat_graph;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(mat_graph->coords);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc*dim,&mat_graph->coords);CHKERRQ(ierr);
+  ierr = PetscMemcpy(mat_graph->coords,coords,nloc*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  mat_graph->cnloc = nloc;
+  mat_graph->cdim  = dim;
+  mat_graph->cloc  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2551,7 +2566,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 .    -pc_bddc_coarse_redistribute <0> - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
 .    -pc_bddc_use_deluxe_scaling <false> - use deluxe scaling
 .    -pc_bddc_schur_layers <-1> - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold <0.0> - when a value greater than one is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
+.    -pc_bddc_adaptive_threshold <0.0> - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
 -    -pc_bddc_check_level <0> - set verbosity level of debugging output
 
    Options for Dirichlet, Neumann or coarse solver can be set with
@@ -2577,7 +2592,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Level: intermediate
 
-   Developer notes:
+   Developer Notes:
 
    Contributed by Stefano Zampini
 
@@ -2615,6 +2630,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->nedglobal                 = PETSC_TRUE;
   pcbddc->graphmaxcount             = PETSC_MAX_INT;
   pcbddc->sub_schurs_layers         = -1;
+  pcbddc->adaptive_threshold[0]     = 0.0;
+  pcbddc->adaptive_threshold[1]     = 0.0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
@@ -2655,6 +2672,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",PCBDDCMatFETIDPGetRHS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_BDDC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

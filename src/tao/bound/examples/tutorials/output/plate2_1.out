@@ -47,7 +47,7 @@ Tao Object: 1 MPI processes
         not using I-node routines
   total KSP iterations: 12
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=1.4512e-11
   Objective value=1.50566
   total number of iterations=3,                          (max: 50)

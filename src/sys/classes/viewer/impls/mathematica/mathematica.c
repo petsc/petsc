@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkMode *mode)
+static PetscErrorCode PetscViewerMathematicaParseLinkMode(char *modename, LinkMode *mode)
 {
   PetscBool      isCreate, isConnect, isLaunch;
   PetscErrorCode ierr;
@@ -245,7 +245,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   if (opt) {
     LinkMode mode;
 
-    ierr = PetscViewerMathematicaParseLinkMode_Private(modename, &mode);CHKERRQ(ierr);
+    ierr = PetscViewerMathematicaParseLinkMode(modename, &mode);CHKERRQ(ierr);
     ierr = PetscViewerMathematicaSetLinkMode(v, mode);CHKERRQ(ierr);
   }
   /* Get graphics type */
@@ -372,7 +372,7 @@ PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char m
   LinkMode linkmode;
   ierr = PetscViewerMathematicaSetLinkPort(*v, port);CHKERRQ(ierr);
   ierr = PetscViewerMathematicaSetLinkHost(*v, machine);CHKERRQ(ierr);
-  ierr = PetscViewerMathematicaParseLinkMode_Private(mode, &linkmode);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaParseLinkMode(mode, &linkmode);CHKERRQ(ierr);
   ierr = PetscViewerMathematicaSetLinkMode(*v, linkmode);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerSetType(*v, PETSC_VIEWER_MATHEMATICA);CHKERRQ(ierr);

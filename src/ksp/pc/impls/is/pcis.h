@@ -54,11 +54,10 @@ typedef struct {
   PetscBool   use_stiffness_scaling;
 
   ISLocalToGlobalMapping mapping;
-  PetscInt  n_neigh;     /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
-                         /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
-  PetscInt *neigh;       /* list of neighbouring subdomains                                                          */
-  PetscInt *n_shared;    /* n_shared[j] is the number of nodes shared with subdomain neigh[j]                        */
-  PetscInt **shared;     /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j]          */
+  PetscInt  n_neigh;     /* number of neighbours this subdomain has (INCLUDING the subdomain itself).       */
+  PetscInt *neigh;       /* list of neighbouring subdomains                                                 */
+  PetscInt *n_shared;    /* n_shared[j] is the number of nodes shared with subdomain neigh[j]               */
+  PetscInt **shared;     /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j] */
   /* It is necessary some consistency in the                                                  */
   /* numbering of the shared edges from each side.                                            */
   /* For instance:                                                                            */
@@ -77,11 +76,11 @@ typedef struct {
   PetscBool reusesubmatrices;
 } PC_IS;
 
-PETSC_EXTERN PetscErrorCode PCISSetUp(PC pc, PetscBool computesolvers);
-PETSC_EXTERN PetscErrorCode PCISDestroy(PC pc);
-PETSC_EXTERN PetscErrorCode PCISCreate(PC pc);
-PETSC_EXTERN PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
-PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
-PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
+PETSC_EXTERN PetscErrorCode PCISSetUp(PC,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PCISDestroy(PC);
+PETSC_EXTERN PetscErrorCode PCISCreate(PC);
+PETSC_EXTERN PetscErrorCode PCISApplySchur(PC,Vec,Vec,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar*,Vec,InsertMode,ScatterMode,PC);
+PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC,Vec,Vec,Vec,Vec);
 
 #endif /* __pcis_h */

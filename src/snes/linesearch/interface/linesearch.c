@@ -29,7 +29,7 @@ PetscLogEvent SNESLINESEARCH_Apply;
 
 .keywords: SNESLineSearch, nonlinear, set, monitor
 
-.seealso: SNESLineSearchMonitorDefault(), SNESLineSearchMonitorSet()
+.seealso: SNESGetLineSearch(), SNESLineSearchMonitorDefault(), SNESLineSearchMonitorSet()
 @*/
 PetscErrorCode  SNESLineSearchMonitorCancel(SNESLineSearch ls)
 {
@@ -61,7 +61,7 @@ PetscErrorCode  SNESLineSearchMonitorCancel(SNESLineSearch ls)
 
    Level: developer
 
-.seealso: SNESLineSearchMonitorSet()
+.seealso: SNESGetLineSearch(), SNESLineSearchMonitorSet()
 @*/
 PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
 {
@@ -95,13 +95,14 @@ PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
    SNESLineSearchMonitorSet() multiple times; all will be called in the
    order in which they were set.
 
-   Fortran notes: Only a single monitor function can be set for each SNESLineSearch object
+   Fortran Notes:
+    Only a single monitor function can be set for each SNESLineSearch object
 
    Level: intermediate
 
 .keywords: SNESLineSearch, nonlinear, set, monitor
 
-.seealso: SNESLineSearchMonitorDefault(), SNESLineSearchMonitorCancel()
+.seealso: SNESGetLineSearch(), SNESLineSearchMonitorDefault(), SNESLineSearchMonitorCancel()
 @*/
 PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(SNESLineSearch,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -135,7 +136,7 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
 
 .keywords: SNES, nonlinear, default, monitor, norm
 
-.seealso: SNESMonitorSet(), SNESMonitorSolution()
+.seealso: SNESGetLineSearch(), SNESMonitorSet(), SNESMonitorSolution()
 @*/
 PetscErrorCode  SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls,PetscViewerAndFormat *vf)
 {
@@ -237,7 +238,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 
 .keywords: SNESLineSearch, SetUp
 
-.seealso: SNESLineSearchReset()
+.seealso: SNESGetLineSearch(), SNESLineSearchReset()
 @*/
 
 PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
@@ -274,13 +275,14 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
    Input Parameters:
 .  linesearch - The LineSearch instance.
 
-   Notes: Usually only called by SNESReset()
+   Notes:
+    Usually only called by SNESReset()
 
    Level: developer
 
 .keywords: SNESLineSearch, Reset
 
-.seealso: SNESLineSearchSetUp()
+.seealso: SNESGetLineSearch(), SNESLineSearchSetUp()
 @*/
 
 PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
@@ -309,11 +311,12 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 
    Level: developer
 
-   Notes: This is used internally by PETSc and not called by users
+   Notes:
+    This is used internally by PETSc and not called by users
 
 .keywords: get, linesearch, pre-check
 
-.seealso: SNESSetFunction()
+.seealso: SNESGetLineSearch(), SNESSetFunction()
 @*/
 PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCode (*func)(SNES,Vec,Vec))
 {
@@ -322,27 +325,6 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
   linesearch->ops->snesfunc = func;
   PetscFunctionReturn(0);
 }
-
-
-/*MC
-    SNESLineSearchPreCheckFunction - form of function passed to check the search direction before line search is called
-
-     Synopsis:
-     #include <petscsnes.h>
-     SNESLineSearchPreCheckFunction(SNESLineSearch snes,Vec x,Vec y, PetscBool *changed);
-
-       Input Parameters:
-+      x - solution vector
-.      y - search direction vector
--      changed - flag to indicate the precheck changed x or y.
-
-     Note: This is NOTE a PETSc function, rather it documents the calling sequence of functions passed to SNESLineSearchSetPreCheck()
-           and SNESLineSearchGetPreCheck()
-
-   Level: advanced
-
-.seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck()
-M*/
 
 /*@C
    SNESLineSearchSetPreCheck - Sets a user function that is called after the initial search direction has been computed but
@@ -353,14 +335,14 @@ M*/
 
    Input Parameters:
 +  linesearch - the SNESLineSearch context
-.  func - [optional] function evaluation routine, see SNESLineSearchPreCheckFunction for the calling sequence
+.  func - [optional] function evaluation routine, see SNESLineSearchPreCheck() for the calling sequence
 -  ctx        - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
    Level: intermediate
 
 .keywords: set, linesearch, pre-check
 
-.seealso: SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck(), SNESLineSearchGetPreCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck(), SNESLineSearchGetPreCheck()
 @*/
 PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorCode (*func)(SNESLineSearch,Vec,Vec,PetscBool*,void*),void *ctx)
 {
@@ -378,14 +360,14 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
-+  func       - [optional] function evaluation routine, see SNESLineSearchPreCheckFunction for calling sequence
++  func       - [optional] function evaluation routine, see SNESLineSearchPreCheck() for calling sequence
 -  ctx        - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
    Level: intermediate
 
 .keywords: get, linesearch, pre-check
 
-.seealso: SNESLineSearchGetPostCheck(), SNESLineSearchSetPreCheck()
+.seealso: SNESGetLineSearch(), SNESGetLineSearch(), SNESLineSearchPreCheck(), SNESLineSearchGetPostCheck(), SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 @*/
 PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorCode (**func)(SNESLineSearch,Vec,Vec,PetscBool*,void*),void **ctx)
 {
@@ -396,28 +378,6 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
   PetscFunctionReturn(0);
 }
 
-/*MC
-    SNESLineSearchPostCheckFunction - form of function that is called after line search is complete
-
-     Synopsis:
-     #include <petscsnes.h>
-     SNESLineSearchPostheckFunction(SNESLineSearch linesearch,Vec x,Vec y,  Vec w, *changed_y, PetscBool *changed_w);
-
-     Input Parameters:
-+      x - old solution vector
-.      y - search direction vector
-.      w - new solution vector
-.      changed_y - indicates that the line search changed y
--      changed_w - indicates that the line search changed w
-
-     Note: This is NOTE a PETSc function, rather it documents the calling sequence of functions passed to SNESLineSearchSetPostCheck()
-           and SNESLineSearchGetPostCheck()
-
-   Level: advanced
-
-.seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchGetPostCheck()
-M*/
-
 /*@C
    SNESLineSearchSetPostCheck - Sets a user function that is called after the line search has been applied to determine the step
        direction and length. Allows the user a chance to change or override the decision of the line search routine
@@ -426,14 +386,14 @@ M*/
 
    Input Parameters:
 +  linesearch - the SNESLineSearch context
-.  func - [optional] function evaluation routine, see SNESLineSearchPostCheckFunction for the calling sequence
+.  func - [optional] function evaluation routine, see SNESLineSearchPostCheck()  for the calling sequence
 -  ctx        - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
    Level: intermediate
 
 .keywords: set, linesearch, post-check
 
-.seealso: SNESLineSearchSetPreCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchPostCheck(), SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchGetPostCheck()
 @*/
 PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscErrorCode (*func)(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void *ctx)
 {
@@ -451,14 +411,14 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscError
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
-+  func - [optional] function evaluation routine, see for the calling sequence SNESLineSearchPostCheckFunction
++  func - [optional] function evaluation routine, see for the calling sequence SNESLineSearchPostCheck()
 -  ctx        - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
    Level: intermediate
 
 .keywords: get, linesearch, post-check
 
-.seealso: SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchPostCheck(), SNESLineSearchSetPreCheck()
 @*/
 PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscErrorCode (**func)(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*),void **ctx)
 {
@@ -486,7 +446,7 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscError
 
 .keywords: SNESLineSearch, Create
 
-.seealso: SNESLineSearchPostCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchPostCheck(), SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck()
 @*/
 PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
 {
@@ -520,7 +480,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,Pets
 
 .keywords: SNESLineSearch, Create
 
-.seealso: SNESLineSearchPreCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck(), SNESLineSearchSetPrecheck(), SNESLineSearchGetPrecheck()
 @*/
 PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
@@ -568,7 +528,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
    Reference:
    Hindmarsh and Payne (1996) Time step limits for stable solutions of the ice sheet equation, Annals of Glaciology.
 
-.seealso: SNESLineSearchSetPreCheck()
+.seealso: SNESGetLineSearch(), SNESLineSearchSetPreCheck()
 @*/
 PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed,void *ctx)
 {
@@ -648,14 +608,14 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
    help with convergence of the nonlinear method.  Various SNES types use line searches
    in different ways, but the overarching theme is that a line search is used to determine
    an optimal damping parameter of a step at each iteration of the method.  Each
-   application of the line search may invoke SNESComputeFunction several times, and
+   application of the line search may invoke SNESComputeFunction() several times, and
    therefore may be fairly expensive.
 
    Level: Intermediate
 
 .keywords: SNESLineSearch, Create
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck(), SNESSolve(), SNESComputeFunction(), SNESLineSearchSetComputeNorms(),
+.seealso: SNESGetLineSearch(), SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck(), SNESSolve(), SNESComputeFunction(), SNESLineSearchSetComputeNorms(),
           SNESLineSearchType, SNESLineSearchSetType()
 @*/
 PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, PetscReal * fnorm, Vec Y)
@@ -701,11 +661,11 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
    Input Parameters:
 .  linesearch - The linesearch context
 
-   Level: Intermediate
+   Level: developer
 
 .keywords: SNESLineSearch, Destroy
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchReset(), SNESDestroy()
+.seealso: SNESGetLineSearch(), SNESLineSearchCreate(), SNESLineSearchReset(), SNESDestroy()
 @*/
 PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
 {
@@ -742,7 +702,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
      SNESLineSearchMonitorSet() since it is called in many locations of the line search routines to display aspects of the
      line search that are not visible to the other monitors.
 
-.seealso: SNESLineSearchGetDefaultMonitor(), PetscViewer, SNESLineSearchSetMonitor()
+.seealso: SNESGetLineSearch(), SNESLineSearchGetDefaultMonitor(), PetscViewer, SNESLineSearchSetMonitor()
 @*/
 PetscErrorCode  SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscViewer viewer)
 {
@@ -771,7 +731,7 @@ PetscErrorCode  SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, Petsc
 
    Level: intermediate
 
-.seealso: SNESLineSearchSetDefaultMonitor(), PetscViewer
+.seealso: SNESGetLineSearch(), SNESLineSearchSetDefaultMonitor(), PetscViewer
 @*/
 PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscViewer *monitor)
 {
@@ -950,9 +910,6 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscInt     tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer);CHKERRQ(ierr);
     if (linesearch->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -972,7 +929,6 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
     if (linesearch->ops->postcheck) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using user-defined postcheck step\n", linesearch->max_its);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1644,8 +1600,6 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 
    Level: developer
 
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
-
 .keywords: SNESLineSearch, work, vector
 
 .seealso: SNESSetWorkVecs()
@@ -1757,7 +1711,7 @@ PetscErrorCode  SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearc
 
 .seealso: SNESLineSearchGetVIFunctions(), SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 @*/
-extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc projectfunc, SNESLineSearchVINormFunc normfunc)
+PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc projectfunc, SNESLineSearchVINormFunc normfunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
@@ -1784,7 +1738,7 @@ extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SN
 
 .seealso: SNESLineSearchSetVIFunctions(), SNESLineSearchGetPostCheck(), SNESLineSearchGetPreCheck()
 @*/
-extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc *projectfunc, SNESLineSearchVINormFunc *normfunc)
+PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFunc *projectfunc, SNESLineSearchVINormFunc *normfunc)
 {
   PetscFunctionBegin;
   if (projectfunc) *projectfunc = linesearch->ops->viproject;

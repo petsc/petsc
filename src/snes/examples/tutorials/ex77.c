@@ -364,7 +364,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
       ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(cdm, &cs);CHKERRQ(ierr);
+      ierr = DMGetSection(cdm, &cs);CHKERRQ(ierr);
 
       /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
       for (f = 0; f < Nf; ++f) {
@@ -523,26 +523,28 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE         fe[2], feAux[2];
   PetscQuadrature q, fq;
   PetscDS         prob, probAux;
+  MPI_Comm        comm;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   /* Create finite element */
-  ierr = PetscFECreateDefault(dm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "def_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "deformation");CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFEGetFaceQuadrature(fe[0], &fq);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(fe[1], fq);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(feAux[0], fq);CHKERRQ(ierr);
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(feAux[1], fq);CHKERRQ(ierr);

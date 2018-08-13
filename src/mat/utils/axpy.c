@@ -41,17 +41,9 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (Y->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -144,7 +136,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
    Level: intermediate
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 
@@ -173,17 +166,9 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
-  if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (Y->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    Y->valid_GPU_matrix = PETSC_CUDA_CPU;
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+  if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -219,7 +204,8 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 
    Neighbor-wise Collective on Mat and Vec
 
-   Notes: If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
+   Notes:
+    If the matrix Y is missing some diagonal entries this routine can be very slow. To make it fast one should initially
    fill the matrix so that all diagonal entries have a value (with a value of zero for those locations that would not have an
    entry).
 

@@ -2,6 +2,42 @@
 /*
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
+
+/* We cut-and-past below from aij.h to make a "no_function" version of PetscSparseDensePlusDot().
+ * This is necessary because the USESHORT case cannot use the inlined functions that may be employed. */
+
+#if defined(PETSC_KERNEL_USE_UNROLL_4)
+#define PetscSparseDensePlusDot_no_function(sum,r,xv,xi,nnz) { \
+    if (nnz > 0) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
+      case 3: sum += *xv++ *r[*xi++]; \
+      case 2: sum += *xv++ *r[*xi++]; \
+      case 1: sum += *xv++ *r[*xi++]; \
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
+        sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
+
+#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#define PetscSparseDensePlusDot_no_function(sum,r,xv,xi,nnz) { \
+    PetscInt __i,__i1,__i2; \
+    for (__i=0; __i<nnz-1; __i+=2) {__i1 = xi[__i]; __i2=xi[__i+1]; \
+                                    sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);} \
+    if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
+
+#else
+#define PetscSparseDensePlusDot_no_function(sum,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
+#endif
+
+
 #if defined(USESHORT)
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz)
 #else
@@ -175,7 +211,11 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       vj  = aj + ai[i] + 1;
       v   = aa + ai[i] + 1;
       sum = b[i]*d/omega;
+#ifdef USESHORT
+      PetscSparseDensePlusDot_no_function(sum,b,v,vj,nz);
+#else
       PetscSparseDensePlusDot(sum,b,v,vj,nz);
+#endif
       x[i] = sum;
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);

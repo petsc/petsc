@@ -1,11 +1,12 @@
 #include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
+#if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
-PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
 PetscFunctionList PetscSFList;
+PetscBool         PetscSFRegisterAllCalled;
 
 /*@C
    PetscSFRegisterAll - Registers all the PetscSF communication implementations
@@ -25,10 +26,10 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
+  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
   ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
-  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -38,8 +39,8 @@ PetscErrorCode  PetscSFRegisterAll(void)
    Not collective
 
    Input Parameters:
-+  name_impl - name of a new user-defined implementation
--  routine_create - routine to create method context
++  name - name of a new user-defined implementation
+-  create - routine to create method context
 
    Notes:
    PetscSFRegister() may be called multiple times to add several user-defined implementations.
@@ -52,20 +53,19 @@ PetscErrorCode  PetscSFRegisterAll(void)
    Then, this implementation can be chosen with the procedural interface via
 $     PetscSFSetType(sf,"my_impl")
    or at runtime via the option
-$     -snes_type my_solver
+$     -sf_type my_impl
 
    Level: advanced
 
 .keywords: PetscSF, register
 
-.seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
+.seealso: PetscSFRegisterAll(), PetscSFInitializePackage()
 @*/
-PetscErrorCode  PetscSFRegister(const char sname[],PetscErrorCode (*function)(PetscSF))
+PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscSFList,sname,function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscSFList,name,create);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

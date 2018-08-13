@@ -9,13 +9,7 @@
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
-PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
-PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list);
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
-
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
-#endif
 
 #if defined(PETSC_HAVE_CLOSURES)
 PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
@@ -189,7 +183,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortr
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 
 
@@ -202,6 +195,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
+#define PetscValidHeaderSpecificType(h,ck,arg,t) do {} while (0)
 #define PetscValidHeader(h,arg) do {} while (0)
 #define PetscValidPointer(h,arg) do {} while (0)
 #define PetscValidCharPointer(h,arg) do {} while (0)
@@ -211,6 +205,16 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidFunction(h,arg) do {} while (0)
 
 #else
+
+/*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
+#define PetscValidHeaderSpecificType(h,ck,arg,t) \
+  do {   \
+    PetscErrorCode __ierr; \
+    PetscBool      same; \
+    PetscValidHeaderSpecific(h,ck,arg); \
+    __ierr = PetscObjectTypeCompare((PetscObject)h,t,&same);CHKERRQ(__ierr);      \
+    if (!same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+  } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   do {                                                                  \
@@ -423,7 +427,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
-   Notes: object state is an integer which gets increased every time
+   Notes:
+    object state is an integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
@@ -788,49 +793,21 @@ typedef struct {
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
 
-#if defined(PETSC_HAVE_CUSP)
 /*E
-    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
+    PetscOffloadFlag - indicates which memory (CPU, GPU, or none contains valid vector
 
-   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
-   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
-   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+   PETSC_OFFLOAD_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
+   PETSC_OFFLOAD_CPU - CPU has valid vector/matrix entries
+   PETSC_OFFLOAD_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
 
    Level: developer
 E*/
-typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
-#elif defined(PETSC_HAVE_VIENNACL)
-/*E
-    PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
-
-   PETSC_VIENNACL_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_VIENNACL_GPU - GPU has valid vector/matrix entries
-   PETSC_VIENNACL_CPU - CPU has valid vector/matrix entries
-   PETSC_VIENNACL_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-
-   Level: developer
-E*/
-typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
-#elif defined(PETSC_HAVE_VECCUDA)
-/*E
-    PetscCUDAFlag - indicates which memory (CPU, GPU, or none contains valid vector
-
-   PETSC_CUDA_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_CUDA_GPU - GPU has valid vector/matrix entries
-   PETSC_CUDA_CPU - CPU has valid vector/matrix entries
-   PETSC_CUDA_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-
-   Level: developer
-E*/
-typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
-#endif
+typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETSC_OFFLOAD_BOTH} PetscOffloadFlag;
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
-#define REDUCE_SUM  0
-#define REDUCE_MAX  1
-#define REDUCE_MIN  2
+typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
   MPI_Comm    comm;
@@ -918,11 +895,19 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
+PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 #endif
+#endif
+
+PETSC_EXTERN PetscLogEvent PETSC_Barrier;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
+
+#if defined(PETSC_HAVE_ADIOS)
+PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
 #endif /* _PETSCHEAD_H */

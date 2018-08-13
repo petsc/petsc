@@ -1,6 +1,6 @@
 DM Object: 4 MPI processes
   type: swarm
-DataBucketView: 
+DMSwarmDataBucketView: 
   L                  = 196 
   buffer             = 4 
   allocated          = 200 
@@ -88,7 +88,7 @@ rank[3] before(144,676)
 [rank 3]: box from 0 : range[+4.0106e-312,+0.0000e+00]x[+8.5967e-322,+0.0000e+00]
 [rank 3]: box from 1 : range[+0.0000e+00,+1.2479e-315]x[+0.0000e+00,+0.0000e+00]
 [rank 3]: box from 2 : range[+0.0000e+00,+0.0000e+00]x[+0.0000e+00,+0.0000e+00]
-DataEx: instance=0
+DMSwarmDataEx: instance=0
   topology status:        finalized 
   message lengths status: finalized 
   packer status status:   finalized 

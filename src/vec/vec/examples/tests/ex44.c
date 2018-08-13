@@ -1,10 +1,10 @@
 /*T
-   requires: cusp veccuda
+   requires: veccuda
 T*/
 
 #include <petscvec.h>
 
-static char help[] = "Tests vecScatter Sequential to Sequential for (CUSP) vectors\n\
+static char help[] = "Tests vecScatter Sequential to Sequential for (CUDA) vectors\n\
   -m # : the size of the vectors\n					\
   -n # : the numer of indices (with n<=m)\n				\
   -toFirst # : the starting index of the output vector for strided scatters\n \
@@ -71,7 +71,7 @@ int main(int argc, char * argv[]) {
     ierr = VecSetFromOptions(X);CHKERRQ(ierr);
     ierr = VecSet(X,2.0);CHKERRQ(ierr);
     ierr = VecSet(Y,1.0);CHKERRQ(ierr);
-    
+
     /* Build the strided index sets */
     ierr = ISCreate(PETSC_COMM_WORLD,&toISStrided);CHKERRQ(ierr);
     ierr = ISCreate(PETSC_COMM_WORLD,&fromISStrided);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc, char * argv[]) {
     ierr = ISSetType(fromISStrided, ISSTRIDE);CHKERRQ(ierr);
     ierr = ISStrideSetStride(fromISStrided,n,fromFirst,fromStep);CHKERRQ(ierr);
     ierr = ISStrideSetStride(toISStrided,n,toFirst,toStep);CHKERRQ(ierr);
-    
+
     /* Build the general index sets */
     ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&idy);CHKERRQ(ierr);
@@ -94,38 +94,38 @@ int main(int argc, char * argv[]) {
 
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,n1,idx,PETSC_COPY_VALUES,&toISGeneral);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,n2,idy,PETSC_COPY_VALUES,&fromISGeneral);CHKERRQ(ierr);
-    
+
     /* set the mode and the insert/add parameter */
     mode = SCATTER_FORWARD;
     addv = ADD_VALUES;
-    
+
     /* VecScatter : Seq Strided to Seq Strided */
     ierr = VecScatterCreate(X,fromISStrided,Y,toISStrided,&vscatSStoSS);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSStoSS,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSStoSS);CHKERRQ(ierr);
-    
+
     /* VecScatter : Seq General to Seq Strided */
     ierr = VecScatterCreate(Y,fromISGeneral,X,toISStrided,&vscatSGtoSS);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSGtoSS,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSGtoSS);CHKERRQ(ierr);
-    
+
     /* VecScatter : Seq General to Seq General */
     ierr = VecScatterCreate(X,fromISGeneral,Y,toISGeneral,&vscatSGtoSG);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSGtoSG,X,Y,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSGtoSG);CHKERRQ(ierr);
-    
+
     /* VecScatter : Seq Strided to Seq General */
     ierr = VecScatterCreate(Y,fromISStrided,X,toISGeneral,&vscatSStoSG);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(vscatSStoSG,Y,X,addv,mode);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&vscatSStoSG);CHKERRQ(ierr);
-    
+
     /* view the results */
     ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    
+
     /* Cleanup */
     ierr = VecDestroy(&X);CHKERRQ(ierr);
     ierr = VecDestroy(&Y);CHKERRQ(ierr);
@@ -142,10 +142,6 @@ int main(int argc, char * argv[]) {
 
 
 /*TEST
-
-   test:
-      args: -vec_type cusp
-      requires: cusp
 
    test:
       suffix: cuda

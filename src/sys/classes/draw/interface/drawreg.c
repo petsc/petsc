@@ -363,7 +363,8 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
    Level: intermediate
 
-   Notes: Must be called after PetscDrawCreate() before the PetscDraw is used.
+   Notes:
+    Must be called after PetscDrawCreate() before the PetscDraw is used.
 
    Concepts: drawing^setting options
    Concepts: graphics^setting options

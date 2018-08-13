@@ -66,4 +66,13 @@ int main(int argc,char **args)
       nsize: 3
       args: -mat_type baij
 
+   test:
+      suffix: dense
+      args: -mat_type dense
+
+   test:
+      suffix: dense_2
+      nsize: 3
+      args: -mat_type dense
+
 TEST*/

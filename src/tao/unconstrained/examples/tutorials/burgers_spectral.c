@@ -245,7 +245,7 @@ int main(int argc,char **argv)
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetMonitor(tao,MonitorError,&appctx,NULL);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBQNLS);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,appctx.dat.ic);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation  */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
@@ -448,6 +448,8 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
    Creates the element stiffness matrix for the given gll
    */
   ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  /* workarround for clang analyzer warning: Division by zero */
+  if (appctx->param.N <= 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
 
   /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {
@@ -645,13 +647,13 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
       requires: !complex
 
     test:
-      args: -tao_max_it 5
+      args: -tao_max_it 5 -tao_gatol 1.e-4
       requires: !single
 
     test:
       suffix: 2
       nsize: 2
-      args: -tao_max_it 5
+      args: -tao_max_it 5 -tao_gatol 1.e-4
       requires: !single
 
 TEST*/

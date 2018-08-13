@@ -29,7 +29,7 @@ typedef struct Edge {
   struct Edge   *next;
 } Edge;
 
-PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
+PetscReal findDistance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
   return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
@@ -39,14 +39,14 @@ PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
   Routing of Multipoint Connections, Bernard M. Waxman. 1988
 */
 
-PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,PetscInt seed)
+PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,PetscInt **pedgelist,PetscInt seed)
 {
   PetscErrorCode ierr;
   PetscInt       i, j, nedges = 0;
-  int            *edgelist;
+  PetscInt       *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
-  PetscReal    maxdist = 0.0, dist, alpha, beta, prob;
+  PetscReal      maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
@@ -76,7 +76,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   /* find maximum distance */
   for (i=0; i<nvertex; i++) {
     for (j=0; j<nvertex; j++) {
-      dist = distance(x[i],x[j],y[i],y[j]);
+      dist = findDistance(x[i],x[j],y[i],y[j]);
       if (dist >= maxdist) maxdist = dist;
     }
   }
@@ -85,7 +85,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   for (i=0; i<nvertex; i++) {
     for (j=0; j<nvertex; j++) {
       if (j != i) {
-        dist = distance(x[i],x[j],y[i],y[j]);
+        dist = findDistance(x[i],x[j],y[i],y[j]);
         prob = beta*PetscExpScalar(-dist/(maxdist*alpha));
         ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
         if (value <= prob) {
@@ -177,11 +177,10 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   Branch            *branch;
   Node              *node;
   PetscInt          e,v,vStart,vEnd,eStart, eEnd;
-  PetscInt          lofst,lofst_to,lofst_fr,compoffset,row[2],col[6];
+  PetscInt          lofst,lofst_to,lofst_fr,row[2],col[6];
   PetscBool         ghost;
   const PetscInt    *cone;
   PetscScalar       *barr,val[6];
-  DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(networkdm,&localb);CHKERRQ(ierr);
@@ -190,13 +189,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
 
   ierr = VecGetArray(localb,&barr);CHKERRQ(ierr);
-
-  /*
-    The component data array stores the information which we had in the
-    node and branch data structures. We access the correct element  with
-    a variable offset that the DMNetwork provides.
-  */
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
 
   /*
     We can define the current as a "edge characteristic" and the voltage
@@ -208,14 +200,12 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   /* Branch equations: i/r + uj - ui = battery */
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,NULL,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,e,0,NULL,(void**)&branch);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
     ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
-
-    branch = (Branch*)(arr + compoffset);
 
     barr[lofst] = branch->bat;
 
@@ -226,8 +216,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* from node */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[0],0,NULL,&compoffset);CHKERRQ(ierr);
-    node = (Node*)(arr + compoffset);
+    ierr = DMNetworkGetComponent(networkdm,cone[0],0,NULL,(void**)&node);CHKERRQ(ierr);
 
     if (!node->gr) {
       row[0] = lofst_fr;
@@ -236,8 +225,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[1],0,NULL,&compoffset);CHKERRQ(ierr);
-    node = (Node*)(arr + compoffset);
+    ierr = DMNetworkGetComponent(networkdm,cone[1],0,NULL,(void**)&node);CHKERRQ(ierr);
 
     if (!node->gr) {
       row[0] = lofst_to;
@@ -250,9 +238,8 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,0,NULL,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,v,0,NULL,(void**)&node);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableOffset(networkdm,v,&lofst);CHKERRQ(ierr);
-      node = (Node*)(arr + compoffset);
 
       if (node->gr) {
         row[0] = lofst;
@@ -285,7 +272,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist = NULL;
+  PetscInt          *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
@@ -318,9 +305,9 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
   /* Set number of nodes/edges */
-  ierr = DMNetworkSetSizes(networkdm,nnode,nbranch,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,0,&nnode,&nbranch,NULL,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
-  ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
+  ierr = DMNetworkSetEdgeList(networkdm,&edgelist,NULL);CHKERRQ(ierr);
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 

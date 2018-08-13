@@ -1,6 +1,75 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 /*@
+  DMPlexSetMigrationSF - Sets the SF for migrating from a parent DM into this DM
+
++ dm          - The DM
+. naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexGetMigrationSF()
+@*/
+PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  dm->sfMigration = migrationSF;
+  ierr = PetscObjectReference((PetscObject) migrationSF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetMigrationSF - Gets the SF for migrating from a parent DM into this DM
+
++ dm          - The DM
+. *migrationSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexSetMigrationSF
+@*/
+PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF) 
+{
+  PetscFunctionBegin;
+  *migrationSF = dm->sfMigration;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetGlobalToNaturalSF - Sets the SF for mapping Global Vec to the Natural Vec
+
++ dm          - The DM
+. naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexGetGlobaltoNaturalSF()
+@*/
+PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  dm->sfNatural = naturalSF;
+  ierr = PetscObjectReference((PetscObject) naturalSF);CHKERRQ(ierr);
+  dm->useNatural = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetGlobalToNaturalSF - Gets the SF for mapping Global Vec to the Natural Vec
+
++ dm          - The DM
+. *naturalSF   - The PetscSF
+  Level: intermediate
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexSetGlobaltoNaturalSF
+@*/
+PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF) 
+{
+  PetscFunctionBegin;
+  *naturalSF = dm->sfNatural;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexCreateGlobalToNaturalSF - Creates the SF for mapping Global Vec to the Natural Vec
 
   Input Parameters:
@@ -34,9 +103,9 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   ierr = PetscSFDistributeSection(sfMigration, section, &remoteOffsets, sectionDist);CHKERRQ(ierr);
   /* ierr = PetscPrintf(comm, "Distributed Section\n");CHKERRQ(ierr);
    ierr = PetscSectionView(sectionDist, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = DMSetDefaultSection(dm, sectionDist);CHKERRQ(ierr);
+  ierr = DMSetSection(dm, sectionDist);CHKERRQ(ierr);
   /* Get a pruned version of migration SF */
-  ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(dm, &gSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart, ssize = 0; p < pEnd; ++p) {
     PetscInt dof, off;

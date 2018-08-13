@@ -68,7 +68,8 @@ PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 
 .seealso: PetscDrawLGDraw(), PetscDrawSPDraw()
 
-   Developer Notes: This code cheats and uses the fact that the LG and SP structs are the same
+   Developer Notes:
+    This code cheats and uses the fact that the LG and SP structs are the same
 
 @*/
 PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
@@ -139,7 +140,8 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 
     Level: intermediate
 
-    Notes: The MPI communicator that owns the PetscDraw owns this PetscDrawLG, but the calls to set options and add points are ignored on all processes except the
+    Notes:
+    The MPI communicator that owns the PetscDraw owns this PetscDrawLG, but the calls to set options and add points are ignored on all processes except the
            zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawLGDraw() to display the updated graph.
 
     Concepts: line graph^creating
@@ -229,7 +231,8 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 
    Level: intermediate
 
-   Notes: Call PetscDrawLGGetAxis() and then change properties of the PetscDrawAxis for detailed control of the plot
+   Notes:
+    Call PetscDrawLGGetAxis() and then change properties of the PetscDrawAxis for detailed control of the plot
 
    Concepts: line graph^setting number of lines
 
