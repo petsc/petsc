@@ -273,7 +273,6 @@ class Installer(script.Script):
     import shutil
     for file in ['rules', 'variables','petscrules', 'petscvariables']:
       self.fixConfFile(os.path.join(self.destConfDir,file))
-    self.fixConfFile(os.path.join(self.destLibDir,'pkgconfig','PETSc.pc'))
     return
 
   def createUninstaller(self):

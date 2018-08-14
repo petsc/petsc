@@ -163,15 +163,15 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
     fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig','PETSc.pc'),'w')
+    cflags_inc = ['-I${includedir}']
     if self.framework.argDB['prefix']:
       fd.write('prefix='+self.installdir.dir+'\n')
-      fd.write('exec_prefix=${prefix}\n')
-      fd.write('includedir=${prefix}/include\n')
     else:
       fd.write('prefix='+self.petscdir.dir+'\n')
-      fd.write('exec_prefix=${prefix}\n')
-      fd.write('includedir=${prefix}/include\n')
-    fd.write('libdir='+os.path.join(self.installdir.dir,'lib')+'\n')
+      cflags_inc.append('-I' + os.path.join('${prefix}', self.arch.arch, 'include'))
+    fd.write('exec_prefix=${prefix}\n')
+    fd.write('includedir=${prefix}/include\n')
+    fd.write('libdir=${prefix}/lib\n')
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
@@ -194,7 +194,7 @@ class Configure(config.base.Configure):
     fd.write('Name: PETSc\n')
     fd.write('Description: Library to solve ODEs and algebraic equations\n')
     fd.write('Version: %s\n' % self.petscdir.version)
-    fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
+    fd.write('Cflags: ' + ' '.join([self.setCompilers.CPPFLAGS] + cflags_inc) + '\n')
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
     # Remove RPATH flags from library list.  User can add them using
     # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
