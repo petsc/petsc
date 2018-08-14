@@ -382,7 +382,9 @@ prepend-path PATH "%s"
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
     self.framework.packages.reverse()
-    includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
+    petscincludes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
+    petscincludes_install = [os.path.join(self.installdir.dir, 'include')] if self.framework.argDB['prefix'] else petscincludes
+    includes = []
     self.packagelibs = []
     for i in self.framework.packages:
       if i.useddirectly:
@@ -401,20 +403,23 @@ prepend-path PATH "%s"
     else:
       self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
     self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+self.packagelibs+self.complibs)
+    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L${PETSC_DIR}/${PETSC_ARCH}/lib', self.petsclib]+self.packagelibs+self.complibs)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
 
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
-    self.allincludes = self.headers.toStringNoDupes(includes)
-    self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
-    self.PETSC_CC_INCLUDES = self.allincludes
+    allincludes = petscincludes + includes
+    allincludes_install = petscincludes_install + includes
+    self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(allincludes)
+    self.PETSC_CC_INCLUDES_INSTALL = self.headers.toStringNoDupes(allincludes_install)
+    self.addMakeMacro('PETSC_CC_INCLUDES',self.PETSC_CC_INCLUDES)
+    self.addMakeMacro('PETSC_CC_INCLUDES_INSTALL', self.PETSC_CC_INCLUDES_INSTALL)
     if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
-        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
-      else:
-        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
+      def modinc(includes):
+        return includes if self.compilers.fortranIsF90 else []
+      self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(allincludes,modinc(allincludes)))
+      self.addMakeMacro('PETSC_FC_INCLUDES_INSTALL',self.headers.toStringNoDupes(allincludes_install,modinc(allincludes_install)))
 
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
@@ -500,7 +505,7 @@ prepend-path PATH "%s"
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s\\n\"\n' % (escape(self.PETSC_CC_INCLUDES).replace(self.petscdir.dir,self.installdir.petscDir).replace(self.arch.arch,self.installdir.petscArch)))
+    fd.write('\"Using include paths: %s\\n\"\n' % (escape(self.PETSC_CC_INCLUDES_INSTALL.replace('${PETSC_DIR}', self.installdir.petscDir))))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
