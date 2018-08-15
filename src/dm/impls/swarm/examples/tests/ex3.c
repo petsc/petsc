@@ -18,7 +18,8 @@ typedef struct {
   PetscReal      meshRelDx;                        /* Relative vertex position perturbation compared to average cell diameter h */
   PetscInt       k;                                /* Mode number for test function */
   PetscReal      momentTol;                        /* Tolerance for checking moment conservation */
-  PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
+  PetscErrorCode (*MMSFunc)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
+  PetscReal      B0[3]; /* B field is just a vector now */
 } AppCtx;
 
 static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
@@ -69,25 +70,40 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
 /* F	- function vector */
 /* ctx	- [optional] user-defined context for matrix evaluation routine (may be NULL) */
 
-static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void *ctx)
+static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F, void *ctx)
 {
   AppCtx            *app = (AppCtx*)ctx;
-  const PetscScalar *u,*v,*a,E=1,q_m=1;
-  PetscScalar       Res,*f;
+  const PetscScalar *u,*v,*a,E[3]={1,0,0},q_m=1; /* need E(x) -- TODO */
+  PetscScalar       vxB[3], *f;
   PetscErrorCode    ierr;
-
+  PetscInt          N,i,k,dim;
+  DM                dm;
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(U, &N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  Res = -q_m*E; // a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSignReal(PetscRealPart(v[0]));
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  for (i = 0; i < N; i += dim) {
+    vxB[2] = v[0]*app->B0[1] - v[1]*app->B0[0];
+    if (dim==3) {
+      vxB[0] = v[1]*app->B0[2] - v[2]*app->B0[1];
+      vxB[1] = v[2]*app->B0[0] - v[0]*app->B0[2];
+    } else {
+      vxB[0] = vxB[1] = 0;
+    }
+    for (k = 0; k < dim; k++) {
+      f[i+k] = -q_m*(E[k] + vxB[k]); // a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSignReal(PetscRealPart(v[0]));
+    }
+  }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "I2Function ....\n");
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = Res;
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "I2Function .... not used\n");
+
   PetscFunctionReturn(0);
 }
 
@@ -173,17 +189,22 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-function", "Name of test function", "ex3.c", fstring, fstring, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscStrcmp(fstring, "linear", &flag);CHKERRQ(ierr);
   if (flag) {
-    options->func = linear;
+    options->MMSFunc = linear;
   } else {
     ierr = PetscStrcmp(fstring, "sin", &flag);CHKERRQ(ierr);
     if (flag) {
-      options->func = sinx;
+      options->MMSFunc = sinx;
     } else {
       ierr = PetscStrcmp(fstring, "x2_x4", &flag);CHKERRQ(ierr);
-      options->func = x2_x4;
+      options->MMSFunc = x2_x4;
       if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
     }
   }
+  options->B0[0]  = 1;
+  options->B0[1]  = 0;
+  options->B0[2]  = 0;
+  bd = 3;
+  ierr = PetscOptionsRealArray("-b0", "B_0 vector", "ex3.c", options->B0, &bd, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -343,7 +364,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       const PetscInt n = c*Np + p;
 
       for (d = 0; d < dim; ++d) {ierr = PetscRandomGetValue(rndp, &value);CHKERRQ(ierr); coords[n*dim+d] += PetscRealPart(value);}
-      user->func(dim, 0.0, &coords[n*dim], 1, &vals[c], user);
+      user->MMSFunc(dim, 0.0, &coords[n*dim], 1, &vals[c], user);
     }
   }
   ierr = DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
