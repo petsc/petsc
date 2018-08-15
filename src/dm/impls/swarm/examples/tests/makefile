@@ -20,7 +20,7 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 NP=1
-N=2
+N=4
 P=4
 ORDER=2
 VALGRIND_PROG=valgrind
@@ -28,8 +28,7 @@ VALGRIND_ARGS=--dsymutil=yes --leak-check=full --gen-suppressions=no --num-calle
 VAL=$(VALGRIND_PROG) $(VALGRIND_ARGS)
 
 run:
-	-${MPIEXEC} -n ${NP} ./ex3 -dim 2 -pc_type lu -faces ${N} -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER}
-#-particlesPerCell ${P}-dm_view hdf5:sol.h5 -fhat_view hdf5:sol.h5::append -rhs_view hdf5:sol.h5::append -simplex 1 -function linear -mesh_perturbation 1.e-21 -particle_perturbation 1.e-22
+	-${MPIEXEC} -n ${NP} ./ex3 -dim 2 -pc_type lu -faces ${N} -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER} -particlesPerCell ${P} -dm_view hdf5:sol.h5 -fhat_view hdf5:sol.h5::append -rhs_view hdf5:sol.h5::append -simplex 1 -function linear -mesh_perturbation 1.e-21 -particle_perturbation 1.e-22
 	-@${PETSC_DIR}/lib/petsc/bin/petsc_gen_xdmf.py sol.h5
 
 # -M_p_view ascii:f.m:ascii_matlab
@@ -37,7 +36,7 @@ run:
 #-petscfe_default_quadrature_order 4
 
 val:
-	-${MPIEXEC} -n ${NP} $(VAL) ./ex3 -dim 2 -pc_type lu -faces ${N} -particlesPerCell ${P} -sw_view -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER} -dm_view hdf5:sol.h5 -fhat_view hdf5:sol.h5::append -simplex 1 -function linear
+	-${MPIEXEC} -n ${NP} $(VAL) ./ex3 -dim 2 -pc_type lu -faces ${N} -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER} -particlesPerCell ${P} -dm_view 
 
 lldb:
-	-@lldb ./ex3 -- -dim 2 -dim 2 -faces 1 -pc_type lu -dm_view -sw_view -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER}
+	-@lldb ./ex3 -- -dim 2 -pc_type lu -faces ${N} -petscspace_order ${ORDER} -petscfe_default_quadrature_order ${ORDER} -particlesPerCell ${P} -dm_view 
