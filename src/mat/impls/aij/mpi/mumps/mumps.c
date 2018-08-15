@@ -31,16 +31,39 @@ EXTERN_C_END
 /* calls to MUMPS */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-#define PetscMUMPS_c cmumps_c
+#define MUMPS_c cmumps_c
 #else
-#define PetscMUMPS_c zmumps_c
+#define MUMPS_c zmumps_c
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-#define PetscMUMPS_c smumps_c
+#define MUMPS_c smumps_c
 #else
-#define PetscMUMPS_c dmumps_c
+#define MUMPS_c dmumps_c
 #endif
+#endif
+
+#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) && defined(PETSC_HAVE_HWLOC)
+#define PETSC_HAVE_OPENMP_SUPPORT 1
+#endif
+
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+#define PetscMUMPS_c(mumps) \
+  do { \
+    if (mumps->use_petsc_omp_support) { \
+      if (mumps->is_omp_master) { \
+        ierr = PetscOmpCtrlOmpRegionOnMasterBegin(mumps->omp_ctrl);CHKERRQ(ierr); \
+        MUMPS_c(&mumps->id); \
+        ierr = PetscOmpCtrlOmpRegionOnMasterEnd(mumps->omp_ctrl);CHKERRQ(ierr); \
+      } \
+      ierr = PetscOmpCtrlBarrier(mumps->omp_ctrl);CHKERRQ(ierr); \
+    } else { \
+      MUMPS_c(&mumps->id); \
+    } \
+  } while(0)
+#else
+#define PetscMUMPS_c(mumps) \
+  do { MUMPS_c(&mumps->id); } while (0)
 #endif
 
 /* declare MumpsScalar */
@@ -89,6 +112,14 @@ typedef struct {
   PetscInt     sizeredrhs;
   PetscScalar  *schur_sol;
   PetscInt     schur_sizesol;
+
+  PetscBool    use_petsc_omp_support;
+  PetscOmpCtrl omp_ctrl;             /* an OpenMP controler that blocked processes will release their CPU (MPI_Barrier does not have this guarantee) */
+  MPI_Comm     petsc_comm,omp_comm;  /* petsc_comm is petsc matrix's comm */
+  PetscMPIInt  mpinz;                /* on master rank, nz = sum(mpinz) over omp_comm; on other ranks, mpinz = nz*/
+  PetscMPIInt  omp_comm_size;
+  PetscBool    is_omp_master;        /* is this rank the master of omp_comm */
+  PetscMPIInt  *recvcount,*displs;
 
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
 } Mat_MUMPS;
@@ -179,7 +210,7 @@ static PetscErrorCode MatMumpsHandleSchur_Private(Mat F, PetscBool expansion)
     /* solve Schur complement (this has to be done by the MUMPS user, so basically us) */
     ierr = MatMumpsSolveSchur_Private(F);CHKERRQ(ierr);
     mumps->id.ICNTL(26) = 2; /* expansion phase */
-    PetscMUMPS_c(&mumps->id);
+    PetscMUMPS_c(mumps);
     if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
     /* restore defaults */
     mumps->id.ICNTL(26) = -1;
@@ -712,8 +743,11 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(mumps->info);CHKERRQ(ierr);
   ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
   mumps->id.job = JOB_END;
-  PetscMUMPS_c(&mumps->id);
-  ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRQ(ierr);
+  PetscMUMPS_c(mumps);
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+  if (mumps->use_petsc_omp_support) { ierr = PetscOmpCtrlDestroy(&mumps->omp_ctrl);CHKERRQ(ierr); }
+#endif
+  ierr = PetscFree2(mumps->recvcount,mumps->displs);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -762,7 +796,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecScatterBegin(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (!mumps->myid) {ierr = VecGetArray(b_seq,&array);CHKERRQ(ierr);}
-  } else {  /* size == 1 */
+  } else {  /* petsc_size == 1 */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   }
@@ -786,7 +820,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   /* solve phase */
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
   /* handle expansion step of Schur complement (if any) */
@@ -903,7 +937,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     /* solve phase */
     /*-------------*/
     mumps->id.job = JOB_SOLVE;
-    PetscMUMPS_c(&mumps->id);
+    PetscMUMPS_c(mumps);
     if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
     /* handle expansion step of Schur complement (if any) */
@@ -1007,7 +1041,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   /* solve phase */
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
   /* scatter mumps distributed solution to petsc vector v_mpi, which shares local arrays with solution matrix X */
@@ -1115,6 +1149,56 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 }
 #endif
 
+PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,nz,*irn,*jcn;
+  PetscScalar    *val;
+  PetscMPIInt    mpinz,*recvcount=NULL,*displs=NULL;
+
+  PetscFunctionBegin;
+  if (mumps->omp_comm_size > 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      /* master first gathers counts of nonzeros to receive */
+      if (mumps->is_omp_master) { ierr = PetscMalloc2(mumps->omp_comm_size,&recvcount,mumps->omp_comm_size,&displs);CHKERRQ(ierr); }
+      ierr = PetscMPIIntCast(mumps->nz,&mpinz);CHKERRQ(ierr);
+      ierr = MPI_Gather(&mpinz,1,MPI_INT,recvcount,1,MPI_INT,0/*root*/,mumps->omp_comm);CHKERRQ(ierr);
+
+      /* master allocates memory to receive nonzeros */
+      if (mumps->is_omp_master) {
+        displs[0] = 0;
+        for (i=1; i<mumps->omp_comm_size; i++) displs[i] = displs[i-1] + recvcount[i-1];
+        nz   = displs[mumps->omp_comm_size-1] + recvcount[mumps->omp_comm_size-1];
+        ierr = PetscMalloc(2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar),&irn);CHKERRQ(ierr);
+        jcn  = irn + nz;
+        val  = (PetscScalar*)(jcn + nz);
+      }
+
+      /* save the gatherv plan */
+      mumps->mpinz     = mpinz; /* used as send count */
+      mumps->recvcount = recvcount;
+      mumps->displs    = displs;
+
+      /* master gathers nonzeros */
+      ierr = MPI_Gatherv(mumps->irn,mpinz,MPIU_INT,irn,mumps->recvcount,mumps->displs,MPIU_INT,0/*root*/,mumps->omp_comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(mumps->jcn,mpinz,MPIU_INT,jcn,mumps->recvcount,mumps->displs,MPIU_INT,0/*root*/,mumps->omp_comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(mumps->val,mpinz,MPIU_SCALAR,val,mumps->recvcount,mumps->displs,MPIU_SCALAR,0/*root*/,mumps->omp_comm);CHKERRQ(ierr);
+
+      /* master frees its row/col/val and replaces them with bigger arrays */
+      if (mumps->is_omp_master) {
+        ierr = PetscFree(mumps->irn);CHKERRQ(ierr); /* irn/jcn/val are allocated together so free only irn */
+        mumps->nz  = nz; /* it is a sum of mpinz over omp_comm */
+        mumps->irn = irn;
+        mumps->jcn = jcn;
+        mumps->val = val;
+      }
+    } else {
+      ierr = MPI_Gatherv((mumps->is_omp_master?MPI_IN_PLACE:mumps->val),mumps->mpinz,MPIU_SCALAR,mumps->val,mumps->recvcount,mumps->displs,MPIU_SCALAR,0/*root*/,mumps->omp_comm);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_MUMPS      *mumps =(Mat_MUMPS*)(F)->data;
@@ -1131,6 +1215,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   }
 
   ierr = (*mumps->ConvertToTriples)(A, 1, MAT_REUSE_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
+  ierr = MatMumpsGatherNonzerosOnMaster(MAT_REUSE_MATRIX,mumps);CHKERRQ(ierr);
 
   /* numerical factorization phase */
   /*-------------------------------*/
@@ -1142,7 +1227,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   } else {
     mumps->id.a_loc = (MumpsScalar*)mumps->val;
   }
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0) {
     if (A->erroriffailure) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
@@ -1177,6 +1262,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   /* just to be sure that ICNTL(19) value returned by a call from MatMumpsGetIcntl is always consistent */
   if (!mumps->sym && mumps->id.ICNTL(19) && mumps->id.ICNTL(19) != 1) mumps->id.ICNTL(19) = 3;
 
+  if (!mumps->is_omp_master) mumps->id.INFO(23) = 0;
   if (mumps->petsc_size > 1) {
     PetscInt    lsol_loc;
     PetscScalar *sol_loc;
@@ -1289,18 +1375,40 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
+  PetscInt       nthreads=1;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &mumps->myid);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&mumps->petsc_size);CHKERRQ(ierr);
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mumps->mumps_comm));CHKERRQ(ierr);
+  mumps->petsc_comm = PetscObjectComm((PetscObject)A);
+  ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRQ(ierr); /* so that code like "if (!myid)" still works even if mumps_comm is different */
+
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mumps_omp_num_threads",&nthreads,&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  if (mumps->use_petsc_omp_support) {
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
+    ierr = PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl);CHKERRQ(ierr);
+    ierr = PetscOmpCtrlGetOmpComms(mumps->omp_ctrl,&mumps->omp_comm,&mumps->mumps_comm,&mumps->is_omp_master);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -mumps_omp_num_threads option\n");
+#endif
+  } else {
+    mumps->omp_comm      = PETSC_COMM_SELF;
+    mumps->mumps_comm    = mumps->petsc_comm;
+    mumps->is_omp_master = PETSC_TRUE;
+  }
+  ierr = MPI_Comm_size(mumps->omp_comm,&mumps->omp_comm_size);CHKERRQ(ierr);
 
   mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
-
   mumps->id.job = JOB_INIT;
   mumps->id.par = 1;  /* host participates factorizaton and solve */
   mumps->id.sym = mumps->sym;
-  PetscMUMPS_c(&mumps->id);
+
+  PetscMUMPS_c(mumps);
+
+  /* copy MUMPS default control values from master to slaves. Although slaves do not call MUMPS, they may access these values in code.
+     For example, ICNTL(9) is initialized to 1 by MUMPS and slaves check ICNTL(9) in MatSolve_MUMPS.
+   */
+  ierr = MPI_Bcast(mumps->id.icntl,40,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 Manual Section 9 */
+  ierr = MPI_Bcast(mumps->id.cntl, 15,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
 
   mumps->scat_rhs     = NULL;
   mumps->scat_sol     = NULL;
@@ -1331,6 +1439,8 @@ PetscErrorCode MatFactorSymbolic_MUMPS_ReportIfError(Mat F,Mat A,const MatFactor
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Bcast(mumps->id.infog, 40,MPIU_INT, 0,mumps->omp_comm);CHKERRQ(ierr); /* see MUMPS-5.1.2 manual p82 */
+  ierr = MPI_Bcast(mumps->id.rinfog,20,MPIU_REAL,0,mumps->omp_comm);CHKERRQ(ierr);
   if (mumps->id.INFOG(1) < 0) {
     if (A->erroriffailure) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
@@ -1366,6 +1476,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
   ierr = (*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
+  ierr = MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
@@ -1419,7 +1530,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
   }
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
 
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
@@ -1446,6 +1557,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
   ierr = (*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
+  ierr = MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
@@ -1480,7 +1592,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
   }
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
 
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
@@ -1505,6 +1617,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
   ierr = (*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
+  ierr = MatMumpsGatherNonzerosOnMaster(MAT_INITIAL_MATRIX,mumps);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
@@ -1539,7 +1652,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
   }
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   ierr = MatFactorSymbolic_MUMPS_ReportIfError(F,A,info,mumps);CHKERRQ(ierr);
 
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
@@ -1724,10 +1837,10 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
   if (mumps->petsc_size > 1) {
-    PetscBool ls,gs;
+    PetscBool ls,gs; /* gs is false if any rank other than root has non-empty IS */
 
-    ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE;
-    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->mumps_comm);CHKERRQ(ierr);
+    ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
+    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm);CHKERRQ(ierr);
     if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
   }
   if (mumps->id.size_schur != size) {
@@ -2082,7 +2195,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   /* solve phase */
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
-  PetscMUMPS_c(&mumps->id);
+  PetscMUMPS_c(mumps);
   if (mumps->id.INFOG(1) < 0)
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
 
@@ -2612,4 +2725,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_sell_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef PETSC_HAVE_OPENMP_SUPPORT
 

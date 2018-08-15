@@ -281,7 +281,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
      Use 0 as key so that rank ordering wont change in new comm.
    */
   color = shm_rank / nthreads;
-  MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm);
+  ierr  = MPI_Comm_split(shm_comm,color,0/*key*/,&ctrl->omp_comm);CHKERRQ(ierr);
 
   /* put rank 0's in omp_comms (i.e., master ranks) into a new comm - omp_master_comm */
   ierr = MPI_Comm_rank(ctrl->omp_comm,&omp_rank);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     ctrl->is_omp_master = PETSC_FALSE; /* slave */
     color = MPI_UNDEFINED; /* to make slaves get omp_master_comm = MPI_COMM_NULL in MPI_Comm_split */
   }
-  MPI_Comm_split(petsc_comm,color,0/*key*/,&ctrl->omp_master_comm); /* rank 0 in omp_master_comm is rank 0 in petsc_comm */
+  ierr = MPI_Comm_split(petsc_comm,color,0/*key*/,&ctrl->omp_master_comm);CHKERRQ(ierr); /* rank 0 in omp_master_comm is rank 0 in petsc_comm */
 
   /*=================================================================================
     Each omp_comm has a pthread_barrier_t in its shared memory, which is used to put
@@ -313,10 +313,10 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 #endif
   ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
 
-  ctrl->cpuset = hwloc_bitmap_alloc();
+  ctrl->cpuset = hwloc_bitmap_alloc(); if (!ctrl->cpuset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed\n");
   ierr = hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
 
-  /* hwloc main developer said they would add new APIs hwloc_bitmap_{nr,to,from}_ulongs in 2.1 to help us simplify the following bitmap pack/unpack code */
+  /* hwloc main developer said they will add new APIs hwloc_bitmap_{nr,to,from}_ulongs in 2.1 to help us simplify the following bitmap pack/unpack code */
   nr_cpu_ulongs = (hwloc_bitmap_last(hwloc_topology_get_topology_cpuset (ctrl->topology))+sizeof(unsigned long)*8)/sizeof(unsigned long)/8;
   ierr = PetscMalloc1(nr_cpu_ulongs,&cpu_ulongs);CHKERRQ(ierr);
   if (nr_cpu_ulongs == 1) {
@@ -328,11 +328,21 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
   ierr = MPI_Reduce(ctrl->is_omp_master ? MPI_IN_PLACE : cpu_ulongs, cpu_ulongs,nr_cpu_ulongs, MPI_UNSIGNED_LONG,MPI_BOR,0,ctrl->omp_comm);CHKERRQ(ierr);
 
   if (ctrl->is_omp_master) {
-    ctrl->omp_cpuset = hwloc_bitmap_alloc(); if (!ctrl->omp_cpuset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed within PetscOmpCtrlCreate()\n");
+    ctrl->omp_cpuset = hwloc_bitmap_alloc(); if (!ctrl->omp_cpuset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed\n");
     if (nr_cpu_ulongs == 1) {
+#if HWLOC_API_VERSION >= 0x00020000
       ierr = hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]);CHKERRQ(ierr);
+#else
+      hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]);
+#endif
     } else {
-      for (i=0; i<nr_cpu_ulongs; i++)  { ierr = hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]);CHKERRQ(ierr); }
+      for (i=0; i<nr_cpu_ulongs; i++)  {
+#if HWLOC_API_VERSION >= 0x00020000
+        ierr = hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]);CHKERRQ(ierr);
+#else
+        hwloc_bitmap_set_ith_ulong(ctrl->omp_cpuset,(unsigned)i,cpu_ulongs[i]);
+#endif
+      }
     }
   }
 
