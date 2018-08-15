@@ -20,6 +20,7 @@ typedef struct {
   PetscReal      momentTol;                        /* Tolerance for checking moment conservation */
   PetscErrorCode (*MMSFunc)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
   PetscReal      B0[3]; /* B field is just a vector now */
+  PetscReal      q_m; /* one species */
 } AppCtx;
 
 static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
@@ -73,14 +74,15 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
 static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F, void *ctx)
 {
   AppCtx            *app = (AppCtx*)ctx;
-  const PetscScalar *u,*v,*a,E[3]={1,0,0},q_m=1; /* need E(x) -- TODO */
-  PetscScalar       vxB[3], *f;
+  const PetscScalar *u,*v,*a;
+  PetscScalar       vxB[3],*f,E[3]={1,0,0}; /* need E(x) -- TODO */
   PetscErrorCode    ierr;
   PetscInt          N,i,k,dim;
   DM                dm;
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
   ierr = VecGetLocalSize(U, &N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
@@ -95,7 +97,7 @@ static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F,
       vxB[0] = vxB[1] = 0;
     }
     for (k = 0; k < dim; k++) {
-      f[i+k] = -q_m*(E[k] + vxB[k]); // a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSignReal(PetscRealPart(v[0]));
+      f[i+k] = -app->q_m*(E[k] + vxB[k]);
     }
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -205,6 +207,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->B0[2]  = 0;
   bd = 3;
   ierr = PetscOptionsRealArray("-b0", "B_0 vector", "ex3.c", options->B0, &bd, NULL);CHKERRQ(ierr);
+  options->q_m = 1;
+  ierr = PetscOptionsReal("-q_m", "q/m", "ex3.c", options->q_m, &options->q_m, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
