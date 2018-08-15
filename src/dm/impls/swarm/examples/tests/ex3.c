@@ -62,53 +62,6 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
   PetscFunctionReturn(0);
 }
 
-/* point residaul function F = -(q/m)E */
-/* I2Function(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx); */
-/* t	- time at step/stage being solved */
-/* U	- state vector */
-/* U_t	- time derivative of state vector */
-/* U_tt	- second time derivative of state vector */
-/* F	- function vector */
-/* ctx	- [optional] user-defined context for matrix evaluation routine (may be NULL) */
-
-static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F, void *ctx)
-{
-  AppCtx            *app = (AppCtx*)ctx;
-  const PetscScalar *u,*v,*a;
-  PetscScalar       vxB[3],*f,E[3]={1,0,0}; /* need E(x) -- TODO */
-  PetscErrorCode    ierr;
-  PetscInt          N,i,k,dim;
-  DM                dm;
-  PetscFunctionBegin;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-
-  ierr = VecGetLocalSize(U, &N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  for (i = 0; i < N; i += dim) {
-    vxB[2] = v[0]*app->B0[1] - v[1]*app->B0[0];
-    if (dim==3) {
-      vxB[0] = v[1]*app->B0[2] - v[2]*app->B0[1];
-      vxB[1] = v[2]*app->B0[0] - v[0]*app->B0[2];
-    } else {
-      vxB[0] = vxB[1] = 0;
-    }
-    for (k = 0; k < dim; k++) {
-      f[i+k] = -app->q_m*(E[k] + vxB[k]);
-    }
-  }
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "I2Function .... not used\n");
-
-  PetscFunctionReturn(0);
-}
-
 /* const char *const ex3FunctionTypes[] = {"linear","x2_x4","sin","ex3FunctionTypes","EX3_FUNCTION_",0}; */
 
 static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
@@ -281,12 +234,20 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+static void g0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                      PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   g0[0] = 1.0;
+}
+
+static void g3_1(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
+  g3[0] = 1.0;
 }
 
 static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
@@ -304,7 +265,10 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) fe,"fe");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   /* Setup to form mass matrix */
-  ierr = PetscDSSetJacobian(prob, 0, 0, identity, NULL, NULL, NULL);CHKERRQ(ierr);
+  /* ierr = PetscDSSetJacobian(prob, 0, 0, g0_1, NULL, NULL, NULL);CHKERRQ(ierr); */
+  /* Setup to form Laplacian */
+  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_1);CHKERRQ(ierr);
+ 
   PetscFunctionReturn(0);
 }
 
@@ -336,7 +300,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_SCALAR);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &Ncell);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(*sw, Ncell * Np, 0);CHKERRQ(ierr);
+  ierr = DMSwarmSetLocalSizes(*sw, Ncell * Np, 2 * Ncell * Np);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
@@ -462,14 +426,14 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode go(TS ts, DM dm, DM sw, AppCtx *user)
+static PetscErrorCode PoissonSolve(TS ts, DM dm, DM sw, AppCtx *user, Vec fhat)
 {
   MPI_Comm       comm;
   KSP            ksp;
   /* SNES           snes; */
   Mat            M;            /* FEM mass matrix */
   Mat            M_p;          /* Particle mass matrix */
-  Vec            f, rhs, fhat; /* Particle field f, \int phi_i f, FEM field */
+  Vec            f, rhs; /* Particle field f, \int phi_i f, FEM field */
   PetscReal      pmoments[3];  /* \int f, \int x f, \int r^2 f */
   PetscReal      fmoments[3];  /* \int \hat f, \int x \hat f, \int r^2 \hat f */
   PetscInt       m;
@@ -479,14 +443,13 @@ static PetscErrorCode go(TS ts, DM dm, DM sw, AppCtx *user)
   /* ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr); */
   ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
 
   ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
   /* make particle weight vector */
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
-  /* create matrix RHS vector */
+  /* create matrix RHS vector, this should be charge*weight TODO */
   ierr = MatMultTranspose(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
@@ -511,8 +474,115 @@ static PetscErrorCode go(TS ts, DM dm, DM sw, AppCtx *user)
 
   ierr = MatDestroy(&M);CHKERRQ(ierr);
   ierr = MatDestroy(&M_p);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &rhs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* point residaul function F = -(q/m)(E + v x B) */
+/* I2Function(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx); */
+/* t	- time at step/stage being solved */
+/* U	- state vector */
+/* U_t	- time derivative of state vector */
+/* U_tt	- second time derivative of state vector */
+/* F	- function vector */
+/* ctx	- [optional] user-defined context for matrix evaluation routine (may be NULL) */
+static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F, void *ctx)
+{
+  AppCtx            *app = (AppCtx*)ctx;
+  const PetscScalar *u,*v;
+  PetscReal         *v0, *J, *invJ, detJ, *refCoord, *phiv;
+  PetscScalar       vxB[3],*f;
+  PetscErrorCode    ierr;
+  PetscInt          cell,dim,nvertices,cStart,cEnd;
+  DM                sw,dm;
+  Vec               phi,locphi;
+  PetscFE           fe;
+  PetscDS           prob;
+  PetscFunctionBegin;
+PetscPrintf(PETSC_COMM_SELF, "I2Function .... not used\n");
+  ierr = TSGetDM(ts,&sw);CHKERRQ(ierr);
+  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
+  ierr = DMSwarmGetCellDM(sw, &dm);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &phi);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject*) &fe);CHKERRQ(ierr);
+  /* get potential - Deposition and Poisson solve */
+  ierr = PoissonSolve(ts, dm, sw, app, phi);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &locphi);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, phi, INSERT_VALUES, locphi);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, phi, INSERT_VALUES, locphi);CHKERRQ(ierr);
+  /* F = -(q/m)(E + v x B) */
+  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (cell = cStart; cell < cEnd; ++cell) {
+    PetscInt  *pidx;
+    PetscInt  Np, p, d, e, c;
+    PetscReal *D = NULL, *B = NULL;
+    ierr = DMPlexVecGetClosure(dm, NULL, locphi, cell, &nvertices, NULL);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, locphi, cell, &nvertices, NULL);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, nvertices*dim, PETSC_SCALAR, &refCoord);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, nvertices*dim, PETSC_SCALAR, &v0);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, nvertices*dim*dim, PETSC_SCALAR, &J);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, nvertices*dim*dim, PETSC_SCALAR, &invJ);CHKERRQ(ierr);
+    /* Affine approximation for reference coordinates */
+    ierr = DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMSwarmSortGetPointsPerCell(sw, cell, &Np, &pidx);CHKERRQ(ierr);
+    /* get refCoord for cell's particles */
+    for (p = 0; p < Np; ++p) {
+      const PetscInt  idx = pidx[p];
+      const PetscReal *pxx = &u[idx*dim];
+      PetscScalar     *rc = &refCoord[dim*p];
+      /* refCoord = J^-1 * (x - v0) */
+      for (d = 0; d < dim; ++d) {
+        rc[d] = -1.;
+        for (e = 0; e < dim; ++e) {
+          rc[d] += invJ[d*dim+e]*(pxx[e] - v0[e]);
+        }
+      }
+    }
+    ierr = PetscFEGetTabulation(fe, Np, refCoord, &B, &D, NULL);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, nvertices*dim, PETSC_SCALAR, &v0);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, nvertices*dim, PETSC_SCALAR, &refCoord);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, nvertices*dim*dim, PETSC_SCALAR, &J);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, nvertices*dim*dim, PETSC_SCALAR, &invJ);CHKERRQ(ierr);
+    /* apply */
+    ierr = DMPlexVecGetClosure(dm, NULL, locphi, cell, &nvertices, &phiv);CHKERRQ(ierr);
+    for (p = 0; p < Np; ++p) {
+      const PetscInt  idx = pidx[p];
+      const PetscReal *BB = &B[p*nvertices];
+      const PetscReal *DD = &D[p*nvertices*dim];
+      PetscScalar     E[3];
+      /* get E(x) */
+      for (e = 0; e < dim; ++e) {
+        for (c = 0, E[e] = 0; c < nvertices; ++c) {
+          E[e] -= BB[c] * DD[c*dim+e] * phiv[c]; /* E = - grad phi */
+        }
+      }
+      /* F = -(q/m)(E + v x B) */
+      vxB[2] = v[0]*app->B0[1] - v[1]*app->B0[0];
+      if (dim==3) {
+        vxB[0] = v[1]*app->B0[2] - v[2]*app->B0[1];
+        vxB[1] = v[2]*app->B0[0] - v[0]*app->B0[2];
+      } else {
+        vxB[0] = vxB[1] = 0;
+      }
+      for (e = 0; e < dim; e++) {
+        f[idx*dim+e] = -app->q_m*(E[e] + vxB[e]);
+      }
+    }
+    ierr = PetscFree(pidx);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, locphi, cell, &nvertices, &phiv);CHKERRQ(ierr);
+  }
+  ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &locphi);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &phi);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -522,11 +592,11 @@ int main (int argc, char * argv[]) {
   AppCtx         user;
   TS             ts;
   PetscErrorCode ierr;
-  PetscInt       direction[2];
+  PetscInt       direction[2],Np;
   PetscBool      terminate[2];
   TSAdapt        adapt;
-  Vec            F=0; /* need to fix -- TODO */
-
+  Vec            U,F;
+  PetscScalar    *xx;
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
@@ -548,13 +618,31 @@ int main (int argc, char * argv[]) {
   direction[0] = -1; terminate[0] = PETSC_FALSE;
   direction[1] = -1; terminate[1] = PETSC_TRUE;
   ierr = TSSetEventHandler(ts,2,direction,terminate,Event,PostEvent,&user);CHKERRQ(ierr);
+  /* create vectors */
+  ierr = DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &xx);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(sw, &Np);CHKERRQ(ierr); /* wrap DMSwarm coordinate vector as solution vector - do the same for velocity TODO */
+  ierr = VecCreateMPIWithArray(comm, user.dim, user.dim*Np, PETSC_DECIDE , xx, &U);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)U,"X");CHKERRQ(ierr);
+  ierr = VecCreate(comm,&F);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
+  ierr = VecSetBlockSize(F,user.dim);CHKERRQ(ierr);
+  ierr = VecSetSizes(F,user.dim*Np,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetUp(F);CHKERRQ(ierr);
 
   ierr = TSSetI2Function(ts,F,I2Function,&user);CHKERRQ(ierr);
   /* ierr = TSSetI2Jacobian(ts,J,J,I2Jacobian,&user);CHKERRQ(ierr); */
 
-  /* do it */
-  ierr = go(ts, dm, sw, &user);CHKERRQ(ierr);
+  ierr = TS2SetSolution(ts,U,F);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
+
+  ierr = DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &xx);CHKERRQ(ierr);
+
+
+  
   /* clean up */
+  ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = DMDestroy(&sw);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
