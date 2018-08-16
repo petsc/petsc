@@ -33,8 +33,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 {
   MatPartitioning_Hierarchical *hpart  = (MatPartitioning_Hierarchical*)part->data;
   const PetscInt               *fineparts_indices, *coarseparts_indices;
-  PetscInt                     *parts_indices,i,j,mat_localsize;
+  PetscInt                     *parts_indices,i,j,mat_localsize, *offsets;
   Mat                           mat    = part->adj,adj,sadj;
+  PetscReal                    *part_weights;
   PetscBool                     flg;
   PetscInt                      bs     = 1;
   MatPartitioning               finePart, coarsePart;
@@ -65,16 +66,36 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   /* how many small subdomains we want from a given 'big' suddomain */
   if(!hpart->Nfineparts) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain \n");
   if(!hpart->Ncoarseparts && !part->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts \n");
-  if(part->n && part->n%hpart->Nfineparts!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,
-		   " total number of parts %D can not be divided by number of fine parts %D\n",part->n,hpart->Nfineparts);
+
   if(part->n){
     hpart->Ncoarseparts = part->n/hpart->Nfineparts;
+
+    if (part->n%hpart->Nfineparts != 0) hpart->Ncoarseparts++;
   }else{
 	part->n = hpart->Ncoarseparts*hpart->Nfineparts;
   }
-   /* we do not support this case currently, but this restriction should be
-     * removed in the further
-     * */
+
+  ierr = PetscCalloc1(hpart->Ncoarseparts+1, &offsets);CHKERRQ(ierr);
+  ierr = PetscCalloc1(hpart->Ncoarseparts, &part_weights);CHKERRQ(ierr);
+
+
+  if (part->n%hpart->Nfineparts != 0) offsets[1] = part->n%hpart->Nfineparts;
+  else offsets[1] = hpart->Nfineparts;
+
+  part_weights[0] = ((PetscReal)offsets[1])/part->n;
+
+  for (i=2; i<=hpart->Ncoarseparts; i++) {
+    offsets[i] = hpart->Nfineparts;
+    part_weights[i-1] = ((PetscReal)offsets[i])/part->n;
+  }
+
+  offsets[0] = 0;
+  for (i=1;i<=hpart->Ncoarseparts; i++)
+    offsets[i] += offsets[i-1];
+
+  /* we do not support this case currently, but this restriction should be
+   * removed in the further
+   * */
   if(hpart->Ncoarseparts>size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP," we do not support number of coarse parts %D > size %D \n",hpart->Ncoarseparts,size);
   ierr = MatPartitioningCreate(comm,&coarsePart);CHKERRQ(ierr);
     /* if did not set partitioning type yet, use parmetis by default */
@@ -95,6 +116,9 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
    ierr = PetscMemcpy(coarse_vertex_weights,part->vertex_weights,sizeof(PetscInt)*mat_localsize);CHKERRQ(ierr);
    ierr = MatPartitioningSetVertexWeights(coarsePart,coarse_vertex_weights);CHKERRQ(ierr);
   }
+
+  ierr = MatPartitioningSetPartitionWeights(coarsePart, part_weights);CHKERRQ(ierr);
+
   /* It looks nontrivial to support part weights,
    * I will return back to implement it when have
    * an idea.
@@ -123,7 +147,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = MatPartitioningSetType(finePart,hpart->fineparttype);CHKERRQ(ierr);
   }
   ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
-  ierr = MatPartitioningSetNParts(finePart, hpart->Nfineparts);CHKERRQ(ierr);
+  ierr = MatPartitioningSetNParts(finePart, offsets[rank+1]-offsets[rank]);CHKERRQ(ierr);
   ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
   ierr = MatDestroy(&sadj);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
@@ -136,9 +160,10 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   ierr = PetscMalloc1(bs*adj->rmap->n,&parts_indices);CHKERRQ(ierr);
   for(i=0; i<adj->rmap->n; i++){
     for(j=0; j<bs; j++){
-      parts_indices[bs*i+j] = fineparts_indices[i]+coarseparts_indices[i]*hpart->Nfineparts;
+      parts_indices[bs*i+j] = fineparts_indices[i]+offsets[coarseparts_indices[i]];
     }
   }
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
