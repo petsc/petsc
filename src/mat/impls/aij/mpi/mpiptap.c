@@ -179,6 +179,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
+  Mat_SeqAIJ        *cd=(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
   Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
   Mat_PtAPMPI       *ptap = c->ptap;
   Mat               AP_loc,C_loc,C_oth;
@@ -241,11 +242,22 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   c_seq = (Mat_SeqAIJ*)C_loc->data;
   cols = c_seq->j;
   vals = c_seq->a;
-  for (i=0; i<cm; i++) {
-    ncols = c_seq->i[i+1] - c_seq->i[i];
-    row = rstart + i;
-    ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-    cols += ncols; vals += ncols;
+
+  /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assemled is PETSC_FALSE and */
+  /* when there are no off-processor parts.  */
+  if (C->assembled) {
+    C->was_assembled = PETSC_TRUE;
+    C->assembled     = PETSC_FALSE;
+  }
+  if (C->was_assembled) {
+    for (i=0; i<cm; i++) {
+      ncols = c_seq->i[i+1] - c_seq->i[i];
+      row = rstart + i;
+      ierr = MatSetValues_MPIAIJ(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      cols += ncols; vals += ncols;
+    }
+  } else {
+    ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat(C,c_seq->j,c_seq->i,c_seq->a,cd->i,co->i);CHKERRQ(ierr);
   }
 
   /* Co -> C, off-processor part */
