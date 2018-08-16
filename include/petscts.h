@@ -817,7 +817,7 @@ PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
 J*/
 typedef const char* TSPRKType;
 #define TSPRKM2        "pm2"
-#define TSPRKM3        "pm3"
+/*#define TSPRKM3        "pm3"*/
 #define TSPRKRFSMR2    "p2"
 #define TSPRKRFSMR3    "p3"
 

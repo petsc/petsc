@@ -66,7 +66,7 @@ M*/
      This method has eight stages for both slow and fast parts.
 
      Options database:
-.     -ts_prk_type pm3
+.     -ts_prk_type pm3  (put here temporarily)
 
      Level: advanced
 
@@ -132,7 +132,7 @@ PetscErrorCode TSPRKRegisterAll(void)
            ierr  = TSPRKRegister(TSPRKM2,2,4,&As[0][0],bs,NULL,&A[0][0],b,NULL);CHKERRQ(ierr);
   }
 
-  {
+  /*{
       const PetscReal
         As[8][8] = {{0,0,0,0,0,0,0,0},
                     {RC(1.0)/RC(2.0),0,0,0,0,0,0,0},
@@ -153,7 +153,7 @@ PetscErrorCode TSPRKRegisterAll(void)
           bs[8] = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0)},
            b[8] = {RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0),RC(1.0)/RC(12.0),RC(1.0)/RC(6.0),RC(1.0)/RC(6.0),RC(1.0)/RC(12.0)};
            ierr = TSPRKRegister(TSPRKM3,3,8,&As[0][0],bs,NULL,&A[0][0],b,NULL);CHKERRQ(ierr);
-  }
+  }*/
 
   {
      const PetscReal
@@ -679,7 +679,7 @@ static PetscErrorCode TSLoad_PRK(TS ts,PetscViewer viewer)
 -  prktype - type of PRK-scheme
 
   Options Database:
-.   -ts_prk_type - <pm2,pm3,p2,p3>
+.   -ts_prk_type - <pm2,p2,p3>
 
   Level: intermediate
 
