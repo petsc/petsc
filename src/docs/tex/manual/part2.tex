@@ -1515,8 +1515,7 @@ Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|
 Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
 Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
-Restricted Broyden Family Diagonal                      & \lstinline|MATLMVMDiagBrdn|
-& \trl{lmvmdiagbrdn}  & SPD \\
+Restricted Broyden Family (full-memory diagonal)        & \lstinline|MATLMVMDiagBrdn|     & \trl{lmvmdiagbrdn}  & SPD \\
 \hline
 \end{tabular}
 \end{center}
@@ -1570,8 +1569,8 @@ options available via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}. W
   initialization requires the most computational effort of the available choices but typically results in a significant 
   reduction in the number of function evaluations taken to compute a solution. 
 \end{itemize}
-Note that the user-provided initial Jacobian via \lstinline{MatLMVMSetJ0()} overrides and disables all of these 
-built-in initialization methods.
+Note that the user-provided initial Jacobian via \lstinline{MatLMVMSetJ0()} overrides and disables all built-in 
+initialization methods.
 
 \subsection{Dense Matrices}
 \label{sec_matdense}

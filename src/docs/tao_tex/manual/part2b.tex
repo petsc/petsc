@@ -112,6 +112,10 @@ to prevent resetting the LMVM approximation between subsequent solutions. This
 recycling also avoids one extra function and gradient evalution, instead re-using 
 the values already computed at the end of the previous solution.
 
+This algorithm will be deprecated in the next version and replaced by the 
+bounded quasi-Newton Line Search (BQNLS) algorithm that can solve both bound constrained 
+and unconstrained problems.
+
 \subsection{Nonlinear Conjugate Gradient Method}\sindex{line search}\sindex{gradients}
 
 The nonlinear conjugate gradient method can be viewed as an extension of the 
@@ -403,6 +407,10 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
+This algorithm will be deprecated in the next version and replaced by the 
+bounded Newton Line Search (BNLS) algorithm that can solve both bound constrained 
+and unconstrained problems.
+
 \subsection{Newton Trust-Region Method}\sindex{Newton method}\sindex{trust
 region}
 
@@ -553,6 +561,10 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
+This algorithm will be deprecated in the next version and replaced by the 
+bounded Newton Trust Region (BNTR) algorithm that can solve both bound constrained 
+and unconstrained problems.
+
 \subsection{BMRM}\sindex{BMRM}
 The Bundle Method for Regularized Risk Minimization (BMRM)\cite{brmrm} is a 
 numerical approach to optimizing an unconstrained objective in the form of 
@@ -645,12 +657,11 @@ tolerances to determine which variables are actively bounded and which are free.
 BNK algorithms invert the reduced Hessian using a Krylov iterative method. Trust-region conjugate gradient 
 methods ({\tt KSPNASH}, {\tt KSPSTCG}, and {\tt KSPGLTR}) are required for the BNTR and BNTL algorithms, 
 and recommended for the BNLS algorithm. The preconditioner type can be changed using the 
-{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ahess}/{\tt bfgs}/{\tt petsc}. The {\tt ahess} option, which is 
-also the default, results in an absolute-valued Jacobi preconditioner, while the {\tt bfgs} option 
-preconditions the Krylov solution with an {\tt TAO\_LMVM} matrix. The {\tt petsc} option allows the user to 
-bypass the algorithm's special preconditioners specify a built-in PETSc preconditioner with {\tt -pc\_type} 
-({\tt ilu} and {\tt icc} preconditioners can yield good results for dense explicit Hessian matrices). The 
-BFGS and Jacobi preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
+{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ilu}/{\tt icc}/{\tt jacobi}/{\tt lmvm}. The {\tt lmvm} option, which is 
+also the default, preconditions the Krylov solution with a {\tt MATLMVM} matrix. The remaining supported 
+preconditioner types are default PETSc types. If Jacobi is selected, the diagonal values are safeguarded to be positive. 
+{\tt icc} and {\tt ilu} options produce good results for problems with dense Hessians. The LMVM and Jacobi 
+preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
 If neither are available, or if the Hessian matrix does not have {\tt MATOP\_GET\_DIAGONAL} defined, then the 
 active-set estimation falls back onto using an identity matrix in place of $D_k$ (this is equivalent to 
 estimating the active-set using a gradient descent step).
@@ -787,7 +798,6 @@ that equal one of its bounds and
 applies a preconditioned conjugate gradient method to a
 quadratic model of the remaining set of ``free'' variables.  
 
-
 The TRON algorithm solves a reduced linear system
 defined by the rows and columns corresponding to the variables that
 lie between the upper and lower bounds.
@@ -807,9 +817,36 @@ tuned and adjusted for optimal performance.
 
 BLMVM is a limited-memory, variable-metric method and is 
 the bound-constrained variant of the LMVM method for
-unconstrained optimization.  It uses projected gradients to approximate
+unconstrained optimization. It uses projected gradients to approximate
 the Hessian, eliminating the need for Hessian evaluations.
-The method can be set by using the TAO solver {\tt tao\_blmvm}.
+The method can be set by using the TAO solver {\tt tao\_blmvm}. For more details, 
+please see the LMVM section in the unconstrained algorithms as well as the 
+LMVM matrix documentation in the PETSc manual.
+
+This algorithm will be deprecated in the next version in favor of the bounded quasi-Newton 
+line search (BQNLS) algorithm.
+
+\subsection{Bounded Quasi-Newton-Krylov}\label{sec:bqnk}
+
+BQNK algorithms use the BNK infrastructure, but replace the exact Hessian with a quasi-Newton 
+approximation. The matrix-free forward product operation based on quasi-Newton update formulas 
+are used in conjunction with Krylov solvers to compute step directions. The quasi-Newton inverse 
+application is used to precondition the Krylov solution, and typically helps converge to a step 
+direction in $\mathcal{O}(10)$ iterations. This approach is most useful with quasi-Newton update 
+types such as Symmetric Rank-1 that cannot strictly guarantee positive-definiteness. The BNLS 
+framework with Hessian shifting, or the BNTR framework with trust region safeguards, can 
+successfully compensate for the Hessian approximation becoming indefinite.
+
+Similar to the full Newton-Krylov counterpart, BQNK algorithms come in three forms separated by 
+the globalization technique: line search (BQNKLS), trust region (BQNKTR) and trust region w/ line 
+search fall-back (BQNKTL). These algorithms are available via {\tt tao\_type <bqnkls, bqnktr, bqnktl>}.
+
+\subsection{Bounded Quasi-Newton Line Search (BQNLS)}\label{sec:bqnls}
+
+BQNLS algorithm uses the BNLS infrastructure, but replaces the step calculation with a direct 
+inverse application of the approximate Hessian based on quasi-Newton update formulas. No Krylov 
+solver is used in the solution, and therefore the quasi-Newton method chosen must guarantee 
+a positive-definite Hessian approximation. This algorithm is available via {\tt tao\_type bqnls}.
 
 \section{PDE-Constrained Optimization}
 \label{sec:lcl}
