@@ -74,7 +74,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 #include <sys/mman.h>
 
 
-static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_ShmComm_keyval = MPI_KEYVAL_INVALID;
 
 /*
    Private routine to delete internal storage when a communicator is freed.
