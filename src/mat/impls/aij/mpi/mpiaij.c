@@ -633,10 +633,53 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
 }
 
 /*
-    This function sets the j-arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    This function sets the j and ilen arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
     The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+    No off-processor parts off the matrix are allowed here and mat->was_assembled has to be PETSC_FALSE.
 */
-PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const PetscInt mat_j[], const PetscInt mat_i[], const PetscInt *dnz, const PetscInt *onz)
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[])
+{
+  Mat_MPIAIJ     *aij        = (Mat_MPIAIJ*)mat->data;
+  Mat            A           = aij->A; /* diagonal part of the matrix */
+  Mat            B           = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *a          = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b          = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart      = mat->cmap->rstart,cend = mat->cmap->rend,col;
+  PetscInt       *ailen      = a->ilen,*aj = a->j;
+  PetscInt       *bilen      = b->ilen,*bj = b->j;
+  PetscInt       am          = aij->A->rmap->n,i,j;
+  PetscInt       diag_so_far = 0,dnz;
+  PetscInt       offd_so_far = 0,onz;
+
+  PetscFunctionBegin;
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    dnz = onz = 0;
+    /*  Iterate over all non-zero columns of the current row */
+    for (i=0; i<mat_i[j+1]-mat_i[j]; i++) {
+      col = i + mat_i[j];
+      /* If column is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        aj[diag_so_far++] = mat_j[col] - cstart;
+        dnz++;
+      } else { /* off-diagonal entries */
+        bj[offd_so_far++] = mat_j[col];
+        onz++;
+      }
+    }
+    ailen[j] = dnz;
+    bilen[j] = onz;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+    This function sets the local j, a and ilen arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+    No off-processor parts off the matrix are allowed here and mat->was_assembled has to be PETSC_FALSE.
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[],const PetscScalar mat_a[],
+                                                     const PetscInt full_diag_i[],const PetscInt full_offd_i[])
 {
   Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
   Mat            A      = aij->A; /* diagonal part of the matrix */
@@ -647,22 +690,31 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat, const Pet
   PetscInt       *ailen = a->ilen,*aj = a->j;
   PetscInt       *bilen = b->ilen,*bj = b->j;
   PetscInt       am     = aij->A->rmap->n,i,j;
-  PetscInt       col, diag_so_far=0, offd_so_far=0;
+  PetscInt       col,dnz_row,onz_row,rowstart_diag,rowstart_offd;
+  PetscScalar    *aa = a->a,*ba = b->a;
 
   PetscFunctionBegin;
   /* Iterate over all rows of the matrix */
   for (j=0; j<am; j++) {
-    for (i=0; i<dnz[j]+onz[j]; i++) {
+    dnz_row = onz_row = 0;
+    /*  Iterate over all non-zero columns of the current row */
+    for (i=0; i<mat_i[j+1]-mat_i[j]; i++) {
       col = i + mat_i[j];
+      rowstart_offd = full_offd_i[j];
+      rowstart_diag = full_diag_i[j];
       /* If column is in the diagonal */
       if (mat_j[col] >= cstart && mat_j[col] < cend) {
-        aj[diag_so_far++] = mat_j[col] - cstart;
+        aj[rowstart_diag+dnz_row] = mat_j[col] - cstart;
+        aa[rowstart_diag+dnz_row] = mat_a[col];
+        dnz_row++;
       } else { /* off-diagonal entries */
-        bj[offd_so_far++] = mat_j[col];
+        bj[rowstart_offd+onz_row] = mat_j[col];
+        ba[rowstart_offd+onz_row] = mat_a[col];
+        onz_row++;
       }
     }
-    ailen[j] = dnz[j];
-    bilen[j] = onz[j];
+    ailen[j] = dnz_row;
+    bilen[j] = onz_row;
   }
   PetscFunctionReturn(0);
 }
