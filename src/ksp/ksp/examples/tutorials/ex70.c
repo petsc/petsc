@@ -941,7 +941,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   }
 
   /* Create DMDA for representing scalar fields */
-  ierr = DMDAGetReducedDMDA(dm_stokes,1,&dm_coeff);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(dm_stokes,1,&dm_coeff);CHKERRQ(ierr);
 
   /* Create the swarm for storing quadrature point values */
   ierr = DMCreate(PETSC_COMM_WORLD,&dms_quadrature);CHKERRQ(ierr);
@@ -1185,7 +1185,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
       ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 
       if (nsplits == 2) {
-        ierr = DMDAGetReducedDMDA(dm_stokes,2,&dm_u);CHKERRQ(ierr);
+        ierr = DMDACreateCompatibleDMDA(dm_stokes,2,&dm_u);CHKERRQ(ierr);
 
         ierr = KSPSetDM(ksp_u,dm_u);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_u,PETSC_FALSE);CHKERRQ(ierr);

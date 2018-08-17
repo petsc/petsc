@@ -1,0 +1,5 @@
+Failed to load initial guess, so use a vector of all zeros.
+Linear solve converged due to CONVERGED_RTOL iterations 18
+KSP type: cgls
+Number of iterations =  18
+Residual norm 0.000116721

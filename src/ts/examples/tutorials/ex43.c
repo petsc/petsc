@@ -206,9 +206,8 @@ int main(int argc, char *argv[])
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = VecDestroy(&V);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*TEST

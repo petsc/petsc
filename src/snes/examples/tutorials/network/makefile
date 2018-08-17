@@ -14,9 +14,6 @@ OBJECTS_EX1 = ex1.o power/PFReadData.o power/pffunctions.o water/waterreaddata.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-
-ex1: $(OBJECTS_EX1) chkopts
-	-${CLINKER} -o ex1 $(OBJECTS_EX1) ${PETSC_SNES_LIB}
-	${RM} ${OBJECTS_EX1}
-
 include ${PETSC_DIR}/lib/petsc/conf/test
+
+ex1: $(OBJECTS_EX1)

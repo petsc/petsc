@@ -155,7 +155,8 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
 
   Concepts: incomplete Cholesky factorization
 
-   Notes: Only implemented for some matrix formats. Not implemented in parallel.
+   Notes:
+    Only implemented for some matrix formats. Not implemented in parallel.
 
           For BAIJ matrices this implements a point block ICC.
 

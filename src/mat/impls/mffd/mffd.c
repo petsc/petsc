@@ -64,7 +64,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("matmffd",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(MATMFFD_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(MatMFFDFinalizePackage);CHKERRQ(ierr);
@@ -1072,7 +1072,7 @@ PetscErrorCode  MatMFFDResetHHistory(Mat J)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
         Jacobian are computed
 
@@ -1083,7 +1083,8 @@ PetscErrorCode  MatMFFDResetHHistory(Mat J)
 .   U - the vector
 -   F - (optional) vector that contains F(u) if it has been already computed
 
-    Notes: This is rarely used directly
+    Notes:
+    This is rarely used directly
 
     If F is provided then it is not recomputed. Otherwise the function is evaluated at the base
     point during the first MatMult() after each call to MatMFFDSetBase().
@@ -1119,7 +1120,8 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 
     Level: advanced
 
-    Notes: For example, MatMFFDCheckPositivity() insures that all entries
+    Notes:
+    For example, MatMFFDCheckPositivity() insures that all entries
        of U + h*a are non-negative
 
      The function you provide is called after the default h has been computed and allows you to
@@ -1154,7 +1156,8 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
 
     Level: advanced
 
-    Notes: This is rarely used directly, rather it is passed as an argument to
+    Notes:
+    This is rarely used directly, rather it is passed as an argument to
            MatMFFDSetCheckh()
 
 .seealso:  MatMFFDSetCheckh()

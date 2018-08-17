@@ -132,7 +132,7 @@ class Configure(config.base.Configure):
         yield ('Default compiler locations', ('', petscArch))
       petscDirRE = re.compile(r'(PETSC|pets)c(-.*)?')
       trialDirs = []
-      for packageDir in self.framework.argDB['package-dirs']:
+      for packageDir in self.framework.argDB['with-packages-search-path']:
         if os.path.isdir(packageDir):
           for d in os.listdir(packageDir):
             if petscDirRE.match(d):

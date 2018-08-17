@@ -159,7 +159,8 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
 - -random_no_imaginary_part - makes the imaginary part of the random number zero, this is useful when you want the
                               same code to produce the same result when run with real numbers or complex numbers for regression testing purposes
 
-  Notes:  To see all options, run your program with the -help option.
+  Notes:
+    To see all options, run your program with the -help option.
           Must be called after PetscRandomCreate() but before the rnd is used.
 
   Level: beginner

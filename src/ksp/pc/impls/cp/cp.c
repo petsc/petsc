@@ -149,7 +149,8 @@ $        dx_i = (A_i^T A_i)^(-1) A_i^T r
 $
 $    This algorithm can be thought of as Gauss-Seidel on the normal equations
 
-    Notes: This proceedure can also be done with block columns or any groups of columns
+    Notes:
+    This proceedure can also be done with block columns or any groups of columns
         but this is not coded.
 
       These "projections" can be done simultaneously for all columns (similar to Jacobi)

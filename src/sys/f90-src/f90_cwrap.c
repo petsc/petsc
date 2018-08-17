@@ -14,7 +14,8 @@
 
    Level: developer
 
-   Developer Notes: The MPI documentation in multiple places says that one can never us
+   Developer Notes:
+    The MPI documentation in multiple places says that one can never us
    Fortran MPI_Datatypes in C (or vis-versa) but this is problematic since users could never
    call C routines from Fortran that have MPI_Datatype arguments. Jed states that the Fortran
    MPI_Datatypes will always be available in C if the MPI was built to support Fortran. This function
@@ -29,7 +30,9 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit,MPI_Datatype *dtype)
   if (ftype == MPI_INTEGER) *dtype = MPI_INT;
   else if (ftype == MPI_INTEGER8) *dtype = MPIU_INT64;
   else if (ftype == MPI_DOUBLE_PRECISION) *dtype = MPI_DOUBLE;
-  else if (ftype == MPI_COMPLEX16) *dtype = MPI_C_DOUBLE_COMPLEX;
+#if defined(PETSC_HAVE_COMPLEX)
+  else if (ftype == MPI_COMPLEX16) *dtype = MPIU_C_DOUBLE_COMPLEX;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown Fortran MPI_Datatype");
   PetscFunctionReturn(0);
 }

@@ -715,7 +715,7 @@ int main(int argc, char **argv)
     args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 20_parmetis
-    requires: triangle !single
+    requires: parmetis triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 3
     args: -run_type full -petscpartitioner_type parmetis -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
@@ -854,7 +854,7 @@ int main(int argc, char **argv)
   test:
     requires: !single
     suffix: bddc_quad
-    nsize: 9
+    nsize: 5
     args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
 
 TEST*/

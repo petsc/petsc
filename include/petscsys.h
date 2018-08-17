@@ -60,10 +60,12 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #endif
 
 #if defined(__cplusplus)
-#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#  define PETSC_INLINE PETSC_CXX_INLINE
 #else
-#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#  define PETSC_INLINE PETSC_C_INLINE
 #endif
+
+#define PETSC_STATIC_INLINE static PETSC_INLINE
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
@@ -124,7 +126,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
-#include <mpi.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#  include <petsc/mpiuni/mpi.h>
+#else
+#  include <mpi.h>
+#endif
 
 /*
    Perform various sanity checks that the correct mpi.h is being included at compile time.
@@ -252,7 +258,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 #include <stdint.h>
 #endif
 #if defined (PETSC_HAVE_INTTYPES_H)
+#if !defined(__STDC_FORMAT_MACROS)
 #define __STDC_FORMAT_MACROS /* required for using PRId64 from c++ */
+#endif
 #include <inttypes.h>
 # if !defined(PRId64)
 # define PRId64 "ld"
@@ -1196,7 +1204,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc2()
+   Notes:
+    Memory must have been obtained with PetscMalloc2()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree()
 
@@ -1221,7 +1230,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc3()
+   Notes:
+    Memory must have been obtained with PetscMalloc3()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3()
 
@@ -1247,7 +1257,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc4()
+   Notes:
+    Memory must have been obtained with PetscMalloc4()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4()
 
@@ -1274,7 +1285,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc5()
+   Notes:
+    Memory must have been obtained with PetscMalloc5()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5()
 
@@ -1303,7 +1315,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc6()
+   Notes:
+    Memory must have been obtained with PetscMalloc6()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6()
 
@@ -1333,7 +1346,8 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc7()
+   Notes:
+    Memory must have been obtained with PetscMalloc7()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(),
           PetscMalloc7()
@@ -1572,7 +1586,7 @@ $  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and w
 .seealso: PetscViewerFileSetMode()
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
-extern const char *const PetscFileModes[];
+PETSC_EXTERN const char *const PetscFileModes[];
 
 /*
     Defines PETSc error handling.
@@ -1830,10 +1844,14 @@ PETSC_EXTERN PetscErrorCode PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscPrintf(MPI_Comm,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintf(char*,size_t,const char [],...);
 PETSC_EXTERN PetscErrorCode PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
+PETSC_EXTERN PetscErrorCode PetscFormatRealArray(char[],size_t,const char*,PetscInt,const PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+
+PETSC_EXTERN PetscErrorCode PetscFormatConvertGetSize(const char*,size_t*);
+PETSC_EXTERN PetscErrorCode PetscFormatConvert(const char*,char *);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
@@ -2159,7 +2177,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
+.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PetscRealPart(), PetscImaginaryPart()
 M*/
 
 /*MC
@@ -3033,6 +3051,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 /*
     Returned from PETSc functions that are called from MPI, such as related to attributes
 */
-PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
 
 #endif

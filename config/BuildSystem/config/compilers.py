@@ -103,37 +103,37 @@ class Configure(config.base.Configure):
     return
 
   # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
-  # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
+  # checkCInline & checkCxxInline are pretty much the same code right now.
   # but they could be different (later) - and they also check/set different flags - hence
   # code duplication.
-  def checkCStaticInline(self):
-    '''Check for C keyword: static inline'''
-    self.cStaticInlineKeyword = 'static'
+  def checkCInline(self):
+    '''Check for C inline keyword'''
+    self.cInlineKeyword = ' '
     self.pushLanguage('C')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cStaticInlineKeyword = kw
-        self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cInlineKeyword = kw
+        self.logPrint('Set C Inline keyword to '+self.cInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cStaticInlineKeyword == 'static':
-      self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
+    if self.cInlineKeyword == ' ':
+      self.logPrint('No C Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('C_INLINE', self.cInlineKeyword)
     return
 
-  def checkCxxStaticInline(self):
-    '''Check for C++ keyword: static inline'''
-    self.cxxStaticInlineKeyword = 'static'
+  def checkCxxInline(self):
+    '''Check for C++ inline keyword'''
+    self.cxxInlineKeyword = ' '
     self.pushLanguage('C++')
-    for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
-        self.cxxStaticInlineKeyword = kw
-        self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
+    for kw in ['inline', '__inline', '__inline__']:
+      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
+        self.cxxInlineKeyword = kw
+        self.logPrint('Set Cxx Inline keyword to '+self.cxxInlineKeyword , 4, 'compilers')
         break
     self.popLanguage()
-    if self.cxxStaticInlineKeyword == 'static':
-      self.logPrint('No Cxx StaticInline keyword. using static function', 4, 'compilers')
-    self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
+    if self.cxxInlineKeyword == ' ':
+      self.logPrint('No Cxx Inline keyword. Using static function', 4, 'compilers')
+    self.addDefine('CXX_INLINE', self.cxxInlineKeyword)
     return
 
   def checkRestrict(self,language):
@@ -308,7 +308,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -618,7 +618,7 @@ class Configure(config.base.Configure):
             self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
@@ -805,6 +805,10 @@ class Configure(config.base.Configure):
       self.addDefine('STDCALL', '__stdcall')
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
       self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
+    if config.setCompilers.Configure.isGfortran8plus(self.getCompiler('FC'), self.log):
+      self.addDefine('FORTRAN_CHARLEN_T', 'size_t')
+    else:
+      self.addDefine('FORTRAN_CHARLEN_T', 'int')
     return
 
   def checkFortranNameManglingDouble(self):
@@ -1046,7 +1050,7 @@ class Configure(config.base.Configure):
             self.logPrint('Already in lflags so skipping: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|gcc_ext(.[0-9]+)*|System|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m:
           self.logPrint('Found system library therefor skipping: '+arg, 4, 'compilers')
           continue
@@ -1291,11 +1295,20 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
+  def configureFortranFlush(self):
+    self.pushLanguage('FC')
+    for baseName in ['flush','flush_']:
+      if self.checkLink(body='      call '+baseName+'(6)'):
+        self.addDefine('HAVE_FORTRAN_'+baseName.upper(), 1)
+        break
+    self.popLanguage()
+    return
+
   def checkFortranTypeInitialize(self):
     '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
     if self.argDB['with-fortran-type-initialize']:
-      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', 1)
-      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = 1')
+      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', 0)
+      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = 0')
       self.logPrint('Initializing Fortran objects')
     else:
       self.addDefine('FORTRAN_TYPE_INITIALIZE', ' ')
@@ -1343,7 +1356,7 @@ class Configure(config.base.Configure):
   def checkFortran2003(self):
     '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
-    if self.fortranIsF90 and self.checkLink(includes = '''
+    if self.fortranIsF90 and self.checkLink(codeBegin = '''
       module Base_module
         type, public :: base_type
            integer :: A
@@ -1355,7 +1368,8 @@ class Configure(config.base.Configure):
           class(base_type) :: this
         end subroutine BasePrint
       end module Base_module
-    ''',body = '''
+
+      program main''',body = '''
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()
@@ -1653,7 +1667,7 @@ class Configure(config.base.Configure):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
-      self.executeTest(self.checkCStaticInline)
+      self.executeTest(self.checkCInline)
       self.executeTest(self.checkDynamicLoadFlag)
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
@@ -1666,7 +1680,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkRestrict,['Cxx'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
-      self.executeTest(self.checkCxxStaticInline)
+      self.executeTest(self.checkCxxInline)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       self.executeTest(self.checkCxx11)
@@ -1690,6 +1704,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranModuleOutput)
       self.executeTest(self.checkFortranTypeStar)
       self.executeTest(self.checkFortranTypeInitialize)
+      self.executeTest(self.configureFortranFlush)
     self.no_configure()
     return
 

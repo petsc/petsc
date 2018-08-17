@@ -78,7 +78,8 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
 
    Level: developer
 
-   Notes: This is an internal routine called by DMDAGlobalToNatural() to
+   Notes:
+    This is an internal routine called by DMDAGlobalToNatural() to
      create the scatter context.
 
 .keywords: distributed array, global to local, begin
@@ -150,7 +151,7 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
   PetscValidHeaderSpecific(n,VEC_CLASSID,4);
   if (!dd->gton) {
@@ -195,7 +196,7 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec n)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
   PetscValidHeaderSpecific(n,VEC_CLASSID,4);
   ierr = VecScatterEnd(dd->gton,g,n,mode,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -237,7 +238,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidHeaderSpecific(n,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   if (!dd->gton) {
@@ -282,7 +283,7 @@ PetscErrorCode  DMDANaturalToGlobalEnd(DM da,Vec n,InsertMode mode,Vec g)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidHeaderSpecific(n,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   ierr = VecScatterEnd(dd->gton,n,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);

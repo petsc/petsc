@@ -19,12 +19,14 @@
 
    Level: intermediate
 
-   Notes: TextBelt is run for testing purposes only, please do not use this feature often
+   Notes:
+    TextBelt is run for testing purposes only, please do not use this feature often
 
    As of November 2016 this service does not seem to be actually transmitting the SMS, which is unfortunate since it is such a great service. Consider
    registering and using PetscTellMyCell() instead. Or email us with other alternatives we might add or make a pull request.
 
-   Developer Notes:  I do not know how to make the buff[] long enough to receive the "success" string but short enough that the code does not hang
+   Developer Notes:
+    I do not know how to make the buff[] long enough to receive the "success" string but short enough that the code does not hang
        waiting for part of the message to arrive that does not exist, hence the success flg may be improperly set to false even
        though the message was delivered.
 

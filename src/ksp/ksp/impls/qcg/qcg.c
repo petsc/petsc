@@ -341,11 +341,13 @@ PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ks
    Options Database Keys:
 .      -ksp_qcg_trustregionradius <r> - Trust Region Radius
 
-   Notes: This is rarely used directly
+   Notes:
+    This is rarely used directly
 
    Level: developer
 
-  Notes:  Use preconditioned conjugate gradient to compute
+  Notes:
+    Use preconditioned conjugate gradient to compute
       an approximate minimizer of the quadratic function
 
             q(s) = g^T * s + .5 * s^T * H * s

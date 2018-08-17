@@ -133,7 +133,8 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
    Level: beginner
 
-   Notes: this method requires that one be apply to apply the transpose of the preconditioner and operator
+   Notes:
+    this method requires that one be apply to apply the transpose of the preconditioner and operator
          as well as the operator and preconditioner.
          Supports only left preconditioning
 

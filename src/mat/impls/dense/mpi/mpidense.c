@@ -194,8 +194,13 @@ static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReu
   PetscScalar    *av,*bv,*v = lmat->v;
   Mat            newmat;
   IS             iscol_local;
+  MPI_Comm       comm_is,comm_mat;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm_mat);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)iscol,&comm_is);CHKERRQ(ierr);
+  if (comm_mat != comm_is) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"IS communicator must match matrix communicator");
+
   ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol_local,&icol);CHKERRQ(ierr);
@@ -949,7 +954,6 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX  && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports square matrix only in-place");
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);

@@ -338,7 +338,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
         PetscFunctionReturn(0);
       }
     }
-    if (snes->nfuncs >= snes->max_funcs) {
+    if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscFunctionReturn(0);
     }
@@ -445,7 +445,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 .   -snes_linesearch_type <cp,l2,basic> - Line search type.
 -   -snes_ncg_monitor - Print relevant information about the ncg iteration.
 
-   Notes: This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
+   Notes:
+    This solves the nonlinear system of equations F(x) = 0 using the nonlinear generalization of the conjugate
           gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
           chooses the initial search direction as F(x) for the initial guess x.
 
@@ -456,7 +457,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
    SIAM Review, 57(4), 2015
 
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {

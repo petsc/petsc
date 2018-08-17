@@ -512,7 +512,8 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 .  begin - the routine that begins the global to local scatter
 -  end - the routine that ends the global to local scatter
 
-   Notes: If these functions are not provided but DMShellSetGlobalToLocalVecScatter() is called then
+   Notes:
+    If these functions are not provided but DMShellSetGlobalToLocalVecScatter() is called then
    DMGlobalToLocalBeginDefaultShell()/DMGlobalToLocalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced
@@ -536,7 +537,8 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 .  begin - the routine that begins the local to global scatter
 -  end - the routine that ends the local to global scatter
 
-   Notes: If these functions are not provided but DMShellSetLocalToGlobalVecScatter() is called then
+   Notes:
+    If these functions are not provided but DMShellSetLocalToGlobalVecScatter() is called then
    DMLocalToGlobalBeginDefaultShell()/DMLocalToGlobalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced
@@ -560,7 +562,8 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 .  begin - the routine that begins the local to local scatter
 -  end - the routine that ends the local to local scatter
 
-   Notes: If these functions are not provided but DMShellSetLocalToLocalVecScatter() is called then
+   Notes:
+    If these functions are not provided but DMShellSetLocalToLocalVecScatter() is called then
    DMLocalToLocalBeginDefaultShell()/DMLocalToLocalEndDefaultShell() are used to to perform the transfers
 
    Level: advanced

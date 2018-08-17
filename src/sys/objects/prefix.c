@@ -13,7 +13,8 @@
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
 -  options - the options database, use NULL for default
 
-   Notes: if this is not called the object will use the default options database
+   Notes:
+    if this is not called the object will use the default options database
 
   Level: advanced
 

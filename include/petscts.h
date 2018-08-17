@@ -59,7 +59,8 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
    Supported types are:
      TS_EQ_UNSPECIFIED (default)
@@ -90,7 +91,8 @@ PETSC_EXTERN const char *const*TSEquationTypes;
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
    Each reason has its own manual page.
 
@@ -176,7 +178,8 @@ M*/
 
    Level: beginner
 
-   Notes: See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
+   Notes:
+    See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason(), TSSetMaxSNESFailures()
 M*/
@@ -186,7 +189,8 @@ M*/
 
    Level: beginner
 
-   Notes: See TSSetMaxStepRejections() for how to allow more step rejections.
+   Notes:
+    See TSSetMaxStepRejections() for how to allow more step rejections.
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxStepRejections()
 M*/
@@ -196,7 +200,8 @@ M*/
 
    Level: beginner
 
-   Developer Notes: this must match petsc/finclude/petscts.h
+   Developer Notes:
+    this must match petsc/finclude/petscts.h
 
 $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
@@ -257,7 +262,7 @@ PETSC_EXTERN PetscErrorCode TSComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 
   Concepts: ODE solvers, trajectory
 
-.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy(), TSTrajectoryReset()
 S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
@@ -281,9 +286,10 @@ PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryView(TSTrajectory,PetscViewer);
-PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,const TSTrajectoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,TS,TSTrajectoryType);
 PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
@@ -345,6 +351,7 @@ PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTi
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
+PETSC_EXTERN PetscErrorCode TSMonitorExtreme(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 
 typedef struct _n_TSMonitorDrawCtx*  TSMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorDrawCtx *);

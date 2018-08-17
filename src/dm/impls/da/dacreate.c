@@ -29,7 +29,7 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   ierr = PetscOptionsInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetNumLocalSubDomains(da,dd->Nsub);CHKERRQ(ierr);}
 
-  /* Handle DMDA parallel distibution */
+  /* Handle DMDA parallel distribution */
   ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
   if (dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
   if (dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL);CHKERRQ(ierr);}
@@ -132,6 +132,7 @@ extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char***,IS**,IS**,DM**);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
+PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM,DM,PetscBool*,PetscBool*);
 
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
@@ -209,7 +210,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
     ierr = DMDASetStencilWidth(*subdm, da->s);CHKERRQ(ierr);
     ierr = DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   }
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   } else {
@@ -460,6 +461,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
+  da->ops->getcompatibility            = DMGetCompatibility_DA;
   ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

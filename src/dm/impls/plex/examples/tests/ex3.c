@@ -54,18 +54,16 @@ PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[
 /* u = x */
 PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = coords[d];
+  for (d = 0; d < dim; ++d) u[d] = coords[d];
   return 0;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx   *user = (AppCtx *) ctx;
   PetscInt d, e;
-  for (d = 0; d < user->dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     u[d] = 0.0;
-    for (e = 0; e < user->dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+    for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
   return 0;
 }
@@ -431,7 +429,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
     ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
     ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-    ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+    ierr = DMSetSection(dm, section);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
   if (!user->simplex && user->constraints) {
@@ -448,7 +446,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       Vec             local;
       const PetscInt *anchors;
 
-      ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+      ierr = DMGetSection(dm,&section);CHKERRQ(ierr);
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
       ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
@@ -523,7 +521,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
         ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
         ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
         ierr = DMDACreateSection(dmda, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
-        ierr = DMSetDefaultSection(dmda, section);CHKERRQ(ierr);
+        ierr = DMSetSection(dmda, section);CHKERRQ(ierr);
         ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
         ierr = DMCreateMatrix(dmda,&mass);CHKERRQ(ierr);
         /* there isn't a DMDA equivalent of DMPlexSNESComputeJacobianFEM()
@@ -575,7 +573,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
       ierr = VecSet(res,0.);CHKERRQ(ierr);
       ierr = DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
-      ierr = DMPlexSNESComputeJacobianActionFEM(dm,local,localX,localRes,NULL);CHKERRQ(ierr);
+      ierr = DMPlexComputeJacobianAction(dm,NULL,0,0,local,NULL,localX,localRes,NULL);CHKERRQ(ierr);
       ierr = DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
       ierr = DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
       ierr = VecNorm(res,NORM_2,&resNorm);CHKERRQ(ierr);
@@ -756,6 +754,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
   ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-projection_view");CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
   ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
   ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
@@ -1184,6 +1183,24 @@ int main(int argc, char **argv)
     suffix: p3_2d_6
     requires: triangle pragmatic
     args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+
+  # 2D Q_3 on a quadrilaterial
+  test:
+    suffix: q3_2d_0
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -convergence
+  test:
+    suffix: q3_2d_1
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 1
+  test:
+    suffix: q3_2d_2
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 2
+  test:
+    suffix: q3_2d_3
+    requires: mpi_type_get_envelope !single
+    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
   test:

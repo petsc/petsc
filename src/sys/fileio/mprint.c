@@ -7,7 +7,7 @@
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 /*
      Allows one to overwrite where standard out is sent. For example
      PETSC_STDOUT = fopen("/dev/ttyXX","w") will cause all standard out
@@ -21,30 +21,77 @@ FILE *PETSC_STDOUT = 0;
 */
 FILE *PETSC_STDERR = 0;
 
-/*
-     Return the maximum expected new size of the format
-*/
-#define PETSC_MAX_LENGTH_FORMAT(l) (l+l/8)
-
 /*@C
-     PetscFormatConvert - Takes a PETSc format string and converts it to a reqular C format string
+     PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with PetscFormatConvert()
 
-   Input Parameters:
-+   format - the PETSc format string
-.   newformat - the location to put the standard C format string values
--   size - the length of newformat
+   Input Parameter:
+.   format - the PETSc format string
 
-    Note: this exists so we can have the same code when PetscInt is either int or long long and PetscScalar is either __float128, double, or float
+   Output Parameter:
+.   size - the needed length of the new format
 
  Level: developer
 
+.seealso: PetscFormatConvert(), PetscVSNPrintf(), PetscVFPrintf()
+
 @*/
-PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t size)
+PetscErrorCode PetscFormatConvertGetSize(const char *format,size_t *size)
 {
-  PetscInt i = 0,j = 0;
+  PetscInt i = 0;
 
   PetscFunctionBegin;
-  while (format[i] && j < (PetscInt)size-1) {
+  *size = 0;
+  while (format[i]) {
+    if (format[i] == '%' && format[i+1] == '%') {
+      i++; i++; *size += 2;
+    } else if (format[i] == '%') {
+      /* Find the letter */
+      for (; format[i] && format[i] <= '9'; i++,(*size += 1));
+      switch (format[i]) {
+      case 'D':
+#if defined(PETSC_USE_64BIT_INDICES)
+        *size += 2;
+#endif
+        break;
+      case 'g':
+        *size += 4;
+        break;
+      default:
+        break;
+      }
+      *size += 1;
+      i++;
+    } else {
+      i++;
+      *size += 1;
+    }
+  }
+  *size += 1; /* space for NULL character */
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PetscFormatConvert - Takes a PETSc format string and converts the %D to %d for 32 bit PETSc indices and %lld for 64 bit PETSc indices. Also
+                        converts %g to [|%g|] so that PetscVSNPrintf() can easily insure all %g formatted numbers have a decimal point when printed.
+
+   Input Parameters:
++   format - the PETSc format string
+.   newformat - the location to put the new format
+-   size - the length of newformat, you can use PetscFormatConvertGetSize() to compute the needed size
+
+    Note: this exists so we can have the same code when PetscInt is either int or long long int
+
+ Level: developer
+
+.seealso: PetscFormatConvertGetSize(), PetscVSNPrintf(), PetscVFPrintf()
+
+@*/
+PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
+{
+  PetscInt i = 0, j = 0;
+
+  PetscFunctionBegin;
+  while (format[i]) {
     if (format[i] == '%' && format[i+1] == '%') {
       newformat[j++] = format[i++];
       newformat[j++] = format[i++];
@@ -89,6 +136,8 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
   PetscFunctionReturn(0);
 }
 
+#define PETSCDEFAULTBUFFERSIZE 8*1024
+
 /*@C
      PetscVSNPrintf - The PETSc version of vsnprintf(). Converts a PETSc format string into a standard C format string and then puts all the
        function arguments into a string using the format statement.
@@ -99,43 +148,38 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 +   format - the PETSc format string
 -   fullLength - the amount of space in str actually used.
 
-    Developer Notes: this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
+    Developer Notes:
+    this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
       a recursion will occur and possible crash.
 
  Level: developer
 
+.seealso: PetscVSNPrintf(), PetscErrorPrintf(), PetscVPrintf()
+
 @*/
-PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
+PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
 {
-  char           *newformat;
-  char           formatbuf[8*1024];
-  size_t         oldLength,length;
+  char           *newformat = NULL;
+  char           formatbuf[PETSCDEFAULTBUFFERSIZE];
+  size_t         newLength;
   PetscErrorCode ierr;
+  int            flen;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
-  if (oldLength < 8*1024) {
+  ierr = PetscFormatConvertGetSize(format,&newLength);CHKERRQ(ierr);
+  if (newLength < PETSCDEFAULTBUFFERSIZE) {
     newformat = formatbuf;
-    oldLength = 8*1024-1;
+    newLength = PETSCDEFAULTBUFFERSIZE-1;
   } else {
-    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
-    ierr      = PetscMalloc1(oldLength, &newformat);CHKERRQ(ierr);
+    ierr      = PetscMalloc1(newLength, &newformat);CHKERRQ(ierr);
   }
-  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
-  ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
-#if 0
-  if (length > len) newformat[len] = '\0';
-#endif
-#if defined(PETSC_HAVE_VSNPRINTF_CHAR)
-  (void) vsnprintf(str,len,newformat,(char*)Argp);
-#elif defined(PETSC_HAVE_VSNPRINTF)
-  (void) vsnprintf(str,len,newformat,Argp);
-#elif defined(PETSC_HAVE__VSNPRINTF)
-  (void) _vsnprintf(str,len,newformat,Argp);
+  ierr = PetscFormatConvert(format,newformat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VSNPRINTF)
+  flen = vsnprintf(str,len,newformat,Argp);
 #else
 #error "vsnprintf not found"
 #endif
-  if (oldLength >= 8*1024) {
+  if (newLength > PETSCDEFAULTBUFFERSIZE-1) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
   {
@@ -145,19 +189,20 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     if (leng > 4) {
       for (cnt=0; cnt<leng-4; cnt++) {
         if (str[cnt] == '[' && str[cnt+1] == '|'){
-           cnt++; cnt++;
-           foundedot = PETSC_FALSE;
-           for (; cnt<leng-1; cnt++) {
-             if (str[cnt] == '|' && str[cnt+1] == ']'){
-               cnt++;
-               if (!foundedot) str[ncnt++] = '.';
-               ncnt--;
-               break;
-             } else {
-               if (str[cnt] == 'e' || str[cnt] == '.') foundedot = PETSC_TRUE;
-               str[ncnt++] = str[cnt];
-             }
-           }
+          flen -= 4;
+          cnt++; cnt++;
+          foundedot = PETSC_FALSE;
+          for (; cnt<leng-1; cnt++) {
+            if (str[cnt] == '|' && str[cnt+1] == ']'){
+              cnt++;
+              if (!foundedot) str[ncnt++] = '.';
+              ncnt--;
+              break;
+            } else {
+              if (str[cnt] == 'e' || str[cnt] == '.') foundedot = PETSC_TRUE;
+              str[ncnt++] = str[cnt];
+            }
+          }
         } else {
           str[ncnt] = str[cnt];
         }
@@ -192,9 +237,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     }
   }
 #endif
-  if (fullLength) {
-    ierr = PetscStrlen(str,fullLength);CHKERRQ(ierr);
-  }
+  if (fullLength) *fullLength = 1 + (size_t) flen;
   PetscFunctionReturn(0);
 }
 
@@ -221,10 +264,12 @@ $}
 then before the call to PetscInitialize() do the assignment
 $    PetscVFPrintf = mypetscvfprintf;
 
-      Notes: For error messages this may be called by any process, for regular standard out it is
+      Notes:
+    For error messages this may be called by any process, for regular standard out it is
           called only by process 0 of a given communicator
 
-      Developer Notes: this could be called by an error handler, if that happens then a recursion of the error handler may occur
+      Developer Notes:
+    this could be called by an error handler, if that happens then a recursion of the error handler may occur
                        and a crash
 
   Level:  developer
@@ -232,15 +277,34 @@ $    PetscVFPrintf = mypetscvfprintf;
 .seealso: PetscVSNPrintf(), PetscErrorPrintf()
 
 @*/
-PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
-  char           str[8*1024];
+  char           str[PETSCDEFAULTBUFFERSIZE];
+  char           *buff = str;
+  size_t         fullLength;
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_VA_COPY)
+  va_list        Argpcopy;
+#endif
 
   PetscFunctionBegin;
-  ierr = PetscVSNPrintf(str,sizeof(str),format,NULL,Argp);CHKERRQ(ierr);
-  fprintf(fd,"%s",str);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VA_COPY)
+  va_copy(Argpcopy,Argp);
+#endif
+  ierr = PetscVSNPrintf(str,sizeof(str),format,&fullLength,Argp);CHKERRQ(ierr);
+  if (fullLength > sizeof(str)) {
+    ierr = PetscMalloc1(fullLength,&buff);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VA_COPY)
+    ierr = PetscVSNPrintf(buff,fullLength,format,NULL,Argpcopy);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
+#endif
+  }
+  fprintf(fd,"%s",buff);CHKERRQ(ierr);
   fflush(fd);
+  if (buff != str) {
+    ierr = PetscFree(buff);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -258,9 +322,9 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
    Level: intermediate
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
-          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
+          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscVFPrintf()
 @*/
-PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
+PetscErrorCode PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
   PetscErrorCode ierr;
   size_t         fullLength;
@@ -281,15 +345,17 @@ PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
 +   str - the string to print to
 .   len - the length of str
 .   format - the usual printf() format string
-.   countused - number of characters used
 -   any arguments
+
+    Output Parameter:
+.   countused - number of characters used
 
    Level: intermediate
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
-          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscSNPrintf()
+          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscSNPrintf(), PetscVFPrintf()
 @*/
-PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size_t *countused,...)
+PetscErrorCode PetscSNPrintfCount(char *str,size_t len,const char format[],size_t *countused,...)
 {
   PetscErrorCode ierr;
   va_list        Argp;
@@ -328,7 +394,7 @@ int         petsc_printfqueuelength = 0;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(),
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -350,7 +416,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
-    size_t      fullLength = 8191;
+    size_t      fullLength = PETSCDEFAULTBUFFERSIZE;
 
     ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
@@ -359,10 +425,11 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
       petsc_printfqueue->next = 0;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
-    next->size = -1;
+    next->size   = -1;
+    next->string = NULL;
     while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
-
+      ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
       ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
@@ -395,7 +462,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format[],...)
+PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -417,7 +484,8 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
-    size_t      fullLength = 8191;
+    size_t      fullLength = PETSCDEFAULTBUFFERSIZE;
+
     ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
@@ -425,9 +493,11 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
       petsc_printfqueue->next = 0;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
-    next->size = -1;
+    next->size   = -1;
+    next->string = NULL;
     while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
+      ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
       ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
@@ -459,7 +529,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
+PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag,i,j,n = 0,dummy = 0;
@@ -532,7 +602,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -574,7 +644,7 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -614,7 +684,7 @@ $    PetscHelpPrintf = mypetschelpprintf;
 
 .seealso: PetscVSNPrintf(), PetscVFPrintf(), PetscErrorPrintf()
 @*/
-PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -657,7 +727,7 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char string[])
+PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char string[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -680,7 +750,7 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
 #if defined(PETSC_HAVE_CLOSURES)
 int (^SwiftClosure)(const char*) = 0;
 
-PetscErrorCode  PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
+PetscErrorCode PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
 {
   PetscErrorCode ierr;
 
@@ -688,11 +758,11 @@ PetscErrorCode  PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
   if (fd != stdout && fd != stderr) { /* handle regular files */
     ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
   } else {
-    size_t len=8*1024,length;
-    char   buf[len];
+    size_t length;
+    char   buff[PETSCDEFAULTBUFFERSIZE];
 
-    ierr = PetscVSNPrintf(buf,len,format,&length,Argp);CHKERRQ(ierr);
-    ierr = SwiftClosure(buf);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(buf,size(buff),format,&length,Argp);CHKERRQ(ierr);
+    ierr = SwiftClosure(buff);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -708,26 +778,6 @@ PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char*))
 }
 #endif
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <mex.h>
-PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (fd != stdout && fd != stderr) { /* handle regular files */
-    ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
-  } else {
-    size_t len=8*1024,length;
-    char   buf[len];
-
-    ierr = PetscVSNPrintf(buf,len,format,&length,Argp);CHKERRQ(ierr);
-    mexPrintf("%s",buf);
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 
@@ -737,7 +787,7 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
  Level: developer
 
 @*/
-PetscErrorCode  PetscFormatStrip(char *format)
+PetscErrorCode PetscFormatStrip(char *format)
 {
   size_t loc1 = 0, loc2 = 0;
 
@@ -752,3 +802,21 @@ PetscErrorCode  PetscFormatStrip(char *format)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  size_t         left,count;
+  char           *p;
+
+  PetscFunctionBegin;
+  for (i=0,p=buf,left=len; i<n; i++) {
+    ierr = PetscSNPrintfCount(p,left,fmt,&count,(double)x[i]);CHKERRQ(ierr);
+    if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
+    left -= count;
+    p    += count-1;
+    *p++  = ' ';
+  }
+  p[i ? 0 : -1] = 0;
+  PetscFunctionReturn(0);
+}

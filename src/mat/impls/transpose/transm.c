@@ -67,7 +67,7 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
     ierr = MatTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
   } else if (op == MAT_DO_NOT_COPY_VALUES) {
     ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
-    ierr = MatTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+    ierr = MatTranspose(*m,MAT_INPLACE_MATRIX,m);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
   PetscFunctionReturn(0);
 }
@@ -122,7 +122,8 @@ PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
 
    Level: intermediate
 
-   Notes: The transpose A' is NOT actually formed! Rather the new matrix
+   Notes:
+    The transpose A' is NOT actually formed! Rather the new matrix
           object performs the matrix-vector product by using the MatMultTranspose() on
           the original matrix
 

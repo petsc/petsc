@@ -45,6 +45,8 @@
        INTEGER MPI_SOURCE,MPI_TAG,MPI_ERROR
        PARAMETER(MPI_SOURCE=1,MPI_TAG=2,MPI_ERROR=3)
 
+       integer MPI_STATUS_IGNORE
+       parameter (MPI_STATUS_IGNORE=0)
 
 !     Data Types. Same Values used in mpi.c
        integer MPI_INTEGER,MPI_LOGICAL
@@ -90,10 +92,4 @@
        integer MPI_MAX_PROCESSOR_NAME
        parameter (MPI_MAX_PROCESSOR_NAME=128-1)
 
-!
-!  some parameters require common blocks?
-!
-       integer MPI_IN_PLACE
-       common /MPIUNIPRIV/ MPI_IN_PLACE
-       save /MPIUNIPRIV/
 

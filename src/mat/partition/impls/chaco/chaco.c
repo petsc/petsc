@@ -696,7 +696,8 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 
    Level: beginner
 
-   Notes: See http://www.cs.sandia.gov/CRF/chac.html
+   Notes:
+    See http://www.cs.sandia.gov/CRF/chac.html
 
 .keywords: Partitioning, create, context
 

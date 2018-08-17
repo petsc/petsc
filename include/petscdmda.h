@@ -85,7 +85,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,
 /* function to wrap coordinates around boundary */
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMDACreateCompatibleDMDA(DM,PetscInt,DM*);
+PETSC_EXTERN PETSC_DEPRECATED("Use DMDACreateCompatibleDMDA()") PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
@@ -124,8 +125,6 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayRead(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOFRead(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFRead(DM,Vec,void *);
-
-PETSC_EXTERN PetscErrorCode DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
 
@@ -192,6 +191,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqUSFFT(Vec,DM,Mat*);
 
 PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, Mat *));
 PETSC_EXTERN PetscErrorCode DMDASetBlockFills(DM,const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDASetBlockFillsSparse(DM,const PetscInt*,const PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);
 

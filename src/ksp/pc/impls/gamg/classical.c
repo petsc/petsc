@@ -31,7 +31,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGAMGClassicalSetType_C",(PC,PCGAMGType),(pc,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCGAMGClassicalSetType_C",(PC,PCGAMGClassicalType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -56,7 +56,7 @@ PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCGAMGClassicalGetType_C",(PC,PCGAMGType*),(pc,type));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCGAMGClassicalGetType_C",(PC,PCGAMGClassicalType*),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,17 +93,14 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   PetscScalar       *gval;
   PetscReal         rmax;
   PetscInt          cmax = 0;
-  PC_MG             *mg;
-  PC_GAMG           *gamg;
+  PC_MG             *mg = (PC_MG *)pc->data;
+  PC_GAMG           *gamg = (PC_GAMG *)mg->innerctx;
   PetscErrorCode    ierr;
   PetscInt          *gsparse,*lsparse;
   PetscScalar       *Amax;
   MatType           mtype;
 
   PetscFunctionBegin;
-  mg   = (PC_MG *)pc->data;
-  gamg = (PC_GAMG *)mg->innerctx;
-
   ierr = MatGetOwnershipRange(A,&s,&f);CHKERRQ(ierr);
   n=f-s;
   ierr = PetscMalloc3(n,&lsparse,n,&gsparse,n,&Amax);CHKERRQ(ierr);
@@ -187,7 +184,6 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   ierr = MatCoarsenApply(crs);CHKERRQ(ierr);
   ierr = MatCoarsenGetData(crs,agg_lists);CHKERRQ(ierr);
   ierr = MatCoarsenDestroy(&crs);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +260,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     ierr = PetscSFBcastEnd(sf,MPIU_INT,lcid,gcid);CHKERRQ(ierr);
   }
 
-  /* determine the biggest off-diagonal entries in each row */
+  /* determine the largest off-diagonal entries in each row */
   for (i=fs;i<fe;i++) {
     Amax_pos[i-fs] = 0.;
     Amax_neg[i-fs] = 0.;
@@ -331,7 +327,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       g_neg = 0.;
       a_pos = 0.;
       a_neg = 0.;
-      diag = 0.;
+      diag  = 0.;
 
       /* local connections */
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
@@ -451,7 +447,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
     ierr = PetscFree(gcid);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -938,7 +933,7 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
 
   PetscFunctionBegin;
   /* no data for classical AMG */
-  pc_gamg->data = NULL;
+  pc_gamg->data           = NULL;
   pc_gamg->data_cell_cols = 0;
   pc_gamg->data_cell_rows = 0;
   pc_gamg->data_sz        = 0;

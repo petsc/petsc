@@ -1,6 +1,8 @@
 #include <petscmat.h>              /*I  "mat.h"  I*/
 
-typedef struct{
+PETSC_INTERN PetscErrorCode MatCreateADA(Mat,Vec, Vec, Mat*);
+
+typedef struct {
   Mat      A;
   Vec      D1;
   Vec      D2;
@@ -10,8 +12,6 @@ typedef struct{
   PetscInt GotDiag;
 } _p_TaoMatADACtx;
 typedef  _p_TaoMatADACtx* TaoMatADACtx;
-
-extern PetscErrorCode MatCreateADA(Mat,Vec, Vec, Mat*);
 
 static PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
 {

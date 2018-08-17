@@ -273,7 +273,8 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   Options Database Keys:
 . -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
-  Notes: You must ./configure with the options --with-matlab --with-matlab-engine
+  Notes:
+    You must ./configure with the options --with-matlab --with-matlab-engine
 
   Level: beginner
 

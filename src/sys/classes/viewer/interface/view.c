@@ -80,7 +80,7 @@ PetscErrorCode  PetscViewerInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("viewer",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_VIEWER_CLASSID);CHKERRQ(ierr);}
   }
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
@@ -134,7 +134,8 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
    Output Parameter:
 .   vf - viewer and format object
 
-   Notes: This increases the reference count of the viewer so you can destroy the viewer object after this call
+   Notes:
+    This increases the reference count of the viewer so you can destroy the viewer object after this call
    Level: developer
 
    This is used as the context variable for many of the TS, SNES, and KSP monitor functions
@@ -287,7 +288,8 @@ PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char pre
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   Notes:
+    On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced

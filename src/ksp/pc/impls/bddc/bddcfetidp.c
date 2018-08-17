@@ -584,8 +584,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MatSetLocalToGlobalMapping(T,l2g,l2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
     ierr = MatISSetLocalMat(T,BD2);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy(&BD2);CHKERRQ(ierr);
-    ierr = MatISGetMPIXAIJ(T,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
+    ierr = MatConvert(T,MATAIJ,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
     ierr = MatDestroy(&T);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(TA,1,&is,&is,MAT_INITIAL_MATRIX,&pT);CHKERRQ(ierr);

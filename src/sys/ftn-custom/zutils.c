@@ -6,7 +6,8 @@ void *PETSCNULLPOINTERADDRESS = NULL;
    PetscFortranAddr - a variable type in Fortran that can hold a
      regular C pointer.
 
-   Notes: Used, for example, as the file argument in PetscFOpen()
+   Notes:
+    Used, for example, as the file argument in PetscFOpen()
 
    Level: beginner
 

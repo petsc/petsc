@@ -256,7 +256,8 @@ static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 + pc - the preconditioner
 - eps - epsilon (default .4)
 
-  Notes:  Espilon must be between 0 and 1. It controls the
+  Notes:
+    Espilon must be between 0 and 1. It controls the
                  quality of the approximation of M to the inverse of
                  A. Higher values of epsilon lead to more work, more
                  fill, and usually better preconditioners. In many
@@ -287,7 +288,8 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 + pc - the preconditioner
 - n - number of steps (default 5)
 
-  Notes:  SPAI constructs to approximation to every column of
+  Notes:
+    SPAI constructs to approximation to every column of
                  the exact inverse of A in a series of improvement
                  steps. The quality of the approximation is determined
                  by epsilon. If an approximation achieving an accuracy
@@ -363,7 +365,8 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 + pc - the preconditioner
 - n - block size (default 1)
 
-  Notes: A block
+  Notes:
+    A block
                  size of 1 treats A as a matrix of scalar elements. A
                  block size of s > 1 treats A as a matrix of sxs
                  blocks. A block size of 0 treats A as a matrix with
@@ -403,7 +406,8 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 + pc - the preconditioner
 - n -  cache size {0,1,2,3,4,5} (default 5)
 
-  Notes:    SPAI uses a hash table to cache messages and avoid
+  Notes:
+    SPAI uses a hash table to cache messages and avoid
                  redundant communication. If suggest always using
                  5. This parameter is irrelevant in the serial
                  version.
@@ -430,7 +434,8 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 + pc - the preconditioner
 - n - level (default 1)
 
-  Notes: print parameters, timings and matrix statistics
+  Notes:
+    print parameters, timings and matrix statistics
 
   Level: intermediate
 
@@ -454,7 +459,8 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 + pc - the preconditioner
 - n - 0 or 1
 
-  Notes: If A has a symmetric nonzero pattern use -sp 1 to
+  Notes:
+    If A has a symmetric nonzero pattern use -sp 1 to
                  improve performance by eliminating some communication
                  in the parallel version. Even if A does not have a
                  symmetric nonzero pattern -sp 1 may well lead to good
@@ -542,7 +548,8 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
 .  -pc_spai_sp <m> - set sp
 -  -pc_spai_set_verbose <true,false> - verbose output
 
-   Notes: This only works with AIJ matrices.
+   Notes:
+    This only works with AIJ matrices.
 
    Level: beginner
 

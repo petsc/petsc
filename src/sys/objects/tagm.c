@@ -336,10 +336,10 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval
   PetscCommShared scomm = (PetscCommShared)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting shared subcommunicator in a MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = MPI_Comm_free(&scomm->scomm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = PetscFree(scomm->ranks);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  ierr = PetscFree(val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting shared subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = MPI_Comm_free(&scomm->scomm);CHKERRMPI(ierr);
+  ierr = PetscFree(scomm->ranks);CHKERRMPI(ierr);
+  ierr = PetscFree(val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -359,7 +359,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval
 
     Level: developer
 
-    Notes: This should be called only with an PetscCommDuplicate() communictor
+    Notes:
+    This should be called only with an PetscCommDuplicate() communictor
 
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
@@ -427,7 +428,8 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
     Notes:
            When used with MPICH, MPICH must be configured with --download-mpich-device=ch3:nemesis
 
-    Developer Notes: Assumes the scomm->ranks[] is sorted
+    Developer Notes:
+    Assumes the scomm->ranks[] is sorted
 
     It may be better to rewrite this to map multiple global ranks to local in the same function call
 

@@ -491,7 +491,8 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
 
    Level: intermediate
 
-   Notes: Insure that SNESMonitorRatio() is called when you set this monitor
+   Notes:
+    Insure that SNESMonitorRatio() is called when you set this monitor
 .keywords: SNES, nonlinear, monitor, norm
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorRatio()
@@ -553,6 +554,8 @@ PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
   This is because the later digits are meaningless and are often
   different on different machines; by using this routine different
   machines will usually generate the same output.
+
+  Deprecated: Intentionally has no manual page
 */
 PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
 {
@@ -592,7 +595,7 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
   Level: intermediate
 
 .keywords: SNES, nonlinear, field, monitor, norm
-.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault(), SNESMonitorDefaultShort()
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
 PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
@@ -612,8 +615,8 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     PetscSection s, gs;
     PetscInt     Nf, f;
 
-    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
+    ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
     if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
     ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
     if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
@@ -691,7 +694,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
     ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
-  } else if (snes->nfuncs >= snes->max_funcs) {
+  } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
     ierr    = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
@@ -764,9 +767,7 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 . snes  - the SNES context
 . nw - number of work vectors to allocate
 
-   Level: developer
-
-   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
+  Level: developer
 
 @*/
 PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)

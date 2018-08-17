@@ -258,8 +258,11 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
 /*TEST
 
     test:
-      args: -pc_type lu -ts_dt 1e-5 -ts_final_time 1e5 -n 50 -monitor_short
       requires: !single
-      TODO: broken
+
+    test:
+      args: -pc_type lu -ts_dt 1e-5 -ts_final_time 1e5 -n 50 -monitor_short -snes_max_it 5 -snes_type newtonls -ts_max_snes_failures -1
+      requires: !single
+      suffix: 2
 
 TEST*/

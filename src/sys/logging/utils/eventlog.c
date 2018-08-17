@@ -7,6 +7,8 @@
 */
 #include <petsc/private/logimpl.h>  /*I    "petscsys.h"   I*/
 
+PetscBool PetscLogSyncOn = PETSC_FALSE;
+
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
 
@@ -142,6 +144,7 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->time          = 0.0;
   eventInfo->time2         = 0.0;
   eventInfo->timeTmp       = 0.0;
+  eventInfo->syncTime      = 0.0;
   eventInfo->numMessages   = 0.0;
   eventInfo->messageLength = 0.0;
   eventInfo->numReductions = 0.0;
@@ -197,7 +200,6 @@ PetscErrorCode PetscEventPerfLogEnsureSize(PetscEventPerfLog eventLog,int size)
     ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents * sizeof(PetscEventPerfInfo));CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
-
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
   }
@@ -285,14 +287,14 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
     ierr = PetscMalloc1(eventLog->maxEvents*2,&eventInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo,eventLog->eventInfo,eventLog->maxEvents * sizeof(PetscEventRegInfo));CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
-
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
   }
   ierr = PetscStrallocpy(ename,&str);CHKERRQ(ierr);
 
-  eventLog->eventInfo[e].name    = str;
-  eventLog->eventInfo[e].classid = classid;
+  eventLog->eventInfo[e].name       = str;
+  eventLog->eventInfo[e].classid    = classid;
+  eventLog->eventInfo[e].collective = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPE)
   if (PetscLogPLB == PetscLogEventBeginMPE) {
     const char  *color;
@@ -590,6 +592,30 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event,MPI_Comm comm)
+{
+  PetscStageLog     stageLog;
+  PetscEventRegLog  eventRegLog;
+  PetscEventPerfLog eventLog = NULL;
+  int               stage;
+  PetscLogDouble    time = 0.0;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (!PetscLogSyncOn || comm == MPI_COMM_NULL) PetscFunctionReturn(0);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogGetEventRegLog(stageLog,&eventRegLog);CHKERRQ(ierr);
+  if (!eventRegLog->eventInfo[event].collective) PetscFunctionReturn(0);
+  ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
+  ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
+
+  PetscTimeSubtract(&time);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+  PetscTimeAdd(&time);
+  eventLog->eventInfo[event].syncTime += time;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   PetscStageLog     stageLog;
@@ -604,7 +630,8 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event,int t,PetscObject o
   /* Check for double counting */
   eventLog->eventInfo[event].depth++;
   if (eventLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
-  /* Log performance info */
+  /* Log the performance info */
+  ierr = PetscLogEventSynchronize(event,PetscObjectComm(o1));CHKERRQ(ierr);
   eventLog->eventInfo[event].count++;
   eventLog->eventInfo[event].timeTmp = 0.0;
   PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
@@ -778,6 +805,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event,int t,PetscObject o1,
   PetscFunctionBegin;
   if (!petsc_tracetime) PetscTime(&petsc_tracetime);
 
+  petsc_tracelevel++;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
@@ -785,7 +813,6 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event,int t,PetscObject o1,
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventPerfLog);CHKERRQ(ierr);
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth++;
-  petsc_tracelevel++;
   if (eventPerfLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
   /* Log performance info */
   PetscTime(&cur_time);

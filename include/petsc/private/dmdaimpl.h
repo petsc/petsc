@@ -47,6 +47,7 @@ typedef struct {
 
   DMDAElementType       elementtype;
   PetscInt              ne;                  /* number of elements */
+  PetscInt              nen;                 /* number of nodes per element */
   PetscInt              *e;                  /* the elements */
   IS                    ecorners;            /* corners of the subdomain */
 
@@ -95,7 +96,5 @@ PETSC_INTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDASelectFields(DM,PetscInt*,PetscInt**);
-
-PETSC_EXTERN PetscLogEvent DMDA_LocalADFunction;
 
 #endif

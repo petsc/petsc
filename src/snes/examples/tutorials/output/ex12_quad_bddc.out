@@ -1,28 +1,29 @@
   0 SNES Function norm 14.5309 
-    0 KSP Residual norm 17.9171 
-    1 KSP Residual norm 1.23247 
-    2 KSP Residual norm 0.195634 
-    3 KSP Residual norm 0.01767 
-    4 KSP Residual norm 0.00250051 
-    5 KSP Residual norm 1.95846e-05 
-    6 KSP Residual norm 5.39113e-07 
-    7 KSP Residual norm 5.54033e-09 
-  1 SNES Function norm 1.29774e-08 
-SNES Object: 9 MPI processes
+    0 KSP Residual norm 18.0889 
+    1 KSP Residual norm 0.985108 
+    2 KSP Residual norm 0.119912 
+    3 KSP Residual norm 0.00306439 
+    4 KSP Residual norm 0.000310043 
+    5 KSP Residual norm 9.96095e-06 
+    6 KSP Residual norm 5.3834e-07 
+    7 KSP Residual norm 7.3847e-08 
+    8 KSP Residual norm 2.7968e-09 
+  1 SNES Function norm 5.15304e-09 
+SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=7
+  total number of linear solver iterations=8
   total number of function evaluations=2
   norm schedule ALWAYS
-  SNESLineSearch Object: 9 MPI processes
+  SNESLineSearch Object: 5 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
-  KSP Object: 9 MPI processes
+  KSP Object: 5 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
@@ -30,7 +31,7 @@ SNES Object: 9 MPI processes
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
-  PC Object: 9 MPI processes
+  PC Object: 5 MPI processes
     type: bddc
       Use verbose output: 0
       Use user-defined CSR: 0
@@ -64,36 +65,36 @@ SNES Object: 9 MPI processes
       Symmetric computation of primal basis functions: 1
       Num. Procs. to map coarse adjacency list: 0
       Coarse eqs per proc (significant at the coarsest level): 1
-      Detect disconnected: 0
+      Detect disconnected: 0 (filter 0)
       Benign subspace trick: 0 (change explicit 0)
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux 0
       ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 529 interface 88 coarse 12
-      Coarsening ratios: all/coarse 44 interface/coarse 7
-      Active processes : 9
-      Total subdomains : 9
+      Global dofs sizes: all 529 interface 67 coarse 10
+      Coarsening ratios: all/coarse 52 interface/coarse 6
+      Active processes : 5
+      Total subdomains : 5
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	49	49	49
-      Interface dofs   :	15	32	20
-      Primal    dofs   :	3	4	3
-      Local     dofs   :	64	81	69
+      Interior  dofs   :	49	105	92
+      Interface dofs   :	15	39	27
+      Primal    dofs   :	3	7	4
+      Local     dofs   :	64	144	120
       Local     subs   :	1	1
       ********************************** COARSE PROBLEM DETAILS *********************************
-    KSP Object: (pc_bddc_coarse_) 9 MPI processes
+    KSP Object: (pc_bddc_coarse_) 5 MPI processes
       type: preonly
       maximum iterations=1, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
-    PC Object: (pc_bddc_coarse_) 9 MPI processes
+    PC Object: (pc_bddc_coarse_) 5 MPI processes
       type: redundant
-        First (color=0) of 9 PCs follows
+        First (color=0) of 5 PCs follows
       linear system matrix = precond matrix:
-      Mat Object: 9 MPI processes
+      Mat Object: 5 MPI processes
         type: mpiaij
-        rows=12, cols=12
-        total: nonzeros=72, allocated nonzeros=92
+        rows=10, cols=10
+        total: nonzeros=80, allocated nonzeros=92
         total number of mallocs used during MatSetValues calls =0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
             KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
@@ -107,25 +108,25 @@ SNES Object: 9 MPI processes
                 out-of-place factorization
                 tolerance for zero pivot 2.22045e-14
                 matrix ordering: nd
-                factor fill ratio given 5., needed 1.33333
+                factor fill ratio given 5., needed 1.175
                   Factored matrix follows:
                     Mat Object:     1 MPI processes
                       type: seqaij
-                      rows=12, cols=12
+                      rows=10, cols=10
                       package used to perform factorization: petsc
-                      total: nonzeros=96, allocated nonzeros=96
+                      total: nonzeros=94, allocated nonzeros=94
                       total number of mallocs used during MatSetValues calls =0
-                        using I-node routines: found 9 nodes, limit used is 5
+                        using I-node routines: found 4 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object:     1 MPI processes
                 type: seqaij
-                rows=12, cols=12
-                total: nonzeros=72, allocated nonzeros=72
+                rows=10, cols=10
+                total: nonzeros=80, allocated nonzeros=80
                 total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
+                  using I-node routines: found 7 nodes, limit used is 5
     linear system matrix = precond matrix:
-    Mat Object: 9 MPI processes
+    Mat Object: 5 MPI processes
       type: is
       rows=529, cols=529
-      total: nonzeros=7921, allocated nonzeros=9409
+      total: nonzeros=7832, allocated nonzeros=8924
       total number of mallocs used during MatSetValues calls =0

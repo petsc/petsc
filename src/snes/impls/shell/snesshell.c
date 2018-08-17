@@ -19,7 +19,8 @@ typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 +  snes - the preconditioner, get the application context with SNESShellGetContext()
 -  xout - solution vector
 
-   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+   Notes:
+    the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: advanced
 
@@ -119,7 +120,8 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
 
    Level: advanced
 
-   Fortran Notes: The context can only be an integer or a PetscObject
+   Fortran Notes:
+    The context can only be an integer or a PetscObject
       unfortunately it cannot be a Fortran array or derived type.
 
 

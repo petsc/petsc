@@ -22,7 +22,8 @@
 $       character*(10) str
 $       call PetscGetArchType(str,ierr)
 
-   Notes: This name is arbitrary and need not correspond to the physical hardware or the software running on the system.
+   Notes:
+    This name is arbitrary and need not correspond to the physical hardware or the software running on the system.
 
 .seealso: PetscGetUserName(),PetscGetHostName()
 @*/

@@ -339,7 +339,7 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
    PCBJacobiGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
 
-   Note Collective
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -517,7 +517,8 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 +  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
 -  -pc_bjacobi_blocks <n> - use n total blocks
 
-   Notes: Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
+   Notes:
+    Each processor can have one or more blocks, or a single block can be shared by several processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
@@ -1089,7 +1090,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
   ierr = MatCreateSubMatrices(pmat,n_local,bjac->is,bjac->is,scall,&bjac->pmat);CHKERRQ(ierr);
   if (pc->useAmat) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(mat,n_local,bjac->is,bjac->is,scall,&bjac->mat);CHKERRQ(ierr);
   }
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -1102,6 +1102,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->pmat[i],pprefix);CHKERRQ(ierr);
     if (pc->useAmat) {
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->mat[i]);CHKERRQ(ierr);
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->mat[i],mprefix);CHKERRQ(ierr);
       ierr = KSPSetOperators(jac->ksp[i],bjac->mat[i],bjac->pmat[i]);CHKERRQ(ierr);
     } else {

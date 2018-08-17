@@ -13,7 +13,8 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
    Ouput Parameters:
 .  axis - the axis datastructure
 
-   Notes: the MPI communicator that owns the underlying draw object owns the PetscDrawAxis object, but calls to set PetscDrawAxis options are ignored by all processes
+   Notes:
+    the MPI communicator that owns the underlying draw object owns the PetscDrawAxis object, but calls to set PetscDrawAxis options are ignored by all processes
           except the first MPI process in the communicator
 
    Level: advanced
@@ -118,7 +119,8 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 .   top - the label at the top of the image
 -   xlabel,ylabel - the labes for the x and y axis
 
-    Notes: Must be called before PetscDrawAxisDraw() or PetscDrawLGDraw()
+    Notes:
+    Must be called before PetscDrawAxisDraw() or PetscDrawLGDraw()
            There should be no newlines in the arguments
 
     Level: advanced

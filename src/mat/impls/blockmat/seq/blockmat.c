@@ -706,12 +706,13 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 
 static PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool flg)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (opt == MAT_SYMMETRIC && flg) {
     A->ops->sor  = MatSOR_BlockMat_Symmetric;
     A->ops->mult = MatMult_BlockMat_Symmetric;
   } else {
-    PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
+    ierr = PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1006,7 +1007,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
    Level: intermediate
 
-   Notes: Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
+   Notes:
+    Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
    have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
 
    For matrices containing parallel submatrices and variable block sizes, see MATNEST.

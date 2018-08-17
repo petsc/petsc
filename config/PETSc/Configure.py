@@ -51,7 +51,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
-    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
     help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     return
 
@@ -84,7 +83,6 @@ class Configure(config.base.Configure):
     self.scalartypes   = framework.require('PETSc.options.scalarTypes', self)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
@@ -144,9 +142,9 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf','inttypes','immintrin','zmmintrin'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
+                 'gettimeofday', 'getwd', 'memalign', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
@@ -270,6 +268,9 @@ prepend-path PATH "%s"
       self.setCompilers.pushLanguage('Cxx')
       self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      cxx_linker = self.setCompilers.getLinker()
+      self.addMakeMacro('CXX_LINKER',cxx_linker)
+      self.addMakeMacro('CXX_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
 
     # C preprocessor values
@@ -826,7 +827,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     def getFunctionName(lang):
       name = '"unknown"'
       self.pushLanguage(lang)
-      for fname in ['__func__','__FUNCTION__']:
+      for fname in ['__func__','__FUNCTION__','__extension__ __func__']:
         code = "if ("+fname+"[0] != 'm') return 1;"
         if self.checkCompile('',code) and self.checkLink('',code):
           name = fname
@@ -1046,17 +1047,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('USE_GCOV','1')
     return
 
-  def configureFortranFlush(self):
-    if hasattr(self.compilers, 'FC'):
-      for baseName in ['flush','flush_']:
-        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
-          self.addDefine('HAVE_'+baseName.upper(), 1)
-          return
-
-  def configureViewFromOptions(self):
-    if not self.framework.argDB['with-viewfromoptions']:
-      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
-
   def postProcessPackages(self):
     postPackages=[]
     for i in self.framework.packages:
@@ -1110,9 +1100,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
-    self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
-    self.executeTest(self.configureViewFromOptions)
 
     self.Dump()
     self.dumpConfigInfo()

@@ -53,6 +53,10 @@ int main(int argc,char **argv)
   eq[1] = "equal";
   ierr  = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRQ(ierr);
 
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
+  if (!equal) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTranspose with MAT_REUSE_MATRIX failed");CHKERRQ(ierr); }
+
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -65,5 +69,10 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
+
+    test:
+      suffix: 2
+      nsize: 2
+      output_file: output/ex58_1.out
 
 TEST*/

@@ -554,13 +554,11 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       offsetd;
+  PetscInt       offsetd = 0;
 
   PetscFunctionBegin;
-
   ierr = DMNetworkGetComponentKeyOffset(dm,p,compnum,key,&offsetd);CHKERRQ(ierr);
   *component = network->componentdataarray+offsetd;
-
   PetscFunctionReturn(0);
 }
 
@@ -1036,8 +1034,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   newDMnetwork->NEdges = oldDMnetwork->NEdges;
 
   /* Set Dof section as the default section for dm */
-  ierr = DMSetDefaultSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
+  ierr = DMSetSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
 
   /* Set up subnetwork info in the newDM */
   newDMnetwork->nsubnet = oldDMnetwork->nsubnet;
@@ -1239,7 +1237,7 @@ PetscErrorCode DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost)
 
   PetscFunctionBegin;
   *isghost = PETSC_FALSE;
-  ierr = DMGetDefaultGlobalSection(network->plex,&sectiong);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(network->plex,&sectiong);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(sectiong,p,&offsetg);CHKERRQ(ierr);
   if (offsetg < 0) *isghost = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1254,8 +1252,8 @@ PetscErrorCode DMSetUp_Network(DM dm)
   ierr = DMNetworkComponentSetUp(dm);CHKERRQ(ierr);
   ierr = DMNetworkVariablesSetUp(dm);CHKERRQ(ierr);
 
-  ierr = DMSetDefaultSection(network->plex,network->DofSection);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(network->plex,&network->GlobalDofSection);CHKERRQ(ierr);
+  ierr = DMSetSection(network->plex,network->DofSection);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(network->plex,&network->GlobalDofSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1277,6 +1275,7 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
 {
   DM_Network     *network=(DM_Network*)dm->data;
   PetscErrorCode ierr;
+  PetscInt       nVertices = network->nVertices;
 
   PetscFunctionBegin;
   network->userEdgeJacobian   = eflg;
@@ -1286,9 +1285,9 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
     ierr = PetscCalloc1(3*network->nEdges,&network->Je);CHKERRQ(ierr);
   }
 
-  if (vflg && !network->Jv) {
+  if (vflg && !network->Jv && nVertices) {
     PetscInt       i,*vptr,nedges,vStart=network->vStart;
-    PetscInt       nVertices = network->nVertices,nedges_total;
+    PetscInt       nedges_total;
     const PetscInt *edges;
 
     /* count nvertex_total */
@@ -1602,7 +1601,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   }
 
   ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(network->plex,&sectionGlobal);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(network->plex,&sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal,&localSize);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
 

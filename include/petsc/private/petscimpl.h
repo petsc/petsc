@@ -11,10 +11,6 @@
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
-#endif
-
 #if defined(PETSC_HAVE_CLOSURES)
 PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
 #endif
@@ -187,7 +183,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortr
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 
 
@@ -200,6 +195,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscValidHeaderSpecific(h,ck,arg) do {} while (0)
+#define PetscValidHeaderSpecificType(h,ck,arg,t) do {} while (0)
 #define PetscValidHeader(h,arg) do {} while (0)
 #define PetscValidPointer(h,arg) do {} while (0)
 #define PetscValidCharPointer(h,arg) do {} while (0)
@@ -209,6 +205,16 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidFunction(h,arg) do {} while (0)
 
 #else
+
+/*  This check is for subtype methods such as DMDAGetCorners() that do not use the PetscTryMethod() or PetscUseMethod() paradigm */
+#define PetscValidHeaderSpecificType(h,ck,arg,t) \
+  do {   \
+    PetscErrorCode __ierr; \
+    PetscBool      same; \
+    PetscValidHeaderSpecific(h,ck,arg); \
+    __ierr = PetscObjectTypeCompare((PetscObject)h,t,&same);CHKERRQ(__ierr);      \
+    if (!same) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)h)->type_name); \
+  } while (0)
 
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   do {                                                                  \
@@ -421,7 +427,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
-   Notes: object state is an integer which gets increased every time
+   Notes:
+    object state is an integer which gets increased every time
    the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
@@ -800,9 +807,7 @@ typedef enum {PETSC_OFFLOAD_UNALLOCATED,PETSC_OFFLOAD_GPU,PETSC_OFFLOAD_CPU,PETS
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 
-#define REDUCE_SUM  0
-#define REDUCE_MAX  1
-#define REDUCE_MIN  2
+typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
   MPI_Comm    comm;
@@ -890,11 +895,19 @@ typedef int PetscSpinlock;
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-extern PetscSpinlock PetscViewerASCIISpinLockOpen;
-extern PetscSpinlock PetscViewerASCIISpinLockStdout;
-extern PetscSpinlock PetscViewerASCIISpinLockStderr;
-extern PetscSpinlock PetscCommSpinLock;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
+PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
+PETSC_INTERN PetscSpinlock PetscCommSpinLock;
 #endif
+#endif
+
+PETSC_EXTERN PetscLogEvent PETSC_Barrier;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSided;
+PETSC_EXTERN PetscLogEvent PETSC_BuildTwoSidedF;
+
+#if defined(PETSC_HAVE_ADIOS)
+PETSC_EXTERN int64_t Petsc_adios_group;
 #endif
 
 #endif /* _PETSCHEAD_H */

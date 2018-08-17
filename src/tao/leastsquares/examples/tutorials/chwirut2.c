@@ -13,7 +13,6 @@
 T*/
 
 #include <petsctao.h>
-#include <mpi.h>
 
 
 /*
@@ -468,7 +467,6 @@ PetscErrorCode StopWorkers(AppCtx *user)
 
    test:
       nsize: 3
-      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
-      TODO: too many inconsistent results across machines
+      args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
 
 TEST*/

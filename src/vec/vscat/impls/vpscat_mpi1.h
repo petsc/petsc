@@ -97,7 +97,11 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
     } else {
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
-        PETSCMAP1(Pack_MPI1)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
+        if (to->memcpy_plan.optimized[i]) { /* use memcpy instead of indivisual load/store */
+          ierr = VecScatterMemcpyPlanExecute_Pack(i,xv,&to->memcpy_plan,svalues+bs*sstarts[i],INSERT_VALUES,bs);CHKERRQ(ierr);
+        } else {
+          PETSCMAP1(Pack_MPI1)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
+        }
         ierr = MPI_Start_isend((sstarts[i+1]-sstarts[i])*bs,swaits+i);CHKERRQ(ierr);
       }
     }
@@ -110,10 +114,11 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
 
   /* take care of local scatters */
   if (to->local.n) {
-    if (to->local.is_copy && addv == INSERT_VALUES) {
-      if (yv != xv || from->local.copy_start !=  to->local.copy_start) {
-        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
-      }
+    if (to->local.memcpy_plan.optimized[0] && addv == INSERT_VALUES) {
+      /* do copy when it is not a self-to-self copy */
+      if (!(xv == yv && to->local.memcpy_plan.same_copy_starts)) { ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&to->local.memcpy_plan,yv,&from->local.memcpy_plan,addv);CHKERRQ(ierr); }
+    } else if (to->local.memcpy_plan.optimized[0]) {
+      ierr = VecScatterMemcpyPlanExecute_Scatter(0,xv,&to->local.memcpy_plan,yv,&from->local.memcpy_plan,addv);CHKERRQ(ierr);
     } else {
       if (xv == yv && addv == INSERT_VALUES && to->local.nonmatching_computed) {
         /* only copy entries that do not share identical memory locations */
@@ -181,7 +186,11 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
         ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
-      ierr = PETSCMAP1(UnPack_MPI1)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
+      if (from->memcpy_plan.optimized[imdex]) {
+        ierr = VecScatterMemcpyPlanExecute_Unpack(imdex,rvalues+bs*rstarts[imdex],yv,&from->memcpy_plan,addv,bs);CHKERRQ(ierr);
+      } else {
+        ierr = PETSCMAP1(UnPack_MPI1)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
+      }
       count--;
     }
   }

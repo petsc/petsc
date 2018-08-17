@@ -488,7 +488,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
    Level: beginner
 
-    Notes: The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
+    Notes:
+    The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
            Comparing with AOCreateBasic(), this routine trades memory with message communication.
 
@@ -532,7 +533,8 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
 
    Level: beginner
 
-    Notes: The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+    Notes:
+    The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes".
            Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
 .keywords: AO, create

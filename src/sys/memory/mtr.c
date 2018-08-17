@@ -13,12 +13,12 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
-extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
-extern PetscErrorCode  PetscReallocAlign(size_t,int,const char[],const char[],void**);
-extern PetscErrorCode  PetscTrMallocDefault(size_t,int,const char[],const char[],void**);
-extern PetscErrorCode  PetscTrFreeDefault(void*,int,const char[],const char[]);
-extern PetscErrorCode  PetscTrReallocDefault(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscTrMallocDefault(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscTrFreeDefault(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscTrReallocDefault(size_t,int,const char[],const char[],void**);
 
 
 #define CLASSID_VALUE  ((PetscClassId) 0xf0e0d0c9)
@@ -68,7 +68,7 @@ static size_t     PetscLogMallocThreshold = 0;
 static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocFile,**PetscLogMallocFunction;
 
-PetscErrorCode PetscSetUseTrMalloc_Private(void)
+PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
   PetscErrorCode ierr;
 
@@ -624,7 +624,8 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
    The calling sequence in Fortran is PetscMallocDump(integer ierr)
    The fp defaults to stdout.
 
-   Notes: uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
+   Notes:
+    uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
           has been freed.
 
    Concepts: memory usage

@@ -95,7 +95,8 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
    Output Parameters:
 .  access_token - can be used with PetscGlobusUpLoad() for 30 days
 
-   Notes: This call requires stdout and stdin access from process 0 on the MPI communicator
+   Notes:
+    This call requires stdout and stdin access from process 0 on the MPI communicator
 
    You can run src/sys/webclient/examples/tutorials/globusobtainaccesstoken to get an access token
 

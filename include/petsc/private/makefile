@@ -10,6 +10,7 @@ SOURCEH = bagimpl.h characteristicimpl.h dmdaimpl.h dmforestimpl.h      \
  matimpl.h matorderimpl.h pcgamgimpl.h pcimpl.h pcmgimpl.h              \
  petscdsimpl.h petscfeimpl.h petscfptimpl.h petscfvimpl.h petscimpl.h   \
  sfimpl.h snesimpl.h taoimpl.h taolinesearchimpl.h tsimpl.h vecimpl.h   \
+ hashtable.h hashmap.h hashset.h                                        \
  viewerimpl.h
 LIBBASE  = libpetscvec
 DIRS     =

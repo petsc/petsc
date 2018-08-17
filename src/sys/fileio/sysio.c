@@ -465,7 +465,8 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   Concepts: files^opening binary
   Concepts: binary files^opening
 
-   Notes: Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
+   Notes:
+    Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
@@ -657,7 +658,8 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Notes: because byte-swapping may be done on the values in data it cannot be declared const
+   Notes:
+    because byte-swapping may be done on the values in data it cannot be declared const
 
    WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
    while PetscSynchronizedFPrintf() has all processes print their strings in order.

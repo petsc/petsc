@@ -78,7 +78,7 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
   if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
   /* now we can safely dereference */
@@ -129,7 +129,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(ao,2);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
   if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");

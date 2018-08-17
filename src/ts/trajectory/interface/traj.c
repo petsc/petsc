@@ -182,7 +182,8 @@ PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transf
 
   Level: developer
 
-  Notes: Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
+  Notes:
+    Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
 
 .keywords: TS, trajectory, create
 
@@ -227,7 +228,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 .seealso: TS, TSTrajectoryCreate(), TSTrajectorySetFromOptions(), TSTrajectoryDestroy()
 
 @*/
-PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,const TSTrajectoryType type)
+PetscErrorCode  TSTrajectorySetType(TSTrajectory tj,TS ts,TSTrajectoryType type)
 {
   PetscErrorCode (*r)(TSTrajectory,TS);
   PetscBool      match;
@@ -284,6 +285,36 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 }
 
 /*@
+   TSTrajectoryReset - Resets a trajectory context
+
+   Collective on TSTrajectory
+
+   Input Parameter:
+.  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
+
+   Level: developer
+
+.keywords: TS, trajectory, timestep, reset
+
+.seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
+@*/
+PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!tj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+
+  if (tj->ops->reset) {
+    ierr = (*tj->ops->reset)(tj);CHKERRQ(ierr);
+  }
+  tj->setupcalled = PETSC_FALSE;
+  ierr = PetscFree(tj->dirfiletemplate);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSTrajectoryDestroy - Destroys a trajectory context
 
    Collective on TSTrajectory
@@ -297,7 +328,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
 
 .seealso: TSTrajectoryCreate(), TSTrajectorySetUp()
 @*/
-PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
+PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscErrorCode ierr;
 
@@ -306,13 +337,14 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
+  ierr = TSTrajectoryReset((*tj));CHKERRQ(ierr);
+
   if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);CHKERRQ(ierr);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->dirname);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->filetemplate);CHKERRQ(ierr);
-  ierr = PetscFree((*tj)->dirfiletemplate);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -403,7 +435,8 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
    Options Database Keys:
 .  -ts_trajectory_keep_files - have it keep the files
 
-   Notes: By default the TSTrajectory used for adjoint computations, TSTRAJECTORYBASIC, removes the files it generates at the end of the run. This causes the files to be kept.
+   Notes:
+    By default the TSTrajectory used for adjoint computations, TSTRAJECTORYBASIC, removes the files it generates at the end of the run. This causes the files to be kept.
 
    Level: advanced
 
@@ -432,7 +465,8 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
    Options Database Keys:
 .  -ts_trajectory_dirname - set the directory name
 
-   Notes: The final location of the files is determined by dirname/filetemplate where filetemplate was provided by TSTrajectorySetFiletemplate()
+   Notes:
+    The final location of the files is determined by dirname/filetemplate where filetemplate was provided by TSTrajectorySetFiletemplate()
 
    Level: developer
 
@@ -463,7 +497,8 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
    Options Database Keys:
 .  -ts_trajectory_file_template - set the file name template
 
-   Notes: The name template should be of the form, for example filename-%06D.bin It should not begin with a leading /
+   Notes:
+    The name template should be of the form, for example filename-%06D.bin It should not begin with a leading /
 
    The final location of the files is determined by dirname/filetemplate where dirname was provided by TSTrajectorySetDirname(). The %06D is replaced by the 
    timestep counter
@@ -513,7 +548,8 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetempla
 
    Level: developer
 
-   Notes: This is not normally called directly by users
+   Notes:
+    This is not normally called directly by users
 
 .keywords: TS, trajectory, timestep, set, options, database
 

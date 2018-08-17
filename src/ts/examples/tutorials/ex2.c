@@ -639,6 +639,21 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
       nsize: 2
       requires: !single
 
+    test:
+      suffix: tut_1
+      nsize: 1
+      args: -ts_max_steps 10 -ts_monitor
+
+    test:
+      suffix: tut_2
+      nsize: 4
+      args: -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor
+
+    test:
+      suffix: tut_3
+      nsize: 4
+      args: ./ex2 -ts_max_steps 10 -ts_monitor -M 128
+
 TEST*/
 
 

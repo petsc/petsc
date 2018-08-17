@@ -1,7 +1,7 @@
 
+#include <petscao.h>
 #include <petsc/private/dmlabelimpl.h>
 #include <petsc/private/dmfieldimpl.h>
-#include <petsc/private/dmdaimpl.h>
 #include <petsc/private/dmpleximpl.h>
 #include <petsc/private/petscdsimpl.h>
 #include <petsc/private/petscfeimpl.h>
@@ -77,16 +77,14 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
-
-  ierr = PetscLogEventRegister("Mesh Partition",         PETSCPARTITIONER_CLASSID,&PETSCPARTITIONER_Partition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistLabels",       DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistribSF",        DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistribOL",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistSF",           DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistOvrlp",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistField",        DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistData",         DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterpSF",         DM_CLASSID,&DMPLEX_InterpolateSF);CHKERRQ(ierr);
@@ -102,7 +100,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexInjectorFE",       DM_CLASSID,&DMPLEX_InjectorFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh);CHKERRQ(ierr);
-  
+
   ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin);CHKERRQ(ierr);
@@ -125,7 +123,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("dm",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(DM_CLASSID);CHKERRQ(ierr);}
   }
 
   ierr = DMPlexGenerateRegisterAll();CHKERRQ(ierr);
@@ -199,7 +197,7 @@ PetscErrorCode PetscFEInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("fe",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
@@ -268,9 +266,9 @@ PetscErrorCode PetscFVInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("fv",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
     ierr = PetscStrInList("limiter",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
@@ -334,7 +332,7 @@ PetscErrorCode PetscDSInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("ds",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(PetscDSFinalizePackage);CHKERRQ(ierr);

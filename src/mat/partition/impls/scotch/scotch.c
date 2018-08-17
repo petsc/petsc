@@ -3,6 +3,10 @@
 
 EXTERN_C_BEGIN
 #include <ptscotch.h>
+#if defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+/* we define the prototype instead of include SCOTCH's parmetis.h */
+void SCOTCH_ParMETIS_V3_NodeND(const SCOTCH_Num * const,SCOTCH_Num * const, SCOTCH_Num * const,const SCOTCH_Num * const,const SCOTCH_Num * const,SCOTCH_Num * const,SCOTCH_Num * const,MPI_Comm *);
+#endif
 EXTERN_C_END
 
 typedef struct {
@@ -229,8 +233,9 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioning)
+static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part, PetscBool useND, IS *partitioning)
 {
+  MPI_Comm                 pcomm,comm;
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
   PetscErrorCode           ierr;
   PetscMPIInt              rank;
@@ -238,12 +243,16 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   Mat_MPIAdj               *adj = (Mat_MPIAdj*)mat->data;
   PetscBool                flg,distributed;
   PetscBool                proc_weight_flg;
-  PetscInt                 i,j,p,wgtflag=0,bs=1,nold;
+  PetscInt                 i,j,p,bs=1,nold;
+  PetscInt                 *NDorder = NULL;
   PetscReal                *vwgttab,deltval;
   SCOTCH_Num               *locals,*velotab,*veloloctab,*edloloctab,vertlocnbr,edgelocnbr,nparts=part->n;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)part,&pcomm);CHKERRQ(ierr);
+  /* Duplicate the communicator to be sure that PTSCOTCH attribute caching does not interfere with PETSc. */
+  ierr = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
     /* bs indicates if the converted matrix is "reduced" from the original and hence the
@@ -259,86 +268,120 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
 
   ierr = PetscMalloc1(mat->rmap->n+1,&locals);CHKERRQ(ierr);
 
-  velotab = NULL;
-  if (proc_weight_flg)
-  {
-  ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
-  for (j=0; j<nparts; j++) {
-    if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
-    else vwgttab[j] = 1.0;
-  }
-  for (i=0; i<nparts; i++) {
-    deltval = PetscAbsReal(vwgttab[i]-PetscFloorReal(vwgttab[i]+0.5));
-    if (deltval>0.01) {
-      for (j=0; j<nparts; j++) vwgttab[j] /= deltval;
+  if (useND) {
+#if defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+    PetscInt    *sizes, *seps, log2size, subd, *level, base = 0;
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    log2size = PetscLog2Real(size);
+    subd = PetscPowInt(2,log2size);
+    if (subd != size) SETERRQ(comm,PETSC_ERR_SUP,"Only power of 2 communicator sizes");
+    ierr = PetscMalloc1(mat->rmap->n,&NDorder);CHKERRQ(ierr);
+    ierr = PetscMalloc3(2*size,&sizes,4*size,&seps,size,&level);CHKERRQ(ierr);
+    SCOTCH_ParMETIS_V3_NodeND(mat->rmap->range,adj->i,adj->j,&base,NULL,NDorder,sizes,&comm);
+    ierr = MatPartitioningSizesToSep_Private(subd,sizes,seps,level);CHKERRQ(ierr);
+    for (i=0;i<mat->rmap->n;i++) {
+      PetscInt loc;
+
+      ierr = PetscFindInt(NDorder[i],2*subd,seps,&loc);CHKERRQ(ierr);
+      if (loc < 0) {
+        loc = -(loc+1);
+        if (loc%2) { /* part of subdomain */
+          locals[i] = loc/2;
+        } else {
+          ierr = PetscFindInt(NDorder[i],2*(subd-1),seps+2*subd,&loc);CHKERRQ(ierr);
+          loc = loc < 0 ? -(loc+1)/2 : loc/2;
+          locals[i] = level[loc];
+        }
+      } else locals[i] = loc/2;
     }
-  }
-  for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
-  ierr = PetscFree(vwgttab);CHKERRQ(ierr);
-  }
+    ierr = PetscFree3(sizes,seps,level);CHKERRQ(ierr);
+#else
+    SETERRQ(pcomm,PETSC_ERR_SUP,"Need libptscotchparmetis.a compiled with -DSCOTCH_METIS_PREFIX");
+#endif
+  } else {
+    velotab = NULL;
+    if (proc_weight_flg) {
+      ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
+      for (j=0; j<nparts; j++) {
+        if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
+        else vwgttab[j] = 1.0;
+      }
+      for (i=0; i<nparts; i++) {
+        deltval = PetscAbsReal(vwgttab[i]-PetscFloorReal(vwgttab[i]+0.5));
+        if (deltval>0.01) {
+          for (j=0; j<nparts; j++) vwgttab[j] /= deltval;
+        }
+      }
+      for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
+      ierr = PetscFree(vwgttab);CHKERRQ(ierr);
+    }
 
-  vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
-  edgelocnbr = adj->i[vertlocnbr];
-  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : NULL;
-  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : NULL;
+    vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
+    edgelocnbr = adj->i[vertlocnbr];
+    veloloctab = part->vertex_weights;
+    edloloctab = adj->values;
 
-  /* detect whether all vertices are located at the same process in original graph */
-  for (p = 0; !mat->rmap->range[p+1] && p < nparts; ++p);
-  distributed = (mat->rmap->range[p+1] == mat->rmap->N) ? PETSC_FALSE : PETSC_TRUE;
+    /* detect whether all vertices are located at the same process in original graph */
+    for (p = 0; !mat->rmap->range[p+1] && p < nparts; ++p);
+    distributed = (mat->rmap->range[p+1] == mat->rmap->N) ? PETSC_FALSE : PETSC_TRUE;
 
-  if (distributed) {
-    SCOTCH_Arch              archdat;
-    SCOTCH_Dgraph            grafdat;
-    SCOTCH_Dmapping          mappdat;
-    SCOTCH_Strat             stradat;
+    if (distributed) {
+      SCOTCH_Arch              archdat;
+      SCOTCH_Dgraph            grafdat;
+      SCOTCH_Dmapping          mappdat;
+      SCOTCH_Strat             stradat;
 
-    ierr = SCOTCH_dgraphInit(&grafdat,PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
-    ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
-                              NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
+      ierr = SCOTCH_dgraphInit(&grafdat,comm);CHKERRQ(ierr);
+      ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
+                                NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-    ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
+      ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
 #endif
 
-    ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
-    ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
-    ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
+      ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
+      ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
+      ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
 
-    if (velotab) {
-      ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
-    } else {
-      ierr = SCOTCH_archCmplt( &archdat,nparts);CHKERRQ(ierr);
-    }
-    ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
-    ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
+      if (velotab) {
+        ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+      } else {
+        ierr = SCOTCH_archCmplt( &archdat,nparts);CHKERRQ(ierr);
+      }
+      ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
+      ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
 
-    SCOTCH_dgraphMapExit(&grafdat,&mappdat);
-    SCOTCH_archExit(&archdat);
-    SCOTCH_stratExit(&stradat);
-    SCOTCH_dgraphExit(&grafdat);
+      SCOTCH_dgraphMapExit(&grafdat,&mappdat);
+      SCOTCH_archExit(&archdat);
+      SCOTCH_stratExit(&stradat);
+      SCOTCH_dgraphExit(&grafdat);
 
-  } else if (rank == p) {
-    SCOTCH_Graph   grafdat;
-    SCOTCH_Strat   stradat;
+    } else if (rank == p) {
+      SCOTCH_Graph   grafdat;
+      SCOTCH_Strat   stradat;
 
-    ierr = SCOTCH_graphInit(&grafdat);CHKERRQ(ierr);
-    ierr = SCOTCH_graphBuild(&grafdat,0,vertlocnbr,adj->i,adj->i+1,veloloctab,NULL,edgelocnbr,adj->j,edloloctab);CHKERRQ(ierr);
+      ierr = SCOTCH_graphInit(&grafdat);CHKERRQ(ierr);
+      ierr = SCOTCH_graphBuild(&grafdat,0,vertlocnbr,adj->i,adj->i+1,veloloctab,NULL,edgelocnbr,adj->j,edloloctab);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-    ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);
+      ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);
 #endif
 
-    ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
-    ierr = SCOTCH_stratGraphMapBuild(&stradat,scotch->strategy,nparts,scotch->imbalance);CHKERRQ(ierr);
+      ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
+      ierr = SCOTCH_stratGraphMapBuild(&stradat,scotch->strategy,nparts,scotch->imbalance);CHKERRQ(ierr);
 
-    ierr = SCOTCH_graphPart(&grafdat,nparts,&stradat,locals);CHKERRQ(ierr);
+      ierr = SCOTCH_graphPart(&grafdat,nparts,&stradat,locals);CHKERRQ(ierr);
 
-    SCOTCH_stratExit(&stradat);
-    SCOTCH_graphExit(&grafdat);
+      SCOTCH_stratExit(&stradat);
+      SCOTCH_graphExit(&grafdat);
+    }
+
+    ierr = PetscFree(velotab);CHKERRQ(ierr);
   }
-
-  ierr = PetscFree(velotab);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
   if (bs > 1) {
     PetscInt *newlocals;
@@ -349,14 +392,44 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
       }
     }
     ierr = PetscFree(locals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(pcomm,bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(pcomm,mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  }
+  if (useND) {
+    IS ndis;
+
+    if (bs > 1) {
+      ierr = ISCreateBlock(pcomm,bs,mat->rmap->n,NDorder,PETSC_OWN_POINTER,&ndis);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateGeneral(pcomm,mat->rmap->n,NDorder,PETSC_OWN_POINTER,&ndis);CHKERRQ(ierr);
+    }
+    ierr = ISSetPermutation(ndis);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)(*partitioning),"_petsc_matpartitioning_ndorder",(PetscObject)ndis);CHKERRQ(ierr);
+    ierr = ISDestroy(&ndis);CHKERRQ(ierr);
   }
 
   if (!flg) {
     ierr = MatDestroy(&mat);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioning)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatPartitioningApply_PTScotch_Private(part,PETSC_FALSE,partitioning);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatPartitioningApplyND_PTScotch(MatPartitioning part,IS *partitioning)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatPartitioningApply_PTScotch_Private(part,PETSC_TRUE,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +453,8 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 
    Level: beginner
 
-   Notes: See http://www.labri.fr/perso/pelegrin/scotch/
+   Notes:
+    See http://www.labri.fr/perso/pelegrin/scotch/
 
 .keywords: Partitioning, create, context
 
@@ -400,6 +474,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   scotch->strategy  = SCOTCH_STRATDEFAULT;
 
   part->ops->apply          = MatPartitioningApply_PTScotch;
+  part->ops->applynd        = MatPartitioningApplyND_PTScotch;
   part->ops->view           = MatPartitioningView_PTScotch;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_PTScotch;
   part->ops->destroy        = MatPartitioningDestroy_PTScotch;

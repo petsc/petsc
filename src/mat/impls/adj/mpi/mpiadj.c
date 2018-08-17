@@ -875,7 +875,8 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
 
    Level: intermediate
 
-   Notes: This matrix object does not support most matrix operations, include
+   Notes:
+    This matrix object does not support most matrix operations, include
    MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
    when the matrix is destroyed; you must allocate them with PetscMalloc(). If you

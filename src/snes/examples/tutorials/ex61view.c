@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   ierr = DMCreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMLoad(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
-  ierr = DMDAGetReducedDMDA(da,1,&da2);CHKERRQ(ierr);
+  ierr = DMDACreateCompatibleDMDA(da,1,&da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da2,&cv);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da2,&eta);CHKERRQ(ierr);
 

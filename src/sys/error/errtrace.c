@@ -136,7 +136,7 @@ static void PetscErrorPrintfNormal(void)
 #endif
 }
 
-extern PetscErrorCode  PetscOptionsViewError(void);
+PETSC_EXTERN PetscErrorCode  PetscOptionsViewError(void);
 
 /*@C
 

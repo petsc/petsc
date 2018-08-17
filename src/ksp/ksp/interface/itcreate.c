@@ -124,9 +124,6 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    PetscInt    tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -154,7 +151,6 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
     MPI_Comm    comm;
@@ -533,7 +529,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 
     Level: intermediate
 
-   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
+   Notes:
+    DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
@@ -750,6 +747,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -767,6 +765,8 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   }
   /* Reinitialize function pointers in KSPOps structure */
   ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
   ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);

@@ -338,7 +338,6 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
                           "Warning: Cannot tell what pointer points to, assuming global memory space",
                           "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
-                          "warning: linker scope was specified more than once",
                           "cl : Command line warning D9024 : unrecognized source file type",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
@@ -411,9 +410,10 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       example_problem_num = 0
       for line in open(logfile_examples_full):
         examples_summary_file.write(line)
-        if re.search(r'not ok', line):
-          example_problem_num += 1
-        if re.search(r'[Pp]ossible [Pp]roblem', line):
+        if re.search(r'not ok', line) or re.search(r'[Pp]ossible [Pp]roblem', line) or re.search(r'error: ld returned', line) \
+           or re.search(r'[Ww]arning:', line) or re.search(r': warning ', line) or re.search(r': error:', line) \
+           or re.search(r'^compilation aborted ',line) or re.search(r'not remade because of errors.',line) \
+           or re.search(r'^Error: ',line):
           example_problem_num += 1
 
       if example_problem_num < 1:

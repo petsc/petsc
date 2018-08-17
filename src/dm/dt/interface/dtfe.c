@@ -5043,7 +5043,7 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
       }
       if (debug > 1 && q < Np) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-#ifndef PETSC_USE_COMPLEX
+#if !defined(PETSC_USE_COMPLEX)
         ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
 #endif
       }
@@ -5229,7 +5229,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
       }
       if (debug > 1 && q < Np) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-#ifndef PETSC_USE_COMPLEX
+#if !defined(PETSC_USE_COMPLEX)
         ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
 #endif
       }
@@ -5335,7 +5335,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
       }
       if (debug > 1 && q < Np) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-#ifndef PETSC_USE_COMPLEX
+#if !defined(PETSC_USE_COMPLEX)
         ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
 #endif
       }
@@ -5803,7 +5803,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_OPENCL
+#if defined(PETSC_HAVE_OPENCL)
 
 PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {

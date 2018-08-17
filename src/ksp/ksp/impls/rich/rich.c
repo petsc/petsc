@@ -60,12 +60,12 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   ierr = MatGetNullSpace(Pmat,&nullsp);CHKERRQ(ierr);
-  if (exists && richardsonP->scale == 1.0 && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
+  if (exists && maxit > 0 && richardsonP->scale == 1.0 && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
     PCRichardsonConvergedReason reason;
     ierr        = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason);CHKERRQ(ierr);
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
-  } else if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
+  } else if (exists && maxit > 0 && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
     ierr  = PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson() because scale factor is not 1.0\n");CHKERRQ(ierr);
   }
 
@@ -234,13 +234,15 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
    Level: beginner
 
-   Notes: x^{n+1} = x^{n} + scale*B(b - A x^{n})
+   Notes:
+    x^{n+1} = x^{n} + scale*B(b - A x^{n})
 
           Here B is the application of the preconditioner
 
           This method often (usually) will not converge unless scale is very small.
 
-   Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
+   Notes:
+    For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
     thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
     (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
     you specifically call KSPSetNormType(ksp,KSP_NORM_NONE);

@@ -17,7 +17,11 @@
 
 
 #if !defined(PETSC_AVOID_MPIF_H)
+#if defined(PETSC_HAVE_MPIUNI)
+#include "petsc/mpiuni/mpif.h"
+#else
 #include "mpif.h"
+#endif
 #endif
 
       type tPetscOptions
@@ -157,74 +161,9 @@
       parameter(MPIU_INTEGER = MPI_INTEGER)
 #endif
 
-!
-! ----------------------------------------------------------------------------
-!    BEGIN COMMON-BLOCK VARIABLES
-!
-!
-!     PETSc world communicator
-!
-      MPI_Comm PETSC_COMM_WORLD
-      MPI_Comm PETSC_COMM_SELF
-!
-!     Fortran Null
-!
-      PetscChar(80)       PETSC_NULL_CHARACTER
-      PetscInt         PETSC_NULL_INTEGER(1)
-      PetscFortranDouble PETSC_NULL_DOUBLE(1)
-!
 !      A PETSC_NULL_FUNCTION pointer
 !
       external PETSC_NULL_FUNCTION
-      PetscScalar PETSC_NULL_SCALAR(1)
-      PetscReal   PETSC_NULL_REAL(1)
-      PetscBool   PETSC_NULL_BOOL(1)
-!
-#if defined(PETSC_USE_REAL___FLOAT128)
-      integer MPIU_REAL
-      integer MPIU_SCALAR
-      integer MPIU_SUM
-#endif
-!
-!
-!
-!     Basic math constants
-!
-      PetscReal PETSC_PI
-      PetscReal PETSC_MAX_REAL
-      PetscReal PETSC_MIN_REAL
-      PetscReal PETSC_MACHINE_EPSILON
-      PetscReal PETSC_SQRT_MACHINE_EPSILON
-      PetscReal PETSC_SMALL
-      PetscReal PETSC_INFINITY
-      PetscReal PETSC_NINFINITY
-
-!
-!     Common Block to store some of the PETSc constants.
-!     which can be set - only at runtime.
-!
-      common /petscfortran1/ PETSC_NULL_CHARACTER
-      common /petscfortran2/PETSC_NULL_INTEGER
-      common /petscfortran4/ PETSC_NULL_SCALAR
-      common /petscfortran5/ PETSC_NULL_DOUBLE
-      common /petscfortran6/ PETSC_NULL_REAL
-      common /petscfortran7/ PETSC_NULL_BOOL
-      common /petscfortran9/ PETSC_COMM_WORLD
-      common /petscfortran10/ PETSC_COMM_SELF
-#if defined(PETSC_USE_REAL___FLOAT128)
-      common /petscfortran11/ MPIU_REAL
-      common /petscfortran12/ MPIU_SCALAR
-      common /petscfortran13/ MPIU_SUM
-#endif
-      common /petscfortran14/ PETSC_PI
-      common /petscfortran15/ PETSC_MAX_REAL
-      common /petscfortran16/ PETSC_MIN_REAL
-      common /petscfortran17/ PETSC_MACHINE_EPSILON
-      common /petscfortran18/ PETSC_SQRT_MACHINE_EPSILON
-      common /petscfortran19/ PETSC_SMALL
-      common /petscfortran20/ PETSC_INFINITY
-      common /petscfortran21/ PETSC_NINFINITY
-
 !
 !     Possible arguments to PetscPushErrorHandler()
 !
@@ -240,7 +179,6 @@
       PetscBool PetscIsInfOrNanReal
 
 
-!    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 !
 !     Random numbers

@@ -1311,7 +1311,8 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   Level: advanced
 
-  Notes: conj(x) is the complex conjugate of x when x is complex
+  Notes:
+    conj(x) is the complex conjugate of x when x is complex
 
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
@@ -1336,7 +1337,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   if (s->map->N != t->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (s->map->n != t->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(VEC_DotNorm2,s,t,0,0);CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
     ierr = (*s->ops->dotnorm2)(s,t,dp,&dpx);CHKERRQ(ierr);
     *nm  = PetscRealPart(dpx);CHKERRQ(ierr);
@@ -1360,7 +1361,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
     ierr = VecRestoreArrayRead(s, &sx);CHKERRQ(ierr);
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_DotNorm2,s,t,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

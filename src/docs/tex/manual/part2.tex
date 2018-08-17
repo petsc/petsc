@@ -123,7 +123,7 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of \lstinline{INSERT_VALUES} and
 \lstinline{ADD_VALUES} this nondeterministic behavior will not occur in PETSc.)
 
-You can called \lstinline{VecGetValues()} to pull local values from a vector (but
+You can call \lstinline{VecGetValues()} to pull local values from a vector (but
 not off-process values),
 an alternative method for extracting some components of a vector are
 the vector scatter routines.  
@@ -782,7 +782,7 @@ DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 followed by
 \begin{lstlisting}
 VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);
-MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);
+MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping);
 \end{lstlisting}
 Now entries may be added to the vector and matrix using the local numbering
 and \break\lstinline{VecSetValuesLocal()} and \lstinline{MatSetValuesLocal()}.
@@ -1173,7 +1173,7 @@ MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
 By placing other code between these two calls, the user can perform
 computations while messages are in transit.
 Calls to \lstinline{MatSetValues()} with the \lstinline{INSERT_VALUES} and
-\lstinline{ADD_VALUES] options {\em cannot} be mixed without intervening calls to
+\lstinline{ADD_VALUES} options {\em cannot} be mixed without intervening calls to
 the assembly routines.  For such intermediate assembly calls the
 second routine argument  typically should be \lstinline{MAT_FLUSH_ASSEMBLY},
 \findex{MAT_FLUSH_ASSEMBLY} which omits some of the work of the full
@@ -1305,7 +1305,7 @@ Thus, when assembling a sparse matrix with very different
 numbers of nonzeros in various rows, one could proceed
 as follows for finite difference methods:
 \begin{tightenumerate}
-\item item Allocate integer array \lstinline{nnz}.
+\item Allocate integer array \lstinline{nnz}.
 \item Loop over grid, counting the expected number of nonzeros for the row(s)
 associated with the various grid points.
 \item Create the sparse matrix via \lstinline{MatCreateSeqAIJ()} or alternative.
@@ -1496,6 +1496,53 @@ to generate most entries on the owning process.
 this can lead to cleaner, simpler, less buggy codes.  One should never
 make code overly complicated in order to generate all values locally. Rather,
 one should organize the code in such a way that {\em most} values are generated locally.
+
+\subsubsection{Limited-Memory Variable Metric (LMVM) Matrices}
+
+Variable metric methods, also known as quasi-Newton methods, are frequently used for root finding problems 
+and approximate Jacobian matrices or their inverses via sequential nonlinear updates based on the secant condition. 
+The limited-memory variants do not store the full explicit Jacobian, and instead compute forward products and 
+inverse applications based on a fixed number of stored update vectors.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+{\bf Method}                                       & {\bf PETSc Type}                & {\bf Name}          & {\bf Property} \\
+\hline
+``Good'' Broyden \cite{griewank2012broyden}             & \lstinline|MATLMVMBrdn|         & \trl{lmvmbrdn}      & Square \\
+``Bad'' Broyden \cite{griewank2012broyden}              & \lstinline|MATLMVMBadBrdn|      & \trl{lmvmbadbrdn}   & Square  \\
+Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|          & \trl{lmvmsr1}       & Symmetric \\
+Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
+Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc LMVM matrix implementations.}
+\label{tab_matlmvmimpl}
+\end{table}
+
+PETSc implements six different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
+the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
+We will review the most important ones below:
+\begin{itemize}
+  \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store 
+  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while 
+  the \lstinline{F} defines the function space for the history of updates.
+  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such 
+  that $s_k = x_k - x_{k-1}$ and $y_k = f(x_k) - f(x_{k-1})$, where $k$ is the index for the update.
+  \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets 
+  the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data 
+  structures and necessitates another allocation call before the matrix can be updated and used for products and solves.
+  \item \lstinline{MatLMVMSetJ0(Mat B, Mat J0)} -- Defines the initial Jacobian to apply the updates to. If no initial 
+  Jacobian is provided, the updates are applied to an identity matrix.
+\end{itemize}
+
+LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
+in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
+\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
+\lstinline{-mat_lmvm_num_vecs} option. Restricted Broyden Family, DFP and BFGS methods additionally implement scalar 
+and diagonal scaling of the initial Jacobian which can be selected via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}.
 
 \subsection{Dense Matrices}
 \label{sec_matdense}
@@ -2175,7 +2222,7 @@ set to work with the \lstinline{KSP} object is ignored if \lstinline{KSPLSQR} wa
 
 By default, \lstinline{KSP} assumes an initial guess of zero by zeroing the initial
 value for the solution vector that is given; this zeroing is done at the
-call to \lstinline{KSPSolve()} (or \lstinline{KSPSolve()}). To use a nonzero
+call to \lstinline{KSPSolve()}. To use a nonzero
 initial guess, the user {\em must} call
 \begin{lstlisting}
 KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg);
@@ -2867,6 +2914,9 @@ systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic. 
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
+The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
+For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
+
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
@@ -3394,7 +3444,6 @@ For matrices defined with any number of blocks there are three ``block'' algorit
   0   & \text{ksp}(A_{11},Ap_{11}) \\
 \end{array} \right)
 \]
-
 block Gauss-Seidel,
 \[
 \left( \begin{array}{cc}
@@ -3614,11 +3663,11 @@ solve these systems.
 
 First, one must know what the null space is and store it using an orthonormal basis
 in an array of PETSc Vecs. The constant functions can be handled separately, since
-they are such a common cas). Create a \lstinline{MatNullSpace} object with the command
+they are such a common case). Create a \lstinline{MatNullSpace} object with the command
 \begin{lstlisting}
 MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,PetscInt dim,Vec *basis,MatNullSpace *nsp);
 \end{lstlisting}
-Her, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
+Here, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
 if the null space contains the constant functions. If the null space contains the constant
 functions you do not need to include it in the \lstinline{basis} vectors you provide, nor in the count \lstinline{dim}.
 
@@ -4458,7 +4507,7 @@ The second approach, taken from Walker and Pernice, \cite{pw98}, computes $ h $ 
         h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
 \end{eqnarray*}
 This has no tunable parameters, but note that inside the nonlinear solve for
-the entire {\bf linear} iterative process $ u $ does not change hence
+the entire \emph{linear} iterative process $ u $ does not change hence
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the
 options
 \begin{lstlisting}
@@ -4619,25 +4668,32 @@ finite difference Jacobian approximation.  These are set with the command
 MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
 \end{lstlisting}
 The parameter \lstinline{rerror} is the square root of
-the relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision), which assumes 
-that the functions are evaluated to full floating-point precision accuracy. The
+the relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision), which assumes
+that the functions are evaluated approximately to floating-point precision accuracy. The
 second parameter, \lstinline{umin}, is a bit more involved; its default is
-$ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
+$ 10e^{-6} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
 approximated by the formula
 \[
     F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
 \]
-where $ h $ is computed via
+where $ h $ is computed via:
 \begin{eqnarray*}
         h = e_{rel}*u_{i}             &    \hbox{if }  |u_{i}| > u_{min} \\
         h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.
 \end{eqnarray*}
+for MATMFFD\_DS
+or:
+\begin{eqnarray*}
+        h = e_{rel}*sqrt(\|u\|)
+\end{eqnarray*}
+for MATMFFD\_WP (default).
 These parameters may be set from the options database with
 \begin{lstlisting}
 -mat_fd_coloring_err <err>
 -mat_fd_coloring_umin <umin>
+-mat_fd_type <htype>
 \end{lstlisting}
-\findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
+\findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin} \findex{-mat_fd_type}
 
 Note that \lstinline{MatColoring} type \lstinline{MATCOLORINGSL}, \lstinline{MATCOLORINGLF}, and \lstinline{MATCOLORINGID} are sequential algorithms.  \lstinline{MATCOLORINGJP} and
 \lstinline{MATCOLORINGGREEDY} are parallel algorithms, although in practice they may create more colors than the sequential
@@ -4823,7 +4879,7 @@ PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,void*),void *jacP);
   $B$, and the (optional) user-provided context \lstinline{jacP}.
 \end{itemize}
 
-Providing appropriate $F()$ and $G()$ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
+Providing appropriate $F()$ and $G()$ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit methods.
 
 \section{Basic TS Options}
 
@@ -5527,8 +5583,8 @@ For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=
 and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using \lstinline{TSSetCostIntegrand()}.
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$.
-After \lstinline{TSAdjointSolve()}, the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly.
-And the sensitivity of the cost function w.r.t. to the parameter $p_m$ can be computed (by users) as
+After \lstinline{TSAdjointSolve()}, the sensitivity of the cost function w.r.t. initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly.
+And the sensitivity of the cost function w.r.t. the parameter $p_m$ can be computed (by users) as
 %
 \[
 \frac{\mathrm{d} \Psi}{\mathrm{d} p_m} = \mu(t_0) + \lambda(t_0)  \frac{\mathrm{d} \left[ \phi(t_0) \; \omega(t_0) \right]^T}{\mathrm{d} p_m}  .
@@ -5777,17 +5833,17 @@ which can also be represented as the DAG in Figure~\ref{fig:doubletDAG}.
   \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
   \tikzstyle{sec}     = [->]
   % DAG for doublet
-  \path (-1.5, 2.0) node[vertexV](dv0) {$v_0$};
-  \path (-0.5, 2.0) node[vertexV](dv1) {$v_1$};
-  \path ( 0.5, 2.0) node[vertexV](dv2) {$v_2$};
-  \path ( 1.5, 2.0) node[vertexV](dv3) {$v_3$};
-  \draw (-2.0, 1.0) node[edgeV](e0) {$e_0$};
-  \draw (-1.0, 1.0) node[edgeV](e1) {$e_1$};
-  \draw ( 0.0, 1.0) node[edgeV](e2) {$e_2$};
-  \draw ( 1.0, 1.0) node[edgeV](e3) {$e_3$};
-  \draw ( 2.0, 1.0) node[edgeV](e4) {$e_4$};
-  \path (-1.0, 0.0) node[faceV](f0) {$f_0$};
-  \path ( 1.0, 0.0) node[faceV](f1) {$f_1$};
+  \path (-1.5, 2.0) node[vertexV](dv0) {$2,v_0$};
+  \path (-0.5, 2.0) node[vertexV](dv1) {$3,v_1$};
+  \path ( 0.5, 2.0) node[vertexV](dv2) {$4,v_2$};
+  \path ( 1.5, 2.0) node[vertexV](dv3) {$5,v_3$};
+  \draw (-2.0, 1.0) node[edgeV](e0) {$6,e_0$};
+  \draw (-1.0, 1.0) node[edgeV](e1) {$7,e_1$};
+  \draw ( 0.0, 1.0) node[edgeV](e2) {$8,e_2$};
+  \draw ( 1.0, 1.0) node[edgeV](e3) {$9,e_3$};
+  \draw ( 2.0, 1.0) node[edgeV](e4) {$10,e_4$};
+  \path (-1.0, 0.0) node[faceV](f0) {$0,f_0$};
+  \path ( 1.0, 0.0) node[faceV](f1) {$1,f_1$};
   \draw[sec] (dv0) -- (e0);
   \draw[sec] (dv1) -- (e0);
   \draw[sec] (dv1) -- (e1);
@@ -5883,9 +5939,9 @@ element method,
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
 DMPlexGetChart(dm, &pStart, &pEnd);
-DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
-DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
-DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);
+DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   /* cells */
+DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   /* edges */
+DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);   /* vertices, equivalent to DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd); */
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5895,6 +5951,19 @@ for(e = eStart; e < eEnd; ++e)
     PetscSectionSetDof(s, e, 2);
 PetscSectionSetUp(s);
 \end{lstlisting}
+DMPlexGetHeightStratum() returns all the points of the requested
+height in the DAG. Since this problem is in two dimensions the edges
+are at height 1 and the vertices at height 2 (the cells are always at
+height 0). One can also use \lstinline{DMPlexGetDepthStratum()} to use the depth
+in the DAG to select the points. \lstinline{DMPlexGetDepth(,&depth)} routines the depth of the DAG, hence
+\lstinline{DMPlexGetDepthStratum(dm,depth-1-h,)} returns the same values as \lstinline{DMPlexGetHeightStratum(dm,h,)}.
+
+For P3 elements there is one degree of freedom at each vertex, 2 along
+each edge (resulting in a total of 4 degrees of freedom alone each
+edge including the vertices, thus being able to reproduce a cubic
+function) and 1 degree of freedom within the cell (the bubble function
+which is zero along all edges).
+
 Now a PETSc local vector can be created manually using this layout,
 \begin{lstlisting}
 PetscSectionGetStorageSize(s, &n);
@@ -5903,7 +5972,7 @@ VecSetFromOptions(localVec);
 \end{lstlisting}
 though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
-DMSetDefaultSection(dm, s);
+DMSetSection(dm, s);
 DMGetLocalVector(dm, &localVec);
 DMGetGlobalVector(dm, &globalVec);
 \end{lstlisting}
@@ -5919,7 +5988,7 @@ a problem partitioning/ordering.
 
 The evaluation of a residual or Jacobian, for most discretizations has the following general form:
 \begin{itemize}
-  \item Traverse the mesh, picking out pieces which in general overlap,
+  \item Traverse the mesh, picking out pieces (which in general overlap),
 
   \item Extract some values from the solution vector, associated with this piece,
 
@@ -5932,7 +6001,7 @@ routines to data extraction routines and back. In this way, the \lstinline{Petsc
 not need to know anything about the mesh inside a \lstinline{DMPlex}.
 
 The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
-in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
+in the DAG using the covering relation. In other words, the transitive closure consists of all points that cover the given point (generally a cell) plus all points that cover those points, etc. So in 2d the transitive closure for a cell consists of edges and vertices while in 3d it consists of faces, edges, and vertices. Note that this closure can be calculated orienting the arrows in either
 direction. For example, in a finite element calculation, we calculate an integral over each element, and
 then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
 as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
@@ -6313,16 +6382,7 @@ DMDAVecGetArrayF90(), DMDAVecGetArrayReadF90(), ISLocalToGlobalMappingGetIndices
 MatDenseGetArrayF90(), MatDenseRestoreArrayF90()
 ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{lstlisting}
-See the manual pages for details and pointers to example programs.  To
-use the
-routines \lstinline{VecGetArrayF90()}, \lstinline{VecRestoreArrayF90()}, \lstinline{VecGetArrayReadF90()}, \lstinline{VecRestoreArrayReadF90()},
-\lstinline{VecDuplicateVecsF90()}, and \lstinline{VecDestroyVecsF90()}, one must
-use the Fortran90 vector include file,
-\begin{lstlisting}
-#include "petsc/finclude/petscvec.h90"
-\end{lstlisting}
-Analogous include files for other libraries are \trl{petscdm.h90},
-\trl{petscmat.h90}, and \trl{petscis.h90}.
+See the manual pages for details and pointers to example programs.
 
 \section{Sample Fortran Programs}
 \label{sec_fortran-examples}
@@ -6709,13 +6769,15 @@ We next discuss performance summaries for parallel programs,
 \findex{-log_view} as shown within Figures~\ref{fig_exparprof}
 and~\ref{fig_exparprof2}, which present the combined output generated by
 the \trl{-log_view} option.  The program that generated this data is
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/ex10.c}}.  
+\href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex10.c.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex10.c}}.
 The code loads a
 matrix and right-hand-side vector from a binary file and then solves
 the resulting linear system; the program then repeats this process for
 a second linear system.  This particular case was run on four
-processors of an IBM SP, using restarted GMRES and the block Jacobi
-preconditioner, where each block was solved with ILU.
+processors of an Intel x86\_64 Linux cluster, using restarted GMRES and the block Jacobi
+preconditioner, where each block was solved with ILU. The two input files
+\href{http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/medium}{\trl{medium}} and
+\href{http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/arco6}{\trl{arco6}} can be downloaded from \url{http://ftp.mcs.anl.gov/pub/petsc/Datafiles/matrices/}.
 
 Figure~\ref{fig_exparprof} presents an overall performance summary,
 including times, floating-point operations, computational rates, and
@@ -6732,32 +6794,33 @@ is presented.
 mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
-Number of iterations =  19
-Residual norm = 7.7643e-05
-Number of iterations =  55
-Residual norm = 6.3633e-01
-
+Number of iterations = 19
+Residual norm 1.088292e-05
+Number of iterations = 59
+Residual norm 3.871022e-02
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
 
-ex10 on a rs6000 named p039 with 4 processors, by mcinnes Wed Jul 24 16:30:22 1996
+./ex10 on a intel-bdw-opt named beboplogin4 with 4 processors, by jczhang Mon Apr 23 13:36:54 2018
+Using Petsc Development GIT revision: v3.9-163-gbe3efd42  GIT Date: 2018-04-16 10:45:40 -0500
 
-                         Max         Min        Avg        Total
-Time (sec):           3.289e+01      1.0   3.288e+01
-Objects:              1.130e+02      1.0   1.130e+02
-Flop:                 2.195e+08      1.0   2.187e+08   8.749e+08
-Flop/sec:             6.673e+06      1.0               2.660e+07
-MPI Messages:         2.205e+02      1.4   1.928e+02   7.710e+02
-MPI Message Lengths:  7.862e+06      2.5   5.098e+06   2.039e+07
-MPI Reductions:       1.850e+02      1.0
+                         Max       Max/Min        Avg      Total
+Time (sec):           1.849e-01      1.00002   1.849e-01
+Objects:              1.060e+02      1.00000   1.060e+02
+Flop:                 2.361e+08      1.00684   2.353e+08  9.413e+08
+Flop/sec:            1.277e+09      1.00685   1.273e+09  5.091e+09
+MPI Messages:         2.360e+02      1.34857   2.061e+02  8.245e+02
+MPI Message Lengths:  1.256e+07      2.24620   4.071e+04  3.357e+07
+MPI Reductions:       2.160e+02      1.00000
 
-Summary of Stages:  ---- Time ------  ----- Flop  -------  -- Messages -- -- Message-lengths -- Reductions -
-                      Avg      %Total    Avg     %Total   counts   %Total    avg      %Total   counts  %Total
- 0:  Load System 0: 1.191e+00    3.6% 3.980e+06   0.5%  3.80e+01    4.9%  6.102e+04   0.3%  1.80e+01   9.7%
- 1:    KSPSetup 0:  6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
- 2:    KSPSolve 0:  2.269e-01    0.9% 1.340e+06   0.0%  1.52e+02   19.7%  9.405e+03   0.0%  3.90e+01  21.1%
- 3:  Load System 1: 2.680e+01  107.3% 0.000e+00   0.0%  2.10e+01    2.7%  1.799e+07  88.2%  1.60e+01   8.6%
- 4:    KSPSetup 1:  1.867e-01    0.7% 1.088e+08   2.3%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
- 5:    KSPSolve 1:  3.831e+00   15.3% 2.217e+08  97.1%  5.60e+02   72.6%  2.333e+06  11.4%  1.12e+02  60.5%
+Summary of Stages:   ----- Time ------  ----- Flop -----  --- Messages ---  -- Message Lengths --  -- Reductions --
+                        Avg     %Total     Avg     %Total   counts   %Total     Avg         %Total   counts   %Total
+ 0:      Main Stage: 5.9897e-04   0.3%  0.0000e+00   0.0%  0.000e+00   0.0%  0.000e+00        0.0%  2.000e+00   0.9%
+ 1:   Load System 0: 2.9113e-03   1.6%  0.0000e+00   0.0%  3.550e+01   4.3%  5.984e+02        0.1%  2.200e+01  10.2%
+ 2:      KSPSetUp 0: 7.7349e-04   0.4%  9.9360e+03   0.0%  0.000e+00   0.0%  0.000e+00        0.0%  2.000e+00   0.9%
+ 3:      KSPSolve 0: 1.7690e-03   1.0%  2.9673e+05   0.0%  1.520e+02  18.4%  1.800e+02        0.1%  3.900e+01  18.1%
+ 4:   Load System 1: 1.0056e-01  54.4%  0.0000e+00   0.0%  3.700e+01   4.5%  5.657e+05       62.4%  2.200e+01  10.2%
+ 5:      KSPSetUp 1: 5.6883e-03   3.1%  2.1205e+07   2.3%  0.000e+00   0.0%  0.000e+00        0.0%  2.000e+00   0.9%
+ 6:      KSPSolve 1: 7.2578e-02  39.3%  9.1979e+08  97.7%  6.000e+02  72.8%  2.098e+04       37.5%  1.200e+02  55.6%
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -6767,15 +6830,18 @@ Summary of Stages:  ---- Time ------  ----- Flop  -------  -- Messages -- -- Mes
 
 Memory usage is given in bytes:
 
-Object Type      Creations   Destructions   Memory  Descendants' Mem.
-Viewer                5              5          0     0
-Index set            10             10     127076     0
-Vector               76             76    9152040     0
-Vector Scatter        2              2     106220     0
-Matrix                8              8    9611488     5.59773e+06
-Krylov Solver         4              4      33960     7.5966e+06
-Preconditioner        4              4         16     9.49114e+06
-KSP                   4              4          0     1.71217e+07
+Object Type          Creations   Destructions     Memory  Descendants' Mem.
+Reports information only for process 0.
+...
+--- Event Stage 3: KSPSolve 0
+
+              Matrix     0              4        23024     0.
+              Vector    20             30        60048     0.
+           Index Set     0              3         2568     0.
+         Vec Scatter     0              1         1264     0.
+       Krylov Solver     0              2        19592     0.
+      Preconditioner     0              2         1912     0.
+
 \end{outputlisting}
 \caption{Profiling a PETSc Program: Part I - Overall Summary}
 \label{fig_exparprof}
@@ -6811,7 +6877,7 @@ Phase summary info:
    Time and Flop/sec: Max - maximum over all processors
                        Ratio - ratio of maximum to minimum over all processors
    Mess: number of messages sent
-   Avg. len: average message length
+   AvgLen: average message length
    Reduct: number of global reductions
    Global: entire computation
    Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
@@ -6820,37 +6886,39 @@ Phase summary info:
       %R - percent reductions in this phase
    Total Mflop/s: 10^6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flop/sec                           --- Global ---  --- Stage ---   Total
-                            Max    Ratio      Max    Ratio  Mess  Avg len  Reduct %T %F %M %L %R  %T %F %M %L %R Mflop/s
+Phase              Count      Time (sec)       Flop/sec                          --- Global ---  --- Stage ----  Total
+                            Max    Ratio      Max    Ratio  Mess AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 ...
 
---- Event Stage 4: KSPSetUp 1
+--- Event Stage 5: KSPSetUp 1
 
-MatGetReordering       1  3.491e-03   1.0  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   2  0  0  0  0     0
-MatILUFctrSymbol       1  6.970e-03   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   3  0  0  0  0     0
-MatLUFactorNumer       1  1.829e-01   1.1  3.2e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  90 99  0  0  0   110
-KSPSetUp               2  1.989e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  99 99  0  0  0   102
-PCSetUp                2  1.952e-01   1.1  2.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  97 99  0  0  0   104
-PCSetUpOnBlocks        1  1.930e-01   1.1  3.0e+07   1.1  0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0  96 99  0  0  0   105
+MatLUFactorNum         1 1.0 3.6440e-03 1.1 5.30e+06 1.0 0.0e+00 0.0e+00 0.0e+00  2  2  0  0  0  62100  0  0  0  5819
+MatILUFactorSym        1 1.0 1.7111e-03 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0  26  0  0  0  0     0
+MatGetRowIJ            1 1.0 1.1921e-06 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetOrdering         1 1.0 3.0041e-05 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0     0
+KSPSetUp               2 1.0 6.6495e-04 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  1   9  0  0  0100     0
+PCSetUp                2 1.0 5.4271e-03 1.2 5.30e+06 1.0 0.0e+00 0.0e+00 0.0e+00  3  2  0  0  0  90100  0  0  0  3907
+PCSetUpOnBlocks        1 1.0 5.3999e-03 1.2 5.30e+06 1.0 0.0e+00 0.0e+00 0.0e+00  3  2  0  0  0  90100  0  0  0  3927
 
---- Event Stage 5: KSPSolve 1
+--- Event Stage 6: KSPSolve 1
 
-MatMult               56  1.199e+00   1.1  5.3e+07   1.0  1.1e+03 4.2e+03 0.0e+00  5 28 99 23  0  30 28 99 99  0   201
-MatSolve              57  1.263e+00   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  5 27  0  0  0  33 28  0  0  0   187
-VecNorm               57  1.528e-01   1.3  2.7e+07   1.3  0.0e+00 0.0e+00 2.3e+02  1  1  0  0 31   3  1  0  0 51    81
-VecScale              57  3.347e-02   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   1  1  0  0  0   184
-VecCopy                2  1.703e-03   1.1  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecSet                 3  2.098e-03   1.0  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecAXPY                3  3.247e-03   1.1  5.4e+07   1.1  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   200
-VecMDot               55  5.216e-01   1.2  9.8e+07   1.2  0.0e+00 0.0e+00 2.2e+02  2 20  0  0 30  12 20  0  0 49   327
-VecMAXPY              57  6.997e-01   1.1  6.9e+07   1.1  0.0e+00 0.0e+00 0.0e+00  3 21  0  0  0  18 21  0  0  0   261
-VecScatterBegin       56  4.534e-02   1.8  0.0e+00   0.0  1.1e+03 4.2e+03 0.0e+00  0  0 99 23  0   1  0 99 99  0     0
-VecScatterEnd         56  2.095e-01   1.2  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   5  0  0  0  0     0
-KSPSolve               1  3.832e+00   1.0  5.6e+07   1.0  1.1e+03 4.2e+03 4.5e+02 15 97 99 23 61  99 99 99 99 99   222
-KSPGMRESOrthog        55  1.177e+00   1.1  7.9e+07   1.1  0.0e+00 0.0e+00 2.2e+02  4 39  0  0 30  29 40  0  0 49   290
-PCSetUpOnBlocks        1  1.180e-05   1.1  0.0e+00   0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-PCApply               57  1.267e+00   1.0  4.7e+07   1.0  0.0e+00 0.0e+00 0.0e+00  5 27  0  0  0  33 28  0  0  0   186
+MatMult               60 1.0 2.4068e-02 1.1 6.54e+07 1.0 6.0e+02 2.1e+04 0.0e+00 12 27 73 37  0  32 28100100  0 10731
+MatSolve              61 1.0 1.9177e-02 1.0 5.99e+07 1.0 0.0e+00 0.0e+00 0.0e+00 10 25  0  0  0  26 26  0  0  0 12491
+VecMDot               59 1.0 1.4741e-02 1.3 4.86e+07 1.0 0.0e+00 0.0e+00 5.9e+01  7 21  0  0 27  18 21  0  0 49 13189
+VecNorm               61 1.0 3.0417e-03 1.4 3.29e+06 1.0 0.0e+00 0.0e+00 6.1e+01  1  1  0  0 28   4  1  0  0 51  4332
+VecScale              61 1.0 9.9802e-04 1.0 1.65e+06 1.0 0.0e+00 0.0e+00 0.0e+00  1  1  0  0  0   1  1  0  0  0  6602
+VecCopy                2 1.0 5.9128e-05 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet                64 1.0 8.0323e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0     0
+VecAXPY                3 1.0 7.4387e-05 1.1 1.62e+05 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  8712
+VecMAXPY              61 1.0 8.8558e-03 1.1 5.18e+07 1.0 0.0e+00 0.0e+00 0.0e+00  5 22  0  0  0  12 23  0  0  0 23393
+VecScatterBegin       60 1.0 9.6416e-04 1.8 0.00e+00 0.0 6.0e+02 2.1e+04 0.0e+00  0  0 73 37  0   1  0100100  0     0
+VecScatterEnd         60 1.0 6.1543e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0   8  0  0  0  0     0
+VecNormalize          61 1.0 4.2675e-03 1.3 4.94e+06 1.0 0.0e+00 0.0e+00 6.1e+01  2  2  0  0 28   5  2  0  0 51  4632
+KSPGMRESOrthog        59 1.0 2.2627e-02 1.1 9.72e+07 1.0 0.0e+00 0.0e+00 5.9e+01 11 41  0  0 27  29 42  0  0 49 17185
+KSPSolve               1 1.0 7.2577e-02 1.0 2.31e+08 1.0 6.0e+02 2.1e+04 1.2e+02 39 98 73 37 56  99100100100100 12673
+PCSetUpOnBlocks        1 1.0 9.5367e-07 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+PCApply               61 1.0 2.0427e-02 1.0 5.99e+07 1.0 0.0e+00 0.0e+00 0.0e+00 11 25  0  0  0  28 26  0  0  0 11726
 ------------------------------------------------------------------------------------------------------------------------
 .... [Conclusion of overall summary, see part I] ...
 \end{outputlisting}
@@ -6996,11 +7064,11 @@ PetscFinalize();
 Figures~\ref{fig_exparprof} and \ref{fig_exparprof2} show output
 generated by \trl{-log_view} for a program that employs
 several profiling stages.  In particular, this program is
-subdivided into six stages: loading a matrix and right-hand-side
+subdivided into six stages except the Main stage: loading a matrix and right-hand-side
 vector from a binary file, setting up the preconditioner, and solving
 the linear system; this sequence is then repeated for a second linear
 system.  For simplicity, Figure~\ref{fig_exparprof2} contains output
-only for stages 4 and 5 (linear solve of the second system), which comprise
+only for stages 5 and 6 (linear solve of the second system), which comprise
 the part of this computation of most interest to us in terms of
 performance monitoring.  This code organization (solving a small
 linear system followed by a larger system) enables generation of more
@@ -7147,7 +7215,7 @@ problem of interest.  For example, we used this technique in the program
 generate the timings within Figures~\ref{fig_exparprof} and \ref{fig_exparprof2}.
 In this case,
 the profiled code of interest (solving the linear system for the larger problem)
-occurs within event stages 4 and 5.  Section~\ref{sec_parperformance} provides
+occurs within event stages 5 and 6.  Section~\ref{sec_parperformance} provides
 details about interpreting such profiling data.
 
 In particular, the macros
@@ -7908,9 +7976,9 @@ blocks can be controlled via the options \trl{-sub_ksp_type} and \trl{
 \subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
-use of \trl{-options_table}, which prints to \lstinline{stdout} during \lstinline{PetscFinalize()}
+use of \trl{-options_view}, which prints to \lstinline{stdout} during \lstinline{PetscFinalize()}
  a table of all runtime options that the user has
-specified.  \findex{-options_table} A related option is \trl{-options_left},
+specified.  \findex{-options_view} A related option is \trl{-options_left},
 \findex{-options_left} which prints the options table and indicates
 any options that have {\em not} been requested upon a call to \lstinline{PetscFinalize()}.  This feature is useful to check whether an option
 has been activated for a particular PETSc object (such as a solver or

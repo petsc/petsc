@@ -216,7 +216,8 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
    convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer Notes: this must match petsc/finclude/petscsnes.h
+   Developer Notes:
+    this must match petsc/finclude/petscsnes.h
 
        The string versions of these are in SNESConvergedReasons, if you change any value here you must
      also adjust that array.
@@ -355,6 +356,7 @@ PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipCon
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,PetscErrorCode (*)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,PetscErrorCode (**)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
 
 PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode (*)(SNES,Vec,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode (**)(SNES,Vec,Mat,Mat,void*),void**);
@@ -364,7 +366,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES,Vec,Mat,Mat,voi
 PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES,Vec,PetscErrorCode (*)(SNES,Vec,Vec,void*),Mat,Mat,PetscErrorCode (*)(SNES,Vec,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES,Vec*,PetscErrorCode (**)(SNES,Vec,Vec,void*),Mat*,Mat*,PetscErrorCode (**)(SNES,Vec,Mat,Mat,void*),void**);
-PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES,PetscErrorCode (*)(SNES,Vec,PetscReal *,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,PetscErrorCode (**)(SNES,Vec,PetscReal *,void*),void**);
@@ -590,7 +593,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetOrder(SNESLineSearch,PetscInt order
 
    Level: intermediate
 
-   Developer Notes: this must match petsc/finclude/petscsnes.h
+   Developer Notes:
+    this must match petsc/finclude/petscsnes.h
 
    Developer Note: The string versions of these are in SNESLineSearchReasons, if you change any value here you must
      also adjust that array.
@@ -695,8 +699,8 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode 
 
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMPlexSNESGetGradientDM(DM,PetscFV,DM*);
-PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
-PETSC_EXTERN PetscErrorCode DMPlexRestoreCellFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellFields(DM, IS, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreCellFields(DM, IS, Vec, Vec, Vec, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscInt *, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaceFields(DM, PetscInt, PetscInt, Vec, Vec, Vec, Vec, Vec, PetscInt *, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaceGeometry(DM, PetscInt, PetscInt, Vec, Vec, PetscInt *, PetscFVFaceGeom **, PetscReal **);
@@ -838,6 +842,7 @@ PETSC_EXTERN PetscErrorCode SNESFASSetLog(SNES, PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASGetGalerkin(SNES, PetscBool*);
+PETSC_EXTERN PetscErrorCode SNESFASGalerkinFunctionDefault(SNES,Vec,Vec,void*);
 
 /* called on any level -- "Cycle" FAS instance */
 PETSC_EXTERN PetscErrorCode SNESFASCycleGetSmoother(SNES, SNES*);

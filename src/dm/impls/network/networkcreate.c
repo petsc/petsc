@@ -1,6 +1,5 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
-#include <petscdmda.h>
 #include <petsc/private/vecimpl.h>
 
 PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)

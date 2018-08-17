@@ -190,10 +190,9 @@ class Installer(script.Script):
   def copyExamples(self, src, dst):
     """copy the examples directories
     """
-    top=os.path.relpath(src,os.path.abspath(os.curdir))
-    for root, dirs, files in os.walk(top, topdown=False):
-        if not os.path.basename(root) == "examples": continue
-        self.copies.extend(self.copytree(root, os.path.join(dst,root)))
+    for root, dirs, files in os.walk(src, topdown=False):
+      if not os.path.basename(root) == "examples": continue
+      self.copies.extend(self.copytree(root, root.replace(src,dst)))
     return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = [], exclude_ext= ['.DSYM','.o','.pyc'], recurse = 1):
@@ -336,7 +335,7 @@ for file in files:
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
     os.mkdir(os.path.join(examplesdir,'src'))
-    self.copyExamples(self.rootSrcDir,examplesdir)
+    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
     self.copyConfig(self.rootDir,examplesdir)
     self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return

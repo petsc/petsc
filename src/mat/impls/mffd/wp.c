@@ -21,7 +21,8 @@
 
    Level: intermediate
 
-   Notes: Requires no global collectives when used with GMRES
+   Notes:
+    Requires no global collectives when used with GMRES
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
@@ -139,7 +140,8 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptionItems *PetscOptionsObj
   Input Parameter:
 .  ctx - the matrix free context
 
-   Notes: does not free the ctx, that is handled by the calling routine
+   Notes:
+    does not free the ctx, that is handled by the calling routine
 
 */
 static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)

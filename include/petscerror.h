@@ -64,7 +64,6 @@
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
-#if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
@@ -87,8 +86,6 @@
 
     See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
-    In Fortran MPI_Abort() is always called
-
     Experienced users can set the error handler with PetscPushErrorHandler().
 
    Concepts: error^setting condition
@@ -96,6 +93,31 @@
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
+
+/*MC
+   SETERRMPI - Macro to be called when an error has been detected within an MPI callback function
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode SETERRMPI(MPI_Comm comm,PetscErrorCode ierr,char *message)
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - A communicator, use PETSC_COMM_SELF unless you know all ranks of another communicator will detect the error
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
+-  message - error message
+
+  Level: developer
+
+   Notes:
+    This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
+    which is registered with MPI_Add_error_code() when PETSc is initialized.
+
+   Concepts: error^setting condition
+
+.seealso: SETERRQ(), CHKERRQ(), CHKERRMPI(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
+M*/
 #define SETERRMPI(comm,ierr,s) return (PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s),PETSC_MPI_ERROR_CODE)
 
 /*MC
@@ -417,8 +439,6 @@ M*/
     where you may pass back a NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
     MPI_Abort() returned immediately.
 
-    In Fortran MPI_Abort() is always called
-
    Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
@@ -427,6 +447,30 @@ M*/
 #define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
 #define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
 #define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
+
+
+/*MC
+   CHKERRMPI - Checks error code, if non-zero it calls the error handler and then returns
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscErrorCode CHKERRMPI(PetscErrorCode ierr)
+
+   Not Collective
+
+   Input Parameters:
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
+
+  Level: developer
+
+   Notes:
+    This macro is FOR USE IN MPI CALLBACK FUNCTIONS ONLY, such as those passed to MPI_Comm_create_keyval(). It always returns the error code PETSC_MPI_ERROR_CODE
+    which is registered with MPI_Add_error_code() when PETSc is initialized.
+
+   Concepts: error^setting condition
+
+.seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
+M*/
 #define CHKERRMPI(ierr)        do {if (PetscUnlikely(ierr)) return (PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," "),PETSC_MPI_ERROR_CODE);} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
@@ -494,39 +538,6 @@ M*/
 
 #define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)
 
-#else /* PETSC_USE_ERRORCHECKING */
-
-/*
-    These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
-*/
-
-#define SETERRQ(c,ierr,s)
-#define SETERRMPI(comm,ierr,s)
-#define SETERRQ1(c,ierr,s,a1)
-#define SETERRQ2(c,ierr,s,a1,a2)
-#define SETERRQ3(c,ierr,s,a1,a2,a3)
-#define SETERRQ4(c,ierr,s,a1,a2,a3,a4)
-#define SETERRQ5(c,ierr,s,a1,a2,a3,a4,a5)
-#define SETERRQ6(c,ierr,s,a1,a2,a3,a4,a5,a6)
-#define SETERRQ7(c,ierr,s,a1,a2,a3,a4,a5,a6,a7)
-#define SETERRQ8(c,ierr,s,a1,a2,a3,a4,a5,a6,a7,a8)
-#define SETERRABORT(comm,ierr,s)
-
-#define CHKERRQ(ierr)     ;
-#define CHKERRV(ierr)     ;
-#define CHKERRABORT(comm,n) ;
-#define CHKERRCONTINUE(ierr) ;
-#define CHKERRMPI(ierr) ;
-#define CHKMEMQ        ;
-#define CHKERRCUDA(err) ;
-#define CHKERRCUBLAS(err) ;
-
-#ifdef PETSC_CLANGUAGE_CXX
-#define CHKERRXX(ierr) ;
-#endif
-
-#endif /* PETSC_USE_ERRORCHECKING */
-
 /*E
   PetscErrorType - passed to the PETSc error handling routines indicating if this is the first or a later call to the error handlers
 
@@ -534,7 +545,8 @@ M*/
 
   PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
 
-  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
+  Developer Notes:
+    This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
 .seealso: PetscError(), SETERRXX()
 E*/
@@ -577,7 +589,8 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the  (default) stderr
 -    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
 
-   Notes: Use
+   Notes:
+    Use
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
 $                        error is handled.) and
 $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can use your own function
@@ -872,7 +885,8 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
 +   func-  name of the routine
 -   args - arguments to the routine surrounded by ()
 
-   Notes: This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
+   Notes:
+    This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
 
    Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 

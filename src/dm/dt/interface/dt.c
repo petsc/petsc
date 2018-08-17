@@ -1,13 +1,5 @@
 /* Discretization tools */
 
-#include <petscconf.h>
-#if defined(PETSC_HAVE_MATHIMF_H)
-#include <mathimf.h>           /* this needs to be included before math.h */
-#endif
-#ifdef PETSC_HAVE_MPFR
-#include <mpfr.h>
-#endif
-
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
 #include <petsc/private/petscimpl.h>
@@ -15,6 +7,10 @@
 #include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
+
+#if defined(PETSC_HAVE_MPFR)
+#include <mpfr.h>
+#endif
 
 static PetscBool GaussCite       = PETSC_FALSE;
 const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
@@ -237,7 +233,8 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Level: intermediate
 
-  Fortran Notes: From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
+  Fortran Notes:
+    From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
 
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
@@ -282,7 +279,7 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
 
-  Note: This routine owns the references to points and weights, so they msut be allocated using PetscMalloc() and the user should not free them.
+  Note: This routine owns the references to points and weights, so they must be allocated using PetscMalloc() and the user should not free them.
 
   Level: intermediate
 
@@ -944,7 +941,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_MPFR
+#if defined(PETSC_HAVE_MPFR)
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */

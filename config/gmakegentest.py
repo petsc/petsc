@@ -188,7 +188,7 @@ class generateExamples(Petsc):
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
-    #if not langReq: print "ERROR: ", srcext, srcfile
+    #if not langReq: print("ERROR: ", srcext, srcfile)
     return langReq
 
   def _getLoopVars(self,inDict,testname, isSubtest=False):
@@ -273,11 +273,10 @@ class generateExamples(Petsc):
     argStr=re.sub(' +',' ',argStr)  # Remove repeated white space
     return argStr.strip()
 
-  def addToSources(self,exfile,root,srcDict):
+  def addToSources(self,exfile,rpath,srcDict):
     """
       Put into data structure that allows easy generation of makefile
     """
-    rpath=self.srcrelpath(root)
     pkg=rpath.split(os.path.sep)[0]
     relpfile=os.path.join(rpath,exfile)
     lang=self.getLanguage(exfile)
@@ -291,19 +290,17 @@ class generateExamples(Petsc):
         self.sources[pkg][lang][relpfile].append(os.path.join(rpath,depObj))
 
     # In gmakefile, ${TESTDIR} var specifies the object compilation
-    testsdir=self.srcrelpath(root)+"/"
+    testsdir=rpath+"/"
     objfile="${TESTDIR}/"+testsdir+os.path.splitext(exfile)[0]+".o"
     self.objects[pkg].append(objfile)
     return
 
-  def addToTests(self,test,root,exfile,execname,testDict):
+  def addToTests(self,test,rpath,exfile,execname,testDict):
     """
       Put into data structure that allows easy generation of makefile
       Organized by languages to allow testing of languages
     """
-    rpath=self.srcrelpath(root)
     pkg=rpath.split("/")[0]
-    #nmtest=self.nameSpace(test,root)
     nmtest=os.path.join(rpath,test)
     lang=self.getLanguage(exfile)
     if not lang: return
@@ -313,12 +310,11 @@ class generateExamples(Petsc):
     self.tests[pkg][lang][nmtest]['argLabel']=self.getArgLabel(testDict)
     return
 
-  def getExecname(self,exfile,root):
+  def getExecname(self,exfile,rpath):
     """
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
-    rpath=self.srcrelpath(root)
     if self.single_ex:
       execname=rpath.split("/")[1]+"-ex"
     else:
@@ -408,9 +404,28 @@ class generateExamples(Petsc):
       fullaf=os.path.join(self.petsc_dir,srcaf)
       if os.path.isfile(fullaf): altlist.append(srcaf)
     if len(altlist)>1: subst['altfiles']=altlist
-    #if len(altlist)>1: print "Found alt files: ",altlist
+    #if len(altlist)>1: print("Found alt files: ",altlist)
+
+    subst['regexes']={}
+    for subkey in subst:
+      if subkey=='regexes': continue
+      if not isinstance(subst[subkey],str): continue
+      patt="@"+subkey.upper()+"@"
+      subst['regexes'][subkey]=re.compile(patt)
 
     return subst
+
+  def _substVars(self,subst,origStr):
+    """
+      Substitute variables
+    """
+    Str=origStr
+    for subkey in subst:
+      if subkey=='regexes': continue
+      if not isinstance(subst[subkey],str): continue
+      if subkey.upper() not in Str: continue
+      Str=subst['regexes'][subkey].sub(subst[subkey],Str)
+    return Str
 
   def getCmds(self,subst,i):
     """
@@ -453,17 +468,6 @@ class generateExamples(Petsc):
     cmdLines+=diffindnt+'printf "ok ${label} # SKIP Command failed so no diff\\n"\n'
     cmdLines+=cmdindnt+'fi\n'
     return cmdLines
-
-  def _substVars(self,subst,origStr):
-    """
-      Substitute variables
-    """
-    Str=origStr
-    for subkey in subst:
-      if type(subst[subkey])!=bytes: continue
-      patt="@"+subkey.upper()+"@"
-      Str=re.sub(patt,subst[subkey],Str)
-    return Str
 
   def _writeTodoSkip(self,fh,tors,reasons,footer):
     """
@@ -531,7 +535,6 @@ class generateExamples(Petsc):
     # Get variables to go into shell scripts.  last time testDict used
     subst=self.getSubstVars(testDict,rpath,testname)
     loopVars = self._getLoopVars(subst,testname)  # Alters subst as well
-    #if '33_' in testname: print subst['subargs']
 
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
@@ -578,7 +581,6 @@ class generateExamples(Petsc):
           fh.write("nsize=1\n")
         subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
-        #if '10_9' in testname: print sLoopVars
         if sLoopVars: 
           (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
           fh.write(sLoopHead+"\n")
@@ -609,7 +611,8 @@ class generateExamples(Petsc):
      All tests are *always* run, but some may be SKIP'd per the TAP standard
     """
     debug=False
-    execname=self.getExecname(exfile,root)
+    rpath=self.srcrelpath(root)
+    execname=self.getExecname(exfile,rpath)
     isBuilt=self._isBuilt(exfile,srcDict)
     for test in srcDict:
       if test in self.buildkeys: continue
@@ -618,10 +621,10 @@ class generateExamples(Petsc):
       isRun=self._isRun(srcDict[test])
       self.genRunScript(test,root,isRun,srcDict)
       srcDict[test]['isrun']=isRun
-      self.addToTests(test,root,exfile,execname,srcDict[test])
+      self.addToTests(test,rpath,exfile,execname,srcDict[test])
 
     # This adds to datastructure for building deps
-    if isBuilt: self.addToSources(exfile,root,srcDict)
+    if isBuilt: self.addToSources(exfile,rpath,srcDict)
     return
 
   def _isBuilt(self,exfile,srcDict):
@@ -663,20 +666,21 @@ class generateExamples(Petsc):
     if 'SKIP' not in testDict:
       testDict['SKIP'] = []
     # MPI requirements
-    if testDict.get('nsize',1)>1 and 'MPI_IS_MPIUNI' in self.conf:
-      if debug: print(indent+"Cannot run parallel tests")
-      testDict['SKIP'].append("Parallel test with serial build")
- 
-    # The requirements for the test are the sum of all the run subtests
-    if 'subtests' in testDict:
-      if 'requires' not in testDict: testDict['requires']=""
-      for stest in testDict['subtests']:
-        if 'requires' in testDict[stest]:
-          testDict['requires']+=" "+testDict[stest]['requires']
-        if 'nsize' in testDict[stest]:
-          if testDict[stest].get('nsize',1)>1 and 'MPI_IS_MPIUNI' in self.conf:
-            testDict['SKIP'].append("Parallel test with serial build")
+    if 'MPI_IS_MPIUNI' in self.conf:
+      nsize=testDict.get('nsize','1')
+      if str(nsize) != '1':
+        testDict['SKIP'].append("Parallel test with serial build")
 
+      # The requirements for the test are the sum of all the run subtests
+      if 'subtests' in testDict:
+        if 'requires' not in testDict: testDict['requires']=""
+        for stest in testDict['subtests']:
+          if 'requires' in testDict[stest]:
+            testDict['requires']+=" "+testDict[stest]['requires']
+          nsize=testDict[stest].get('nsize','1')
+          if str(nsize) != '1':
+            testDict['SKIP'].append("Parallel test with serial build")
+            break
 
     # Now go through all requirements
     if 'requires' in testDict:
@@ -758,7 +762,6 @@ class generateExamples(Petsc):
     indent="   "
     fhname=os.path.join(self.testroot_dir,'GenPetscTests_summarize.txt')
     fh=open(fhname,"w")
-    #print "See ", fhname
     for root in dataDict:
       relroot=self.srcrelpath(root)
       pkg=relroot.split("/")[1]
@@ -809,6 +812,9 @@ class generateExamples(Petsc):
       if exfile.startswith("."): continue
       if exfile.startswith("#"): continue
       if exfile.endswith("~"): continue
+      # Only parse source files
+      ext=os.path.splitext(exfile)[-1].lstrip('.')
+      if ext not in LANGS: continue
 
       # Convenience
       fullex=os.path.join(root,exfile)
@@ -823,7 +829,6 @@ class generateExamples(Petsc):
     """
     Walk a directory tree, starting from 'top'
     """
-    #print "action", action
     # Goal of action is to fill this dictionary
     dataDict={}
     for root, dirs, files in os.walk(top, topdown=True):
@@ -835,7 +840,7 @@ class generateExamples(Petsc):
       if self.verbose: print(root)
       self.genPetscTests(root,dirs,files,dataDict)
     # Now summarize this dictionary
-    self.genPetscTests_summarize(dataDict)
+    if self.verbose: self.genPetscTests_summarize(dataDict)
     return dataDict
 
   def gen_gnumake(self, fd):
@@ -912,7 +917,6 @@ class generateExamples(Petsc):
           testdir="${TESTDIR}/"+basedir+"/"
           nmtest=self.nameSpace(test,basedir)
           rundir=os.path.join(testdir,test)
-          #print test, nmtest
           script=test+".sh"
 
           # Deps

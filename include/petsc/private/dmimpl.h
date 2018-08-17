@@ -74,6 +74,8 @@ struct _DMOps {
   PetscErrorCode (*computel2diff)(DM,PetscReal,PetscErrorCode(**)(PetscInt, PetscReal,const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
   PetscErrorCode (*computel2gradientdiff)(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal [],const PetscReal[],PetscInt, PetscScalar *,void *),void **,Vec,const PetscReal[],PetscReal *);
   PetscErrorCode (*computel2fielddiff)(DM,PetscReal,PetscErrorCode(**)(PetscInt, PetscReal,const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
+
+  PetscErrorCode (*getcompatibility)(DM,DM,PetscBool*,PetscBool*);
 };
 
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
@@ -230,7 +232,14 @@ struct _p_DM {
   PetscObject             dmksp,dmsnes,dmts;
 };
 
-PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
+PETSC_EXTERN PetscLogEvent DM_Convert;
+PETSC_EXTERN PetscLogEvent DM_GlobalToLocal;
+PETSC_EXTERN PetscLogEvent DM_LocalToGlobal;
+PETSC_EXTERN PetscLogEvent DM_LocatePoints;
+PETSC_EXTERN PetscLogEvent DM_Coarsen;
+PETSC_EXTERN PetscLogEvent DM_Refine;
+PETSC_EXTERN PetscLogEvent DM_CreateInterpolation;
+PETSC_EXTERN PetscLogEvent DM_CreateRestriction;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);

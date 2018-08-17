@@ -320,9 +320,9 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
    many values simultaneously if possible.
 
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd()
-   MUST be called after all calls to VecSetValues() have been completed.
+   MUST be called after all calls to VecSetValue() have been completed.
 
-   VecSetValues() uses 0-based indices in Fortran as well as in C.
+   VecSetValue() uses 0-based indices in Fortran as well as in C.
 
    Level: beginner
 
