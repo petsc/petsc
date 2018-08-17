@@ -5,7 +5,6 @@ static char help[] = "Tests L2 projection with DMSwarm using delta function part
 #include <petscds.h>
 #include <petscksp.h>
 #include <petsc/private/petscfeimpl.h>
-
 typedef struct {
   PetscInt       dim;                              /* The topological mesh dimension */
   PetscBool      simplex;                          /* Flag for simplices or tensor cells */
@@ -385,11 +384,12 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
 
-  //ierr = DMSwarmCreateInterpolationMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
   ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
+
   /* make particle weight vector */
   ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  
   /* create matrix RHS vector */
   ierr = MatMultTranspose(M_p, f, rhs);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
@@ -404,6 +404,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   ierr = KSPSolve(ksp, rhs, fhat);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fhat,"fhat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
+  
   /* Check moments of field */
   ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
   ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
@@ -418,38 +419,75 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   ierr = MatDestroy(&M_p);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &rhs);CHKERRQ(ierr);
-#if 0
-  /* get FE moments */
-  {
-    PetscScalar momentum, energy, density, tt[0];
-    PetscDS     prob;
-    Vec         vecs[3];
-    ierr = MatMultTranspose(QinterpT, f_q, rhs);CHKERRQ(ierr); /* interpolate particles to grid: Q * w_p */
-    ierr = KSPSolve(ksp, rhs, uproj);CHKERRQ(ierr);
-    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetObjective(prob, 0, &f0_1);CHKERRQ(ierr);
-    ierr = DMPlexComputeIntegralFEM(dm,uproj,tt,user);CHKERRQ(ierr);
-    density = tt[0];
-    ierr = PetscDSSetObjective(prob, 0, &f0_momx);CHKERRQ(ierr);
-    ierr = DMPlexComputeIntegralFEM(dm,uproj,tt,user);CHKERRQ(ierr);
-    momentum = tt[0];
-    ierr = PetscDSSetObjective(prob, 0, &f0_energy);CHKERRQ(ierr);
-    ierr = DMPlexComputeIntegralFEM(dm,uproj,tt,user);CHKERRQ(ierr);
-    energy = tt[0];
-    ierr = PetscPrintf(comm, "\t[%D] L2 projection x_m ([x_m-x_p]/x_m) rho: %20.13e (%11.4e), momentum_x: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n",rank,density,(density-den0tot)/density,momentum,(momentum-mom0tot)/momentum,energy,(energy-energy0tot)/energy);CHKERRQ(ierr);
-    /* compute coordinate vectos x and moments x' * Q * w_p */
-    ierr = computeMomentVectors(dm, vecs, user);CHKERRQ(ierr);
-    ierr = VecDot(vecs[0],rhs,&density);CHKERRQ(ierr);
-    ierr = VecDot(vecs[1],rhs,&momentum);CHKERRQ(ierr);
-    ierr = VecDot(vecs[2],rhs,&energy);CHKERRQ(ierr);
-    PetscPrintf(comm, "\t[%D] x' * Q * w_p: x_m ([x_m-x_p]/x_m) rho: %20.13e (%11.4e), momentum_x: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n",rank,density,(density-den0tot)/density,momentum,(momentum-mom0tot)/momentum,energy,(energy-energy0tot)/energy);
-    ierr = VecDestroy(&vecs[0]);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecs[1]);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecs[2]);CHKERRQ(ierr);
-  }
-#endif
+
   PetscFunctionReturn(0);
 }
+
+
+static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
+{
+  
+  MPI_Comm       comm;
+  KSP            ksp;
+  PC             pc;
+  Mat            M;            /* FEM mass matrix */
+  Mat            M_p;          /* Particle mass matrix */
+  Vec            f, rhs, fhat; /* Particle field f, \int phi_i fhat, FEM field */
+  PetscReal      pmoments[3];  /* \int f, \int x f, \int r^2 f */
+  PetscReal      fmoments[3];  /* \int \hat f, \int x \hat f, \int r^2 \hat f */
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  
+  /* create LSQR KSP and set PC type to none in lieu of user options */
+  ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp, KSPLSQR);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
+
+  ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
+
+  ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
+  
+  /* make particle weight vector */
+  ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  
+  /* create matrix RHS vector, in this case the FEM field fhat with the coefficients vector #alpha */
+  ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(rhs, NULL, "-rhs_view");CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
+  ierr = DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(M, NULL, "-M_view");CHKERRQ(ierr);
+  ierr = MatMultTranspose(M, fhat, rhs);CHKERRQ(ierr);
+
+  ierr = KSPSetOperators(ksp, M_p, M_p);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(ksp, rhs, f);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fhat,"fhat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
+
+  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  
+  /* Check moments */
+  ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
+  ierr = computeFEMMoments(dm, fhat, fmoments, user);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
+                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  for (m = 0; m < 3; ++m) {
+    if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+  }
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&M);CHKERRQ(ierr);
+  ierr = MatDestroy(&M_p);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &fhat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &rhs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 int main (int argc, char * argv[]) {
   MPI_Comm       comm;
@@ -464,95 +502,74 @@ int main (int argc, char * argv[]) {
   ierr = CreateFEM(dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = TestL2Projection(dm, sw, &user);CHKERRQ(ierr);
+  ierr = TestL2ProjectionParticlesToField(dm, sw, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = DMDestroy(&sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
 
-  /* if (1) { /\* print array *\/ */
-  /*   PetscInt    rStart, cStart, cEnd, cell; */
-  /*   PetscScalar *w_p; */
-  /*   const PetscReal *coords, *c2; */
-  /*   ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr); */
-  /*   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr); */
-  /*   ierr = VecGetOwnershipRange(f,&rStart,NULL);CHKERRQ(ierr); */
-  /*   ierr = DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr); */
-  /*   ierr = VecGetArray(f,&w_p);CHKERRQ(ierr); */
-  /*   for (cell = cStart, c2 = coords; cell < cEnd; ++cell) { */
-  /*     PetscInt *cindices, p; */
-  /*     PetscInt  numCIndices; */
-  /*     ierr = DMSwarmSortGetPointsPerCell(sw, cell, &numCIndices, &cindices);CHKERRQ(ierr); */
-  /*     for (p = 0; p < numCIndices; ++p, c2 += 2) { */
-  /*       PetscPrintf(PETSC_COMM_SELF, "[%D]TestL2Projection: %D) real coord[%4D]:%12.5e,%12.5e, w_p[%D]=%12.5e\n",-1,c2-coords,c2-coords,c2[0],c2[1],cindices[p],w_p[cindices[p]]); */
-  /*     } */
-  /*     ierr = PetscFree(cindices);CHKERRQ(ierr); */
-  /*   } */
-  /*   ierr = VecRestoreArray(f,&w_p);CHKERRQ(ierr); */
-  /*   ierr = DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr); */
-  /*   ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr); */
-  /* } */
-
+ 
 /*TEST
 
   test:
     suffix: proj_tri_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}
+    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_2_faces
-    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_quad_0
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}
+    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ksp_rtol 1e-15
 
   test:
     suffix: proj_quad_2_faces
-    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_quad_5P
-    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_mdx
-    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_mdx_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_3d
-    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}  -pc_type lu
+    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}  -pc_type lu -ksp_rtol 1e-15
   
   test:
     suffix: proj_tri_3d_2_faces
-    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
   
   test:
     suffix: proj_tri_3d_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_3d_mdx
-    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_3d_mdx_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
   
   test:
     suffix: proj_tri_3d_mdx_2_faces
-    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
   test:
     suffix: proj_tri_3d_mdx_5P_2_faces
-    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu
+    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
 
 TEST*/
