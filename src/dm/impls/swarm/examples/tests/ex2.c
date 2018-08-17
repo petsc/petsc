@@ -366,7 +366,7 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
+static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
 {
   MPI_Comm       comm;
   KSP            ksp;
@@ -381,6 +381,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ksp, "ptof_");CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
 
@@ -424,12 +425,11 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
 }
 
 
-static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
+static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *user)
 {
-  
+
   MPI_Comm       comm;
   KSP            ksp;
-  PC             pc;
   Mat            M;            /* FEM mass matrix */
   Mat            M_p;          /* Particle mass matrix */
   Vec            f, rhs, fhat; /* Particle field f, \int phi_i fhat, FEM field */
@@ -441,12 +441,9 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   
-  /* create LSQR KSP and set PC type to none in lieu of user options */
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp, KSPLSQR);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ksp, "ftop_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
@@ -501,8 +498,8 @@ int main (int argc, char * argv[]) {
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateFEM(dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
-  ierr = TestL2Projection(dm, sw, &user);CHKERRQ(ierr);
   ierr = TestL2ProjectionParticlesToField(dm, sw, &user);CHKERRQ(ierr);
+  ierr = TestL2ProjectionFieldToParticles(dm, sw, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = DMDestroy(&sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -514,62 +511,62 @@ int main (int argc, char * argv[]) {
 
   test:
     suffix: proj_tri_0
-    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ksp_rtol 1e-15
+    args: -dim 2 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_2_faces
-    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -faces 2  -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_quad_0
-    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ksp_rtol 1e-15
+    args: -dim 2 -simplex 0 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_quad_2_faces
-    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -simplex 0 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_quad_5P
-    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -simplex 0 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_mdx
-    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_mdx_5P
-    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 2 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_3d
-    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}}  -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
   
   test:
     suffix: proj_tri_3d_2_faces
-    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 2 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
   
   test:
     suffix: proj_tri_3d_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 1 -particlesPerCell 5 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_3d_mdx
-    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 1 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_3d_mdx_5P
-    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 1 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
   
   test:
     suffix: proj_tri_3d_mdx_2_faces
-    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 2 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
   test:
     suffix: proj_tri_3d_mdx_5P_2_faces
-    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -pc_type lu -ksp_rtol 1e-15
+    args: -dim 3 -faces 2 -particlesPerCell 5 -mesh_perturbation 1.0e-1 -dm_view -sw_view -petscspace_order 2 -petscfe_default_quadrature_order {{2 3}} -ptof_pc_type lu  -ftop_ksp_rtol 1e-15 -ftop_ksp_type lsqr -ftop_pc_type none
 
 TEST*/
