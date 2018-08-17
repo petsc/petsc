@@ -2922,6 +2922,15 @@ PETSC_EXTERN PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm,PetscMPIInt,P
 PETSC_EXTERN PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm,PetscMPIInt,PetscMPIInt*);
 PETSC_EXTERN PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm,MPI_Comm*);
 
+/* routines to better support OpenMP multithreading needs of some PETSc third party libraries */
+typedef struct _n_PetscOmpCtrl* PetscOmpCtrl;
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlCreate(MPI_Comm,PetscInt,PetscOmpCtrl*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl,MPI_Comm*,MPI_Comm*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl);
+
 /*S
    PetscSegBuffer - a segmented extendable buffer
 
