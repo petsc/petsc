@@ -647,7 +647,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const Pets
   PetscInt       cstart      = mat->cmap->rstart,cend = mat->cmap->rend,col;
   PetscInt       *ailen      = a->ilen,*aj = a->j;
   PetscInt       *bilen      = b->ilen,*bj = b->j;
-  PetscInt       am          = aij->A->rmap->n,i,j;
+  PetscInt       am          = aij->A->rmap->n,j;
   PetscInt       diag_so_far = 0,dnz;
   PetscInt       offd_so_far = 0,onz;
 
@@ -656,8 +656,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const Pets
   for (j=0; j<am; j++) {
     dnz = onz = 0;
     /*  Iterate over all non-zero columns of the current row */
-    for (i=0; i<mat_i[j+1]-mat_i[j]; i++) {
-      col = i + mat_i[j];
+    for (col=mat_i[j]; col<mat_i[j+1]; col++) {
       /* If column is in the diagonal */
       if (mat_j[col] >= cstart && mat_j[col] < cend) {
         aj[diag_so_far++] = mat_j[col] - cstart;
@@ -689,7 +688,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_
   PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
   PetscInt       *ailen = a->ilen,*aj = a->j;
   PetscInt       *bilen = b->ilen,*bj = b->j;
-  PetscInt       am     = aij->A->rmap->n,i,j;
+  PetscInt       am     = aij->A->rmap->n,j;
   PetscInt       col,dnz_row,onz_row,rowstart_diag,rowstart_offd;
   PetscScalar    *aa = a->a,*ba = b->a;
 
@@ -698,8 +697,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_
   for (j=0; j<am; j++) {
     dnz_row = onz_row = 0;
     /*  Iterate over all non-zero columns of the current row */
-    for (i=0; i<mat_i[j+1]-mat_i[j]; i++) {
-      col = i + mat_i[j];
+    for (col=mat_i[j]; col<mat_i[j+1]; col++) {
       rowstart_offd = full_offd_i[j];
       rowstart_diag = full_diag_i[j];
       /* If column is in the diagonal */
