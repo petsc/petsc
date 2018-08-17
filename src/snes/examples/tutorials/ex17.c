@@ -361,7 +361,7 @@ PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[],
   /* Create finite element */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, Nc, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
