@@ -675,7 +675,9 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const Pets
 /*
     This function sets the local j, a and ilen arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
     The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
-    No off-processor parts off the matrix are allowed here and mat->was_assembled has to be PETSC_FALSE.
+    No off-processor parts off the matrix are allowed here, they are set at a later point by MatSetValues_MPIAIJ.
+    Also, mat->was_assembled has to be false, otherwise the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart;
+    would not be true and the more complex MatSetValues_MPIAIJ has to be used.
 */
 PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[],const PetscScalar mat_a[])
 {
@@ -689,7 +691,7 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_
   PetscInt       *ailen = a->ilen,*aj = a->j;
   PetscInt       *bilen = b->ilen,*bj = b->j;
   PetscInt       am     = aij->A->rmap->n,j;
-  PetscInt       *full_diag_i=aijd->i,*full_offd_i=aijo->i;
+  PetscInt       *full_diag_i=aijd->i,*full_offd_i=aijo->i; /* These variables can also include non-local elements, which are set at a later point. */
   PetscInt       col,dnz_row,onz_row,rowstart_diag,rowstart_offd;
   PetscScalar    *aa = a->a,*ba = b->a;
 

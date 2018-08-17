@@ -244,6 +244,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
 
   /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assembled is PETSC_FALSE and */
   /* when there are no off-processor parts.  */
+  /* If was_assembled is true, then the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart; in MatSetValues_MPIAIJ_CopyFromCSRFormat */
+  /* is no longer true. Then the more complex function MatSetValues_MPIAIJ() has to be used, where the column index is looked up from */
+  /* a table, and other, more complex stuff has to be done. */
   if (C->assembled) {
     C->was_assembled = PETSC_TRUE;
     C->assembled     = PETSC_FALSE;
@@ -1031,6 +1034,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assembled is PETSC_FALSE and */
   /* when there are no off-processor parts.  */
+  /* If was_assembled is true, then the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart; in MatSetValues_MPIAIJ_CopyFromCSRFormat */
+  /* is no longer true. Then the more complex function MatSetValues_MPIAIJ() has to be used, where the column index is looked up from */
+  /* a table, and other, more complex stuff has to be done. */
   if (C->assembled) {
     C->was_assembled = PETSC_TRUE;
     C->assembled     = PETSC_FALSE;
