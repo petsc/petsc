@@ -677,18 +677,19 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const Pets
     The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
     No off-processor parts off the matrix are allowed here and mat->was_assembled has to be PETSC_FALSE.
 */
-PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[],const PetscScalar mat_a[],
-                                                     const PetscInt full_diag_i[],const PetscInt full_offd_i[])
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[],const PetscScalar mat_a[])
 {
   Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
   Mat            A      = aij->A; /* diagonal part of the matrix */
   Mat            B      = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *aijd  =(Mat_SeqAIJ*)(aij->A)->data,*aijo=(Mat_SeqAIJ*)(aij->B)->data;
   Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ     *b     = (Mat_SeqAIJ*)B->data;
   PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
   PetscInt       *ailen = a->ilen,*aj = a->j;
   PetscInt       *bilen = b->ilen,*bj = b->j;
   PetscInt       am     = aij->A->rmap->n,j;
+  PetscInt       *full_diag_i=aijd->i,*full_offd_i=aijo->i;
   PetscInt       col,dnz_row,onz_row,rowstart_diag,rowstart_offd;
   PetscScalar    *aa = a->a,*ba = b->a;
 
@@ -696,10 +697,10 @@ PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_
   /* Iterate over all rows of the matrix */
   for (j=0; j<am; j++) {
     dnz_row = onz_row = 0;
+    rowstart_offd = full_offd_i[j];
+    rowstart_diag = full_diag_i[j];
     /*  Iterate over all non-zero columns of the current row */
     for (col=mat_i[j]; col<mat_i[j+1]; col++) {
-      rowstart_offd = full_offd_i[j];
-      rowstart_diag = full_diag_i[j];
       /* If column is in the diagonal */
       if (mat_j[col] >= cstart && mat_j[col] < cend) {
         aj[rowstart_diag+dnz_row] = mat_j[col] - cstart;
