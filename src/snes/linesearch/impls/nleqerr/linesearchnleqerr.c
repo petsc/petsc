@@ -322,9 +322,8 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)
 {
-
   SNESLineSearch_NLEQERR *nleqerr;
-  PetscErrorCode    ierr;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_NLEQERR;
