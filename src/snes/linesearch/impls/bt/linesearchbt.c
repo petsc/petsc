@@ -18,15 +18,13 @@ typedef struct {
 @*/
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
-  SNESLineSearch_BT *bt;
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  bt        = (SNESLineSearch_BT*)linesearch->data;
   bt->alpha = alpha;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the BT linesearch variant.
@@ -43,11 +41,10 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 @*/
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
-  SNESLineSearch_BT *bt;
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  bt     = (SNESLineSearch_BT*)linesearch->data;
   *alpha = bt->alpha;
   PetscFunctionReturn(0);
 }
@@ -65,7 +62,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscReal         g,gprev;
   PetscViewer       monitor;
   PetscInt          max_its,count;
-  SNESLineSearch_BT *bt;
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
   Mat               jac;
   PetscErrorCode    (*objective)(SNES,Vec,PetscReal*,void*);
 
@@ -78,7 +75,6 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,&maxstep,NULL,NULL,NULL,&max_its);CHKERRQ(ierr);
   ierr = SNESGetTolerances(snes,NULL,NULL,&stol,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESGetObjective(snes,&objective,NULL);CHKERRQ(ierr);
-  bt   = (SNESLineSearch_BT*)linesearch->data;
   alpha = bt->alpha;
 
   ierr = SNESGetJacobian(snes, &jac, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -394,11 +390,10 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
-  SNESLineSearch_BT *bt;
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  bt   = (SNESLineSearch_BT*)linesearch->data;
   if (iascii) {
     if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
       ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: cubic\n");CHKERRQ(ierr);
@@ -410,7 +405,6 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 {
   PetscErrorCode ierr;
@@ -420,10 +414,8 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOptionsObject,SNESLineSearch linesearch)
 {
-
   PetscErrorCode    ierr;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
@@ -433,7 +425,6 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*MC
    SNESLINESEARCHBT - Backtracking line search.
