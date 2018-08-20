@@ -181,6 +181,22 @@ PetscErrorCode TSBSIRegister(TSRosWType name,PetscInt order,PetscInt s,const Pet
   PetscFunctionReturn(0);
 }
 
+/*
+The simplified form of the equations are:
+
+$ p_{i+1} = p_i + c_i*g(q_i)*h
+$ q_{i+1} = q_i + d_i*f(p_{i+1},t_{i+1})*h
+
+Several symplectic integrators are given below. An illustrative way to use them is to consider a particle with position q and velocity p.
+
+To apply a timestep with values c_{1,2},d_{1,2} to the particle, carry out the following steps:
+
+- Update the velocity of the particle by adding to it its acceleration multiplied by c_1
+- Update the position of the particle by adding to it its (updated) velocity multiplied by d_1
+- Update the velocity of the particle by adding to it its acceleration (at the updated position) multiplied by c_2
+- Update the position of the particle by adding to it its (double-updated) velocity multiplied by d_2
+
+*/
 static PetscErrorCode TSStep_BSI(TS ts)
 {
   TS_BSI         *bsi = (TS_BSI*)ts->data;
@@ -192,24 +208,23 @@ static PetscErrorCode TSStep_BSI(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecNestGetSubVec(solution,0,&p);CHKERRQ(ierr);
-  ierr = VecNestGetSubVec(solution,1,&q);CHKERRQ(ierr);
-
-  ierr = VecNestGetSubVec(update,0,&p_update);CHKERRQ(ierr);
-  ierr = VecNestGetSubVec(update,1,&q_update);CHKERRQ(ierr);
+  ierr = VecGetSubVector(solution,ts->iss[0],&q);CHKERRQ(ierr);
+  ierr = VecGetSubVector(solution,ts->iss[1],&p);CHKERRQ(ierr);
+  ierr = VecGetSubVector(update,ts->iss[0],&q_update);CHKERRQ(ierr);
+  ierr = VecGetSubVector(update,ts->iss[1],&p_update);CHKERRQ(ierr);
 
   for (iter = 0;iter<scheme->s;iter++) {
-    /* wikipedia says update q first, then p. It is wrong. */
     ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
-    ierr = TSComputeRHSFunctionSplit2w(ts,ts->ptime,q,p_update,1);CHKERRQ(ierr);
-    /* update p */
-    ierr = VecAXPY(p,scheme->d[iter]*ts->time_step,p_update);CHKERRQ(ierr);
+    /* update velocity p */
     if (scheme->c[iter]) {
-      ierr = TSComputeRHSFunctionSplit2w(ts,ts->ptime,p,q_update,2);CHKERRQ(ierr);
-      /* update q */
-      ierr = VecAXPY(q,scheme->c[iter]*ts->time_step,q_update);CHKERRQ(ierr);
-      /* for nonautonomous systems */
-      ts->ptime = ts->ptime+scheme->c[iter]*ts->time_step;
+      ierr = TSComputeRHSSplitFunction(ts,2,ts->ptime,q,p_update);CHKERRQ(ierr);
+      ierr = VecAXPY(p,scheme->c[iter]*ts->time_step,p_update);CHKERRQ(ierr);
+    }
+    /* update position q */
+    if (scheme->d[iter]) {
+      ierr = TSComputeRHSSplitFunction(ts,1,ts->ptime,p,q_update);CHKERRQ(ierr);
+      ierr = VecAXPY(q,scheme->d[iter]*ts->time_step,q_update);CHKERRQ(ierr);
+      ts->ptime = ts->ptime+scheme->d[iter]*ts->time_step;
     }
     ierr = TSPostStage(ts,ts->ptime,0,&solution);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime,solution,&stageok);CHKERRQ(ierr);
@@ -219,6 +234,10 @@ static PetscErrorCode TSStep_BSI(TS ts)
   }
 
   ts->time_step = next_time_step;
+  ierr = VecRestoreSubVector(solution,ts->iss[0],&q);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(solution,ts->iss[1],&p);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(update,ts->iss[0],&q_update);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(update,ts->iss[1],&p_update);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,19 +268,15 @@ static PetscErrorCode DMSubDomainRestrictHook_BSI(DM dm,VecScatter gscat,VecScat
 
 static PetscErrorCode TSSetUp_BSI(TS ts)
 {
-  TS_BSI               *bsi = (TS_BSI*)ts->data;
-  DM                   dm;
-  VecType              vtype;
-  PetscBool            isNestVec;
-  TSRHSFunctionSplit2w rhsfunction1,rhsfunction2;
-  PetscErrorCode       ierr;
+  TS_BSI         *bsi = (TS_BSI*)ts->data;
+  DM             dm;
+  TSRHSFunction  rhssplitfunction1,rhssplitfunction2;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  TSGetRHSFunctionSplit2w(ts,NULL,&rhsfunction1,&rhsfunction2,NULL);CHKERRQ(ierr);
-  if (!rhsfunction1 || !rhsfunction2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunctionSplit2w() in order to use -ts_type bsi");
-  ierr = VecGetType(ts->vec_sol,&vtype);CHKERRQ(ierr);
-  ierr = PetscStrcmp(vtype,VECNEST,&isNestVec);CHKERRQ(ierr);
-  if (!isNestVec) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must use nest vector for the solution in order to use -ts_type bsi");
+  ierr = TSGetRHSSplitFunction(ts,1,NULL,&rhssplitfunction1,NULL);CHKERRQ(ierr);
+  ierr = TSGetRHSSplitFunction(ts,2,NULL,&rhssplitfunction2,NULL);CHKERRQ(ierr);
+  if (!rhssplitfunction1 || !rhssplitfunction2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunctionSplit2w() in order to use -ts_type bsi");
   ierr = VecDuplicate(ts->vec_sol,&bsi->update);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
@@ -345,7 +360,7 @@ static PetscErrorCode TSComputeLinearStability_BSI(TS ts,PetscReal xr,PetscReal 
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSBSISetType - Set the type of the BSI method
 
   Logically Collective on TS
@@ -358,7 +373,6 @@ static PetscErrorCode TSComputeLinearStability_BSI(TS ts,PetscReal xr,PetscReal 
 .  -ts_bsi_type <scheme>
 
   Level: intermediate
-
 @*/
 PetscErrorCode TSBSISetType(TS ts,TSBSIType bsitype)
 {
@@ -370,6 +384,17 @@ PetscErrorCode TSBSISetType(TS ts,TSBSIType bsitype)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  TSBSIGetType - Get the type of the BSI method
+
+  Logically Collective on TS
+
+  Input Parameter:
++  ts - timestepping context
+-  bsitype - type of the BSI scheme
+
+  Level: intermediate
+@*/
 PetscErrorCode TSBSIGetType(TS ts,TSBSIType *bsitype)
 {
   PetscErrorCode ierr;
@@ -417,8 +442,8 @@ static PetscErrorCode  TSBSIGetType_BSI(TS ts,TSBSIType *bsitype)
 
   These methods are intened for separable Hamiltonian systems
 
-$  pdot = -dH(q,p,t)/dq
 $  qdot = dH(q,p,t)/dp
+$  pdot = -dH(q,p,t)/dq
 
   where the Hamiltonian can be split into the sum of kinetic energy and potential energy
 
@@ -426,20 +451,20 @@ $  H(q,p,t) = T(p,t) + V(q,t).
 
   As a result, the system can be genearlly represented by
 
-$  pdot = f(q,t) = -dV(q,t)/dq
-$  qdot = g(p,t) = dT(p,t)/dp
+$  qdot = f(p,t) = dT(p,t)/dp
+$  pdot = g(q,t) = -dV(q,t)/dq
 
   and solved iteratively with
 
-$  q_new = q_old + c_i*h*g(p_old,t_old)
-$  t_new = t_old + c_i*h
-$  p_new = p_old + d_i*h*f(q_new,t_new)
+$  q_new = q_old + d_i*h*f(p_old,t_old)
+$  t_new = t_old + d_i*h
+$  p_new = p_old + c_i*h*g(p_new,t_new)
 $  i=0,1,...,n.
 
-  The solution is represented by a nest vec [p,q].
+  The solution vector should contain both q and p, which correspond to position and momentum respectively.
   f and g are provided by RHSFunction1 and RHSFunction2 respectively.
 
-  Reference: wikipedia
+  Reference: wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
   Level: beginner
 

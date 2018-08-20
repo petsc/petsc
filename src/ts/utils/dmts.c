@@ -872,26 +872,26 @@ PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
 }
 
 /*@C
-   DMTSSetRHSFunctionSplit2w - set TS explicit residual evaluation functions based on two-way component partitioning
+   DMTSSetRHSSplitFunction - set TS explicit residual evaluation functions
 
    Not Collective
 
    Input Arguments:
-+  dm - DM to be used with TS
-.  fun1 - RHS function evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
-.  fun2 - RHS function evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
--  ctx - context for residual evaluation
++  dm     - DM to be used with TS
+.  ind    - index of the RHS function to be set
+.  rshfun - RHS function evaluation function, see TSSetRHSSplitFunction() for calling sequence
+-  ctx    - context for residual evaluation
 
    Level: advanced
 
    Note:
-   TSSetRSHFunctionSplit2w() is normally used, but it calls this function internally because the user context is actually
+   TSSetRHSSplitFunction() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetFunctioniSplit2w(), DMTSSetJacobianSplit2w()
+.seealso: DMTSSetContext(), TSSetRHSSplitFunctioni(), DMTSSetRHSSplitJacobian()
 @*/
-PetscErrorCode DMTSSetRHSFunctionSplit2w(DM dm,TSRHSFunctionSplit2w fun1,TSRHSFunctionSplit2w fun2,void *ctx)
+PetscErrorCode DMTSSetRHSSplitFunction(DM dm,PetscInt ind,TSRHSFunction rhsfunc,void *ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -899,14 +899,13 @@ PetscErrorCode DMTSSetRHSFunctionSplit2w(DM dm,TSRHSFunctionSplit2w fun1,TSRHSFu
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (fun1) tsdm->ops->rhsfunction1 = fun1;
-  if (fun2) tsdm->ops->rhsfunction2 = fun2;
-  if (ctx)  tsdm->rhsfunctionctx = ctx;
+  if (rhsfunc) tsdm->ops->rhssplitfunctions[ind-1] = rhsfunc;
+  if (ctx) tsdm->rhssplitfunctionctxs[ind-1] = ctx;
   PetscFunctionReturn(0);
 }
 
 /*@C
-   DMTSGetRHSFunctionSplit2w - get TS explicit residual evaluation functions based on two-way partitioning
+   DMTSGetRHSSplitFunction - get a TS explicit residual evaluation function
 
    Not Collective
 
@@ -914,19 +913,19 @@ PetscErrorCode DMTSSetRHSFunctionSplit2w(DM dm,TSRHSFunctionSplit2w fun1,TSRHSFu
 .  dm - DM to be used with TS
 
    Output Arguments:
-+  fun1 - residual evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
-.  fun2 - residual evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
--  ctx - context for residual evaluation
++  rhsfunc - residual evaluation function, see TSSetRHSSplitFunction() for calling sequence
+.  ind     - index of the requested RHS function
+-  ctx     - context for residual evaluation
 
    Level: advanced
 
    Note:
-   TSGetFunctionSplit2w() is normally used, but it calls this function internally because the user context is actually
+   TSGetRHSSplitFunction() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.
 
-.seealso: DMTSSetContext(), DMTSSetFunctionSplit2w(), TSSetFunctionSplit2w()
+.seealso: DMTSSetContext(), DMTSSetRHSSplitFunction(), TSSetRHSSplitFunction()
 @*/
-PetscErrorCode DMTSGetRHSFunctionSplit2w(DM dm,TSRHSFunction *fun1,TSRHSFunction *fun2,void **ctx)
+PetscErrorCode DMTSGetRHSSplitFunction(DM dm,PetscInt ind,TSRHSFunction *rhsfunc,void **ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -934,8 +933,7 @@ PetscErrorCode DMTSGetRHSFunctionSplit2w(DM dm,TSRHSFunction *fun1,TSRHSFunction
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
-  if (fun1) *fun1 = tsdm->ops->rhsfunction1;
-  if (fun2) *fun2 = tsdm->ops->rhsfunction2;
-  if (ctx)  *ctx = tsdm->rhsfunctionctx;
+  if (rhsfunc) *rhsfunc = tsdm->ops->rhssplitfunctions[ind-1];
+  if (ctx) *ctx = tsdm->rhssplitfunctionctxs[ind-1];
   PetscFunctionReturn(0);
 }

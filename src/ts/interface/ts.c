@@ -1785,19 +1785,73 @@ PetscErrorCode  TS2GetSolution(TS ts,Vec *u,Vec *v)
 }
 
 /*@C
- TSSetRHSFunctionSplit2w - Set the split right-hand-side functions which are based on two-way component partitioning.
+   TSSetRHSSplits - Set the number of splits for the RHS function
+
+   Logically Collective on TS
+
+   Input Parameters:
+   + ts        - the TS context obtained from TSCreate()
+   - numsplits - the number of splits for the RHS function
+
+   Level: intermediate
+
+.seealso: TSSetRHSSplitFunction, TSGetRHSSplitFunction
+
+.keywords: TS, multirate
+@*/
+PetscErrorCode TSSetRHSSplits(TS ts,PetscInt numsplits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (numsplits > MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of splits set for RHSFunction exceeds the maximum number allowed");
+  ts->num_rhs_splits = numsplits;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSSetRHSSplitIS - Set the index set for the specified split
+
+   Logically Collective on TS
+
+   Input Parameters:
+   + ts  - the TS context obtained from TSCreate()
+   . ind - the index of the split, starting from 1
+   - is  - the index set for part of the solution vector
+
+   Level: intermediate
+
+.seealso: TSSetRHSSplits
+
+.keywords: TS, multirate
+@*/
+PetscErrorCode TSSetRHSSplitIS(TS ts,PetscInt ind,IS is)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+  if (!ts->num_rhs_splits) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Call TSSetRHSSplits() to set the Number of splits first");
+  if (ind > ts->num_rhs_splits || ind <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Second argument is out of range");
+  ierr = ISDestroy(&ts->iss[ind-1]);CHKERRQ(ierr);
+  ts->iss[ind-1] = is;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ TSSetRHSSplitFunction - Set the split right-hand-side functions.
 
  Logically Collective on TS
 
  Input Parameters:
- +  ts  - the TS context obtained from TSCreate()
- .  r   - vector to hold the residual (or NULL to have it created internally)
- .  fun1 - the first function evaluation routine corresponding
- .  fun2 - the second function evaluation routine corresponding
- -  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
+ +  ts      - the TS context obtained from TSCreate()
+ .  ind     - the index of split RHS function
+ .  r       - vector to hold the residual (or NULL to have it created internally)
+ .  rhsfunc - the RHS function evaluation routine
+ -  ctx     - user-defined context for private data for the split function evaluation routine (may be NULL)
 
  Calling sequence of fun:
- $  fun(TS ts,PetscReal t,Vec u,Vec f,ctx);
+ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
 
  +  t    - time at step/stage being solved
  .  u    - state vector
@@ -1808,9 +1862,9 @@ PetscErrorCode  TS2GetSolution(TS ts,Vec *u,Vec *v)
 
  .keywords: TS, timestep, set, ODE, Hamiltonian, Function
 
- .seealso: TSGetRHSFunctionSplit2w()
+ .seealso: TSGetRHSSplitFunction()
  @*/
-PetscErrorCode TSSetRHSFunctionSplit2w(TS ts,Vec r,TSRHSFunctionSplit2w fun1,TSRHSFunctionSplit2w fun2,void *ctx)
+PetscErrorCode TSSetRHSSplitFunction(TS ts,PetscInt ind,Vec r,TSRHSFunction rhsfunc,void *ctx)
 {
   DM             dm;
   SNES           snes;
@@ -1822,7 +1876,7 @@ PetscErrorCode TSSetRHSFunctionSplit2w(TS ts,Vec r,TSRHSFunctionSplit2w fun1,TSR
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSSetRHSFunctionSplit2w(dm,fun1,fun2,ctx);CHKERRQ(ierr);
+  ierr = DMTSSetRHSSplitFunction(dm,ind,rhsfunc,ctx);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!r && !ts->dm && ts->vec_sol) {
@@ -1835,7 +1889,7 @@ PetscErrorCode TSSetRHSFunctionSplit2w(TS ts,Vec r,TSRHSFunctionSplit2w fun1,TSR
 }
 
 /*@C
- TSGetRHSFunctionSplit2w - Returns the vector where the RHS residual is stored and the functions to compute it.
+ TSGetRHSSplitFunction - Returns the vector where the split RHS residual is stored and the functions to compute it.
 
  Not Collective
 
@@ -1843,18 +1897,17 @@ PetscErrorCode TSSetRHSFunctionSplit2w(TS ts,Vec r,TSRHSFunctionSplit2w fun1,TSR
  . ts - the TS context
 
  Output Parameter:
- + r - vector to hold residual (or NULL)
- . fun1 - the function to compute part of the residual (or NULL)
- . fun2 - the function to compute part of the residual (or NULL)
- - ctx - the function context (or NULL)
+ + r       - vector to hold residual (or NULL)
+ . rhsfunc - the function to compute part of the residual (or NULL)
+ - ctx     - the function context (or NULL)
 
  Level: advanced
 
  .keywords: TS, nonlinear, get, function
 
- .seealso: TSSetRHSFunctionSplit2w(), SNESGetFunction()
+ .seealso: TSSetRHSSplitFunction(), SNESGetFunction()
  @*/
-PetscErrorCode TSGetRHSFunctionSplit2w(TS ts,Vec *r,TSRHSFunctionSplit2w *fun1,TSRHSFunctionSplit2w *fun2,void **ctx)
+PetscErrorCode TSGetRHSSplitFunction(TS ts,PetscInt ind,Vec *r,TSRHSFunction *rhsfunc,void **ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -1865,12 +1918,12 @@ PetscErrorCode TSGetRHSFunctionSplit2w(TS ts,Vec *r,TSRHSFunctionSplit2w *fun1,T
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSGetRHSFunctionSplit2w(dm,fun1,fun2,ctx);CHKERRQ(ierr);
+  ierr = DMTSGetRHSSplitFunction(dm,ind,rhsfunc,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
- TSComputeRHSFunctionSplit2w - Evaluates the right-hand-side function.
+ TSComputeRHSSplitFunction - Evaluates the right-hand-side function.
 
  Collective on TS and Vec
 
@@ -1890,14 +1943,14 @@ PetscErrorCode TSGetRHSFunctionSplit2w(TS ts,Vec *r,TSRHSFunctionSplit2w *fun1,T
 
  .keywords: TS, compute
 
- .seealso: TSSetRHSFunctionSplit2w()
+ .seealso: TSSetRHSSplitFunction()
  @*/
-PetscErrorCode TSComputeRHSFunctionSplit2w(TS ts,PetscReal t,Vec U,Vec y,PetscInt component)
+PetscErrorCode TSComputeRHSSplitFunction(TS ts,PetscInt ind,PetscReal t,Vec U,Vec y)
 {
-  PetscErrorCode       ierr;
-  TSRHSFunctionSplit2w rhsfunction1,rhsfunction2;
-  void                 *ctx;
-  DM                   dm;
+  PetscErrorCode ierr;
+  TSRHSFunction  rhsfunc;
+  void           *ctx;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1905,18 +1958,14 @@ PetscErrorCode TSComputeRHSFunctionSplit2w(TS ts,PetscReal t,Vec U,Vec y,PetscIn
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
 
-  ierr = DMTSGetRHSFunctionSplit2w(dm,&rhsfunction1,&rhsfunction2,&ctx);CHKERRQ(ierr);
+  ierr = DMTSGetRHSSplitFunction(dm,ind,&rhsfunc,&ctx);CHKERRQ(ierr);
 
-  if (!rhsfunction1 || !rhsfunction2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunctionSplit2w()");
+  if (!rhsfunc) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSSplitFunction()");
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
 
   PetscStackPush("TS user right-hand-side function");
-  if (component==1) {
-    ierr = (*rhsfunction1)(ts,t,U,y,ctx);CHKERRQ(ierr);
-  } else if (component==2) {
-    ierr = (*rhsfunction2)(ts,t,U,y,ctx);CHKERRQ(ierr);
-  }
+  ierr = (*rhsfunc)(ts,t,U,y,ctx);CHKERRQ(ierr);
   PetscStackPop;
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
@@ -2725,6 +2774,7 @@ PetscErrorCode  TSSetUp(TS ts)
 @*/
 PetscErrorCode  TSReset(TS ts)
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2753,6 +2803,9 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
+  for (i=0; i<ts->num_rhs_splits; i++) {
+    ierr = ISDestroy(&ts->iss[i]);CHKERRQ(ierr);
+  }
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

@@ -17,6 +17,11 @@
 */
 #define MAXTSMONITORS 10
 
+/*
+     Maximum number of partitions you can split the RHS function into
+*/
+#define MAXRHSSPLITS 3
+
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
@@ -220,6 +225,9 @@ struct _p_TS {
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
   Vec      *work;
+
+  PetscInt num_rhs_splits;
+  IS       iss[MAXRHSSPLITS];
 };
 
 struct _TSAdaptOps {
@@ -273,8 +281,7 @@ struct _DMTSOps {
   TSI2Jacobian i2jacobian;
 
   /* needed by symplectic integrators to solve separable Hamiltonian systems */
-  TSRHSFunctionSplit2w rhsfunction1;
-  TSRHSFunctionSplit2w rhsfunction2;
+  TSRHSFunction rhssplitfunctions[MAXRHSSPLITS];
 
   TSSolutionFunction solution;
   TSForcingFunction  forcing;
@@ -298,6 +305,8 @@ struct _p_DMTS {
   void *forcingctx;
 
   void *data;
+
+  void *rhssplitfunctionctxs[MAXRHSSPLITS];
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
    * copy-on-write. When DMGetDMTSWrite() sees a request using a different DM, it makes a copy. Thus, if a user

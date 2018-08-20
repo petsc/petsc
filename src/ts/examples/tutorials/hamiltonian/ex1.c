@@ -10,8 +10,8 @@ Input parameters include:\n";
 /* ------------------------------------------------------------------------
 
   This program solves the motion of spring by Hooke's law
-  v' = f(t,x) = -omega^2*x
-  x' = g(t,v) = v
+  x' = f(t,v) = v
+  v' = g(t,x) = -omega^2*x
   on the interval 0 <= t <= 0.1, with the initial conditions
     x(0) = 0.2, x'(0) = v(0) = 0,
   and
@@ -43,7 +43,7 @@ struct _n_User {
   The first RHS function provides f(t,x), the residual for the generalized momentum,
   and the second one provides g(t,v), the residual for the generalized position.
 */
-static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
+static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
 {
   User              user = (User)ctx;
   const PetscScalar *x;
@@ -59,7 +59,7 @@ static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec X,Vec Vres,void *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec V,Vec Xres,void *ctx)
+static PetscErrorCode RHSFunction1(TS ts,PetscReal t,Vec V,Vec Xres,void *ctx)
 {
   const PetscScalar *v;
   PetscScalar       *xres;
@@ -77,27 +77,17 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec V,Vec Xres,void *ctx)
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec R,void *ctx)
 {
   User              user = (User)ctx;
-  Vec               V,X,Rv,Rx;
-  const PetscScalar *v,*x;
-  PetscScalar       *rv,*rx;
+  const PetscScalar *u;
+  PetscScalar       *r;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecNestGetSubVec(U,0,&V);CHKERRQ(ierr);
-  ierr = VecNestGetSubVec(U,1,&X);CHKERRQ(ierr);
-  ierr = VecNestGetSubVec(R,0,&Rv);CHKERRQ(ierr);
-  ierr = VecNestGetSubVec(R,1,&Rx);CHKERRQ(ierr);
-
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Rv,&rv);CHKERRQ(ierr);
-  ierr = VecGetArray(Rx,&rx);CHKERRQ(ierr);
-  rv[0] = -user->omega*user->omega*x[0];
-  rx[0] = v[0];
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Rv,&rv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Rx,&rx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(R,&r);CHKERRQ(ierr);
+  r[0] = u[1];
+  r[1] = -user->omega*user->omega*u[0];
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,20 +95,17 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec R,void *ctx)
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscErrorCode    ierr;
-  Vec               X,V;
-  const PetscScalar *x,*v;
-  PetscReal         energy, dt;
+  const PetscScalar *u;
+  PetscReal         energy,dt;
   User              user = (User)ctx;
 
   PetscFunctionBeginUser;
   if (step%user->nts == 0) {
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = VecNestGetSubVec(U,0,&V);CHKERRQ(ierr);
-    ierr = VecNestGetSubVec(U,1,&X);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-    energy = (v[0]*v[0]+user->omega*user->omega*x[0]*x[0]-user->omega*user->omega*dt*v[0]*x[0])/2.;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Energy = %6e at time  %6f\n",(double)energy,t);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+    energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Energy = %g at time  %.6lf\n",(double)energy,t);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -126,11 +113,12 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 int main(int argc,char **argv)
 {
   TS             ts;            /* nonlinear solver */
-  Vec            U,X,V;         /* solution, residual vectors */
-  Vec            hx[2];
+  Vec            U;             /* solution, residual vectors */
+  IS             is1,is2;
+  PetscInt       nindices[1];
   PetscReal      ftime   = 0.1;
   PetscBool      monitor = PETSC_FALSE;
-  PetscScalar    *x_ptr,*v_ptr;
+  PetscScalar    *u_ptr;
   PetscMPIInt    size;
   struct _n_User user;
   PetscErrorCode ierr;
@@ -156,24 +144,28 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,1,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&V);CHKERRQ(ierr);
-  hx[0] = V;
-  hx[1] = X;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,hx,&U);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(U);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(U);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,2,&U);CHKERRQ(ierr);
+  nindices[0] = 0;
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,1,nindices,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+  nindices[0] = 1;
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,1,nindices,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
-  ierr = TSSetRHSFunctionSplit2w(ts,NULL,RHSFunction1,RHSFunction2,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSSplits(ts,2);CHKERRQ(ierr);
+  ierr = TSSetRHSSplitIS(ts,1,is1);CHKERRQ(ierr);
+  ierr = TSSetRHSSplitIS(ts,2,is2);CHKERRQ(ierr);
+  ierr = TSSetRHSSplitFunction(ts,1,NULL,RHSFunction1,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSSplitFunction(ts,2,NULL,RHSFunction2,&user);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
 
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.0001);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
@@ -181,17 +173,12 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecGetArray(X,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.2;
-  ierr = VecRestoreArray(X,&x_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(V,&v_ptr);CHKERRQ(ierr);
-  v_ptr[0] = 0.0;
-  ierr = VecRestoreArray(V,&v_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u_ptr);CHKERRQ(ierr);
+  u_ptr[0] = 0.2;
+  u_ptr[1] = 0.0;
+  ierr = VecRestoreArray(U,&u_ptr);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&V);CHKERRQ(ierr);
-
-  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
+  ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -205,7 +192,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"The exact solution is [%6g %6g]\n",(double)-0.2*user.omega*PetscSinReal(user.omega*ftime),(double)0.2*PetscCosReal(user.omega*ftime));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"The exact solution at time %.6lf is [%g %g]\n",(double)ftime,(double)0.2*PetscCosReal(user.omega*ftime),(double)-0.2*user.omega*PetscSinReal(user.omega*ftime));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -213,7 +200,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
