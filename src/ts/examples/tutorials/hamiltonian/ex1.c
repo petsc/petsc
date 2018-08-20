@@ -96,7 +96,8 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscErrorCode    ierr;
   const PetscScalar *u;
-  PetscReal         energy,menergy,dt;
+  PetscReal         dt;
+  PetscScalar       energy,megergy;
   User              user = (User)ctx;
 
   PetscFunctionBeginUser;
