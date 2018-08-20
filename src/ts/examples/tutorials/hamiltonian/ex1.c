@@ -96,15 +96,16 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
   PetscErrorCode    ierr;
   const PetscScalar *u;
-  PetscReal         energy,dt;
+  PetscReal         energy,menergy,dt;
   User              user = (User)ctx;
 
   PetscFunctionBeginUser;
   if (step%user->nts == 0) {
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-    energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Energy = %g at time  %.6lf\n",(double)energy,t);CHKERRQ(ierr);
+    menergy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0]-user->omega*user->omega*dt*u[0]*u[1])/2.;
+    energy = (u[1]*u[1]+user->omega*user->omega*u[0]*u[0])/2.;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"At time %.6lf, Energy = %8g, Modified Energy = %8g\n",t,(double)energy,(double)menergy);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -205,3 +206,16 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
+
+/*TEST
+   build:
+     requires: !single
+
+   test:
+     args: -ts_bsi_type 1 -monitor
+
+   test:
+     suffix: 2
+     args: -ts_bsi_type 2 -monitor
+
+TEST*/

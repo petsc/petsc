@@ -65,6 +65,14 @@ PetscErrorCode TSBSIRegisterAll(void)
     const PetscReal c[2] = {0,1.0},d[2] = {0.5,0.5};
     ierr = TSBSIRegister(TSVELVERLET,2,2,c,d);CHKERRQ(ierr);
   }
+  {
+    const PetscReal c[3] = {1,-2.0/3.0,2.0/3.0},d[3] = {-1.0/24.0,3.0/4.0,7.0/24.0};
+    ierr = TSBSIRegister(TSBSI3,3,3,c,d);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal c[4] = {1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0))},d[4] = {1.0/(2.0-PetscPowScalar(2,1.0/3.0)),-PetscPowScalar(2,1.0/3.0)/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/(2.0-PetscPowScalar(2,1.0/3.0)),0};
+    ierr = TSBSIRegister(TSBSI4,4,4,c,d);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,23 +1,16 @@
-Energy = 8.192000e+01 at time  0.000000
-Energy = 8.192000e+01 at time  0.010000
-Energy = 8.192000e+01 at time  0.020000
-Energy = 8.192000e+01 at time  0.030000
-Energy = 8.192000e+01 at time  0.040000
-Energy = 8.192000e+01 at time  0.050000
-Energy = 8.192000e+01 at time  0.060000
-Energy = 8.192000e+01 at time  0.070000
-Energy = 8.192000e+01 at time  0.080000
-Energy = 8.192000e+01 at time  0.090000
-Energy = 8.192000e+01 at time  0.100000
+At time 0.000000, Energy =    81.92, Modified Energy =    81.92
+At time 0.010000, Energy =  81.9203, Modified Energy =  82.1714
+At time 0.020000, Energy =  81.9208, Modified Energy =  82.0648
+At time 0.030000, Energy =  81.9207, Modified Energy =  81.7522
+At time 0.040000, Energy =  81.9203, Modified Energy =  81.6796
+At time 0.050000, Energy =    81.92, Modified Energy =  81.9506
+At time 0.060000, Energy =  81.9203, Modified Energy =  82.1785
+At time 0.070000, Energy =  81.9208, Modified Energy =  82.0383
+At time 0.080000, Energy =  81.9207, Modified Energy =  81.7299
+At time 0.090000, Energy =  81.9202, Modified Energy =  81.6933
+At time 0.100000, Energy =    81.92, Modified Energy =  81.9807
 Vec Object: 1 MPI processes
-  type: nest
-  VecNest, rows=2,  structure: 
-  (0) : type=seq, rows=1 
-    Vec Object: 1 MPI processes
-      type: seq
-    -1.49198
-  (1) : type=seq, rows=1 
-    Vec Object: 1 MPI processes
-      type: seq
-    0.198562
-The exact solution is [-1.49183 0.198637]
+  type: seq
+0.198637
+-1.49198
+The exact solution at time 0.100000 is [0.198637 -1.49183]
