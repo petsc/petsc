@@ -401,6 +401,29 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *isect = NULL;
+  if (is2 && is1) {
+    char           composeStr[33] = {0};
+    PetscObjectId  is2id;
+
+    ierr = PetscObjectGetId((PetscObject)is2,&is2id);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(composeStr,32,"ISIntersect_Caching_%x",is2id);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) is1, composeStr, (PetscObject *) isect);CHKERRQ(ierr);
+    if (*isect == NULL) {
+      ierr = ISIntersect(is1, is2, isect);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) is1, composeStr, (PetscObject) *isect);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject) *isect);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 

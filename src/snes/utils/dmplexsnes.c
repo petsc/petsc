@@ -1374,29 +1374,6 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISIntersect_Caching(IS is1, IS is2, IS *isect)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *isect = NULL;
-  if (is2 && is1) {
-    char           composeStr[33] = {0};
-    PetscObjectId  is2id;
-
-    ierr = PetscObjectGetId((PetscObject)is2,&is2id);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(composeStr,32,"ISIntersect_Caching_%x",is2id);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject) is1, composeStr, (PetscObject *) isect);CHKERRQ(ierr);
-    if (*isect == NULL) {
-      ierr = ISIntersect(is1, is2, isect);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) is1, composeStr, (PetscObject) *isect);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectReference((PetscObject) *isect);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF, DMField coordField, IS facetIS)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
@@ -1438,7 +1415,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       IS isectIS;
 
       /* TODO: Special cases of ISIntersect where it is quick to check a priori if one is a superset of the other */
-      ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+      ierr = ISIntersect_Caching_Internal(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       pointIS = isectIS;
     }
@@ -2200,7 +2177,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         IS isectIS;
 
         /* TODO: Special cases of ISIntersect where it is quick to check a prior if one is a superset of the other */
-        ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+        ierr = ISIntersect_Caching_Internal(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
         ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
         pointIS = isectIS;
       }
