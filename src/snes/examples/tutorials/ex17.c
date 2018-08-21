@@ -455,15 +455,15 @@ int main(int argc, char **argv)
 
   test:
     suffix: 3d_p1_quad_vlap
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -displacement_petscspace_order 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_vlap
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -displacement_petscspace_order 2 -dm_refine 1 -dmsnes_check
   test:
     suffix: 3d_p3_quad_vlap
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -displacement_petscspace_order 3 -dm_refine 0 -dmsnes_check
   test:
     suffix: 3d_q1_quad_vlap
@@ -476,15 +476,15 @@ int main(int argc, char **argv)
     args: -dim 3 -simplex 0 -displacement_petscspace_order 3 -dm_refine 0 -dmsnes_check
   test:
     suffix: 3d_p1_quad_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_quad -dim 3 -displacement_petscspace_order 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_quad -dim 3 -displacement_petscspace_order 2 -dm_refine 1 -dmsnes_check
   test:
     suffix: 3d_p3_quad_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_quad -dim 3 -displacement_petscspace_order 3 -dm_refine 0 -dmsnes_check
   test:
     suffix: 3d_q1_quad_elas
@@ -541,15 +541,15 @@ int main(int argc, char **argv)
 
   test:
     suffix: 3d_p1_trig_vlap
-    requires: triangle
+    requires: ctetgen
     args: -sol_type vlap_trig -dim 3 -displacement_petscspace_order 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_vlap
-    requires: triangle
+    requires: ctetgen
     args: -sol_type vlap_trig -dim 3 -displacement_petscspace_order 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p3_trig_vlap
-    requires: triangle
+    requires: ctetgen
     args: -sol_type vlap_trig -dim 3 -displacement_petscspace_order 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q1_trig_vlap
@@ -562,15 +562,15 @@ int main(int argc, char **argv)
     args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_order 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p1_trig_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_trig -dim 3 -displacement_petscspace_order 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_trig -dim 3 -displacement_petscspace_order 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p3_trig_elas
-    requires: triangle
+    requires: ctetgen
     args: -sol_type elas_trig -dim 3 -displacement_petscspace_order 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q1_trig_elas
