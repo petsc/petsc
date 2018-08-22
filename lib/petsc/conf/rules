@@ -954,7 +954,7 @@ rmtrailingblanks:
 #  Remove trailing blanks from source code
 uncrustify:
 	@for i in ${SOURCED} ${EXAMPLESC}; do \
-	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
+	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
 	done
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
