@@ -552,8 +552,8 @@ static PetscErrorCode PetscSpaceInitialize_Tensor(PetscSpace sp)
 
 /*MC
   PETSCSPACETENSOR = "tensor" - A PetscSpace object that encapsulates a tensor product space.
-                     Subspaces are scalar spaces (num of componenents = 1), vector components
-                     are assumed to be identical.
+                     Subspaces are scalar spaces (num of componenents = 1), so the components
+                     of a vector-valued tensor space are assumed to be identical.
 
   Level: intermediate
 
