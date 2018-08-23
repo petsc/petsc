@@ -7192,3 +7192,122 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS *is, DM *subdm)
+{
+  PetscDS        prob;
+  IS             subis;
+  PetscSection   section, subsection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (!section) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting subdomain");
+  if (!subdm)   SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set output subDM for splitting subdomain");
+  /* Create subdomain */
+  ierr = DMPlexFilter(dm, label, value, subdm);CHKERRQ(ierr);
+  /* Create submodel */
+  ierr = DMPlexCreateSubpointIS(*subdm, &subis);CHKERRQ(ierr);
+  ierr = PetscSectionCreateSubmeshSection(section, subis, &subsection);CHKERRQ(ierr);
+  ierr = ISDestroy(&subis);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = DMSetDS(*subdm, prob);CHKERRQ(ierr);
+  /* Create map from submodel to global model */
+  if (is) {
+    PetscSection    sectionGlobal, subsectionGlobal;
+    IS              spIS;
+    const PetscInt *spmap;
+    PetscInt       *subIndices;
+    PetscInt        subSize = 0, subOff = 0, pStart, pEnd, p;
+    PetscInt        Nf, f, bs = -1, bsLocal[2], bsMinMax[2];
+
+    ierr = DMPlexCreateSubpointIS(*subdm, &spIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(spIS, &spmap);CHKERRQ(ierr);
+    ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(*subdm, &subsectionGlobal);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(subsection, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt gdof, pSubSize  = 0;
+
+      ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        for (f = 0; f < Nf; ++f) {
+          PetscInt fdof, fcdof;
+
+          ierr     = PetscSectionGetFieldDof(subsection, p, f, &fdof);CHKERRQ(ierr);
+          ierr     = PetscSectionGetFieldConstraintDof(subsection, p, f, &fcdof);CHKERRQ(ierr);
+          pSubSize += fdof-fcdof;
+        }
+        subSize += pSubSize;
+        if (pSubSize) {
+          if (bs < 0) {
+            bs = pSubSize;
+          } else if (bs != pSubSize) {
+            /* Layout does not admit a pointwise block size */
+            bs = 1;
+          }
+        }
+      }
+    }
+    /* Must have same blocksize on all procs (some might have no points) */
+    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+    ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
+    if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+    else                            {bs = bsMinMax[0];}
+    ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt gdof, goff;
+
+      ierr = PetscSectionGetDof(subsectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        const PetscInt point = spmap[p];
+
+        ierr = PetscSectionGetOffset(sectionGlobal, point, &goff);CHKERRQ(ierr);
+        for (f = 0; f < Nf; ++f) {
+          PetscInt fdof, fcdof, fc, f2, poff = 0;
+
+          /* Can get rid of this loop by storing field information in the global section */
+          for (f2 = 0; f2 < f; ++f2) {
+            ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+            ierr  = PetscSectionGetFieldConstraintDof(section, p, f2, &fcdof);CHKERRQ(ierr);
+            poff += fdof-fcdof;
+          }
+          ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          for (fc = 0; fc < fdof-fcdof; ++fc, ++subOff) {
+            subIndices[subOff] = goff+poff+fc;
+          }
+        }
+      }
+    }
+    ierr = ISRestoreIndices(spIS, &spmap);CHKERRQ(ierr);
+    ierr = ISDestroy(&spIS);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+    if (bs > 1) {
+      /* We need to check that the block size does not come from non-contiguous fields */
+      PetscInt i, j, set = 1;
+      for (i = 0; i < subSize; i += bs) {
+        for (j = 0; j < bs; ++j) {
+          if (subIndices[i+j] != subIndices[i]+j) {set = 0; break;}
+        }
+      }
+      if (set) {ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);}
+    }
+    /* Attach nullspace */
+    for (f = 0; f < Nf; ++f) {
+      (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[f];
+      if ((*subdm)->nullspaceConstructors[f]) break;
+    }
+    if (f < Nf) {
+      MatNullSpace nullSpace;
+
+      ierr = (*(*subdm)->nullspaceConstructors[f])(*subdm, f, &nullSpace);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}

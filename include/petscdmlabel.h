@@ -20,6 +20,7 @@ PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelGetName(DMLabel, const char **);
+PETSC_EXTERN PetscErrorCode DMLabelSetName(DMLabel, const char *);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
