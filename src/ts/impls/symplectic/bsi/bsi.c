@@ -210,27 +210,32 @@ static PetscErrorCode TSStep_BSI(TS ts)
   TS_BSI         *bsi = (TS_BSI*)ts->data;
   BSIScheme      scheme = bsi->scheme;
   Vec            solution = ts->vec_sol,update = bsi->update,q,p,q_update,p_update;
+  IS             is_q,is_p;
+  TS             *subts;
   PetscBool      stageok;
   PetscReal      next_time_step = ts->time_step;
   PetscInt       iter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetSubVector(solution,ts->iss[0],&q);CHKERRQ(ierr);
-  ierr = VecGetSubVector(solution,ts->iss[1],&p);CHKERRQ(ierr);
-  ierr = VecGetSubVector(update,ts->iss[0],&q_update);CHKERRQ(ierr);
-  ierr = VecGetSubVector(update,ts->iss[1],&p_update);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetSubTS(ts,NULL,&subts);CHKERRQ(ierr);
+  is_q = ts->tsrhssplit[0]->is;
+  is_p = ts->tsrhssplit[1]->is;
+  ierr = VecGetSubVector(solution,is_q,&q);CHKERRQ(ierr);
+  ierr = VecGetSubVector(solution,is_p,&p);CHKERRQ(ierr);
+  ierr = VecGetSubVector(update,is_q,&q_update);CHKERRQ(ierr);
+  ierr = VecGetSubVector(update,is_p,&p_update);CHKERRQ(ierr);
 
   for (iter = 0;iter<scheme->s;iter++) {
     ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
     /* update velocity p */
     if (scheme->c[iter]) {
-      ierr = TSComputeRHSSplitFunction(ts,2,ts->ptime,q,p_update);CHKERRQ(ierr);
+      ierr = TSComputeRHSFunction(subts[1],ts->ptime,q,p_update);CHKERRQ(ierr);
       ierr = VecAXPY(p,scheme->c[iter]*ts->time_step,p_update);CHKERRQ(ierr);
     }
     /* update position q */
     if (scheme->d[iter]) {
-      ierr = TSComputeRHSSplitFunction(ts,1,ts->ptime,p,q_update);CHKERRQ(ierr);
+      ierr = TSComputeRHSFunction(subts[0],ts->ptime,p,q_update);CHKERRQ(ierr);
       ierr = VecAXPY(q,scheme->d[iter]*ts->time_step,q_update);CHKERRQ(ierr);
       ts->ptime = ts->ptime+scheme->d[iter]*ts->time_step;
     }
@@ -242,10 +247,11 @@ static PetscErrorCode TSStep_BSI(TS ts)
   }
 
   ts->time_step = next_time_step;
-  ierr = VecRestoreSubVector(solution,ts->iss[0],&q);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(solution,ts->iss[1],&p);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(update,ts->iss[0],&q_update);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(update,ts->iss[1],&p_update);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(solution,is_q,&q);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(solution,is_p,&p);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(update,is_q,&q_update);CHKERRQ(ierr);
+  ierr = VecRestoreSubVector(update,is_p,&p_update);CHKERRQ(ierr);
+  ierr = PetscFree(subts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -278,13 +284,12 @@ static PetscErrorCode TSSetUp_BSI(TS ts)
 {
   TS_BSI         *bsi = (TS_BSI*)ts->data;
   DM             dm;
-  TSRHSFunction  rhssplitfunction1,rhssplitfunction2;
+  PetscInt       numsubts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetRHSSplitFunction(ts,1,NULL,&rhssplitfunction1,NULL);CHKERRQ(ierr);
-  ierr = TSGetRHSSplitFunction(ts,2,NULL,&rhssplitfunction2,NULL);CHKERRQ(ierr);
-  if (!rhssplitfunction1 || !rhssplitfunction2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunctionSplit2w() in order to use -ts_type bsi");
+  ierr = TSRHSSplitGetSubTS(ts,&numsubts,NULL);CHKERRQ(ierr);
+  if (numsubts<2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call set up RHSSplits with TSRHSSplitSetIS() in order to use -ts_type bsi");
   ierr = VecDuplicate(ts->vec_sol,&bsi->update);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);

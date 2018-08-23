@@ -97,7 +97,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
   PetscErrorCode    ierr;
   const PetscScalar *u;
   PetscReal         dt;
-  PetscScalar       energy,megergy;
+  PetscScalar       energy,menergy;
   User              user = (User)ctx;
 
   PetscFunctionBeginUser;
@@ -157,11 +157,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
-  ierr = TSSetRHSSplits(ts,2);CHKERRQ(ierr);
-  ierr = TSSetRHSSplitIS(ts,1,is1);CHKERRQ(ierr);
-  ierr = TSSetRHSSplitIS(ts,2,is2);CHKERRQ(ierr);
-  ierr = TSSetRHSSplitFunction(ts,1,NULL,RHSFunction1,&user);CHKERRQ(ierr);
-  ierr = TSSetRHSSplitFunction(ts,2,NULL,RHSFunction2,&user);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"0",is1);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"1",is2);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"0",NULL,RHSFunction1,&user);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"1",NULL,RHSFunction2,&user);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
@@ -210,7 +209,7 @@ int main(int argc,char **argv)
 
 /*TEST
    build:
-     requires: !single
+     requires: !single !complex
 
    test:
      args: -ts_bsi_type 1 -monitor
