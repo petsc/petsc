@@ -272,7 +272,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
       cg->diag_scaling = PETSC_FALSE;
       cg->alpha = -1.0;
     }
-    if (cg->alpha = -1.0 && cg->cg_type == CG_KouDai && !cg->diag_scaling){ /* Some more default options that appear to be good. */
+    if (cg->alpha == -1.0 && cg->cg_type == CG_KouDai && !cg->diag_scaling){ /* Some more default options that appear to be good. */
       cg->neg_xi = PETSC_TRUE;
     }
     ierr = PetscOptionsBool("-tao_bncg_neg_xi","(developer) Use negative xi when it might be a smaller descent direction than necessary","",cg->neg_xi,&cg->neg_xi,NULL);CHKERRQ(ierr);
