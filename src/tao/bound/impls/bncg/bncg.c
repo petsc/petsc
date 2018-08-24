@@ -508,7 +508,7 @@ PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal
    PetscFunctionReturn(0);
  }
 
-PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2, PetscReal step, PetscReal fold, PetscReal gnorm2_old, PetscReal dnorm, PetscReal ginner, PetscBool pcgd_fallback)
+PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2, PetscReal step, PetscReal fold, PetscReal gnorm2_old, PetscReal dnorm, PetscBool pcgd_fallback)
 {
   TAO_BNCG          *cg = (TAO_BNCG*)tao->data;
   PetscErrorCode    ierr;
@@ -961,7 +961,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
   TAO_BNCG                     *cg = (TAO_BNCG*)tao->data;
   PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                    step=1.0,gnorm2,gd,ginner=0.0,dnorm=0.0;
+  PetscReal                    step=1.0,gnorm2,gd,dnorm=0.0;
   PetscReal                    gnorm2_old,f_old,resnorm, gnorm_old;
   PetscBool                    gd_fallback = PETSC_FALSE, pcgd_fallback = PETSC_FALSE;
 
@@ -1002,7 +1002,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
         /* Fall back on preconditioned CG (so long as you're not already using it) */
         if (cg->cg_type != CG_PCGradientDescent && cg->diag_scaling){
           pcgd_fallback = PETSC_TRUE;
-          ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, ginner, pcgd_fallback);CHKERRQ(ierr);
+          ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, pcgd_fallback);CHKERRQ(ierr);
 
           ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
           ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
@@ -1065,10 +1065,9 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
   gnorm2 = gnorm*gnorm;
 
   /* Calculate some quantities used in the StepDirectionUpdate. */
-  ierr = VecDot(tao->gradient, cg->G_old, &ginner);CHKERRQ(ierr);
   ierr = VecNorm(tao->stepdirection, NORM_2, &dnorm);CHKERRQ(ierr);
   /* Update the step direction. */
-  ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, ginner, pcgd_fallback);CHKERRQ(ierr);
+  ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, pcgd_fallback);CHKERRQ(ierr);
   ++tao->niter;
   ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
 
