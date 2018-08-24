@@ -214,7 +214,6 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
     ierr = VecDestroy(&cg->y_work);CHKERRQ(ierr);
     ierr = VecDestroy(&cg->sk);CHKERRQ(ierr);
     ierr = VecDestroy(&cg->yk);CHKERRQ(ierr);
-    ierr = MatDestroy(&cg->B);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&cg->active_lower);CHKERRQ(ierr);
   ierr = ISDestroy(&cg->active_upper);CHKERRQ(ierr);
@@ -223,8 +222,9 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
   ierr = ISDestroy(&cg->inactive_idx);CHKERRQ(ierr);
   ierr = ISDestroy(&cg->inactive_old);CHKERRQ(ierr);
   ierr = ISDestroy(&cg->new_inactives);CHKERRQ(ierr);
+  ierr = MatDestroy(&cg->B);CHKERRQ(ierr);
   if (cg->pc) {
-    PetscObjectDereference((PetscObject)cg->pc);
+    ierr = MatDestroy(&cg->pc);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
