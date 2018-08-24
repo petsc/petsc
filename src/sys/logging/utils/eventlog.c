@@ -145,7 +145,14 @@ PetscErrorCode PetscEventPerfInfoClear(PetscEventPerfInfo *eventInfo)
   eventInfo->time2         = 0.0;
   eventInfo->timeTmp       = 0.0;
   eventInfo->syncTime      = 0.0;
-  eventInfo->dof           = -1.0;
+  eventInfo->dof[0]        = -1.0;
+  eventInfo->dof[1]        = -1.0;
+  eventInfo->dof[2]        = -1.0;
+  eventInfo->dof[3]        = -1.0;
+  eventInfo->dof[4]        = -1.0;
+  eventInfo->dof[5]        = -1.0;
+  eventInfo->dof[6]        = -1.0;
+  eventInfo->dof[7]        = -1.0;
   eventInfo->errors[0]     = -1.0;
   eventInfo->errors[1]     = -1.0;
   eventInfo->errors[2]     = -1.0;
@@ -869,13 +876,14 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 }
 
 /*@C
-  PetscLogEventSetDof - Set the number of degrees of freedom associated with this event
+  PetscLogEventSetDof - Set the nth number of degrees of freedom associated with this event
 
   Not Collective
 
   Input Parameters:
 + event - The event id to log
-. dof   - The number of dofs
+. n     - The dof index, in [0, 8)
+- dof   - The number of dofs
 
   Database Options:
 . -log_view - Activates log summary
@@ -887,7 +895,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 .keywords: log, visible, event
 .seealso: PetscLogEventSetError(), PetscEventRegLogRegister(), PetscStageLogGetEventLog()
 @*/
-PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscLogDouble dof)
+PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDouble dof)
 {
   PetscStageLog     stageLog;
   PetscEventPerfLog eventLog = NULL;
@@ -895,15 +903,16 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscLogDouble dof)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if ((n < 0) || (n > 7)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %D is not in [0, 8)", n);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
-  eventLog->eventInfo[event].dof = dof;
+  eventLog->eventInfo[event].dof[n] = dof;
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscLogEventSetDof - Set the nth error associated with this event
+  PetscLogEventSetError - Set the nth error associated with this event
 
   Not Collective
 

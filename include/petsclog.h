@@ -128,7 +128,7 @@ typedef struct {
   PetscLogDouble flops, flops2, flopsTmp; /* The flops and flops^2 used in this event */
   PetscLogDouble time, time2, timeTmp;    /* The time and time^2 taken for this event */
   PetscLogDouble syncTime;                /* The synchronization barrier time */
-  PetscLogDouble dof;           /* The number of degrees of freedom associated with this event */
+  PetscLogDouble dof[8];        /* The number of degrees of freedom associated with this event */
   PetscLogDouble errors[8];     /* The errors (user-defined) associated with this event */
   PetscLogDouble numMessages;   /* The number of messages in this event */
   PetscLogDouble messageLength; /* The total message lengths in this event */
@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventActivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetId(const char[],PetscLogEvent*);
 PETSC_EXTERN PetscErrorCode PetscLogEventGetPerfInfo(int,PetscLogEvent,PetscEventPerfInfo*);
-PETSC_EXTERN PetscErrorCode PetscLogEventSetDof(PetscLogEvent, PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscLogEventSetDof(PetscLogEvent, PetscInt, PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscLogEventSetError(PetscLogEvent, PetscInt, PetscLogDouble);
 
 /* Global counters */
