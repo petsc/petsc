@@ -1478,8 +1478,12 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
         ierr = DMPlexVecRestoreClosure(plex, section, locX_t, support[0], NULL, &x);CHKERRQ(ierr);
       }
       if (locA) {
-        PetscInt subp;
-        ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);
+        DMLabel  spmap;
+        PetscInt subp = support[0];
+
+        /* If dm is a submesh, do not get subpoint */
+        ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+        if (!spmap) {ierr = DMPlexGetSubpoint(plexA, support[0], &subp);CHKERRQ(ierr);}
         ierr = DMPlexVecGetClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
         for (i = 0; i < totDimAux; ++i) a[face*totDimAux+i] = x[i];
         ierr = DMPlexVecRestoreClosure(plexA, sectionAux, locA, subp, NULL, &x);CHKERRQ(ierr);
@@ -2849,6 +2853,17 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMSNESCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information
+
+  Input Parameters:
++ snes - the SNES object
+. u    - representative SNES vector
+. exactFuncs - pointwise functions of the exact solution for each field
+- ctxs - contexts for the functions
+
+  Level: developer
+@*/
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;

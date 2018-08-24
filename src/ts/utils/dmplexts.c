@@ -252,6 +252,17 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMTSCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information
+
+  Input Parameters:
++ ts - the TS object
+. u    - representative TS vector
+. exactFuncs - pointwise functions of the exact solution for each field
+- ctxs - contexts for the functions
+
+  Level: developer
+@*/
 PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
