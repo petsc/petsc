@@ -44,14 +44,22 @@ def Import(pkg, name, path, arch):
     """
     Import helper for PETSc-based extension modules.
     """
-    import sys, os, imp, warnings
-    # full dotted module name
-    fullname = '%s.%s' % (pkg, name)
+    import sys, os, warnings
+    # TODO: use 'importlib' module under Python 3
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        import imp
+    def get_ext_suffix():
+        return imp.get_suffixes()[0][0]
+    def import_module(pkg, name, path, arch):
+        fullname = '%s.%s' % (pkg, name)
+        pathlist = [os.path.join(path, arch)]
+        f, fn, info = imp.find_module(name, pathlist)
+        with f: return imp.load_module(fullname, f, fn, info)
     # test if extension module was already imported
-    module  = sys.modules.get(fullname)
-    fname = getattr(module, '__file__', '')
-    shext = imp.get_suffixes()[0][0]
-    if os.path.splitext(fname)[-1] == shext:
+    module = sys.modules.get('%s.%s' % (pkg, name))
+    filename = getattr(module, '__file__', '')
+    if filename.endswith(get_ext_suffix()):
         # if 'arch' is None, do nothing; otherwise this
         # call may be invalid if extension module for
         # other 'arch' has been already imported.
@@ -62,10 +70,8 @@ def Import(pkg, name, path, arch):
     warnings.filterwarnings("ignore", message="numpy.dtype size changed")
     warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
     # import extension module from 'path/arch' directory
-    pathlist = [os.path.join(path, arch)]
-    f, fn, info = imp.find_module(name, pathlist)
-    with f: module = imp.load_module(fullname, f, fn, info)
-    module.__arch__ = arch # save arch value
+    module = import_module(pkg, name, path, arch)
+    module.__arch__ = arch  # save arch value
     setattr(sys.modules[pkg], name, module)
     return module
 
