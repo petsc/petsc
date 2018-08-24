@@ -192,8 +192,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
 
   /* 1) get R = Pd^T,Ro = Po^T */
   if (ptap->reuse == MAT_REUSE_MATRIX) {
-    ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
-    ierr = MatTranspose_SeqAIJ(p->B,MAT_REUSE_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+    ierr = MatTranspose(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+    ierr = MatTranspose(p->B,MAT_REUSE_MATRIX,&ptap->Ro);CHKERRQ(ierr);
   }
 
   /* 2) get AP_loc */
@@ -334,8 +334,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
   /* --------------------------------- */
-  ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
-  ierr = MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+  ierr = MatTranspose(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+  ierr = MatTranspose(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
   /* ----------------------------------------------------------------- */
@@ -673,8 +673,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
   /* --------------------------------- */
-  ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
-  ierr = MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+  ierr = MatTranspose(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+  ierr = MatTranspose(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
   /* ----------------------------------------------------------------- */
@@ -978,8 +978,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   /* 1) get R = Pd^T,Ro = Po^T */
   if (ptap->reuse == MAT_REUSE_MATRIX) {
-    ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
-    ierr = MatTranspose_SeqAIJ(p->B,MAT_REUSE_MATRIX,&ptap->Ro);CHKERRQ(ierr);
+    ierr = MatTranspose(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
+    ierr = MatTranspose(p->B,MAT_REUSE_MATRIX,&ptap->Ro);CHKERRQ(ierr);
   }
 
   /* 2) get AP_loc */
