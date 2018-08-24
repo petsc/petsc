@@ -526,18 +526,18 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
     ynorm2 = ynorm*ynorm;
     ierr = VecDot(cg->yk, tao->stepdirection, &dk_yk);CHKERRQ(ierr);
     if (step*dnorm < PETSC_MACHINE_EPSILON || step*dk_yk < PETSC_MACHINE_EPSILON){
-      cg_restart = 1;
+      cg_restart = PETSC_TRUE;
       ++cg->skipped_updates;
     }
     if (cg->spaced_restart) {
       ierr = VecGetSize(tao->gradient, &dim);CHKERRQ(ierr);
-      if (tao->niter % (dim*cg->min_restart_num)) cg_restart = 1;
+      if (tao->niter % (dim*cg->min_restart_num)) cg_restart = PETSC_TRUE;
     }
   }
   /* If the user wants regular restarts, do it every 6n iterations, where n=dimension */
   if (cg->spaced_restart){
     ierr = VecGetSize(tao->gradient, &dim);CHKERRQ(ierr);
-    if (0 == tao->niter % (6*dim)) cg_restart = 1;
+    if (0 == tao->niter % (6*dim)) cg_restart = PETSC_TRUE;
   }
   /* Compute the diagonal scaling vector if applicable */
   if (cg->diag_scaling) {
@@ -961,7 +961,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
   TAO_BNCG                     *cg = (TAO_BNCG*)tao->data;
   PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                    step=1.0,gnorm2,gd,ginner,dnorm;
+  PetscReal                    step=1.0,gnorm2,gd,ginner=0.0,dnorm=0.0;
   PetscReal                    gnorm2_old,f_old,resnorm, gnorm_old;
   PetscBool                    gd_fallback = PETSC_FALSE, pcgd_fallback = PETSC_FALSE;
 
@@ -1001,7 +1001,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
 
         /* Fall back on preconditioned CG (so long as you're not already using it) */
         if (cg->cg_type != CG_PCGradientDescent && cg->diag_scaling){
-          pcgd_fallback = 1;
+          pcgd_fallback = PETSC_TRUE;
           ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, ginner, pcgd_fallback);CHKERRQ(ierr);
 
           ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
@@ -1016,7 +1016,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
             /* Going to perform a regular gradient descent step. */
             ++cg->ls_fails;
             step = 0.0;
-            gd_fallback = 1;
+            gd_fallback = PETSC_TRUE;
           }
         }
         /* Fall back on the scaled gradient step */
