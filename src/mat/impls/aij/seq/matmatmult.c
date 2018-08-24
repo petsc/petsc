@@ -20,13 +20,14 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,
 {
   PetscErrorCode ierr;
 #if !defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[6] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed"};
-  PetscInt       nalg = 6;
-#else
-  const char     *algTypes[7] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","hypre"};
+  const char     *algTypes[7] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined"};
   PetscInt       nalg = 7;
+#else
+  const char     *algTypes[8] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined","hypre"};
+  PetscInt       nalg = 8;
 #endif
   PetscInt       alg = 0; /* set default algorithm */
+  PetscBool      combined = PETSC_FALSE;  /* Indicates whether the symbolic stage already computed the numerical values. */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -51,8 +52,12 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,
     case 5:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
       break;
-#if defined(PETSC_HAVE_HYPRE)
     case 6:
+      ierr = MatMatMult_SeqAIJ_SeqAIJ_Combined(A,B,fill,C);CHKERRQ(ierr);
+      combined = PETSC_TRUE;
+      break;
+#if defined(PETSC_HAVE_HYPRE)
+    case 7:
       ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
       break;
 #endif
@@ -64,7 +69,9 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,
   }
 
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+  if (!combined) {
+    ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1525,5 +1532,122 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   c->columns     = columns;
 
   ierr = PetscFree(idxhit);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Needed for MatMatMult_SeqAIJ_SeqAIJ_Combined() */
+/* Append value to an array if the value is not present yet. A bitarray */
+/* was used to determine if there is already an entry at this position. */
+void appendToArray(PetscInt val, PetscInt *array, PetscInt *cnzi)
+{
+  array[(*cnzi)++] = val;
+}
+
+/* This algorithm combines the symbolic and numeric phase of matrix-matrix multiplication. */
+PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode     ierr;
+  PetscLogDouble     flops=0.0;
+  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data, *b = (Mat_SeqAIJ*)B->data, *c;
+  const PetscInt     *ai = a->i,*bi = b->i, *aj = a->j;
+  PetscInt           *ci,*cj,*cj_i;
+  PetscScalar        *ca, *ca_i;
+  PetscInt           c_maxmem = 0, a_maxrownnz = 0, a_rownnz, a_col;
+  PetscInt           am = A->rmap->N, bn = B->cmap->N, bm = B->rmap->N;
+  PetscInt           i, k, ndouble = 0;
+  PetscReal          afill;
+  PetscScalar        *c_row_val_dense;
+  PetscBool          *c_row_idx_flags;
+  PetscInt           *aj_i = a->j;
+  PetscScalar        *aa_i = a->a;
+
+  PetscFunctionBegin;
+  /* Step 1: Determine upper bounds on memory for C */
+  for (i=0; i<am; i++) { /* iterate over all rows of A */
+    const PetscInt anzi  = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
+    const PetscInt *acol = aj + ai[i]; /* column indices of nonzero entries in this row */
+    a_rownnz = 0;
+    for (k=0;k<anzi;++k) a_rownnz += bi[acol[k]+1] - bi[acol[k]];
+    a_maxrownnz = PetscMax(a_maxrownnz, a_rownnz);
+    c_maxmem += a_rownnz;
+  }
+  ierr = PetscMalloc1(am+1, &ci);               CHKERRQ(ierr);
+  ierr = PetscMalloc1(bn, &c_row_val_dense);    CHKERRQ(ierr);
+  ierr = PetscMalloc1(bn, &c_row_idx_flags);    CHKERRQ(ierr);
+  ierr = PetscMalloc1(c_maxmem,&cj);            CHKERRQ(ierr);
+  ierr = PetscMalloc1(c_maxmem,&ca);            CHKERRQ(ierr);
+  ca_i = ca;
+  cj_i = cj;
+  ci[0] = 0;
+  ierr = PetscMemzero(c_row_val_dense, bn * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(c_row_idx_flags, bn * sizeof(PetscBool));CHKERRQ(ierr);
+  for (i=0; i<am; i++) {
+    /* Step 2: Initialize the dense row vector for C  */
+    const PetscInt anzi     = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
+    PetscInt cnzi           = 0;
+    PetscInt *bj_i;
+    PetscScalar *ba_i;
+
+    /* Step 3: Do the numerical calculations */
+    for (a_col=0; a_col<anzi; a_col++) {          /* iterate over all non zero values in a row of A */
+      PetscInt a_col_index = aj_i[a_col];
+      const PetscInt bnzi = bi[a_col_index+1] - bi[a_col_index];
+      flops += 2*bnzi;
+      bj_i = b->j + bi[a_col_index];   /* points to the current row in bj */
+      ba_i = b->a + bi[a_col_index];   /* points to the current row in ba */
+      for (k=0; k<bnzi; ++k) { /* iterate over all non zeros of this row in B */
+        if (c_row_idx_flags[ bj_i[k] ] == PETSC_FALSE) {
+          appendToArray(bj_i[k], cj_i, &cnzi);
+          c_row_idx_flags[ bj_i[k] ] = PETSC_TRUE;
+        }
+        c_row_val_dense[ bj_i[k] ] += aa_i[a_col] * ba_i[k];
+      }
+    }
+
+    /* Sort array */
+    ierr = PetscSortInt(cnzi, cj_i);CHKERRQ(ierr);
+    /* Step 4 */
+    for (k=0; k < cnzi; k++) {
+      ca_i[k] = c_row_val_dense[cj_i[k]];
+      c_row_val_dense[cj_i[k]] = 0.;
+      c_row_idx_flags[cj_i[k]] = PETSC_FALSE;
+    }
+    /* terminate current row */
+    aa_i += anzi;
+    aj_i += anzi;
+    ca_i += cnzi;
+    cj_i += cnzi;
+    ci[i+1] = ci[i] + cnzi;
+    flops += cnzi;
+  }
+
+  /* Step 5 */
+  /* Create the new matrix */
+  ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c          = (Mat_SeqAIJ*)((*C)->data);
+  c->a       = ca;
+  c->free_a  = PETSC_TRUE;
+  c->free_ij = PETSC_TRUE;
+  c->nonew   = 0;
+
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am];
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = ndouble;
+  (*C)->info.fill_ratio_given  = fill;
+  (*C)->info.fill_ratio_needed = afill;
+
+  ierr = PetscFree(c_row_val_dense);CHKERRQ(ierr);
+  ierr = PetscFree(c_row_idx_flags);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

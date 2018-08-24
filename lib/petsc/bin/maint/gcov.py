@@ -39,7 +39,7 @@ def run_gcov(gcov_dir):
                 c_file = file_name.split('.c')[0]
                 PETSC_ARCH = os.environ['PETSC_ARCH']
                 OBJDIR = os.path.join(PETSC_DIR, PETSC_ARCH, 'obj')
-                objpath = os.path.join(OBJDIR, os.path.relpath(c_file, PETSC_DIR))
+                objpath = os.path.join(OBJDIR, os.path.relpath(c_file, os.path.join(PETSC_DIR,"src")))
                 gcov_graph_file = objpath+".gcno"
                 gcov_data_file  = objpath+".gcda"
                 if os.path.isfile(gcov_graph_file) and os.path.isfile(gcov_data_file):

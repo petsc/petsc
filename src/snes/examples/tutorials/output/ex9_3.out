@@ -1,8 +1,10 @@
-setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
-  0 SNES Function norm 5.52931 
-  1 SNES Function norm 0.695513 
-  2 SNES Function norm 0.224211 
-  3 SNES Function norm 0.0852096 
-  4 SNES Function norm 3.7195e-07 
-  5 SNES Function norm < 1.e-11
-errors:     av |u-uexact|  = 1.287e-03    |u-uexact|_inf = 7.882e-03
+      0 SNES VI Function norm 2.16768 Active lower constraints 1/5 upper constraints 0/0 Percent of total 0.04 Percent of bounded 0.
+      1 SNES VI Function norm 5.99161e-16 Active lower constraints 1/1 upper constraints 0/0 Percent of total 0.04 Percent of bounded 0.
+    0 SNES VI Function norm 1.18058 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 3.85786e-06 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    2 SNES VI Function norm 1.52053e-11 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  0 SNES VI Function norm 0.386707 Active lower constraints 25/33 upper constraints 0/0 Percent of total 0.0865052 Percent of bounded 0.
+  1 SNES VI Function norm 0.0637668 Active lower constraints 29/37 upper constraints 0/0 Percent of total 0.100346 Percent of bounded 0.
+  2 SNES VI Function norm 6.43862e-07 Active lower constraints 29/29 upper constraints 0/0 Percent of total 0.100346 Percent of bounded 0.
+  3 SNES VI Function norm 2.1326e-12 Active lower constraints 29/29 upper constraints 0/0 Percent of total 0.100346 Percent of bounded 0.
+errors on 17 x 17 grid:  av |u-uexact|  = 2.707e-03,  |u-uexact|_inf = 1.428e-02

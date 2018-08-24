@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(PETSC_COMM_WORLD,"str_opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
   }
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

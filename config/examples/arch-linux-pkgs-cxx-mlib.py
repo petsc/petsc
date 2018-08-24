@@ -24,6 +24,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-netcdf=1',
   '--download-hdf5=1',
+  '--download-adios=1',
   '--with-zlib=1',
   '--download-szlib=1',
   '--download-moab=1',

@@ -120,82 +120,82 @@ int main(int argc,char **argv)
 /*TEST
 
       test:
-         nsize: 10
-         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_x 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_x 5
 
       test:
          suffix: 2
-         nsize: 10
-         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_x 10
+         nsize: 5
+         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_x 5
 
       test:
          suffix: 3
-         nsize: 10
-         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_x 10
+         nsize: 5
+         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_x 5
 
       test:
          suffix: 4
-         nsize: 10
-         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_x 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_x 5
 
       test:
          suffix: 5
-         nsize: 10
-         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_y 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_y 5
 
       test:
          suffix: 6
-         nsize: 10
-         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_y 10
+         nsize: 5
+         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_y 5
 
       test:
          suffix: 7
-         nsize: 10
-         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_y 10
+         nsize: 5
+         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_y 5
 
       test:
          suffix: 8
-         nsize: 10
-         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_y 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_y 5
 
       test:
          suffix: 9
-         nsize: 10
-         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_z 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 30 -periodic 0 -da_processors_z 5
 
       test:
          suffix: 10
-         nsize: 10
-         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_z 10
+         nsize: 5
+         args: -mx 29 -my 30 -mz 30 -periodic 1 -da_processors_z 5
 
       test:
          suffix: 11
-         nsize: 10
-         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_z 10
+         nsize: 5
+         args: -mx 30 -my 29 -mz 30 -periodic 2 -da_processors_z 5
 
       test:
          suffix: 12
-         nsize: 10
-         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_z 10
+         nsize: 5
+         args: -mx 30 -my 30 -mz 29 -periodic 3 -da_processors_z 5
 
       test:
          suffix: 13
-         nsize: 10
+         nsize: 5
          args: -mx 30 -my 30 -mz 30 -periodic 0
 
       test:
          suffix: 14
-         nsize: 10
+         nsize: 5
          args: -mx 29 -my 30 -mz 30 -periodic 1
 
       test:
          suffix: 15
-         nsize: 10
+         nsize: 5
          args: -mx 30 -my 29 -mz 30 -periodic 2
 
       test:
          suffix: 16
-         nsize: 10
+         nsize: 5
          args: -mx 30 -my 30 -mz 29 -periodic 3
 
 TEST*/

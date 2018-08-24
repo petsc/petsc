@@ -5,17 +5,18 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--with-cc=/usr/bin/mpicc',
-    '--with-fc=/usr/bin/mpif90',
-    '--with-cxx=/usr/bin/mpicxx',
+    '--with-cc=/home/petsc/soft/mpich-3.3b1/bin/mpicc',
+    '--with-fc=/home/petsc/soft/mpich-3.3b1/bin/mpif90',
+    '--with-cxx=/home/petsc/soft/mpich-3.3b1/bin/mpicxx',
+    '--with-blaslapack-dir=/home/petsc/soft/f2cblaslapack-3.4.2.q3',
     '--with-clanguage=c',
     '--with-shared-libraries=no',
     '--with-debugging=yes',
     '--with-scalar-type=real',
-    '--with-64-bit-indices=no',
+    '--with-64-bit-indices=yes',
     '--with-precision=__float128',
-    '--with-blaslapack-lib=[/home/sarich/software/quadf2cblaslapack/libf2clapack.a,/home/sarich/software/quadf2cblaslapack/libf2cblas.a]',
     '--with-sowing=1',
-    '--with-sowing-dir=/home/petsc/soft/linux-Ubuntu_12.04-x86_64/sowing-1.1.17-p1'
+    '--with-sowing-dir=/homes/petsc/soft/sowing-v1.1.25-p1',
+    'DATAFILESPATH=/home/petsc/datafiles',
     ]
   configure.petsc_configure(configure_options)

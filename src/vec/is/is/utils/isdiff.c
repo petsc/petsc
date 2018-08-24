@@ -250,10 +250,13 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
-  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
+  if (is1) PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  if (is2) PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
 
+  if (!is1 && !is2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
+  if (!is1) {ierr = ISDuplicate(is2, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
+  if (!is2) {ierr = ISDuplicate(is1, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);

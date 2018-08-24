@@ -182,4 +182,20 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
       nsize: 2
       args: -pc_type mg -pc_mg_type full -ksp_monitor_short -da_refine 5 -mg_coarse_ksp_type cg -mg_coarse_ksp_converged_reason -mg_coarse_ksp_rtol 1e-2 -mg_coarse_ksp_max_it 5 -mg_coarse_pc_type none -pc_mg_levels 2 -ksp_type pipefgmres -ksp_pipefgmres_shift 1.5
 
+   test:
+      suffix: tut_1
+      nsize: 1
+      args: -da_grid_x 4 -da_grid_y 4 -mat_view
+
+   test:
+      suffix: tut_2
+      requires: superlu_dist
+      nsize: 4
+      args: -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_type superlu_dist -ksp_monitor -ksp_view
+
+   test:
+      suffix: tut_3
+      nsize: 4
+      args: -da_grid_x 1025 -da_grid_y 1025 -pc_type mg -pc_mg_levels 9 -ksp_monitor
+
 TEST*/

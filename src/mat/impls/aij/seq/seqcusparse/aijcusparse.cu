@@ -449,8 +449,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
   ierr = MatSeqAIJCUSPARSEBuildILULowerTriMatrix(A);CHKERRQ(ierr);
   ierr = MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(A);CHKERRQ(ierr);
 
-  cusparseTriFactors->workVector = new THRUSTARRAY;
-  cusparseTriFactors->workVector->resize(n);
+  cusparseTriFactors->workVector = new THRUSTARRAY(n);
   cusparseTriFactors->nnz=a->nz;
 
   A->valid_GPU_matrix = PETSC_OFFLOAD_BOTH;
@@ -631,8 +630,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
 
   PetscFunctionBegin;
   ierr = MatSeqAIJCUSPARSEBuildICCTriMatrices(A);CHKERRQ(ierr);
-  cusparseTriFactors->workVector = new THRUSTARRAY;
-  cusparseTriFactors->workVector->resize(n);
+  cusparseTriFactors->workVector = new THRUSTARRAY(n);
   cusparseTriFactors->nnz=(a->nz-n)*2 + n;
 
   /*lower triangular indices */
@@ -1298,8 +1296,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           ierr = PetscFree(ii);CHKERRQ(ierr);
           ierr = PetscFree(ridx);CHKERRQ(ierr);
         }
-        cusparsestruct->workVector = new THRUSTARRAY;
-        cusparsestruct->workVector->resize(m);
+        cusparsestruct->workVector = new THRUSTARRAY(m);
       } catch(char *ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
       }

@@ -4,8 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'xsdk-0.2.0'
-    self.download         = ['git://https://github.com/trilinos/trilinos','https://github.com/trilinos/trilinos/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit        = '103c8df9da' # xsdk-0.2.0 + superlu_dist-5.4.0 fix jul-31-2018
+    #self.download         = ['git://https://github.com/trilinos/trilinos','https://github.com/trilinos/trilinos/archive/'+self.gitcommit+'.tar.gz']
+    self.download         = ['git://https://github.com/balay/trilinos','https://github.com/balay/trilinos/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['trilinos']
     self.includes         = ['Trilinos_version.h']
     self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos

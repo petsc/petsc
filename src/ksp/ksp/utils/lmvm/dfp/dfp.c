@@ -129,7 +129,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
     beta = PetscRealPart(stz)/ldfp->yts[i];
     ierr = VecAXPY(Z, alpha[i]-beta, lmvm->Y[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(alpha);
+  ierr = PetscFree(alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +175,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);CHKERRQ(ierr);
       ldfp->yts[lmvm->k] = PetscRealPart(curvature);
       ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
       ldfp->sts[lmvm->k] = PetscRealPart(ststmp);

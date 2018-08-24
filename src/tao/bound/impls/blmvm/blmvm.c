@@ -276,6 +276,29 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
+{
+  TAO_LMVM       *lmP;
+  TAO_BLMVM      *blmP;
+  TaoType        type;
+  PetscBool      is_lmvm, is_blmvm;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
+  
+  if (is_lmvm) {
+    lmP = (TAO_LMVM *)tao->data;
+    lmP->recycle = flg;
+  } else if (is_blmvm) {
+    blmP = (TAO_BLMVM *)tao->data;
+    blmP->recycle = flg;
+  } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
   TAO_LMVM       *lmP;
@@ -283,7 +306,8 @@ PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
   TaoType        type;
   PetscBool      is_lmvm, is_blmvm;
   PetscErrorCode ierr;
-
+  
+  PetscFunctionBegin;
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
@@ -309,7 +333,8 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   Mat            M;
 
   PetscErrorCode ierr;
-
+  
+  PetscFunctionBegin;
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOLMVM,  &is_lmvm);CHKERRQ(ierr);
   ierr = PetscStrcmp(type, TAOBLMVM, &is_blmvm);CHKERRQ(ierr);
