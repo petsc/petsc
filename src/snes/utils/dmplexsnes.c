@@ -2791,7 +2791,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErr
   /* Check discretization error */
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs ? exactFuncs : exacts, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (numFields > 1) {
     PetscInt f;
 
