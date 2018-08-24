@@ -270,7 +270,7 @@ static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, Pets
 . ce   - The PetscConvEst object
 
   Output Parameter:
-. alpha - The convergence rate
+. alpha - The convergence rate for each field
 
   Note: The convergence rate alpha is defined by
 $ || u_h - u_exact || < C h^alpha
@@ -297,7 +297,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   void          *ctx;
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
-  PetscInt      *dof, dim, Nr = ce->Nr, r;
+  PetscInt      *dof, dim, Nf, f, Nr = ce->Nr, r;
   PetscLogEvent  event;
   PetscErrorCode ierr;
 
@@ -306,8 +306,9 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1), &dof);CHKERRQ(ierr);
+  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*Nf, &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
   *alpha = 0.0;
   /* Loop over meshes */
@@ -328,7 +329,6 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
     }
     ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm[r], 0, NULL, &dof[r]);CHKERRQ(ierr);
     /* Create solution */
     ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
     ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
@@ -345,8 +345,18 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
     ierr = PetscLogEventBegin(event, ce, 0, 0, 0);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
-    ierr = PetscLogEventSetDof(event, dof[r]);CHKERRQ(ierr);
-    for (f = 0; f < ce->Nf; ++f) {ierr = PetscLogEventSetError(event, f , ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);}
+    for (f = 0; f < ce->Nf; ++f) {
+      PetscSection s, fs;
+      PetscInt     lsize;
+
+      /* Could use DMGetOutputDM() to add in Dirichlet dofs */
+      ierr = DMGetSection(dm[r], &s);CHKERRQ(ierr);
+      ierr = PetscSectionGetField(s, f, &fs);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstrainedStorageSize(fs, &lsize);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&lsize, &dof[r*ce->Nf+f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) ce->snes));CHKERRQ(ierr);
+      ierr = PetscLogEventSetDof(event, f, dof[r*ce->Nf+f]);CHKERRQ(ierr);
+      ierr = PetscLogEventSetError(event, f, ce->errors[r*ce->Nf+f]);CHKERRQ(ierr);
+    }
     /* Monitor */
     if (ce->monitor) {
       PetscReal *errors = &ce->errors[r*ce->Nf];
@@ -368,14 +378,16 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   }
   /* Fit convergence rate */
   ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
-  for (r = 0; r <= Nr; ++r) {
-    x[r] = PetscLog10Real(dof[r]);
-    y[r] = PetscLog10Real(ce->errors[r*ce->Nf+0]);
+  for (f = 0; f < ce->Nf; ++f) {
+    for (r = 0; r <= Nr; ++r) {
+      x[r] = PetscLog10Real(dof[r*ce->Nf+f]);
+      y[r] = PetscLog10Real(ce->errors[r*ce->Nf+f]);
+    }
+    ierr = PetscConvEstLinearRegression_Private(ce, Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
+    /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
+    alpha[f] = -slope * dim;
   }
-  ierr = PetscConvEstLinearRegression_Private(ce, Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
   ierr = PetscFree2(x, y);CHKERRQ(ierr);
-  /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
-  *alpha = -slope * dim;
   ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
   /* Restore solver */
   ierr = SNESReset(ce->snes);CHKERRQ(ierr);
@@ -392,7 +404,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
 
    Parameter:
 +  snes - iterative context obtained from SNESCreate()
-.  alpha - the convergence rate
+.  alpha - the convergence rate for each field
 -  viewer - the viewer to display the reason
 
    Options Database Keys:
@@ -402,7 +414,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
 
 .seealso: PetscConvEstGetRate()
 @*/
-PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha, PetscViewer viewer)
+PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
   PetscBool      isAscii;
   PetscErrorCode ierr;
@@ -410,8 +422,20 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha, PetscViewe
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii);CHKERRQ(ierr);
   if (isAscii) {
+    DM       dm;
+    PetscInt Nf, f;
+
+    ierr = SNESGetDM(ce->snes, &dm);CHKERRQ(ierr);
+    ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: %g\n", (double) alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: ");CHKERRQ(ierr);
+    if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "[");CHKERRQ(ierr);}
+    for (f = 0; f < Nf; ++f) {
+      if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "%.2g", (double) alpha[f]);CHKERRQ(ierr);
+    }
+    if (Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
