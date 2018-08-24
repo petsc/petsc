@@ -429,8 +429,8 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   n    = sp->n;
-  ierr = PetscOptionsGetBool(((PetscObject)sp)->options,NULL,"-mat_null_space_test_view",&flg1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)sp)->options,NULL,"-mat_null_space_test_view_draw",&flg2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view",&flg1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)sp)->options,((PetscObject)mat)->prefix,"-mat_null_space_test_view_draw",&flg2,NULL);CHKERRQ(ierr);
 
   if (n) {
     ierr = VecDuplicate(sp->vecs[0],&l);CHKERRQ(ierr);
