@@ -8,10 +8,7 @@
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 #if defined(PETSC_HAVE_VECCUDA)
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_PtoP(PetscInt,PetscInt*,PetscInt,PetscInt*,PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesDestroy(PetscCUDAIndices*);
-PETSC_INTERN PetscErrorCode VecScatterCUDA_StoS(Vec,Vec,PetscCUDAIndices,InsertMode,ScatterMode);
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 #endif
 
 #if defined(PETSC_USE_DEBUG)
