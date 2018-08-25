@@ -176,6 +176,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     at->free_a  = PETSC_TRUE;
     at->free_ij = PETSC_TRUE;
     at->nonew   = 0;
+    at->maxnz   = ati[an];
   }
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
