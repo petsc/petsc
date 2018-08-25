@@ -1,5 +1,5 @@
 #include <petsc/private/vecimpl.h> /*I   "petscvec.h"    I*/
-
+#include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 /* ------------------------------------------------------------------*/
 /*@
    VecScatterGetMerged - Returns true if the scatter is completed in the VecScatterBegin()
