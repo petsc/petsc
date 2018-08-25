@@ -1138,11 +1138,12 @@ int main(int argc, char **argv)
   if (user.bdIntegral) {
     DMLabel   label;
     PetscInt  id = 1;
-    PetscReal bdInt = 0.0, exact = 3.3333333333;
+    PetscScalar bdInt = 0.0;
+    PetscReal   exact = 3.3333333333;
 
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) bdInt);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt));CHKERRQ(ierr);
     if (PetscAbsReal(bdInt - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", bdInt, exact);
   }
 
