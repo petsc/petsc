@@ -53,8 +53,8 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
   PetscErrorCode    ierr;
   PetscInt          old_k, i, start;
   PetscScalar       yty = 0.0, yts = 0.0, sts = 0.0;
-  PetscScalar       ytDy, stDs, ytDs, yy_sum, ss_sum, ys_sum, sigma, denom;
-  PetscReal         curvtol;
+  PetscScalar       ytDy, stDs, ytDs;
+  PetscReal         curvtol, sigma, yy_sum, ss_sum, ys_sum, denom;
 
   PetscFunctionBegin;
   if (!lmvm->m) PetscFunctionReturn(0);
