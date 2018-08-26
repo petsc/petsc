@@ -423,7 +423,6 @@ PETSC_EXTERN PetscErrorCode TSGetI2Function(TS,Vec*,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode TSSetI2Jacobian(TS,Mat,Mat,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetI2Jacobian(TS,Mat*,Mat*,TSI2Jacobian*,void**);
 
-typedef struct _p_TS_RHSSplit *TS_RHSSplit;
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetIS(TS,const char[],IS);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetIS(TS,const char[],IS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetRHSFunction(TS,const char[],Vec,TSRHSFunction,void*);

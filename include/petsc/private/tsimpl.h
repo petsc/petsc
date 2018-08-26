@@ -96,9 +96,10 @@ struct _p_TSTrajectory {
   void           *data;
 };
 
-struct _p_TS_RHSSplit {
-  TS            ts;
+typedef struct _TS_RHSSplit *TS_RHSSplit;
+struct _TS_RHSSplit {
   char          *splitname;
+  TS            ts;
   IS            is;
   PetscLogEvent event;
 };
