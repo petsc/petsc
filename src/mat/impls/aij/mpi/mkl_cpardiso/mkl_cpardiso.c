@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+#define MKL_ILP64
+#endif
 #include <mkl.h>
 #include <mkl_cluster_sparse_solver.h>
 
