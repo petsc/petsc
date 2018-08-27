@@ -402,7 +402,7 @@ static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void bd_integral_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                           PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uint[])
+                           PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *uint)
 {
   uint[0] = u[0];
 }
@@ -1144,7 +1144,7 @@ int main(int argc, char **argv)
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt));CHKERRQ(ierr);
-    if (PetscAbsReal(bdInt - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", bdInt, exact);
+    if (PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", bdInt, exact);
   }
 
   if (user.bcType == NEUMANN) {ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);}
