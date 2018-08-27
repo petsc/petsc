@@ -304,7 +304,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
 
         if (0.0 == ldb->alpha) {
           /*  Safeguard ys_sum  */
-          ys_sum = PetscMax(ldb->tol, PetscRealPart(ys_sum));
+          ys_sum = PetscMax(ldb->tol, ys_sum);
 
           sigma = ss_sum / ys_sum;
         } else if (1.0 == ldb->alpha) {
@@ -314,7 +314,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
           denom = 2.0*ldb->alpha*yy_sum;
 
           /*  Safeguard denom */
-          denom = PetscMax(ldb->tol, PetscRealPart(denom));
+          denom = PetscMax(ldb->tol, denom);
 
           sigma = ((2.0*ldb->alpha-1)*ys_sum + PetscSqrtReal((2.0*ldb->alpha-1)*(2.0*ldb->alpha-1)*ys_sum*ys_sum - 4.0*ldb->alpha*(ldb->alpha-1)*yy_sum*ss_sum)) / denom;
         }
