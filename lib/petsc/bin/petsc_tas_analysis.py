@@ -24,7 +24,7 @@ def dataProces(cmdLineArgs):
     """
     data = {}
     print(cmdLineArgs)
-    for module in cmdLineArgs:
+    for module in cmdLineArgs.file:
         module = importlib.import_module(module)
         Nf     = module.size
         dofs   = []
@@ -87,7 +87,7 @@ def graphGen(data):
     statScaleFig = plt.figure()
     statScaleHandles = []
     axStatScale = statScaleFig.add_subplot(1,1,1)
-    axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flope Rate (F/s)', title = 'Static Scaling')
+    axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flop Rate (F/s)', title = 'Static Scaling')
 
     efficFig = plt.figure()
     efficHandles = []
@@ -106,19 +106,17 @@ def graphGen(data):
         print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1]))
 
         end = value['dofs'].size-1
-
-        slope = ((((value['dofs'][end]**lstSqMeshConv[0] * 10**lstSqMeshConv[1]))-((value['dofs'][0])**lstSqMeshConv[0] * 10**lstSqMeshConv[1])) \
-            /(value['dofs'][end]-value['dofs'][0]))
-
-        print('Slope: {} of {} data'.format(slope,fileName))
+        #Command line argument for dim note needs to be neg
+        convRate = lstSqMeshConv[0] * -2
+        print('convRate: {} of {} data'.format(convRate,fileName))
 
         ##Start Mesh Convergance graph
-        slope = str(slope)
+        convRate = str(convRate)
         x, = axMeshConv.loglog(value['dofs'], value['errors'][0], label = fileName + ' Orig Data')
         meshConvOrigHandles.append(x)
 
         y, = axMeshConv.loglog(value['dofs'], ((value['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
-                label = fileName + " Least Squares Slope =  " + slope )
+                label = fileName + " Convergence rate =  " + convRate )
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph
@@ -171,7 +169,7 @@ def leastSquares(x, y):
        :param y: Contains the y values for the data.
        :type y: numpy array
 
-       :returns: alpha -- the slope fo the least squares solution
+       :returns: alpha -- the convRate fo the least squares solution
        :returns: c -- the constant of the least squares solution.
     """
 
