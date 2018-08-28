@@ -680,7 +680,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         ierr = VecDot(cg->d_work, cg->g_work, &dk_yk);CHKERRQ(ierr);
         dk_yk = dk_yk - gd_old;
         beta = gtDg/dk_yk;
-        ierr = VecScale(cg->d_work, beta);
+        ierr = VecScale(cg->d_work, beta);CHKERRQ(ierr);
         ierr = VecWAXPY(tao->stepdirection, -1.0, cg->g_work, cg->d_work);CHKERRQ(ierr);
       }
       break;
@@ -948,7 +948,6 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       break;
 
     default:
-      beta = 0.0;
       break;
 
     }
@@ -963,7 +962,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step=1.0,gnorm2,gd,dnorm=0.0;
   PetscReal                    gnorm2_old,f_old,resnorm, gnorm_old;
-  PetscBool                    gd_fallback = PETSC_FALSE, pcgd_fallback = PETSC_FALSE;
+  PetscBool                    pcgd_fallback = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* We are now going to perform a line search along the direction. */
@@ -986,7 +985,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     /*  Check linesearch failure */
     if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
       ++cg->ls_fails;
-      if (cg->cg_type == CG_GradientDescent || gd_fallback){
+      if (cg->cg_type == CG_GradientDescent){
         /* Nothing left to do but fail out of the optimization */
         step = 0.0;
         tao->reason = TAO_DIVERGED_LS_FAILURE;
@@ -1016,13 +1015,11 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
             /* Going to perform a regular gradient descent step. */
             ++cg->ls_fails;
             step = 0.0;
-            gd_fallback = PETSC_TRUE;
           }
         }
         /* Fall back on the scaled gradient step */
         if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
           ++cg->ls_fails;
-          gd_fallback = PETSC_TRUE;
           ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
           ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
           ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
@@ -1037,7 +1034,6 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
           tao->reason = TAO_DIVERGED_LS_FAILURE;
         } else {
           /* One of the fallbacks worked. Set them both back equal to false. */
-          gd_fallback = PETSC_FALSE;
           pcgd_fallback = PETSC_FALSE;
         }
       }
@@ -1094,9 +1090,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
       ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
       ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
       ++cg->descent_error;
-      gd_fallback = PETSC_TRUE;
     } else {
-      gd_fallback = PETSC_FALSE;
     }
   }
   PetscFunctionReturn(0);
