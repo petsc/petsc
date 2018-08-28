@@ -3,9 +3,9 @@
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
 iter =   0, Function value 1.57687, Residual: 0.447462 
-iter =   1, Function value 1.52089, Residual: 0.221654 
-iter =   2, Function value 1.50587, Residual: 0.0267211 
-iter =   3, Function value 1.50566, Residual: 0.000673421 
+iter =   1, Function value 1.52082, Residual: 0.221251 
+iter =   2, Function value 1.50587, Residual: 0.0266265 
+iter =   3, Function value 1.50566, Residual: 0.000666672 
 iter =   4, Function value 1.50566, Residual: < 1.0e-6 
 Tao Object: 1 MPI processes
   type: bntl
@@ -62,7 +62,7 @@ Tao Object: 1 MPI processes
   total KSP iterations: 61
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=7.94744e-07
+  Residual in Function/Gradient:=7.7662e-07
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=15,      (max: 4000)

@@ -4,15 +4,15 @@ mx: 10     my: 8
 
 iter =   0, Function value 1.45591, Residual: 0.21372 
 iter =   1, Function value 1.43049, Residual: 0.132023 
-iter =   2, Function value 1.42068, Residual: 0.0888575 
-iter =   3, Function value 1.41846, Residual: 0.062679 
-iter =   4, Function value 1.41806, Residual: 0.03934 
-iter =   5, Function value 1.41777, Residual: 0.0114592 
-iter =   6, Function value 1.41776, Residual: 0.00405907 
-iter =   7, Function value 1.41776, Residual: 0.00193113 
-iter =   8, Function value 1.41776, Residual: 0.002003 
-iter =   9, Function value 1.41776, Residual: 0.00105279 
-iter =  10, Function value 1.41776, Residual: 0.000691466 
+iter =   2, Function value 1.42069, Residual: 0.0887699 
+iter =   3, Function value 1.41846, Residual: 0.0624733 
+iter =   4, Function value 1.41806, Residual: 0.0392532 
+iter =   5, Function value 1.41777, Residual: 0.0113338 
+iter =   6, Function value 1.41776, Residual: 0.0039953 
+iter =   7, Function value 1.41776, Residual: 0.00190676 
+iter =   8, Function value 1.41776, Residual: 0.0019401 
+iter =   9, Function value 1.41776, Residual: 0.0010569 
+iter =  10, Function value 1.41776, Residual: 0.000715926 
 Tao Object: 1 MPI processes
   type: lmvm
     Gradient steps: 1
@@ -25,7 +25,7 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=1
     Termination reason: 1
   convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=0.000691466
+  Residual in Function/Gradient:=0.000715926
   Objective value=1.41776
   total number of iterations=10,                          (max: 2000)
   total number of function/gradient evaluations=13,      (max: 4000)
