@@ -865,10 +865,10 @@ PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
   .seealso: TSBSISetType(), TS, TSBSI, TSBSIRegister()
 J*/
 typedef const char* TSBSIType;
-#define TSSIEULER   "1"
-#define TSVELVERLET "2"
-#define TSBSI3      "3"
-#define TSBSI4      "4"
+#define TSBSISIEULER   "1"
+#define TSBSIVELVERLET "2"
+#define TSBSI3         "3"
+#define TSBSI4         "4"
 PETSC_EXTERN PetscErrorCode TSBSISetType(TS,TSBSIType);
 PETSC_EXTERN PetscErrorCode TSBSIGetType(TS,TSBSIType*);
 PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,const PetscReal[],const PetscReal[]);

@@ -4,7 +4,7 @@
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-static TSBSIType TSBSIDefault = TSSIEULER;
+static TSBSIType TSBSIDefault = TSBSISIEULER;
 static PetscBool TSBSIRegisterAllCalled;
 static PetscBool TSBSIPackageInitialized;
 
@@ -30,13 +30,13 @@ typedef struct {
 } TS_BSI;
 
 /*MC
-  TSSIEULER - first order semi-implicit Euler method
+  TSBSISIEULER - first order semi-implicit Euler method
   Level: intermediate
 .seealso: TSBSI
 M*/
 
 /*MC
-  TSVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determing velocity and position at the same time)
+  TSBSIVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determing velocity and position at the same time)
 Level: intermediate
 .seealso: TSBSI
 M*/
@@ -61,11 +61,11 @@ PetscErrorCode TSBSIRegisterAll(void)
   TSBSIRegisterAllCalled = PETSC_TRUE;
   {
     const PetscReal c[1] = {1.0},d[1] = {1.0};
-    ierr = TSBSIRegister(TSSIEULER,1,1,c,d);CHKERRQ(ierr);
+    ierr = TSBSIRegister(TSBSISIEULER,1,1,c,d);CHKERRQ(ierr);
   }
   {
     const PetscReal c[2] = {0,1.0},d[2] = {0.5,0.5};
-    ierr = TSBSIRegister(TSVELVERLET,2,2,c,d);CHKERRQ(ierr);
+    ierr = TSBSIRegister(TSBSIVELVERLET,2,2,c,d);CHKERRQ(ierr);
   }
   {
     const PetscReal c[3] = {1,-2.0/3.0,2.0/3.0},d[3] = {-1.0/24.0,3.0/4.0,7.0/24.0};
@@ -479,7 +479,7 @@ $  t_new = t_old + d_i*h
 $  p_new = p_old + c_i*h*g(p_new,t_new)
 $  i=0,1,...,n.
 
-  The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively.
+  The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively. Note that the momentum component could simply be velocity in some representations.
   The BSI solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS that is intended to store the user-provided RHS function.
 
   Reference: wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
