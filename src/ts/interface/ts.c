@@ -2586,8 +2586,8 @@ PetscErrorCode  TSSetUp(TS ts)
 @*/
 PetscErrorCode  TSReset(TS ts)
 {
-  PetscInt       i;
-  PetscErrorCode ierr;
+  TS_RHSSplitLink ilink = ts->tsrhssplit,next;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2615,11 +2615,13 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
-  for (i=0; i<ts->num_rhs_splits; i++) {
-    ierr = TSDestroy(&ts->tsrhssplit[i]->ts);CHKERRQ(ierr);
-    ierr = PetscFree(ts->tsrhssplit[i]->splitname);CHKERRQ(ierr);
-    ierr = ISDestroy(&ts->tsrhssplit[i]->is);CHKERRQ(ierr);
-    ierr = PetscFree(ts->tsrhssplit[i]);CHKERRQ(ierr);
+  while (ilink) {
+    next = ilink->next;
+    ierr = TSDestroy(&ilink->ts);CHKERRQ(ierr);
+    ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
+    ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
+    ierr = PetscFree(ilink);CHKERRQ(ierr);
+    ilink = next;
   }
   ts->num_rhs_splits = 0;
   ts->setupcalled = PETSC_FALSE;

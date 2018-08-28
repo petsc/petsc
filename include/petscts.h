@@ -426,7 +426,8 @@ PETSC_EXTERN PetscErrorCode TSGetI2Jacobian(TS,Mat*,Mat*,TSI2Jacobian*,void**);
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetIS(TS,const char[],IS);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetIS(TS,const char[],IS*);
 PETSC_EXTERN PetscErrorCode TSRHSSplitSetRHSFunction(TS,const char[],Vec,TSRHSFunction,void*);
-PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS,PetscInt*,TS**);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS,const char[],TS*);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTSs(TS,PetscInt*,TS*[]);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);

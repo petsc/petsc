@@ -17,11 +17,6 @@
 */
 #define MAXTSMONITORS 10
 
-/*
-  Maximum number of partitions you can split the RHS function into
-*/
-#define MAXRHSSPLITS 3
-
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
@@ -96,12 +91,13 @@ struct _p_TSTrajectory {
   void           *data;
 };
 
-typedef struct _TS_RHSSplit *TS_RHSSplit;
-struct _TS_RHSSplit {
-  char          *splitname;
-  TS            ts;
-  IS            is;
-  PetscLogEvent event;
+typedef struct _TS_RHSSplitLink *TS_RHSSplitLink;
+struct _TS_RHSSplitLink {
+  TS              ts;
+  char            *splitname;
+  IS              is;
+  TS_RHSSplitLink next;
+  PetscLogEvent   event;
 };
 
 struct _p_TS {
@@ -235,8 +231,8 @@ struct _p_TS {
   Vec      *work;
 
   /* ---------------------- RHS splitting support ---------------------------------*/
-  PetscInt    num_rhs_splits;
-  TS_RHSSplit tsrhssplit[MAXRHSSPLITS];
+  PetscInt        num_rhs_splits;
+  TS_RHSSplitLink tsrhssplit;
 };
 
 struct _TSAdaptOps {

@@ -157,10 +157,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"0",is1);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"1",is2);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"0",NULL,RHSFunction1,&user);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"1",NULL,RHSFunction2,&user);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"position",is1);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"momentum",is2);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"position",NULL,RHSFunction1,&user);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"momentum",NULL,RHSFunction2,&user);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);

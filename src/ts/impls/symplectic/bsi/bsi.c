@@ -23,7 +23,9 @@ struct _BSISchemeLink {
 };
 static BSISchemeLink BSISchemeList;
 typedef struct {
-  Vec       update;   /* a nest work vector for generalized coordinates */
+  TS        subts_p,subts_q; /* sub TS contexts that holds the RHSFunction pointers */
+  IS        is_p,is_q; /* IS sets for position and momentum respectively */
+  Vec       update;    /* a nest work vector for generalized coordinates */
   BSIScheme scheme;
 } TS_BSI;
 
@@ -210,17 +212,14 @@ static PetscErrorCode TSStep_BSI(TS ts)
   TS_BSI         *bsi = (TS_BSI*)ts->data;
   BSIScheme      scheme = bsi->scheme;
   Vec            solution = ts->vec_sol,update = bsi->update,q,p,q_update,p_update;
-  IS             is_q,is_p;
-  TS             *subts;
+  IS             is_q = bsi->is_q,is_p = bsi->is_p;
+  TS             subts_q = bsi->subts_q,subts_p = bsi->subts_p;
   PetscBool      stageok;
   PetscReal      next_time_step = ts->time_step;
   PetscInt       iter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSRHSSplitGetSubTS(ts,NULL,&subts);CHKERRQ(ierr);
-  is_q = ts->tsrhssplit[0]->is;
-  is_p = ts->tsrhssplit[1]->is;
   ierr = VecGetSubVector(solution,is_q,&q);CHKERRQ(ierr);
   ierr = VecGetSubVector(solution,is_p,&p);CHKERRQ(ierr);
   ierr = VecGetSubVector(update,is_q,&q_update);CHKERRQ(ierr);
@@ -230,12 +229,12 @@ static PetscErrorCode TSStep_BSI(TS ts)
     ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
     /* update velocity p */
     if (scheme->c[iter]) {
-      ierr = TSComputeRHSFunction(subts[1],ts->ptime,q,p_update);CHKERRQ(ierr);
+      ierr = TSComputeRHSFunction(subts_p,ts->ptime,q,p_update);CHKERRQ(ierr);
       ierr = VecAXPY(p,scheme->c[iter]*ts->time_step,p_update);CHKERRQ(ierr);
     }
     /* update position q */
     if (scheme->d[iter]) {
-      ierr = TSComputeRHSFunction(subts[0],ts->ptime,p,q_update);CHKERRQ(ierr);
+      ierr = TSComputeRHSFunction(subts_q,ts->ptime,p,q_update);CHKERRQ(ierr);
       ierr = VecAXPY(q,scheme->d[iter]*ts->time_step,q_update);CHKERRQ(ierr);
       ts->ptime = ts->ptime+scheme->d[iter]*ts->time_step;
     }
@@ -251,7 +250,6 @@ static PetscErrorCode TSStep_BSI(TS ts)
   ierr = VecRestoreSubVector(solution,is_p,&p);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(update,is_q,&q_update);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(update,is_p,&p_update);CHKERRQ(ierr);
-  ierr = PetscFree(subts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -284,12 +282,16 @@ static PetscErrorCode TSSetUp_BSI(TS ts)
 {
   TS_BSI         *bsi = (TS_BSI*)ts->data;
   DM             dm;
-  PetscInt       numsubts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSRHSSplitGetSubTS(ts,&numsubts,NULL);CHKERRQ(ierr);
-  if (numsubts<2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call set up RHSSplits with TSRHSSplitSetIS() in order to use -ts_type bsi");
+  ierr = TSRHSSplitGetIS(ts,"position",&bsi->is_q);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetIS(ts,"momentum",&bsi->is_p);CHKERRQ(ierr);
+  if (!bsi->is_q || !bsi->is_p) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type bsi");
+  ierr = TSRHSSplitGetSubTS(ts,"position",&bsi->subts_q);CHKERRQ(ierr);
+  ierr = TSRHSSplitGetSubTS(ts,"momentum",&bsi->subts_p);CHKERRQ(ierr);
+  if (!bsi->subts_q || !bsi->subts_p) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+
   ierr = VecDuplicate(ts->vec_sol,&bsi->update);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
@@ -474,14 +476,14 @@ $  t_new = t_old + d_i*h
 $  p_new = p_old + c_i*h*g(p_new,t_new)
 $  i=0,1,...,n.
 
-  The solution vector should contain both q and p, which correspond to position and momentum respectively.
-  f and g are provided by RHSFunction1 and RHSFunction2 respectively.
+  The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively.
+  The IS sets and the corresponding RHS function pointers can be set with TSRHSSplitXXX().
 
   Reference: wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSSIEULER, TSVELVERLET
+.seealso:  TSCreate(), TSSetType(), TSRHSSplitSetIS(), TSRHSSplitSetRHSFunction()
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BSI(TS ts)

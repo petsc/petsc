@@ -1,5 +1,21 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 
+static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSSplitLink *isplit)
+{
+  PetscBool       found = PETSC_FALSE;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  *isplit = ts->tsrhssplit;
+  /* look up the split */
+  while (*isplit) {
+    ierr = PetscStrcmp((*isplit)->splitname,splitname,&found);CHKERRQ(ierr);
+    if (found) break;
+    *isplit = (*isplit)->next;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
    TSRHSSplitSetIS - Set the index set for the specified split
 
@@ -12,20 +28,20 @@
 
    Level: intermediate
 
-.seealso: TSRHSSplitGetIS
+.seealso: TSRHSSplitGetIS()
 
 .keywords: TS, TSRHSSplit
 @*/
 PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
 {
-  TS_RHSSplit    newsplit;
-  char           prefix[128];
-  PetscErrorCode ierr;
+  TS_RHSSplitLink newsplit,next = ts->tsrhssplit;
+  char            prefix[128];
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,3);
-  if (ts->num_rhs_splits == MAXRHSSPLITS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"MAXIMUM number of splits reached");
+
   ierr = PetscNew(&newsplit);CHKERRQ(ierr);
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&newsplit->splitname);CHKERRQ(ierr);
@@ -40,7 +56,12 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
   ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname);
   ierr = TSSetOptionsPrefix(newsplit->ts,prefix);CHKERRQ(ierr);
-  ts->tsrhssplit[ts->num_rhs_splits++] = newsplit;
+  if (!next) ts->tsrhssplit = newsplit;
+  else {
+    while (next->next) next = next->next;
+    next->next = newsplit;
+  }
+  ts->num_rhs_splits++;
   PetscFunctionReturn(0);
 }
 
@@ -58,27 +79,21 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
 
    Level: intermediate
 
-.seealso: TSRHSSplitSetIS
+.seealso: TSRHSSplitSetIS()
 
 .keywords: TS, TSRHSSplit
 @*/
 PetscErrorCode TSRHSSplitGetIS(TS ts,const char splitname[],IS *is)
 {
-  PetscInt       i = 0;
-  PetscBool      found = PETSC_FALSE;
-  PetscErrorCode ierr;
+  TS_RHSSplitLink isplit;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *is = NULL;
   /* look up the split */
-  while (i<ts->num_rhs_splits) {
-    ierr = PetscStrcmp(ts->tsrhssplit[i]->splitname,splitname,&found);CHKERRQ(ierr);
-    if (found) {
-      *is = ts->tsrhssplit[i]->is;
-      break;
-    }
-    i++;
-  }
+  ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);
+  if (isplit) *is = isplit->is;
   PetscFunctionReturn(0);
 }
 
@@ -105,50 +120,62 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
  Level: beginner
 
 .keywords: TS, timestep, set, ODE, Hamiltonian, Function
-
-.seealso: TSGetRHSSplitFunction()
 @*/
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHSFunction rhsfunc,void *ctx)
 {
-  DM             dm;
-  SNES           snes;
-  Vec            subvec,ralloc = NULL;
-  PetscBool      found = PETSC_FALSE;
-  PetscInt       i = 0;
-  TS             subts;
-  PetscErrorCode ierr;
+  TS_RHSSplitLink isplit;
+  Vec             subvec,ralloc = NULL;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
 
   /* look up the split */
-  while (i<ts->num_rhs_splits) {
-     ierr = PetscStrcmp(ts->tsrhssplit[i]->splitname,splitname,&found);CHKERRQ(ierr);
-     if (found) break;
-     i++;
-  }
-  if (!found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
+  ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);
+  if (!isplit) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
 
-  subts = ts->tsrhssplit[i]->ts;
-
-  ierr = TSGetDM(subts,&dm);CHKERRQ(ierr);
-  ierr = DMTSSetRHSFunction(dm,rhsfunc,ctx);CHKERRQ(ierr);
-
-  ierr = TSGetSNES(subts,&snes);CHKERRQ(ierr);
-  if (!r && !subts->dm && ts->vec_sol) {
-    ierr = VecGetSubVector(ts->vec_sol,ts->tsrhssplit[i]->is,&subvec);CHKERRQ(ierr);
+  if (!r && ts->vec_sol) {
+    ierr = VecGetSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
     ierr = VecDuplicate(subvec,&ralloc);CHKERRQ(ierr);
-    r = ralloc;
-    ierr = VecRestoreSubVector(ts->vec_sol,ts->tsrhssplit[i]->is,&subvec);CHKERRQ(ierr);
+    r    = ralloc;
+    ierr = VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
   }
-  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,subts);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-   TSRHSSplitGetSubTS - Get the split right-hand-side functions.
+   TSRHSSplitGetSubTS - Get the sub-TS by split name.
+
+   Logically Collective on TS
+
+   Output Parameters:
++  splitname - the number of the split
+-  subts - the array of TS contexts
+
+   Level: advanced
+
+.seealso: TSGetRHSSplitFunction()
+@*/
+PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
+{
+  TS_RHSSplitLink isplit;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(subts,3);
+  *subts = NULL;
+  /* look up the split */
+  ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);
+  if (isplit) *subts = isplit->ts;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSRHSSplitGetSubTSs - Get an array of all sub-TS contexts.
 
    Logically Collective on TS
 
@@ -164,22 +191,21 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
 .seealso: TSGetRHSSplitFunction()
 @*/
-PetscErrorCode TSRHSSplitGetSubTS(TS ts,PetscInt *n,TS **subts)
+PetscErrorCode TSRHSSplitGetSubTSs(TS ts,PetscInt *n,TS *subts[])
 {
-  PetscInt       i = 0;
-  PetscErrorCode ierr;
+  TS_RHSSplitLink ilink = ts->tsrhssplit;
+  PetscInt        i = 0;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (subts) {
     ierr = PetscMalloc1(ts->num_rhs_splits,subts);CHKERRQ(ierr);
-    while (i<ts->num_rhs_splits) {
-      (*subts)[i] = ts->tsrhssplit[i]->ts;
-      i++;
+    while (ilink) {
+      (*subts)[i++] = ilink->ts;
+      ilink = ilink->next;
     }
   }
   if (n) *n = ts->num_rhs_splits;
   PetscFunctionReturn(0);
 }
-
-
