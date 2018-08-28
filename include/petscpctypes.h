@@ -46,6 +46,7 @@ typedef const char* PCType;
 #define PCNN              "nn"
 #define PCCHOLESKY        "cholesky"
 #define PCPBJACOBI        "pbjacobi"
+#define PCVPBJACOBI       "vpbjacobi"
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
 #define PCPARMS           "parms"
