@@ -1137,6 +1137,45 @@ PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, Petsc
 }
 
 /*@C
+  PetscFEIntegrateBd - Produce the integral for the given field for a chunk of elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ fem          - The PetscFE object for the field being integrated
+. prob         - The PetscDS specifying the discretizations and continuum functions
+. field        - The field being integrated
+. obj_func     - The function to be integrated
+. Ne           - The number of elements in the chunk
+. fgeom        - The face geometry for each face in the chunk
+. coefficients - The array of FEM basis coefficients for the elements
+. probAux      - The PetscDS specifying the auxiliary discretizations
+- coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
+
+  Output Parameter
+. integral     - the integral for this field
+
+  Level: developer
+
+.seealso: PetscFEIntegrateResidual()
+@*/
+PetscErrorCode PetscFEIntegrateBd(PetscFE fem, PetscDS prob, PetscInt field,
+                                  void (*obj_func)(PetscInt, PetscInt, PetscInt,
+                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                   PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
+                                  PetscInt Ne, PetscFEGeom *geom, const PetscScalar coefficients[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
+  if (fem->ops->integratebd) {ierr = (*fem->ops->integratebd)(fem, prob, field, obj_func, Ne, geom, coefficients, probAux, coefficientsAux, integral);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscFEIntegrateResidual - Produce the element residual vector for a chunk of elements by quadrature integration
 
   Not collective
