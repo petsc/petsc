@@ -387,6 +387,9 @@ static PetscErrorCode TSComputeLinearStability_BSI(TS ts,PetscReal xr,PetscReal 
   Options Database:
 .  -ts_bsi_type <scheme>
 
+  Notes:
+  The BSI solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS that is intended to store the user-provided RHS function.
+
   Level: intermediate
 @*/
 PetscErrorCode TSBSISetType(TS ts,TSBSIType bsitype)
@@ -477,7 +480,7 @@ $  p_new = p_old + c_i*h*g(p_new,t_new)
 $  i=0,1,...,n.
 
   The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively.
-  The IS sets and the corresponding RHS function pointers can be set with TSRHSSplitXXX().
+  The BSI solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS that is intended to store the user-provided RHS function.
 
   Reference: wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
