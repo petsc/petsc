@@ -90,6 +90,23 @@ PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
   }
   PetscFunctionReturn(0);
 }
+/*
+  PetscByteSwapLong - Swap bytes in a long
+*/
+PetscErrorCode  PetscByteSwapLong(long *buff,PetscInt n)
+{
+  PetscInt i,j;
+  long     tmp;
+  char     *ptr1,*ptr2 = (char*)&tmp;
+
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
+    for (i=0; i<(PetscInt) sizeof(long); i++) ptr2[i] = ptr1[sizeof(long)-1-i];
+    for (i=0; i<(PetscInt) sizeof(long); i++) ptr1[i] = ptr2[i];
+  }
+  PetscFunctionReturn(0);
+}
 /* --------------------------------------------------------- */
 /*
   PetscByteSwapReal - Swap bytes in a PetscReal
@@ -180,6 +197,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_FLOAT)  {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_LONG)   {ierr = PetscByteSwapLong((long*)data,count);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -253,9 +271,10 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_FLOAT)   m *= sizeof(float);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
+  else if (type == PETSC_LONG)    m *= sizeof(long);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
-  else if (type == PETSC_BOOL)   m *= sizeof(PetscBool);
+  else if (type == PETSC_BOOL)    m *= sizeof(PetscBool);
   else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
@@ -413,6 +432,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   else if (wtype == PETSC_DOUBLE)  m *= sizeof(double);
   else if (wtype == PETSC_FLOAT)   m *= sizeof(float);
   else if (wtype == PETSC_SHORT)   m *= sizeof(short);
+  else if (wtype == PETSC_LONG)    m *= sizeof(long);
   else if (wtype == PETSC_CHAR)    m *= sizeof(char);
   else if (wtype == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (wtype == PETSC_BOOL)    m *= sizeof(PetscBool);
