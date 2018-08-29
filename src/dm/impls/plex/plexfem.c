@@ -2579,16 +2579,6 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom (void *ctx)
-{
-  PetscFEGeom *geom = (PetscFEGeom *) ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
 {
   char            composeStr[33] = {0};
