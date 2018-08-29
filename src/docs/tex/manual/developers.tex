@@ -171,8 +171,6 @@ We use several conventions
 \item Each application-usable function begins with the name of the class object, followed by any subclass name,
   for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()}, or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user-providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()}).
-\item Each application usable function begins with the name of the class object, followed by any subclass name,
-  for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get'',
 for example, \trl{-ksp_gmres_restart}.
 \item Specific \lstinline{XXXType} values (for example, \lstinline{MATSEQAIJ}) do not have an underscore in them unless they refer to another package that uses an underscore, for example, \lstinline{MATSOLVERSUPERLU_DIST}.

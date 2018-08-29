@@ -306,7 +306,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
 
-  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api, dnz, onz);CHKERRQ(ierr);
+  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -813,7 +813,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ierr = PetscCalloc1(apnz_max,&apa);CHKERRQ(ierr);
   ptap->apa = apa;
 
-  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api, dnz, onz);CHKERRQ(ierr);
+  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1098,7 +1098,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
 
 
-  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api, dnz, onz);CHKERRQ(ierr);
+  ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Cmpi, apj, api);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* (5) compute the local portion of Cmpi      */
   /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
-  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr); 
+  ierr          = PetscFreeSpaceGet(Crmax,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   ierr = PetscMalloc3(nrecv,&buf_ri_k,nrecv,&nextrow,nrecv,&nextci);CHKERRQ(ierr);
@@ -1410,7 +1410,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   }
 
   ierr = MatPreallocateInitialize(comm,pn,an,dnz,onz);CHKERRQ(ierr);
-  ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr); 
+  ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr);
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
@@ -1979,7 +1979,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     bi[i+1] = bi[i] + nnz;
     if (nnz > rmax) rmax = nnz;
   }
-  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
   ierr      = PetscMalloc1(bi[pn]+1,&bj);CHKERRQ(ierr);
   ierr      = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);

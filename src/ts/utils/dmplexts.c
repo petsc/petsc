@@ -252,6 +252,17 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMTSCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information
+
+  Input Parameters:
++ ts - the TS object
+. u    - representative TS vector
+. exactFuncs - pointwise functions of the exact solution for each field
+- ctxs - contexts for the functions
+
+  Level: developer
+@*/
 PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
@@ -264,12 +275,13 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(
   ierr = PetscOptionsHasName(((PetscObject)ts)->options,((PetscObject)ts)->prefix, "-dmts_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts, sol);CHKERRQ(ierr);
+  ierr = VecCopy(u, sol);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts, u);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
-  ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions_Internal(snes, dm, u, sol, exactFuncs, ctxs);CHKERRQ(ierr);
+  ierr = SNESSetSolution(snes, u);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions_Internal(snes, dm, sol, exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

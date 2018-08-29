@@ -241,11 +241,25 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   c_seq = (Mat_SeqAIJ*)C_loc->data;
   cols = c_seq->j;
   vals = c_seq->a;
-  for (i=0; i<cm; i++) {
-    ncols = c_seq->i[i+1] - c_seq->i[i];
-    row = rstart + i;
-    ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-    cols += ncols; vals += ncols;
+
+  /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assembled is PETSC_FALSE and */
+  /* when there are no off-processor parts.  */
+  /* If was_assembled is true, then the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart; in MatSetValues_MPIAIJ_CopyFromCSRFormat */
+  /* is no longer true. Then the more complex function MatSetValues_MPIAIJ() has to be used, where the column index is looked up from */
+  /* a table, and other, more complex stuff has to be done. */
+  if (C->assembled) {
+    C->was_assembled = PETSC_TRUE;
+    C->assembled     = PETSC_FALSE;
+  }
+  if (C->was_assembled) {
+    for (i=0; i<cm; i++) {
+      ncols = c_seq->i[i+1] - c_seq->i[i];
+      row = rstart + i;
+      ierr = MatSetValues_MPIAIJ(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      cols += ncols; vals += ncols;
+    }
+  } else {
+    ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat(C,c_seq->j,c_seq->i,c_seq->a);CHKERRQ(ierr);
   }
 
   /* Co -> C, off-processor part */
@@ -945,6 +959,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
+
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode    ierr;
@@ -961,7 +976,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
-
   /* 1) get R = Pd^T,Ro = Po^T */
   if (ptap->reuse == MAT_REUSE_MATRIX) {
     ierr = MatTranspose_SeqAIJ(p->A,MAT_REUSE_MATRIX,&ptap->Rd);CHKERRQ(ierr);
@@ -1016,11 +1030,26 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   c_seq = (Mat_SeqAIJ*)C_loc->data;
   cols = c_seq->j;
   vals = c_seq->a;
-  for (i=0; i<cm; i++) {
-    ncols = c_seq->i[i+1] - c_seq->i[i];
-    row = rstart + i;
-    ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-    cols += ncols; vals += ncols;
+
+
+  /* The (fast) MatSetValues_MPIAIJ_CopyFromCSRFormat function can only be used when C->was_assembled is PETSC_FALSE and */
+  /* when there are no off-processor parts.  */
+  /* If was_assembled is true, then the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart; in MatSetValues_MPIAIJ_CopyFromCSRFormat */
+  /* is no longer true. Then the more complex function MatSetValues_MPIAIJ() has to be used, where the column index is looked up from */
+  /* a table, and other, more complex stuff has to be done. */
+  if (C->assembled) {
+    C->was_assembled = PETSC_TRUE;
+    C->assembled     = PETSC_FALSE;
+  }
+  if (C->was_assembled) {
+    for (i=0; i<cm; i++) {
+      ncols = c_seq->i[i+1] - c_seq->i[i];
+      row = rstart + i;
+      ierr = MatSetValues_MPIAIJ(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      cols += ncols; vals += ncols;
+    }
+  } else {
+    ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat(C,c_seq->j,c_seq->i,c_seq->a);CHKERRQ(ierr);
   }
 
   /* Co -> C, off-processor part */
@@ -1034,6 +1063,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MatSetValues(C,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     cols += ncols; vals += ncols;
   }
+
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
