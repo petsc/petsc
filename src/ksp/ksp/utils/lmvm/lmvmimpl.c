@@ -220,7 +220,7 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
   PetscFunctionBegin;
   ierr = MatGetType(B, &lmvmType);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)B), mat);CHKERRQ(ierr);
-  ierr = MatSetType(*mat, lmvmType);
+  ierr = MatSetType(*mat, lmvmType);CHKERRQ(ierr);
   
   A = *mat;
   mctx = (Mat_LMVM*)A->data;

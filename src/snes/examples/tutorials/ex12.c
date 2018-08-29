@@ -48,8 +48,9 @@ typedef struct {
                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+  PetscBool      bdIntegral;       /* Compute the integral of the solution on the boundary */
   /* Solver */
-  PC            pcmg;              /* This is needed for error monitoring */
+  PC             pcmg;              /* This is needed for error monitoring */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -84,6 +85,10 @@ static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   Which we can express as
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
+
+  The boundary integral of this solution is (assuming we are not orienting the edges)
+
+    \int^1_0 x^2 dx + \int^1_0 (1 + y^2) dy + \int^1_0 (x^2 + 1) dx + \int^1_0 y^2 dy = 1/3 + 4/3 + 4/3 + 1/3 = 3 1/3
 */
 static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
@@ -394,6 +399,14 @@ static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   uexact[0] = a[0];
 }
 
+static void bd_integral_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                           PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *uint)
+{
+  uint[0] = u[0];
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
@@ -428,6 +441,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex             = PETSC_TRUE;
   options->quiet               = PETSC_FALSE;
   options->nonzInit            = PETSC_FALSE;
+  options->bdIntegral          = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -468,6 +482,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-quiet", "Don't print any vecs", "ex12.c", options->quiet, &options->quiet, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-nonzero_initial_guess", "nonzero intial guess", "ex12.c", options->nonzInit, &options->nonzInit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-bd_integral", "Compute the integral of the solution on the boundary", "ex12.c", options->bdIntegral, &options->bdIntegral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1120,6 +1135,18 @@ int main(int argc, char **argv)
   }
   ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
 
+  if (user.bdIntegral) {
+    DMLabel   label;
+    PetscInt  id = 1;
+    PetscScalar bdInt = 0.0;
+    PetscReal   exact = 3.3333333333;
+
+    ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+    ierr = DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt));CHKERRQ(ierr);
+    if (PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", bdInt, exact);
+  }
+
   if (user.bcType == NEUMANN) {ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);}
   if (user.jacobianMF) {ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);}
   if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
@@ -1181,6 +1208,16 @@ int main(int argc, char **argv)
     suffix: 8
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
+
+  test:
+    suffix: bd_int_0
+    requires: triangle
+    args: -run_type test -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
+
+  test:
+    suffix: bd_int_1
+    requires: triangle
+    args: -run_type test -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
 
   # 3D serial P1 test 9-12
   test:
@@ -1485,19 +1522,19 @@ int main(int argc, char **argv)
     suffix: tri_bddc
     requires: triangle !single
     nsize: 5
-    args: -run_type full -petscpartitioner_type simple -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   # Full solve simplex: BDDC
   test:
     suffix: tri_bddc_parmetis
     requires: hdf5 triangle !single
     nsize: 4
-    args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   test:
     suffix: quad_bddc
     args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -simplex 0 -petscspace_poly_tensor -pc_bddc_corner_selection -cells 3,3 -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
-    nsize: 9
+    nsize: 5
 
   # Full solve simplex: ASM
   test:

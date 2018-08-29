@@ -260,7 +260,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);CHKERRQ(ierr);
       lsb->yts[lmvm->k] = PetscRealPart(curvature);
       lsb->yty[lmvm->k] = PetscRealPart(ytytmp);
       lsb->sts[lmvm->k] = PetscRealPart(ststmp);
@@ -961,7 +961,7 @@ PetscErrorCode MatSymBrdnComputeJ0Diag(Mat B)
   if (lsb->rho == 1.0) {
     ierr = VecCopy(lsb->invDnew, lsb->invD);CHKERRQ(ierr);
   } else if (lsb->rho) {
-    ierr = VecAXPBY(lsb->invD, 1.0-lsb->rho, lsb->rho, lsb->invDnew);CHKERRQ(ierr);
+    ierr = VecAXPBY(lsb->invD, lsb->rho, 1.0-lsb->rho, lsb->invDnew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1018,6 +1018,6 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B)
       }
     }
   }
-  lsb->sigma = (1.0 - lsb->rho)*signew + lsb->rho*lsb->sigma;
+  lsb->sigma = lsb->rho*signew + (1.0 - lsb->rho)*lsb->sigma;
   PetscFunctionReturn(0);
 }

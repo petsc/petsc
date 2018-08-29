@@ -1,7 +1,6 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petsc/private/snesimpl.h>
 
-
 typedef struct {
   SNESLineSearchUserFunc func;
   void                   *ctx;
@@ -66,7 +65,6 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    SNESLineSearchShellGetUserFunc - Gets the user function and context for the shell implementation.
 
@@ -103,7 +101,6 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
@@ -128,8 +125,7 @@ static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 }
 
 /*MC
-
-SNESLINESEARCHSHELL - Provides context for a user-provided line search routine.
+   SNESLINESEARCHSHELL - Provides context for a user-provided line search routine.
 
 The user routine has one argument, the SNESLineSearch context.  The user uses the interface to
 extract line search parameters and set them accordingly when the computation is finished.

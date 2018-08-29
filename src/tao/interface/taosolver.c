@@ -1412,21 +1412,18 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (tao->numbermonitors >= MAXTAOMONITORS) SETERRQ1(PETSC_COMM_SELF,1,"Cannot attach another monitor -- max=",MAXTAOMONITORS);
 
   for (i=0; i<tao->numbermonitors;i++) {
-    if (func == tao->monitor[i] && dest == tao->monitordestroy[i] && ctx == tao->monitorcontext[i]) {
-      if (dest) {
-        ierr = (*dest)(&ctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))func,ctx,dest,(PetscErrorCode (*)(void))tao->monitor[i],tao->monitorcontext[i],tao->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
   tao->monitor[tao->numbermonitors] = func;
-  tao->monitorcontext[tao->numbermonitors] = ctx;
+  tao->monitorcontext[tao->numbermonitors] = (void*)ctx;
   tao->monitordestroy[tao->numbermonitors] = dest;
   ++tao->numbermonitors;
   PetscFunctionReturn(0);

@@ -1,0 +1,10 @@
+  Residual norms for stokes_ solve.
+  0 KSP Residual norm 2.219696134159e-01 
+  1 KSP Residual norm 2.160496122907e-01 
+  2 KSP Residual norm 2.931931177007e-02 
+  3 KSP Residual norm 3.505372069583e-03 
+  4 KSP Residual norm 5.619667025611e-04 
+  5 KSP Residual norm 9.130887729526e-05 
+  6 KSP Residual norm 1.745745948841e-05 
+  7 KSP Residual norm 2.979709687028e-06 
+  8 KSP Residual norm 5.167316063963e-07 

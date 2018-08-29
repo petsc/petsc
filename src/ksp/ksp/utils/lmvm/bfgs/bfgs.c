@@ -63,7 +63,7 @@ PetscErrorCode MatSolve_LMVMBFGS(Mat B, Vec F, Vec dX)
     beta = PetscRealPart(ytx)/lbfgs->yts[i];
     ierr = VecAXPY(dX, alpha[i]-beta, lmvm->S[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(alpha);
+  ierr = PetscFree(alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +184,7 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
         }
       }
       /* Update history of useful scalars */
-      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &ytytmp);CHKERRQ(ierr);
       lbfgs->yts[lmvm->k] = PetscRealPart(curvature);
       lbfgs->yty[lmvm->k] = PetscRealPart(ytytmp);
       lbfgs->sts[lmvm->k] = PetscRealPart(ststmp);

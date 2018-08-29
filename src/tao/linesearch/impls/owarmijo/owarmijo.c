@@ -122,7 +122,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
   PetscErrorCode         ierr;
-  PetscInt               i;
+  PetscInt               i, its=0;
   PetscReal              fact, ref, gdx;
   PetscInt               idx;
   PetscBool              g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
@@ -147,6 +147,8 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     armP->x = x;
     ierr = PetscObjectReference((PetscObject)armP->x);CHKERRQ(ierr);
   }
+  
+  ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
 
   /* Check linesearch parameters */
   if (armP->alpha < 1) {
@@ -225,6 +227,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   ls->step = ls->initstep;
   while (ls->step >= owlqn_minstep && ls->nfeval < ls->max_funcs) {
     /* Calculate iterate */
+    ++its;
     ierr = VecCopy(x,armP->work);CHKERRQ(ierr);
     ierr = VecAXPY(armP->work,ls->step,s);CHKERRQ(ierr);
 
@@ -247,6 +250,8 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     /* Calculate function at new iterate */
     ierr = TaoLineSearchComputeObjectiveAndGradient(ls,armP->work,f,g);CHKERRQ(ierr);
     g_computed=PETSC_TRUE;
+    
+    ierr = TaoLineSearchMonitor(ls, its, *f, ls->step);CHKERRQ(ierr);
 
     if (ls->step == ls->initstep) {
       ls->f_fullstep = *f;

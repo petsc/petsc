@@ -32,6 +32,16 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TaoLineSearchMonitor_MT(TaoLineSearch ls)
+{
+  TaoLineSearch_MT *mt = (TaoLineSearch_MT*)ls->data;
+  PetscErrorCode   ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(ls->viewer, "stx: %g, fx: %g, dgx: %g\n", (double)mt->stx, (double)mt->fx, (double)mt->dgx);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ls->viewer, "sty: %g, fy: %g, dgy: %g\n", (double)mt->sty, (double)mt->fy, (double)mt->dgy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* @ TaoApply_LineSearch - This routine takes step length of 1.0.
 
@@ -66,6 +76,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscValidScalarPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
+  
+  ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
 
   /* comm,type,size checks are done in interface TaoLineSearchApply */
   mt = (TaoLineSearch_MT*)(ls->data);
@@ -175,6 +187,15 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
         ierr = VecDot(g,s,&dg);CHKERRQ(ierr);
       }
     }
+    
+    /* update bracketing parameters in the MT context for printouts in monitor */
+    mt->stx = stx;
+    mt->fx = fx;
+    mt->dgx = dgx;
+    mt->sty = sty;
+    mt->fy = fy;
+    mt->dgy = dgy;
+    ierr = TaoLineSearchMonitor(ls, i+1, *f, ls->step);CHKERRQ(ierr);
 
     if (0 == i) {
       ls->f_fullstep=*f;
@@ -302,6 +323,7 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->ops->apply=TaoLineSearchApply_MT;
   ls->ops->destroy=TaoLineSearchDestroy_MT;
   ls->ops->setfromoptions=TaoLineSearchSetFromOptions_MT;
+  ls->ops->monitor=TaoLineSearchMonitor_MT;
   PetscFunctionReturn(0);
 }
 

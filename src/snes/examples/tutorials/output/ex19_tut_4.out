@@ -1,0 +1,139 @@
+lid velocity = 0.000106281, prandtl # = 1., grashof # = 1.
+Number of SNES iterations = 2
+************************************************************************************************************************
+***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***
+************************************************************************************************************************
+
+---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
+
+./ex19 on a arch-ubuntu-mb-double-extra-opt named pdsbox with 1 processor, by patrick Fri Jul 27 15:30:21 2018
+Using Petsc Development GIT revision: v3.9.3-921-gfc2aa81  GIT Date: 2018-07-27 11:07:58 +0200
+
+                         Max       Max/Min     Avg       Total 
+Time (sec):           3.068e+00     1.000   3.068e+00
+Objects:              9.400e+01     1.000   9.400e+01
+Flop:                 3.195e+09     1.000   3.195e+09  3.195e+09
+Flop/sec:             1.041e+09     1.000   1.041e+09  1.041e+09
+MPI Messages:         0.000e+00     0.000   0.000e+00  0.000e+00
+MPI Message Lengths:  0.000e+00     0.000   0.000e+00  0.000e+00
+MPI Reductions:       0.000e+00     0.000
+
+Flop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)
+                            e.g., VecAXPY() for real vectors of length N --> 2N flop
+                            and VecAXPY() for complex vectors of length N --> 8N flop
+
+Summary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --
+                        Avg     %Total     Avg     %Total    Count   %Total     Avg         %Total    Count   %Total 
+ 0:      Main Stage: 3.0680e+00 100.0%  3.1952e+09 100.0%  0.000e+00   0.0%  0.000e+00        0.0%  0.000e+00   0.0% 
+
+------------------------------------------------------------------------------------------------------------------------
+See the 'Profiling' chapter of the users' manual for details on interpreting output.
+Phase summary info:
+   Count: number of times phase was executed
+   Time and Flop: Max - maximum over all processors
+                  Ratio - ratio of maximum to minimum over all processors
+   Mess: number of messages sent
+   AvgLen: average message length (bytes)
+   Reduct: number of global reductions
+   Global: entire computation
+   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().
+      %T - percent time in this phase         %F - percent flop in this phase
+      %M - percent messages in this phase     %L - percent message lengths in this phase
+      %R - percent reductions in this phase
+   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)
+------------------------------------------------------------------------------------------------------------------------
+Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total
+                   Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
+------------------------------------------------------------------------------------------------------------------------
+
+--- Event Stage 0: Main Stage
+
+SNESSolve              1 1.0 3.0142e+00 1.0 3.20e+09 1.0 0.0e+00 0.0e+00 0.0e+00 98100  0  0  0  98100  0  0  0  1060
+SNESFunctionEval      45 1.0 4.6601e-02 1.0 3.56e+07 1.0 0.0e+00 0.0e+00 0.0e+00  2  1  0  0  0   2  1  0  0  0   763
+SNESJacobianEval       2 1.0 8.7663e-02 1.0 3.63e+07 1.0 0.0e+00 0.0e+00 0.0e+00  3  1  0  0  0   3  1  0  0  0   414
+SNESLineSearch         2 1.0 6.2666e-03 1.0 5.32e+06 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   849
+VecDot                 2 1.0 7.8201e-05 1.0 1.51e+05 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1925
+VecMDot              568 1.0 2.6999e-01 1.0 6.61e+08 1.0 0.0e+00 0.0e+00 0.0e+00  9 21  0  0  0   9 21  0  0  0  2447
+VecNorm              593 1.0 1.2326e-02 1.0 4.46e+07 1.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  3621
+VecScale             587 1.0 7.1690e-03 1.0 2.21e+07 1.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  3082
+VecCopy               63 1.0 1.7498e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet                64 1.0 4.0205e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecAXPY               76 1.0 2.5930e-03 1.0 5.72e+06 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  2206
+VecWAXPY               2 1.0 2.6870e-04 1.0 7.53e+04 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   280
+VecMAXPY             587 1.0 4.1431e-01 1.0 7.03e+08 1.0 0.0e+00 0.0e+00 0.0e+00 14 22  0  0  0  14 22  0  0  0  1698
+VecScatterBegin       45 1.0 7.8702e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecReduceArith         4 1.0 9.0122e-05 1.0 3.01e+05 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3341
+VecReduceComm          2 1.0 1.6689e-06 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecNormalize         587 1.0 2.0009e-02 1.0 6.63e+07 1.0 0.0e+00 0.0e+00 0.0e+00  1  2  0  0  0   1  2  0  0  0  3312
+MatMult              587 1.0 8.6304e-01 1.0 8.54e+08 1.0 0.0e+00 0.0e+00 0.0e+00 28 27  0  0  0  28 27  0  0  0   990
+MatSolve             587 1.0 1.2751e+00 1.0 8.54e+08 1.0 0.0e+00 0.0e+00 0.0e+00 42 27  0  0  0  42 27  0  0  0   670
+MatLUFactorNum         2 1.0 5.5508e-02 1.0 1.41e+07 1.0 0.0e+00 0.0e+00 0.0e+00  2  0  0  0  0   2  0  0  0  0   254
+MatILUFactorSym        1 1.0 9.9506e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatAssemblyBegin       3 1.0 1.4305e-06 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatAssemblyEnd         3 1.0 6.2709e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetRowIJ            1 1.0 4.0531e-06 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetOrdering         1 1.0 1.2467e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatZeroEntries         2 1.0 4.0841e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatFDColorCreate       1 1.0 2.3603e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatFDColorSetUp        1 1.0 2.7331e-02 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   1  0  0  0  0     0
+MatFDColorApply        2 1.0 5.9345e-02 1.0 3.63e+07 1.0 0.0e+00 0.0e+00 0.0e+00  2  1  0  0  0   2  1  0  0  0   611
+MatFDColorFunc        42 1.0 4.4162e-02 1.0 3.32e+07 1.0 0.0e+00 0.0e+00 0.0e+00  1  1  0  0  0   1  1  0  0  0   752
+KSPSetUp               2 1.0 6.0439e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+KSPSolve               2 1.0 2.9187e+00 1.0 3.15e+09 1.0 0.0e+00 0.0e+00 0.0e+00 95 99  0  0  0  95 99  0  0  0  1080
+KSPGMRESOrthog       568 1.0 6.6268e-01 1.0 1.32e+09 1.0 0.0e+00 0.0e+00 0.0e+00 22 41  0  0  0  22 41  0  0  0  1994
+PCSetUp                2 1.0 6.6768e-02 1.0 1.41e+07 1.0 0.0e+00 0.0e+00 0.0e+00  2  0  0  0  0   2  0  0  0  0   211
+PCApply              587 1.0 1.2759e+00 1.0 8.54e+08 1.0 0.0e+00 0.0e+00 0.0e+00 42 27  0  0  0  42 27  0  0  0   670
+------------------------------------------------------------------------------------------------------------------------
+
+Memory usage is given in bytes:
+
+Object Type          Creations   Destructions     Memory  Descendants' Mem.
+Reports information only for process 0.
+
+--- Event Stage 0: Main Stage
+
+                SNES     1              1         1372     0.
+              DMSNES     1              1          672     0.
+      SNESLineSearch     1              1         1000     0.
+              Vector    47             47     13320304     0.
+              Matrix     2              2     19277596     0.
+  Matrix FD Coloring     1              1     16612048     0.
+    Distributed Mesh     1              1         5344     0.
+           Index Set    29             29       738052     0.
+   IS L to G Mapping     2              2       189524     0.
+   Star Forest Graph     2              2         1728     0.
+     Discrete System     1              1          932     0.
+         Vec Scatter     2              2         1408     0.
+       Krylov Solver     1              1        18416     0.
+     DMKSP interface     1              1          656     0.
+      Preconditioner     1              1         1008     0.
+              Viewer     1              0            0     0.
+========================================================================================================================
+Average time to get PetscTime(): 4.76837e-08
+#PETSc Option Table entries:
+-da_refine 5
+-log_view
+#End of PETSc Option Table entries
+Compiled without FORTRAN kernels
+Compiled with full precision matrices (default)
+sizeof(short) 2 sizeof(int) 4 sizeof(long) 8 sizeof(void*) 8 sizeof(PetscScalar) 8 sizeof(PetscInt) 4
+Configure options: PETSC_DIR=/home/patrick/petsc-mb PETSC_ARCH=arch-ubuntu-mb-double-extra-opt --with-debugging=0 --with-precision=double --with-scalar-type=real --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --COPTFLAGS="-g -O3 -march=native " --CXXOPTFLAGS="-g -O3 -march=native " --FOPTFLAGS="-g -O3 -march=native " --download-c2html --download-suitesparse --download-yaml --download-hdf5 --download-scalapack --download-metis --download-parmetis --download-mumps --download-superlu_dist --download-triangle --download-ctetgen --download-sundials --download-ml --download-exodusii --download-hdf5 --download-netcdf --download-pnetcdf
+-----------------------------------------
+Libraries compiled on 2018-07-27 13:01:14 on pdsbox 
+Machine characteristics: Linux-4.13.0-39-generic-x86_64-with-Ubuntu-16.04-xenial
+Using PETSc directory: /home/patrick/petsc-mb
+Using PETSc arch: arch-ubuntu-mb-double-extra-opt
+-----------------------------------------
+
+Using C compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpicc    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden  
+Using Fortran compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpif90   -Wall -ffree-line-length-0 -Wno-unused-dummy-argument    
+-----------------------------------------
+
+Using include paths: -I/home/patrick/petsc-mb/include -I/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/include
+-----------------------------------------
+
+Using C linker: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpicc
+Using Fortran linker: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpif90
+Using libraries: -Wl,-rpath,/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/lib -L/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/lib -lpetsc -Wl,-rpath,/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/lib -L/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/lib -Wl,-rpath,/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5 -Wl,-rpath,/usr/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu -Wl,-rpath,/lib/x86_64-linux-gnu -L/lib/x86_64-linux-gnu -lcmumps -ldmumps -lsmumps -lzmumps -lmumps_common -lpord -lpthread -lscalapack -lumfpack -lklu -lcholmod -lbtf -lccolamd -lcolamd -lcamd -lamd -lsuitesparseconfig -lsuperlu_dist -lml -lsundials_cvode -lsundials_nvecserial -lsundials_nvecparallel -llapack -lblas -lexodus -lnetcdf -lpnetcdf -lhdf5hl_fortran -lhdf5_fortran -lhdf5_hl -lhdf5 -lparmetis -lmetis -ltriangle -lm -lctetgen -lpthread -lyaml -lstdc++ -ldl -lmpifort -lmpi -lgfortran -lm -lgfortran -lm -lgcc_s -lquadmath -lstdc++ -ldl
+-----------------------------------------
+

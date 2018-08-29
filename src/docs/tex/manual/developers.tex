@@ -171,8 +171,6 @@ We use several conventions
 \item Each application-usable function begins with the name of the class object, followed by any subclass name,
   for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()}, or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user-providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()}).
-\item Each application usable function begins with the name of the class object, followed by any subclass name,
-  for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get'',
 for example, \trl{-ksp_gmres_restart}.
 \item Specific \lstinline{XXXType} values (for example, \lstinline{MATSEQAIJ}) do not have an underscore in them unless they refer to another package that uses an underscore, for example, \lstinline{MATSOLVERSUPERLU_DIST}.
@@ -317,7 +315,7 @@ actually be prototyped as \lstinline{void*}. This prevents the caller from havin
 Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg)} or \lstinline{if (!flg)}.
 \item Do not use \lstinline{#ifdef} or \lstinline{#ifndef}. Rather, use \lstinline{#if defined(...} or \lstinline{#if !defined(...}
 \item Never use system random number generators such as \lstinline{rand()} in PETSc code or examples because these can produce different results
-on different systems thus making portability testing difficult. Instead use the PetscRandom which produces the exact same results regardless of
+on different systems thus making portability testing difficult. Instead use \lstinline{PetscRandom} which produces the exact same results regardless of
 system it is used on.
 \end{enumerate}
 
@@ -383,6 +381,7 @@ typedef NewType OldType PETSC_DEPRECATED("Use NewType (since v3.9)");
 PETSC_DEPRECATED("Use NewFunction (since v3.9)") PetscErrorCode OldFunction();
 \end{lstlisting}
 The old function or type, with the deprecation warning, should remain for at least one major release. The function or type's manual page should be updated (see \ref{sec:manpageformat}, item \ref{item:manpagelevel}).
+\item Before removing or renaming an options database key, \lstinline{PetscOptionsDeprecated()} should be used for at least one major release.
 \end{enumerate}
 
 \section{Formatted Comments}
@@ -1816,22 +1815,22 @@ See examples below for how it works in practice.
 The following is the simplest test block:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   test:
-TESTS*/
+TEST*/
 \end{outputlisting}
 which is equivalent to
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     test:
-TESTS*/
+TEST*/
 \end{outputlisting}
 which is equivalent to
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
-TESTS*/
+TEST*/
 \end{outputlisting}
 
 If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
@@ -1841,15 +1840,15 @@ resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
 For Fortran, the equivalent is
 %
 \begin{outputlisting}
-!/*TESTS
+!/*TEST
 !  test:
-!TESTS*/
+!TEST*/
 \end{outputlisting}
 
 A more complete example is
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   test:
   test:
     suffix: 1
@@ -1858,7 +1857,7 @@ A more complete example is
     args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
     args: -s2_pc_type jacobi -s2_ksp_monitor_short
     requires: x
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutorials/ex1.c}, the tests would
@@ -1869,7 +1868,7 @@ Following is an example of how to test a permutuation of arguments against the s
 output file:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     suffix: 19
     requires: datafilespath
@@ -1878,7 +1877,7 @@ output file:
     test:
     test:
       args: -mat_type seqsbaij
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 Assuming that this is \lstinline{ex10.c}, there would be two
@@ -1888,7 +1887,7 @@ Here is a similar example, but the permutation of arguments creates
 different output:
 
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     requires: datafilespath
     args: -f0 ${DATAFILESPATH}/matrices/medium
@@ -1898,7 +1897,7 @@ different output:
       args: -pc_type lu
     test:
       suffix: 5
-*/TESTS
+*/TEST
 \end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, two shell
 scripts will be created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
@@ -1906,7 +1905,7 @@ scripts will be created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
 An example using a for loop is:
 %
 \begin{outputlisting}
-/*TESTS
+/*TEST
   testset:
     suffix: 1
     args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
@@ -1917,7 +1916,7 @@ An example using a for loop is:
     args: -f ${DATAFILESPATH}/matrices/small
     args: -mat_type baij -matload_block_size {{2 3}shared output}
     requires: datafilespath
-*/TESTS
+*/TEST
 \end{outputlisting}
 
 In this example, \lstinline{ex138_2} will invoke \lstinline{runex138_2.sh} twice with two different

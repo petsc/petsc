@@ -250,10 +250,13 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
-  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
+  if (is1) PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  if (is2) PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
 
+  if (!is1 && !is2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
+  if (!is1) {ierr = ISDuplicate(is2, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
+  if (!is2) {ierr = ISDuplicate(is1, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
@@ -395,6 +398,29 @@ PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
   ierr = ISDestroy(&is2sorted);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is1sorted,&i1);CHKERRQ(ierr);
   ierr = ISDestroy(&is1sorted);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *isect = NULL;
+  if (is2 && is1) {
+    char           composeStr[33] = {0};
+    PetscObjectId  is2id;
+
+    ierr = PetscObjectGetId((PetscObject)is2,&is2id);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(composeStr,32,"ISIntersect_Caching_%x",is2id);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject) is1, composeStr, (PetscObject *) isect);CHKERRQ(ierr);
+    if (*isect == NULL) {
+      ierr = ISIntersect(is1, is2, isect);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) is1, composeStr, (PetscObject) *isect);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectReference((PetscObject) *isect);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

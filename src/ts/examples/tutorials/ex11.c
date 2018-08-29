@@ -1130,7 +1130,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
     ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMSetSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
@@ -1172,7 +1172,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = DMSetSection(dmMass, sectionMass);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
@@ -2578,13 +2578,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: 8
     requires: exodusii
     nsize: 2
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 9
     requires: exodusii
     nsize: 8
-    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+    args: -ufv_vtk_interval 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
   test:
     suffix: 10
@@ -2660,5 +2660,29 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: glvis_adv_2d_quad
     args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+
+  test:
+    suffix: tut_1
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+
+  test:
+    suffix: tut_2
+    requires: exodusii
+    nsize: 1
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+
+  test:
+    suffix: tut_3
+    requires: exodusii
+    nsize: 4
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
+
+  test:
+    suffix: tut_4
+    requires: exodusii
+    nsize: 4
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
 TEST*/
