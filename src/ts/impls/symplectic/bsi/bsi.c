@@ -60,19 +60,19 @@ PetscErrorCode TSBSIRegisterAll(void)
   if (TSBSIRegisterAllCalled) PetscFunctionReturn(0);
   TSBSIRegisterAllCalled = PETSC_TRUE;
   {
-    const PetscReal c[1] = {1.0},d[1] = {1.0};
+    PetscReal c[1] = {1.0},d[1] = {1.0};
     ierr = TSBSIRegister(TSBSISIEULER,1,1,c,d);CHKERRQ(ierr);
   }
   {
-    const PetscReal c[2] = {0,1.0},d[2] = {0.5,0.5};
+    PetscReal c[2] = {0,1.0},d[2] = {0.5,0.5};
     ierr = TSBSIRegister(TSBSIVELVERLET,2,2,c,d);CHKERRQ(ierr);
   }
   {
-    const PetscReal c[3] = {1,-2.0/3.0,2.0/3.0},d[3] = {-1.0/24.0,3.0/4.0,7.0/24.0};
+    PetscReal c[3] = {1,-2.0/3.0,2.0/3.0},d[3] = {-1.0/24.0,3.0/4.0,7.0/24.0};
     ierr = TSBSIRegister(TSBSI3,3,3,c,d);CHKERRQ(ierr);
   }
   {
-    const PetscReal c[4] = {1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0))},d[4] = {1.0/(2.0-PetscPowScalar(2,1.0/3.0)),-PetscPowScalar(2,1.0/3.0)/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/(2.0-PetscPowScalar(2,1.0/3.0)),0};
+    PetscReal c[4] = {1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0))},d[4] = {1.0/(2.0-PetscPowScalar(2,1.0/3.0)),-PetscPowScalar(2,1.0/3.0)/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/(2.0-PetscPowScalar(2,1.0/3.0)),0};
     ierr = TSBSIRegister(TSBSI4,4,4,c,d);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ PetscErrorCode TSBSIFinalizePackage(void)
 
 .seealso: TSBSI
 @*/
-PetscErrorCode TSBSIRegister(TSRosWType name,PetscInt order,PetscInt s,const PetscReal c[],const PetscReal d[])
+PetscErrorCode TSBSIRegister(TSRosWType name,PetscInt order,PetscInt s,PetscReal c[],PetscReal d[])
 {
   BSISchemeLink  link;
   BSIScheme      scheme;

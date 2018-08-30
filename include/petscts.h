@@ -871,7 +871,7 @@ typedef const char* TSBSIType;
 #define TSBSI4         "4"
 PETSC_EXTERN PetscErrorCode TSBSISetType(TS,TSBSIType);
 PETSC_EXTERN PetscErrorCode TSBSIGetType(TS,TSBSIType*);
-PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSBSIInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBSIFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBSIRegisterDestroy(void);
