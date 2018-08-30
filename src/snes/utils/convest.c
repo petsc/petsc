@@ -299,6 +299,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
   PetscInt      *dof, dim, Nr = ce->Nr, r, f;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -307,11 +308,18 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1), &dof);CHKERRQ(ierr);
+  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
   /* Loop over meshes */
+  ierr = PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   for (r = 0; r <= Nr; ++r) {
+    PetscLogStage stage;
+    char          stageName[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     if (r > 0) {
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
       ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
@@ -325,7 +333,6 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       }
     }
     ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm[r], 0, NULL, &dof[r]);CHKERRQ(ierr);
     /* Create solution */
     ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
     ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
@@ -340,21 +347,27 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
     ierr = DMProjectFunction(dm[r], t, ce->initGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     ierr = SNESSolve(ce->snes, NULL, u);CHKERRQ(ierr);
     ierr = DMComputeL2FieldDiff(dm[r], t, ce->exactSol, NULL, u, &ce->errors[r*ce->Nf]);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(event, ce, 0, 0, 0);CHKERRQ(ierr);
+    for (f = 0; f < ce->Nf; ++f) {
+      ierr = DMPlexGetHeightStratum(dm[r], 0, NULL, &dof[r*ce->Nf+f]);CHKERRQ(ierr);
+    }
     /* Monitor */
     if (ce->monitor) {
       PetscReal *errors = &ce->errors[r*ce->Nf];
-      PetscInt f;
 
-      ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "L_2 Error: ");CHKERRQ(ierr);
+      if (ce->Nf > 1) {ierr = PetscPrintf(comm, "[");CHKERRQ(ierr);}
       for (f = 0; f < ce->Nf; ++f) {
         if (f > 0) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
         if (errors[f] < 1.0e-11) {ierr = PetscPrintf(comm, "< 1e-11");CHKERRQ(ierr);}
         else                     {ierr = PetscPrintf(comm, "%g", (double)errors[f]);CHKERRQ(ierr);}
       }
-      ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
+      if (ce->Nf > 1) {ierr = PetscPrintf(comm, "]");CHKERRQ(ierr);}
+      ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
     }
     /* Cleanup */
     ierr = VecDestroy(&u);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   for (r = 1; r <= Nr; ++r) {
     ierr = DMDestroy(&dm[r]);CHKERRQ(ierr);
@@ -363,7 +376,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = PetscMalloc2(Nr+1, &x, Nr+1, &y);CHKERRQ(ierr);
   for (f = 0; f < ce->Nf; ++f) {
     for (r = 0; r <= Nr; ++r) {
-      x[r] = PetscLog10Real(dof[r]);
+      x[r] = PetscLog10Real(dof[r*ce->Nf+f]);
       y[r] = PetscLog10Real(ce->errors[r*ce->Nf+f]);
     }
     ierr = PetscConvEstLinearRegression_Private(ce, Nr+1, x, y, &slope, &intercept);CHKERRQ(ierr);
@@ -407,12 +420,14 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha[], PetscVie
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii);CHKERRQ(ierr);
   if (isAscii) {
     ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: [");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: ");CHKERRQ(ierr);
+    if (ce->Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "[");CHKERRQ(ierr);}
     for (f = 0; f < ce->Nf; ++f) {
       if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "%g", (double) alpha[f]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "]\n");CHKERRQ(ierr);
+    if (ce->Nf > 1) {ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
