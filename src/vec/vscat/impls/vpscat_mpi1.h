@@ -66,34 +66,15 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
   else yv = xv;
 
   if (!(mode & SCATTER_LOCAL)) {
-    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv && !to->use_window) {
+    if (!from->use_readyreceiver && !to->sendfirst){
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-#if defined(PETSC_HAVE_MPI_ALLTOALLW)  && !defined(PETSC_USE_64BIT_INDICES)
-    if (to->use_alltoallw && addv == INSERT_VALUES) {
-      ierr = MPI_Alltoallw(xv,to->wcounts,to->wdispls,to->types,yv,from->wcounts,from->wdispls,from->types,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-    } else
-#endif
-    if (ctx->packtogether || to->use_alltoallv || to->use_window) {
+    if (ctx->packtogether){
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
       PETSCMAP1(Pack_MPI1)(sstarts[nsends],indices,xv,svalues,bs);
-      if (to->use_alltoallv) {
-        ierr = MPI_Alltoallv(to->values,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-      } else if (to->use_window) {
-        PetscInt cnt;
-
-        ierr = MPI_Win_fence(0,from->window);CHKERRQ(ierr);
-        for (i=0; i<nsends; i++) {
-          cnt  = bs*(to->starts[i+1]-to->starts[i]);
-          ierr = MPI_Put(to->values+bs*to->starts[i],cnt,MPIU_SCALAR,to->procs[i],bs*to->winstarts[i],cnt,MPIU_SCALAR,from->window);CHKERRQ(ierr);
-        }
-#endif
-      } else if (nsends) {
-        ierr = MPI_Startall_isend(to->starts[to->n]*bs,nsends,swaits);CHKERRQ(ierr);
-      }
+      ierr = MPI_Startall_isend(to->starts[to->n]*bs,nsends,swaits);CHKERRQ(ierr);
     } else {
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
@@ -106,7 +87,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
       }
     }
 
-    if (!from->use_readyreceiver && to->sendfirst && !to->use_alltoallv && !to->use_window) {
+    if (!from->use_readyreceiver && to->sendfirst) {
       /* post receives since they were not previously posted   */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
@@ -168,14 +149,10 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
   indices = from->indices;
   rstarts = from->starts;
 
-  if (ctx->packtogether || (to->use_alltoallw && (addv != INSERT_VALUES)) || (to->use_alltoallv && !to->use_alltoallw) || to->use_window) {
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-    if (to->use_window) {ierr = MPI_Win_fence(0,from->window);CHKERRQ(ierr);}
-    else
-#endif
-    if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+  if (ctx->packtogether) {
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     ierr = PETSCMAP1(UnPack_MPI1)(from->starts[from->n],from->values,indices,yv,addv,bs);CHKERRQ(ierr);
-  } else if (!to->use_alltoallw) {
+  } else {
     /* unpack one at a time */
     count = nrecvs;
     while (count) {
@@ -200,7 +177,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
   }
 
   /* wait on sends */
-  if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
+  if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
