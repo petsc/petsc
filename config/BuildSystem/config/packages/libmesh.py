@@ -1,79 +1,54 @@
 import config.package
+import os
 
-class Configure(config.package.Package):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'master'  #master+
-    self.download               = ['git://https://github.com/libMesh/libmesh.git']
-    self.functions              = []
-    self.includes               = []
-    self.skippackagewithoptions = 1
-    self.useddirectly           = 0
-    self.linkedbypetsc          = 0
-    self.builtafterpetsc        = 1
+    config.package.GNUPackage.__init__(self, framework)
+    self.download  = ['git://https://github.com/libMesh/libmesh.git', 'https://github.com/libMesh/libmesh/releases/download/v1.2.1/libmesh-1.2.1.tar.gz']
+    self.gitcommit = '262c8c4d4c9669b6116084260baa39633743f4c9'
+    self.functions = []
+    self.includes  = ['libmesh/libmesh.h', 'libmesh/libmesh_config.h']
+    self.liblist   = [['libmesh.la']]
+    self.pkgname   = 'libmesh-1.2.1'
+    self.cxx       = 1
     return
 
   def setupHelp(self, help):
-    config.package.Package.setupHelp(self,help)
     import nargs
-    return
+    config.package.GNUPackage.setupHelp(self, help)
+    help.addArgument('LIBMESH', '-with-libmesh-method=<method>', nargs.Arg(None, 'dbg', 'User may provide which "METHOD" to compile against. Valid options: dbg, opt'))
 
   def setupDependencies(self, framework):
-    config.package.Package.setupDependencies(self, framework)
-    self.setCompilers    = framework.require('config.setCompilers',self)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.installdir      = framework.require('PETSc.options.installDir',self)
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.mpi             = framework.require('config.packages.MPI',  self)
+    self.boost           = framework.require('config.packages.boost',self)
+    self.deps            = [self.mpi, self.boost]
     return
 
-  def Install(self):
-    import os
-
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
+  def formGNUConfigureArgs(self):
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    if not self.argDB['download-libmesh']: #using User specified libmesh
+      if self.argDB['with-libmesh-method'].lower() == 'dbg':
+        args.append('--with-methods=dbg')
+        args.append('--disable-glibcxx-debugging')
+      elif self.argDB['with-libmesh-method'].lower() == 'opt':
+        args.append('--with-methods=opt')
+      else:
+        raise RuntimeError('Valid options for --with-libmesh-method=<string> are OPT or DBG')
+    elif self.compilerFlags.debugging:
+      args.append('--with-methods=dbg')
+      args.append('--disable-glibcxx-debugging')
     else:
-       newuser = ''
-
-    # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '
-       prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-    else:
-       newdir = ' '
-       prefix = os.path.join(self.petscdir.dir,self.arch)
-
-    self.addDefine('HAVE_LIBMESH',1)
-    self.addMakeMacro('LIBMESH','yes')
-    self.addMakeRule('libmeshbuild','', \
-                       ['@echo "*** Building libmesh ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg',\
-                          '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' ./configure --prefix='+prefix+' && \\\n\
-           '+newdir+' '+self.make.make_jnp+' ) > ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             touch ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg && \\\n\
-             exit 1)'])
-    self.addMakeRule('libmeshinstall','', \
-                       ['@echo "*** Installing libmesh ***"',\
-                          '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             exit 1)'])
-    if self.argDB['prefix']:
-      self.addMakeRule('libmesh-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building libmesh
-      self.addMakeRule('libmesh-install','libmeshbuild libmeshinstall')
-    else:
-      self.addMakeRule('libmesh-build','libmeshbuild libmeshinstall')
-      self.addMakeRule('libmesh-install','')
-
-    return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('libmesh-build','')
-    self.addMakeRule('libmesh-install','')
-
+      args.append('--with-methods=opt')
+    args.append('--disable-cxx11')
+    args.append('--disable-openmp')
+    args.append('--disable-perflog')
+    args.append('--disable-pthreads')
+    args.append('--disable-cppthreads')
+    args.append('--disable-unique-ptr')
+    args.append('PETSC_DIR='+self.petscdir.dir)
+    args.append('PETSC_ARCH='+os.environ['PETSC_ARCH'])
+    args.append('--with-boost='+os.path.join(self.boost.directory,self.boost.includedir))
+    args.append('--with-boost-libdir='+os.path.join(self.boost.directory,self.boost.libdir))
+    return args
