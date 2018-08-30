@@ -7,12 +7,12 @@ iter =   0, Function value 1.57687, Residual: 0.447462
   iter =   1,   Function value 1.53574,   Residual: 0.222622 
   iter =   2,   Function value 1.51391,   Residual: 0.187842 
   iter =   3,   Function value 1.51012,   Residual: 0.110361 
-iter =   1, Function value 1.50567, Residual: 0.00326476 
-  iter =   0,   Function value 1.50567,   Residual: 0.00326476 
-  iter =   1,   Function value 1.50567,   Residual: 0.00332264 
-  iter =   2,   Function value 1.50566,   Residual: 0.00201118 
-  iter =   3,   Function value 1.50566,   Residual: 0.00125295 
-iter =   2, Function value 1.50566, Residual: 1.30036e-06 
+iter =   1, Function value 1.50567, Residual: 0.00326471 
+  iter =   0,   Function value 1.50567,   Residual: 0.00326471 
+  iter =   1,   Function value 1.50567,   Residual: 0.00332248 
+  iter =   2,   Function value 1.50566,   Residual: 0.00201114 
+  iter =   3,   Function value 1.50566,   Residual: 0.00125298 
+iter =   2, Function value 1.50566, Residual: 1.29988e-06 
 Tao Object: 1 MPI processes
   type: bntl
     Rejected BFGS updates: 0
@@ -58,6 +58,17 @@ Tao Object: 1 MPI processes
         Number of updates: 2
         Number of rejects: 0
         Number of resets: 0
+        Mat Object: (J0_) 1 MPI processes
+          type: lmvmdiagbrdn
+          rows=48, cols=48
+            Scale history: 1
+            Scale params: alpha=1., beta=0.5, rho=1.
+            Convex factor: theta=0.125
+            Max. storage: 1
+            Used storage: 1
+            Number of updates: 1
+            Number of rejects: 0
+            Number of resets: 0
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -68,7 +79,7 @@ Tao Object: 1 MPI processes
   total KSP iterations: 39
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.30036e-06
+  Residual in Function/Gradient:=1.29988e-06
   Objective value=1.50566
   total number of iterations=2,                          (max: 50)
   total number of function/gradient evaluations=26,      (max: 4000)

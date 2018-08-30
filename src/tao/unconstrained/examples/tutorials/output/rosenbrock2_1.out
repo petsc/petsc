@@ -1,55 +1,51 @@
   0 TAO,  Function value: 1.,  Residual: 2. 
   1 TAO,  Function value: 0.791905,  Residual: 3.15898 
-  2 TAO,  Function value: 0.735272,  Residual: 8.61386 
-  3 TAO,  Function value: 0.571406,  Residual: 2.1649 
-  4 TAO,  Function value: 0.427702,  Residual: 2.17512 
-  5 TAO,  Function value: 0.369204,  Residual: 3.50719 
+  2 TAO,  Function value: 0.592607,  Residual: 5.4106 
+  3 TAO,  Function value: 0.370322,  Residual: 2.58241 
+  4 TAO,  Function value: 0.299535,  Residual: 2.13981 
+  5 TAO,  Function value: 0.270172,  Residual: 4.27842 
 -----------------------
-  0 TAO,  Function value: 0.369204,  Residual: 3.50719 
-  1 TAO,  Function value: 0.263671,  Residual: 6.86097 
-  2 TAO,  Function value: 0.174496,  Residual: 1.97109 
-  3 TAO,  Function value: 0.117083,  Residual: 5.31829 
-  4 TAO,  Function value: 0.0931331,  Residual: 1.47536 
-  5 TAO,  Function value: 0.0518278,  Residual: 2.07607 
+  0 TAO,  Function value: 0.270172,  Residual: 4.27842 
+  1 TAO,  Function value: 0.218497,  Residual: 4.97344 
+  2 TAO,  Function value: 0.135331,  Residual: 2.04591 
+  3 TAO,  Function value: 0.0999946,  Residual: 5.55282 
+  4 TAO,  Function value: 0.0467952,  Residual: 0.277087 
+  5 TAO,  Function value: 0.0314939,  Residual: 2.57633 
 -----------------------
-  0 TAO,  Function value: 0.0518278,  Residual: 2.07607 
-  1 TAO,  Function value: 0.0320908,  Residual: 4.00216 
-  2 TAO,  Function value: 0.01244,  Residual: 0.570254 
-  3 TAO,  Function value: 0.00708569,  Residual: 3.0076 
-  4 TAO,  Function value: 0.00351997,  Residual: 0.273912 
-  5 TAO,  Function value: 0.00161088,  Residual: 0.226273 
+  0 TAO,  Function value: 0.0314939,  Residual: 2.57633 
+  1 TAO,  Function value: 0.0200422,  Residual: 2.94717 
+  2 TAO,  Function value: 0.0069213,  Residual: 0.307266 
+  3 TAO,  Function value: 0.0042892,  Residual: 2.5896 
+  4 TAO,  Function value: 0.001641,  Residual: 0.190459 
+  5 TAO,  Function value: 0.000664491,  Residual: 0.152194 
 -----------------------
-  0 TAO,  Function value: 0.00161088,  Residual: 0.226273 
-  1 TAO,  Function value: 0.000339615,  Residual: 0.753153 
-  2 TAO,  Function value: 3.77908e-05,  Residual: 0.0345923 
-  3 TAO,  Function value: 1.30682e-06,  Residual: 0.00948061 
-  4 TAO,  Function value: 4.84732e-09,  Residual: 0.00281611 
-  5 TAO,  Function value: 8.85269e-10,  Residual: 0.00130775 
------------------------
-  0 TAO,  Function value: 8.85269e-10,  Residual: 0.00130775 
-  1 TAO,  Function value: 1.75429e-14,  Residual: 1.53642e-06 
+  0 TAO,  Function value: 0.000664491,  Residual: 0.152194 
+  1 TAO,  Function value: 7.48733e-05,  Residual: 0.354895 
+  2 TAO,  Function value: 3.77456e-06,  Residual: 0.00555879 
+  3 TAO,  Function value: 1.5422e-08,  Residual: 0.00239995 
+  4 TAO,  Function value: 5.06675e-12,  Residual: 7.76053e-05 
+  5 TAO,  Function value: 4.00865e-16,  Residual: 7.37714e-07 
 -----------------------
   0 TAO,  Function value: 1.,  Residual: 2. 
   1 TAO,  Function value: 0.791905,  Residual: 3.15898 
-  2 TAO,  Function value: 0.735272,  Residual: 8.61386 
-  3 TAO,  Function value: 0.571406,  Residual: 2.1649 
-  4 TAO,  Function value: 0.427702,  Residual: 2.17512 
-  5 TAO,  Function value: 0.369204,  Residual: 3.50719 
-  6 TAO,  Function value: 0.263671,  Residual: 6.86097 
-  7 TAO,  Function value: 0.174496,  Residual: 1.97109 
-  8 TAO,  Function value: 0.117083,  Residual: 5.31829 
-  9 TAO,  Function value: 0.0931331,  Residual: 1.47536 
- 10 TAO,  Function value: 0.0518278,  Residual: 2.07607 
- 11 TAO,  Function value: 0.0320908,  Residual: 4.00216 
- 12 TAO,  Function value: 0.01244,  Residual: 0.570254 
- 13 TAO,  Function value: 0.00708569,  Residual: 3.0076 
- 14 TAO,  Function value: 0.00351997,  Residual: 0.273912 
- 15 TAO,  Function value: 0.00161088,  Residual: 0.226273 
- 16 TAO,  Function value: 0.000339615,  Residual: 0.753153 
- 17 TAO,  Function value: 3.77908e-05,  Residual: 0.0345923 
- 18 TAO,  Function value: 1.30682e-06,  Residual: 0.00948061 
- 19 TAO,  Function value: 4.84732e-09,  Residual: 0.00281611 
- 20 TAO,  Function value: 8.85269e-10,  Residual: 0.00130775 
- 21 TAO,  Function value: 1.75429e-14,  Residual: 1.53642e-06 
+  2 TAO,  Function value: 0.592607,  Residual: 5.4106 
+  3 TAO,  Function value: 0.370322,  Residual: 2.58241 
+  4 TAO,  Function value: 0.299535,  Residual: 2.13981 
+  5 TAO,  Function value: 0.270172,  Residual: 4.27842 
+  6 TAO,  Function value: 0.218497,  Residual: 4.97344 
+  7 TAO,  Function value: 0.135331,  Residual: 2.04591 
+  8 TAO,  Function value: 0.0999946,  Residual: 5.55282 
+  9 TAO,  Function value: 0.0467952,  Residual: 0.277087 
+ 10 TAO,  Function value: 0.0314939,  Residual: 2.57633 
+ 11 TAO,  Function value: 0.0200422,  Residual: 2.94717 
+ 12 TAO,  Function value: 0.0069213,  Residual: 0.307266 
+ 13 TAO,  Function value: 0.0042892,  Residual: 2.5896 
+ 14 TAO,  Function value: 0.001641,  Residual: 0.190459 
+ 15 TAO,  Function value: 0.000664491,  Residual: 0.152194 
+ 16 TAO,  Function value: 7.48733e-05,  Residual: 0.354895 
+ 17 TAO,  Function value: 3.77456e-06,  Residual: 0.00555879 
+ 18 TAO,  Function value: 1.5422e-08,  Residual: 0.00239995 
+ 19 TAO,  Function value: 5.06675e-12,  Residual: 7.76053e-05 
+ 20 TAO,  Function value: 4.00865e-16,  Residual: 7.37714e-07 
 -----------------------
-recycled its: 21 | oneshot its: 21
+recycled its: 20 | oneshot its: 20

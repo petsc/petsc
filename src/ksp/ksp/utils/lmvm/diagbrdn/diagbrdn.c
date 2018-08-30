@@ -87,8 +87,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
 
         /*  W = inv(D)*s */
         ierr = VecPointwiseMult(ldb->W, ldb->invDnew, lmvm->S[lmvm->k]);CHKERRQ(ierr);
-        ierr = VecDotBegin(ldb->W, lmvm->S[lmvm->k], &stDs);CHKERRQ(ierr);
-        ierr = VecDotEnd(ldb->W, lmvm->S[lmvm->k], &stDs);CHKERRQ(ierr);
+        ierr = VecDot(ldb->W, lmvm->S[lmvm->k], &stDs);CHKERRQ(ierr);
 
         /*  Safeguard stDs */
         stDs = PetscMax(PetscRealPart(stDs), ldb->tol);
@@ -134,8 +133,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
 
         /*  W = D*y */
         ierr = VecPointwiseMult(ldb->W, ldb->invDnew, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
-        ierr = VecDotBegin(ldb->W, lmvm->Y[lmvm->k], &ytDy);CHKERRQ(ierr);
-        ierr = VecDotEnd(ldb->W, lmvm->Y[lmvm->k], &ytDy);CHKERRQ(ierr);
+        ierr = VecDot(ldb->W, lmvm->Y[lmvm->k], &ytDy);CHKERRQ(ierr);
 
         /*  Safeguard ytDy */
         ytDy = PetscMax(PetscRealPart(ytDy), ldb->tol);
@@ -160,7 +158,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
         }
 
         if (0.0 == ldb->theta) {
-          ierr = VecAXPY(ldb->invDnew, 1.0, ldb->BFGS);CHKERRQ(ierr);
+          ierr = VecAXPY(ldb->invDnew, 1.0/ldb->yts[lmvm->k], ldb->BFGS);CHKERRQ(ierr);
         } else if (1.0 == ldb->theta) {
           ierr = VecAXPY(ldb->invDnew, 1.0, ldb->DFP);CHKERRQ(ierr);
         } else {
