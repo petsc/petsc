@@ -6,6 +6,7 @@
 */
 
 typedef struct {
+  Mat D;                                    /* diagonal scaling term */
   Vec *P, *Q;                               /* storage vectors for (B_i)*S[i] and (B_i)^{-1}*Y[i] */
   Vec invDnew, invD, BFGS, DFP, U, V, W;    /* work vectors for diagonal scaling */
   Vec work;

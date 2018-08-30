@@ -1,18 +1,4 @@
-#include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
-
-/*
-  "Full" memory implementation of only the diagonal terms in a symmetric Broyden approximation.
-*/
-
-typedef struct {
-  Vec invDnew, invD, BFGS, DFP, U, V, W;    /* work vectors for diagonal scaling */
-  PetscReal *yts, *yty, *sts;               /* scalar arrays for recycling dot products */
-  PetscReal theta, rho, alpha, beta;        /* convex combination factors for the scalar or diagonal scaling */
-  PetscReal delta, delta_min, delta_max, sigma, tol;
-  PetscInt sigma_hist;                      /* length of update history to be used for scaling */
-  PetscBool allocated;
-  PetscBool forward;
-} Mat_DiagBrdn;
+#include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h> /*I "petscksp.h" I*/
 
 /*------------------------------------------------------------*/
 
@@ -386,7 +372,29 @@ static PetscErrorCode MatCopy_DiagBrdn(Mat B, Mat M, MatStructure str)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetFromOptions_LMVMDiagBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+/*------------------------------------------------------------*/
+
+static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
+{
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
+  PetscErrorCode    ierr;
+  PetscBool         isascii;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(pv,"Scale history: %d\n",ldb->sigma_hist);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Scale params: alpha=%g, beta=%g, rho=%g\n",(double)ldb->alpha, (double)ldb->beta, (double)ldb->rho);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"Convex factor: theta=%g\n", (double)ldb->theta);CHKERRQ(ierr);
+  }
+  ierr = MatView_LMVM(B, pv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+static PetscErrorCode MatSetFromOptions_DiagBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_DiagBrdn       *ldb = (Mat_DiagBrdn*)lmvm->ctx;
@@ -409,7 +417,6 @@ static PetscErrorCode MatSetFromOptions_LMVMDiagBrdn(PetscOptionItems *PetscOpti
   if (ldb->sigma_hist < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
   PetscFunctionReturn(0);
 }
-
 
 /*------------------------------------------------------------*/
 
@@ -521,9 +528,10 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
   ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMDIAGBRDN);CHKERRQ(ierr);
   B->ops->setup = MatSetUp_DiagBrdn;
-  B->ops->setfromoptions = MatSetFromOptions_LMVMDiagBrdn;
+  B->ops->setfromoptions = MatSetFromOptions_DiagBrdn;
   B->ops->destroy = MatDestroy_DiagBrdn;
   B->ops->solve = MatSolve_DiagBrdn;
+  B->ops->view = MatView_DiagBrdn;
 
   lmvm = (Mat_LMVM*)B->data;
   lmvm->square = PETSC_TRUE;
