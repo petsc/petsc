@@ -338,7 +338,7 @@ static PetscErrorCode TSSetFromOptions_BSI(PetscOptionItems *PetscOptionsObject,
     const char    **namelist;
 
     for (link=BSISchemeList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=BSISchemeList,count=0; link; link=link->next,count++) namelist[count] = link->sch.name;
     ierr = PetscOptionsEList("-ts_bsi_type","Family of basic symplectic integration method","TSBSISetType",(const char*const*)namelist,count,bsi->scheme->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSBSISetType(ts,namelist[choice]);CHKERRQ(ierr);}
