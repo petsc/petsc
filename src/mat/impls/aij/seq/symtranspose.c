@@ -6,9 +6,9 @@
   (i,j) info for the transpose.  Someday, this info could be
   maintained so successive calls to Get will not recompute the info.
 
-  Also defined is a "faster" implementation of MatTranspose for SeqAIJ
-  matrices which avoids calls to MatSetValues.  This routine has not
-  been adopted as the standard yet as it is somewhat untested.
+  Also defined is a faster implementation of MatTranspose for SeqAIJ
+  matrices which avoids calls to MatSetValues. This routine is the new
+  standard since it is much faster than MatTranspose_AIJ.
 
 */
 
@@ -169,13 +169,16 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
 
   /* Clean up temporary space and complete requests. */
   ierr = PetscFree(atfill);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At);CHKERRQ(ierr);
 
     at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;
     at->free_ij = PETSC_TRUE;
     at->nonew   = 0;
+    at->maxnz   = ati[an];
+
+    ierr = MatSetType(At,((PetscObject)A)->type_name);CHKERRQ(ierr);
   }
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
@@ -197,4 +200,3 @@ PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,PetscInt *ati[],PetscInt
   ierr = PetscFree(*atj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

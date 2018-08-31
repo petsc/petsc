@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = symbrdn.c
+SOURCEC  = symbrdn.c symbadbrdn.c
 SOURCEF  =
 SOURCEH  = symbrdn.h
 LIBBASE  = libpetscksp

@@ -27,9 +27,16 @@ typedef struct {
 
 static const char *Scale_Table[64] = {"none","scalar","diagonal"};
 
-PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
-
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Inv(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Diag(Mat);
 PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
+
+PETSC_INTERN PetscErrorCode MatUpdate_LMVMSymBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatCopy_LMVMSymBrdn(Mat, Mat, MatStructure);
+PETSC_INTERN PetscErrorCode MatReset_LMVMSymBrdn(Mat, PetscBool);
+PETSC_INTERN PetscErrorCode MatAllocate_LMVMSymBrdn(Mat, Vec, Vec);
+PETSC_INTERN PetscErrorCode MatDestroy_LMVMSymBrdn(Mat);
+PETSC_INTERN PetscErrorCode MatSetUp_LMVMSymBrdn(Mat);
+PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems*, Mat);
