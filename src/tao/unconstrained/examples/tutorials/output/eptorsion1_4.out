@@ -8,11 +8,11 @@ iter =   0, Function value -0.330579, Residual: 0.728961
     of hand-coded and finite difference Hessian entries greater than <threshold>.
   Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
     O(1.e-8), the hand-coded Hessian is probably correct.
-  ||H - Hfd||_F/||H||_F = 2.97218e-10, ||H - Hfd||_F = 1.31584e-08
+  ||H - Hfd||_F/||H||_F = 2.97219e-10, ||H - Hfd||_F = 1.31584e-08
 iter =   0, Function value -0.38665, Residual: 0.531327 
   ---------- Testing Hessian -------------
-  ||H - Hfd||_F/||H||_F = 4.25681e-10, ||H - Hfd||_F = 1.88457e-08
-iter =   1, Function value -0.414887, Residual: 0.204719 
+  ||H - Hfd||_F/||H||_F = 4.21318e-10, ||H - Hfd||_F = 1.86526e-08
+iter =   1, Function value -0.414886, Residual: 0.204735 
   ---------- Testing Hessian -------------
-  ||H - Hfd||_F/||H||_F = 1.94063e-10, ||H - Hfd||_F = 8.59156e-09
-iter =   2, Function value -0.427745, Residual: < 1.0e-6 
+  ||H - Hfd||_F/||H||_F = 1.31497e-10, ||H - Hfd||_F = 5.82162e-09
+iter =   2, Function value -0.427745, Residual: 1e-06 

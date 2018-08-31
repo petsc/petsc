@@ -1374,29 +1374,6 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISIntersect_Caching(IS is1, IS is2, IS *isect)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *isect = NULL;
-  if (is2 && is1) {
-    char           composeStr[33] = {0};
-    PetscObjectId  is2id;
-
-    ierr = PetscObjectGetId((PetscObject)is2,&is2id);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(composeStr,32,"ISIntersect_Caching_%x",is2id);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject) is1, composeStr, (PetscObject *) isect);CHKERRQ(ierr);
-    if (*isect == NULL) {
-      ierr = ISIntersect(is1, is2, isect);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) is1, composeStr, (PetscObject) *isect);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectReference((PetscObject) *isect);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, Vec locF, DMField coordField, IS facetIS)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
@@ -1438,7 +1415,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       IS isectIS;
 
       /* TODO: Special cases of ISIntersect where it is quick to check a priori if one is a superset of the other */
-      ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+      ierr = ISIntersect_Caching_Internal(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       pointIS = isectIS;
     }
@@ -1512,6 +1489,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       offset    = numFaces - Nr;
       ierr = PetscFEGeomGetChunk(fgeom,0,offset,&chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEIntegrateBdResidual(fe, prob, field, Ne, chunkGeom, u, u_t, probAux, a, t, elemVec);CHKERRQ(ierr);
+      ierr = PetscFEGeomRestoreChunk(fgeom, 0, offset, &chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEGeomGetChunk(fgeom,offset,numFaces,&chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEIntegrateBdResidual(fe, prob, field, Nr, chunkGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, a ? &a[offset*totDimAux] : NULL, t, &elemVec[offset*totDim]);CHKERRQ(ierr);
       ierr = PetscFEGeomRestoreChunk(fgeom,offset,numFaces,&chunkGeom);CHKERRQ(ierr);
@@ -2204,7 +2182,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         IS isectIS;
 
         /* TODO: Special cases of ISIntersect where it is quick to check a prior if one is a superset of the other */
-        ierr = ISIntersect_Caching(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
+        ierr = ISIntersect_Caching_Internal(facetIS,pointIS,&isectIS);CHKERRQ(ierr);
         ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
         pointIS = isectIS;
       }
@@ -2771,8 +2749,9 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
+PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
+  PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   PetscDS        prob;
   Mat            J, M;
   Vec            r, b;
@@ -2780,19 +2759,25 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   PetscReal     *error, res = 0.0;
   PetscInt       numFields;
   PetscBool      hasJac, hasPrec;
+  PetscInt       Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf, &exacts);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exacts[f]);CHKERRQ(ierr);}
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   /* TODO Null space for J */
   /* Check discretization error */
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (numFields > 1) {
     PetscInt f;
 
-    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
+    ierr = DMComputeL2FieldDiff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, u, error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
@@ -2801,7 +2786,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
   } else {
-    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, exactFuncs ? exactFuncs : exacts, ctxs, u, &error[0]);CHKERRQ(ierr);
     if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)error[0]);CHKERRQ(ierr);}
     else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   }
@@ -2815,7 +2800,6 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
   ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
   /* Check Jacobian */
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
   ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
   if (hasJac && hasPrec) {
@@ -2850,6 +2834,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = PetscFree(exacts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2866,18 +2851,28 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
 @*/
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
+  PetscErrorCode (**exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = NULL;
   DM             dm;
+  PetscDS        prob;
   Vec            sol;
   PetscBool      check;
+  PetscInt       Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(((PetscObject)snes)->options,((PetscObject)snes)->prefix, "-dmsnes_check", &check);CHKERRQ(ierr);
   if (!check) PetscFunctionReturn(0);
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  if (!exactFuncs) {
+    ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nf, &exact);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exact[f]);CHKERRQ(ierr);}
+  }
   ierr = VecDuplicate(u, &sol);CHKERRQ(ierr);
   ierr = SNESSetSolution(snes, sol);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions_Internal(snes, dm, u, sol, exactFuncs, ctxs);CHKERRQ(ierr);
+  ierr = DMSNESCheckFromOptions_Internal(snes, dm, sol, exactFuncs ? exactFuncs : exact, ctxs);CHKERRQ(ierr);
   ierr = VecDestroy(&sol);CHKERRQ(ierr);
+  ierr = PetscFree(exact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
