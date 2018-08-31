@@ -72,7 +72,8 @@ PetscErrorCode TSBSIRegisterAll(void)
     ierr = TSBSIRegister(TSBSI3,3,3,c,d);CHKERRQ(ierr);
   }
   {
-    PetscReal c[4] = {1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),(1.0-PetscPowScalar(2,1.0/3.0))/2.0/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/2.0/(2.0-PetscPowScalar(2,1.0/3.0))},d[4] = {1.0/(2.0-PetscPowScalar(2,1.0/3.0)),-PetscPowScalar(2,1.0/3.0)/(2.0-PetscPowScalar(2,1.0/3.0)),1.0/(2.0-PetscPowScalar(2,1.0/3.0)),0};
+#define CUBEROOTOFTWO 1.2599210498948731647672106
+    PetscReal c[4] = {1.0/2.0/(2.0-CUBEROOTOFTWO),(1.0-CUBEROOTOFTWO)/2.0/(2.0-CUBEROOTOFTWO),(1.0-CUBEROOTOFTWO)/2.0/(2.0-CUBEROOTOFTWO),1.0/2.0/(2.0-CUBEROOTOFTWO)},d[4] = {1.0/(2.0-CUBEROOTOFTWO),-CUBEROOTOFTWO/(2.0-CUBEROOTOFTWO),1.0/(2.0-CUBEROOTOFTWO),0};
     ierr = TSBSIRegister(TSBSI4,4,4,c,d);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
