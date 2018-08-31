@@ -220,7 +220,7 @@ static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -310,7 +310,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
+PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
 {
   Mat_LMVM          *bdata = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *blsb = (Mat_SymBrdn*)bdata->ctx;
@@ -357,7 +357,7 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
+PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -409,7 +409,7 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -445,7 +445,7 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
+PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -479,7 +479,7 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
+PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -536,7 +536,7 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
@@ -624,13 +624,14 @@ PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscBool         is_bfgs, is_dfp, is_symbrdn;
+  PetscBool         is_bfgs, is_dfp, is_symbrdn, is_symbadbrdn;
   
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMBFGS, &is_bfgs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMDFP, &is_dfp);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBRDN, &is_symbrdn);CHKERRQ(ierr);
-  if (!is_bfgs && !is_dfp && !is_symbrdn) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
+  ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBADBRDN, &is_symbadbrdn);CHKERRQ(ierr);
+  if (!is_bfgs && !is_dfp && !is_symbrdn && is_symbadbrdn) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
   lsb->delta = PetscAbsReal(PetscRealPart(delta));
   lsb->delta = PetscMin(lsb->delta, lsb->delta_max);CHKERRQ(ierr);
   lsb->delta = PetscMax(lsb->delta, lsb->delta_min);CHKERRQ(ierr);
