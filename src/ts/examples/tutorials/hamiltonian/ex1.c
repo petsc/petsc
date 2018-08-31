@@ -138,10 +138,10 @@ int main(int argc,char **argv)
   user.omega = 64.;
   user.nts = 100;
   ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);
-  ierr = PetscOptionsReal("-omega","parameter","<64>",user.omega,&user.omega,PETSC_NULL);
-  ierr = PetscOptionsInt("-next_output","time steps for next output point","<100>",user.nts,&user.nts,PETSC_NULL);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-omega","parameter","<64>",user.omega,&user.omega,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-next_output","time steps for next output point","<100>",user.nts,&user.nts,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
