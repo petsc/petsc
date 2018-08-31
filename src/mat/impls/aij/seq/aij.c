@@ -1548,6 +1548,85 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
+#include <petscblaslapack.h>
+#include <petsc/private/kernels/blockinvert.h>
+
+/*
+    Note that values is allocated externally by the PC and then passed into this routine
+*/
+PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A,PetscInt nblocks,const PetscInt *bsizes,PetscScalar *diag)
+{
+  PetscErrorCode  ierr;
+  PetscInt        n = A->rmap->n, i, ncnt = 0, *indx,j,bsizemax = 0,*v_pivots;
+  PetscBool       allowzeropivot,zeropivotdetected=PETSC_FALSE;
+  const PetscReal shift = 0.0;
+  PetscInt        ipvt[5];
+  PetscScalar     work[25],*v_work;
+
+  PetscFunctionBegin;
+  allowzeropivot = PetscNot(A->erroriffailure);
+  for (i=0; i<nblocks; i++) ncnt += bsizes[i];
+  if (ncnt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Total blocksizes %D doesn't match number matrix rows %D",ncnt,n);
+  for (i=0; i<nblocks; i++) {
+    bsizemax = PetscMax(bsizemax,bsizes[i]);
+  }
+  ierr = PetscMalloc1(bsizemax,&indx);CHKERRQ(ierr);
+  if (bsizemax > 7) {
+    ierr = PetscMalloc2(bsizemax,&v_work,bsizemax,&v_pivots);CHKERRQ(ierr);
+  }
+  ncnt = 0;
+  for (i=0; i<nblocks; i++) {
+    for (j=0; j<bsizes[i]; j++) indx[j] = ncnt+j;
+    ierr    = MatGetValues(A,bsizes[i],indx,bsizes[i],indx,diag);CHKERRQ(ierr);
+    switch (bsizes[i]) {
+    case 1:
+      *diag = 1.0/(*diag);
+      break;
+    case 2:
+      ierr  = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
+      break;
+    case 3:
+      ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr  = PetscKernel_A_gets_inverse_A_4(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
+      break;
+    case 5:
+      ierr  = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
+      break;
+    case 6:
+      ierr  = PetscKernel_A_gets_inverse_A_6(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
+      break;
+    case 7:
+      ierr  = PetscKernel_A_gets_inverse_A_7(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
+      break;
+    default:
+      ierr  = PetscKernel_A_gets_inverse_A(bsizes[i],diag,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      ierr  = PetscKernel_A_gets_transpose_A_N(diag,bsizes[i]);CHKERRQ(ierr);
+    }
+    ncnt   += bsizes[i];
+    diag += bsizes[i]*bsizes[i];
+  }
+  if (bsizemax > 7) {
+    ierr = PetscFree2(v_work,v_pivots);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(indx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
 */
@@ -2967,17 +3046,14 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#include <petscblaslapack.h>
-#include <petsc/private/kernels/blockinvert.h>
-
 PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,bs = PetscAbs(A->rmap->bs),mbs = A->rmap->n/bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
-  MatScalar      *diag,work[25],*v_work;
-  PetscReal      shift = 0.0;
-  PetscBool      allowzeropivot,zeropivotdetected=PETSC_FALSE;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,bs = PetscAbs(A->rmap->bs),mbs = A->rmap->n/bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
+  MatScalar       *diag,work[25],*v_work;
+  const PetscReal shift = 0.0;
+  PetscBool       allowzeropivot,zeropivotdetected=PETSC_FALSE;
 
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
@@ -3250,7 +3326,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                 /*124*/ MatFindNonzeroRows_SeqAIJ,
                                         MatGetColumnNorms_SeqAIJ,
                                         MatInvertBlockDiagonal_SeqAIJ,
-                                        0,
+                                        MatInvertVariableBlockDiagonal_SeqAIJ,
                                         0,
                                 /*129*/ 0,
                                         MatTransposeMatMult_SeqAIJ_SeqAIJ,

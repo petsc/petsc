@@ -1241,6 +1241,7 @@ PetscErrorCode MatDestroy(Mat *A)
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree((*A)->bsizes);CHKERRQ(ierr);
   ierr = PetscFree((*A)->solvertype);CHKERRQ(ierr);
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
@@ -7223,6 +7224,72 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 }
 
 /*@
+   MatSetVariableBlockSizes - Sets a diagonal blocks of the matrix that need not be of the same size
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  nblocks - the number of blocks on this process
+-  bsizes - the block sizes
+
+   Notes:
+    Currently used by PCVPBJACOBI for SeqAIJ matrices
+
+   Level: intermediate
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes(), MatGetBlockSizes(), MatGetVariableBlockSizes()
+@*/
+PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsizes)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,ncnt = 0, nlocal;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (nblocks < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local blocks must be great than or equal to zero");
+  ierr = MatGetLocalSize(mat,&nlocal,NULL);CHKERRQ(ierr);
+  for (i=0; i<nblocks; i++) ncnt += bsizes[i];
+  if (ncnt != nlocal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local block sizes %D does not equal local size of matrix %D",ncnt,nlocal);
+  ierr = PetscFree(mat->bsizes);CHKERRQ(ierr);
+  mat->nblocks = nblocks;
+  ierr = PetscMalloc1(nblocks,&mat->bsizes);CHKERRQ(ierr);
+  ierr = PetscMemcpy(mat->bsizes,bsizes,nblocks*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatGetVariableBlockSizes - Gets a diagonal blocks of the matrix that need not be of the same size
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
++  nblocks - the number of blocks on this process
+-  bsizes - the block sizes
+
+   Notes: Currently not supported from Fortran
+
+   Level: intermediate
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes(), MatGetBlockSizes(), MatSetVariableBlockSizes()
+@*/
+PetscErrorCode MatGetVariableBlockSizes(Mat mat,PetscInt *nblocks,const PetscInt **bsizes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *nblocks = mat->nblocks;
+  *bsizes  = mat->bsizes;
+  PetscFunctionReturn(0);
+}
+
+/*@
    MatSetBlockSizes - Sets the matrix block row and column sizes.
 
    Logically Collective on Mat
@@ -10385,6 +10452,39 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  MatInvertVariableBlockDiagonal - Inverts the block diagonal entries.
+
+  Collective on Mat
+
+  Input Parameters:
++ mat - the matrix
+. nblocks - the number of blocks
+- bsizes - the size of each block
+
+  Output Parameters:
+. values - the block inverses in column major order (FORTRAN-like)
+
+   Note:
+   This routine is not available from Fortran.
+
+  Level: advanced
+
+.seealso: MatInvertBockDiagonal()
+@*/
+PetscErrorCode MatInvertVariableBlockDiagonal(Mat mat,PetscInt nblocks,const PetscInt *bsizes,PetscScalar *values)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->ops->invertvariableblockdiagonal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported");
+  ierr = (*mat->ops->invertvariableblockdiagonal)(mat,nblocks,bsizes,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   MatInvertBlockDiagonalMat - set matrix C to be the inverted block diagonal of matrix A
 
@@ -10395,6 +10495,8 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 
   Output Parameters:
 . C - matrix with inverted block diagonal of A.  This matrix should be created and may have its type set.
+
+  Notes: the blocksize of the matrix is used to determine the blocks on the diagonal of C
 
   Level: advanced
 
