@@ -204,7 +204,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     case SYMBRDN_SCALE_DIAG:
       dbase = (Mat_LMVM*)ldfp->D->data;
       dctx = (Mat_DiagBrdn*)dbase->ctx;
-      ierr = VecSet(dctx->invD, ldfp->delta);
+      ierr = VecSet(dctx->invD, ldfp->delta);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_SCALAR:
       ldfp->sigma = ldfp->delta;
@@ -249,12 +249,12 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
     mctx->yts[i] = bctx->yts[i];
     ierr = VecCopy(bctx->Q[i], mctx->Q[i]);CHKERRQ(ierr);
   }
-  mctx->scale_type = bctx->scale_type;
-  mctx->alpha = bctx->alpha;
-  mctx->beta = bctx->beta;
-  mctx->rho = bctx->rho;
-  mctx->sigma_hist = bctx->sigma_hist;
-  mctx->watchdog = bctx->watchdog;
+  mctx->scale_type      = bctx->scale_type;
+  mctx->alpha           = bctx->alpha;
+  mctx->beta            = bctx->beta;
+  mctx->rho             = bctx->rho;
+  mctx->sigma_hist      = bctx->sigma_hist;
+  mctx->watchdog        = bctx->watchdog;
   mctx->max_seq_rejects = bctx->max_seq_rejects;
   switch (bctx->scale_type) {
   case SYMBRDN_SCALE_SCALAR:
@@ -307,7 +307,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
         ierr = MatLMVMReset(ldfp->D, PETSC_FALSE);CHKERRQ(ierr);
         dbase = (Mat_LMVM*)ldfp->D->data;
         dctx = (Mat_DiagBrdn*)dbase->ctx;
-        ierr = VecSet(dctx->invD, ldfp->delta);
+        ierr = VecSet(dctx->invD, ldfp->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
         ldfp->sigma = 1.0;
@@ -430,12 +430,12 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(PetscOptionItems *PetscOptionsOb
     ierr = MatSetFromOptions(ldfp->D);CHKERRQ(ierr);
     dbase = (Mat_LMVM*)ldfp->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;
-    dctx->delta_min = ldfp->delta_min;
-    dctx->delta_max = ldfp->delta_max;
-    dctx->theta = ldfp->theta;
-    dctx->rho = ldfp->rho;
-    dctx->alpha = ldfp->alpha;
-    dctx->beta = ldfp->beta;
+    dctx->delta_min  = ldfp->delta_min;
+    dctx->delta_max  = ldfp->delta_max;
+    dctx->theta      = ldfp->theta;
+    dctx->rho        = ldfp->rho;
+    dctx->alpha      = ldfp->alpha;
+    dctx->beta       = ldfp->beta;
     dctx->sigma_hist = ldfp->sigma_hist;
   }
   PetscFunctionReturn(0);
@@ -469,20 +469,20 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
 
   ierr = PetscNewLog(B, &ldfp);CHKERRQ(ierr);
   lmvm->ctx = (void*)ldfp;
-  ldfp->allocated = PETSC_FALSE;
-  ldfp->needQ = PETSC_TRUE;
-  ldfp->phi = 1.0;
-  ldfp->theta = 0.125;
-  ldfp->alpha = 1.0;
-  ldfp->rho = 1.0;
-  ldfp->beta = 0.5;
-  ldfp->sigma = 1.0;
-  ldfp->delta = 1.0;
-  ldfp->delta_min = 1e-7;
-  ldfp->delta_max = 100.0;
-  ldfp->sigma_hist = 1;
-  ldfp->scale_type = SYMBRDN_SCALE_DIAG;
-  ldfp->watchdog = 0;
+  ldfp->allocated       = PETSC_FALSE;
+  ldfp->needQ           = PETSC_TRUE;
+  ldfp->phi             = 1.0;
+  ldfp->theta           = 0.125;
+  ldfp->alpha           = 1.0;
+  ldfp->rho             = 1.0;
+  ldfp->beta            = 0.5;
+  ldfp->sigma           = 1.0;
+  ldfp->delta           = 1.0;
+  ldfp->delta_min       = 1e-7;
+  ldfp->delta_max       = 100.0;
+  ldfp->sigma_hist      = 1;
+  ldfp->scale_type      = SYMBRDN_SCALE_DIAG;
+  ldfp->watchdog        = 0;
   ldfp->max_seq_rejects = lmvm->m/2;
   
   ierr = MatCreate(PetscObjectComm((PetscObject)B), &ldfp->D);CHKERRQ(ierr);

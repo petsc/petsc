@@ -289,7 +289,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     case SYMBRDN_SCALE_DIAG:
       dbase = (Mat_LMVM*)lsb->D->data;
       dctx = (Mat_DiagBrdn*)dbase->ctx;
-      ierr = VecSet(dctx->invD, lsb->delta);
+      ierr = VecSet(dctx->invD, lsb->delta);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_SCALAR:
       lsb->sigma = lsb->delta;
@@ -339,13 +339,13 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(blsb->P[i], mlsb->P[i]);CHKERRQ(ierr);
     ierr = VecCopy(blsb->Q[i], mlsb->Q[i]);CHKERRQ(ierr);
   }
-  mlsb->scale_type = blsb->scale_type;
-  mlsb->alpha = blsb->alpha;
-  mlsb->beta = blsb->beta;
-  mlsb->rho = blsb->rho;
-  mlsb->delta = blsb->delta;
-  mlsb->sigma_hist = blsb->sigma_hist;
-  mlsb->watchdog = blsb->watchdog;
+  mlsb->scale_type      = blsb->scale_type;
+  mlsb->alpha           = blsb->alpha;
+  mlsb->beta            = blsb->beta;
+  mlsb->rho             = blsb->rho;
+  mlsb->delta           = blsb->delta;
+  mlsb->sigma_hist      = blsb->sigma_hist;
+  mlsb->watchdog        = blsb->watchdog;
   mlsb->max_seq_rejects = blsb->max_seq_rejects;
   switch (blsb->scale_type) {
   case SYMBRDN_SCALE_SCALAR:
@@ -400,7 +400,7 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
         ierr = MatLMVMReset(lsb->D, PETSC_FALSE);CHKERRQ(ierr);
         dbase = (Mat_LMVM*)lsb->D->data;
         dctx = (Mat_DiagBrdn*)dbase->ctx;
-        ierr = VecSet(dctx->invD, lsb->delta);
+        ierr = VecSet(dctx->invD, lsb->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
         lsb->sigma = 1.0;
@@ -554,14 +554,14 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObjec
     ierr = MatSetFromOptions(lsb->D);CHKERRQ(ierr);
     dbase = (Mat_LMVM*)lsb->D->data;
     dctx = (Mat_DiagBrdn*)dbase->ctx;
-    dctx->delta_min = lsb->delta_min;
-    dctx->delta_max = lsb->delta_max;
-    dctx->theta = lsb->theta;
-    dctx->rho = lsb->rho;
-    dctx->alpha = lsb->alpha;
-    dctx->beta = lsb->beta;
+    dctx->delta_min  = lsb->delta_min;
+    dctx->delta_max  = lsb->delta_max;
+    dctx->theta      = lsb->theta;
+    dctx->rho        = lsb->rho;
+    dctx->alpha      = lsb->alpha;
+    dctx->beta       = lsb->beta;
     dctx->sigma_hist = lsb->sigma_hist;
-    dctx->forward = PETSC_TRUE;
+    dctx->forward    = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -594,20 +594,20 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;
-  lsb->allocated = PETSC_FALSE;
-  lsb->needP = lsb->needQ = PETSC_TRUE;
-  lsb->phi = 0.125;
-  lsb->theta = 0.125;
-  lsb->alpha = 1.0;
-  lsb->rho = 1.0;
-  lsb->beta = 0.5;
-  lsb->sigma = 1.0;
-  lsb->delta = 1.0;
-  lsb->delta_min = 1e-7;
-  lsb->delta_max = 100.0;
-  lsb->sigma_hist = 1;
-  lsb->scale_type = SYMBRDN_SCALE_DIAG;
-  lsb->watchdog = 0;
+  lsb->allocated       = PETSC_FALSE;
+  lsb->needP           = lsb->needQ = PETSC_TRUE;
+  lsb->phi             = 0.125;
+  lsb->theta           = 0.125;
+  lsb->alpha           = 1.0;
+  lsb->rho             = 1.0;
+  lsb->beta            = 0.5;
+  lsb->sigma           = 1.0;
+  lsb->delta           = 1.0;
+  lsb->delta_min       = 1e-7;
+  lsb->delta_max       = 100.0;
+  lsb->sigma_hist      = 1;
+  lsb->scale_type      = SYMBRDN_SCALE_DIAG;
+  lsb->watchdog        = 0;
   lsb->max_seq_rejects = lmvm->m/2;
   
   ierr = MatCreate(PetscObjectComm((PetscObject)B), &lsb->D);CHKERRQ(ierr);
