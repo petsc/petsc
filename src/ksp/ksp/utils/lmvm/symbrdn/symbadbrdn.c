@@ -1,4 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
 
 /*------------------------------------------------------------*/
 
@@ -220,47 +221,34 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
+static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
-  Mat_LMVM          *lmvm;
-  Mat_SymBrdn       *lsb;
+  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
+  Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  Mat_LMVM          *dbase;
+  Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate_LMVM(B);CHKERRQ(ierr);
+  ierr = MatSetFromOptions_LMVMSymBrdn(PetscOptionsObject, B);
+  if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+    dbase = (Mat_LMVM*)lsb->D->data;
+    dctx = (Mat_DiagBrdn*)dbase->ctx;
+    dctx->forward = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*------------------------------------------------------------*/
+
+PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate_LMVMSymBrdn(B);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
-  ierr = MatSetOption(B, MAT_SPD, PETSC_TRUE);CHKERRQ(ierr);
-  B->ops->view = MatView_LMVMSymBrdn;
-  B->ops->setfromoptions = MatSetFromOptions_LMVMSymBrdn;
-  B->ops->setup = MatSetUp_LMVMSymBrdn;
-  B->ops->destroy = MatDestroy_LMVMSymBrdn;
-  B->ops->solve = MatSolve_LMVMSymBadBrdn;
-  
-  lmvm = (Mat_LMVM*)B->data;
-  lmvm->square = PETSC_TRUE;
-  lmvm->ops->allocate = MatAllocate_LMVMSymBrdn;
-  lmvm->ops->reset = MatReset_LMVMSymBrdn;
-  lmvm->ops->update = MatUpdate_LMVMSymBrdn;
-  lmvm->ops->mult = MatMult_LMVMSymBadBrdn;
-  lmvm->ops->copy = MatCopy_LMVMSymBrdn;
-  
-  ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
-  lmvm->ctx = (void*)lsb;
-  lsb->allocated = PETSC_FALSE;
-  lsb->needP = lsb->needQ = PETSC_TRUE;
-  lsb->phi = 0.125;
-  lsb->theta = 0.125;
-  lsb->alpha = 1.0;
-  lsb->rho = 1.0;
-  lsb->beta = 0.5;
-  lsb->sigma = 1.0;
-  lsb->delta = 1.0;
-  lsb->delta_min = 1e-7;
-  lsb->delta_max = 100.0;
-  lsb->sigma_hist = 1;
-  lsb->scale_type = SYMBRDN_SCALE_DIAG;
-  lsb->watchdog = 0;
-  lsb->max_seq_rejects = lmvm->m/2;
+  B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
   PetscFunctionReturn(0);
 }
 
