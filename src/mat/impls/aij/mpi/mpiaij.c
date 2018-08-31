@@ -2015,12 +2015,11 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 
 PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 {
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
+  Mat_MPIAIJ     *a    =(Mat_MPIAIJ*)A->data,*b;
+  Mat_SeqAIJ     *Aloc =(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data,*sub_B_diag;
+  PetscInt       M     = A->rmap->N,N=A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,*B_diag_ilen,*B_diag_i,i,ncol,A_diag_ncol;
   PetscErrorCode ierr;
-  PetscInt       M      = A->rmap->N,N = A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i;
-  PetscInt       cstart = A->cmap->rstart,ncol;
-  Mat            B;
+  Mat            B,A_diag,*B_diag;
   MatScalar      *array;
 
   PetscFunctionBegin;
@@ -2037,7 +2036,6 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = PetscMemzero(d_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<ai[ma]; i++) {
       d_nnz[aj[i]]++;
-      aj[i] += cstart; /* global col index to be used by MatSetValues() */
     }
     /* compute local off-diagonal contributions */
     ierr = PetscMemzero(g_nnz,nb*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2060,21 +2058,21 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   } else {
     B    = *matout;
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-    for (i=0; i<ai[ma]; i++) aj[i] += cstart; /* global col index to be used by MatSetValues() */
   }
 
-  /* copy over the A part */
-  array = Aloc->a;
-  row   = A->rmap->rstart;
-  for (i=0; i<ma; i++) {
-    ncol = ai[i+1]-ai[i];
-    ierr = MatSetValues(B,ncol,aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++;
-    array += ncol; aj += ncol;
+  b = B->data;
+  A_diag = a->A;
+  B_diag = &b->A;
+  sub_B_diag = (Mat_SeqAIJ*)(*B_diag)->data;
+  A_diag_ncol = A_diag->cmap->N;
+  B_diag_ilen = sub_B_diag->ilen;
+  B_diag_i = sub_B_diag->i;
+  for (i=0; i<A_diag_ncol; i++) {
+    B_diag_ilen[i] = B_diag_i[i+1] - B_diag_i[i];
   }
-  aj = Aloc->j;
-  for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
-
+  /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
+  very quickly (=without using MatSetValues), because all writes are local. */
+  ierr = MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag);CHKERRQ(ierr);
   /* copy over the B part */
   ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
   array = Bloc->a;
@@ -5890,4 +5888,3 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
   }
   PetscFunctionReturnVoid();
 }
-
