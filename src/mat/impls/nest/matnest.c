@@ -1151,13 +1151,11 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
     ierr = PetscMalloc1(m,&ix);CHKERRQ(ierr);
     for (i=0,m=0; i<n; i++) {
       ISLocalToGlobalMapping smap = NULL;
-      VecScatter             scat;
-      IS                     isreq;
-      Vec                    lvec,gvec;
       Mat                    sub = NULL;
-      union {char padding[sizeof(PetscScalar)]; PetscInt integer;} *x;
+      PetscSF                sf;
+      PetscLayout            map;
+      PetscInt               *ix2;
 
-      if (sizeof(*x) != sizeof(PetscScalar)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support when scalars smaller than integers");
       if (!colflg) {
         ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
       } else {
@@ -1181,29 +1179,24 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       /*
         Now we need to extract the monolithic global indices that correspond to the given split global indices.
         In many/most cases, we only want MatGetLocalSubMatrix() to work, in which case we only need to know the size of the local spaces.
-        The approach here is ugly because it uses VecScatter to move indices.
        */
-      ierr = VecCreateSeq(PETSC_COMM_SELF,mi,&lvec);CHKERRQ(ierr);
-      ierr = VecCreateMPI(((PetscObject)isglobal[i])->comm,mi,PETSC_DECIDE,&gvec);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(((PetscObject)isglobal[i])->comm,mi,ix+m,PETSC_COPY_VALUES,&isreq);CHKERRQ(ierr);
-      ierr = VecScatterCreate(gvec,isreq,lvec,NULL,&scat);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,(PetscScalar**)&x);CHKERRQ(ierr);
-      for (j=0; j<mi; j++) x[j].integer = ix[m+j];
-      ierr = VecRestoreArray(gvec,(PetscScalar**)&x);CHKERRQ(ierr);
-      ierr = VecScatterBegin(scat,gvec,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(scat,gvec,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecGetArray(lvec,(PetscScalar**)&x);CHKERRQ(ierr);
-      for (j=0; j<mi; j++) ix[m+j] = x[j].integer;
-      ierr = VecRestoreArray(lvec,(PetscScalar**)&x);CHKERRQ(ierr);
-      ierr = VecDestroy(&lvec);CHKERRQ(ierr);
-      ierr = VecDestroy(&gvec);CHKERRQ(ierr);
-      ierr = ISDestroy(&isreq);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mi,&ix2);CHKERRQ(ierr);
+      ierr = PetscSFCreate(((PetscObject)isglobal[i])->comm,&sf);CHKERRQ(ierr);
+      ierr = PetscLayoutCreate(((PetscObject)isglobal[i])->comm,&map);CHKERRQ(ierr);
+      ierr = PetscLayoutSetLocalSize(map,mi);CHKERRQ(ierr);
+      ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+      ierr = PetscSFSetGraphLayout(sf,map,mi,NULL,PETSC_USE_POINTER,ix+m);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+      for (j=0; j<mi; j++) ix2[j] = ix[m+j];
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,ix2,ix + m);CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+      ierr = PetscFree(ix2);CHKERRQ(ierr);
       m   += mi;
     }
-    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
   } else {
-    *ltog  = NULL;
+    *ltog = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1484,7 +1477,7 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
         for (ir=rst; ir<ncr+rst; ++ir) {
           ii[ir+1] += nii[1]-nii[0];
           nii++;
-        } 
+        }
       }
     }
   }
@@ -1516,7 +1509,7 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
           }
           ci[ir] += rsize;
           nii++;
-        } 
+        }
       }
     }
   }
