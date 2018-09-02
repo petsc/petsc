@@ -298,9 +298,7 @@ typedef struct {
   PetscScalar            *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus,*rstatus;
-  PetscBool              use_readyreceiver;
   PetscInt               bs;
-  PetscBool              sendfirst;
   PetscBool              contiq;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
@@ -505,10 +503,7 @@ struct _p_VecScatter {
   PETSCHEADER(struct _VecScatterOps);
   PetscInt       to_n,from_n;
   PetscBool      inuse;                /* prevents corruption from mixing two scatters */
-  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
-                                          is then treated as a nop */
-  PetscBool      packtogether;         /* packs all the messages before sending, same with receive */
-  PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
+  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
   void           *fromdata,*todata;
   void           *spptr;
   PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */

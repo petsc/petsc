@@ -140,11 +140,6 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
     ierr = PetscInfo(vscat,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
 
-  vscat->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsBool("-vecscatter_packtogether","Pack all messages before sending","VecScatterCreate",vscat->packtogether,&vscat->packtogether,NULL);CHKERRQ(ierr);
-  if (vscat->packtogether) {
-    ierr = PetscInfo(vscat,"Pack all messages before sending\n");CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
