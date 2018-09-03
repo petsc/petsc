@@ -123,7 +123,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   PetscInt               nrecvs,nsends,*indices,count,*rstarts,bs;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             xrstatus,*rstatus,*sstatus;
+  MPI_Status             xrstatus,*sstatus;
   PetscMPIInt            i;
 
   PetscFunctionBegin;
@@ -135,7 +135,6 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   rwaits  = from->requests;
   swaits  = to->requests;
   sstatus = to->sstatus;    /* sstatus and rstatus are always stored in to */
-  rstatus = to->rstatus;
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)ctx->fromdata;
     from   = (VecScatter_MPI_General*)ctx->todata;
@@ -262,7 +261,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
   PetscInt               nrecvs,nsends,*indices,count,*rstarts,bs;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             xrstatus,*rstatus,*sstatus;
+  MPI_Status             xrstatus,*sstatus;
   Vec_Node               *vnode;
   PetscInt               cnt,*idx,*idy;
   MPI_Comm               comm,mscomm,veccomm;
@@ -285,7 +284,6 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
   rwaits  = from->requests;
   swaits  = to->requests;
   sstatus = to->sstatus;    /* sstatus and rstatus are always stored in to */
-  rstatus = to->rstatus;
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)ctx->fromdata;
     from   = (VecScatter_MPI_General*)ctx->todata;
@@ -308,12 +306,12 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
     ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
     count--;
   }
-  
+
   /* handle processes that share the same shared memory communicator */
 #if defined(PETSC_MEMSHARE_SAFE)
   ierr = MPI_Barrier(mscomm);CHKERRQ(ierr);
 #endif
-  
+
   /* check if xin is sequential */
   ierr = PetscObjectGetComm((PetscObject)xin,&veccomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(veccomm,&xsize);CHKERRQ(ierr);
@@ -325,7 +323,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
     if (!vnode->win) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"vector y must have type VECNODE with shared memory");
     if (ctx->is_duplicate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Duplicate index is not supported");
     ierr  = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    
+
     i = 0;
     while (notdone) {
       while (i < to->msize) {
@@ -333,7 +331,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
           cnt = to->sharedspacestarts[i+1] - to->sharedspacestarts[i];
           idx = to->sharedspaceindices + to->sharedspacestarts[i];
           idy = idx + to->sharedcnt;
-          
+
           sharedspace = vnode->winarray[i];
 
           if (sharedspace[-1] != yv[-1]) {

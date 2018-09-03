@@ -111,7 +111,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
   PetscInt               nrecvs,nsends,*indices,count,*rstarts,bs;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             xrstatus,*rstatus,*sstatus;
+  MPI_Status             xrstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -122,7 +122,6 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,Inser
   rwaits  = from->requests;
   swaits  = to->requests;
   sstatus = to->sstatus;    /* sstatus and rstatus are always stored in to */
-  rstatus = to->rstatus;
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)ctx->fromdata;
     from   = (VecScatter_MPI_General*)ctx->todata;
