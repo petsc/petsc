@@ -313,7 +313,7 @@ int main(int argc,char **args)
   if (user.test) {
     Mat AA;
 
-    ierr = MatISGetMPIXAIJ(A,MAT_INITIAL_MATRIX,&AA);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&AA);CHKERRQ(ierr);
     ierr = MatViewFromOptions(AA,NULL,"-assembled_view");CHKERRQ(ierr);
     ierr = MatDestroy(&AA);CHKERRQ(ierr);
   }

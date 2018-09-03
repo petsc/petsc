@@ -8,13 +8,13 @@ Context for a Newton line search method (unconstrained minimization)
 
 typedef struct {
   Mat M;
+  PC bfgs_pre;
 
   Vec D;
   Vec W;
 
   Vec Xold;
   Vec Gold;
-  Vec Diag;
 
   /* Parameters when updating the perturbation added to the Hessian matrix
      according to the following scheme:
@@ -158,12 +158,8 @@ typedef struct {
 
   PetscInt newt;                /*  Newton directions attempted */
   PetscInt bfgs;                /*  BFGS directions attempted */
-  PetscInt sgrad;               /*  Scaled gradient directions attempted */
   PetscInt grad;                /*  Gradient directions attempted */
 
-
-  PetscInt pc_type;             /*  Preconditioner for the code */
-  PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /*  Trust-region initialization method */
   PetscInt update_type;         /*  Trust-region update method */
 

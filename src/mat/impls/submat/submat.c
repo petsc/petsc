@@ -6,9 +6,11 @@ typedef struct {
   Vec         left,right;       /* optional scaling */
   Vec         olwork,orwork;    /* work vectors outside the scatters, only touched by PreScale and only created if needed*/
   Vec         lwork,rwork;      /* work vectors inside the scatters */
+  Vec         dshift;
   VecScatter  lrestrict,rprolong;
   Mat         A;
-  PetscScalar scale;
+  PetscScalar vscale, axpy_vscale;
+  PetscScalar vshift, axpy_vshift;
 } Mat_SubVirtual;
 
 static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
@@ -71,12 +73,69 @@ static PetscErrorCode PostScaleRight(Mat N,Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
+/*
+         Y = vscale*Y + diag(dshift)*X + vshift*X
+
+         On input Y already contains A*x
+*/
+static PetscErrorCode MatSubmatShiftAndScale(Mat A,Vec X,Vec Y)
 {
-  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  Na->scale *= scale;
+  if (Na->dshift) {          /* get arrays because there is no VecPointwiseMultAdd() */
+    PetscInt          i,m;
+    const PetscScalar *x,*d;
+    PetscScalar       *y;
+    ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(Na->dshift,&d);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+    for (i=0; i<m; i++) y[i] = Na->vscale*y[i] + d[i]*x[i];
+    ierr = VecRestoreArrayRead(Na->dshift,&d);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  } else {
+    ierr = VecScale(Y,Na->vscale);CHKERRQ(ierr);
+  }
+  if (Na->vshift != 0.0) {ierr = VecAXPY(Y,Na->vshift,X);CHKERRQ(ierr);} /* if test is for non-square matrices */
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar a)
+{
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  Na->vscale *= a;
+  Na->vshift *= a;
+  if (Na->dshift) {
+    ierr = VecScale(Na->dshift,a);CHKERRQ(ierr);
+  }
+  Na->axpy_vscale *= a;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatShift_SubMatrix(Mat N,PetscScalar a)
+{
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Na->left || Na->right) {
+    if (!Na->dshift) {
+      ierr = VecDuplicate(Na->left ? Na->left : Na->right, &Na->dshift);CHKERRQ(ierr);
+      ierr = VecSet(Na->dshift,a);CHKERRQ(ierr);
+    } else {
+      if (Na->left)  {ierr = VecPointwiseMult(Na->dshift,Na->dshift,Na->left);CHKERRQ(ierr);}
+      if (Na->right) {ierr = VecPointwiseMult(Na->dshift,Na->dshift,Na->right);CHKERRQ(ierr);}
+      ierr = VecShift(Na->dshift,a);CHKERRQ(ierr);
+    }
+    if (Na->left)  {ierr = VecPointwiseDivide(Na->dshift,Na->dshift,Na->left);CHKERRQ(ierr);}
+    if (Na->right) {ierr = VecPointwiseDivide(Na->dshift,Na->dshift,Na->right);CHKERRQ(ierr);}
+  } else Na->vshift += a;
   PetscFunctionReturn(0);
 }
 
@@ -119,8 +178,8 @@ static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
   ierr = MatMult(Na->A,Na->rwork,Na->lwork);CHKERRQ(ierr);
   ierr = VecScatterBegin(Na->lrestrict,Na->lwork,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = MatSubmatShiftAndScale(N,xx,y);CHKERRQ(ierr);
   ierr = PostScaleLeft(N,y);CHKERRQ(ierr);
-  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,21 +196,18 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   ierr = VecScatterEnd  (Na->rprolong,xx,Na->rwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(Na->A,Na->rwork,Na->lwork);CHKERRQ(ierr);
   if (v2 == v3) {
-    if (Na->scale == (PetscScalar)1.0 && !Na->left) {
-      ierr = VecScatterBegin(Na->lrestrict,Na->lwork,v3,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,v3,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    } else {
-      if (!Na->olwork) {ierr = VecDuplicate(v3,&Na->olwork);CHKERRQ(ierr);}
-      ierr = VecScatterBegin(Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = PostScaleLeft(N,Na->olwork);CHKERRQ(ierr);
-      ierr = VecAXPY(v3,Na->scale,Na->olwork);CHKERRQ(ierr);
-    }
+    if (!Na->olwork) {ierr = VecDuplicate(v3,&Na->olwork);CHKERRQ(ierr);}
+    ierr = VecScatterBegin(Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,Na->olwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatSubmatShiftAndScale(N,xx,Na->olwork);CHKERRQ(ierr);
+    ierr = PostScaleLeft(N,Na->olwork);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,Na->olwork);CHKERRQ(ierr);
   } else {
     ierr = VecScatterBegin(Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (Na->lrestrict,Na->lwork,v3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatSubmatShiftAndScale(N,xx,v3);CHKERRQ(ierr);
     ierr = PostScaleLeft(N,v3);CHKERRQ(ierr);
-    ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -170,8 +226,8 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
   ierr = MatMultTranspose(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
   ierr = VecScatterBegin(Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (Na->rprolong,Na->rwork,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MatSubmatShiftAndScale(N,xx,y);CHKERRQ(ierr);
   ierr = PostScaleRight(N,y);CHKERRQ(ierr);
-  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -188,21 +244,18 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   ierr = VecScatterEnd  (Na->lrestrict,xx,Na->lwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->A,Na->lwork,Na->rwork);CHKERRQ(ierr);
   if (v2 == v3) {
-    if (Na->scale == (PetscScalar)1.0 && !Na->right) {
-      ierr = VecScatterBegin(Na->rprolong,Na->rwork,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (Na->rprolong,Na->rwork,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    } else {
-      if (!Na->orwork) {ierr = VecDuplicate(v3,&Na->orwork);CHKERRQ(ierr);}
-      ierr = VecScatterBegin(Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = PostScaleRight(N,Na->orwork);CHKERRQ(ierr);
-      ierr = VecAXPY(v3,Na->scale,Na->orwork);CHKERRQ(ierr);
-    }
+    if (!Na->orwork) {ierr = VecDuplicate(v3,&Na->orwork);CHKERRQ(ierr);}
+    ierr = VecScatterBegin(Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (Na->rprolong,Na->rwork,Na->orwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = MatSubmatShiftAndScale(N,xx,Na->orwork);CHKERRQ(ierr);
+    ierr = PostScaleRight(N,Na->orwork);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,Na->orwork);CHKERRQ(ierr);
   } else {
     ierr = VecScatterBegin(Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd  (Na->rprolong,Na->rwork,v3,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = MatSubmatShiftAndScale(N,xx,v3);CHKERRQ(ierr);
     ierr = PostScaleRight(N,v3);CHKERRQ(ierr);
-    ierr = VecAYPX(v3,Na->scale,v2);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -221,6 +274,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
   ierr = VecDestroy(&Na->orwork);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->lwork);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->rwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->dshift);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&Na->lrestrict);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&Na->rprolong);CHKERRQ(ierr);
   ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
@@ -277,7 +331,8 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   Na->A     = A;
   Na->isrow = isrow;
   Na->iscol = iscol;
-  Na->scale = 1.0;
+  Na->vscale = 1.0;
+  Na->vshift = 0.0;
 
   N->ops->destroy          = MatDestroy_SubMatrix;
   N->ops->mult             = MatMult_SubMatrix;
@@ -286,6 +341,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
   N->ops->multtransposeadd = MatMultTransposeAdd_SubMatrix;
   N->ops->scale            = MatScale_SubMatrix;
   N->ops->diagonalscale    = MatDiagonalScale_SubMatrix;
+  N->ops->shift            = MatShift_SubMatrix;
 
   ierr = MatSetBlockSizesFromMats(N,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);
@@ -354,8 +410,9 @@ PetscErrorCode  MatSubMatrixVirtualUpdate(Mat N,Mat A,IS isrow,IS iscol)
   ierr  = MatDestroy(&Na->A);CHKERRQ(ierr);
   Na->A = A;
 
-  Na->scale = 1.0;
-  ierr      = VecDestroy(&Na->left);CHKERRQ(ierr);
-  ierr      = VecDestroy(&Na->right);CHKERRQ(ierr);
+  Na->vshift = 0.0;
+  Na->vscale = 1.0;
+  ierr       = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr       = VecDestroy(&Na->right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

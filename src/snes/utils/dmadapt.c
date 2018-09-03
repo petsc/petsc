@@ -818,7 +818,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = VecViewFromOptions(xHess, NULL, "-adapt_hessian_view");CHKERRQ(ierr);
       /*     Compute metric */
       ierr = DMClone(dm, &dmMetric);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(dm, &sec);CHKERRQ(ierr);
+      ierr = DMGetSection(dm, &sec);CHKERRQ(ierr);
       ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
       ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
       ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
@@ -829,7 +829,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscSectionSetFieldDof(msec, v, 0, Nd);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
-      ierr = DMSetDefaultSection(dmMetric, msec);CHKERRQ(ierr);
+      ierr = DMSetSection(dmMetric, msec);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
       ierr = DMGetLocalVector(dmMetric, &metric);CHKERRQ(ierr);
       /*       N is the target size */

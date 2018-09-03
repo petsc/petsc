@@ -398,6 +398,21 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   mapping->indices     = nid;
   mapping->globalstart = 0;
   mapping->globalend   = 0;
+
+  /* reset the cached information */
+  ierr = PetscFree(mapping->info_procs);CHKERRQ(ierr);
+  ierr = PetscFree(mapping->info_numprocs);CHKERRQ(ierr);
+  if (mapping->info_indices) {
+    PetscInt i;
+
+    ierr = PetscFree((mapping->info_indices)[0]);CHKERRQ(ierr);
+    for (i=1; i<mapping->info_nproc; i++) {
+      ierr = PetscFree(mapping->info_indices[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(mapping->info_indices);CHKERRQ(ierr);
+  }
+  mapping->info_cached = PETSC_FALSE;
+
   if (mapping->ops->destroy) {
     ierr = (*mapping->ops->destroy)(mapping);CHKERRQ(ierr);
   }
@@ -481,6 +496,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   (*mapping)->info_procs    = NULL;
   (*mapping)->info_numprocs = NULL;
   (*mapping)->info_indices  = NULL;
+  (*mapping)->info_nodec    = NULL;
+  (*mapping)->info_nodei    = NULL;
 
   (*mapping)->ops->globaltolocalmappingapply      = NULL;
   (*mapping)->ops->globaltolocalmappingapplyblock = NULL;
@@ -564,6 +581,11 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
     }
     ierr = PetscFree((*mapping)->info_indices);CHKERRQ(ierr);
   }
+  if ((*mapping)->info_nodei) {
+    ierr = PetscFree(((*mapping)->info_nodei)[0]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree((*mapping)->info_nodei);CHKERRQ(ierr);
+  ierr = PetscFree((*mapping)->info_nodec);CHKERRQ(ierr);
   if ((*mapping)->ops->destroy) {
     ierr = (*(*mapping)->ops->destroy)(*mapping);CHKERRQ(ierr);
   }
@@ -1391,6 +1413,8 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
 
     Concepts: mapping^local to global
 
+    Notes: The user needs to call ISLocalToGlobalMappingRestoreInfo when the data is no longer needed.
+
     Fortran Usage:
 $        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
 $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
@@ -1455,6 +1479,100 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
   PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingRestoreBlockInfo(mapping,nproc,procs,numprocs,indices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    ISLocalToGlobalMappingGetNodeInfo - Gets the neighbor information for each node
+
+    Collective on ISLocalToGlobalMapping
+
+    Input Parameters:
+.   mapping - the mapping from local to global indexing
+
+    Output Parameter:
++   nnodes - number of local nodes (same ISLocalToGlobalMappingGetSize())
+.   count - number of neighboring processors per node
+-   indices - indices of processes sharing the node (sorted)
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+    Notes: The user needs to call ISLocalToGlobalMappingRestoreInfo when the data is no longer needed.
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingGetInfo(), ISLocalToGlobalMappingRestoreNodeInfo()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,PetscInt *nnodes,PetscInt *count[],PetscInt **indices[])
+{
+  PetscInt       n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);
+  if (!mapping->info_nodec) {
+    PetscInt i,m,n_neigh,*neigh,*n_shared,**shared;
+
+    ierr = PetscCalloc1(n+1,&mapping->info_nodec);CHKERRQ(ierr); /* always allocate to flag setup */
+    ierr = PetscMalloc1(n,&mapping->info_nodei);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetInfo(mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    for (i=0,m=0;i<n;i++) { mapping->info_nodec[i] = 1; m++; }
+    for (i=1;i<n_neigh;i++) {
+      PetscInt j;
+
+      m += n_shared[i];
+      for (j=0;j<n_shared[i];j++) mapping->info_nodec[shared[i][j]] += 1;
+    }
+    if (n) { ierr = PetscMalloc1(m,&mapping->info_nodei[0]);CHKERRQ(ierr); }
+    for (i=1;i<n;i++) mapping->info_nodei[i] = mapping->info_nodei[i-1] + mapping->info_nodec[i-1];
+    ierr = PetscMemzero(mapping->info_nodec,n*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0;i<n;i++) { mapping->info_nodec[i] = 1; mapping->info_nodei[i][0] = neigh[0]; }
+    for (i=1;i<n_neigh;i++) {
+      PetscInt j;
+
+      for (j=0;j<n_shared[i];j++) {
+        PetscInt k = shared[i][j];
+
+        mapping->info_nodei[k][mapping->info_nodec[k]] = neigh[i];
+        mapping->info_nodec[k] += 1;
+      }
+    }
+    for (i=0;i<n;i++) { ierr = PetscSortRemoveDupsInt(&mapping->info_nodec[i],mapping->info_nodei[i]);CHKERRQ(ierr); }
+    ierr = ISLocalToGlobalMappingRestoreInfo(mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  }
+  if (nnodes)  *nnodes  = n;
+  if (count)   *count   = mapping->info_nodec;
+  if (indices) *indices = mapping->info_nodei;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    ISLocalToGlobalMappingRestoreNodeInfo - Frees the memory allocated by ISLocalToGlobalMappingGetNodeInfo()
+
+    Collective on ISLocalToGlobalMapping
+
+    Input Parameters:
+.   mapping - the mapping from local to global indexing
+
+    Output Parameter:
++   nnodes - number of local nodes
+.   count - number of neighboring processors per node
+-   indices - indices of processes sharing the node (sorted)
+
+    Level: advanced
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingGetInfo()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapping,PetscInt *nnodes,PetscInt *count[],PetscInt **indices[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  if (nnodes)  *nnodes  = 0;
+  if (count)   *count   = NULL;
+  if (indices) *indices = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -1,0 +1,90 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:8, bmx:2, bmy:5, height:0.3
+iter =   0, Function value 1.83917, Residual: 0.44807 
+iter =   1, Function value 1.79522, Residual: 0.58077 
+iter =   2, Function value 1.6861, Residual: 0.325694 
+iter =   3, Function value 1.66622, Residual: 0.551157 
+iter =   4, Function value 1.6218, Residual: 0.278657 
+iter =   5, Function value 1.61673, Residual: 0.270997 
+iter =   6, Function value 1.60864, Residual: 0.17566 
+iter =   7, Function value 1.60473, Residual: 0.105672 
+iter =   8, Function value 1.60285, Residual: 0.045556 
+iter =   9, Function value 1.60217, Residual: 0.027934 
+iter =  10, Function value 1.60145, Residual: 0.0244376 
+iter =  11, Function value 1.60122, Residual: 0.0143189 
+iter =  12, Function value 1.60117, Residual: 0.00760274 
+iter =  13, Function value 1.60116, Residual: 0.00394775 
+iter =  14, Function value 1.60115, Residual: 0.00221014 
+iter =  15, Function value 1.60115, Residual: 0.00353179 
+iter =  16, Function value 1.60115, Residual: 0.00211877 
+iter =  17, Function value 1.60115, Residual: 0.00048005 
+iter =  18, Function value 1.60115, Residual: 0.00035904 
+iter =  19, Function value 1.60115, Residual: 0.000222049 
+iter =  20, Function value 1.60115, Residual: 5.76435e-05 
+Tao Object: 1 MPI processes
+  type: bqnls
+    Rejected BFGS updates: 0
+    CG steps: 0
+    Newton steps: 0
+    BFGS steps: 19
+    Scaled gradient steps: 1
+    Gradient steps: 0
+    KSP termination reasons:
+      atol: 0
+      rtol: 0
+      ctol: 0
+      negc: 0
+      dtol: 0
+      iter: 0
+      othr: 0
+  Mat Object: (tao_bqnls_) 1 MPI processes
+    type: lmvmbfgs
+    rows=64, cols=64
+      Scale type: diagonal
+      Scale history: 1
+      Scale params: alpha=1., beta=0.5, rho=1.
+      Convex factors: phi=0., theta=0.125
+      Max. storage: 5
+      Used storage: 5
+      Number of updates: 19
+      Number of rejects: 0
+      Number of resets: 0
+  TaoLineSearch Object: 1 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: 1
+  KSP Object: (unused) 1 MPI processes
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using DEFAULT norm type for convergence test
+  PC Object: (unused) 1 MPI processes
+    type: lmvm
+    PC has not been set up so information may be incomplete
+    Mat Object: (tao_bqnls_) 1 MPI processes
+      type: lmvmbfgs
+      rows=64, cols=64
+        Scale type: diagonal
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 5
+        Number of updates: 19
+        Number of rejects: 0
+        Number of resets: 0
+  total KSP iterations: 0
+  Active Set subset type: subvec
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=5.76435e-05
+  Objective value=1.60115
+  total number of iterations=20,                          (max: 50)
+  total number of function/gradient evaluations=22,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

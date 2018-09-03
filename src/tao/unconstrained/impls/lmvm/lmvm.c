@@ -1,20 +1,16 @@
 #include <petsctaolinesearch.h>
-#include <../src/tao/matrix/lmvmmat.h>
 #include <../src/tao/unconstrained/impls/lmvm/lmvm.h>
 
-#define LMVM_BFGS                0
-#define LMVM_SCALED_GRADIENT     1
-#define LMVM_GRADIENT            2
+#define LMVM_STEP_BFGS     0
+#define LMVM_STEP_GRAD     1
 
 static PetscErrorCode TaoSolve_LMVM(Tao tao)
 {
   TAO_LMVM                     *lmP = (TAO_LMVM *)tao->data;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    step = 1.0;
-  PetscReal                    delta;
   PetscErrorCode               ierr;
-  PetscInt                     stepType, nupdates;
-  PetscBool                    recycle;
+  PetscInt                     stepType = LMVM_STEP_GRAD, nupdates;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -35,28 +31,24 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
-  /*  Set initial scaling for the function */
-  if (f != 0.0) {
-    delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-  } else {
-    delta = 2.0 / (gnorm*gnorm);
-  }
-  ierr = MatLMVMSetDelta(lmP->M,delta);CHKERRQ(ierr);
-
   /*  Set counter for gradient/reset steps */
-  ierr = MatLMVMGetRecycleFlag(lmP->M, &recycle);CHKERRQ(ierr);
-  if (!recycle) {
+  if (!lmP->recycle) {
     lmP->bfgs = 0;
-    lmP->sgrad = 0;
     lmP->grad = 0;
-    ierr = MatLMVMReset(lmP->M); CHKERRQ(ierr);
+    ierr = MatLMVMReset(lmP->M, PETSC_FALSE); CHKERRQ(ierr);
   }
 
   /*  Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /*  Compute direction */
+    if (lmP->H0) {
+      ierr = MatLMVMSetJ0(lmP->M, lmP->H0);CHKERRQ(ierr);
+      stepType = LMVM_STEP_BFGS;
+    } 
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+    ierr = MatSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+    ierr = MatLMVMGetUpdateCount(lmP->M, &nupdates); CHKERRQ(ierr);
+    if (nupdates > 0) stepType = LMVM_STEP_BFGS;
 
     /*  Check for success (descent direction) */
     ierr = VecDot(lmP->D, tao->gradient, &gdx);CHKERRQ(ierr);
@@ -68,31 +60,15 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
 
          Use steepest descent direction (scaled)
       */
-
-      if (f != 0.0) {
-        delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-      } else {
-        delta = 2.0 / (gnorm*gnorm);
-      }
-      ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-      ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+    
+      ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-      ierr = MatLMVMSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
+      ierr = MatSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
 
       /* On a reset, the direction cannot be not a number; it is a
          scaled gradient step.  No need to check for this condition. */
-      ++lmP->sgrad;
-      stepType = LMVM_SCALED_GRADIENT;
-    } else {
-      ierr = MatLMVMGetUpdates(lmP->M, &nupdates); CHKERRQ(ierr);
-      if (1 == nupdates) {
-        /*  The first BFGS direction is always the scaled gradient */
-        ++lmP->sgrad;
-        stepType = LMVM_SCALED_GRADIENT;
-      } else {
-        ++lmP->bfgs;
-        stepType = LMVM_BFGS;
-      }
+      stepType = LMVM_STEP_GRAD;
     }
     ierr = VecScale(lmP->D, -1.0);CHKERRQ(ierr);
 
@@ -104,48 +80,23 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
-    while (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER && (stepType != LMVM_GRADIENT)) {
+    if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER && (stepType != LMVM_STEP_GRAD)) {
       /*  Reset factors and use scaled gradient step */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient);CHKERRQ(ierr);
 
-      switch(stepType) {
-      case LMVM_BFGS:
-        /*  Failed to obtain acceptable iterate with BFGS step */
-        /*  Attempt to use the scaled gradient direction */
+      /*  Failed to obtain acceptable iterate with BFGS step */
+      /*  Attempt to use the scaled gradient direction */
 
-        if (f != 0.0) {
-          delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
-        } else {
-          delta = 2.0 / (gnorm*gnorm);
-        }
-        ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+      ierr = MatLMVMReset(lmP->M, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatLMVMClearJ0(lmP->M);CHKERRQ(ierr);
+      ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+      ierr = MatSolve(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
 
-        /* On a reset, the direction cannot be not a number; it is a
-           scaled gradient step.  No need to check for this condition. */
-        --lmP->bfgs;
-        ++lmP->sgrad;
-        stepType = LMVM_SCALED_GRADIENT;
-        break;
-
-      case LMVM_SCALED_GRADIENT:
-        /* The scaled gradient step did not produce a new iterate;
-           attempt to use the gradient direction.
-           Need to make sure we are not using a different diagonal scaling */
-        ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
-        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-        ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
-        
-        --lmP->sgrad;
-        ++lmP->grad;
-        stepType = LMVM_GRADIENT;
-        break;
-      }
+      /* On a reset, the direction cannot be not a number; it is a
+          scaled gradient step.  No need to check for this condition. */
+      stepType = LMVM_STEP_GRAD;
       ierr = VecScale(lmP->D, -1.0);CHKERRQ(ierr);
 
       /*  Perform the linesearch */
@@ -160,11 +111,23 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
       ierr = VecCopy(lmP->Gold, tao->gradient);CHKERRQ(ierr);
       step = 0.0;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
+    } else {
+      /* LS found valid step, so tally up step type */
+      switch (stepType) {
+      case LMVM_STEP_BFGS:
+        ++lmP->bfgs;
+        break;
+      case LMVM_STEP_GRAD:
+        ++lmP->grad;
+        break;
+      default:
+        break;
+      }
+      /*  Compute new gradient norm */
+      ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     }
-
-    /*  Check for termination */
-    ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-
+    
+    /* Check convergence */
     tao->niter++;
     ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);
@@ -178,7 +141,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
-  KSP            H0ksp;
+  PetscBool      is_spd;
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSetUp() */
@@ -191,25 +154,14 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   /*  Create matrix for the limited memory approximation */
   ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
   ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-  ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&lmP->M);CHKERRQ(ierr);
-  ierr = MatLMVMAllocateVectors(lmP->M,tao->solution);CHKERRQ(ierr);
+  ierr = MatSetSizes(lmP->M, n, n, N, N);CHKERRQ(ierr);
+  ierr = MatLMVMAllocate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
+  ierr = MatGetOption(lmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
+  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (lmP->H0) {
-    const char *prefix;
-    PC H0pc;
-
-    ierr = MatLMVMSetH0(lmP->M, lmP->H0);CHKERRQ(ierr);
-    ierr = MatLMVMGetH0KSP(lmP->M, &H0ksp);CHKERRQ(ierr);
-
-    ierr = TaoGetOptionsPrefix(tao, &prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(H0ksp, prefix);CHKERRQ(ierr);
-    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0ksp, "tao_h0_");CHKERRQ(ierr);
-    ierr = KSPGetPC(H0ksp, &H0pc);CHKERRQ(ierr);
-    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0pc,  "tao_h0_");CHKERRQ(ierr);
-
-    ierr = KSPSetFromOptions(H0ksp);CHKERRQ(ierr);
-    ierr = KSPSetUp(H0ksp);CHKERRQ(ierr);
+    ierr = MatLMVMSetJ0(lmP->M, lmP->H0);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -220,27 +172,17 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscErrorCode ierr;
-  PetscBool      recycle;
 
   PetscFunctionBegin;
-  if (lmP->M) {
-    ierr = MatLMVMGetRecycleFlag(lmP->M, &recycle); CHKERRQ(ierr);
-    if (recycle) {
-      ierr = PetscInfo(tao, "WARNING: TaoDestroy() called when LMVM recycling is enabled!\n"); CHKERRQ(ierr);
-    }
-  }
-  
   if (tao->setupcalled) {
     ierr = VecDestroy(&lmP->Xold);CHKERRQ(ierr);
     ierr = VecDestroy(&lmP->Gold);CHKERRQ(ierr);
     ierr = VecDestroy(&lmP->D);CHKERRQ(ierr);
-    ierr = MatDestroy(&lmP->M);CHKERRQ(ierr);
   }
-
+  ierr = MatDestroy(&lmP->M);CHKERRQ(ierr);
   if (lmP->H0) {
     ierr = PetscObjectDereference((PetscObject)lmP->H0);CHKERRQ(ierr);
   }
-
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -249,11 +191,14 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
+  TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",lm->recycle,&lm->recycle,NULL);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(lm->M);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -262,24 +207,19 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
 static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 {
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
-  PetscBool      isascii, recycle;
+  PetscBool      isascii;
   PetscInt       recycled_its;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", lm->bfgs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", lm->sgrad);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lm->grad);CHKERRQ(ierr);
-    ierr = MatLMVMGetRecycleFlag(lm->M, &recycle);CHKERRQ(ierr);
-    if (recycle) {
-      ierr = PetscViewerASCIIPrintf(viewer, "Recycle: on\n");CHKERRQ(ierr);
-      recycled_its = lm->bfgs + lm->sgrad + lm->grad;
-      ierr = PetscViewerASCIIPrintf(viewer, "Total recycled iterations: %D\n", recycled_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %D\n", lm->grad);CHKERRQ(ierr);
+    if (lm->recycle) {
+      ierr = PetscViewerASCIIPrintf(viewer, "  Recycle: on\n");CHKERRQ(ierr);
+      recycled_its = lm->bfgs + lm->grad;
+      ierr = PetscViewerASCIIPrintf(viewer, "  Total recycled iterations: %D\n", recycled_its);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -287,31 +227,18 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 
 /*MC
-     TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton
-     optimization solver for unconstrained minimization. It solves
-     the Newton step
-              Hkdk = - gk
+  TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton
+  optimization solver for unconstrained minimization. It solves
+  the Newton step
+          Hkdk = - gk
 
-     using an approximation Bk in place of Hk, where Bk is composed using
-     the BFGS update formula. A More-Thuente line search is then used
-     to computed the steplength in the dk direction
+  using an approximation Bk in place of Hk, where Bk is composed using
+  the BFGS update formula. A More-Thuente line search is then used
+  to computed the steplength in the dk direction
+     
   Options Database Keys:
-+     -tao_lmm_vectors - number of vectors to use for approximation
-.     -tao_lmm_scale_type - "none","scalar","broyden"
-.     -tao_lmm_limit_type - "none","average","relative","absolute"
-.     -tao_lmm_rescale_type - "none","scalar","gl"
-.     -tao_lmm_limit_mu - mu limiting factor
-.     -tao_lmm_limit_nu - nu limiting factor
-.     -tao_lmm_delta_min - minimum delta value
-.     -tao_lmm_delta_max - maximum delta value
-.     -tao_lmm_broyden_phi - phi factor for Broyden scaling
-.     -tao_lmm_scalar_alpha - alpha factor for scalar scaling
-.     -tao_lmm_rescale_alpha - alpha factor for rescaling diagonal
-.     -tao_lmm_rescale_beta - beta factor for rescaling diagonal
-.     -tao_lmm_scalar_history - amount of history for scalar scaling
-.     -tao_lmm_rescale_history - amount of history for rescaling diagonal
-.     -tao_lmm_eps - rejection tolerance
--     -tao_lmm_recycle - enable recycling LMVM updates between TaoSolve() calls
+.   -tao_lmvm_recycle - enable recycling LMVM updates between TaoSolve() calls
+.   -tao_lmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
 
   Level: beginner
 M*/
@@ -335,6 +262,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   lmP->Xold = 0;
   lmP->Gold = 0;
   lmP->H0   = NULL;
+  lmP->recycle = PETSC_FALSE;
 
   tao->data = (void*)lmP;
   /* Override default settings (unless already changed) */
@@ -346,5 +274,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
+  
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)tao)->comm, &lmP->M);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)lmP->M, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = MatSetType(lmP->M, MATLMVMBFGS);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(lmP->M, "tao_lmvm_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

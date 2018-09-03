@@ -1316,7 +1316,7 @@ PetscErrorCode EllipticMonitor(Tao tao, void *ptr)
       requires: !complex
 
    test:
-      args: -tao_cmonitor -ns 1 -tao_type lcl -tao_gatol 1.e-3
+      args: -tao_cmonitor -ns 1 -tao_type lcl -tao_gatol 1.e-3 -tao_max_it 11
       requires: !single
 
    test:

@@ -1,9 +1,9 @@
-  0 SNES Function norm 8.32828 
-    0 KSP Residual norm 11.3379 
+  0 SNES Function norm 5.83179 
+    0 KSP Residual norm 5.05497 
     1 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm < 1.e-11
-L_2 Error: 0.00131794
+L_2 Error: 0.00527027
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 4 MPI processes
   type: newtonls
@@ -61,20 +61,20 @@ SNES Object: 4 MPI processes
       Symmetric computation of primal basis functions: 1
       Num. Procs. to map coarse adjacency list: 0
       Coarse eqs per proc (significant at the coarsest level): 1
-      Detect disconnected: 0
+      Detect disconnected: 0 (filter 0)
       Benign subspace trick: 0 (change explicit 0)
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux 0
       ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 225 interface 15 coarse 1
-      Coarsening ratios: all/coarse 225 interface/coarse 15
+      Global dofs sizes: all 49 interface 7 coarse 1
+      Coarsening ratios: all/coarse 49 interface/coarse 7
       Active processes : 2
       Total subdomains : 2
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	105	105	105
-      Interface dofs   :	15	15	15
+      Interior  dofs   :	21	21	21
+      Interface dofs   :	7	7	7
       Primal    dofs   :	1	1	1
-      Local     dofs   :	120	120	120
+      Local     dofs   :	28	28	28
       Local     subs   :	1	1
       ********************************** COARSE PROBLEM DETAILS *********************************
     KSP Object: (pc_bddc_coarse_) 1 MPI processes
@@ -86,33 +86,33 @@ SNES Object: 4 MPI processes
     PC Object: (pc_bddc_coarse_) 1 MPI processes
       type: redundant
         First (color=0) of 1 PCs follows
-      KSP Object: (pc_bddc_coarse_redundant_) 1 MPI processes
-        type: preonly
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-        left preconditioning
-        using NONE norm type for convergence test
-      PC Object: (pc_bddc_coarse_redundant_) 1 MPI processes
-        type: lu
-          out-of-place factorization
-          tolerance for zero pivot 2.22045e-14
-          matrix ordering: nd
-          factor fill ratio given 5., needed 1.
-            Factored matrix follows:
-              Mat Object: 1 MPI processes
-                type: seqaij
-                rows=1, cols=1
-                package used to perform factorization: petsc
-                total: nonzeros=1, allocated nonzeros=1
-                total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
-        linear system matrix = precond matrix:
-        Mat Object: 1 MPI processes
-          type: seqaij
-          rows=1, cols=1
-          total: nonzeros=1, allocated nonzeros=1
-          total number of mallocs used during MatSetValues calls =0
-            not using I-node routines
+        KSP Object: (pc_bddc_coarse_redundant_) 1 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (pc_bddc_coarse_redundant_) 1 MPI processes
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 1.
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=1, cols=1
+                  package used to perform factorization: petsc
+                  total: nonzeros=1, allocated nonzeros=1
+                  total number of mallocs used during MatSetValues calls =0
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=1, cols=1
+            total: nonzeros=1, allocated nonzeros=1
+            total number of mallocs used during MatSetValues calls =0
+              not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: 1 MPI processes
         type: seqaij
@@ -123,6 +123,6 @@ SNES Object: 4 MPI processes
     linear system matrix = precond matrix:
     Mat Object: 4 MPI processes
       type: is
-      rows=225, cols=225
-      total: nonzeros=1500, allocated nonzeros=1558
+      rows=49, cols=49
+      total: nonzeros=308, allocated nonzeros=334
       total number of mallocs used during MatSetValues calls =0

@@ -157,7 +157,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   MatStencil     row, col[7];
   DM             da;
   MatNullSpace   nullspace;
-  PetscBool      dump_mat = PETSC_FALSE;
+  PetscBool      dump_mat = PETSC_FALSE, check_matis = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   ierr    = KSPGetDM(ksp,&da);CHKERRQ(ierr);
@@ -255,6 +255,28 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
     ierr = MatView(JJ2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&JJ2);CHKERRQ(ierr);
     ierr = MatDestroy(&JJ);CHKERRQ(ierr);
+  }
+  ierr = MatViewFromOptions(jac,NULL,"-view_mat");CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-check_matis",&check_matis,NULL);CHKERRQ(ierr);
+  if (check_matis) {
+    void      (*f)(void);
+    Mat       J2;
+    MatType   jtype;
+    PetscReal nrm;
+
+    ierr = MatGetType(jac,&jtype);CHKERRQ(ierr);
+    ierr = MatConvert(jac,MATIS,MAT_INITIAL_MATRIX,&J2);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(J2,NULL,"-view_conv");CHKERRQ(ierr);
+    ierr = MatConvert(J2,jtype,MAT_INPLACE_MATRIX,&J2);CHKERRQ(ierr);
+    ierr = MatGetOperation(jac,MATOP_VIEW,&f);CHKERRQ(ierr);
+    ierr = MatSetOperation(J2,MATOP_VIEW,f);CHKERRQ(ierr);
+    ierr = MatSetDM(J2,da);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(J2,NULL,"-view_conv_assembled");CHKERRQ(ierr);
+    ierr = MatAXPY(J2,-1.,jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(J2,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MATIS %g\n",(double)nrm);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(J2,NULL,"-view_conv_err");CHKERRQ(ierr);
+    ierr = MatDestroy(&J2);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);

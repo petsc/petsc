@@ -69,6 +69,8 @@ struct _p_ISLocalToGlobalMapping{
   PetscInt    *info_procs;
   PetscInt    *info_numprocs;
   PetscInt   **info_indices;
+  PetscInt    *info_nodec;
+  PetscInt   **info_nodei;
   void        *data;            /* type specific data is stored here */
 };
 
@@ -135,4 +137,7 @@ struct _p_PetscSectionSym {
   SymWorkLink workin;
   SymWorkLink workout;
 };
+
+
+PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #endif

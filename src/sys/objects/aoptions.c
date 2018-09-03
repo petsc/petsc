@@ -40,7 +40,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   ierr = PetscStrallocpy(prefix,&PetscOptionsObject->prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&PetscOptionsObject->title);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PetscOptionsObject->options,NULL,"-help",&PetscOptionsObject->printhelp);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(PetscOptionsObject->options,&PetscOptionsObject->printhelp);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1) {
     if (!PetscOptionsObject->alreadyprinted) {
       ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);

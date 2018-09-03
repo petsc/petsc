@@ -4,8 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['https://cmake.org/files/v3.11/cmake-3.11.1.tar.gz',
-                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.1.tar.gz']
+    self.download          = ['https://cmake.org/files/v3.9/cmake-3.9.6.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.9.6.tar.gz']
+    self.download_311      = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
+                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cmake-3.11.4.tar.gz']
     self.downloadonWindows = 1
     self.lookforbydefault  = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
@@ -53,6 +55,8 @@ class Configure(config.package.GNUPackage):
     '''Locate cmake and download it if requested'''
     if self.argDB['download-cmake']:
       self.log.write('Building CMake\n')
+      if config.setCompilers.Configure.isSolaris(self.log):
+        self.download = self.download_311
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for Cmake in '+os.path.join(self.installDir,'bin')+'\n')
       self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)

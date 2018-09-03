@@ -123,7 +123,7 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of \lstinline{INSERT_VALUES} and
 \lstinline{ADD_VALUES} this nondeterministic behavior will not occur in PETSc.)
 
-You can called \lstinline{VecGetValues()} to pull local values from a vector (but
+You can call \lstinline{VecGetValues()} to pull local values from a vector (but
 not off-process values),
 an alternative method for extracting some components of a vector are
 the vector scatter routines.  
@@ -782,7 +782,7 @@ DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 followed by
 \begin{lstlisting}
 VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);
-MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);
+MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping);
 \end{lstlisting}
 Now entries may be added to the vector and matrix using the local numbering
 and \break\lstinline{VecSetValuesLocal()} and \lstinline{MatSetValuesLocal()}.
@@ -1173,7 +1173,7 @@ MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
 By placing other code between these two calls, the user can perform
 computations while messages are in transit.
 Calls to \lstinline{MatSetValues()} with the \lstinline{INSERT_VALUES} and
-\lstinline{ADD_VALUES] options {\em cannot} be mixed without intervening calls to
+\lstinline{ADD_VALUES} options {\em cannot} be mixed without intervening calls to
 the assembly routines.  For such intermediate assembly calls the
 second routine argument  typically should be \lstinline{MAT_FLUSH_ASSEMBLY},
 \findex{MAT_FLUSH_ASSEMBLY} which omits some of the work of the full
@@ -1305,7 +1305,7 @@ Thus, when assembling a sparse matrix with very different
 numbers of nonzeros in various rows, one could proceed
 as follows for finite difference methods:
 \begin{tightenumerate}
-\item item Allocate integer array \lstinline{nnz}.
+\item Allocate integer array \lstinline{nnz}.
 \item Loop over grid, counting the expected number of nonzeros for the row(s)
 associated with the various grid points.
 \item Create the sparse matrix via \lstinline{MatCreateSeqAIJ()} or alternative.
@@ -1496,6 +1496,55 @@ to generate most entries on the owning process.
 this can lead to cleaner, simpler, less buggy codes.  One should never
 make code overly complicated in order to generate all values locally. Rather,
 one should organize the code in such a way that {\em most} values are generated locally.
+
+\subsubsection{Limited-Memory Variable Metric (LMVM) Matrices}
+
+Variable metric methods, also known as quasi-Newton methods, are frequently used for root finding problems 
+and approximate Jacobian matrices or their inverses via sequential nonlinear updates based on the secant condition. 
+The limited-memory variants do not store the full explicit Jacobian, and instead compute forward products and 
+inverse applications based on a fixed number of stored update vectors.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+{\bf Method}                                       & {\bf PETSc Type}                & {\bf Name}          & {\bf Property} \\
+\hline
+``Good'' Broyden \cite{griewank2012broyden}             & \lstinline|MATLMVMBrdn|         & \trl{lmvmbrdn}      & Square \\
+``Bad'' Broyden \cite{griewank2012broyden}              & \lstinline|MATLMVMBadBrdn|      & \trl{lmvmbadbrdn}   & Square  \\
+Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|          & \trl{lmvmsr1}       & Symmetric \\
+Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
+Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+Restricted Broyden Family Diagonal                      & \lstinline|MATLMVMDiagBrdn|
+& \trl{lmvmdiagbrdn}  & SPD \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc LMVM matrix implementations.}
+\label{tab_matlmvmimpl}
+\end{table}
+
+PETSc implements seven different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
+the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
+We will review the most important ones below:
+\begin{itemize}
+  \item \lstinline{MatLMVMAllocate(Mat B, Vec X, Vec F)} -- Creates the internal data structures necessary to store 
+  nonlinear updates and compute forward/inverse applications. The \lstinline{X} vector defines the solution space while 
+  the \lstinline{F} defines the function space for the history of updates.
+  \item \lstinline{MatLMVMUpdate(MatB, Vec X, Vec F)} -- Applies a nonlinear update to the approximate Jacobian such 
+  that $s_k = x_k - x_{k-1}$ and $y_k = f(x_k) - f(x_{k-1})$, where $k$ is the index for the update.
+  \item \lstinline{MatLMVMReset(Mat B, PetscBool destructive)} -- Flushes the accumulated nonlinear updates and resets 
+  the matrix to the initial state. If \lstinline{destructive = PETSC_TRUE}, the reset also destroys the internal data 
+  structures and necessitates another allocation call before the matrix can be updated and used for products and solves.
+  \item \lstinline{MatLMVMSetJ0(Mat B, Mat J0)} -- Defines the initial Jacobian to apply the updates to. If no initial 
+  Jacobian is provided, the updates are applied to an identity matrix.
+\end{itemize}
+
+LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
+in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
+\lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
+\lstinline{-mat_lmvm_num_vecs} option. Restricted Broyden Family, DFP and BFGS methods additionally implement scalar 
+and diagonal scaling of the initial Jacobian which can be selected via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}.
 
 \subsection{Dense Matrices}
 \label{sec_matdense}
@@ -2175,7 +2224,7 @@ set to work with the \lstinline{KSP} object is ignored if \lstinline{KSPLSQR} wa
 
 By default, \lstinline{KSP} assumes an initial guess of zero by zeroing the initial
 value for the solution vector that is given; this zeroing is done at the
-call to \lstinline{KSPSolve()} (or \lstinline{KSPSolve()}). To use a nonzero
+call to \lstinline{KSPSolve()}. To use a nonzero
 initial guess, the user {\em must} call
 \begin{lstlisting}
 KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg);
@@ -2867,7 +2916,7 @@ systems.
 Unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic. 
 If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
-The parameters for the eigen estimator can be set with the prefix``gamg_est_".
+The parameters for the eigen estimator can be set with the prefix \trl{gamg_est}.
 For example CG is a much better KSP type than the default GMRES if your problem is symmetric positive definite; one can specify this with \trl{-gamg_est_ksp_type cg}, prepending any solver prefix that has been added to the solver.
 
 AMG methods requires knowledge of the number of degrees of
@@ -3397,7 +3446,6 @@ For matrices defined with any number of blocks there are three ``block'' algorit
   0   & \text{ksp}(A_{11},Ap_{11}) \\
 \end{array} \right)
 \]
-
 block Gauss-Seidel,
 \[
 \left( \begin{array}{cc}
@@ -3617,11 +3665,11 @@ solve these systems.
 
 First, one must know what the null space is and store it using an orthonormal basis
 in an array of PETSc Vecs. The constant functions can be handled separately, since
-they are such a common cas). Create a \lstinline{MatNullSpace} object with the command
+they are such a common case). Create a \lstinline{MatNullSpace} object with the command
 \begin{lstlisting}
 MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,PetscInt dim,Vec *basis,MatNullSpace *nsp);
 \end{lstlisting}
-Her, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
+Here, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
 if the null space contains the constant functions. If the null space contains the constant
 functions you do not need to include it in the \lstinline{basis} vectors you provide, nor in the count \lstinline{dim}.
 
@@ -4461,7 +4509,7 @@ The second approach, taken from Walker and Pernice, \cite{pw98}, computes $ h $ 
         h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
 \end{eqnarray*}
 This has no tunable parameters, but note that inside the nonlinear solve for
-the entire {\bf linear} iterative process $ u $ does not change hence
+the entire \emph{linear} iterative process $ u $ does not change hence
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the
 options
 \begin{lstlisting}
@@ -4833,7 +4881,7 @@ PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,void*),void *jacP);
   $B$, and the (optional) user-provided context \lstinline{jacP}.
 \end{itemize}
 
-Providing appropriate $F()$ and $G()$ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
+Providing appropriate $F()$ and $G()$ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit methods.
 
 \section{Basic TS Options}
 
@@ -5537,8 +5585,8 @@ For sensitivity analysis, we need to provide a routine to compute $\mathrm{f}_p=
 and three routines corresponding to the integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$, $r_p = [0 \; 0]^T$ and $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using \lstinline{TSSetCostIntegrand()}.
 
 In the adjoint run, $\lambda$ and $\mu$ are initialized as $[ 0 \;  0 ]^T$ and $[-1]$ at the final time $t_F$.
-After \lstinline{TSAdjointSolve()}, the sensitivity of the cost function w.r.t. to initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly.
-And the sensitivity of the cost function w.r.t. to the parameter $p_m$ can be computed (by users) as
+After \lstinline{TSAdjointSolve()}, the sensitivity of the cost function w.r.t. initial conditions is given by the sensitivity variable $\lambda$ (at time $t_0$) directly.
+And the sensitivity of the cost function w.r.t. the parameter $p_m$ can be computed (by users) as
 %
 \[
 \frac{\mathrm{d} \Psi}{\mathrm{d} p_m} = \mu(t_0) + \lambda(t_0)  \frac{\mathrm{d} \left[ \phi(t_0) \; \omega(t_0) \right]^T}{\mathrm{d} p_m}  .
@@ -5893,9 +5941,9 @@ element method,
 PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
 DMPlexGetChart(dm, &pStart, &pEnd);
-DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);
-DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);
-DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);
+DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);   /* cells */
+DMPlexGetHeightStratum(dm, 1, &eStart, &eEnd);   /* edges */
+DMPlexGetHeightStratum(dm, 2, &vStart, &vEnd);   /* vertices, equivalent to DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd); */
 PetscSectionSetChart(s, pStart, pEnd);
 for(c = cStart; c < cEnd; ++c)
     PetscSectionSetDof(s, c, 1);
@@ -5926,7 +5974,7 @@ VecSetFromOptions(localVec);
 \end{lstlisting}
 though it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
 \begin{lstlisting}
-DMSetDefaultSection(dm, s);
+DMSetSection(dm, s);
 DMGetLocalVector(dm, &localVec);
 DMGetGlobalVector(dm, &globalVec);
 \end{lstlisting}
@@ -7930,9 +7978,9 @@ blocks can be controlled via the options \trl{-sub_ksp_type} and \trl{
 \subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
-use of \trl{-options_table}, which prints to \lstinline{stdout} during \lstinline{PetscFinalize()}
+use of \trl{-options_view}, which prints to \lstinline{stdout} during \lstinline{PetscFinalize()}
  a table of all runtime options that the user has
-specified.  \findex{-options_table} A related option is \trl{-options_left},
+specified.  \findex{-options_view} A related option is \trl{-options_left},
 \findex{-options_left} which prints the options table and indicates
 any options that have {\em not} been requested upon a call to \lstinline{PetscFinalize()}.  This feature is useful to check whether an option
 has been activated for a particular PETSc object (such as a solver or

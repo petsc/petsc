@@ -134,6 +134,7 @@ typedef struct {
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;
+  PetscBool detect_disconnected_filter;
   PetscInt  n_local_subs;
   IS        *local_subs;
 

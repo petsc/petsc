@@ -7,8 +7,9 @@ class Configure(config.package.Package):
     self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch']
-    self.liblist         = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
+    self.liblist         = [['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
     self.functions       = ['SCOTCH_archBuild']
+    self.functionsDefine = ['SCOTCH_ParMETIS_V3_NodeND']
     self.includes        = ['ptscotch.h']
     self.hastests        = 1
     return
@@ -69,6 +70,8 @@ class Configure(config.package.Package):
       self.cflags = self.cflags + ' -DINTSIZE64'
     else:
       self.cflags = self.cflags + ' -DINTSIZE32'
+    # Prepend SCOTCH_ for the compatibility layer with ParMETIS
+    self.cflags = self.cflags + ' -DSCOTCH_METIS_PREFIX'
 
     g.write('CFLAGS	= '+self.cflags+'\n')
     if self.argDB['with-batch']:

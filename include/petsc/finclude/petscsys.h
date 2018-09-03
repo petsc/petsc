@@ -150,6 +150,7 @@
 !
 !     Macro for templating between real and complex
 !
+#define PetscComplex PetscFortranComplex
 #if defined(PETSC_USE_COMPLEX)
 #define PetscScalar PetscFortranComplex
 !

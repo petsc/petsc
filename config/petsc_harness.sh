@@ -195,7 +195,7 @@ function petsc_testend() {
     printf "skip $skip\n" >> $logfile
   fi
   ENDTIME=`date +%s`
-  timing=`touch timing.out && egrep '(user|sys)' timing.out | awk '{sum += sprintf("%.2f",$2)} END {printf "%.2f\n",sum}'`
+  timing=`touch timing.out && egrep '(user|sys)' timing.out | awk '{if( sum1 == "" || $2 > sum1 ) { sum1=sprintf("%.2f",$2) } ; sum2 += sprintf("%.2f",$2)} END {printf "%.2f %.2f\n",sum1,sum2}'`
   printf "time $timing\n" >> $logfile
   if $cleanup; then
     echo "Cleaning up"

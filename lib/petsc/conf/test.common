@@ -25,3 +25,5 @@ allgtest-tap:
 allgtest:
 	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)'
 
+cleantest:
+	+${OMAKE} -f ${ALLTESTS_MAKEFILE} cleantest

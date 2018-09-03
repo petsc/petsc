@@ -25,8 +25,8 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsLeftRestore(NULL,&N,&names,&values);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 /*TEST

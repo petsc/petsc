@@ -416,7 +416,7 @@ address = {Los Alamitos, CA},
 }
 
 @inbook{st2013,
-  author = "B. F. Smith and X. Tu",
+  author = "Barry F. Smith and Xumin Tu",
   chapter = "Domain Decomposition",
   title = "Encyclopedia of Applied and Computational Mathematics",
   bookeditor = "B. Engquist",
@@ -4058,7 +4058,7 @@ publisher = {ACM Press}
      }
 
 @Article{kk97,
-  author    = "C.T. Kelley and D.E. Keyes",
+  author    = "Carl T. Kelley and David E. Keyes",
   title     = "Convergence analysis of pseudo-transient continuation",
   journal =   "SIAM J. Numerical Analysis",
   year      = "1998",
@@ -7264,6 +7264,7 @@ year = {2010}
   year    = {2008}
 }
 
+%Poster at Biophysical Society Fall Meeting
 @article{BardhanKnepley2017,
   author       = {Jaydeep P. Bardhan and Matthew G. Knepley},
   title        = {Accurate Atom-by-Atom Predictions of Solvation Electrostatics Using a Hydration-Shell {Poisson}-{Boltzmann} Model},
@@ -7272,8 +7273,15 @@ year = {2010}
   number       = {3},
   note         = {Fall Meeting Supplemental, Abstract DI14A-08},
   doi          = {10.1016/j.bpj.2015.11.1766},
-  note         = {poster at Biophysical Society Fall Meeting},
   year         = {2017}
+}
+
+@article{TabriziRahimiGoossensKnepleyBardhan2018,
+  title   = {Solvation Thermodynamics of Neutral and Charged Solutes Using the Solvation-Layer Interface Condition (SLIC) Continuum Dielectric Model},
+  author  = {Amirhossein Molavi Tabrizi and Ali Mehdizadeh Rahimi and Spencer Goossens and Matthew G. Knepley and Jaydeep P. Bardhan},
+  journal = {International Journal of Quantum Chemistry},
+  note    = {Accepted},
+  year    = {2018}
 }
 
 @article{Knepley2010,
@@ -10580,7 +10588,7 @@ year = {2009}
 }
 @book{Kelley03,
   title     = {Solving nonlinear equations with Newton's method},
-  author    = {C. T. Kelley},
+  author    = {Carl T. Kelley},
   publisher = {SIAM},
   year      = {2003},
 }
@@ -10597,13 +10605,21 @@ year = {2009}
   eprint  = {http://rstb.royalsocietypublishing.org/content/237/641/37.full.pdf},
   year    = {1952}
 }
-@article{FabienKnepleyRiviere2017,
+@article{FabienKnepleyMillsRiviere2017,
   title   = {Heterogeneous computing for a hybridizable discontinuous {Galerkin} geometric multigrid method},
   author  = {Maurice S. Fabien and Matthew G. Knepley and Richard Mills and B\'eatrice M. Rivier\'e},
   journal = {SIAM Journal on Scientific Computing},
   url     = {https://arxiv.org/abs/1705.09907},
   note    = {In review},
   year    = {2017}
+}
+@article{FabienKnepleyRiviere2018,
+  title   = {A hybridizable discontinuous Galerkin method for two-phase flow in heterogeneous porous media},
+  author  = {Maurice S. Fabien and Matthew G. Knepley and B\'eatrice M. Rivier\'e},
+  journal = {International Journal for Numerical Methods in Engineering},
+  url     = {https://onlinelibrary.wiley.com/doi/abs/10.1002/nme.5919},
+  doi     = {10.1002/nme.5919},
+  year    = {2018}
 }
 @book{Byerly1893,
   title     = {An elementary treatise on Fourier's series: and spherical, cylindrical, and ellipsoidal harmonics, with applications to problems in mathematical physics},
@@ -10863,7 +10879,7 @@ year = {2009}
 
 @article{BartelGunther2018,
   author  = {Andreas Bartel and Michael G\"unther},
-  title   = {{PDAEs} in Refined Electrical Network Modeling},
+  title   = {{PDAEs} in refined electrical network modeling},
   journal = {SIAM Review},
   volume  = {60},
   number  = {1},
@@ -10873,9 +10889,9 @@ year = {2009}
 }
 
 @Article{MATPOWER,
-  author    = {R. D. Zimmerman and C. E. Murillo-S{\'a}nchez and R. J. Thomas},
-  title     = {{MATPOWER}: Steady-State Operations, Planning and Analysis Tools for Power Systems Research and Education},
-  journal   = {Power Systems, IEEE Transactions on,},
+  author    = {Ray D. Zimmerman and Carlos E. Murillo-S{\'a}nchez and Robert J. Thomas},
+  title     = {{MATPOWER}: Steady-state operations, planning and analysis tools for power systems research and education},
+  journal   = {IEEE Transactions on Power Systems},
   volume    = {26},
   number    = {1},
   pages     = {12--19},
@@ -11090,10 +11106,13 @@ year   = {2017}
   year = 2018
 }
 @inproceedings{duplyakin2018memory,
-    author      = "Dmitry Duplyakin and Jed Brown and Donna Calhoun",
-    title       = "Evaluating Active Learning with Cost and Memory Awareness",
-    booktitle   = "Accepted to IPDPS",
-    year        = {2018 (accepted)}
+  title={Evaluating Active Learning with Cost and Memory Awareness},
+  author={Duplyakin, Dmitry and Brown, Jed and Calhoun, Donna},
+  booktitle={2018 IEEE International Parallel and Distributed Processing Symposium (IPDPS)},
+  pages={214--223},
+  year={2018},
+  organization={IEEE},
+  pdf={https://jedbrown.org/files/DuplyakinBrownCalhoun-ActiveLearningCostMemoryAware-2018.pdf}
 }
 @InProceedings{duplyakin2016active,
     author      = "Dmitry Duplyakin and Jed Brown and Robert Ricci",
@@ -11104,7 +11123,6 @@ year   = {2017}
     url         = "http://www.flux.utah.edu/paper/duplyakin-cluster16",
     pdf         = {https://jedbrown.org/files/DuplyakinBrownRicci-ActiveLearningPerformanceAnalysis-2016.pdf}
 }
-
 @misc{XGC1:website,
   title = "{XGC1 project website}",
   author = "C. S. Chang and others",
@@ -11147,4 +11165,20 @@ year   = {2017}
   pages   = {215--234},
   year    = {1967},
   publisher = {IBM}
+}
+@article{erway2017solving,
+  title={On solving large-scale limited-memory quasi-Newton equations},
+  author={Erway, Jennifer B and Marcia, Roummel F},
+  journal={Linear Algebra and its Applications},
+  volume={515},
+  pages={196--225},
+  year={2017},
+  publisher={Elsevier}
+}
+@article{griewank2012broyden,
+  title={Broyden updating, the good and the bad!},
+  author={Griewank, Andreas},
+  journal={Optimization Stories, Documenta Mathematica. Extra Volume: Optimization Stories},
+  pages={301--315},
+  year={2012}
 }

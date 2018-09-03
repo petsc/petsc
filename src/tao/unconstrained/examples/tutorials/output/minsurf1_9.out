@@ -4,12 +4,13 @@ mx: 10     my: 8
 
 iter =   0, Function value 1.45591, Residual: 0.21372 
   iter =   0,   Function value 1.45591,   Residual: 0.21372 
-  iter =   1,   Function value 1.43049,   Residual: 0.132023 
-  iter =   2,   Function value 1.42067,   Residual: 0.0934364 
-  iter =   3,   Function value 1.41945,   Residual: 0.0918066 
-iter =   1, Function value 1.41776, Residual: 0.00507796 
-  iter =   0,   Function value 1.41776,   Residual: 0.00507796 
-  iter =   1,   Function value 1.41775,   Residual: 0.00177492 
-  iter =   2,   Function value 1.41775,   Residual: 0.00178519 
-  iter =   3,   Function value 1.41775,   Residual: 0.000938964 
+  iter =   0,   Function value 1.42961,   Residual: 0.150207 
+  iter =   1,   Function value 1.42481,   Residual: 0.154781 
+  iter =   2,   Function value 1.41983,   Residual: 0.0516731 
+  iter =   3,   Function value 1.41888,   Residual: 0.0332344 
+iter =   1, Function value 1.41775, Residual: 0.00157412 
+  iter =   0,   Function value 1.41775,   Residual: 0.00157412 
+  iter =   1,   Function value 1.41775,   Residual: 0.000526997 
+  iter =   2,   Function value 1.41775,   Residual: 0.000328923 
+  iter =   3,   Function value 1.41775,   Residual: 0.000126604 
 iter =   2, Function value 1.41775, Residual: < 1.0e-6 

@@ -435,6 +435,7 @@ PETSC_INTERN PetscErrorCode MatZeroRowsMapLocal_Private(Mat,PetscInt,const Petsc
 typedef struct _MatPartitioningOps *MatPartitioningOps;
 struct _MatPartitioningOps {
   PetscErrorCode (*apply)(MatPartitioning,IS*);
+  PetscErrorCode (*applynd)(MatPartitioning,IS*);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatPartitioning);
   PetscErrorCode (*destroy)(MatPartitioning);
   PetscErrorCode (*view)(MatPartitioning,PetscViewer);
@@ -449,6 +450,9 @@ struct _p_MatPartitioning {
   void        *data;
   PetscInt    setupcalled;
 };
+
+/* needed for parallel nested dissection by ParMetis and PTSCOTCH */
+PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
 
 /*
     Object for coarsen graphs
@@ -1248,6 +1252,18 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 */
 #define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(&(bt)))
 
+#define MatCheckSameLocalSize(A,ar1,B,ar2) \
+  PetscCheckSameComm(A,ar1,B,ar2); \
+  if ((A->rmap->n != B->rmap->n) || (A->cmap->n != B->cmap->n)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->n,A->cmap->n,ar2,B->rmap->n,B->cmap->n);
+  
+#define MatCheckSameSize(A,ar1,B,ar2) \
+  if ((A->rmap->N != B->rmap->N) || (A->cmap->N != B->cmap->N)) SETERRQ6(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%D x %D) != parameter # %d (%D x %D)",ar1,A->rmap->N,A->cmap->N,ar2,B->rmap->N,B->cmap->N);\
+  MatCheckSameLocalSize(A,ar1,B,ar2);
+  
+#define VecCheckMatCompatible(M,x,ar1,b,ar2)                               \
+  if (M->cmap->N != x->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix column global size %D",ar1,x->map->N,M->cmap->N);\
+  if (M->rmap->N != b->map->N) SETERRQ3(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %D != matrix row global size %D",ar2,b->map->N,M->rmap->N);
+
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>
 /*
@@ -1407,6 +1423,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
   llnk[3] = 2;               /* next for the head node */
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max,PetscInt **lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       lsize = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscRealloc(lsize*sizeof(PetscInt),lnk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1627,6 +1654,7 @@ PETSC_EXTERN PetscLogEvent MAT_GetOrdering;
 PETSC_EXTERN PetscLogEvent MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap;
 PETSC_EXTERN PetscLogEvent MAT_Partitioning;
+PETSC_EXTERN PetscLogEvent MAT_PartitioningND;
 PETSC_EXTERN PetscLogEvent MAT_Coarsen;
 PETSC_EXTERN PetscLogEvent MAT_ZeroEntries;
 PETSC_EXTERN PetscLogEvent MAT_Load;

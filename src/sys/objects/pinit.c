@@ -64,12 +64,12 @@ PetscSpinlock PetscCommSpinLock;
 */
 PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
-  PetscBool      flg1;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
+  if (flg) {
 #if defined(PETSC_USE_LOG)
     MPI_Comm comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
@@ -89,11 +89,11 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Components(void)
    Level: advanced
 
     Notes:
-    this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
+    this is called only by the PETSc Julia interface. Even though it might start MPI it sets the flag to
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
-     be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
+     be called multiple times from Julia without the problem of trying to initialize MPI more than once.
 
-     Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
+     Developer Note: Turns off PETSc signal handling to allow Julia to manage signals
 
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
 */
@@ -111,7 +111,7 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
 }
 
 /*
-      Used by MATLAB and Julia interface to get communicator
+      Used by Julia interface to get communicator
 */
 PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 {
@@ -380,6 +380,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 
+PETSC_INTERN int  PetscGlobalArgc;
+PETSC_INTERN char **PetscGlobalArgs;
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList;
@@ -392,6 +394,44 @@ PetscErrorCode PetscCitationsInitialize(void)
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Shrirang Abhyankar and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley and Dave A. May and Lois Curfman McInnes\n            and Richard Tran Mills and Todd Munson and Karl Rupp and Patrick Sanan\n            and Barry F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.9},\n  Institution = {Argonne National Laboratory},\n  Year = {2018}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
+
+PetscErrorCode  PetscSetProgramName(const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr  = PetscStrncpy(programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscGetProgramName - Gets the name of the running program.
+
+    Not Collective
+
+    Input Parameter:
+.   len - length of the string name
+
+    Output Parameter:
+.   name - the name of the running program
+
+   Level: advanced
+
+    Notes:
+    The name of the program is copied into the user-provided character
+    array of length len.  On some machines the program name includes
+    its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
+@*/
+PetscErrorCode  PetscGetProgramName(char name[],size_t len)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+   ierr = PetscStrncpy(name,programname,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,12 +493,12 @@ PetscErrorCode  PetscGetArguments(char ***args)
 
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
-  if (!argc) {*args = 0; PetscFunctionReturn(0);}
+  if (!argc) {*args = NULL; PetscFunctionReturn(0);}
   ierr = PetscMalloc1(argc,args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
   }
-  (*args)[argc-1] = 0;
+  (*args)[argc-1] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -605,6 +645,15 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
   }
   PetscFunctionReturn(0);
 }
+#endif
+
+#if defined(PETSC_HAVE_ADIOS)
+#include <adios.h>
+#include <adios_read.h>
+int64_t Petsc_adios_group;
+#endif
+#if defined(PETSC_HAVE_ADIOS2)
+#include <adios2_c.h>
 #endif
 
 /*@C
@@ -932,7 +981,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
      Print main application help message
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg);CHKERRQ(ierr);
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
@@ -1001,6 +1050,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE); CHKERRQ(ierr);}
 
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = adios_init_noxml(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",adios_stat_default);CHKERRQ(ierr);
+  ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);
+  ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ADIOS2)
+#endif
+
   /*
       Once we are completedly initialized then we can set this variables
   */
@@ -1066,7 +1124,7 @@ PetscErrorCode  PetscFreeMPIResources(void)
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_table - Calls PetscOptionsView()
++  -options_view - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
 .  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 .  -mpidump - Calls PetscMPIDump()
@@ -1100,7 +1158,12 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_ADIOS)
+  ierr = adios_read_finalize_method(ADIOS_READ_METHOD_BP_AGGREGATE);CHKERRQ(ierr);
+  ierr = adios_finalize(rank);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_ADIOS2)
+#endif
   ierr = PetscOptionsHasName(NULL,NULL,"-citations",&flg);CHKERRQ(ierr);
   if (flg) {
     char  *cits, filename[PETSC_MAX_PATH_LEN];

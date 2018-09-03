@@ -110,7 +110,7 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat AIJ %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatISGetMPIXAIJ(D,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatConvert(D,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat IS %g",err);
