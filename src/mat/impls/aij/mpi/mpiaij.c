@@ -2060,19 +2060,23 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  b = B->data;
-  A_diag = a->A;
-  B_diag = &b->A;
-  sub_B_diag = (Mat_SeqAIJ*)(*B_diag)->data;
+  b           = (Mat_MPIAIJ*)B->data;
+  A_diag      = a->A;
+  B_diag      = &b->A;
+  sub_B_diag  = (Mat_SeqAIJ*)(*B_diag)->data;
   A_diag_ncol = A_diag->cmap->N;
   B_diag_ilen = sub_B_diag->ilen;
-  B_diag_i = sub_B_diag->i;
+  B_diag_i    = sub_B_diag->i;
+
+  /* Set ilen for diagonal of B */
   for (i=0; i<A_diag_ncol; i++) {
     B_diag_ilen[i] = B_diag_i[i+1] - B_diag_i[i];
   }
+
   /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
   very quickly (=without using MatSetValues), because all writes are local. */
   ierr = MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag);CHKERRQ(ierr);
+
   /* copy over the B part */
   ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
   array = Bloc->a;
