@@ -403,10 +403,9 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
       }
     }
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
-
-    /* output y is parallel, ensure it is done -- would lose performance */
-    ierr = MPI_Barrier(mscomm);CHKERRQ(ierr);
   }
+  /* output y is parallel, ensure it is done -- would lose performance */
+  ierr = MPI_Barrier(mscomm);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
