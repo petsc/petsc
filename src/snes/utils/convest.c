@@ -297,7 +297,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   void          *ctx;
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
-  PetscInt      *dof, dim, Nf, f, Nr = ce->Nr, r;
+  PetscInt      *dof, dim, Nr = ce->Nr, r, f;
   PetscLogEvent  event;
   PetscErrorCode ierr;
 
@@ -306,17 +306,15 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*Nf, &dof);CHKERRQ(ierr);
+  ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
-  *alpha = 0.0;
+  for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
   /* Loop over meshes */
   ierr = PetscLogEventRegister("ConvEst Error", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   for (r = 0; r <= Nr; ++r) {
     PetscLogStage stage;
     char          stageName[PETSC_MAX_PATH_LEN];
-    PetscInt      f;
 
     ierr = PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r);CHKERRQ(ierr);
     ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);
@@ -361,13 +359,15 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
     if (ce->monitor) {
       PetscReal *errors = &ce->errors[r*ce->Nf];
 
-      ierr = PetscPrintf(comm, "L_2 Error: [");CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "L_2 Error: ");CHKERRQ(ierr);
+      if (ce->Nf > 1) {ierr = PetscPrintf(comm, "[");CHKERRQ(ierr);}
       for (f = 0; f < ce->Nf; ++f) {
         if (f > 0) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
         if (errors[f] < 1.0e-11) {ierr = PetscPrintf(comm, "< 1e-11");CHKERRQ(ierr);}
         else                     {ierr = PetscPrintf(comm, "%g", (double)errors[f]);CHKERRQ(ierr);}
       }
-      ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
+      if (ce->Nf > 1) {ierr = PetscPrintf(comm, "]");CHKERRQ(ierr);}
+      ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
     }
     /* Cleanup */
     ierr = VecDestroy(&u);CHKERRQ(ierr);
