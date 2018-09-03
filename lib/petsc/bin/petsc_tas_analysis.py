@@ -24,7 +24,7 @@ def dataProces(cmdLineArgs):
     """
     data = {}
     print(cmdLineArgs)
-    for module in cmdLineArgs:
+    for module in cmdLineArgs.file:
         module = importlib.import_module(module)
         Nf     = module.size
         dofs   = []
@@ -32,14 +32,16 @@ def dataProces(cmdLineArgs):
         flops  = []
         errors = []
         for f in range(Nf): errors.append([])
+        for f in range(Nf): dofs.append([])
         level  = 0
         while level >= 0:
             stageName = "ConvEst Refinement Level "+str(level)
             if stageName in module.Stages:
-                dofs.append(module.Stages[stageName]["ConvEst Error"][0]["dof"])
                 times.append(module.Stages[stageName]["SNESSolve"][0]["time"])
                 flops.append(module.Stages[stageName]["SNESSolve"][0]["flop"])
-                for f in range(Nf): errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
+                for f in range(Nf):
+                    dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
+                    errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
                 level = level + 1
             else:
                 level = -1
@@ -54,9 +56,10 @@ def dataProces(cmdLineArgs):
         data[module.__name__]["errors"] = errors
 
     print('**************data*******************')
-    for k,v in data.items():
+    print module.__name__
+    for k,v in data.get(module.__name__).items():
         print(" {} corresponds to {}".format(k,v))
-        print(v["dofs"])
+        #print(v["dofs"][0])
 
     return data
 
@@ -87,7 +90,7 @@ def graphGen(data):
     statScaleFig = plt.figure()
     statScaleHandles = []
     axStatScale = statScaleFig.add_subplot(1,1,1)
-    axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flope Rate (F/s)', title = 'Static Scaling')
+    axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flop Rate (F/s)', title = 'Static Scaling')
 
     efficFig = plt.figure()
     efficHandles = []
@@ -97,7 +100,8 @@ def graphGen(data):
     #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
     for fileName, value in data.items():
         #Least squares solution for Mesh Convergence
-        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(value['dofs'], value['errors'][0])
+        #TODO need to update index for multifield
+        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(value['dofs'][0], value['errors'][0])
 
 
         print("Least Squares Data")
@@ -105,20 +109,18 @@ def graphGen(data):
         print("Mesh Convergence")
         print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1]))
 
-        end = value['dofs'].size-1
-
-        slope = ((((value['dofs'][end]**lstSqMeshConv[0] * 10**lstSqMeshConv[1]))-((value['dofs'][0])**lstSqMeshConv[0] * 10**lstSqMeshConv[1])) \
-            /(value['dofs'][end]-value['dofs'][0]))
-
-        print('Slope: {} of {} data'.format(slope,fileName))
+        #TODO Command line argument for dim note needs to be neg
+        convRate = lstSqMeshConv[0] * -2
+        print('convRate: {} of {} data'.format(convRate,fileName))
 
         ##Start Mesh Convergance graph
-        slope = str(slope)
-        x, = axMeshConv.loglog(value['dofs'], value['errors'][0], label = fileName + ' Orig Data')
+        convRate = str(convRate)
+        #TODO have to update index for multiple fields
+        x, = axMeshConv.loglog(value['dofs'][0], value['errors'][0], label = fileName + ' Orig Data')
         meshConvOrigHandles.append(x)
-
-        y, = axMeshConv.loglog(value['dofs'], ((value['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
-                label = fileName + " Least Squares Slope =  " + slope )
+        #TODO need to update index for multifield
+        y, = axMeshConv.loglog(value['dofs'][0], ((value['dofs'][0]**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
+                label = fileName + " Convergence rate =  " + convRate )
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph
@@ -151,15 +153,6 @@ def graphGen(data):
     efficFig.show()
 
 
-def getLineStyles(counter):
-    switch = {
-            '0': 'b-',
-            '1': 'g--',
-            '2': 'r-.',
-            '3': 'y:',
-            '4': 'k'
-            }
-
 def leastSquares(x, y):
     """
     This function takes 2 numpy arrays of data and out puts the least squares solution,
@@ -171,7 +164,7 @@ def leastSquares(x, y):
        :param y: Contains the y values for the data.
        :type y: numpy array
 
-       :returns: alpha -- the slope fo the least squares solution
+       :returns: alpha -- the convRate fo the least squares solution
        :returns: c -- the constant of the least squares solution.
     """
 
@@ -179,6 +172,7 @@ def leastSquares(x, y):
     x = np.log10(x)
     y = np.log10(y)
     X = np.hstack((np.ones((x.shape[0],1)),x.reshape((x.shape[0],1))))
+    print y
 
 
     beta = np.dot(np.linalg.pinv(np.dot(X.transpose(),X)),X.transpose())
@@ -193,6 +187,7 @@ def leastSquares(x, y):
     return beta[1][0], beta[0][0]
 
 if __name__ == "__main__":
+    #TODO Need to add cmd line argument for
     cmdLine = argparse.ArgumentParser(
            description = 'This is part of the PETSc toolkit for evaluating solvers using\n\
                    Time-Accuracy-Size(TAS) spectrum analysis')
