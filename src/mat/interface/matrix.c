@@ -8214,6 +8214,8 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  MatCheckPreallocated(mat,1);
   if (nullsp) PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
@@ -8284,9 +8286,9 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   MatCheckPreallocated(mat,1);
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (nullsp) PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
+  if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->transnullsp);CHKERRQ(ierr);
   mat->transnullsp = nullsp;
   PetscFunctionReturn(0);
