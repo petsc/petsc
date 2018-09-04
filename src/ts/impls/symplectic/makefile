@@ -1,12 +1,11 @@
 
 ALL: lib
 
-DIRS     = explicit implicit pseudo python arkimex rosw eimex mimex bdf glee symplectic
-LOCDIR   = src/ts/impls/
 MANSEC   = TS
+LOCDIR   = src/ts/impls/symplectic/
+DIRS     = bsi
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-
 

@@ -77,6 +77,8 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->cfltime            = PETSC_MAX_REAL;
   t->cfltime_local      = PETSC_MAX_REAL;
 
+  t->num_rhs_splits     = 0;
+
   *ts = t;
   PetscFunctionReturn(0);
 }
