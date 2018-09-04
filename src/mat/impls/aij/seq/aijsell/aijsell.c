@@ -306,8 +306,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
 /*@C
    MatCreateSeqAIJSELL - Creates a sparse matrix of type SEQAIJSELL.
    This type inherits from AIJ and is largely identical, but keeps a "shadow"
-   copy of the matrix in SEQSELL format, which is used when performing
-   operations for which this format is more suitable.
+   copy of the matrix in SEQSELL format, which is used when this format
+   may be more suitable for a requested operation. Currently, SEQSELL format
+   is used for MatMult, MatMultTranspose, MatMultAdd, MatMultTransposeAdd,
+   and MatSOR operations.
 
    Collective on MPI_Comm
 
