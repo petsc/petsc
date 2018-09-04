@@ -48,6 +48,7 @@ class Configure(config.package.GNUPackage):
     # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
     if self.compilerFlags.debugging:
       args.append("--enable-fast=no")
+      args.append("--enable-error-messages=all")
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
     # MPICH configure errors out on certain standard configure arguments
