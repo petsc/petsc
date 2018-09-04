@@ -1392,11 +1392,12 @@ int main(int argc, char **argv)
   testset:
     requires: triangle !single
     nsize: 3
-    args: -interpolate -run_type full -petscspace_order 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2
+    args: -interpolate -run_type full -petscspace_order 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
     test:
       suffix: gmg_bddc
       args: -mg_levels_pc_type jacobi
     test:
+      filter: sed -e "s/iterations 1/iterations 4/g"
       suffix: gmg_bddc_lev
       args: -mg_levels_pc_type bddc
 
