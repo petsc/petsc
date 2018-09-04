@@ -25,9 +25,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJSELL(Mat);
-/* Uncomment below line when MatCreate_MPIAIJSELL() is completed. --RTM
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJSELL(Mat);
-*/
 
 #if defined PETSC_HAVE_MKL_SPARSE
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat);
@@ -107,9 +105,7 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM);CHKERRQ(ierr);
 
   ierr = MatRegisterBaseName(MATAIJSELL,MATSEQAIJSELL,MATMPIAIJSELL);CHKERRQ(ierr);
-/* Uncomment when MatCreate_MPIAIJSELL has been created. --RTM
   ierr = MatRegister(MATMPIAIJSELL,     MatCreate_MPIAIJSELL);CHKERRQ(ierr);
-*/
   ierr = MatRegister(MATSEQAIJSELL,     MatCreate_SeqAIJSELL);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_MKL_SPARSE

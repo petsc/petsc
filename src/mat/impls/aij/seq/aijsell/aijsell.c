@@ -310,6 +310,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
    may be more suitable for a requested operation. Currently, SEQSELL format
    is used for MatMult, MatMultTranspose, MatMultAdd, MatMultTransposeAdd,
    and MatSOR operations.
+   Because SEQAIJSELL is a subtype of SEQAIJ, the option "-mat_seqaij_type seqaijsell" can be used to make
+   sequential AIJ matrices default to being instances of MATSEQAIJSELL.
 
    Collective on MPI_Comm
 
@@ -332,7 +334,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A,MatType type,MatR
 
    Level: intermediate
 
-.keywords: matrix, sparse, parallel
+.keywords: matrix, sparse
 
 .seealso: MatCreate(), MatCreateMPIAIJSELL(), MatSetValues()
 @*/
