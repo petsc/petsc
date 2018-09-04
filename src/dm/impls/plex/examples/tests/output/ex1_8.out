@@ -38,6 +38,22 @@ Simplicial Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
 \path (2.,0.5) node(20_1) [draw,shape=circle,color=orange] {20};
 \path (0.5,0.5) node(21_1) [draw,shape=circle,color=orange] {21};
 \path (1.5,0.5) node(22_1) [draw,shape=circle,color=orange] {22};
+\draw[color=gray] (8_0) -- (14_0) -- (21_0) -- (18_0) -- (8_0);
+\draw[color=gray] (14_0) -- (9_0) -- (19_0) -- (21_0) -- (14_0);
+\draw[color=gray] (21_0) -- (19_0) -- (12_0) -- (16_0) -- (21_0);
+\draw[color=gray] (18_0) -- (21_0) -- (16_0) -- (11_0) -- (18_0);
+\draw[color=gray] (9_0) -- (15_0) -- (22_0) -- (19_0) -- (9_0);
+\draw[color=gray] (15_0) -- (10_0) -- (20_0) -- (22_0) -- (15_0);
+\draw[color=gray] (22_0) -- (20_0) -- (13_0) -- (17_0) -- (22_0);
+\draw[color=gray] (19_0) -- (22_0) -- (17_0) -- (12_0) -- (19_0);
+\path (0.25,1.25) node(0_0) [draw,shape=circle,color=gray] {0};
+\path (0.75,1.25) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (0.75,1.75) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (0.25,1.75) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (1.25,1.25) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (1.75,1.25) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (1.75,1.75) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (1.25,1.75) node(7_0) [draw,shape=circle,color=gray] {7};
 \path
 (0.25,1.) node(23_0) [draw,shape=circle,color=gray] {23} --
 (0.75,1.) node(24_0) [draw,shape=circle,color=gray] {24} --
@@ -61,6 +77,22 @@ Simplicial Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
 (1.75,1.5) node(42_0) [draw,shape=circle,color=gray] {42} --
 (1.5,1.75) node(43_0) [draw,shape=circle,color=gray] {43} --
 (1.25,1.5) node(44_0) [draw,shape=circle,color=gray] {44} --
+\draw[color=orange] (8_1) -- (14_1) -- (21_1) -- (18_1) -- (8_1);
+\draw[color=orange] (14_1) -- (9_1) -- (19_1) -- (21_1) -- (14_1);
+\draw[color=orange] (21_1) -- (19_1) -- (12_1) -- (16_1) -- (21_1);
+\draw[color=orange] (18_1) -- (21_1) -- (16_1) -- (11_1) -- (18_1);
+\draw[color=orange] (9_1) -- (15_1) -- (22_1) -- (19_1) -- (9_1);
+\draw[color=orange] (15_1) -- (10_1) -- (20_1) -- (22_1) -- (15_1);
+\draw[color=orange] (22_1) -- (20_1) -- (13_1) -- (17_1) -- (22_1);
+\draw[color=orange] (19_1) -- (22_1) -- (17_1) -- (12_1) -- (19_1);
+\path (0.25,0.25) node(0_1) [draw,shape=circle,color=orange] {0};
+\path (0.75,0.25) node(1_1) [draw,shape=circle,color=orange] {1};
+\path (0.75,0.75) node(2_1) [draw,shape=circle,color=orange] {2};
+\path (0.25,0.75) node(3_1) [draw,shape=circle,color=orange] {3};
+\path (1.25,0.25) node(4_1) [draw,shape=circle,color=orange] {4};
+\path (1.75,0.25) node(5_1) [draw,shape=circle,color=orange] {5};
+\path (1.75,0.75) node(6_1) [draw,shape=circle,color=orange] {6};
+\path (1.25,0.75) node(7_1) [draw,shape=circle,color=orange] {7};
 (0.25,0.) node(23_1) [draw,shape=circle,color=orange] {23} --
 (0.75,0.) node(24_1) [draw,shape=circle,color=orange] {24} --
 (1.25,0.) node(25_1) [draw,shape=circle,color=orange] {25} --
@@ -84,21 +116,5 @@ Simplicial Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
 (1.5,0.75) node(43_1) [draw,shape=circle,color=orange] {43} --
 (1.25,0.5) node(44_1) [draw,shape=circle,color=orange] {44} --
 (0,0);
-\draw[color=gray] (8_0) -- (14_0) -- (21_0) -- (18_0) -- (8_0);
-\draw[color=gray] (14_0) -- (9_0) -- (19_0) -- (21_0) -- (14_0);
-\draw[color=gray] (21_0) -- (19_0) -- (12_0) -- (16_0) -- (21_0);
-\draw[color=gray] (18_0) -- (21_0) -- (16_0) -- (11_0) -- (18_0);
-\draw[color=gray] (9_0) -- (15_0) -- (22_0) -- (19_0) -- (9_0);
-\draw[color=gray] (15_0) -- (10_0) -- (20_0) -- (22_0) -- (15_0);
-\draw[color=gray] (22_0) -- (20_0) -- (13_0) -- (17_0) -- (22_0);
-\draw[color=gray] (19_0) -- (22_0) -- (17_0) -- (12_0) -- (19_0);
-\draw[color=orange] (8_1) -- (14_1) -- (21_1) -- (18_1) -- (8_1);
-\draw[color=orange] (14_1) -- (9_1) -- (19_1) -- (21_1) -- (14_1);
-\draw[color=orange] (21_1) -- (19_1) -- (12_1) -- (16_1) -- (21_1);
-\draw[color=orange] (18_1) -- (21_1) -- (16_1) -- (11_1) -- (18_1);
-\draw[color=orange] (9_1) -- (15_1) -- (22_1) -- (19_1) -- (9_1);
-\draw[color=orange] (15_1) -- (10_1) -- (20_1) -- (22_1) -- (15_1);
-\draw[color=orange] (22_1) -- (20_1) -- (13_1) -- (17_1) -- (22_1);
-\draw[color=orange] (19_1) -- (22_1) -- (17_1) -- (12_1) -- (19_1);
 \end{tikzpicture}
 \end{document}
