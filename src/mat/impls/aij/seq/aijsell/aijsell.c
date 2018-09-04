@@ -8,6 +8,9 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sell/seq/sell.h>
 
+/* Logging support */
+PetscLogEvent MAT_Convert;
+
 typedef struct {
   Mat S; /* The SELL formatted "shadow" matrix. */
   PetscBool eager_shadow;
@@ -101,11 +104,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
     PetscFunctionReturn(0);
   }
 
+  ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   if (aijsell->S) {
     ierr = MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_REUSE_MATRIX,&aijsell->S);CHKERRQ(ierr);
   } else {
     ierr = MatConvert_SeqAIJ_SeqSELL(A,MATSEQSELL,MAT_INITIAL_MATRIX,&aijsell->S);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
 
   /* Record the ObjectState so that we can tell when the shadow matrix needs updating */
   ierr = PetscObjectStateGet((PetscObject)A,&aijsell->state);CHKERRQ(ierr);
