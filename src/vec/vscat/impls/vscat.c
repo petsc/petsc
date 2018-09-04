@@ -1059,11 +1059,6 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
   if (ctx->beginandendtogether) {
     ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
-  ctx->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
-  if (ctx->packtogether) {
-    ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
-  }
   *newctx = ctx;
   PetscFunctionReturn(0);
 }

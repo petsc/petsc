@@ -140,11 +140,6 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter vscat)
     ierr = PetscInfo(vscat,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
 
-  vscat->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsBool("-vecscatter_packtogether","Pack all messages before sending","VecScatterCreate",vscat->packtogether,&vscat->packtogether,NULL);CHKERRQ(ierr);
-  if (vscat->packtogether) {
-    ierr = PetscInfo(vscat,"Pack all messages before sending\n");CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -212,34 +207,10 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
    Options Database Keys: (uses regular MPI_Sends by default)
 .  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
-.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init()
-.  -vecscatter_rsend           - use ready receiver mode for MPI sends
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
-.  -vecscatter_sendfirst    - Posts sends before receives
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
-.  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
-.  -vecscatter_window       - Use MPI 2 window operations to move data
-.  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
--  -vecscatter_reproduce    - insure that the order of the communications are done the same for each scatter, this under certain circumstances
                               will make the results of scatters deterministic when otherwise they are not (it may be slower also).
-
-$
-$                                                                                    --When packing is used--
-$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*
-$                                _nopack                   _sendfirst    _merge      _packtogether                -vecscatter_
-$ ----------------------------------------------------------------------------------------------------------------------------
-$    Message passing    Send       p                           X            X           X         always
-$                      Ssend       p                           X            X           X         always          _ssend
-$                      Rsend       p                        nonsense        X           X         always          _rsend
-$    AlltoAll  v or w              X                        nonsense     always         X         nonsense        _alltoall
-$    MPI_Win                       p                        nonsense        p           p         nonsense        _window
-$
-$   Since persistent sends and receives require a constant memory address they can only be used when data is packed into the work vector
-$   because the in and out array may be different for each call to VecScatterBegin/End().
-$
-$    p indicates possible, but not implemented. X indicates implemented
-$
 
     Level: intermediate
 
@@ -252,10 +223,10 @@ $
    context until the VecScatterEnd() has been called on the first VecScatterBegin().
    In this case a separate VecScatter is needed for each concurrent scatter.
 
-   Currently the MPI_Send(), MPI_Ssend() and MPI_Rsend() all use PERSISTENT versions.
+   Currently the MPI_Send() use PERSISTENT versions.
    (this unfortunately requires that the same in and out arrays be used for each use, this
-    is why when not using MPI_alltoallw() we always need to pack the input into the work array before sending
-    and unpack upon receeving instead of using MPI datatypes to avoid the packing/unpacking).
+    is why  we always need to pack the input into the work array before sending
+    and unpack upon receiving instead of using MPI datatypes to avoid the packing/unpacking).
 
    Both ix and iy cannot be NULL at the same time.
 
