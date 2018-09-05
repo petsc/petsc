@@ -1212,12 +1212,12 @@ int main(int argc, char **argv)
   test:
     suffix: bd_int_0
     requires: triangle
-    args: -run_type test -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
+    args: -run_type test -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -bd_integral -dm_view -quiet
 
   test:
     suffix: bd_int_1
     requires: triangle
-    args: -run_type test -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
+    args: -run_type test -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -bd_integral -dm_view -quiet
 
   # 3D serial P1 test 9-12
   test:
