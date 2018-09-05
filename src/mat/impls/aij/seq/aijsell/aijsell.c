@@ -8,9 +8,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sell/seq/sell.h>
 
-/* Logging support */
-PetscLogEvent MAT_Convert;
-
 typedef struct {
   Mat S; /* The SELL formatted "shadow" matrix. */
   PetscBool eager_shadow;
