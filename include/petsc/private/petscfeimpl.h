@@ -48,12 +48,12 @@ typedef struct {
 } PetscSpace_Poly;
 
 typedef struct {
-  PetscSpace *spaces;
-  PetscInt    numSpaces;
+  PetscSpace *tensspaces;
+  PetscInt    numTensSpaces;
   PetscInt    dim;
   PetscBool   uniform;
   PetscBool   setupCalled;
-  PetscSpace *subspaces;    /* Height subspaces */
+  PetscSpace *heightsubspaces;    /* Height subspaces */
 } PetscSpace_Tensor;
 
 typedef struct {
