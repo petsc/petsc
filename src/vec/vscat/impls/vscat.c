@@ -5,7 +5,7 @@
   some special cases for parallel scatters.
 */
 
-#include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
+#include <petsc/private/vecscatterimpl.h>    /*I   "petscvec.h"    I*/
 
 #if defined(PETSC_HAVE_VECCUDA)
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
