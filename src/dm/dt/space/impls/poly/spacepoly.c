@@ -45,6 +45,7 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (poly->setupCalled) PetscFunctionReturn(0);
   ierr = PetscMalloc1(ndegree, &poly->degrees);CHKERRQ(ierr);
   for (deg = 0; deg < ndegree; ++deg) poly->degrees[deg] = deg;
   if (poly->tensor) {
@@ -52,6 +53,7 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   } else {
     sp->maxDegree = sp->degree;
   }
+  poly->setupCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
