@@ -64,10 +64,11 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-- create_func - The creation routine itself
+- create_func - The creation routine for the implementation type
 
   Notes:
-  PetscSpaceRegister() may be called multiple times to add several user-defined PetscSpaces
+  PetscSpaceRegister() may be called multiple times to add several user-defined types of PetscSpaces. The creation function is called
+  when the type is set to 'name'.
 
   Sample usage:
 .vb
