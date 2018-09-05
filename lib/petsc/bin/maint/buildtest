@@ -164,6 +164,7 @@ endif
 
 #cleanup some generated files to reduce disk usage
 find ${nPETSC_ARCH} -type f \( -name "*.pdb" -o -name "*.ilk" \) -exec rm {} \;
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR cleantest >>& examples.log
 
 echo "Finishing examples run on $MACH $nPETSC_ARCH $nPETSC_DIR at `date +'%a, %d %b %Y %H:%M:%S %z'`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
