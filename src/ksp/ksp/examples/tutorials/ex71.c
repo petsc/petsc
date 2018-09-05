@@ -423,7 +423,7 @@ int main(int argc,char **args)
  test:
    requires: ml
    nsize: 8
-   filter: grep -v "variant HERMITIAN" | sed -e "s/nonzeros=575/nonzeros=576/g"
+   filter: grep -v "variant HERMITIAN" | sed -e "s/nonzeros=575/nonzeros=576/g" -e "s/found 6 nodes/found 5 nodes/g"
    suffix: bddc_elast_dir_approx
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type ml -ksp_monitor_short -ksp_converged_reason -pc_bddc_dirichlet_approximate
  test:
