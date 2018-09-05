@@ -150,6 +150,7 @@ struct _p_KSP {
   Vec          diagonal;     /* 1/sqrt(diag of matrix) */
   Vec          truediagonal;
 
+  PetscInt     setfromoptionscalled;
   PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */

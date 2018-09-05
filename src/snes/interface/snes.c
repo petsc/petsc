@@ -766,7 +766,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESSetOptionsPrefix()
+.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions()
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
@@ -988,6 +988,30 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (pcset && (!snes->npc)) {
     ierr = SNESGetNPC(snes, &snes->npc);CHKERRQ(ierr);
   }
+  snes->setfromoptionscalled++;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESResetFromOptions - Sets various SNES and KSP parameters from user options ONLY if the SNES was previously set from options
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, options, database
+
+.seealso: SNESSetFromOptions(), SNESSetOptionsPrefix()
+@*/
+PetscErrorCode SNESResetFromOptions(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->setfromoptionscalled) {ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1633,6 +1657,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->vec_func_init_set = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->npcside           = PC_RIGHT;
+  snes->setfromoptionscalled = 0;
 
   snes->mf          = PETSC_FALSE;
   snes->mf_operator = PETSC_FALSE;

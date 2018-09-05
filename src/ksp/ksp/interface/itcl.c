@@ -386,7 +386,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 
 .keywords: KSP, set, from, options, database
 
-.seealso: KSPSetUseFischerGuess()
+.seealso: KSPSetOptionsPrefix(), KSPResetFromOptions(), KSPSetUseFischerGuess()
 
 @*/
 PetscErrorCode  KSPSetFromOptions(KSP ksp)
@@ -673,5 +673,29 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ksp->setfromoptionscalled++;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPResetFromOptions - Sets various KSP parameters from user options ONLY if the KSP was previously set from options
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Level: beginner
+
+.keywords: KSP, linear, set, options, database
+
+.seealso: KSPSetFromOptions(), KSPSetOptionsPrefix()
+@*/
+PetscErrorCode KSPResetFromOptions(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ksp->setfromoptionscalled) {ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
