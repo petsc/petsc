@@ -182,17 +182,9 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
       ldfp->yts[lmvm->k] = PetscRealPart(curvature);
       ldfp->yty[lmvm->k] = PetscRealPart(ytytmp);
       ldfp->sts[lmvm->k] = PetscRealPart(ststmp);
-      /* Update the scaling */
-      switch (ldfp->scale_type) {
-      case SYMBRDN_SCALE_SCALAR:
+      /* Compute the scalar scale if necessary */
+      if (ldfp->scale_type == SYMBRDN_SCALE_SCALAR) {
         ierr = MatSymBrdnComputeJ0Scalar(B);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_DIAG:
-        ierr = MatLMVMUpdate(ldfp->D, X, F);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_NONE:
-      default:
-        break;
       }
     } else {
       /* Update is bad, skip it */
@@ -215,6 +207,11 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
     default:
       break;
     }
+  }
+  
+  /* Update the scaling */
+  if (ldfp->scale_type == SYMBRDN_SCALE_DIAG) {
+    ierr = MatLMVMUpdate(ldfp->D, X, F);CHKERRQ(ierr);
   }
   
   if (ldfp->watchdog > ldfp->max_seq_rejects) {

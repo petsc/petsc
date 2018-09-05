@@ -4,13 +4,12 @@ mx: 10     my: 8
 
 iter =   0, Function value 1.45591, Residual: 0.21372 
 iter =   1, Function value 1.43049, Residual: 0.132023 
-iter =   2, Function value 1.42105, Residual: 0.110296 
-iter =   3, Function value 1.41847, Residual: 0.0630839 
-iter =   4, Function value 1.41778, Residual: 0.0100295 
-iter =   5, Function value 1.41776, Residual: 0.00290309 
-iter =   6, Function value 1.41776, Residual: 0.00168024 
-iter =   7, Function value 1.41776, Residual: 0.00109313 
-iter =   8, Function value 1.41776, Residual: 0.000952721 
+iter =   2, Function value 1.42069, Residual: 0.0887699 
+iter =   3, Function value 1.41857, Residual: 0.0676407 
+iter =   4, Function value 1.41781, Residual: 0.0161113 
+iter =   5, Function value 1.41776, Residual: 0.00313094 
+iter =   6, Function value 1.41776, Residual: 0.00280956 
+iter =   7, Function value 1.41776, Residual: 0.000935101 
 Tao Object: 1 MPI processes
   type: lmvm
     Gradient steps: 1
@@ -23,8 +22,8 @@ Tao Object: 1 MPI processes
     total number of function/gradient evaluations=1
     Termination reason: 1
   convergence tolerances: gatol=0.001,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=0.000952721
+  Residual in Function/Gradient:=0.000935101
   Objective value=1.41776
-  total number of iterations=8,                          (max: 2000)
-  total number of function/gradient evaluations=9,      (max: 4000)
+  total number of iterations=7,                          (max: 2000)
+  total number of function/gradient evaluations=8,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol

@@ -38,8 +38,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
   Mat_DiagBrdn      *ldb = (Mat_DiagBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i, start;
-  PetscScalar       yty = 0.0, yts = 0.0, sts = 0.0;
-  PetscScalar       ytDy, stDs, ytDs;
+  PetscScalar       yty, ststmp, curvature, ytDy, stDs, ytDs;
   PetscReal         curvtol, sigma, yy_sum, ss_sum, ys_sum, denom;
 
   PetscFunctionBegin;
@@ -48,34 +47,34 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     ierr = VecAYPX(lmvm->Xprev, -1.0, X);CHKERRQ(ierr);
     ierr = VecAYPX(lmvm->Fprev, -1.0, F);CHKERRQ(ierr);
-    /* Accept the update */
-    old_k = lmvm->k;
-    ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
-    /* If we hit the memory limit, shift the yty and yts arrays */
-    if (old_k == lmvm->k) {
-      for (i = 0; i <= lmvm->k-1; ++i) {
-        ldb->yty[i] = ldb->yty[i+1];
-        ldb->yts[i] = ldb->yts[i+1];
-        ldb->sts[i] = ldb->sts[i+1];
-      }
-    }
-    /* Accumulate the latest yTy and yTs dot products */
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    ierr = VecDotBegin(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->Y[lmvm->k], lmvm->S[lmvm->k], &yts);CHKERRQ(ierr);
-    ierr = VecDotEnd(lmvm->S[lmvm->k], lmvm->S[lmvm->k], &sts);CHKERRQ(ierr);
-    ldb->yty[lmvm->k] = PetscRealPart(yty);
-    ldb->yts[lmvm->k] = PetscRealPart(yts);
-    ldb->sts[lmvm->k] = PetscRealPart(sts);
-
-    if (ldb->sts[lmvm->k] < lmvm->eps){
+    /* Compute tolerance for accepting the update */
+    ierr = VecDotBegin(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
+    ierr = VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
+    ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
+    if (PetscRealPart(ststmp) < lmvm->eps){
       curvtol = 0.0;
     } else {
-      curvtol = lmvm->eps * PetscRealPart(sts);
+      curvtol = lmvm->eps * PetscRealPart(ststmp);
     }
-    if (PetscRealPart(yts) > curvtol) {
+    /* Test the curvature for the update */
+    if (PetscRealPart(curvature) > curvtol) {
+      /* Update is good so we accept it */
+      old_k = lmvm->k;
+      ierr = MatUpdateKernel_LMVM(B, lmvm->Xprev, lmvm->Fprev);CHKERRQ(ierr);
+      /* If we hit the memory limit, shift the yty and yts arrays */
+      if (old_k == lmvm->k) {
+        for (i = 0; i <= lmvm->k-1; ++i) {
+          ldb->yty[i] = ldb->yty[i+1];
+          ldb->yts[i] = ldb->yts[i+1];
+          ldb->sts[i] = ldb->sts[i+1];
+        }
+      }
+      /* Accept dot products into the history */
+      ierr = VecDot(lmvm->Y[lmvm->k], lmvm->Y[lmvm->k], &yty);CHKERRQ(ierr);
+      ldb->yty[lmvm->k] = PetscRealPart(yty);
+      ldb->yts[lmvm->k] = PetscRealPart(curvature);
+      ldb->sts[lmvm->k] = PetscRealPart(ststmp);
       if (ldb->forward) {
         /* We are doing diagonal scaling of the forward Hessian B */
         /*  BFGS = DFP = inv(D); */

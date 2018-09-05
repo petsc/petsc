@@ -3,12 +3,4 @@
 mx: 10     my: 10   
 
 iter =   0, Function value -0.330579, Residual: 0.728961 
-iter =   1, Function value -0.391218, Residual: 0.386209 
-iter =   2, Function value -0.416588, Residual: 0.23073 
-iter =   3, Function value -0.424669, Residual: 0.10396 
-iter =   4, Function value -0.426842, Residual: 0.0414786 
-iter =   5, Function value -0.427412, Residual: 0.0272494 
-iter =   6, Function value -0.427612, Residual: 0.0352933 
-iter =   7, Function value -0.42768, Residual: 0.023981 
-iter =   8, Function value -0.427744, Residual: 0.00141576 
-iter =   9, Function value -0.427745, Residual: 0.000590677 
+iter =   1, Function value -0.427745, Residual: 5.69446e-06 

@@ -191,17 +191,9 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
       lbfgs->yts[lmvm->k] = PetscRealPart(curvature);
       lbfgs->yty[lmvm->k] = PetscRealPart(ytytmp);
       lbfgs->sts[lmvm->k] = PetscRealPart(ststmp);
-      /* Update the scaling */
-      switch (lbfgs->scale_type) {
-      case SYMBRDN_SCALE_SCALAR:
+      /* Compute the scalar scale if necessary */
+      if (lbfgs->scale_type == SYMBRDN_SCALE_SCALAR) {
         ierr = MatSymBrdnComputeJ0Scalar(B);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_DIAG:
-        ierr = MatLMVMUpdate(lbfgs->D, X, F);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_NONE:
-      default:
-        break;
       }
     } else {
       /* Update is bad, skip it */
@@ -224,6 +216,11 @@ static PetscErrorCode MatUpdate_LMVMBFGS(Mat B, Vec X, Vec F)
     default:
       break;
     }
+  }
+  
+  /* Update the scaling */
+  if (lbfgs->scale_type == SYMBRDN_SCALE_DIAG) {
+    ierr = MatLMVMUpdate(lbfgs->D, X, F);CHKERRQ(ierr);
   }
   
   if (lbfgs->watchdog > lbfgs->max_seq_rejects) {
