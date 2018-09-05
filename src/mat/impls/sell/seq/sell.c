@@ -63,8 +63,8 @@
  Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
  entries or columns indices.
 
- The maximum number of nonzeos in any row should be as accuate as possible.
- If it is underesitmated, you will get bad performance due to reallocation
+ The maximum number of nonzeos in any row should be as accurate as possible.
+ If it is underestimated, you will get bad performance due to reallocation
  (MatSeqXSELLReallocateSELL).
 
  Level: intermediate
