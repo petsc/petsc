@@ -1309,7 +1309,6 @@ static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
   switch (viewer->format) {
   case PETSC_VIEWER_DEFAULT:
   case PETSC_VIEWER_ASCII_INFO:
-  case PETSC_VIEWER_ASCII_INFO_DETAIL:
   {
     PetscInt   dim;
     const char *name;
@@ -1318,6 +1317,13 @@ static PetscErrorCode DMView_ASCII_pforest(PetscObject odm, PetscViewer viewer)
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     if (name) {ierr = PetscViewerASCIIPrintf(viewer, "Forest %s in %D dimensions:\n", name, dim);CHKERRQ(ierr);}
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Forest in %D dimensions:\n", dim);CHKERRQ(ierr);}
+  }
+  case PETSC_VIEWER_ASCII_INFO_DETAIL:
+  {
+    DM plex;
+
+    ierr = DMPforestGetPlex(dm, &plex);CHKERRQ(ierr);
+    ierr = DMView(plex, viewer);CHKERRQ(ierr);
   }
   break;
   default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
