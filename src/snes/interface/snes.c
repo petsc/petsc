@@ -4421,6 +4421,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
       ierr = SNESReset(snes);CHKERRQ(ierr);
       ierr = SNESSetDM(snes,fine);CHKERRQ(ierr);
+      ierr = SNESResetFromOptions(snes);CHKERRQ(ierr);
       ierr = DMDestroy(&fine);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)));CHKERRQ(ierr);
     }
