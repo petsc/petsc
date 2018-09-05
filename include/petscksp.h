@@ -292,6 +292,7 @@ PETSC_EXTERN PetscErrorCode KSPBCGSLSetEll(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP,PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
+PETSC_EXTERN PetscErrorCode KSPResetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP,PetscInt,PetscReal,PetscViewerAndFormat*);
