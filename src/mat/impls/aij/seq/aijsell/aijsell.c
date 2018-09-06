@@ -9,8 +9,8 @@
 #include <../src/mat/impls/sell/seq/sell.h>
 
 typedef struct {
-  Mat S; /* The SELL formatted "shadow" matrix. */
-  PetscBool eager_shadow;
+  Mat              S; /* The SELL formatted "shadow" matrix. */
+  PetscBool        eager_shadow;
   PetscObjectState state; /* State of the matrix when shadow matrix was last constructed. */
 } Mat_SeqAIJSELL;
 
@@ -45,10 +45,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A,MatType type,MatR
 
   if (reuse == MAT_INITIAL_MATRIX) aijsell = (Mat_SeqAIJSELL*)B->spptr;
 
-  /* Clean up the Mat_SeqAIJSELL data structure. */
-  if(aijsell->S) {
-    ierr = MatDestroy(&aijsell->S);CHKERRQ(ierr);
-  }
+  /* Clean up the Mat_SeqAIJSELL data structure.
+   * Note that MatDestroy() simply returns if passed a NULL value, so it's OK to call even if the shadow matrix was never constructed. */
+  ierr = MatDestroy(&aijsell->S);CHKERRQ(ierr);
   ierr = PetscFree(B->spptr);CHKERRQ(ierr);
 
   /* Change the type of B to MATSEQAIJ. */
@@ -69,9 +68,7 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
    * spptr pointer. */
   if (aijsell) {
     /* Clean up everything in the Mat_SeqAIJSELL data structure, then free A->spptr. */
-    if (aijsell->S) {
-      ierr = MatDestroy(&aijsell->S);CHKERRQ(ierr);
-    }
+    ierr = MatDestroy(&aijsell->S);CHKERRQ(ierr);
     ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   }
 
@@ -94,7 +91,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
   PetscObjectState state;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
   if (aijsell->S && aijsell->state == state) {
     /* The existing shadow matrix is up-to-date, so simply exit. */
@@ -138,7 +134,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJSELL  *aijsell;
+  Mat_SeqAIJSELL  *aijsell = (Mat_SeqAIJSELL*)A->spptr;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -158,7 +154,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
 
   /* If the user has requested "eager" shadowing, create the SELL shadow matrix (if needed; the function checks).
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
-  aijsell = (Mat_SeqAIJSELL*) A->spptr;
   if (aijsell->eager_shadow) {
     ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   }
@@ -168,14 +163,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
 
 PetscErrorCode MatMult_SeqAIJSELL(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJSELL    *aijsell=(Mat_SeqAIJSELL*)A->spptr;
+  Mat_SeqAIJSELL    *aijsell = (Mat_SeqAIJSELL*)A->spptr;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatMult_SeqSELL(aijsell->S,xx,yy);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -185,10 +178,8 @@ PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatMultTranspose_SeqSELL(aijsell->S,xx,yy);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -198,10 +189,8 @@ PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatMultAdd_SeqSELL(aijsell->S,xx,yy,zz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -211,10 +200,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqSELL(aijsell->S,xx,yy,zz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -224,10 +211,8 @@ PetscErrorCode MatSOR_SeqAIJSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   ierr = MatSeqAIJSELL_build_shadow(A);CHKERRQ(ierr);
   ierr = MatSOR_SeqSELL(aijsell->S,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
