@@ -95,6 +95,7 @@ typedef const char* MatType;
 #define MATLMVMBRDN        "lmvmbrdn"
 #define MATLMVMBADBRDN     "lmvmbadbrdn"
 #define MATLMVMSYMBRDN     "lmvmsymbrdn"
+#define MATLMVMSYMBADBRDN  "lmvmsymbadbrdn"
 #define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
 
 /*J
