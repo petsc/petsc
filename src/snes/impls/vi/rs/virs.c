@@ -297,6 +297,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   PetscFunctionBegin;
   ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
   ierr = KSPReset(snesksp);CHKERRQ(ierr);
+  ierr = KSPResetFromOptions(snesksp);CHKERRQ(ierr);
 
   /*
   KSP                    kspnew;
