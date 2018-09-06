@@ -130,5 +130,5 @@ int main(int argc, char **argv)
 /*TEST
   test:
     suffix: 0
-    args: -petscspace_order 1 -trace_fe_view
+    args: -petscspace_degree 1 -trace_fe_view
 TEST*/

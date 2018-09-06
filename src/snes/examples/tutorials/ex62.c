@@ -586,275 +586,275 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 1
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 2
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 3
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   # 2D serial P2 tests 4-5
   test:
     suffix: 4
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 5
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   # 2D serial P3 tests
   test:
     suffix: 2d_p3_0
     requires: triangle
-    args: -run_type test -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
+    args: -run_type test -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 3 -pres_petscspace_degree 2
   test:
     suffix: 2d_p3_1
     requires: triangle !single
-    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
+    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 3 -pres_petscspace_degree 2
   # Parallel tests 6-17
   test:
     suffix: 6
     requires: triangle
     nsize: 2
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 7
     requires: triangle
     nsize: 3
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 8
     requires: triangle
     nsize: 5
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 9
     requires: triangle
     nsize: 2
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 10
     requires: triangle
     nsize: 3
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 11
     requires: triangle
     nsize: 5
-    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 12
     requires: triangle
     nsize: 2
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 13
     requires: triangle
     nsize: 3
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 14
     requires: triangle
     nsize: 5
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 15
     requires: triangle
     nsize: 2
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 16
     requires: triangle
     nsize: 3
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   test:
     suffix: 17
     requires: triangle
     nsize: 5
-    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -dm_plex_print_fem 1
   # 3D serial P1 tests 43-46
   test:
     suffix: 43
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 44
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 45
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 46
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   # Full solutions 18-29
   test:
     suffix: 18
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 19
     requires: triangle !single
     nsize: 2
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 20
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 3
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 20_parmetis
     requires: parmetis triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 3
-    args: -run_type full -petscpartitioner_type parmetis -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type parmetis -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 21
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 5
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 22
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 23
     requires: triangle !single
     nsize: 2
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 24
     requires: triangle !single
     nsize: 3
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 25
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=11/total number of linear solver iterations=12/g"
     nsize: 5
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 26
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 27
     requires: triangle !single
     nsize: 2
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 28
     requires: triangle !single
     nsize: 3
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   test:
     suffix: 29
     requires: triangle !single
     nsize: 5
-    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
+    args: -run_type full -petscpartitioner_type simple -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view
   # Full solutions with quads
   #   FULL Schur with LU/Jacobi
   test:
     suffix: quad_q2q1_full
     requires: !single
-    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   test:
     suffix: quad_q2p1_full
     requires: !single
-    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   # Stokes preconditioners 30-36
   #   Jacobi
   test:
     suffix: 30
     requires: triangle !single
     filter:  sed -e "s/total number of linear solver iterations=756/total number of linear solver iterations=757/g" -e "s/total number of linear solver iterations=758/total number of linear solver iterations=757/g"
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}
   test:
     suffix: 31
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-4 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-4 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
   test:
     suffix: 32
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Diagonal Schur complement \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix}
   test:
     suffix: 33
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Upper triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
   test:
     suffix: 34
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Lower triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
   test:
     suffix: 35
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  Full Schur complement \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix} \begin{pmatrix} I & A^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: 36
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  SIMPLE \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T diag(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & diag(A)^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: pc_simple
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
+    args: -run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -show_solution 0
   #  SIMPLEC \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T rowsum(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & rowsum(A)^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: pc_simplec
     requires: triangle
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_max_it 5 -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_ksp_max_it 10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_type rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_type rowsum -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -ksp_type fgmres -ksp_max_it 5 -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_ksp_max_it 10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_type rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_type rowsum -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   # FETI-DP solvers
   test:
     suffix: fetidp_2d_tri
     requires: triangle mumps
     filter: grep -v "variant HERMITIAN"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
   test:
     suffix: fetidp_3d_tet
     requires: ctetgen suitesparse
     filter: grep -v "variant HERMITIAN" | sed -e "s/linear solver iterations=10[0-9]/linear solver iterations=100/g" | sed -e "s/linear solver iterations=9[0-9]/linear solver iterations=100/g"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 1000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_type umfpack -fetidp_fieldsplit_lag_ksp_type preonly -test_partition
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 1000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_type umfpack -fetidp_fieldsplit_lag_ksp_type preonly -test_partition
 
   test:
     suffix: fetidp_2d_quad
     requires: mumps
     filter: grep -v "variant HERMITIAN"
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -simplex 0 -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -simplex 0 -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly
   test:
     suffix: fetidp_3d_hex
     requires: suitesparse
     filter: grep -v "variant HERMITIAN" | sed -e "s/linear solver iterations=7[0-9]/linear solver iterations=71/g"
     nsize: 5
-    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
+    args: -run_type full -dm_refine 1 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 2000 -fetidp_fieldsplit_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -dim 3 -simplex 0 -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_type cholmod -fetidp_harmonic_pc_type cholesky -petscpartitioner_type simple -fetidp_fieldsplit_lag_ksp_type preonly -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack
 
   test:
     requires: !single
     suffix: bddc_quad
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -snes_view -snes_error_if_not_converged -show_solution 0 -dm_mat_type is -ksp_type gmres -ksp_rtol 1.e-8 -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd -simplex 0 -petscpartitioner_type simple -ksp_monitor_short -pc_bddc_symmetric 0
 
 TEST*/

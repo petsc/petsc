@@ -1166,233 +1166,233 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 1
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 2
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 3
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
     suffix: 4
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   # 2D serial P2 test 5-8
   test:
     suffix: 5
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 6
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 7
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
     suffix: 8
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
 
   test:
     suffix: bd_int_0
     requires: triangle
-    args: -run_type test -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
+    args: -run_type test -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -bd_integral -dm_view -quiet
 
   test:
     suffix: bd_int_1
     requires: triangle
-    args: -run_type test -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -bd_integral -dm_view -quiet
+    args: -run_type test -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -bd_integral -dm_view -quiet
 
   # 3D serial P1 test 9-12
   test:
     suffix: 9
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
     suffix: 10
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
     suffix: 11
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   test:
     suffix: 12
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_degree 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view -cells 1,1,1
 
   # Analytic variable coefficient 13-20
   test:
     suffix: 13
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 14
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 15
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 16
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 17
     requires: hdf5 ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 18
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 19
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 20
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # P1 variable coefficient 21-28
   test:
     suffix: 21
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 22
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 23
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 24
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 25
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 26
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 27
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 28
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -mat_petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # P0 variable coefficient 29-36
   test:
     suffix: 29
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 30
     requires: triangle
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: 31
     requires: triangle
-    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     requires: triangle
     suffix: 32
-    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     requires: ctetgen
     suffix: 33
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 34
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 35
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: 36
     requires: ctetgen
-    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # Full solve 39-44
   test:
     suffix: 39
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.015625 -interpolate 1 -petscspace_order 2 -pc_type gamg -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
+    args: -run_type full -refinement_limit 0.015625 -interpolate 1 -petscspace_degree 2 -pc_type gamg -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
   test:
     suffix: 40
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.015625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -pc_type svd -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason ::ascii_info_detail
+    args: -run_type full -refinement_limit 0.015625 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -pc_type svd -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason ::ascii_info_detail
   test:
     suffix: 41
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
+    args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: 42
     requires: triangle !single
-    args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
+    args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
   test:
     suffix: 43
     requires: triangle !single
     nsize: 2
-    args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
+    args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
 
   test:
     suffix: 44
     requires: triangle !single
     nsize: 2
-    args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
+    args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
 
   # These tests use a loose tolerance just to exercise the PtAP operations for MATIS and multiple BDDC setup calls inside PCMG
   testset:
     requires: triangle !single
     nsize: 3
-    args: -interpolate -run_type full -petscspace_order 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
+    args: -interpolate -run_type full -petscspace_degree 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
     test:
       suffix: gmg_bddc
       args: -mg_levels_pc_type jacobi
@@ -1405,7 +1405,7 @@ int main(int argc, char **argv)
   testset:
     suffix: restart
     requires: hdf5 triangle !complex
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1
     test:
       args: -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
     test:
@@ -1415,408 +1415,408 @@ int main(int argc, char **argv)
   test:
     suffix: periodic_0
     requires: triangle
-    args: -run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -snes_converged_reason ::ascii_info_detail
+    args: -run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -snes_converged_reason ::ascii_info_detail
 
   # 2D serial P1 test with field bc
   test:
     suffix: field_bc_p1_0
     requires: triangle
-    args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p1_1
     requires: triangle
-    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p1_2
     requires: triangle
-    args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p1_3
     requires: triangle
-    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P1 test with field bc
   test:
     suffix: field_bc_p1_4
     requires: ctetgen
-    args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p1_5
     requires: ctetgen
-    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p1_6
     requires: ctetgen
-    args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p1_7
     requires: ctetgen
-    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 1 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # 2D serial P2 test with field bc
   test:
     suffix: field_bc_p2_0
     requires: triangle
-    args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p2_1
     requires: triangle
-    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p2_2
     requires: triangle
-    args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   test:
     suffix: field_bc_p2_3
     requires: triangle
-    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1
 
   # 3D serial P2 test with field bc
   test:
     suffix: field_bc_p2_4
     requires: ctetgen
-    args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p2_5
     requires: ctetgen
-    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p2_6
     requires: ctetgen
-    args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   test:
     suffix: field_bc_p2_7
     requires: ctetgen
-    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
+    args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_degree 2 -bc_petscspace_degree 2 -show_initial -dm_plex_print_fem 1 -cells 1,1,1
 
   # Full solve simplex: Convergence
   test:
     suffix: tet_conv_p1_r0
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
   test:
     suffix: tet_conv_p1_r2
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
   test:
     suffix: tet_conv_p1_r3
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
   test:
     suffix: tet_conv_p2_r0
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
   test:
     suffix: tet_conv_p2_r2
     requires: ctetgen
-    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
+    args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_view -snes_converged_reason ::ascii_info_detail -pc_type lu -cells 1,1,1
 
   # Full solve simplex: BDDC
   test:
     suffix: tri_bddc
     requires: triangle !single
     nsize: 5
-    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   # Full solve simplex: BDDC
   test:
     suffix: tri_bddc_parmetis
     requires: hdf5 triangle !single parmetis
     nsize: 4
-    args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   test:
     suffix: quad_bddc
-    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -simplex 0 -petscspace_poly_tensor -pc_bddc_corner_selection -cells 3,3 -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -simplex 0 -petscspace_poly_tensor -pc_bddc_corner_selection -cells 3,3 -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
     nsize: 5
 
   # Full solve simplex: ASM
   test:
     suffix: tri_q2q1_asm_lu
     requires: triangle !single
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   test:
     suffix: tri_q2q1_msm_lu
     requires: triangle !single
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   test:
     suffix: tri_q2q1_asm_sor
     requires: triangle !single
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   test:
     suffix: tri_q2q1_msm_sor
     requires: triangle !single
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   # Full solve simplex: FAS
   test:
     suffix: fas_newton_0
     requires: triangle !single
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
 
   test:
     suffix: fas_newton_1
     requires: triangle !single
-    args: -run_type full -dm_refine_hierarchy 3 -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -ksp_rtol 1.0e-10 -fas_coarse_pc_type lu -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type basic -fas_levels_ksp_rtol 1.0e-10 -fas_levels_snes_monitor_short
+    args: -run_type full -dm_refine_hierarchy 3 -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -ksp_rtol 1.0e-10 -fas_coarse_pc_type lu -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type basic -fas_levels_ksp_rtol 1.0e-10 -fas_levels_snes_monitor_short
 
   test:
     suffix: fas_ngs_0
     requires: triangle !single
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short
 
   test:
     suffix: fas_newton_coarse_0
     requires: pragmatic triangle
     TODO: broken
-    args: -run_type full -dm_refine 2 -dm_plex_hash_location -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_coarsen_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
+    args: -run_type full -dm_refine 2 -dm_plex_hash_location -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_coarsen_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
 
   test:
     suffix: mg_newton_coarse_0
     requires: triangle pragmatic
-    args: -run_type full -dm_refine 3 -interpolate 1 -petscspace_order 1 -snes_monitor_short -ksp_monitor_true_residual -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_coarsen_hierarchy 3 -dm_plex_hash_location -snes_view -dm_view -ksp_type richardson -pc_type mg  -pc_mg_levels 4 -snes_atol 1.0e-8 -ksp_atol 1.0e-8 -snes_rtol 0.0 -ksp_rtol 0.0 -ksp_norm_type unpreconditioned -mg_levels_ksp_type gmres -mg_levels_pc_type ilu -mg_levels_ksp_max_it 10
+    args: -run_type full -dm_refine 3 -interpolate 1 -petscspace_degree 1 -snes_monitor_short -ksp_monitor_true_residual -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_coarsen_hierarchy 3 -dm_plex_hash_location -snes_view -dm_view -ksp_type richardson -pc_type mg  -pc_mg_levels 4 -snes_atol 1.0e-8 -ksp_atol 1.0e-8 -snes_rtol 0.0 -ksp_rtol 0.0 -ksp_norm_type unpreconditioned -mg_levels_ksp_type gmres -mg_levels_pc_type ilu -mg_levels_ksp_max_it 10
 
   test:
     suffix: mg_newton_coarse_1
     requires: triangle pragmatic
-    args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_order 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_coarsen_bd_label marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_converged_reason ::ascii_info_detail -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
+    args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_degree 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_coarsen_bd_label marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_converged_reason ::ascii_info_detail -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
 
   test:
     suffix: mg_newton_coarse_2
     requires: triangle pragmatic
-    args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_order 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_converged_reason ::ascii_info_detail -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
+    args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_degree 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_converged_reason ::ascii_info_detail -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
 
   # Full solve tensor
   test:
     suffix: tensor_plex_2d
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_refine_hierarchy 2 -cells 2,2
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dm_refine_hierarchy 2 -cells 2,2
 
   test:
     suffix: tensor_p4est_2d
     requires: p4est
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_forest_initial_refinement 2 -dm_forest_minimum_refinement 0 -dm_plex_convert_type p4est -cells 2,2
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dm_forest_initial_refinement 2 -dm_forest_minimum_refinement 0 -dm_plex_convert_type p4est -cells 2,2
 
   test:
     suffix: tensor_plex_3d
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dim 3 -dm_refine_hierarchy 1 -cells 2,2,2
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dim 3 -dm_refine_hierarchy 1 -cells 2,2,2
 
   test:
     suffix: tensor_p4est_3d
     requires: p4est
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_forest_initial_refinement 1 -dm_forest_minimum_refinement 0 -dim 3 -dm_plex_convert_type p8est -cells 2,2,2
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dm_forest_initial_refinement 1 -dm_forest_minimum_refinement 0 -dim 3 -dm_plex_convert_type p8est -cells 2,2,2
 
   test:
     suffix: p4est_test_q2_conformal_serial
     requires: p4est
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
 
   test:
     suffix: p4est_test_q2_conformal_parallel
     requires: p4est
     nsize: 7
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type simple -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_test_q2_conformal_parallel_parmetis
     requires: hdf5 p4est
     nsize: 4
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis -cells 2,2
 
   test:
     suffix: p4est_test_q2_nonconformal_serial
     requires: p4est
     filter: grep -v "CG or CGNE: variant"
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   test:
     suffix: p4est_test_q2_nonconformal_parallel
     requires: p4est
     filter: grep -v "CG or CGNE: variant"
     nsize: 7
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_test_q2_nonconformal_parallel_parmetis
     requires: hdf5 p4est
     nsize: 4
-    args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
+    args: -run_type test -interpolate 1 -petscspace_degree 2 -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_serial
     requires: p4est !single
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_parallel
     TODO: broken
     requires: p4est !single
     nsize: 7
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -cells 2,2
 
   test:
     suffix: p4est_exact_q2_conformal_parallel_parmetis
     requires: hdf5 p4est !single
     nsize: 4
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis  -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis  -cells 2,2
 
   test:
     suffix: p4est_exact_q2_nonconformal_serial
     requires: p4est
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   test:
     suffix: p4est_exact_q2_nonconformal_parallel
     requires: p4est
     nsize: 7
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_exact_q2_nonconformal_parallel_parmetis
     requires: hdf5 p4est
     nsize: 4
-    args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
+    args: -run_type exact -interpolate 1 -petscspace_degree 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis -cells 2,2
 
   test:
     suffix: p4est_full_q2_nonconformal_serial
     requires: p4est !single
     filter: grep -v "variant HERMITIAN"
-    args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+    args: -run_type full -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   test:
     suffix: p4est_full_q2_nonconformal_parallel
     requires: p4est !single
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
+    args: -run_type full -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddcfas
     requires: p4est
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -pc_type bddc -ksp_type cg -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
+    args: -run_type full -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -pc_type bddc -ksp_type cg -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddc
     requires: p4est
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
+    args: -run_type full -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
 
   test:
     suffix: p4est_fas_q2_conformal_serial
     requires: p4est
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_refine_hierarchy 3 -cells 2,2
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_refine_hierarchy 3 -cells 2,2
     TODO: broken
 
   test:
     suffix: p4est_fas_q2_nonconformal_serial
     requires: p4est broken
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type jacobi -fas_coarse_ksp_type gmres -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type jacobi -fas_coarse_ksp_type gmres -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   test:
     suffix: fas_newton_0_p4est
     requires: p4est !single
-    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+    args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
 
   # Full solve simplicial AMR
   test:
     suffix: tri_p1_adapt_0
     requires: pragmatic
-    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial
+    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial
 
   test:
     suffix: tri_p1_adapt_1
     requires: pragmatic
-    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
+    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
 
   test:
     suffix: tri_p1_adapt_analytic_0
     requires: pragmatic
-    args: -run_type exact -dim 2 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_view -dm_adapt_iter_view
+    args: -run_type exact -dim 2 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_view -dm_adapt_iter_view
 
   # Full solve tensor AMR
   test:
     suffix: quad_q1_adapt_0
     requires: p4est
-    args: -run_type exact -dim 2 -simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4   -snes_adapt_initial -dm_view
+    args: -run_type exact -dim 2 -simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4   -snes_adapt_initial -dm_view
     filter: grep -v DM_
 
   test:
     suffix: amr_0
     nsize: 5
-    args: -run_type test -petscpartitioner_type simple -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_refine 1 -cells 2,2
+    args: -run_type test -petscpartitioner_type simple -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dm_refine 1 -cells 2,2
 
   test:
     suffix: amr_1
     requires: p4est !complex
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append -cells 2,2
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_degree 1 -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append -cells 2,2
 
   test:
     suffix: p4est_solve_bddc
     requires: p4est
-    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
+    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
     nsize: 4
 
   test:
     suffix: p4est_solve_fas
     requires: p4est
-    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 10 -snes_type fas -snes_linesearch_type bt -snes_fas_levels 3 -fas_coarse_snes_type newtonls -fas_coarse_snes_linesearch_type basic -fas_coarse_ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_snes_monitor_short -fas_levels_snes_max_it 4 -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type bt -fas_levels_ksp_type cg -fas_levels_pc_type jacobi -fas_levels_snes_monitor_short -fas_levels_cycle_snes_linesearch_type bt -snes_monitor_short -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_degree 2 -snes_max_it 10 -snes_type fas -snes_linesearch_type bt -snes_fas_levels 3 -fas_coarse_snes_type newtonls -fas_coarse_snes_linesearch_type basic -fas_coarse_ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_snes_monitor_short -fas_levels_snes_max_it 4 -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type bt -fas_levels_ksp_type cg -fas_levels_pc_type jacobi -fas_levels_snes_monitor_short -fas_levels_cycle_snes_linesearch_type bt -snes_monitor_short -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
     TODO: identical machine two runs produce slightly different solver trackers
 
   test:
     suffix: p4est_convergence_test_1
     requires: p4est
-    args:  -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args:  -quiet -run_type test -interpolate 1 -petscspace_degree 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
 
   test:
     suffix: p4est_convergence_test_2
     requires: p4est
-    args: -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 -dm_p4est_refine_pattern hash
+    args: -quiet -run_type test -interpolate 1 -petscspace_degree 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 3 -dm_forest_maximum_refinement 5 -dm_p4est_refine_pattern hash
 
   test:
     suffix: p4est_convergence_test_3
     requires: p4est
-    args: -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 4 -dm_forest_initial_refinement 4 -dm_forest_maximum_refinement 6 -dm_p4est_refine_pattern hash
+    args: -quiet -run_type test -interpolate 1 -petscspace_degree 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 4 -dm_forest_initial_refinement 4 -dm_forest_maximum_refinement 6 -dm_p4est_refine_pattern hash
 
   test:
     suffix: p4est_convergence_test_4
     requires: p4est
-    args: -quiet -run_type test -interpolate 1 -petscspace_order 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 5 -dm_forest_initial_refinement 5 -dm_forest_maximum_refinement 7 -dm_p4est_refine_pattern hash
+    args: -quiet -run_type test -interpolate 1 -petscspace_degree 1 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 5 -dm_forest_initial_refinement 5 -dm_forest_maximum_refinement 7 -dm_p4est_refine_pattern hash
     timeoutfactor: 5
 
   # Serial tests with GLVis visualization
   test:
     suffix: glvis_2d_tet_p1
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_order 1 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 1 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
   test:
     suffix: glvis_2d_tet_p2
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_order 2 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
   test:
     suffix: glvis_2d_hex_p1
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_order 1 -vec_view glvis: -simplex 0 -dm_refine 1
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 1 -vec_view glvis: -simplex 0 -dm_refine 1
   test:
     suffix: glvis_2d_hex_p2
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_order 2 -vec_view glvis: -simplex 0 -dm_refine 1
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -simplex 0 -dm_refine 1
   test:
     suffix: glvis_2d_hex_p2_p4est
     requires: p4est
-    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_order 2 -vec_view glvis: -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2 -viewer_glvis_dm_plex_enable_ncmesh
+    args: -quiet -run_type test -interpolate 1 -bc_type dirichlet -petscspace_degree 2 -vec_view glvis: -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2 -viewer_glvis_dm_plex_enable_ncmesh
 
 TEST*/
