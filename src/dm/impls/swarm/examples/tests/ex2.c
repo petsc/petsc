@@ -1,6 +1,7 @@
 static char help[] = "Tests L2 projection with DMSwarm using delta function particles.\n";
 
 #include <petscdmplex.h>
+#include <petscfe.h>
 #include <petscdmswarm.h>
 #include <petscds.h>
 #include <petscksp.h>
@@ -485,6 +486,185 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
+
+  DM_Plex         *mesh  = (DM_Plex *) dm->data;
+  PetscInt         debug = mesh->printFEM;
+  DM               dmC;
+  PetscSection     section;
+  PetscQuadrature  quad;
+  PetscScalar     *interpolant, *gradsum;
+  PetscReal       *coords, *detJ, *J, *invJ;
+  const PetscReal *quadPoints, *quadWeights;
+  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cStart, cEnd, cEndInterior, vStart, vEnd, v, field, fieldOffset;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(locC, &dmC);CHKERRQ(ierr);
+  ierr = VecSet(locC, 0.0);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &quad);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+    numComponents += Nc;
+  }
+  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  ierr = PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&detJ,coordDim*coordDim*Nq,&J,coordDim*coordDim*Nq,&invJ);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  for (v = vStart; v < vEnd; ++v) {
+    PetscInt   *star = NULL;
+    PetscInt    starSize, st, d, fc;
+
+    ierr = PetscMemzero(gradsum, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for (st = 0; st < starSize*2; st += 2) {
+      const PetscInt cell = star[st];
+      PetscScalar   *grad = &gradsum[coordDim*numComponents];
+      PetscScalar   *x    = NULL;
+
+      if ((cell < cStart) || (cell >= cEnd)) continue;
+      ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, J, invJ, detJ);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (field = 0, fieldOffset = 0; field < numFields; ++field) {
+        PetscObject  obj;
+        PetscClassId id;
+        PetscInt     Nb, Nc, q, qc = 0;
+
+        ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
+        else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
+        else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+        for (q = 0; q < Nq; ++q) {
+          if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)detJ[q], cell, q);
+          if (ierr) {
+            PetscErrorCode ierr2;
+            ierr2 = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr2);
+            ierr2 = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr2);
+            ierr2 = PetscFree4(interpolant,coords,detJ,J);CHKERRQ(ierr2);
+            CHKERRQ(ierr);
+          }
+          if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolateGradient_Static((PetscFE) obj, &x[fieldOffset], coordDim, invJ, NULL, q, interpolant);CHKERRQ(ierr);}
+          else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+          for (fc = 0; fc < Nc; ++fc) {
+            const PetscReal wt = quadWeights[q*qNc+qc+fc];
+
+            for (d = 0; d < coordDim; ++d) grad[fc*coordDim+d] += interpolant[fc*dim+d]*wt*detJ[q];
+          }
+        }
+        fieldOffset += Nb;
+        qc          += Nc;
+      }
+      ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (fc = 0; fc < numComponents; ++fc) {
+        for (d = 0; d < coordDim; ++d) {
+          gradsum[fc*coordDim+d] += grad[fc*coordDim+d];
+        }
+      }
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D gradient: [", cell);CHKERRQ(ierr);
+        for (fc = 0; fc < numComponents; ++fc) {
+          for (d = 0; d < coordDim; ++d) {
+            if (fc || d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(grad[fc*coordDim+d]));CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dmC, NULL, locC, v, gradsum, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree6(gradsum,interpolant,coords,detJ,J,invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
+{
+
+  MPI_Comm       comm;
+  KSP            ksp;
+  Mat            M;                   /* FEM mass matrix */
+  Mat            M_p;                 /* Particle mass matrix */
+  Vec            f, rhs, fhat, grad;  /* Particle field f, \int phi_i f, FEM field */
+  PetscReal      pmoments[3];         /* \int f, \int x f, \int r^2 f */
+  PetscReal      fmoments[3];         /* \int \hat f, \int x \hat f, \int r^2 \hat f */
+  PetscInt       m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ksp, "ptof_");CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &fhat);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &rhs);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &grad);CHKERRQ(ierr);
+
+  ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(M_p, NULL, "-M_p_view");CHKERRQ(ierr);
+
+  /* make particle weight vector */
+  ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  
+  /* create matrix RHS vector */
+  ierr = MatMultTranspose(M_p, f, rhs);CHKERRQ(ierr);
+  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) rhs,"rhs");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(rhs, NULL, "-rhs_view");CHKERRQ(ierr);
+
+  ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
+  ierr = DMPlexSNESComputeJacobianFEM(dm, fhat, M, M, user);CHKERRQ(ierr);
+
+  ierr = InterpolateGradient(dm, fhat, grad);CHKERRQ(ierr);
+
+  ierr = MatViewFromOptions(M, NULL, "-M_view");CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, M, M);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, rhs, grad);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fhat,"fhat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(fhat, NULL, "-fhat_view");CHKERRQ(ierr);
+  
+  /* Check moments of field */
+  ierr = computeParticleMoments(sw, pmoments, user);CHKERRQ(ierr);
+  ierr = computeFEMMoments(dm, grad, fmoments, user);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "L2 projection m ([m - m_p]/m) mass: %20.13e (%11.4e), x-momentum: %20.13e (%11.4e), energy: %20.13e (%11.4e).\n", fmoments[0], (fmoments[0] - pmoments[0])/fmoments[0],
+                     fmoments[1], (fmoments[1] - pmoments[1])/fmoments[1], fmoments[2], (fmoments[2] - pmoments[2])/fmoments[2]);CHKERRQ(ierr);
+  for (m = 0; m < 3; ++m) {
+    if (PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]) > user->momentTol) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Moment %D error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m])/fmoments[m]), user->momentTol);
+  }
+
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&M);CHKERRQ(ierr);
+  ierr = MatDestroy(&M_p);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &fhat);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &rhs);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &grad);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 int main (int argc, char * argv[]) {
   MPI_Comm       comm;
@@ -500,6 +680,7 @@ int main (int argc, char * argv[]) {
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = TestL2ProjectionParticlesToField(dm, sw, &user);CHKERRQ(ierr);
   ierr = TestL2ProjectionFieldToParticles(dm, sw, &user);CHKERRQ(ierr);
+  ierr = TestFieldGradientProjection(dm, sw, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = DMDestroy(&sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
