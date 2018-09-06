@@ -140,8 +140,6 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
                                     void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),
                                     void *ctx,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(A);
-  CHKFORTRANNULLOBJECTDEREFERENCE(B);  
   CHKFORTRANNULLFUNCTION(func);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefault_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefault,ctx);
@@ -159,13 +157,6 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
   }
 }
 /* -------------------------------------------------------------*/
-
-PETSC_EXTERN void PETSC_STDCALL snessolve_(SNES *snes,Vec *b,Vec *x, int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  *ierr = SNESSolve(*snes,*b,*x);
-}
 
 PETSC_EXTERN void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

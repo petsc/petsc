@@ -47,13 +47,6 @@
 #define dmkspsetcomputeoperators_      dmkspsetcomputeoperators    /* zdmkspf.c */
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  kspsolve_(KSP *ksp,Vec *b,Vec *x, int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  *ierr = KSPSolve(*ksp,*b,*x);
-}
-
 /* These are defined in zdmkspf.c */
 PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
 PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);

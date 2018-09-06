@@ -4212,7 +4212,7 @@ PetscErrorCode SNESReasonViewFromOptions(SNES snes)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    SNESSolve - Solves a nonlinear system F(x) = b.
    Call SNESSolve() after calling SNESCreate() and optional routines of the form SNESSetXXX().
 

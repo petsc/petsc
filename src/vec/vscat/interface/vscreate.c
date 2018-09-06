@@ -188,7 +188,7 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
 /* VecScatterCreate() will be renamed as VecScatterCreateWithVecs() */
 /* ---------------------------------------------------------------- */
-/*@C
+/*@
    VecScatterCreate - Creates a vector scatter context.
 
    Collective on Vec
