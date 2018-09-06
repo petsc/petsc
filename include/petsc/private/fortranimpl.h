@@ -130,7 +130,7 @@ if (flg) {                                   \
   if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); *ierr = 1; return; } \
-  else if (*(void**)a == (void*)-1) { a = NULL; }
+  else if (*(void**)a == (void*)0) { a = NULL; }
 
 PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 
@@ -138,7 +138,7 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
   if (FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); *ierr = 1; return; } \
-  else if (*(void**)a == (void*)-1) { *((void***)&a) = &PETSCNULLPOINTERADDRESS; }
+  else if (*(void**)a == (void*)0) { *((void***)&a) = &PETSCNULLPOINTERADDRESS; }
 
 
 #define CHKFORTRANNULLBOOL(a)  \

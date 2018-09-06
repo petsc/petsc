@@ -8216,7 +8216,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatGetNullSpace - retrieves the null space of a matrix.
 
    Logically Collective on Mat and MatNullSpace

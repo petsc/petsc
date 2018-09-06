@@ -25,11 +25,11 @@
 #endif
 
       type tPetscOptions
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscOptions
 
       PetscOptions, parameter :: PETSC_NULL_OPTIONS =                        &
-     &                           tPetscOptions(-1)
+     &                           tPetscOptions(0)
 
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
@@ -185,11 +185,11 @@
 !
       type tPetscRandom
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscRandom
 
       PetscRandom, parameter :: PETSC_NULL_RANDOM                                  &
-     &             = tPetscRandom(-1)
+     &             = tPetscRandom(0)
 !
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
