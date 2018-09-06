@@ -635,7 +635,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   for (l = 0; l < nleaves; ++l) {
     PetscInt adjSize = PETSC_DETERMINE, a;
 
-    ierr = DMPlexGetAdjacency(dm, local[l], &adjSize, &adj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, local ? local[l] : l, &adjSize, &adj);CHKERRQ(ierr);
     for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(ovAdjByRank, adj[a], remote[l].rank);CHKERRQ(ierr);}
   }
   ierr = ISGetIndices(rootrank, &rrank);CHKERRQ(ierr);
