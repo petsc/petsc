@@ -169,7 +169,6 @@ PETSC_EXTERN void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (
   Vec R;
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
-  CHKFORTRANNULLOBJECT(fP);
   R = r ? *r : (Vec)NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsfunctionlinear_) {
     *ierr = TSSetRHSFunction(*ts,R,TSComputeRHSFunctionLinear,fP);
@@ -194,7 +193,6 @@ PETSC_EXTERN void PETSC_STDCALL tssetifunction_(TS *ts,Vec *r,PetscErrorCode (PE
   Vec R;
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
-  CHKFORTRANNULLOBJECT(fP);
   R = r ? *r : (Vec)NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeifunctionlinear_) {
     *ierr = TSSetIFunction(*ts,R,TSComputeIFunctionLinear,fP);
