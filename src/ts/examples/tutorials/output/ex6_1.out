@@ -6,5 +6,5 @@ TS Object: 1 MPI processes
   maximum time=100.
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-TSAdapt Object: 1 MPI processes
-  type: none
+  TSAdapt Object: 1 MPI processes
+    type: none

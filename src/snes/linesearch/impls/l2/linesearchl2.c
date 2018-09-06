@@ -3,7 +3,6 @@
 
 static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 {
-
   PetscBool      changed_y, changed_w;
   PetscErrorCode ierr;
   Vec            X;
@@ -15,13 +14,11 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscReal      ynorm;
   PetscReal      xnorm;
   PetscReal      steptol, maxstep, rtol, atol, ltol;
-
-  PetscViewer monitor;
-  PetscReal   lambda, lambda_old, lambda_mid, lambda_update, delLambda;
-  PetscReal   fnrm, fnrm_old, fnrm_mid;
-  PetscReal   delFnrm, delFnrm_old, del2Fnrm;
-  PetscInt    i, max_its;
-
+  PetscViewer    monitor;
+  PetscReal      lambda, lambda_old, lambda_mid, lambda_update, delLambda;
+  PetscReal      fnrm, fnrm_old, fnrm_mid;
+  PetscReal      delFnrm, delFnrm_old, del2Fnrm;
+  PetscInt       i, max_its;
   PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
 
   PetscFunctionBegin;
@@ -123,7 +120,8 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     /* compute the secant (Newton) update -- always go downhill */
     if (del2Fnrm > 0.) lambda_update = lambda - delFnrm / del2Fnrm;
-    else lambda_update = lambda + delFnrm / del2Fnrm;
+    else if (del2Fnrm < 0.) lambda_update = lambda + delFnrm / del2Fnrm;
+    else break;
 
     if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
 

@@ -112,6 +112,56 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 }
 
 
+/* gets as input the "sizes" array computed by ParMetis_*_NodeND and returns
+       seps[  0 :         2*p) : the start and end node of each subdomain
+       seps[2*p : 2*p+2*(p-1)) : the start and end node of each separator
+     levels[  0 :         p-1) : level in the tree for each separator (-1 root, -2 and -3 first level and so on)
+   The arrays must be large enough
+*/
+PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscInt sizes[], PetscInt seps[], PetscInt level[])
+{
+  PetscInt       l2p,i,pTree,pStartTree;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  l2p = PetscLog2Real(p);
+  if (l2p - (PetscInt)PetscLog2Real(p)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%D is not a power of 2",p);
+  if (!p) PetscFunctionReturn(0);
+  ierr = PetscMemzero(seps,(2*p-2)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(level,(p-1)*sizeof(PetscInt));CHKERRQ(ierr);
+  seps[2*p-2] = sizes[2*p-2];
+  pTree = p;
+  pStartTree = 0;
+  while (pTree != 1) {
+    for (i = pStartTree; i < pStartTree + pTree; i++) {
+      seps[i] += sizes[i];
+      seps[pStartTree + pTree + (i-pStartTree)/2] += seps[i];
+    }
+    pStartTree += pTree;
+    pTree = pTree/2;
+  }
+  seps[2*p-2] -= sizes[2*p-2];
+
+  pStartTree = 2*p-2;
+  pTree      = 1;
+  while (pStartTree > 0) {
+    for (i = pStartTree; i < pStartTree + pTree; i++) {
+      PetscInt k = 2*i - (pStartTree +2*pTree);
+      PetscInt n = seps[k+1];
+
+      seps[k+1]  = seps[i]   - sizes[k+1];
+      seps[k]    = seps[k+1] + sizes[k+1] - n - sizes[k];
+      level[i-p] = -pTree - i + pStartTree;
+    }
+    pTree *= 2;
+    pStartTree -= pTree;
+  }
+  /* I know there should be a formula */
+  ierr = PetscSortIntWithArrayPair(p-1,seps+p,sizes+p,level);CHKERRQ(ierr);
+  for (i=2*p-2;i>=0;i--) { seps[2*i] = seps[i]; seps[2*i+1] = seps[i] + sizes[i] - 1; }
+  PetscFunctionReturn(0);
+}
+
 /* ===========================================================================================*/
 
 PetscFunctionList MatPartitioningList              = 0;
@@ -206,6 +256,47 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 }
 
 /*@
+   MatPartitioningApplyND - Gets a nested dissection partitioning for a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
+.  matp - the matrix partitioning object
+
+   Output Parameters:
+.   partitioning - the partitioning. For each local node, a positive value indicates the processor
+                   number the node has been assigned to. Negative x values indicate the separator level -(x+1).
+
+   Level: beginner
+
+   The user can define additional partitionings; see MatPartitioningRegister().
+
+.keywords: matrix, get, partitioning
+
+.seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
+           MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
+           ISPartitioningCount()
+@*/
+PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
+  PetscValidPointer(partitioning,2);
+  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!matp->ops->applynd) SETERRQ1(PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
+  ierr = PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
+  ierr = (*matp->ops->applynd)(matp,partitioning);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
+
+  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
    Collective on Mat
@@ -237,7 +328,6 @@ $    -mat_partitioning_view
 PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
@@ -249,13 +339,8 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,((PetscObject)matp)->prefix,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
-    ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-    ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
-  }
+  ierr = MatPartitioningViewFromOptions(matp,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
+  ierr = ISViewFromOptions(*partitioning,NULL,"-mat_partitioning_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

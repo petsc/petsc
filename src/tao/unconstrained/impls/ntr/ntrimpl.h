@@ -8,11 +8,11 @@
 
 typedef struct {
   Mat M;
+  PC  bfgs_pre;
 
   Vec D;
   Vec W;
 
-  Vec Diag;
   PetscReal radius;
 
   /* Parameters when updating the trust-region radius based on reduction
@@ -87,8 +87,6 @@ typedef struct {
   PetscReal max_radius;    /*  upper bound on trust region radius */
   PetscReal epsilon;       /*  tolerance used when computing actred/prered */
 
-  PetscInt pc_type;        /*  Preconditioner for the code */
-  PetscInt bfgs_scale_type;/*  Scaling matrix for the bfgs preconditioner */
   PetscInt init_type;      /*  Trust-region initialization method */
   PetscInt update_type;    /*  Trust-region update method */
 } TAO_NTR;

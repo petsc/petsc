@@ -47,6 +47,7 @@ class Package(config.base.Configure):
     self.extraLib               = []   # additional libraries needed to link
     self.includes               = []   # headers to check for
     self.functions              = []   # functions we wish to check for in the libraries
+    self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.cxx                    = 0    # 1 means requires C++
@@ -635,6 +636,7 @@ class Package(config.base.Configure):
         download_urls.append(url)
       if url.find('http://ftp.mcs.anl.gov') >=0:
         download_urls.append(url.replace('http://','ftp://'))
+        download_urls.append(url.replace('http://ftp.mcs.anl.gov/pub/petsc/','https://www.mcs.anl.gov/petsc/mirror/'))
       # prefer giturl from a petsc gitclone, and tarball urls from a petsc tarball.
       if git_urls:
         if not hasattr(self.sourceControl, 'git'):
@@ -775,6 +777,7 @@ class Package(config.base.Configure):
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
+        self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
@@ -1367,7 +1370,7 @@ class CMakePackage(Package):
     cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
     if self.requirec99flag:
       if (self.compilers.c99flag == None):
-        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+        raise RuntimeError('Requires c99 compiler. Configure cold not determine compatible compiler flag. Perhaps you can specify via CFLAG')
       cflags += ' '+self.compilers.c99flag
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     args.append('-DCMAKE_C_FLAGS_DEBUG:STRING="'+cflags+'"')

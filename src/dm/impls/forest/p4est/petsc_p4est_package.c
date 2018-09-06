@@ -74,7 +74,7 @@ PetscErrorCode PetscP4estInitialize(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("p4est",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(P4ESTLOGGING_CLASSID);CHKERRQ(ierr);}
   }
   ierr = PetscHeaderCreate(P4estLoggingObject,P4ESTLOGGING_CLASSID,"p4est","p4est logging","DM",PETSC_COMM_WORLD,NULL,PetscObjectView);CHKERRQ(ierr);
   if (sc_package_id == -1) {

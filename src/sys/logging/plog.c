@@ -95,22 +95,40 @@ char             petsc_tracespace[128]       = " ";
 PetscLogDouble   petsc_tracetime             = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
-/*---------------------------------------------- General Functions --------------------------------------------------*/
-/*@C
-  PetscLogDestroy - Destroys the object and event logging data and resets the global counters.
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
+{
+  int            stage;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
-  Not Collective
+  PetscFunctionBegin;
+  if (PetscLogInitializeCalled) PetscFunctionReturn(0);
+  PetscLogInitializeCalled = PETSC_TRUE;
 
-  Notes:
-  This routine should not usually be used by programmers. Instead employ
-  PetscLogStagePush() and PetscLogStagePop().
+  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
+  if (opt) petsc_logActions = PETSC_FALSE;
+  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
+  if (opt) petsc_logObjects = PETSC_FALSE;
+  if (petsc_logActions) {
+    ierr = PetscMalloc1(petsc_maxActions, &petsc_actions);CHKERRQ(ierr);
+  }
+  if (petsc_logObjects) {
+    ierr = PetscMalloc1(petsc_maxObjects, &petsc_objects);CHKERRQ(ierr);
+  }
+  PetscLogPHC = PetscLogObjCreateDefault;
+  PetscLogPHD = PetscLogObjDestroyDefault;
+  /* Setup default logging structures */
+  ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
+  ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
 
-  Level: developer
+  /* All processors sync here for more consistent logging */
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscTime(&petsc_BaseTime);
+  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-.keywords: log, destroy
-.seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogView(), PetscLogStagePush(), PlogStagePop()
-@*/
-PetscErrorCode  PetscLogDestroy(void)
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
 {
   PetscStageLog  stageLog;
   PetscErrorCode ierr;
@@ -164,7 +182,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PETSC_LARGEST_CLASSID       = PETSC_SMALLEST_CLASSID;
   PETSC_OBJECT_CLASSID        = 0;
   petsc_stageLog              = 0;
-  PetscLogInitializeCalled = PETSC_FALSE;
+  PetscLogInitializeCalled    = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -187,44 +205,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionBegin;
   PetscLogPLB = b;
   PetscLogPLE = e;
-  PetscFunctionReturn(0);
-}
-
-/*------------------------------------------- Initialization Functions ----------------------------------------------*/
-/*
-    The data structures for logging are always created even if no logging is turned on. This is so events etc can
-  be registered in the code before the actually logging is turned on.
- */
-PetscErrorCode  PetscLogInitialize(void)
-{
-  int            stage;
-  PetscBool      opt;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (PetscLogInitializeCalled) PetscFunctionReturn(0);
-  PetscLogInitializeCalled = PETSC_TRUE;
-
-  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
-  if (opt) petsc_logActions = PETSC_FALSE;
-  ierr = PetscOptionsHasName(NULL,NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
-  if (opt) petsc_logObjects = PETSC_FALSE;
-  if (petsc_logActions) {
-    ierr = PetscMalloc1(petsc_maxActions, &petsc_actions);CHKERRQ(ierr);
-  }
-  if (petsc_logObjects) {
-    ierr = PetscMalloc1(petsc_maxObjects, &petsc_objects);CHKERRQ(ierr);
-  }
-  PetscLogPHC = PetscLogObjCreateDefault;
-  PetscLogPHD = PetscLogObjDestroyDefault;
-  /* Setup default logging structures */
-  ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
-  ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-
-  /* All processors sync here for more consistent logging */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscTime(&petsc_BaseTime);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -739,6 +719,60 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
 }
 
 /*@
+  PetscLogEventIncludeClass - Activates event logging for a PETSc object class in every stage.
+
+  Not Collective
+
+  Input Parameter:
+. classid - The object class, for example MAT_CLASSID, SNES_CLASSID, etc.
+
+  Level: developer
+
+.keywords: log, event, include, class
+.seealso: PetscLogEventActivateClass(),PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
+@*/
+PetscErrorCode  PetscLogEventIncludeClass(PetscClassId classid)
+{
+  PetscStageLog  stageLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  for (stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = PetscEventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscLogEventExcludeClass - Deactivates event logging for a PETSc object class in every stage.
+
+  Not Collective
+
+  Input Parameter:
+. classid - The object class, for example MAT_CLASSID, SNES_CLASSID, etc.
+
+  Level: developer
+
+.keywords: log, event, exclude, class
+.seealso: PetscLogEventDeactivateClass(),PetscLogEventActivateClass(),PetscLogEventDeactivate(),PetscLogEventActivate()
+@*/
+PetscErrorCode  PetscLogEventExcludeClass(PetscClassId classid)
+{
+  PetscStageLog  stageLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  for (stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = PetscEventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscLogEventActivate - Indicates that a particular event should be logged.
 
   Not Collective
@@ -857,7 +891,7 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
   Level: developer
 
 .keywords: log, event, activate, class
-.seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscLogEventDeactivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
 {
@@ -883,7 +917,7 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
   Level: developer
 
 .keywords: log, event, deactivate, class
-.seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscLogEventActivateClass(),PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
 {
@@ -1051,7 +1085,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
   _TotalTime -= petsc_BaseTime;
   /* Open log file */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  if (sname) sprintf(file, "%s.%d", sname, rank);
+  if (sname && sname[0]) sprintf(file, "%s.%d", sname, rank);
   else sprintf(file, "Log.%d", rank);
   ierr = PetscFixFilename(file, fname);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
@@ -1553,6 +1587,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         }
       }
     } else {
+      if (!localStageVisible[stage]) continue;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage);CHKERRQ(ierr);
     }
   }
@@ -1708,7 +1743,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
 }
 
 /*@C
-  PetscLogViewFromOptions - Processes command line options to determine if/how a PetscLog is to be viewed. 
+  PetscLogViewFromOptions - Processes command line options to determine if/how a PetscLog is to be viewed.
 
   Collective on PETSC_COMM_WORLD
 

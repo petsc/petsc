@@ -1,0 +1,50 @@
+Vec Object: Test_Vec 2 MPI processes
+  type: mpi
+Process [0]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+Process [1]
+10.
+11.
+12.
+13.
+14.
+15.
+16.
+17.
+18.
+19.
+writing vector in hdf5 to vector.dat ...
+reading vector in hdf5 from vector.dat ...
+Vec Object: Test_Vec 2 MPI processes
+  type: mpi
+Process [0]
+0.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+Process [1]
+10.
+11.
+12.
+13.
+14.
+15.
+16.
+17.
+18.
+19.

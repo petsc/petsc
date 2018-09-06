@@ -83,25 +83,10 @@ static PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS
 
 static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
 {
-#if defined(PETSC_USE_DEBUG)
-  IS_General    *sub = (IS_General*)is->data;
-  PetscInt       n;
-#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  {
-    PetscInt i,j;
-    for (i=0; i<n; i+=bs) {
-      for (j=0; j<bs; j++) {
-        if (sub->idx[i+j] != sub->idx[i]+j) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not have block structure, cannot set block size to %D",bs);
-      }
-    }
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -208,12 +193,12 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   } else {
     /* crude, nonscalable get entire IS on each processor */
-    if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");
     ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(&istmp);CHKERRQ(ierr);
     /* get the part we need */
+    if (nlocal == PETSC_DECIDE) nlocal = n;
     ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
@@ -460,7 +445,7 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
   IS_General     *sub = (IS_General*)is->data;
   PetscErrorCode ierr;
   PetscInt       i,n,*idx = sub->idx;
-  PetscBool      iascii,isbinary,ishdf5,matl;
+  PetscBool      iascii,isbinary,ishdf5;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
@@ -477,10 +462,9 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
-    matl = (PetscBool)(fmt == PETSC_VIEWER_ASCII_MATLAB);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     if (size > 1) {
-      if (matl) {
+      if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
         const char* name;
 
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
@@ -490,16 +474,19 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
+        PetscInt st = 0;
+
+        if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         if (is->isperm) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %D\n",rank,n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,idx[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i + st,idx[i]);CHKERRQ(ierr);
         }
       }
     } else {
-      if (matl) {
+      if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
         const char* name;
 
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
@@ -509,12 +496,15 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
+        PetscInt st = 0;
+
+        if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         if (is->isperm) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %D\n",n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i,idx[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i + st,idx[i]);CHKERRQ(ierr);
         }
       }
     }

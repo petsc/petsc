@@ -8,17 +8,17 @@
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.
   If PetscLogPrintInfo is zero, no info messages are printed.
-  If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
 
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
   to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
-PetscBool PetscLogPrintInfo     = PETSC_FALSE;
-PetscBool PetscLogPrintInfoNull = PETSC_FALSE;
-int       PetscInfoFlags[]      = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                                   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                                   1,1,1,1,1,1,1,1,1,1,1,1};
-FILE      *PetscInfoFile = NULL;
+PetscBool PetscLogPrintInfo = PETSC_FALSE;
+FILE     *PetscInfoFile     = NULL;
+int       PetscInfoFlags[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 /*@C
     PetscInfoAllow - Causes PetscInfo() messages to be printed to standard output.
@@ -43,7 +43,7 @@ FILE      *PetscInfoFile = NULL;
 @*/
 PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
 {
-  char           fname[PETSC_MAX_PATH_LEN], tname[5];
+  char           fname[PETSC_MAX_PATH_LEN], tname[11];
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -57,18 +57,17 @@ PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
     if (!PetscInfoFile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) PetscInfoFile = PETSC_STDOUT;
 
-  PetscLogPrintInfo     = flag;
-  PetscLogPrintInfoNull = flag;
+  PetscLogPrintInfo = flag;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc object class.
+  PetscInfoDeactivateClass - Deactivates PetscInfo() messages for a PETSc object class.
 
   Not Collective
 
   Input Parameter:
-. objclass - The object class,  e.g., MAT_CLASSID, SNES_CLASSID, etc.
+. classid - The object class,  e.g., MAT_CLASSID, SNES_CLASSID, etc.
 
   Notes:
   One can pass 0 to deactivate all messages that are not associated with an object.
@@ -78,24 +77,21 @@ PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode  PetscInfoDeactivateClass(int objclass)
+PetscErrorCode  PetscInfoDeactivateClass(PetscClassId classid)
 {
   PetscFunctionBegin;
-  if (!objclass) {
-    PetscLogPrintInfoNull = PETSC_FALSE;
-    PetscFunctionReturn(0);
-  }
-  PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 0;
+  if (!classid) classid = PETSC_SMALLEST_CLASSID;
+  PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = 0;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
+  PetscInfoActivateClass - Activates PetscInfo() messages for a PETSc object class.
 
   Not Collective
 
   Input Parameter:
-. objclass - The object class, e.g., MAT_CLASSID, SNES_CLASSID, etc.
+. classid - The object class, e.g., MAT_CLASSID, SNES_CLASSID, etc.
 
   Notes:
   One can pass 0 to activate all messages that are not associated with an object.
@@ -105,11 +101,11 @@ PetscErrorCode  PetscInfoDeactivateClass(int objclass)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode  PetscInfoActivateClass(int objclass)
+PetscErrorCode  PetscInfoActivateClass(PetscClassId classid)
 {
   PetscFunctionBegin;
-  if (!objclass) PetscLogPrintInfoNull = PETSC_TRUE;
-  else PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 1;
+  if (!classid) classid = PETSC_SMALLEST_CLASSID;
+  PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID] = 1;
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +114,7 @@ PetscErrorCode  PetscInfoActivateClass(int objclass)
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
-extern FILE *petsc_history;
+PETSC_INTERN FILE *petsc_history;
 
 /*MC
     PetscInfo - Logs informative data, which is printed to standard output
@@ -160,9 +156,10 @@ M*/
 PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char message[], ...)
 {
   va_list        Argp;
-  PetscMPIInt    rank,urank;
+  PetscMPIInt    rank = 0,urank;
   size_t         len;
   PetscObject    obj = (PetscObject)vobj;
+  PetscClassId   classid;
   char           string[8*1024];
   PetscErrorCode ierr;
   size_t         fullLength;
@@ -172,12 +169,9 @@ PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char messa
   if (obj) PetscValidHeader(obj,2);
   PetscValidCharPointer(message,3);
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
-  if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
-  if (obj && !PetscInfoFlags[obj->classid - PETSC_SMALLEST_CLASSID - 1]) PetscFunctionReturn(0);
-  if (!obj) rank = 0;
-  else {
-    ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRQ(ierr);
-  }
+  classid = obj ? obj->classid : PETSC_SMALLEST_CLASSID;
+  if (!PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]) PetscFunctionReturn(0);
+  if (obj) {ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRQ(ierr);}
   if (rank) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);

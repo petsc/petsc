@@ -92,7 +92,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = PetscCalloc1(PetscMax(3, dim),&lambda);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, &csec);CHKERRQ(ierr);
+  ierr = DMGetSection(cdm, &csec);CHKERRQ(ierr);
 
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &msec);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(msec, 1);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     ierr = PetscSectionSetFieldDof(msec, p, 0, Nd);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(msec);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(mdm, msec);CHKERRQ(ierr);
+  ierr = DMSetSection(mdm, msec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error);CHKERRQ(ierr);
 
   ierr = VecSet(ones, 1.0);CHKERRQ(ierr);
-  ierr = DMPlexSNESComputeJacobianActionFEM(dma, ua, ones, massLumped, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobianAction(dma, NULL, 0, 0, ua, NULL, ones, massLumped, user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) massLumped, "Lumped mass");CHKERRQ(ierr);
   ierr = VecViewFromOptions(massLumped, NULL, "-mass_vec_view");CHKERRQ(ierr);
   ierr = DMCreateMassMatrix(dm, dma, &mass);CHKERRQ(ierr);

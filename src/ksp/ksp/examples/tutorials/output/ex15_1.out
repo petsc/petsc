@@ -10,7 +10,7 @@ PC Object: 2 MPI processes
   type: shell
     MyPreconditioner
   linear system matrix = precond matrix:
-  Mat Object: 2 MPI processes  
+  Mat Object: 2 MPI processes
     type: mpiaij
     rows=56, cols=56
     total: nonzeros=250, allocated nonzeros=560

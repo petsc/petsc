@@ -2,91 +2,92 @@
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
 iter =   0, Function value 1.67039, Residual: 0.47529 
-iter =   1, Function value 1.58436, Residual: 0.551899 
-iter =   2, Function value 1.52951, Residual: 0.184763 
-iter =   3, Function value 1.51894, Residual: 0.301819 
-iter =   4, Function value 1.51123, Residual: 0.112218 
-iter =   5, Function value 1.50982, Residual: 0.0929645 
-iter =   6, Function value 1.50903, Residual: 0.0692067 
-iter =   7, Function value 1.50882, Residual: 0.153327 
-iter =   8, Function value 1.50811, Residual: 0.117845 
-iter =   9, Function value 1.50762, Residual: 0.0977029 
-iter =  10, Function value 1.50726, Residual: 0.0787403 
-iter =  11, Function value 1.50697, Residual: 0.064851 
-iter =  12, Function value 1.50675, Residual: 0.0527147 
-iter =  13, Function value 1.50657, Residual: 0.0436322 
-iter =  14, Function value 1.50642, Residual: 0.0383386 
-iter =  15, Function value 1.5063, Residual: 0.0334914 
-iter =  16, Function value 1.5062, Residual: 0.0303921 
-iter =  17, Function value 1.50611, Residual: 0.0268841 
-iter =  18, Function value 1.50604, Residual: 0.0240955 
-iter =  19, Function value 1.50598, Residual: 0.021272 
-iter =  20, Function value 1.50593, Residual: 0.0189403 
-iter =  21, Function value 1.50589, Residual: 0.0175742 
-iter =  22, Function value 1.50585, Residual: 0.0157372 
-iter =  23, Function value 1.50582, Residual: 0.0146013 
-iter =  24, Function value 1.5058, Residual: 0.013093 
-iter =  25, Function value 1.50577, Residual: 0.0121483 
-iter =  26, Function value 1.50576, Residual: 0.0109073 
-iter =  27, Function value 1.50574, Residual: 0.0101209 
-iter =  28, Function value 1.50573, Residual: 0.00909719 
-iter =  29, Function value 1.50572, Residual: 0.00844177 
-iter =  30, Function value 1.50571, Residual: 0.00759479 
-iter =  31, Function value 1.5057, Residual: 0.00704786 
-iter =  32, Function value 1.5057, Residual: 0.00634527 
-iter =  33, Function value 1.50569, Residual: 0.00588837 
-iter =  34, Function value 1.50569, Residual: 0.00530425 
-iter =  35, Function value 1.50568, Residual: 0.00492224 
-iter =  36, Function value 1.50568, Residual: 0.00443575 
-iter =  37, Function value 1.50568, Residual: 0.00411615 
-iter =  38, Function value 1.50567, Residual: 0.00371042 
-iter =  39, Function value 1.50567, Residual: 0.00344294 
-iter =  40, Function value 1.50567, Residual: 0.00310423 
-iter =  41, Function value 1.50567, Residual: 0.0028803 
-iter =  42, Function value 1.50567, Residual: 0.00259734 
-iter =  43, Function value 1.50567, Residual: 0.00240986 
-iter =  44, Function value 1.50567, Residual: 0.00217335 
-iter =  45, Function value 1.50567, Residual: 0.00201637 
-iter =  46, Function value 1.50567, Residual: 0.00181862 
-iter =  47, Function value 1.50567, Residual: 0.00168719 
-iter =  48, Function value 1.50566, Residual: 0.0015218 
-iter =  49, Function value 1.50566, Residual: 0.00141176 
-iter =  50, Function value 1.50566, Residual: 0.00127343 
-iter =  51, Function value 1.50566, Residual: 0.0011813 
-iter =  52, Function value 1.50566, Residual: 0.00106558 
-iter =  53, Function value 1.50566, Residual: 0.000988455 
-iter =  54, Function value 1.50566, Residual: 0.00089165 
-iter =  55, Function value 1.50566, Residual: 0.000827084 
-iter =  56, Function value 1.50566, Residual: 0.000746097 
-iter =  57, Function value 1.50566, Residual: 0.000692051 
-iter =  58, Function value 1.50566, Residual: 0.000624294 
-iter =  59, Function value 1.50566, Residual: 0.000579057 
-iter =  60, Function value 1.50566, Residual: 0.000522369 
-iter =  61, Function value 1.50566, Residual: 0.000484508 
-iter =  62, Function value 1.50566, Residual: 0.000437079 
-iter =  63, Function value 1.50566, Residual: 0.000405392 
-iter =  64, Function value 1.50566, Residual: 0.00036571 
-iter =  65, Function value 1.50566, Residual: 0.000339193 
-iter =  66, Function value 1.50566, Residual: 0.000305992 
-iter =  67, Function value 1.50566, Residual: 0.000283801 
-iter =  68, Function value 1.50566, Residual: 0.000256023 
-iter =  69, Function value 1.50566, Residual: 0.000237453 
-iter =  70, Function value 1.50566, Residual: 0.000214213 
-iter =  71, Function value 1.50566, Residual: 0.000198673 
-iter =  72, Function value 1.50566, Residual: 0.000179229 
-iter =  73, Function value 1.50566, Residual: 0.000166226 
-iter =  74, Function value 1.50566, Residual: 0.000149957 
-iter =  75, Function value 1.50566, Residual: 0.000139077 
-iter =  76, Function value 1.50566, Residual: 0.000125466 
-iter =  77, Function value 1.50566, Residual: 0.000116362 
-iter =  78, Function value 1.50566, Residual: 0.000104974 
-iter =  79, Function value 1.50566, Residual: 9.73568e-05 
+iter =   0, Function value 1.58436, Residual: 0.551899 
+iter =   1, Function value 1.52951, Residual: 0.184763 
+iter =   2, Function value 1.51894, Residual: 0.301819 
+iter =   3, Function value 1.51123, Residual: 0.112218 
+iter =   4, Function value 1.50982, Residual: 0.0929645 
+iter =   5, Function value 1.50903, Residual: 0.0692067 
+iter =   6, Function value 1.50882, Residual: 0.153327 
+iter =   7, Function value 1.50811, Residual: 0.117845 
+iter =   8, Function value 1.50762, Residual: 0.0977029 
+iter =   9, Function value 1.50726, Residual: 0.0787403 
+iter =  10, Function value 1.50697, Residual: 0.064851 
+iter =  11, Function value 1.50675, Residual: 0.0527147 
+iter =  12, Function value 1.50657, Residual: 0.0436322 
+iter =  13, Function value 1.50642, Residual: 0.0383386 
+iter =  14, Function value 1.5063, Residual: 0.0334914 
+iter =  15, Function value 1.5062, Residual: 0.0303921 
+iter =  16, Function value 1.50611, Residual: 0.0268841 
+iter =  17, Function value 1.50604, Residual: 0.0240955 
+iter =  18, Function value 1.50598, Residual: 0.021272 
+iter =  19, Function value 1.50593, Residual: 0.0189403 
+iter =  20, Function value 1.50589, Residual: 0.0175742 
+iter =  21, Function value 1.50585, Residual: 0.0157372 
+iter =  22, Function value 1.50582, Residual: 0.0146013 
+iter =  23, Function value 1.5058, Residual: 0.013093 
+iter =  24, Function value 1.50577, Residual: 0.0121483 
+iter =  25, Function value 1.50576, Residual: 0.0109073 
+iter =  26, Function value 1.50574, Residual: 0.0101209 
+iter =  27, Function value 1.50573, Residual: 0.00909719 
+iter =  28, Function value 1.50572, Residual: 0.00844177 
+iter =  29, Function value 1.50571, Residual: 0.00759479 
+iter =  30, Function value 1.5057, Residual: 0.00704786 
+iter =  31, Function value 1.5057, Residual: 0.00634527 
+iter =  32, Function value 1.50569, Residual: 0.00588837 
+iter =  33, Function value 1.50569, Residual: 0.00530425 
+iter =  34, Function value 1.50568, Residual: 0.00492224 
+iter =  35, Function value 1.50568, Residual: 0.00443575 
+iter =  36, Function value 1.50568, Residual: 0.00411615 
+iter =  37, Function value 1.50567, Residual: 0.00371042 
+iter =  38, Function value 1.50567, Residual: 0.00344294 
+iter =  39, Function value 1.50567, Residual: 0.00310423 
+iter =  40, Function value 1.50567, Residual: 0.0028803 
+iter =  41, Function value 1.50567, Residual: 0.00259734 
+iter =  42, Function value 1.50567, Residual: 0.00240986 
+iter =  43, Function value 1.50567, Residual: 0.00217335 
+iter =  44, Function value 1.50567, Residual: 0.00201637 
+iter =  45, Function value 1.50567, Residual: 0.00181862 
+iter =  46, Function value 1.50567, Residual: 0.00168719 
+iter =  47, Function value 1.50566, Residual: 0.0015218 
+iter =  48, Function value 1.50566, Residual: 0.00141176 
+iter =  49, Function value 1.50566, Residual: 0.00127343 
+iter =  50, Function value 1.50566, Residual: 0.0011813 
+iter =  51, Function value 1.50566, Residual: 0.00106558 
+iter =  52, Function value 1.50566, Residual: 0.000988455 
+iter =  53, Function value 1.50566, Residual: 0.00089165 
+iter =  54, Function value 1.50566, Residual: 0.000827084 
+iter =  55, Function value 1.50566, Residual: 0.000746097 
+iter =  56, Function value 1.50566, Residual: 0.000692051 
+iter =  57, Function value 1.50566, Residual: 0.000624294 
+iter =  58, Function value 1.50566, Residual: 0.000579057 
+iter =  59, Function value 1.50566, Residual: 0.000522369 
+iter =  60, Function value 1.50566, Residual: 0.000484508 
+iter =  61, Function value 1.50566, Residual: 0.000437079 
+iter =  62, Function value 1.50566, Residual: 0.000405392 
+iter =  63, Function value 1.50566, Residual: 0.00036571 
+iter =  64, Function value 1.50566, Residual: 0.000339193 
+iter =  65, Function value 1.50566, Residual: 0.000305992 
+iter =  66, Function value 1.50566, Residual: 0.000283801 
+iter =  67, Function value 1.50566, Residual: 0.000256023 
+iter =  68, Function value 1.50566, Residual: 0.000237453 
+iter =  69, Function value 1.50566, Residual: 0.000214213 
+iter =  70, Function value 1.50566, Residual: 0.000198673 
+iter =  71, Function value 1.50566, Residual: 0.000179229 
+iter =  72, Function value 1.50566, Residual: 0.000166226 
+iter =  73, Function value 1.50566, Residual: 0.000149957 
+iter =  74, Function value 1.50566, Residual: 0.000139077 
+iter =  75, Function value 1.50566, Residual: 0.000125466 
+iter =  76, Function value 1.50566, Residual: 0.000116362 
+iter =  77, Function value 1.50566, Residual: 0.000104974 
+iter =  78, Function value 1.50566, Residual: 9.73568e-05 
 Tao Object: 1 MPI processes
   type: bncg
-    CG Type: gd
-    Resets: 4
-      Broken ortho: 5
-      Not a descent dir.: 0
+    CG Type: pcgd
+    Skipped Stepdirection Updates: 0
+    Scaled gradient steps: 0
+    Pure gradient steps: 1
+    Not a descent direction: 0
     Line search fails: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
@@ -101,6 +102,6 @@ Tao Object: 1 MPI processes
   convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.73568e-05
   Objective value=1.50566
-  total number of iterations=79,                          (max: 2000)
+  total number of iterations=78,                          (max: 2000)
   total number of function/gradient evaluations=165,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol

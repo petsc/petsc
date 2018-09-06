@@ -136,10 +136,12 @@ PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCKSPSetKSP(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetSubKSP(PC,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
 PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
@@ -333,9 +335,10 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 #define KSP_FILE_CLASSID 1211223
 
-PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
+PETSC_EXTERN PetscErrorCode KSPLSQRSetExactMatNorm(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
-PETSC_EXTERN PetscErrorCode KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetNorms(KSP,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
@@ -586,7 +589,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
-PETSC_EXTERN PetscErrorCode KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
+PETSC_EXTERN PetscErrorCode KSPLSQRConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
@@ -702,6 +705,34 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementGetPmat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchurComplementAinvType,MatReuse,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDFP(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBFGS(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+
+PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);
+PETSC_EXTERN PetscErrorCode MatLMVMAllocate(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMReset(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatLMVMResetShift(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMClearJ0(Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0(Mat, Mat);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Scale(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0Diag(Mat, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0PC(Mat, PC);
+PETSC_EXTERN PetscErrorCode MatLMVMSetJ0KSP(Mat, KSP);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Fwd(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetUpdateCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt*);
+PETSC_EXTERN PetscErrorCode MatSymBrdnSetDelta(Mat, PetscScalar);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

@@ -19,8 +19,8 @@ typedef struct {
   const char  *objName;      /* The name for the next object passed to Mathematica */
 } PetscViewer_Mathematica;
 
-extern PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer);
-extern PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer,const char*);
-extern PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer,int);
-extern PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer,const char*);
-extern PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer,LinkMode);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer,const char*);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer,int);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer,const char*);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer,LinkMode);

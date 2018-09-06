@@ -9,11 +9,11 @@
 
 typedef struct {
   Mat M;
+  PC bfgs_pre;
 
   Vec W;
   Vec Xold;
   Vec Gold;
-  Vec Diag;
 
   /* Parameters when updating the trust-region radius based on steplength
 
@@ -115,11 +115,8 @@ typedef struct {
   PetscInt ntrust;              /* Trust-region steps accepted */
   PetscInt newt;                /* Newton directions attempted */
   PetscInt bfgs;                /* BFGS directions attempted */
-  PetscInt sgrad;               /* Scaled gradient directions attempted */
   PetscInt grad;                /* Gradient directions attempted */
 
-  PetscInt pc_type;             /* Preconditioner for the code */
-  PetscInt bfgs_scale_type;     /* Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;           /* Trust-region initialization method */
   PetscInt update_type;         /* Trust-region update method */
 } TAO_NTL;

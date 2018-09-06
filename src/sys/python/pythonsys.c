@@ -53,8 +53,11 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[PETSC_MAX_
 
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
 {
-  const char     cmdline1[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
-  const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
+  const char     cmdline1[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
+  const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; import sys;print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),\"libpython\"+sys.version[:3]+\".dylib\"))'";
+  const char     cmdline3[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
+  const char     cmdline4[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
+
   PetscBool      found = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -67,6 +70,12 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH
   ierr = PetscPythonFindLibraryName(pythonexe,cmdline1,pythonlib,&found);CHKERRQ(ierr);
   if (!found) {
     ierr = PetscPythonFindLibraryName(pythonexe,cmdline2,pythonlib,&found);CHKERRQ(ierr);
+  }
+  if (!found) {
+    ierr = PetscPythonFindLibraryName(pythonexe,cmdline3,pythonlib,&found);CHKERRQ(ierr);
+  }
+  if (!found) {
+    ierr = PetscPythonFindLibraryName(pythonexe,cmdline4,pythonlib,&found);CHKERRQ(ierr);
   }
   ierr = PetscInfo2(0,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -84,7 +93,7 @@ static int       (*Py_IsInitialized)(void);
 static void      (*Py_InitializeEx)(int);
 static void      (*Py_Finalize)(void);
 
-static void      (*PySys_SetArgv)(int,char**);
+static void      (*PySys_SetArgv)(int,void*);
 static PyObject* (*PySys_GetObject)(const char*);
 static PyObject* (*PyObject_CallMethod)(PyObject*,const char*, const char*, ...);
 static PyObject* (*PyImport_ImportModule)(const char*);
@@ -210,13 +219,12 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     /*  build 'sys.argv' list */
     py_version = Py_GetVersion();
     if (py_version[0] == '2') {
-      int argc = 0; char **argv = 0;
-      ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
+      int argc = 0; char *argv[1] = {NULL};
       PySys_SetArgv(argc,argv);
     }
     if (py_version[0] == '3') {
-      /* XXX 'argv' is type 'wchar_t**' */
-      PySys_SetArgv(0,NULL);
+      int argc = 0; wchar_t *argv[1] = {NULL};
+      PySys_SetArgv(argc,argv);
     }
     /* add PETSC_LIB_DIR in front of 'sys.path' */
     sys_path = PySys_GetObject("path");
@@ -227,7 +235,6 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     /* register finalizer */
     if (!registered) {
       ierr = PetscRegisterFinalize(PetscPythonFinalize);CHKERRQ(ierr);
-
       registered = PETSC_TRUE;
     }
     PetscBeganPython = PETSC_TRUE;

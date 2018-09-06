@@ -150,6 +150,7 @@
 !
 !     Macro for templating between real and complex
 !
+#define PetscComplex PetscFortranComplex
 #if defined(PETSC_USE_COMPLEX)
 #define PetscScalar PetscFortranComplex
 !
@@ -203,10 +204,10 @@
 #define PetscMatlabEngine PetscFortranAddr
 
 #if !defined(PetscFlush)
-#if defined(PETSC_HAVE_FLUSH)
-#define PetscFlush(a)    call flush(a)
-#elif defined(PETSC_HAVE_FLUSH_)
-#define PetscFlush(a)    call flush_(a)
+#if defined(PETSC_HAVE_FORTRAN_FLUSH)
+#define PetscFlush(a)    flush(a)
+#elif defined(PETSC_HAVE_FORTRAN_FLUSH_)
+#define PetscFlush(a)    flush_(a)
 #else
 #define PetscFlush(a)
 #endif

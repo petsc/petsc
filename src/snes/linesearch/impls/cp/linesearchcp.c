@@ -8,12 +8,10 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   Vec            X, Y, F, W;
   SNES           snes;
   PetscReal      xnorm, ynorm, gnorm, steptol, atol, rtol, ltol, maxstep;
-
-  PetscReal   lambda, lambda_old, lambda_update, delLambda;
-  PetscScalar fty, fty_init, fty_old, fty_mid1, fty_mid2, s;
-  PetscInt    i, max_its;
-
-  PetscViewer monitor;
+  PetscReal      lambda, lambda_old, lambda_update, delLambda;
+  PetscScalar    fty, fty_init, fty_old, fty_mid1, fty_mid2, s;
+  PetscInt       i, max_its;
+  PetscViewer    monitor;
 
   PetscFunctionBegin;
   ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL);CHKERRQ(ierr);
@@ -93,6 +91,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     }
     /* if the solve is going in the wrong direction, fix it */
     if (PetscRealPart(s) > 0.) s = -s;
+    if (s == 0.0) break;
     lambda_update =  lambda - PetscRealPart(fty / s);
 
     /* switch directions if we stepped out of bounds */

@@ -3,8 +3,6 @@
 
 const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
 
-extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES,Vec,Vec,void*);
-
 static PetscErrorCode SNESReset_FAS(SNES snes)
 {
   PetscErrorCode ierr  = 0;
@@ -128,13 +126,13 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->galerkin) {
     if (next) {
-      ierr = SNESSetFunction(next, NULL, SNESFASGalerkinDefaultFunction, next);CHKERRQ(ierr);
+      ierr = SNESSetFunction(next, NULL, SNESFASGalerkinFunctionDefault, next);CHKERRQ(ierr);
     }
     if (fas->smoothd && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
+      ierr = SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinFunctionDefault, snes);CHKERRQ(ierr);
     }
     if (fas->smoothu && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
+      ierr = SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinFunctionDefault, snes);CHKERRQ(ierr);
     }
   }
 
@@ -563,7 +561,7 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
     B_c  = next->vec_rhs;
 
     if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}
-    ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
+    ierr = SNESFASRestrict(snes, X, Xo_c);CHKERRQ(ierr);
     /* restrict the defect: R(F(x) - b) */
     ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
     if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,snes,0,0,0);CHKERRQ(ierr);}

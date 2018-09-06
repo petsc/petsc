@@ -94,6 +94,7 @@ PetscBool PetscCUDASynchronize = PETSC_FALSE;
 /*
    Optional file where all PETSc output from various prints is saved
 */
+PETSC_INTERN FILE *petsc_history;
 FILE *petsc_history = NULL;
 
 PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
@@ -136,7 +137,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
+PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -210,10 +211,10 @@ PetscErrorCode  PetscEnd(void)
 }
 
 PetscBool PetscOptionsPublish = PETSC_FALSE;
-extern PetscErrorCode PetscSetUseTrMalloc_Private(void);
-extern PetscErrorCode PetscSetUseHBWMalloc_Private(void);
-extern PetscBool      petscsetmallocvisited;
-static char           emacsmachinename[256];
+PETSC_INTERN PetscErrorCode PetscSetUseTrMalloc_Private(void);
+PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void);
+PETSC_INTERN PetscBool      petscsetmallocvisited;
+static       char           emacsmachinename[256];
 
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
@@ -241,10 +242,10 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 }
 
 #if defined(PETSC_USE_LOG)
-extern PetscBool   PetscObjectsLog;
+PETSC_INTERN PetscBool   PetscObjectsLog;
 #endif
 
-PetscErrorCode  PetscOptionsCheckInitial_Private(void)
+PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char              string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm          comm = PETSC_COMM_WORLD;
@@ -337,7 +338,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscOptionsHasName(NULL,NULL,"-v",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-version",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg3);CHKERRQ(ierr);
   if (flg1 || flg2 || flg3) {
 
     /*
@@ -614,7 +615,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
        Print basic help message
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-help",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasHelp(NULL,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -help: prints help method for each option\n");CHKERRQ(ierr);
@@ -642,7 +643,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -malloc_info: prints total memory usage\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -malloc_log: keeps log of all memory allocations\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -malloc_debug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -options_table: dump list of options inputted\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_view: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left no: don't dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -tmp tmpdir: alternative /tmp directory\n");CHKERRQ(ierr);

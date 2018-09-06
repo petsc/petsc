@@ -46,6 +46,7 @@ typedef const char* PCType;
 #define PCNN              "nn"
 #define PCCHOLESKY        "cholesky"
 #define PCPBJACOBI        "pbjacobi"
+#define PCVPBJACOBI       "vpbjacobi"
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
 #define PCPARMS           "parms"
@@ -69,6 +70,7 @@ typedef const char* PCType;
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
 #define PCTELESCOPE       "telescope"
+#define PCLMVM            "lmvm"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

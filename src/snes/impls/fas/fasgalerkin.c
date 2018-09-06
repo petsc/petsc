@@ -48,15 +48,29 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-/*
-SNESFASGalerkinDefaultFunction
+/*@C
+   SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
- */
-PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ctx)
+   Input Parameters:
+.  snes - the nonlinear solver context
+.  X - input vector
+.  ctx - the FAS context
+
+   Output Parameter:
+.  F - output vector
+
+   Notes:
+   The Galerkin FAS function evalutation is defined as
+$  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
+
+   Level: developer
+
+.keywords: FAS, galerkin
+
+.seealso: SNESFASGetGalerkin(), SNESFASSetGalerkin()
+@*/
+PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx)
 {
-  /* the Galerkin FAS function evalutation is defined as
-   F^l(x^l) = I^l_0F^0(P^0_lx^l)
-   */
   SNES           fassnes;
   SNES_FAS       *fas;
   SNES_FAS       *prevfas;

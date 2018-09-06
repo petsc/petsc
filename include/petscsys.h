@@ -1586,7 +1586,7 @@ $  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and w
 .seealso: PetscViewerFileSetMode()
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
-extern const char *const PetscFileModes[];
+PETSC_EXTERN const char *const PetscFileModes[];
 
 /*
     Defines PETSc error handling.

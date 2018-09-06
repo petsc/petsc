@@ -3,7 +3,6 @@
 #include <petscviewer.h>
 #include <petsc/private/viewerimpl.h>
 
-extern PetscLogEvent PETSC_Barrier,PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 
 /*@C
@@ -64,7 +63,7 @@ PetscErrorCode  PetscSysInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("null",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_SMALLEST_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_SMALLEST_CLASSID);CHKERRQ(ierr);}
   }
   ierr = PetscRegisterFinalize(PetscSysFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

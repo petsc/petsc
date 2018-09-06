@@ -17,8 +17,8 @@ KSP Object: 1 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: eisenstat
-  omega = 1.
-  Using diagonal scaling (default)
+    omega = 1.
+    Using diagonal scaling (default)
   linear system matrix = precond matrix:
   Mat Object: 1 MPI processes
     type: seqaij

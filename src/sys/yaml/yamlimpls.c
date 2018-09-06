@@ -94,7 +94,7 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile()
 C*/
-extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[],PetscBool require)
+PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[],PetscBool require)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

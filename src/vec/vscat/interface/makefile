@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vscreate.c dlregisvecscat.c
+SOURCEC  = vscreate.c dlregisvecscat.c vscatfce.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

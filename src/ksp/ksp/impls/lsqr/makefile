@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lsqr.c lsqr_monitor.c lsqr_converged.c
+SOURCEC  = lsqr.c
 SOURCEF  =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/lsqr/

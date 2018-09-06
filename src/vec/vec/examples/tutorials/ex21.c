@@ -14,7 +14,7 @@
 #define f90array1dcreatemystruct_       f90array1dcreatemystruct
 #define f90array1daccessmystruct_       f90array1daccessmystruct
 #define f90array1ddestroymystruct_      f90array1ddestroymystruct
-#define f90array1dgetaddrmystruc_       f90array1dgetaddrmystruct
+#define f90array1dgetaddrmystruct_      f90array1dgetaddrmystruct
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL f90array1dcreatemystruct_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);

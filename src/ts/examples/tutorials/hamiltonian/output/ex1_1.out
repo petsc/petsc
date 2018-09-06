@@ -1,0 +1,16 @@
+At time 0.000000, Energy =    81.92, Modified Energy =    81.92
+At time 0.010000, Energy =  81.6695, Modified Energy =    81.92
+At time 0.020000, Energy =  81.7775, Modified Energy =    81.92
+At time 0.030000, Energy =    82.09, Modified Energy =    81.92
+At time 0.040000, Energy =  82.1612, Modified Energy =    81.92
+At time 0.050000, Energy =  81.8895, Modified Energy =    81.92
+At time 0.060000, Energy =  81.6625, Modified Energy =    81.92
+At time 0.070000, Energy =  81.8041, Modified Energy =    81.92
+At time 0.080000, Energy =  82.1122, Modified Energy =    81.92
+At time 0.090000, Energy =  82.1473, Modified Energy =    81.92
+At time 0.100000, Energy =  81.8593, Modified Energy =    81.92
+Vec Object: 1 MPI processes
+  type: seq
+0.198562
+-1.49198
+The exact solution at time 0.100000 is [0.198637 -1.49183]

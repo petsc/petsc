@@ -22,6 +22,7 @@ PC Object: 1 MPI processes
     total: nonzeros=55, allocated nonzeros=65
     total number of mallocs used during MatSetValues calls =1
       has attached null space
+      has attached transposed null space
       not using I-node routines
   0 KSP unpreconditioned resid norm 2.236067977500e+00 true resid norm 2.236067977500e+00 ||r(i)||/||b|| 1.000000000000e+00
   1 KSP unpreconditioned resid norm 1.236205646889e+00 true resid norm 1.236205646889e+00 ||r(i)||/||b|| 5.528479721225e-01

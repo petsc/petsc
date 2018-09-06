@@ -2438,4 +2438,4 @@ Process 0:
   ( 267) dim  2 offset 618 3.35245 3.67474
   ( 268) dim  2 offset 620 5.81216 5.05816
   ( 269) dim  2 offset 622 6.62255 6.69854
-Mesh with 180 cells, shape condition numbers: min = 2.02081, max = 22.142, mean = 2.83887, stddev = 2.0901
+Mesh with 180 cells, shape condition numbers: min = 2.02081, max = 22.142, mean = 2.83887, stddev = 2.09593

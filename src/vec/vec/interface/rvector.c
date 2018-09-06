@@ -328,7 +328,7 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 }
 
 /*@C
-   VecMax - Determines the maximum vector component and its location.
+   VecMax - Determines the vector component with maximum real part and its location.
 
    Collective on Vec
 
@@ -336,8 +336,8 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 .  x - the vector
 
    Output Parameters:
-+  val - the maximum component
--  p - the location of val (pass NULL if you don't want this)
++  p - the location of val (pass NULL if you don't want this)
+-  val - the maximum component
 
    Notes:
    Returns the value PETSC_MIN_REAL and p = -1 if the vector is of length 0.
@@ -365,7 +365,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 }
 
 /*@C
-   VecMin - Determines the minimum vector component and its location.
+   VecMin - Determines the vector component with minimum real part and its location.
 
    Collective on Vec
 
@@ -373,8 +373,8 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 .  x - the vector
 
    Output Parameter:
-+  val - the minimum component
--  p - the location of val (pass NULL if you don't want this location)
++  p - the location of val (pass NULL if you don't want this location)
+-  val - the minimum component
 
    Level: intermediate
 

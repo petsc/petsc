@@ -65,7 +65,7 @@ PetscErrorCode CharacteristicInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("characteristic",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(CHARACTERISTIC_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(CHARACTERISTIC_CLASSID);CHKERRQ(ierr);}
   }
   /* Process package finalizer */
   ierr = PetscRegisterFinalize(CharacteristicFinalizePackage);CHKERRQ(ierr);

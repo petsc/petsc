@@ -7,7 +7,6 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--with-cuda=1',
-    '--download-cusp=1',
     '--with-precision=double',
     '--with-clanguage=c',
   ]

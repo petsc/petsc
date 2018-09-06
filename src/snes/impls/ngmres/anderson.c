@@ -1,10 +1,5 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-extern PetscErrorCode SNESDestroy_NGMRES(SNES);
-extern PetscErrorCode SNESReset_NGMRES(SNES);
-extern PetscErrorCode SNESSetUp_NGMRES(SNES);
-extern PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
-
 static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;

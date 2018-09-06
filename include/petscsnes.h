@@ -356,6 +356,7 @@ PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipCon
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,PetscErrorCode (*)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,PetscErrorCode (**)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
 
 PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode (*)(SNES,Vec,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode (**)(SNES,Vec,Mat,Mat,void*),void**);
@@ -365,7 +366,8 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES,Vec,Mat,Mat,voi
 PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES,Vec,PetscErrorCode (*)(SNES,Vec,Vec,void*),Mat,Mat,PetscErrorCode (*)(SNES,Vec,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES,Vec*,PetscErrorCode (**)(SNES,Vec,Vec,void*),Mat*,Mat*,PetscErrorCode (**)(SNES,Vec,Mat,Mat,void*),void**);
-PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES,PetscErrorCode (*)(SNES,Vec,PetscReal *,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,PetscErrorCode (**)(SNES,Vec,PetscReal *,void*),void**);
@@ -840,6 +842,7 @@ PETSC_EXTERN PetscErrorCode SNESFASSetLog(SNES, PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASGetGalerkin(SNES, PetscBool*);
+PETSC_EXTERN PetscErrorCode SNESFASGalerkinFunctionDefault(SNES,Vec,Vec,void*);
 
 /* called on any level -- "Cycle" FAS instance */
 PETSC_EXTERN PetscErrorCode SNESFASCycleGetSmoother(SNES, SNES*);

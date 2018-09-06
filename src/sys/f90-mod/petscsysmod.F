@@ -75,9 +75,120 @@
         module petscsys
         use iso_c_binding
         use petscsysdef
+        MPI_Comm PETSC_COMM_SELF
+        MPI_Comm PETSC_COMM_WORLD
+
+        PetscChar(80) PETSC_NULL_CHARACTER = ''
+        PetscInt PETSC_NULL_INTEGER(1)
+        PetscFortranDouble PETSC_NULL_DOUBLE(1)
+        PetscScalar PETSC_NULL_SCALAR(1)
+        PetscReal PETSC_NULL_REAL(1)
+        PetscBool PETSC_NULL_BOOL(1)
+!
+#if defined(PETSC_USE_REAL___FLOAT128)
+        integer MPIU_REAL
+        integer MPIU_SCALAR
+        integer MPIU_SUM
+#endif
+!
+!
+!
+!     Basic math constants
+!
+        PetscReal PETSC_PI
+        PetscReal PETSC_MAX_REAL
+        PetscReal PETSC_MIN_REAL
+        PetscReal PETSC_MACHINE_EPSILON
+        PetscReal PETSC_SQRT_MACHINE_EPSILON
+        PetscReal PETSC_SMALL
+        PetscReal PETSC_INFINITY
+        PetscReal PETSC_NINFINITY
+
+!
 #include <../src/sys/f90-mod/petscsys.h90>
         interface
 #include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
         end interface
+
         end module
 
+        subroutine PetscSetCOMM(c1,c2)
+        use petscsys
+        implicit none
+        MPI_Comm c1,c2
+
+        PETSC_COMM_WORLD    = c1
+        PETSC_COMM_SELF     = c2
+        return
+        end
+
+        subroutine PetscGetCOMM(c1)
+        use petscsys
+        implicit none
+        MPI_Comm c1
+
+        c1 = PETSC_COMM_WORLD
+        return
+        end
+
+        subroutine PetscSetModuleBlock()
+        use petscsys
+        implicit none
+
+        call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,                        &
+     &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,                           &
+     &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION)
+
+        return
+        end
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+        subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum)
+        use petscsys
+        implicit none
+
+        integer freal,fscalar,fsum
+
+        MPIU_REAL   = freal
+        MPIU_SCALAR = fscalar
+        MPIU_SUM    = fsum
+        return
+        end
+#endif
+
+        subroutine PetscSetModuleBlockNumeric(pi,maxreal,minreal,eps,       &
+     &     seps,small,pinf,pninf)
+        use petscsys
+        implicit none
+
+        PetscReal pi,maxreal,minreal,eps,seps
+        PetscReal small,pinf,pninf
+
+        PETSC_PI = pi
+        PETSC_MAX_REAL = maxreal
+        PETSC_MIN_REAL = minreal
+        PETSC_MACHINE_EPSILON = eps
+        PETSC_SQRT_MACHINE_EPSILON = seps
+        PETSC_SMALL = small
+        PETSC_INFINITY = pinf
+        PETSC_NINFINITY = pninf
+
+        return
+        end
+
+
+      block data PetscCommInit
+      implicit none
+!
+!     this code is duplicated - because including ../src/sys/f90-mod/petscsys.h here
+!     gives compile errors.
+!
+      MPI_Comm PETSC_COMM_WORLD
+      MPI_Comm PETSC_COMM_SELF
+      common /petscfortran9/ PETSC_COMM_WORLD
+      common /petscfortran10/ PETSC_COMM_SELF
+      data   PETSC_COMM_WORLD /0/
+      data   PETSC_COMM_SELF /0/
+      end
+      

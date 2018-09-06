@@ -29,7 +29,7 @@ typedef struct Edge {
   struct Edge   *next;
 } Edge;
 
-PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
+PetscReal findDistance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
   return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
@@ -76,7 +76,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   /* find maximum distance */
   for (i=0; i<nvertex; i++) {
     for (j=0; j<nvertex; j++) {
-      dist = distance(x[i],x[j],y[i],y[j]);
+      dist = findDistance(x[i],x[j],y[i],y[j]);
       if (dist >= maxdist) maxdist = dist;
     }
   }
@@ -85,7 +85,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   for (i=0; i<nvertex; i++) {
     for (j=0; j<nvertex; j++) {
       if (j != i) {
-        dist = distance(x[i],x[j],y[i],y[j]);
+        dist = findDistance(x[i],x[j],y[i],y[j]);
         prob = beta*PetscExpScalar(-dist/(maxdist*alpha));
         ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
         if (value <= prob) {

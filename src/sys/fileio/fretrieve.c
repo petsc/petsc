@@ -401,7 +401,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
     if (download) {
       /* local file is not already here so use curl to get it */
       ierr = PetscStrncpy(localname,tlocalname,llen);CHKERRQ(ierr);
-      ierr = PetscStrcpy(buffer,"curl ");CHKERRQ(ierr);
+      ierr = PetscStrcpy(buffer,"curl --fail --silent --show-error ");CHKERRQ(ierr);
       ierr = PetscStrcat(buffer,url);CHKERRQ(ierr);
       ierr = PetscStrcat(buffer," > ");CHKERRQ(ierr);
       ierr = PetscStrcat(buffer,localname);CHKERRQ(ierr);

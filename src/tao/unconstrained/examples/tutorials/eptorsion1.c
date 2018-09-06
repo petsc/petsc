@@ -87,6 +87,13 @@ PetscErrorCode main(int argc,char **argv)
   AppCtx             user;                /* application context */
   PetscMPIInt        size;                /* number of processes */
   PetscReal          one=1.0;
+  
+  PetscBool          test_lmvm = PETSC_FALSE;
+  KSP                ksp;
+  PC                 pc;
+  Mat                M;
+  Vec                in, out, out2;
+  PetscReal          mult_solve_dist;
 
   /* Initialize TAO,PETSc */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
@@ -98,6 +105,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n---- Elastic-Plastic Torsion Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",mx,my); CHKERRQ(ierr);
@@ -128,22 +136,42 @@ PetscErrorCode main(int argc,char **argv)
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
     ierr = TaoSetHessianRoutine(tao,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
-
-    /* Set null preconditioner.  Alternatively, set user-provided
-       preconditioner or explicitly form preconditioning matrix */
-    ierr = PetscOptionsSetValue(NULL,"-pc_type","none");CHKERRQ(ierr);
   } else {
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,NULL,&H);CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
+  /* Test the LMVM matrix */
+  if (test_lmvm) {
+    ierr = PetscOptionsSetValue(NULL, "-tao_type", "bntr");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue(NULL, "-tao_bnk_pc_type", "lmvm");CHKERRQ(ierr);
+  }
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
+  
+  /* Test the LMVM matrix */
+  if (test_lmvm) {
+    ierr = TaoGetKSP(tao, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PCLMVMGetMatLMVM(pc, &M);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &in);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &out);CHKERRQ(ierr);
+    ierr = VecDuplicate(x, &out2);CHKERRQ(ierr);
+    ierr = VecSet(in, 5.0);CHKERRQ(ierr);
+    ierr = MatMult(M, in, out);CHKERRQ(ierr);
+    ierr = MatSolve(M, out, out2);CHKERRQ(ierr);
+    ierr = VecAXPY(out2, -1.0, in);CHKERRQ(ierr);
+    ierr = VecNorm(out2, NORM_2, &mult_solve_dist);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)tao), "error between MatMult and MatSolve: %e\n", mult_solve_dist);CHKERRQ(ierr);
+    ierr = VecDestroy(&in);CHKERRQ(ierr);
+    ierr = VecDestroy(&out);CHKERRQ(ierr);
+    ierr = VecDestroy(&out2);CHKERRQ(ierr);
+  }
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&user.s);CHKERRQ(ierr);
@@ -607,5 +635,17 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
    test:
       suffix: 4
       args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
+      
+   test:
+     suffix: 5
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnls
+     
+   test:
+     suffix: 6
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type blmvm
+     
+   test:
+     suffix: 7
+     args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
 
 TEST*/

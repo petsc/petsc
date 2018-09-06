@@ -9,15 +9,20 @@
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot_no_function(sum,r,xv,xi,nnz) { \
     if (nnz > 0) { \
-      switch (nnz & 0x3) { \
+      PetscInt nnz2=nnz,rem=nnz&0x3; \
+      switch (rem) { \
       case 3: sum += *xv++ *r[*xi++]; \
       case 2: sum += *xv++ *r[*xi++]; \
       case 1: sum += *xv++ *r[*xi++]; \
-        nnz       -= 4;} \
-      while (nnz > 0) { \
+        nnz2      -= rem;} \
+      while (nnz2 > 0) { \
         sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
-               xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-        xv += 4; xi += 4; nnz -= 4; }}}
+                xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz2 -= 4; \
+      } \
+      xv -= nnz; xi -= nnz; \
+    } \
+  }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot_no_function(sum,r,xv,xi,nnz) { \

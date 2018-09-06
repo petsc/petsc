@@ -84,7 +84,7 @@ Vec Object: 1 MPI processes
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 
@@ -104,7 +104,7 @@ Vec Object: 1 MPI processes
         1.
         1.
   (1) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 
@@ -129,7 +129,7 @@ Vec Object: 1 MPI processes
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 
@@ -149,7 +149,7 @@ Vec Object: 1 MPI processes
         3.
         3.
   (1) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 
@@ -228,7 +228,7 @@ Vec Object: 1 MPI processes
   type: nest
   VecNest, rows=2,  structure: 
   (0) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 
@@ -248,7 +248,7 @@ Vec Object: 1 MPI processes
         1.
         1.
   (1) : type=nest, rows=8 
-    Vec Object:     1 MPI processes
+    Vec Object: 1 MPI processes
       type: nest
       VecNest, rows=2,  structure: 
       (0) : type=mpi, rows=4 

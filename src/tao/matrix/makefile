@@ -3,11 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lmvmmat.c adamat.c submatfree.c
+SOURCEC  = adamat.c submatfree.c
 SOURCEF  = 
-SOURCEH  = lmvmmat.h submatfree.h
+SOURCEH  = submatfree.h
 LIBBASE  = libpetsctao
 MANSEC   = Tao
+DIRS		 = 
 LOCDIR   = src/tao/matrix/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

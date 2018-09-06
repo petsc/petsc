@@ -51,7 +51,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
-    help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
     help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     return
 
@@ -145,7 +144,7 @@ class Configure(config.base.Configure):
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','inttypes','immintrin','zmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
+                 'gettimeofday', 'getwd', 'memalign', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
@@ -162,15 +161,15 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
     fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig','PETSc.pc'),'w')
+    cflags_inc = ['-I${includedir}']
     if self.framework.argDB['prefix']:
       fd.write('prefix='+self.installdir.dir+'\n')
-      fd.write('exec_prefix=${prefix}\n')
-      fd.write('includedir=${prefix}/include\n')
     else:
       fd.write('prefix='+self.petscdir.dir+'\n')
-      fd.write('exec_prefix=${prefix}\n')
-      fd.write('includedir=${prefix}/include\n')
-    fd.write('libdir='+os.path.join(self.installdir.dir,'lib')+'\n')
+      cflags_inc.append('-I' + os.path.join('${prefix}', self.arch.arch, 'include'))
+    fd.write('exec_prefix=${prefix}\n')
+    fd.write('includedir=${prefix}/include\n')
+    fd.write('libdir=${prefix}/lib\n')
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
@@ -193,7 +192,7 @@ class Configure(config.base.Configure):
     fd.write('Name: PETSc\n')
     fd.write('Description: Library to solve ODEs and algebraic equations\n')
     fd.write('Version: %s\n' % self.petscdir.version)
-    fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
+    fd.write('Cflags: ' + ' '.join([self.setCompilers.CPPFLAGS] + cflags_inc) + '\n')
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
     # Remove RPATH flags from library list.  User can add them using
     # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
@@ -381,7 +380,9 @@ prepend-path PATH "%s"
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
     self.framework.packages.reverse()
-    includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
+    petscincludes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
+    petscincludes_install = [os.path.join(self.installdir.dir, 'include')] if self.framework.argDB['prefix'] else petscincludes
+    includes = []
     self.packagelibs = []
     for i in self.framework.packages:
       if i.useddirectly:
@@ -400,20 +401,23 @@ prepend-path PATH "%s"
     else:
       self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
     self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+self.packagelibs+self.complibs)
+    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L${PETSC_DIR}/${PETSC_ARCH}/lib', self.petsclib]+self.packagelibs+self.complibs)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
 
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
-    self.allincludes = self.headers.toStringNoDupes(includes)
-    self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
-    self.PETSC_CC_INCLUDES = self.allincludes
+    allincludes = petscincludes + includes
+    allincludes_install = petscincludes_install + includes
+    self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(allincludes)
+    self.PETSC_CC_INCLUDES_INSTALL = self.headers.toStringNoDupes(allincludes_install)
+    self.addMakeMacro('PETSC_CC_INCLUDES',self.PETSC_CC_INCLUDES)
+    self.addMakeMacro('PETSC_CC_INCLUDES_INSTALL', self.PETSC_CC_INCLUDES_INSTALL)
     if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
-        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
-      else:
-        self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
+      def modinc(includes):
+        return includes if self.compilers.fortranIsF90 else []
+      self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(allincludes,modinc(allincludes)))
+      self.addMakeMacro('PETSC_FC_INCLUDES_INSTALL',self.headers.toStringNoDupes(allincludes_install,modinc(allincludes_install)))
 
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
@@ -499,7 +503,7 @@ prepend-path PATH "%s"
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s\\n\"\n' % (escape(self.PETSC_CC_INCLUDES).replace(self.petscdir.dir,self.installdir.petscDir).replace(self.arch.arch,self.installdir.petscArch)))
+    fd.write('\"Using include paths: %s\\n\"\n' % (escape(self.PETSC_CC_INCLUDES_INSTALL.replace('${PETSC_DIR}', self.installdir.petscDir))))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -828,7 +832,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     def getFunctionName(lang):
       name = '"unknown"'
       self.pushLanguage(lang)
-      for fname in ['__func__','__FUNCTION__']:
+      for fname in ['__func__','__FUNCTION__','__extension__ __func__']:
         code = "if ("+fname+"[0] != 'm') return 1;"
         if self.checkCompile('',code) and self.checkLink('',code):
           name = fname
@@ -1048,17 +1052,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('USE_GCOV','1')
     return
 
-  def configureFortranFlush(self):
-    if hasattr(self.compilers, 'FC'):
-      for baseName in ['flush','flush_']:
-        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
-          self.addDefine('HAVE_'+baseName.upper(), 1)
-          return
-
-  def configureViewFromOptions(self):
-    if not self.framework.argDB['with-viewfromoptions']:
-      self.addDefine('SKIP_VIEWFROMOPTIONS',1)
-
   def postProcessPackages(self):
     postPackages=[]
     for i in self.framework.packages:
@@ -1112,9 +1105,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
-    self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureAtoll)
-    self.executeTest(self.configureViewFromOptions)
 
     self.Dump()
     self.dumpConfigInfo()

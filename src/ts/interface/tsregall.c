@@ -18,6 +18,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_BSI(TS);
 
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS package.
@@ -62,6 +63,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSEIMEX,    TSCreate_EIMEX);CHKERRQ(ierr);
   ierr = TSRegister(TSMIMEX,    TSCreate_Mimex);CHKERRQ(ierr);
   ierr = TSRegister(TSBDF,      TSCreate_BDF);CHKERRQ(ierr);
+  ierr = TSRegister(TSBSI,      TSCreate_BSI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -10,6 +10,7 @@ class Configure(config.package.CMakePackage):
     self.includes          = ['pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
     self.includedir        = os.path.join('include', 'pragmatic')
+    self.requirescxx11     = 1
     return
 
   def setupDependencies(self, framework):

@@ -1,4 +1,3 @@
-
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include <petscis.h>                       /*I "petscis.h"  I*/
 #include <petscbt.h>
@@ -22,20 +21,20 @@
 @*/
 PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
-  PetscErrorCode ierr;
-  PetscInt       isz,len,i,j,ival,Nbs;
-  const PetscInt *idx;
+  PetscErrorCode     ierr;
+  PetscInt           isz,len,i,j,ival,Nbs;
+  const PetscInt     *idx;
 #if defined(PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscInt           tt, gid1, *nidx,Nkbs;
   PetscTablePosition tpos;
 #else
-  PetscInt *nidx;
-  PetscBT  table;
+  PetscInt           *nidx;
+  PetscBT            table;
 #endif
 
   PetscFunctionBegin;
-  Nbs =n/bs;
+  Nbs = n/bs;
 #if defined(PETSC_USE_CTABLE)
   Nkbs = nkeys/bs;
   ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
@@ -78,9 +77,9 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
       j++;
     }
     if (j != isz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz");
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_OWN_POINTER,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),isz,nidx,PETSC_OWN_POINTER,(is_out+i));CHKERRQ(ierr);
 #else
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
 #endif
   }
 #if defined(PETSC_USE_CTABLE)
@@ -153,7 +152,7 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
       idx_local += bs;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -184,7 +183,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
 
   PetscFunctionBegin;
   /* Check max size of is_in[] */
-  maxsz=0;
+  maxsz = 0;
   for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     if (len > maxsz) maxsz = len;
@@ -198,7 +197,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
       for (k=0; k<bs; k++) nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,len*bs,nidx,PETSC_COPY_VALUES,is_out+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),len*bs,nidx,PETSC_COPY_VALUES,is_out+i);CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

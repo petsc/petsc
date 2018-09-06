@@ -15,7 +15,7 @@ struct _n_PetscFPT {
   PetscInt count;
   PetscInt tablesize;
 };
-extern PetscFPT  PetscFPTData;
+PETSC_INTERN PetscFPT PetscFPTData;
 
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
 {

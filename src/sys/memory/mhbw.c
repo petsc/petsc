@@ -7,9 +7,9 @@
 /*
    These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-extern PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
-extern PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
-extern PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t,int,const char[],const char[],void**);
 
 /*
    PetscHBWMalloc - HBW malloc.
@@ -70,7 +70,7 @@ static PetscErrorCode PetscHBWRealloc(size_t a,int lineno,const char function[],
 #endif
 }
 
-PetscErrorCode PetscSetUseHBWMalloc_Private(void)
+PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void)
 {
   PetscErrorCode ierr;
 

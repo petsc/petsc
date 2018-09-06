@@ -1,4 +1,3 @@
-
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 
@@ -144,7 +143,7 @@ struct _p_SNES {
   /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
   PetscReal   ttol;              /* rtol*initial_residual_norm */
   PetscReal   rnorm0;            /* initial residual norm (used for divergence testing) */
-  
+
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
 
@@ -252,7 +251,7 @@ PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions_Internal(SNES,DM,Vec,PetscErrorCode (**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar*,void*),void**);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
 PETSC_EXTERN PetscLogEvent SNES_LineSearch;
@@ -263,8 +262,8 @@ PETSC_EXTERN PetscLogEvent SNES_NGSFuncEval;
 PETSC_EXTERN PetscLogEvent SNES_NPCSolve;
 PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 
-extern PetscBool SNEScite;
-extern const char SNESCitation[];
+PETSC_INTERN PetscBool SNEScite;
+PETSC_INTERN const char SNESCitation[];
 
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf

@@ -1038,7 +1038,9 @@ int main(int argc,char **args)
   /* create and customize KSP/PC for BDDC */
   ierr = ComputeKSPBDDC(dd,A,&KSPwithBDDC);CHKERRQ(ierr);
   /* create KSP/PC for FETIDP */
-  ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
+  if (testfetidp) {
+    ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
+  }
   /* create random exact solution */
 #if defined(PETSC_USE_COMPLEX)
   ierr = VecSet(exact_solution,1.0 + PETSC_i);CHKERRQ(ierr);
@@ -1162,7 +1164,7 @@ int main(int argc,char **args)
  testset:
    nsize: 8
    suffix: bddc_fetidp_approximate
-   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -fluxes_ksp_max_it 20 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
+   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
 
  testset:
    nsize: 4
@@ -1178,5 +1180,16 @@ int main(int argc,char **args)
    test:
      suffix: bddc_fetidp_ml_3
      args: -physical_pc_bddc_coarsening_ratio 4
+
+ testset:
+   nsize: 9
+   args: -npx 3 -npy 3 -p 2 -nex 6 -ney 6 -physical_pc_bddc_deluxe_singlemat -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_graph_maxcount 1 -physical_pc_bddc_levels 3 -physical_pc_bddc_coarsening_ratio 2 -physical_pc_bddc_coarse_ksp_type gmres
+   output_file: output/ex59_bddc_fetidp_ml_eqlimit.out
+   test:
+     suffix: bddc_fetidp_ml_eqlimit_1
+     args: -physical_pc_bddc_coarse_eqs_limit 31 -mat_partitioning_type average -physical_pc_bddc_coarse_pc_bddc_graph_maxcount 1
+   test:
+     suffix: bddc_fetidp_ml_eqlimit_2
+     args: -physical_pc_bddc_coarse_eqs_limit 46
 
 TEST*/

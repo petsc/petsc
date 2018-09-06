@@ -13,7 +13,7 @@ int main(int argc,char **args)
   MatType        type[9];
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscBool      equal,flg_loadmat,flg;
+  PetscBool      equal,flg_loadmat,flg,issymmetric;
   PetscScalar    value[3];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -54,6 +54,7 @@ int main(int argc,char **args)
     } else {
       ierr = MatSetType(C,MATMPIBAIJ);CHKERRQ(ierr);
     }
+    ierr = MatSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatLoad(C,fd);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a baij mat with bs>1  */
@@ -89,25 +90,37 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
   {
     /* Check the symmetry of C because it will be converted to a sbaij matrix */
     Mat Ctrans;
-    ierr = MatTranspose(C, MAT_INITIAL_MATRIX,&Ctrans);CHKERRQ(ierr);
-    ierr = MatEqual(C, Ctrans, &flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"C must be symmetric for this example");
+    ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ctrans);CHKERRQ(ierr);
+    ierr = MatEqual(C,Ctrans,&flg);CHKERRQ(ierr);
+/*
+    {
+      ierr = MatAXPY(C,1.,Ctrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      flg  = PETSC_TRUE;
+    }
+*/
+    ierr = MatSetOption(C,MAT_SYMMETRIC,flg);CHKERRQ(ierr);
     ierr = MatDestroy(&Ctrans);CHKERRQ(ierr);
   }
-  /*ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  ierr = MatIsSymmetric(C,0.0,&issymmetric);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(C,NULL,"-view_mat");CHKERRQ(ierr);
 
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
+    PetscBool ismpisbaij,isseqsbaij;
+
+    ierr = PetscStrcmp(type[i],MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+    ierr = PetscStrcmp(type[i],MATMPISBAIJ,&isseqsbaij);CHKERRQ(ierr);
+    if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
     ierr = MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) {
+      ierr = PetscStrcmp(type[j],MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+      ierr = PetscStrcmp(type[j],MATMPISBAIJ,&isseqsbaij);CHKERRQ(ierr);
+      if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
       if (verbose>0) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," \n[%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
       }
@@ -140,10 +153,66 @@ int main(int argc,char **args)
     /* Test in-place convert */
     if (size == 1) { /* size > 1 is not working yet! */
       j = (i+1)%ntypes;
+      ierr = PetscStrcmp(type[j],MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+      ierr = PetscStrcmp(type[j],MATMPISBAIJ,&isseqsbaij);CHKERRQ(ierr);
+      if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
       /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
       ierr = MatConvert(A,type[j],MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     }
 
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+  }
+
+  /* test BAIJ to MATIS */
+  if (size > 1) {
+    MatType ctype;
+
+    ierr = MatGetType(C,&ctype);CHKERRQ(ierr);
+    ierr = MatConvert(C,MATIS,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A,NULL,"-view_conv");CHKERRQ(ierr);
+    if (!equal) {
+      Mat C2;
+
+      ierr = MatConvert(A,ctype,MAT_INITIAL_MATRIX,&C2);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_conv_assembled");CHKERRQ(ierr);
+      ierr = MatAXPY(C2,-1.,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatChop(C2,PETSC_SMALL);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_err");CHKERRQ(ierr);
+      ierr = MatDestroy(&C2);CHKERRQ(ierr);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from BAIJ to MATIS");
+    }
+    ierr = MatConvert(C,MATIS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A,NULL,"-view_conv");CHKERRQ(ierr);
+    if (!equal) {
+      Mat C2;
+
+      ierr = MatConvert(A,ctype,MAT_INITIAL_MATRIX,&C2);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_conv_assembled");CHKERRQ(ierr);
+      ierr = MatAXPY(C2,-1.,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatChop(C2,PETSC_SMALL);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_err");CHKERRQ(ierr);
+      ierr = MatDestroy(&C2);CHKERRQ(ierr);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from BAIJ to MATIS");
+    }
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATIS,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A,NULL,"-view_conv");CHKERRQ(ierr);
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) {
+      Mat C2;
+
+      ierr = MatViewFromOptions(A,NULL,"-view_conv");CHKERRQ(ierr);
+      ierr = MatConvert(A,ctype,MAT_INITIAL_MATRIX,&C2);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_conv_assembled");CHKERRQ(ierr);
+      ierr = MatAXPY(C2,-1.,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatChop(C2,PETSC_SMALL);CHKERRQ(ierr);
+      ierr = MatViewFromOptions(C2,NULL,"-view_err");CHKERRQ(ierr);
+      ierr = MatDestroy(&C2);CHKERRQ(ierr);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from BAIJ to MATIS");
+    }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -159,5 +228,35 @@ int main(int argc,char **args)
    test:
       suffix: 2
       nsize: 3
+
+   testset:
+      requires: parmetis
+      output_file: output/ex55_1.out
+      nsize: 3
+      args: -mat_is_disassemble_l2g_type nd -mat_partitioning_type parmetis
+      test:
+        suffix: matis_baij_parmetis_nd
+      test:
+        suffix: matis_aij_parmetis_nd
+        args: -testseqaij
+      test:
+        requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+        suffix: matis_poisson1_parmetis_nd
+        args: -f ${DATAFILESPATH}/matrices/poisson1
+
+   testset:
+      requires: ptscotch define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+      output_file: output/ex55_1.out
+      nsize: 4
+      args: -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
+      test:
+        suffix: matis_baij_ptscotch_nd
+      test:
+        suffix: matis_aij_ptscotch_nd
+        args: -testseqaij
+      test:
+        requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+        suffix: matis_poisson1_ptscotch_nd
+        args: -f ${DATAFILESPATH}/matrices/poisson1
 
 TEST*/

@@ -9728,4 +9728,4 @@ Process 0:
   (1077) dim  2 offset 2490 0. 0.343822
   (1078) dim  2 offset 2492 9.79929 0.74235
   (1079) dim  2 offset 2494 9.79929 0.925496
-Mesh with 720 cells, shape condition numbers: min = 2.0113, max = 24.5694, mean = 2.78635, stddev = 2.01671
+Mesh with 720 cells, shape condition numbers: min = 2.0113, max = 24.5694, mean = 2.78635, stddev = 2.01811

@@ -71,11 +71,11 @@ PetscErrorCode  ISInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("is",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(IS_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(IS_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);}
     ierr = PetscStrInList("section",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_SECTION_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_SECTION_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);}
   }
   /* Register package finalizer */
   ierr = PetscRegisterFinalize(ISFinalizePackage);CHKERRQ(ierr);
@@ -230,8 +230,8 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrInList("vec",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);}
-    if (pkg) {ierr = PetscLogEventDeactivateClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(VEC_CLASSID);CHKERRQ(ierr);}
+    if (pkg) {ierr = PetscLogEventExcludeClass(VEC_SCATTER_CLASSID);CHKERRQ(ierr);}
   }
 
   /*

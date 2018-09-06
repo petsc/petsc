@@ -99,6 +99,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaij_seqmaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaijperm_seqmaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaijmkl_seqmaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqmaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,6 +148,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpimaij_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_mpimaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3251,6 +3253,21 @@ PetscErrorCode MatCreateSubMatrix_MAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,Ma
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+{
+  PetscErrorCode ierr;
+  Mat            A;
+
+  PetscFunctionBegin;
+  ierr = MatConvert(mat,MATAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+
+
 /* ---------------------------------------------------------------------------------- */
 /*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
@@ -3382,6 +3399,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_seqmaij_C",MatPtAP_SeqAIJ_SeqMAIJ);CHKERRQ(ierr);
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaijperm_seqmaij_C",MatPtAP_SeqAIJ_SeqMAIJ);CHKERRQ(ierr);
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaijmkl_seqmaij_C",MatPtAP_SeqAIJ_SeqMAIJ);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqmaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
     } else {
       Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ*)A->data;
       Mat_MPIMAIJ *b;
@@ -3428,8 +3446,10 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpimaij_mpiaij_C",MatConvert_MPIMAIJ_MPIAIJ);CHKERRQ(ierr);
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_mpiaij_mpimaij_C",MatPtAP_MPIAIJ_MPIMAIJ);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_mpimaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
     }
-    B->ops->createsubmatrix = MatCreateSubMatrix_MAIJ;
+    B->ops->createsubmatrix   = MatCreateSubMatrix_MAIJ;
+    B->ops->createsubmatrices = MatCreateSubMatrices_MAIJ;
     ierr  = MatSetUp(B);CHKERRQ(ierr);
     *maij = B;
     ierr  = MatViewFromOptions(B,NULL,"-mat_view");CHKERRQ(ierr);

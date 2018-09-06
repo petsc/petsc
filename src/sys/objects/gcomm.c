@@ -147,7 +147,7 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
       the KSP object inside a SNES object. By indenting each lower level further the heirarchy of objects
       is very clear.
 
-.seealso:   PetscObjectSetLabLevel(),  PetscObjectGetTabLevel()
+.seealso:   PetscObjectSetTabLevel(),  PetscObjectGetTabLevel()
 
 @*/
 PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)

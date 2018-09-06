@@ -6,9 +6,16 @@ PetscBool TaoRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoList = NULL;
 
 PetscClassId TAO_CLASSID;
-PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_GradientEval, Tao_ObjGradientEval, Tao_HessianEval, Tao_ConstraintsEval, Tao_JacobianEval;
 
-const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
+PetscLogEvent TAO_Solve;
+PetscLogEvent TAO_ObjectiveEval;
+PetscLogEvent TAO_GradientEval;
+PetscLogEvent TAO_ObjGradEval;
+PetscLogEvent TAO_HessianEval;
+PetscLogEvent TAO_JacobianEval;
+PetscLogEvent TAO_ConstraintsEval;
+
+const char *TaoSubSetTypes[] = {"subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
 
 struct _n_TaoMonitorDrawCtx {
   PetscViewer viewer;
@@ -144,6 +151,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewgradient=PETSC_FALSE;
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
+  
+  tao->bounded = PETSC_FALSE;
 
   /* These flags prevents algorithms from overriding user options */
   tao->max_it_changed   =PETSC_FALSE;
@@ -202,9 +211,9 @@ PetscErrorCode TaoSolve(Tao tao)
     ierr = TaoLineSearchReset(tao->linesearch);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
-  ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
 
@@ -460,7 +469,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
       ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    
+
     ierr = PetscOptionsString("-tao_gmonitor","Use the convergence monitor with extra globalization info","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
@@ -582,9 +591,6 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    PetscInt        tabs;
-    ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer);CHKERRQ(ierr);
 
     if (tao->ops->view) {
@@ -593,11 +599,13 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     if (tao->linesearch) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     if (tao->ksp) {
-      ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
@@ -711,7 +719,6 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
       }
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(viewer, tabs); CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
@@ -1405,21 +1412,18 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (tao->numbermonitors >= MAXTAOMONITORS) SETERRQ1(PETSC_COMM_SELF,1,"Cannot attach another monitor -- max=",MAXTAOMONITORS);
 
   for (i=0; i<tao->numbermonitors;i++) {
-    if (func == tao->monitor[i] && dest == tao->monitordestroy[i] && ctx == tao->monitorcontext[i]) {
-      if (dest) {
-        ierr = (*dest)(&ctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))func,ctx,dest,(PetscErrorCode (*)(void))tao->monitor[i],tao->monitorcontext[i],tao->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
   tao->monitor[tao->numbermonitors] = func;
-  tao->monitorcontext[tao->numbermonitors] = ctx;
+  tao->monitorcontext[tao->numbermonitors] = (void*)ctx;
   tao->monitordestroy[tao->numbermonitors] = dest;
   ++tao->numbermonitors;
   PetscFunctionReturn(0);

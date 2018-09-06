@@ -681,7 +681,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
 
   PetscFunctionBegin;
   if (0) { /* Check the order of the queue before sorting */
-    PetscInfo(NULL, "Before Heap sort\n");
+    ierr = PetscInfo(NULL, "Before Heap sort\n");CHKERRQ(ierr);
     for (n=0; n<size; n++) {
       ierr = PetscInfo2(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
     }

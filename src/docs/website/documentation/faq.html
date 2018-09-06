@@ -1779,8 +1779,11 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       </p>
 
       If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X machines
-      - you can try using<a href="http://valgrind.org/">http://valgrind.org</a>
+      - you can try using <a href="http://valgrind.org/">http://valgrind.org</a>
       to look for memory corruption. - Make sure valgrind is installed
+
+      You might also consider using <a href="http://drmemory.org">http://drmemory.org</a> which has
+      support for GNU/Linux, Apple Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
 
       <ul>
         <li>Recommend building PETSc with <code>--download-mpich --with-debugging</code> [debugging is enabled by default]</li>

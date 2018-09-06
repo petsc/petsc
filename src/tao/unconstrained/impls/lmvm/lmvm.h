@@ -19,9 +19,10 @@ typedef struct {
   Vec Gold;
 
   PetscInt bfgs;
-  PetscInt sgrad;
   PetscInt grad;
   Mat      H0;
+  
+  PetscBool recycle;
 } TAO_LMVM;
 
 #endif /* ifndef __TAO_LMVM_H */
