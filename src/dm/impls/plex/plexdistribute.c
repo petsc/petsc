@@ -1599,7 +1599,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes);CHKERRQ(ierr);
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {
-    if (leafNodes[p].rank != rank) npointLeaves++;
+    if (leafNodes[p].rank != (rank + (shift ? (PetscInt) PetscRealPart(shift[roots[p].index%numShifts]) : 0))%size) npointLeaves++;
   }
   ierr = PetscMalloc1(npointLeaves, &pointLocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
