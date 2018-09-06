@@ -768,6 +768,8 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
+
 PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {
   PetscFunctionBegin;
