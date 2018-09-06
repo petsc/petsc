@@ -623,7 +623,7 @@ static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, Pet
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
-    ierr = CorrectDiscretePressure(dm, nullspace, u, user);CHKERRQ(ierr);
+    ierr = CorrectDiscretePressure(dm, nullspace, u, (AppCtx *) user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1021,7 +1021,7 @@ int main(int argc, char **argv)
         -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
   test:
     suffix: 2d_tri_p2_p1_conv
-    requires: !single
+    requires: triangle !single
     args: -run_type full -sol_type cubic -bc_type dirichlet -interpolate 1 -dm_refine 0 \
       -vel_petscspace_order 2 -pres_petscspace_order 1 \
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
