@@ -993,6 +993,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscReal          xyl[2],xyr[2],bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscBool          isnull;
   PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N;
+  PetscMPIInt        rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -1021,6 +1022,31 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   ierr = PetscDrawSetCoordinates(draw, xyl[0], xyl[1], xyr[0], xyr[1]);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *coords = NULL;
+    PetscInt     numCoords,coneSize;
+
+    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+    switch (coneSize) {
+    case 3:
+      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = PetscDrawRectangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D facets", coneSize);
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+  }
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *coords = NULL;
     PetscInt     numCoords,coneSize;
