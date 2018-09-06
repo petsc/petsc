@@ -5,6 +5,9 @@
 !
 
 #include <petscconf.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#include "petsc/mpiuni/mpiunifdef.h"
+#endif
 
       subroutine MPIU_Abort(comm,ierr)
       implicit none
