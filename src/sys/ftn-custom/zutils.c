@@ -1,7 +1,5 @@
 #include <petsc/private/fortranimpl.h>
 
-void *PETSCNULLPOINTERADDRESS = NULL;
-
 /*MC
    PetscFortranAddr - a variable type in Fortran that can hold a
      regular C pointer.

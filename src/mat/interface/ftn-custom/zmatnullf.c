@@ -16,13 +16,11 @@
 
 PETSC_EXTERN void PETSC_STDCALL  matnullspacecreate0_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(vecs);
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matnullspacecreate1_(MPI_Fint * comm,PetscBool *has_cnst,PetscInt *n, Vec vecs[],MatNullSpace *SP, PetscErrorCode *ierr )
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(vecs);
   *ierr = MatNullSpaceCreate(MPI_Comm_f2c(*(comm)),*has_cnst,*n,vecs,SP);
 }
 

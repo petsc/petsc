@@ -254,7 +254,7 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecScatterRemap - Remaps the "from" and "to" indices in a
    vector scatter context. FOR EXPERTS ONLY!
 

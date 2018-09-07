@@ -17,11 +17,11 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatFDColoring
 
-      Mat, parameter :: PETSC_NULL_MAT = tMat(-1)
+      Mat, parameter :: PETSC_NULL_MAT = tMat(0)
       MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING               &
-     &               = tMatFDColoring(-1)
+     &               = tMatFDColoring(0)
       MatNullSpace, parameter :: PETSC_NULL_MATNULLSPACE                 &
-     &               = tMatNullSpace(-1)
+     &               = tMatNullSpace(0)
 !
 !  Flag for matrix assembly
 !

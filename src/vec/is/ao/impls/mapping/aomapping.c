@@ -327,7 +327,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   AOCreateMappingIS - Creates a basic application ordering using two index sets.
 
   Input Parameters:
