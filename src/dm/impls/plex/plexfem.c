@@ -2460,14 +2460,14 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
     if (id == PETSCFE_CLASSID) {
       PetscFE    fe = (PetscFE) obj;
       PetscSpace sp;
-      PetscInt   order;
+      PetscInt   maxDegree;
 
       ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(feRef[f], &fNb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetBasisSpace(fe, &sp);CHKERRQ(ierr);
-      ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
-      if (!order) needAvg[f] = PETSC_TRUE;
+      ierr = PetscSpaceGetDegree(sp, NULL, &maxDegree);CHKERRQ(ierr);
+      if (!maxDegree) needAvg[f] = PETSC_TRUE;
     } else if (id == PETSCFV_CLASSID) {
       PetscFV        fv = (PetscFV) obj;
       PetscDualSpace Q;
@@ -2630,9 +2630,9 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscQuadrature  qGeom = NULL;
   Mat              J = Jac, JP = JacP;
   PetscScalar     *work, *u = NULL, *u_t = NULL, *a = NULL, *elemMat = NULL, *elemMatP = NULL, *elemMatD = NULL;
-  PetscBool        hasJac, hasPrec, hasDyn, isAffine, assembleJac, isMatIS, isMatISP, *isFE, hasFV = PETSC_FALSE;
+  PetscBool        hasJac, hasPrec, hasDyn, assembleJac, isMatIS, isMatISP, *isFE, hasFV = PETSC_FALSE;
   const PetscInt  *cells;
-  PetscInt         Nf, fieldI, fieldJ, numCells, cStart, cEnd, numChunks, chunkSize, chunk, totDim, totDimAux = 0, sz, wsz, off = 0, offCell = 0;
+  PetscInt         Nf, fieldI, fieldJ, maxDegree, numCells, cStart, cEnd, numChunks, chunkSize, chunk, totDim, totDimAux = 0, sz, wsz, off = 0, offCell = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -2709,8 +2709,8 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   if (off != wsz) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error is workspace size %D should be %D", off, wsz);
   /* Setup geometry */
   ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
-  ierr = DMFieldGetFEInvariance(coordField, cellIS, NULL, &isAffine, NULL);CHKERRQ(ierr);
-  if (isAffine) {ierr = DMFieldCreateDefaultQuadrature(coordField, cellIS, &qGeom);CHKERRQ(ierr);}
+  ierr = DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree);CHKERRQ(ierr);
+  if (maxDegree <= 1) {ierr = DMFieldCreateDefaultQuadrature(coordField, cellIS, &qGeom);CHKERRQ(ierr);}
   if (!qGeom) {
     PetscFE fe;
 
