@@ -486,6 +486,7 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
   PetscFunctionReturn(0);
 }
 
+/* Interpolate the gradient of an FEM (FVM) field. Code repurposed from DMInterpolateGradientClementInterpolant */
 static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC){
 
   DM_Plex         *mesh  = (DM_Plex *) dm->data;
