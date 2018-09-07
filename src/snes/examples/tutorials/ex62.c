@@ -1013,7 +1013,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_conv
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 -vel_petscspace_order 1 -pres_petscspace_order 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 -vel_petscspace_degree 1 -pres_petscspace_degree 0 \
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
@@ -1023,7 +1023,7 @@ int main(int argc, char **argv)
     suffix: 2d_tri_p2_p1_conv
     requires: triangle !single
     args: -run_type full -sol_type cubic -bc_type dirichlet -interpolate 1 -dm_refine 0 \
-      -vel_petscspace_order 2 -pres_petscspace_order 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
@@ -1033,7 +1033,7 @@ int main(int argc, char **argv)
     suffix: 2d_quad_q2_q1_conv
     requires: !single
     args: -run_type full -sol_type cubic -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 \
-      -vel_petscspace_order 2 -pres_petscspace_order 1 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
@@ -1043,7 +1043,7 @@ int main(int argc, char **argv)
     suffix: 2d_quad_q2_p1_conv
     requires: !single
     args: -run_type full -sol_type cubic -bc_type dirichlet -simplex 0 -interpolate 1 -dm_refine 0 \
-      -vel_petscspace_order 2 -pres_petscspace_order 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 \
+      -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 \
       -snes_convergence_estimate -convest_num_refine 3 -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
@@ -1053,7 +1053,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_vanka_add
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
@@ -1061,7 +1061,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_vanka_add_unity
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_codim 0 -pc_patch_construct_type vanka \
@@ -1069,7 +1069,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q2_q1_vanka_add
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 0 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
@@ -1077,7 +1077,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q2_q1_vanka_add_unity
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -petscds_jac_pre 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
       -pc_type patch -pc_patch_partition_of_unity 1 -pc_patch_construct_dim 0 -pc_patch_construct_type vanka \
@@ -1086,7 +1086,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_gmg_vanka_add
     requires: !single
-    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine_hierarchy 3 -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 0 -petscds_jac_pre 0 \
+    args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine_hierarchy 3 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
       -pc_type mg -pc_mg_levels 3 \
