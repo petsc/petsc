@@ -14,10 +14,10 @@
       KSP, parameter :: PETSC_NULL_KSP = tKSP(0)
 
       type tKSPGuess
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tKSPGuess
 
-      KSPGuess, parameter :: PETSC_NULL_KSPGuess = tKSPGuess(-1)
+      KSPGuess, parameter :: PETSC_NULL_KSPGuess = tKSPGuess(0)
 
       PetscEnum KSP_CG_SYMMETRIC
       PetscEnum KSP_CG_HERMITIAN

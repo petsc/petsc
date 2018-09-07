@@ -13,7 +13,7 @@
 
       SNES, parameter :: PETSC_NULL_SNES = tSNES(0)
       PetscConvEst, parameter :: PETSC_NULL_CONVEST =                   &
-     & tPetscConvEst(-1)
+     & tPetscConvEst(0)
 !
 !  Convergence flags
 !

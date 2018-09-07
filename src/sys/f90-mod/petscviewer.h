@@ -4,11 +4,11 @@
 #include "petsc/finclude/petscviewer.h"
 
       type tPetscViewer
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscViewer
 
       PetscViewer, parameter :: PETSC_NULL_VIEWER                          &
-     &            = tPetscViewer(-1)
+     &            = tPetscViewer(0)
 !
 !     The numbers used below should match those in
 !     petsc/private/fortranimpl.h
