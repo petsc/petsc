@@ -31,10 +31,11 @@ PETSC_EXTERN void PETSC_STDCALL matgetghostsf90_(Mat *mat,F90Array1d *ptr,int *i
 PETSC_EXTERN void PETSC_STDCALL matdensegetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  PetscInt    m,n;
+  PetscInt    m,N;
   *ierr = MatDenseGetArray(*mat,&fa);       if (*ierr) return;
-  *ierr = MatGetLocalSize(*mat,&m,&n); if (*ierr) return;
-  *ierr = F90Array2dCreate(fa,MPIU_SCALAR,1,m,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = MatGetLocalSize(*mat,&m,NULL); if (*ierr) return;
+  *ierr = MatGetSize(*mat,NULL,&N); if (*ierr) return;
+  *ierr = F90Array2dCreate(fa,MPIU_SCALAR,1,m,1,N,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 PETSC_EXTERN void PETSC_STDCALL matdenserestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

@@ -1,42 +1,32 @@
   0 TAO,  Function value: 8.48202,  Residual: 7.02449 
   1 TAO,  Function value: 1.72589,  Residual: 2.46827 
   2 TAO,  Function value: 0.556599,  Residual: 1.75419 
-  3 TAO,  Function value: 0.181113,  Residual: 0.698038 
-  4 TAO,  Function value: 0.0919628,  Residual: 0.390951 
-  5 TAO,  Function value: 0.0330733,  Residual: 0.276822 
-  6 TAO,  Function value: 0.0137442,  Residual: 0.205942 
-  7 TAO,  Function value: 0.0032463,  Residual: 0.0925536 
-  8 TAO,  Function value: 0.000876358,  Residual: 0.0469696 
-  9 TAO,  Function value: 0.000172022,  Residual: 0.0205954 
- 10 TAO,  Function value: 2.32065e-05,  Residual: 0.00808249 
- 11 TAO,  Function value: 1.00524e-05,  Residual: 0.00695292 
- 12 TAO,  Function value: 2.19094e-06,  Residual: 0.00192488 
- 13 TAO,  Function value: 9.37506e-07,  Residual: 0.00115926 
- 14 TAO,  Function value: 2.79883e-07,  Residual: 0.000907609 
- 15 TAO,  Function value: 7.22e-08,  Residual: 0.000346602 
- 16 TAO,  Function value: 3.51499e-08,  Residual: 0.000184429 
- 17 TAO,  Function value: 1.48741e-08,  Residual: 0.000117587 
- 18 TAO,  Function value: 7.83221e-09,  Residual: 9.19265e-05 
- 19 TAO,  Function value: 2.14226e-09,  Residual: 4.54118e-05 
- 20 TAO,  Function value: 8.99022e-10,  Residual: 2.91421e-05 
- 21 TAO,  Function value: 3.28239e-10,  Residual: 2.06652e-05 
- 22 TAO,  Function value: 1.85795e-10,  Residual: 2.71364e-05 
- 23 TAO,  Function value: 1.14498e-10,  Residual: 2.32933e-05 
- 24 TAO,  Function value: 8.12369e-11,  Residual: 2.22391e-05 
- 25 TAO,  Function value: 1.87747e-11,  Residual: 7.85018e-06 
- 26 TAO,  Function value: 7.29614e-12,  Residual: 5.02828e-06 
- 27 TAO,  Function value: 1.72522e-12,  Residual: 1.07136e-06 
- 28 TAO,  Function value: 1.0259e-12,  Residual: 7.63383e-07 
- 29 TAO,  Function value: 1.72785e-13,  Residual: 3.91911e-07 
- 30 TAO,  Function value: 1.0509e-13,  Residual: 2.75909e-07 
- 31 TAO,  Function value: 4.02491e-14,  Residual: 1.7222e-07 
- 32 TAO,  Function value: 1.5385e-14,  Residual: 1.21345e-07 
- 33 TAO,  Function value: 3.20145e-15,  Residual: 7.81137e-08 
- 34 TAO,  Function value: 1.66953e-15,  Residual: 5.25802e-08 
- 35 TAO,  Function value: 3.39432e-16,  Residual: 3.16327e-08 
- 36 TAO,  Function value: 9.68078e-17,  Residual: 1.15783e-08 
- 37 TAO,  Function value: 8.23443e-17,  Residual: 1.68247e-08 
- 38 TAO,  Function value: 1.53356e-17,  Residual: 7.63537e-09 
+  3 TAO,  Function value: 0.156354,  Residual: 0.597748 
+  4 TAO,  Function value: 0.0882127,  Residual: 0.375476 
+  5 TAO,  Function value: 0.0225069,  Residual: 0.271766 
+  6 TAO,  Function value: 0.00668447,  Residual: 0.14606 
+  7 TAO,  Function value: 0.000546,  Residual: 0.0402107 
+  8 TAO,  Function value: 0.000111998,  Residual: 0.0184689 
+  9 TAO,  Function value: 2.31717e-05,  Residual: 0.00815069 
+ 10 TAO,  Function value: 6.39425e-06,  Residual: 0.00479246 
+ 11 TAO,  Function value: 2.30382e-06,  Residual: 0.00163395 
+ 12 TAO,  Function value: 1.15395e-06,  Residual: 0.00119575 
+ 13 TAO,  Function value: 2.60679e-07,  Residual: 0.000708694 
+ 14 TAO,  Function value: 1.31261e-07,  Residual: 0.00069624 
+ 15 TAO,  Function value: 3.39123e-08,  Residual: 0.0001983 
+ 16 TAO,  Function value: 1.66817e-08,  Residual: 0.000125383 
+ 17 TAO,  Function value: 4.63554e-09,  Residual: 8.59236e-05 
+ 18 TAO,  Function value: 3.00923e-09,  Residual: 0.000125793 
+ 19 TAO,  Function value: 5.38658e-10,  Residual: 2.68374e-05 
+ 20 TAO,  Function value: 2.54007e-10,  Residual: 1.43111e-05 
+ 21 TAO,  Function value: 7.71409e-11,  Residual: 9.65656e-06 
+ 22 TAO,  Function value: 2.93165e-11,  Residual: 9.82401e-06 
+ 23 TAO,  Function value: 1.24708e-11,  Residual: 6.86456e-06 
+ 24 TAO,  Function value: 3.84041e-12,  Residual: 1.83519e-06 
+ 25 TAO,  Function value: 1.61783e-12,  Residual: 1.39233e-06 
+ 26 TAO,  Function value: 7.62118e-13,  Residual: 1.34544e-06 
+ 27 TAO,  Function value: 6.31521e-13,  Residual: 1.16261e-06 
+ 28 TAO,  Function value: 3.92009e-13,  Residual: 8.49226e-07 
 Tao Object: 1 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -49,9 +39,20 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 37
+      Number of updates: 27
       Number of rejects: 0
       Number of resets: 1
+      Mat Object: (J0_) 1 MPI processes
+        type: lmvmdiagbrdn
+        rows=8192, cols=8192
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 27
+          Number of rejects: 0
+          Number of resets: 1
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30
@@ -62,9 +63,9 @@ Tao Object: 1 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=7.63537e-09
-  Objective value=1.53356e-17
-  total number of iterations=38,                          (max: 2000)
-  total number of function/gradient evaluations=41,      (max: 4000)
+  convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.49226e-07
+  Objective value=3.92009e-13
+  total number of iterations=28,                          (max: 2000)
+  total number of function/gradient evaluations=30,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol

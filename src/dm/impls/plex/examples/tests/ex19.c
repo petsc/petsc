@@ -329,10 +329,10 @@ int main (int argc, char * argv[]) {
   test:
     suffix: proj_0
     requires: pragmatic
-    args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_order 1 -petscfe_default_quadrature_order 1 -dm_plex_hash_location -pc_type lu
+    args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_degree 1 -petscfe_default_quadrature_order 1 -dm_plex_hash_location -pc_type lu
   test:
     suffix: proj_1
     requires: pragmatic
-    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_order 2 -petscfe_default_quadrature_order 4 -dm_plex_hash_location -pc_type lu
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_degree 2 -petscfe_default_quadrature_order 4 -dm_plex_hash_location -pc_type lu
 
 TEST*/

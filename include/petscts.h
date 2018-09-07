@@ -27,6 +27,7 @@ J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
+#define TSBSI             "bsi"
 #define TSPSEUDO          "pseudo"
 #define TSCN              "cn"
 #define TSSUNDIALS        "sundials"
@@ -423,6 +424,12 @@ PETSC_EXTERN PetscErrorCode TSSetI2Function(TS,Vec,TSI2Function,void*);
 PETSC_EXTERN PetscErrorCode TSGetI2Function(TS,Vec*,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode TSSetI2Jacobian(TS,Mat,Mat,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetI2Jacobian(TS,Mat*,Mat*,TSI2Jacobian*,void**);
+
+PETSC_EXTERN PetscErrorCode TSRHSSplitSetIS(TS,const char[],IS);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetIS(TS,const char[],IS*);
+PETSC_EXTERN PetscErrorCode TSRHSSplitSetRHSFunction(TS,const char[],Vec,TSRHSFunction,void*);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS,const char[],TS*);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTSs(TS,PetscInt*,TS*[]);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -840,8 +847,8 @@ typedef const char* TSRosWType;
 #define TSROSWVELDD4      "veldd4"
 #define TSROSW4L          "4l"
 
-PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,TSRosWType*);
-PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,TSRosWType);
+PETSC_EXTERN PetscErrorCode TSRosWGetType(TS,TSRosWType*);
+PETSC_EXTERN PetscErrorCode TSRosWSetType(TS,TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRosWRegister(TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
@@ -851,6 +858,25 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
+
+/*J
+  TSBSIType - String with the name of a basic symplectic integration method.
+
+  Level: beginner
+
+  .seealso: TSBSISetType(), TS, TSBSI, TSBSIRegister()
+J*/
+typedef const char* TSBSIType;
+#define TSBSISIEULER   "1"
+#define TSBSIVELVERLET "2"
+#define TSBSI3         "3"
+#define TSBSI4         "4"
+PETSC_EXTERN PetscErrorCode TSBSISetType(TS,TSBSIType);
+PETSC_EXTERN PetscErrorCode TSBSIGetType(TS,TSBSIType*);
+PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSBSIInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSBSIFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSBSIRegisterDestroy(void);
 
 /*
        PETSc interface to Sundials

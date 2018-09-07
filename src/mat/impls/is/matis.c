@@ -41,7 +41,7 @@ static PetscErrorCode MatPtAPNumeric_IS_XAIJ(Mat A, Mat P, Mat C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)(C),"_MatIS_PtAP",(PetscObject*)&c);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)C,"_MatIS_PtAP",(PetscObject*)&c);CHKERRQ(ierr);
   if (!c) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing PtAP information");
   ierr   = PetscContainerGetPointer(c,(void**)&ptap);CHKERRQ(ierr);
   ris[0] = ptap->ris0;
@@ -1930,8 +1930,6 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   }
   ierr = PetscFree2(my_dnz,my_onz);CHKERRQ(ierr);
 
-
-
   /* Resize preallocation if overestimated */
   for (i=0;i<lrows;i++) {
     dnz[i] = PetscMin(dnz[i],lcols);
@@ -2117,14 +2115,35 @@ general_assembly:
     ierr = MatDenseRestoreArray(local_mat,&array);CHKERRQ(ierr);
     ierr = PetscFree(dummy);CHKERRQ(ierr);
   } else if (isseqaij) {
-    PetscInt  i,nvtxs,*xadj,*adjncy;
-    PetscBool done;
+    const PetscInt *blocks;
+    PetscInt       i,nvtxs,*xadj,*adjncy, nb;
+    PetscBool      done;
 
     ierr = MatGetRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
     if (!done) SETERRQ(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatGetRowIJ");
     ierr = MatSeqAIJGetArray(local_mat,&array);CHKERRQ(ierr);
-    for (i=0;i<nvtxs;i++) {
-      ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatGetVariableBlockSizes(local_mat,&nb,&blocks);CHKERRQ(ierr);
+    if (nb) { /* speed up assembly for special blocked matrices (used by BDDC) */
+      PetscInt sum;
+
+      for (i=0,sum=0;i<nb;i++) sum += blocks[i];
+      if (sum == nvtxs) {
+        PetscInt r;
+
+        for (i=0,r=0;i<nb;i++) {
+          if (blocks[i] != xadj[r+1] - xadj[r]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %D: expected %D, got %D",i,blocks[i],xadj[r+1] - xadj[r]);
+          ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],array+xadj[r],ADD_VALUES);CHKERRQ(ierr);
+          r   += blocks[i];
+        }
+      } else {
+        for (i=0;i<nvtxs;i++) {
+          ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      for (i=0;i<nvtxs;i++) {
+        ierr = MatSetValuesLocal(MT,1,&i,xadj[i+1]-xadj[i],adjncy+xadj[i],array+xadj[i],ADD_VALUES);CHKERRQ(ierr);
+      }
     }
     ierr = MatRestoreRowIJ(local_mat,0,PETSC_FALSE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&done);CHKERRQ(ierr);
     if (!done) SETERRQ(PetscObjectComm((PetscObject)local_mat),PETSC_ERR_PLIB,"Error in MatRestoreRowIJ");
@@ -3035,7 +3054,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   ierr = ISGetIndices(row,&rl);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nrg);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %D -> %D greater than maximum possible %D",i,rl[i],nrg);
+  for (i=0;i<nrl;i++) if (rl[i]>=nrg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row index %D -> %D greater then maximum possible %D",i,rl[i],nrg);
 #endif
   ierr = PetscMalloc1(nrg,&idxs);CHKERRQ(ierr);
   /* map from [0,nrl) to row */
@@ -3061,7 +3080,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
     ierr = ISGetIndices(col,&cl);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&ncg);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %D -> %D greater than maximum possible %D",i,cl[i],ncg);
+    for (i=0;i<ncl;i++) if (cl[i]>=ncg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local column index %D -> %D greater then maximum possible %D",i,cl[i],ncg);
 #endif
     ierr = PetscMalloc1(ncg,&idxs);CHKERRQ(ierr);
     /* map from [0,ncl) to col */

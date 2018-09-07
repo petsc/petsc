@@ -1209,7 +1209,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   Vec                cellGeometryFVM = NULL, faceGeometryFVM = NULL, locGrad = NULL;
   PetscFVCellGeom   *cgeomFVM;
   const PetscScalar *lgrad;
-  PetscBool          isAffine;
+  PetscInt           maxDegree;
   DMField            coordField;
   IS                 cellIS;
   PetscErrorCode     ierr;
@@ -1254,8 +1254,8 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
   /* Read out geometry */
   ierr = DMGetCoordinateField(dm,&coordField);CHKERRQ(ierr);
-  ierr = DMFieldGetFEInvariance(coordField,cellIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
-  if (isAffine) {
+  ierr = DMFieldGetDegree(coordField,cellIS,NULL,&maxDegree);CHKERRQ(ierr);
+  if (maxDegree <= 1) {
     ierr = DMFieldCreateDefaultQuadrature(coordField,cellIS,&affineQuad);CHKERRQ(ierr);
     if (affineQuad) {
       ierr = DMFieldCreateFEGeom(coordField,cellIS,affineQuad,PETSC_FALSE,&cgeomFEM);CHKERRQ(ierr);
@@ -1548,7 +1548,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   /* Integrate over points */
   {
     PetscFEGeom    *fgeom, *chunkGeom = NULL;
-    PetscBool       isAffine;
+    PetscInt        maxDegree;
     PetscQuadrature qGeom = NULL;
     const PetscInt *points;
     PetscInt        numFaces, face, Nq, field;
@@ -1557,12 +1557,12 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
     ierr = ISGetLocalSize(pointIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = PetscCalloc2(numFaces*totDim, &u, locA ? numFaces*totDimAux : 0, &a);CHKERRQ(ierr);
-    ierr = DMFieldGetFEInvariance(coordField, pointIS, NULL, &isAffine, NULL);CHKERRQ(ierr);
+    ierr = DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree);CHKERRQ(ierr);
     for (field = 0; field < Nf; ++field) {
       PetscFE fe;
 
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
-      if (isAffine) {ierr = DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom);CHKERRQ(ierr);}
+      if (maxDegree <= 1) {ierr = DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom);CHKERRQ(ierr);}
       if (!qGeom) {
         ierr = PetscFEGetFaceQuadrature(fe, &qGeom);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) qGeom);CHKERRQ(ierr);

@@ -373,7 +373,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
   ierr = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
 
   if (!mat_mkl_pardiso->schur) mat_mkl_pardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
-  else  mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
+  else mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
 
   if (barray == xarray) { /* if the two vectors share the same memory */
     PetscScalar *work;
@@ -425,7 +425,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
 
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
-  if (A->schur) { /* solve Schur complement and expand solution */
+  if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
     PetscInt shift = mat_mkl_pardiso->schur_size;
 
     /* if inverted, uses BLAS *MM subroutines, otherwise LAPACK *TRS */

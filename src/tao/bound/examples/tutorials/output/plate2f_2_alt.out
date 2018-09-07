@@ -1,0 +1,20 @@
+iter =   0, Function value 1.67039, Residual: 0.47529
+iter =   1, Function value 1.57666, Residual: 0.422933
+iter =   2, Function value 1.52136, Residual: 0.22552 
+iter =   3, Function value 1.51856, Residual: 0.274967 
+iter =   4, Function value 1.50977, Residual: 0.080598 
+iter =   5, Function value 1.50812, Residual: 0.0530987 
+iter =   6, Function value 1.50671, Residual: 0.0692294 
+iter =   7, Function value 1.50625, Residual: 0.0817542 
+iter =   8, Function value 1.50582, Residual: 0.0199899 
+iter =   9, Function value 1.5057, Residual: 0.00900502 
+iter =  10, Function value 1.50567, Residual: 0.00462197 
+iter =  11, Function value 1.50567, Residual: 0.00563722 
+iter =  12, Function value 1.50566, Residual: 0.00119864 
+iter =  13, Function value 1.50566, Residual: 0.000827116 
+iter =  14, Function value 1.50566, Residual: 0.000442306 
+iter =  15, Function value 1.50566, Residual: 0.000475991 
+iter =  16, Function value 1.50566, Residual: 0.000146946 
+iter =  17, Function value 1.50566, Residual: 8.48136e-05
+ msa_plate
+ msa_plate

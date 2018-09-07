@@ -1,4 +1,5 @@
 #include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
 
 /*------------------------------------------------------------*/
 
@@ -224,6 +225,8 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  Mat_LMVM          *dbase;
+  Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
   PetscInt          old_k, i;
   PetscReal         curvtol;
@@ -264,17 +267,9 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
       lsb->yts[lmvm->k] = PetscRealPart(curvature);
       lsb->yty[lmvm->k] = PetscRealPart(ytytmp);
       lsb->sts[lmvm->k] = PetscRealPart(ststmp);
-      /* Update the scaling */
-      switch (lsb->scale_type) {
-      case SYMBRDN_SCALE_SCALAR:
+      /* Compute the scalar scale if necessary */
+      if (lsb->scale_type == SYMBRDN_SCALE_SCALAR) {
         ierr = MatSymBrdnComputeJ0Scalar(B);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_DIAG:
-        ierr = MatSymBrdnComputeJ0Diag(B);CHKERRQ(ierr);
-        break;
-      case SYMBRDN_SCALE_NONE:
-      default:
-        break;
       }
     } else {
       /* Update is bad, skip it */
@@ -284,7 +279,9 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   } else {
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_DIAG:
-      ierr = VecSet(lsb->invD, lsb->delta);CHKERRQ(ierr);
+      dbase = (Mat_LMVM*)lsb->D->data;
+      dctx = (Mat_DiagBrdn*)dbase->ctx;
+      ierr = VecSet(dctx->invD, lsb->delta);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_SCALAR:
       lsb->sigma = lsb->delta;
@@ -297,8 +294,16 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     }
   }
   
+  /* Update the scaling */
+  if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+    ierr = MatLMVMUpdate(lsb->D, X, F);CHKERRQ(ierr);
+  }
+  
   if (lsb->watchdog > lsb->max_seq_rejects) {
     ierr = MatLMVMReset(B, PETSC_FALSE);CHKERRQ(ierr);
+    if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+      ierr = MatLMVMReset(lsb->D, PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
 
   /* Save the solution and function to be used in the next update */
@@ -331,20 +336,20 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
     ierr = VecCopy(blsb->P[i], mlsb->P[i]);CHKERRQ(ierr);
     ierr = VecCopy(blsb->Q[i], mlsb->Q[i]);CHKERRQ(ierr);
   }
-  mlsb->scale_type = blsb->scale_type;
-  mlsb->alpha = blsb->alpha;
-  mlsb->beta = blsb->beta;
-  mlsb->rho = blsb->rho;
-  mlsb->delta = blsb->delta;
-  mlsb->sigma_hist = blsb->sigma_hist;
-  mlsb->watchdog = blsb->watchdog;
+  mlsb->scale_type      = blsb->scale_type;
+  mlsb->alpha           = blsb->alpha;
+  mlsb->beta            = blsb->beta;
+  mlsb->rho             = blsb->rho;
+  mlsb->delta           = blsb->delta;
+  mlsb->sigma_hist      = blsb->sigma_hist;
+  mlsb->watchdog        = blsb->watchdog;
   mlsb->max_seq_rejects = blsb->max_seq_rejects;
   switch (blsb->scale_type) {
   case SYMBRDN_SCALE_SCALAR:
     mlsb->sigma = blsb->sigma;
     break;
   case SYMBRDN_SCALE_DIAG:
-    ierr = VecCopy(blsb->invD, mlsb->invD);CHKERRQ(ierr);
+    ierr = MatCopy(blsb->D, mlsb->D, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     break;
   case SYMBRDN_SCALE_NONE:
     mlsb->sigma = 1.0;
@@ -361,6 +366,8 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  Mat_LMVM          *dbase;
+  Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
   
   PetscFunctionBegin;
@@ -374,13 +381,7 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
       ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
       switch (lsb->scale_type) {
       case SYMBRDN_SCALE_DIAG:
-        ierr = VecDestroy(&lsb->invDnew);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->invD);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->BFGS);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->DFP);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->U);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->V);CHKERRQ(ierr);
-        ierr = VecDestroy(&lsb->W);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lsb->D, PETSC_TRUE);CHKERRQ(ierr);
         break;
       default:
         break;
@@ -393,7 +394,10 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
         lsb->sigma = lsb->delta;
         break;
       case SYMBRDN_SCALE_DIAG:
-        ierr = VecSet(lsb->invD, lsb->delta);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lsb->D, PETSC_FALSE);CHKERRQ(ierr);
+        dbase = (Mat_LMVM*)lsb->D->data;
+        dctx = (Mat_DiagBrdn*)dbase->ctx;
+        ierr = VecSet(dctx->invD, lsb->delta);CHKERRQ(ierr);
         break;
       case SYMBRDN_SCALE_NONE:
         lsb->sigma = 1.0;
@@ -427,13 +431,7 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     }
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_DIAG:
-      ierr = VecDuplicate(X, &lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->invD);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->BFGS);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->DFP);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->U);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->V);CHKERRQ(ierr);
-      ierr = VecDuplicate(X, &lsb->W);CHKERRQ(ierr);
+      ierr = MatLMVMAllocate(lsb->D, X, F);CHKERRQ(ierr);
       break;
     default:
       break;
@@ -457,21 +455,9 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
     ierr = PetscFree6(lsb->stp, lsb->ytq, lsb->yts, lsb->yty, lsb->sts, lsb->psi);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->P);CHKERRQ(ierr);
     ierr = VecDestroyVecs(lmvm->m, &lsb->Q);CHKERRQ(ierr);
-    switch (lsb->scale_type) {
-    case SYMBRDN_SCALE_DIAG:
-      ierr = VecDestroy(&lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->invD);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->BFGS);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->DFP);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->U);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->V);CHKERRQ(ierr);
-      ierr = VecDestroy(&lsb->W);CHKERRQ(ierr);
-      break;
-    default:
-      break;
-    }
     lsb->allocated = PETSC_FALSE;
   }
+  ierr = MatDestroy(&lsb->D);CHKERRQ(ierr);
   ierr = PetscFree(lmvm->ctx);CHKERRQ(ierr);
   ierr = MatDestroy_LMVM(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -484,6 +470,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
+  PetscInt          n, N;
   
   PetscFunctionBegin;
   ierr = MatSetUp_LMVM(B);CHKERRQ(ierr);
@@ -497,13 +484,10 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
     }
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_DIAG:
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->invD);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->BFGS);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->DFP);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->U);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->V);CHKERRQ(ierr);
-      ierr = VecDuplicate(lmvm->Xprev, &lsb->W);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(B, &n, &n);CHKERRQ(ierr);
+      ierr = MatGetSize(B, &N, &N);CHKERRQ(ierr);
+      ierr = MatSetSizes(lsb->D, n, n, N, N);CHKERRQ(ierr);
+      ierr = MatSetUp(lsb->D);CHKERRQ(ierr);
       break;
     default:
       break;
@@ -531,15 +515,20 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
     ierr = PetscViewerASCIIPrintf(pv,"Convex factors: phi=%g, theta=%g\n",(double)lsb->phi, (double)lsb->theta);CHKERRQ(ierr);
   }
   ierr = MatView_LMVM(B, pv);CHKERRQ(ierr);
+  if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+    ierr = MatView(lsb->D, pv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptionsObject, Mat B)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
+  Mat_LMVM          *dbase;
+  Mat_DiagBrdn      *dctx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -558,6 +547,19 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems *PetscOptio
   if ((lsb->alpha < 0.0) || (lsb->alpha > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio in the J0 scaling cannot be outside the range of [0, 1]");
   if ((lsb->rho < 0.0) || (lsb->rho > 1.0)) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "update limiter in the J0 scaling cannot be outside the range of [0, 1]");
   if (lsb->sigma_hist < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "J0 scaling history length cannot be negative");
+  if (lsb->scale_type == SYMBRDN_SCALE_DIAG) {
+    ierr = MatSetFromOptions(lsb->D);CHKERRQ(ierr);
+    dbase = (Mat_LMVM*)lsb->D->data;
+    dctx = (Mat_DiagBrdn*)dbase->ctx;
+    dctx->delta_min  = lsb->delta_min;
+    dctx->delta_max  = lsb->delta_max;
+    dctx->theta      = lsb->theta;
+    dctx->rho        = lsb->rho;
+    dctx->alpha      = lsb->alpha;
+    dctx->beta       = lsb->beta;
+    dctx->sigma_hist = lsb->sigma_hist;
+    dctx->forward    = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -589,21 +591,25 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
   
   ierr = PetscNewLog(B, &lsb);CHKERRQ(ierr);
   lmvm->ctx = (void*)lsb;
-  lsb->allocated = PETSC_FALSE;
-  lsb->needP = lsb->needQ = PETSC_TRUE;
-  lsb->phi = 0.125;
-  lsb->theta = 0.125;
-  lsb->alpha = 1.0;
-  lsb->rho = 1.0;
-  lsb->beta = 0.5;
-  lsb->sigma = 1.0;
-  lsb->delta = 1.0;
-  lsb->delta_min = 1e-7;
-  lsb->delta_max = 100.0;
-  lsb->sigma_hist = 1;
-  lsb->scale_type = SYMBRDN_SCALE_DIAG;
-  lsb->watchdog = 0;
+  lsb->allocated       = PETSC_FALSE;
+  lsb->needP           = lsb->needQ = PETSC_TRUE;
+  lsb->phi             = 0.125;
+  lsb->theta           = 0.125;
+  lsb->alpha           = 1.0;
+  lsb->rho             = 1.0;
+  lsb->beta            = 0.5;
+  lsb->sigma           = 1.0;
+  lsb->delta           = 1.0;
+  lsb->delta_min       = 1e-7;
+  lsb->delta_max       = 100.0;
+  lsb->sigma_hist      = 1;
+  lsb->scale_type      = SYMBRDN_SCALE_DIAG;
+  lsb->watchdog        = 0;
   lsb->max_seq_rejects = lmvm->m/2;
+  
+  ierr = MatCreate(PetscObjectComm((PetscObject)B), &lsb->D);CHKERRQ(ierr);
+  ierr = MatSetType(lsb->D, MATLMVMDIAGBRDN);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(lsb->D, "J0_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -624,13 +630,14 @@ PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
   Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
   PetscErrorCode    ierr;
-  PetscBool         is_bfgs, is_dfp, is_symbrdn;
+  PetscBool         is_bfgs, is_dfp, is_symbrdn, is_symbadbrdn;
   
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMBFGS, &is_bfgs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMDFP, &is_dfp);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBRDN, &is_symbrdn);CHKERRQ(ierr);
-  if (!is_bfgs && !is_dfp && !is_symbrdn) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
+  ierr = PetscObjectTypeCompare((PetscObject)B, MATLMVMSYMBADBRDN, &is_symbadbrdn);CHKERRQ(ierr);
+  if (!is_bfgs && !is_dfp && !is_symbrdn && !is_symbadbrdn) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_INCOMP, "diagonal scaling is only available for DFP, BFGS and SymBrdn matrices");
   lsb->delta = PetscAbsReal(PetscRealPart(delta));
   lsb->delta = PetscMin(lsb->delta, lsb->delta_max);CHKERRQ(ierr);
   lsb->delta = PetscMax(lsb->delta, lsb->delta_min);CHKERRQ(ierr);
@@ -706,16 +713,17 @@ PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z)
   if (lmvm->J0 || lmvm->user_pc || lmvm->user_ksp || lmvm->user_scale) {
     ierr = MatLMVMApplyJ0Fwd(B, X, Z);CHKERRQ(ierr); 
   } else {
-    ierr = VecCopy(X, Z);CHKERRQ(ierr);
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_SCALAR:
+      ierr = VecCopy(X, Z);CHKERRQ(ierr);
       ierr = VecScale(Z, 1.0/lsb->sigma);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_DIAG:
-      ierr = VecPointwiseDivide(Z, Z, lsb->invD);CHKERRQ(ierr);
+      ierr = MatMult(lsb->D, X, Z);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_NONE:
     default:
+      ierr = VecCopy(X, Z);CHKERRQ(ierr);
       break;
     }
   }
@@ -734,234 +742,19 @@ PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX)
   if (lmvm->J0 || lmvm->user_pc || lmvm->user_ksp || lmvm->user_scale) {
     ierr = MatLMVMApplyJ0Inv(B, F, dX);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(F, dX);CHKERRQ(ierr);
     switch (lsb->scale_type) {
     case SYMBRDN_SCALE_SCALAR:
+      ierr = VecCopy(F, dX);CHKERRQ(ierr);
       ierr = VecScale(dX, lsb->sigma);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_DIAG:
-      ierr = VecPointwiseMult(dX, dX, lsb->invD);CHKERRQ(ierr);
+      ierr = MatSolve(lsb->D, F, dX);CHKERRQ(ierr);
       break;
     case SYMBRDN_SCALE_NONE:
     default:
+      ierr = VecCopy(F, dX);CHKERRQ(ierr);
       break;
     }
-  }
-  PetscFunctionReturn(0);
-}
-
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatSymBrdnComputeJ0Diag(Mat B)
-{
-  Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
-  Mat_SymBrdn       *lsb = (Mat_SymBrdn*)lmvm->ctx;
-  PetscErrorCode    ierr;
-  PetscInt          i, start;
-  PetscScalar       ytDy, ytDs, stDs;
-  PetscReal         yy_sum, ys_sum, ss_sum;
-  PetscReal         denom, sigma;
-
-  PetscFunctionBegin;
-  /*  BFGS = DFP = inv(D); */
-  ierr = VecCopy(lsb->invD, lsb->BFGS);CHKERRQ(ierr);
-  ierr = VecReciprocal(lsb->BFGS);CHKERRQ(ierr);
-  ierr = VecCopy(lsb->BFGS, lsb->DFP);CHKERRQ(ierr);
-
-  /*  V = y*y */
-  ierr = VecPointwiseMult(lsb->V, lmvm->Y[lmvm->k], lmvm->Y[lmvm->k]);CHKERRQ(ierr);
-
-  /*  W = inv(D)*s */
-  ierr = VecPointwiseMult(lsb->W, lsb->BFGS, lmvm->S[lmvm->k]);CHKERRQ(ierr);
-  ierr = VecDot(lsb->W, lmvm->S[lmvm->k], &stDs);CHKERRQ(ierr);
-
-  /*  Safeguard stDs */
-  if (0.0 == PetscRealPart(stDs)) {
-    stDs = 1.e-8;
-  }
-
-  if (1.0 != lsb->theta) {
-    /*  BFGS portion of the update */
-    /*  U = (inv(D)*s)*(inv(D)*s) */
-    ierr = VecPointwiseMult(lsb->U, lsb->W, lsb->W);CHKERRQ(ierr);
-
-    /*  Assemble */
-    ierr = VecAXPY(lsb->BFGS, 1.0/lsb->yts[lmvm->k], lsb->V);CHKERRQ(ierr);
-    ierr = VecAXPY(lsb->BFGS, -1.0/stDs, lsb->U);CHKERRQ(ierr);
-  }
-
-  if (0.0 != lsb->theta) {
-    /*  DFP portion of the update */
-    /*  U = inv(D)*s*y */
-    ierr = VecPointwiseMult(lsb->U, lsb->W, lmvm->Y[lmvm->k]);CHKERRQ(ierr);
-
-    /*  Assemble */
-    ierr = VecAXPY(lsb->DFP, 1.0/lsb->yts[lmvm->k] + stDs/(lsb->yts[lmvm->k]*lsb->yts[lmvm->k]), lsb->V);CHKERRQ(ierr);
-    ierr = VecAXPY(lsb->DFP, -2.0/lsb->yts[lmvm->k], lsb->U);CHKERRQ(ierr);
-  }
-
-  if (0.0 == lsb->theta) {
-      ierr = VecCopy(lsb->BFGS, lsb->invDnew);CHKERRQ(ierr);
-  } else if (1.0 == lsb->theta) {
-      ierr = VecCopy(lsb->DFP, lsb->invDnew);CHKERRQ(ierr);
-  } else {
-    /*  Broyden update U=(1-theta)*P + theta*Q */
-      ierr = VecCopy(lsb->DFP, lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecAXPBY(lsb->invDnew, 1.0-lsb->theta, lsb->theta, lsb->BFGS);CHKERRQ(ierr);
-  }
-
-  /*  Obtain inverse and ensure positive definite */
-  ierr = VecReciprocal(lsb->invDnew);CHKERRQ(ierr);
-  ierr = VecAbs(lsb->invDnew);CHKERRQ(ierr);
-  
-  if (lsb->sigma_hist == 0) {
-    
-  }
-  /*  Start with re-scaling on the newly computed diagonal */
-  if (0.5 == lsb->beta) {
-    if (1 == PetscMin(lmvm->nupdates, lsb->sigma_hist)) {
-      ierr = VecPointwiseMult(lsb->V, lmvm->Y[0], lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDot(lsb->V, lmvm->Y[0], &ytDy);CHKERRQ(ierr);
-      yy_sum = PetscRealPart(ytDy);
-
-      ierr = VecPointwiseDivide(lsb->W, lmvm->S[0], lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDot(lsb->W, lmvm->S[0], &stDs);CHKERRQ(ierr);
-      ss_sum = PetscRealPart(stDs);
-
-      ys_sum = lsb->yts[0];
-    } else {
-      ierr = VecCopy(lsb->invDnew, lsb->U);CHKERRQ(ierr);
-      ierr = VecReciprocal(lsb->U);CHKERRQ(ierr);
-
-      /*  Compute summations for scalar scaling */
-      yy_sum = 0;       /*  No safeguard required */
-      ys_sum = 0;       /*  No safeguard required */
-      ss_sum = 0;       /*  No safeguard required */
-      start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
-      for (i = start; i < PetscMin(lmvm->nupdates, lsb->sigma_hist); ++i) {
-        ierr = VecPointwiseMult(lsb->V, lmvm->Y[i], lsb->U);CHKERRQ(ierr);
-        ierr = VecDot(lsb->V, lmvm->Y[i], &ytDy);CHKERRQ(ierr);
-        yy_sum += PetscRealPart(ytDy);
-
-        ierr = VecPointwiseMult(lsb->W, lmvm->S[i], lsb->U);CHKERRQ(ierr);
-        ierr = VecDot(lsb->W, lmvm->S[i], &stDs);CHKERRQ(ierr);
-        ss_sum += PetscRealPart(stDs);
-        ys_sum += lsb->yts[i];
-      }
-    }
-  } else if (0.0 == lsb->beta) {
-    if (1 == PetscMin(lmvm->nupdates, lsb->sigma_hist)) {
-      /*  Compute summations for scalar scaling */
-      ierr = VecPointwiseDivide(lsb->W, lmvm->S[0], lsb->invDnew);CHKERRQ(ierr);
-
-      ierr = VecDot(lsb->W, lmvm->Y[0], &ytDs);CHKERRQ(ierr);
-      ys_sum = PetscRealPart(ytDs);
-      ierr = VecDot(lsb->W, lsb->W, &stDs);CHKERRQ(ierr);
-      ss_sum = PetscRealPart(stDs);
-      yy_sum = lsb->yty[0];
-    } else {
-      ierr = VecCopy(lsb->invDnew, lsb->U);CHKERRQ(ierr);
-      ierr = VecReciprocal(lsb->U);CHKERRQ(ierr);
-
-      /*  Compute summations for scalar scaling */
-      yy_sum = 0;       /*  No safeguard required */
-      ys_sum = 0;       /*  No safeguard required */
-      ss_sum = 0;       /*  No safeguard required */
-      start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
-      for (i = start; i < PetscMin(lmvm->nupdates, lsb->sigma_hist); ++i) {
-        ierr = VecPointwiseMult(lsb->W, lmvm->S[i], lsb->U);CHKERRQ(ierr);
-        ierr = VecDot(lsb->W, lmvm->Y[i], &ytDs);CHKERRQ(ierr);
-        ys_sum += PetscRealPart(ytDs);
-
-        ierr = VecDot(lsb->W, lsb->W, &stDs);CHKERRQ(ierr);
-        ss_sum += PetscRealPart(stDs);
-
-        yy_sum += lsb->yty[i];
-      }
-    }
-  } else if (1.0 == lsb->beta) {
-    /*  Compute summations for scalar scaling */
-    yy_sum = 0; /*  No safeguard required */
-    ys_sum = 0; /*  No safeguard required */
-    ss_sum = 0; /*  No safeguard required */
-    start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
-    for (i = start; i < PetscMin(lmvm->nupdates, lsb->sigma_hist); ++i) {
-      ierr = VecPointwiseMult(lsb->V, lmvm->Y[i], lsb->invDnew);CHKERRQ(ierr);
-      ierr = VecDot(lsb->V, lmvm->S[i], &ytDs);CHKERRQ(ierr);
-      ys_sum += PetscRealPart(ytDs);
-
-      ierr = VecDot(lsb->V, lsb->V, &ytDy);CHKERRQ(ierr);
-      yy_sum += PetscRealPart(ytDy);
-
-      ss_sum += lsb->sts[i];
-    }
-  } else {
-    ierr = VecCopy(lsb->invDnew, lsb->U);CHKERRQ(ierr);
-    ierr = VecPow(lsb->U, lsb->beta-1);CHKERRQ(ierr);
-
-    /*  Compute summations for scalar scaling */
-    yy_sum = 0; /*  No safeguard required */
-    ys_sum = 0; /*  No safeguard required */
-    ss_sum = 0; /*  No safeguard required */
-    start = PetscMax(0, lmvm->k-lsb->sigma_hist+1);
-    for (i = start; i < PetscMin(lmvm->nupdates, lsb->sigma_hist); ++i) {
-      ierr = VecPointwiseMult(lsb->V, lsb->invDnew, lmvm->Y[i]);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(lsb->W, lsb->U, lmvm->S[i]);CHKERRQ(ierr);
-
-      ierr = VecDot(lsb->V, lsb->V, &ytDy);CHKERRQ(ierr);
-      ierr = VecDot(lsb->V, lsb->W, &ytDs);CHKERRQ(ierr);
-      ierr = VecDot(lsb->W, lsb->W, &stDs);CHKERRQ(ierr);
-
-      yy_sum += PetscRealPart(ytDy);
-      ys_sum += PetscRealPart(ytDs);
-      ss_sum += PetscRealPart(stDs);
-    }
-  }
-
-  if (0.0 == lsb->alpha) {
-    /*  Safeguard ys_sum  */
-    if (0.0 == ys_sum) {
-      ys_sum = 1.e-8;
-    }
-
-    sigma = ss_sum / ys_sum;
-  } else if (1.0 == lsb->alpha) {
-    /*  Safeguard yy_sum  */
-    if (0.0 == yy_sum) {
-      ys_sum = 1.e-8;
-    }
-
-    sigma = ys_sum / yy_sum;
-  } else {
-    denom = 2*lsb->alpha*yy_sum;
-
-    /*  Safeguard denom */
-    if (0.0 == denom) {
-      denom = 1.e-8;
-    }
-
-    sigma = ((2*lsb->alpha-1)*ys_sum + PetscSqrtReal((2*lsb->alpha-1)*(2*lsb->alpha-1)*ys_sum*ys_sum - 4*lsb->alpha*(lsb->alpha-1)*yy_sum*ss_sum)) / denom;
-  }
-
-  /*  If Q has small values, then Q^(r_beta - 1) */
-  /*  can have very large values.  Hence, ys_sum */
-  /*  and ss_sum can be infinity.  In this case, */
-  /*  sigma can either be not-a-number or infinity. */
-
-  if (PetscIsInfOrNanReal(sigma)) {
-    /*  sigma is not-a-number; skip rescaling */
-  } else if (!sigma) {
-    /*  sigma is zero; this is a bad case; skip rescaling */
-  } else {
-    /*  sigma is positive */
-    ierr = VecScale(lsb->invDnew, sigma);CHKERRQ(ierr);
-  }
-  
-  /* Combine the old diagonal and the new diagonal using a convex limiter */
-  if (lsb->rho == 1.0) {
-    ierr = VecCopy(lsb->invDnew, lsb->invD);CHKERRQ(ierr);
-  } else if (lsb->rho) {
-    ierr = VecAXPBY(lsb->invD, lsb->rho, 1.0-lsb->rho, lsb->invDnew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

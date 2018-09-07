@@ -435,8 +435,6 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 .  len     - size of islist array (nonnegative)
 -  islist  - array of index sets
 
-
-
    Output Parameters:
 .  isout   - The concatenated index set; empty, if len == 0.
 
@@ -459,9 +457,9 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscInt *idx;
 
   PetscFunctionBegin;
-  PetscValidPointer(islist,2);
+  PetscValidPointer(islist,3);
 #if defined(PETSC_USE_DEBUG)
-  for (i = 0; i < len; ++i) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 1);
+  for (i = 0; i < len; ++i) if (islist[i]) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 3);
 #endif
   PetscValidPointer(isout, 4);
   if (!len) {
@@ -471,17 +469,21 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %D", len);
   N = 0;
   for (i = 0; i < len; ++i) {
-    ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
-    N   += n;
+    if (islist[i]) {
+      ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
+      N   += n;
+    }
   }
   ierr = PetscMalloc1(N, &idx);CHKERRQ(ierr);
   N = 0;
   for (i = 0; i < len; ++i) {
-    ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
-    ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
-    N   += n;
+    if (islist[i]) {
+      ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
+      ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
+      ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
+      N   += n;
+    }
   }
   ierr = ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);

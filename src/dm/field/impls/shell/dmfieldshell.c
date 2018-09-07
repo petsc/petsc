@@ -215,11 +215,11 @@ PetscErrorCode DMFieldShellSetEvaluateFV(DMField field, PetscErrorCode (*evaluat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMFieldShellSetGetFEInvariance(DMField field, PetscErrorCode (*getFEInvariance)(DMField,IS,PetscBool*,PetscBool*,PetscBool*))
+PetscErrorCode DMFieldShellSetGetDegree(DMField field, PetscErrorCode (*getDegree)(DMField,IS,PetscInt*,PetscInt*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
-  field->ops->getFEInvariance = getFEInvariance;
+  field->ops->getDegree = getDegree;
   PetscFunctionReturn(0);
 }
 
@@ -238,7 +238,7 @@ static PetscErrorCode DMFieldInitialize_Shell(DMField field)
   field->ops->evaluate                = NULL;
   field->ops->evaluateFE              = DMFieldShellEvaluateFEDefault;
   field->ops->evaluateFV              = DMFieldShellEvaluateFVDefault;
-  field->ops->getFEInvariance         = NULL;
+  field->ops->getDegree               = NULL;
   field->ops->createDefaultQuadrature = NULL;
   field->ops->view                    = NULL;
   PetscFunctionReturn(0);
