@@ -43,7 +43,7 @@ EXTERN_C_END
 #endif
 #endif
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) && defined(PETSC_HAVE_HWLOC)
+#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && (defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) || defined(PETSC_HAVE_MMAP)) && defined(PETSC_HAVE_HWLOC)
 #define PETSC_HAVE_OPENMP_SUPPORT 1
 #endif
 

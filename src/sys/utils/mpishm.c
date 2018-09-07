@@ -186,10 +186,24 @@ PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm,MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) && defined(PETSC_HAVE_HWLOC)
+#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && (defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) || defined(PETSC_HAVE_MMAP)) && defined(PETSC_HAVE_HWLOC)
 #include <pthread.h>
 #include <hwloc.h>
 #include <omp.h>
+
+/* Use mmap() to allocate shared mmeory (for the pthread_barrierattr_t object) if it is available,
+   otherwise use MPI_Win_allocate_shared. They should have the same effect besides MPI-3 is much
+   simpler to use. However, on a Cori Haswell node with Cray MPI, MPI-3 worsened a test's performance
+   by 50%. Until the reason is found out, we use mmap() instead.
+*/
+#define USE_MMAP_ALLOCATE_SHARED_MEMORY
+
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
 
 struct _n_PetscOmpCtrl {
   MPI_Comm          omp_comm;        /* a shared memory communicator to spawn omp threads */
@@ -203,18 +217,50 @@ struct _n_PetscOmpCtrl {
   hwloc_cpuset_t    omp_cpuset;      /* union of cpu bindings of ranks in omp_comm */
 };
 
+
 /* Allocate a shared pthread_barrier_t object in ctrl->omp_comm, set ctrl->barrier */
 PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode        ierr;
   MPI_Aint              size;
-  PetscMPIInt           disp_unit;
   void                  *baseptr;
-  pthread_barrierattr_t attr;
+  pthread_barrierattr_t  attr;
 
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+  PetscInt              fd;
+  PetscChar             pathname[PETSC_MAX_PATH_LEN];
+#else
+  PetscMPIInt           disp_unit;
+#endif
+
+  PetscFunctionBegin;
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+  size = sizeof(pthread_barrier_t);
+  if (ctrl->is_omp_master) {
+    /* use PETSC_COMM_SELF in PetscGetTmp, since it is a collective call. Using omp_comm would otherwise bcast the unfinished pathname to slaves */
+    ierr    = PetscGetTmp(PETSC_COMM_SELF,pathname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr    = PetscStrlcat(pathname,"/petsc-shm-XXXXXX",PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    /* mkstemp replaces XXXXXX with a unique file name and opens the file for us */
+    fd      = mkstemp(pathname); if(fd == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not create tmp file %s with mkstemp\n", pathname);
+    ierr    = ftruncate(fd,size);CHKERRQ(ierr);
+    baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); if (baseptr == MAP_FAILED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed\n");
+    ierr    = close(fd);CHKERRQ(ierr);
+    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRQ(ierr);
+    /* this MPI_Barrier is to wait slaves open the file before master unlinks it */
+    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
+    ierr    = unlink(pathname);CHKERRQ(ierr);
+  } else {
+    ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRQ(ierr);
+    fd      = open(pathname,O_RDWR); if(fd == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not open tmp file %s\n", pathname);
+    baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); if (baseptr == MAP_FAILED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed\n");
+    ierr    = close(fd);CHKERRQ(ierr);
+    ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
+  }
+#else
   size = ctrl->is_omp_master ? sizeof(pthread_barrier_t) : 0;
   ierr = MPI_Win_allocate_shared(size,1,MPI_INFO_NULL,ctrl->omp_comm,&baseptr,&ctrl->omp_win);CHKERRQ(ierr);
   ierr = MPI_Win_shared_query(ctrl->omp_win,0,&size,&disp_unit,&baseptr);CHKERRQ(ierr);
+#endif
   ctrl->barrier = (pthread_barrier_t*)baseptr;
 
   /* omp master initializes the barrier */
@@ -226,8 +272,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
     ierr = pthread_barrierattr_destroy(&attr);CHKERRQ(ierr);
   }
 
-  /* the MPI_Barrier is to make sure the omp barrier is initialized before slaves use it */
-  MPI_Barrier(ctrl->omp_comm);
+  /* this MPI_Barrier is to make sure the omp barrier is initialized before slaves use it */
+  ierr = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -236,10 +282,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
 
-  /* the MPI_Barrier is to make sure slaves have finished using the omp barrier before master destroys it */
+  PetscFunctionBegin;
+  /* this MPI_Barrier is to make sure slaves have finished using the omp barrier before master destroys it */
   ierr = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
   if (ctrl->is_omp_master) { ierr = pthread_barrier_destroy(ctrl->barrier);CHKERRQ(ierr); }
+
+#if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
+  ierr = munmap(ctrl->barrier,sizeof(pthread_barrier_t));CHKERRQ(ierr);
+#else
   ierr = MPI_Win_free(&ctrl->omp_win);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -426,4 +478,5 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
   PetscFunctionReturn(0);
 }
 
+#undef USE_MMAP_ALLOCATE_SHARED_MEMORY
 #endif /* defined(PETSC_HAVE_PTHREAD) && .. */
