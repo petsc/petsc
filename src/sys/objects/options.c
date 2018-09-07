@@ -1407,7 +1407,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscOptionsAllUsed - Returns a count of the number of options in the
    database that have never been selected.
 
@@ -1437,7 +1437,7 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscOptionsLeft - Prints to screen any options that were set and never used.
 
    Not Collective

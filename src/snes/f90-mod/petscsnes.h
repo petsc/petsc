@@ -11,7 +11,7 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscConvEst
 
-      SNES, parameter :: PETSC_NULL_SNES = tSNES(-1)
+      SNES, parameter :: PETSC_NULL_SNES = tSNES(0)
       PetscConvEst, parameter :: PETSC_NULL_CONVEST =                   &
      & tPetscConvEst(-1)
 !

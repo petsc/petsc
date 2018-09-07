@@ -40,9 +40,6 @@
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatShellSetOperation(m,MATOP_CREATE_VECS,mymatgetvecs,ierr)
-!      prevent valgrind warning about uninitialized values
-      x = tVec(0)
-      y = tVec(0)
       call MatCreateVecs(m,x,y,ierr)
       call MatDestroy(m,ierr)
       call VecDestroy(x,ierr)

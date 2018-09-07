@@ -46,9 +46,3 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,char* prefix P
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matmffdsetbase_(Mat *mat,Vec *u,Vec *f,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(f);
- *ierr = MatMFFDSetBase(*mat,*u,*f);
-}
-

@@ -127,12 +127,6 @@
           integer z
         end subroutine
 
-        subroutine MatCreateSchurComplement(a,b,c,d,e,f,z)
-          use petscmatdef
-          Mat a,b,c,d,e,f
-          integer z
-        end subroutine
-
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
           use petscmatdef
           MPI_Comm a

@@ -595,7 +595,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    KSPSolve - Solves linear system.
 
    Collective on KSP

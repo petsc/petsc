@@ -5035,7 +5035,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
    matrices can be NULL.
@@ -5668,7 +5668,7 @@ PetscErrorCode MatZeroEntries(Mat mat)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsColumns - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
 
@@ -5730,7 +5730,7 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsColumnsIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
 
@@ -5785,7 +5785,7 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
 
@@ -5854,7 +5854,7 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
 
@@ -5915,7 +5915,7 @@ PetscErrorCode MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsStencil - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix. These rows must be local to the process.
 
@@ -6016,7 +6016,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsColumnsStencil - Zeros all row and column entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
 
@@ -6117,7 +6117,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
@@ -6193,7 +6193,7 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
@@ -6253,7 +6253,7 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsColumnsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix; using local numbering of rows.
 
@@ -6313,7 +6313,7 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatZeroRowsColumnsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix; using local numbering of rows.
 
@@ -8217,7 +8217,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatGetNullSpace - retrieves the null space of a matrix.
 
    Logically Collective on Mat and MatNullSpace
@@ -8241,7 +8241,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatSetNullSpace - attaches a null space to a matrix.
 
    Logically Collective on Mat and MatNullSpace

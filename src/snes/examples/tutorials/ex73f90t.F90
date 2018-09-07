@@ -304,7 +304,6 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      x = tVec(0)
       call MatCreateVecs(KKTmat,x,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
       call VecDuplicate(x,r,ierr);CHKERRA(ierr)
 

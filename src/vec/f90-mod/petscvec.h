@@ -17,11 +17,11 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tVecTagger
 
-      Vec, parameter :: PETSC_NULL_VEC = tVec(-1)
+      Vec, parameter :: PETSC_NULL_VEC = tVec(0)
       VecScatter, parameter :: PETSC_NULL_VECSCATTER =                    &
-     &                tVecScatter(-1)
+     &                tVecScatter(0)
       VecTagger, parameter :: PETSC_NULL_VECTAGGER =                      &
-     &                tVecTagger(-1)
+     &                tVecTagger(0)
 !
 !
 !  Types of vector and matrix norms
