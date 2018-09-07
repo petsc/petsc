@@ -2,7 +2,6 @@
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define kspsolve_                      KSPSOLVE
 #define kspmonitorset_                 KSPMONITORSET
 #define kspsetconvergencetest_         KSPSETCONVERGENCETEST
 #define kspgetresidualhistory_         KSPGETRESIDUALHISTORY
@@ -24,7 +23,6 @@
 #define dmkspsetcomputeinitialguess_   DMKSPSETCOMPUTEINITIALGUESS /* zdmkspf.c */
 #define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS    /* zdmkspf.c */
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define kspsolve_                      kspsolve
 #define kspmonitorset_                 kspmonitorset
 #define kspsetconvergencetest_         kspsetconvergencetest
 #define kspgetresidualhistory_         kspgetresidualhistory
