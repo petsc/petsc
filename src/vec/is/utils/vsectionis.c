@@ -922,38 +922,35 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
   const PetscInt *pind   = NULL;
-  PetscInt        offset = 0, p, f;
+  PetscInt        offset = 0, foff, p, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->setup) PetscFunctionReturn(0);
   s->setup = PETSC_TRUE;
+  /* Set offsets and field offsets for all points */
+  /*   Assume that all fields have the same chart */
   if (s->perm) {ierr = ISGetIndices(s->perm, &pind);CHKERRQ(ierr);}
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;
 
+    /* Set point offset */
     s->atlasOff[q] = offset;
     offset        += s->atlasDof[q];
     s->maxDof      = PetscMax(s->maxDof, s->atlasDof[q]);
-  }
-  ierr = PetscSectionSetUpBC(s);CHKERRQ(ierr);
-  /* Assume that all fields have the same chart */
-  for (p = 0; p < s->pEnd - s->pStart; ++p) {
-    const PetscInt q   = pind ? pind[p] : p;
-    PetscInt       off = s->atlasOff[q];
-
-    for (f = 0; f < s->numFields; ++f) {
+    /* Set field offset */
+    for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
       PetscSection sf = s->field[f];
 
-      sf->atlasOff[q] = off;
-      off += sf->atlasDof[q];
+      sf->atlasOff[q] = foff;
+      foff += sf->atlasDof[q];
     }
   }
   if (s->perm) {ierr = ISRestoreIndices(s->perm, &pind);CHKERRQ(ierr);}
-  for (f = 0; f < s->numFields; ++f) {
-    ierr = PetscSectionSetUpBC(s->field[f]);CHKERRQ(ierr);
-  }
+  /* Setup BC sections */
+  ierr = PetscSectionSetUpBC(s);CHKERRQ(ierr);
+  for (f = 0; f < s->numFields; ++f) {ierr = PetscSectionSetUpBC(s->field[f]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
