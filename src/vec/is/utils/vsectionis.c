@@ -1011,19 +1011,38 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   /* Set offsets and field offsets for all points */
   /*   Assume that all fields have the same chart */
   if (s->perm) {ierr = ISGetIndices(s->perm, &pind);CHKERRQ(ierr);}
-  for (p = 0; p < s->pEnd - s->pStart; ++p) {
-    const PetscInt q = pind ? pind[p] : p;
+  if (s->pointMajor) {
+    for (p = 0; p < s->pEnd - s->pStart; ++p) {
+      const PetscInt q = pind ? pind[p] : p;
 
-    /* Set point offset */
-    s->atlasOff[q] = offset;
-    offset        += s->atlasDof[q];
-    s->maxDof      = PetscMax(s->maxDof, s->atlasDof[q]);
-    /* Set field offset */
-    for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
+      /* Set point offset */
+      s->atlasOff[q] = offset;
+      offset        += s->atlasDof[q];
+      s->maxDof      = PetscMax(s->maxDof, s->atlasDof[q]);
+      /* Set field offset */
+      for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
+        PetscSection sf = s->field[f];
+
+        sf->atlasOff[q] = foff;
+        foff += sf->atlasDof[q];
+      }
+    }
+  } else {
+    /* Set field offsets for all points */
+    for (f = 0; f < s->numFields; ++f) {
       PetscSection sf = s->field[f];
 
-      sf->atlasOff[q] = foff;
-      foff += sf->atlasDof[q];
+      for (p = 0; p < s->pEnd - s->pStart; ++p) {
+        const PetscInt q = pind ? pind[p] : p;
+
+        sf->atlasOff[q] = offset;
+        offset += sf->atlasDof[q];
+      }
+    }
+    /* Disable point offsets since these are unused */
+    for (p = 0; p < s->pEnd - s->pStart; ++p) {
+      s->atlasOff[p] = -1;
+      s->maxDof      = PetscMax(s->maxDof, s->atlasDof[p]);
     }
   }
   if (s->perm) {ierr = ISRestoreIndices(s->perm, &pind);CHKERRQ(ierr);}
