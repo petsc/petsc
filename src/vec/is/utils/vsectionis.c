@@ -47,6 +47,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->pStart             = -1;
   (*s)->pEnd               = -1;
   (*s)->perm               = NULL;
+  (*s)->pointMajor         = PETSC_TRUE;
   (*s)->maxDof             = 0;
   (*s)->atlasDof           = NULL;
   (*s)->atlasOff           = NULL;
@@ -571,6 +572,54 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
       ierr = PetscObjectReference((PetscObject) s->perm);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionGetPointMajor - Returns the flag for dof ordering, true if it is point major, otherwise field major
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameter:
+. pm - the flag for point major ordering
+
+  Level: intermediate
+
+.seealso: PetscSectionSetPointMajor()
+@*/
+PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidPointer(pm,2);
+  *pm = s->pointMajor;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionSetPointMajor - Sets the flag for dof ordering, true if it is point major, otherwise field major
+
+  Not collective
+
+  Input Parameters:
++ s  - the PetscSection
+- pm - the flag for point major ordering
+
+  Not collective
+
+  Level: intermediate
+
+.seealso: PetscSectionGetPointMajor()
+@*/
+PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (s->setup) SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the dof ordering after the section is setup");
+  s->pointMajor = pm;
   PetscFunctionReturn(0);
 }
 

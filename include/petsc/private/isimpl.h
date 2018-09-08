@@ -90,6 +90,7 @@ struct _p_PetscSection {
   PETSCHEADER(int);
   PetscInt                      pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
   IS                            perm;         /* A permutation of [0, pEnd-pStart) */
+  PetscBool                     pointMajor;   /* True if the offsets are point major, otherwise they are fieldMajor */
   PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
   PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
   PetscInt                      maxDof;       /* Maximum dof on any point */
