@@ -178,6 +178,36 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 }
 
 /*@
+  PetscSectionSetFromOptions - sets parameters in a PetscSection from the options database
+
+  Collective on PetscSection
+
+  Input Parameter:
+. section - the PetscSection
+
+  Options Database:
+. -petscsection_point_major the dof order
+
+  Level: intermediate
+
+.seealso: PetscSection, PetscSectionCreate(), PetscSectionDestroy()
+@*/
+PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  ierr = PetscObjectOptionsBegin((PetscObject) s);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscsection_point_major", "The for ordering, either point major or field major", "PetscSectionSetPointMajor", s->pointMajor, &s->pointMajor, NULL);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) s);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscObjectViewFromOptions((PetscObject) s, NULL, "-petscsection_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscSectionCompare - Compares two sections
 
   Collective on PetscSection
