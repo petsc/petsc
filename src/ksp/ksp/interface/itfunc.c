@@ -951,6 +951,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
     ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   }
 
+  ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
   ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);
