@@ -315,6 +315,34 @@ PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
 
+PETSC_INTERN PetscErrorCode VecScatterCreate_vectype_private(VecScatter);
+
+PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSG(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSS(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterDestroy_SSToSG(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterDestroy_SSToSS(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSG(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSS(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSG(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterView_SSToSG(VecScatter,PetscViewer);
+PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSS(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_INTERN PetscErrorCode VecScatterCopy_SGToSG(VecScatter,VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterView_SGToSG(VecScatter,PetscViewer);
+PETSC_INTERN PetscErrorCode VecScatterCopy_SGToSS(VecScatter,VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterView_SGToSS(VecScatter,PetscViewer);
+PETSC_INTERN PetscErrorCode VecScatterCopy_SSToSS(VecScatter,VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterView_SSToSS(VecScatter,PetscViewer);
+PETSC_INTERN PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt,VecScatter_Seq_General*,VecScatter_Seq_General*);
+PETSC_INTERN PetscErrorCode GetInputISType_private(VecScatter,PetscInt,PetscInt,PetscInt*,IS*,PetscInt*,IS*);
+
+#define VEC_SEQ_ID 0
+#define VEC_MPI_ID 1
+#define IS_GENERAL_ID 0
+#define IS_STRIDE_ID  1
+#define IS_BLOCK_ID   2
+
 PETSC_EXTERN PetscMPIInt Petsc_Reduction_keyval;
 
 #endif

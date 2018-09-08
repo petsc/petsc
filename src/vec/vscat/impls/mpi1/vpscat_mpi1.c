@@ -7,6 +7,19 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/vecscatterimpl.h>
 
+
+PetscErrorCode VecScatterCreate_MPI1(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI1);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI1 for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
@@ -1964,31 +1977,31 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */
 #define BS 1
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 2
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 3
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 4
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 5
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 6
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 7
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 8
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 9
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 10
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 11
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 12
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS bs
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 
 /* ==========================================================================================*/
 

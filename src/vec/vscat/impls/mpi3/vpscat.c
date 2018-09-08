@@ -4,6 +4,30 @@
 
 #include <petsc/private/vecscatterimpl.h>
 
+PetscErrorCode VecScatterCreate_MPI3(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3 for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI3Node(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3NODE);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3NODE for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
@@ -2051,31 +2075,31 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */
 #define BS 1
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 2
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 3
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 4
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 5
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 6
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 7
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 8
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 9
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 10
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 11
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 12
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS bs
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 
 /* ==========================================================================================*/
 /*              create parallel to sequential scatter context                                */
