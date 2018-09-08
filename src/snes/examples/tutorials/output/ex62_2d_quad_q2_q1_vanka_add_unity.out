@@ -1,7 +1,5 @@
   0 SNES Function norm 9.088488010682e+00 
-  Linear solve converged due to CONVERGED_RTOL iterations 23
   1 SNES Function norm 3.941414496025e-01 
-  Linear solve converged due to CONVERGED_RTOL iterations 772
   2 SNES Function norm 2.256919160166e-05 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 1 MPI processes
