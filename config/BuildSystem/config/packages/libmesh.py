@@ -10,10 +10,7 @@ class Configure(config.package.GNUPackage):
     self.includes  = ['libmesh/libmesh.h', 'libmesh/libmesh_config.h']
     self.liblist   = [['libmesh.la']]
     self.pkgname   = 'libmesh-1.2.1'
-    self.cxx             = 1
-    self.useddirectly    = 0
-    self.linkedbypetsc   = 0
-    self.builtafterpetsc = 1
+    self.cxx       = 1
     return
 
   def setupHelp(self, help):
