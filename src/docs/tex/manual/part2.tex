@@ -897,7 +897,7 @@ actually a combination of scatters and gathers.
 To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{lstlisting}
-VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+VecScatterCreateWithData(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
 VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterDestroy(VecScatter *ctx);
@@ -947,11 +947,11 @@ option is used.
 Once a \lstinline{VecScatter} object has been created it may be used with any vectors
 that have the appropriate parallel data layout. That is, one can call
 \lstinline{VecScatterBegin()} and \lstinline{VecScatterEnd()} with different vectors than
-used in the call to \lstinline{VecScatterCreate()} so long as they have the same
+used in the call to \lstinline{VecScatterCreateWithData()} so long as they have the same
 parallel layout (number of elements on each process are the same). Usually,
 these ``different'' vectors would have been obtained via calls to
 \lstinline{VecDuplicate()} from the original vectors used in the call to
-\lstinline{VecScatterCreate()}.
+\lstinline{VecScatterCreateWithData()}.
 
 \sindex{vector values, getting}
 There is a PETSc routine that is nearly the opposite of \lstinline{VecSetValues()}, that is, \lstinline{VecGetValues()}, but it can only get local values from the vector.
@@ -977,7 +977,7 @@ PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
 VecCreateSeq(PETSC_COMM_SELF,2,&x);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,PETSC_COPY_VALUES,&to);
-VecScatterCreate(p,from,x,to,&scatter);
+VecScatterCreateWithData(p,from,x,to,&scatter);
 VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);
 VecGetArray(x,&values);

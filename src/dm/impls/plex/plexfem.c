@@ -2570,7 +2570,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, m, cindices, PETSC_OWN_POINTER, &cis);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, m, findices, PETSC_OWN_POINTER, &fis);CHKERRQ(ierr);
-  ierr = VecScatterCreate(cv, cis, fv, fis, sc);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(cv, cis, fv, fis, sc);CHKERRQ(ierr);
   ierr = ISDestroy(&cis);CHKERRQ(ierr);
   ierr = ISDestroy(&fis);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmf, &fv);CHKERRQ(ierr);

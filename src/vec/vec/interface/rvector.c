@@ -1310,7 +1310,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-      ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)Z,"VecGetSubVector_Scatter",(PetscObject)scatter);CHKERRQ(ierr);
