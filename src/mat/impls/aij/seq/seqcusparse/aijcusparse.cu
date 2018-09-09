@@ -1309,30 +1309,6 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCreateVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
-{
-  PetscErrorCode ierr;
-  PetscInt rbs,cbs;
-
-  PetscFunctionBegin;
-  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
-  if (right) {
-    ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
-    ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
-    ierr = VecSetType(*right,VECSEQCUDA);CHKERRQ(ierr);
-    ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
-  }
-  if (left) {
-    ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
-    ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
-    ierr = VecSetType(*left,VECSEQCUDA);CHKERRQ(ierr);
-    ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 struct VecCUDAPlusEquals
 {
   template <typename Tuple>
@@ -1662,7 +1638,10 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
-  C = *B;
+  C    = *B;
+  ierr = PetscFree(C->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECCUDA,&C->defaultvectype);CHKERRQ(ierr);
+
   /* inject CUSPARSE-specific stuff */
   if (C->factortype==MAT_FACTOR_NONE) {
     /* you cannot check the inode.use flag here since the matrix was just created.
@@ -1696,7 +1675,6 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
 
   C->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
   C->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
-  C->ops->getvecs          = MatCreateVecs_SeqAIJCUSPARSE;
   C->ops->setfromoptions   = MatSetFromOptions_SeqAIJCUSPARSE;
   C->ops->mult             = MatMult_SeqAIJCUSPARSE;
   C->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
@@ -1720,6 +1698,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECCUDA,&B->defaultvectype);CHKERRQ(ierr);
+
   if (B->factortype==MAT_FACTOR_NONE) {
     /* you cannot check the inode.use flag here since the matrix was just created.
        now build a GPU matrix data structure */
@@ -1752,7 +1733,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
-  B->ops->getvecs          = MatCreateVecs_SeqAIJCUSPARSE;
   B->ops->setfromoptions   = MatSetFromOptions_SeqAIJCUSPARSE;
   B->ops->mult             = MatMult_SeqAIJCUSPARSE;
   B->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
