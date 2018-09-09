@@ -665,15 +665,14 @@ PetscErrorCode VecScatterMemcpyPlanCreate_SGToSG(PetscInt bs,VecScatter_Seq_Gene
 }
 
 /* -------------------------------------------------- */
-PetscErrorCode VecScatterCreate_Seq(VecScatter ctx)
+PetscErrorCode VecScatterSetUp_Seq(VecScatter ctx)
 {
   PetscErrorCode    ierr;
   PetscInt          ix_type=-1,iy_type=-1;
-  IS                tix=NULL,tiy=NULL,ix=ctx->from_is,iy=ctx->to_is;
+  IS                tix = NULL,tiy = NULL,ix=ctx->from_is,iy=ctx->to_is;
   Vec               xin=ctx->from_v;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERSEQ);CHKERRQ(ierr);
   ierr = GetInputISType_private(ctx,VEC_SEQ_ID,VEC_SEQ_ID,&ix_type,&tix,&iy_type,&tiy);CHKERRQ(ierr);
   if (tix) ix = tix;
   if (tiy) iy = tiy;
@@ -885,6 +884,16 @@ PetscErrorCode VecScatterCreate_Seq(VecScatter ctx)
   ierr = ISDestroy(&tix);CHKERRQ(ierr);
   ierr = ISDestroy(&tiy);CHKERRQ(ierr);
   ierr = VecScatterViewFromOptions(ctx,NULL,"-vecscatter_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_Seq(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ctx->ops->setup = VecScatterSetUp_Seq;
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERSEQ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2535,15 +2535,23 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI1(PetscInt nx,const PetscInt *inidx
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecScatterSetUp_MPI1(VecScatter ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterSetUp_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI1,VecScatterCreateLocal_StoP_MPI1,VecScatterCreateLocal_PtoP_MPI1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecScatterCreate_MPI1(VecScatter ctx)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ctx->ops->setup = VecScatterSetUp_MPI1;
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI1);CHKERRQ(ierr);
   ierr = PetscInfo(ctx,"Using MPI1 for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI1,VecScatterCreateLocal_StoP_MPI1,VecScatterCreateLocal_PtoP_MPI1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

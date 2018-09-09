@@ -2867,15 +2867,23 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecScatterSetUp_MPI3(VecScatter ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterSetUp_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecScatterCreate_MPI3(VecScatter ctx)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ctx->ops->setup = VecScatterSetUp_MPI3;
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3);CHKERRQ(ierr);
   ierr = PetscInfo(ctx,"Using MPI3 for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2884,9 +2892,8 @@ PetscErrorCode VecScatterCreate_MPI3Node(VecScatter ctx)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ctx->ops->setup = VecScatterSetUp_MPI3;
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3NODE);CHKERRQ(ierr);
   ierr = PetscInfo(ctx,"Using MPI3NODE for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

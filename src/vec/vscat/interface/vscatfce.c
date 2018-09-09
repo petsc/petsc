@@ -192,6 +192,28 @@ PetscErrorCode VecScatterDestroy(VecScatter *ctx)
 }
 
 /*@
+   VecScatterSetUp - Sets up the VecScatter to be able to actually scatter information between vectors
+
+   Collective on VecScatter
+
+   Input Parameter:
+.  ctx - the scatter context
+
+   Level: intermediate
+
+.seealso: VecScatterCreate(), VecScatterCopy()
+@*/
+PetscErrorCode VecScatterSetUp(VecScatter ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
+  ierr = (*ctx->ops->setup)(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    VecScatterCopy - Makes a copy of a scatter context.
 
    Collective on VecScatter

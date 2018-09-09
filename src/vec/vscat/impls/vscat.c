@@ -846,7 +846,7 @@ PetscErrorCode GetInputISType_private(VecScatter ctx,PetscInt xin_type,PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterCreate_vectype_private(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_ptos)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_stop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_ptop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
+PetscErrorCode VecScatterSetUp_vectype_private(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_ptos)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_stop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_ptop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
 {
   PetscErrorCode    ierr;
   PetscInt          xin_type=-1,yin_type=-1;

@@ -251,21 +251,22 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /* Get comm from xin and yin */
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
   if (size > 1) comm = ycomm;
 
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","Vector Scatter","VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  /* TODO: If the size of both comms is > 1 check that the comms are the same */
 
-  ctx->from_v = xin; ctx->to_v = yin;
-  ctx->from_is = ix; ctx->to_is = iy;
-  ctx->inuse        = PETSC_FALSE;
-  ctx->is_duplicate = PETSC_FALSE;
+  ierr = VecScatterCreateEmpty(comm,&ctx);CHKERRQ(ierr);
+  *newctx = ctx;
+
+  ctx->from_v  = xin;
+  ctx->to_v    = yin;
+  ctx->from_is = ix;
+  ctx->to_is   = iy;
 
   ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(yin,&ctx->to_n);CHKERRQ(ierr);
-  *newctx = ctx;
 
   /* Set default scatter type */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -275,6 +276,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr = VecScatterSetType(ctx,VECSCATTERMPI1);CHKERRQ(ierr);
   }
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
+  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -299,9 +301,11 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = VecScatterInitializePackage();CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","Vector Scatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
+  ctx->is_duplicate        = PETSC_FALSE;
   *newctx = ctx;
   PetscFunctionReturn(0);
 }

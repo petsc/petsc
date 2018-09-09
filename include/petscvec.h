@@ -346,6 +346,7 @@ PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterSetUp(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}

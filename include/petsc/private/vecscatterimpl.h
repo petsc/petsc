@@ -292,6 +292,7 @@ struct _VecScatterOps {
   PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*copy)(VecScatter,VecScatter);
   PetscErrorCode (*destroy)(VecScatter);
+  PetscErrorCode (*setup)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
   PetscErrorCode (*viewfromoptions)(VecScatter,const char prefix[],const char name[]);
   PetscErrorCode (*remap)(VecScatter,PetscInt *,PetscInt*);
@@ -315,7 +316,7 @@ PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
 
-PETSC_INTERN PetscErrorCode VecScatterCreate_vectype_private(VecScatter,PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter));
+PETSC_INTERN PetscErrorCode VecScatterSetUp_vectype_private(VecScatter,PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter));
 
 PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSG(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSS(VecScatter);
