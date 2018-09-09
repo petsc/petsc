@@ -1033,7 +1033,7 @@ class Configure(config.base.Configure):
         # AIX does this for MPI and perhaps other things
         m = re.match(r'^-I.*$', arg)
         if m:
-          inc = arg.replace('-I','')
+          inc = arg.replace('-I','',1)
           self.logPrint('Found include directory: '+inc, 4, 'compilers')
           fincs.append(inc)
           continue
