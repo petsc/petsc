@@ -1152,8 +1152,8 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nz,*irn,*jcn;
-  PetscScalar    *val;
+  PetscInt       i,nz=0,*irn,*jcn=0;
+  PetscScalar    *val=0;
   PetscMPIInt    mpinz,*recvcount=NULL,*displs=NULL;
 
   PetscFunctionBegin;
