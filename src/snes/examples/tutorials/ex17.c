@@ -24,6 +24,8 @@ typedef struct {
   PetscInt     cells[3];    /* The initial domain division */
   /* Problem definition */
   SolutionType solType;     /* Type of exact solution */
+  /* Solver definition */
+  PetscBool    useNearNullspace; /* Use the rigid body modes as a near nullspace for AMG */
 } AppCtx;
 
 static PetscErrorCode quadratic_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -237,12 +239,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim      = 2;
-  options->cells[0] = 1;
-  options->cells[1] = 1;
-  options->cells[2] = 1;
-  options->simplex  = PETSC_TRUE;
-  options->solType  = SOL_VLAP_QUADRATIC;
+  options->dim              = 2;
+  options->cells[0]         = 1;
+  options->cells[1]         = 1;
+  options->cells[2]         = 1;
+  options->simplex          = PETSC_TRUE;
+  options->solType          = SOL_VLAP_QUADRATIC;
+  options->useNearNullspace = PETSC_TRUE;
   ierr = PetscStrncpy(options->dmType, DMPLEX, 256);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Linear Elasticity Problem Options", "DMPLEX");CHKERRQ(ierr);
@@ -252,6 +255,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex17.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
+  ierr = PetscOptionsBool("-near_nullspace", "Use the rigid body modes as an AMG near nullspace", "ex17.c", options->useNearNullspace, &options->useNearNullspace, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex17.c", DMList, options->dmType, options->dmType, 256, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -348,9 +352,19 @@ static PetscErrorCode SetupPrimalProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt dummy, MatNullSpace *nullspace)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexCreateRigidBody(dm, nullspace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[], PetscErrorCode (*setup)(PetscDS, AppCtx *), void *ctx)
 {
-  DM             cdm = dm;
+  AppCtx        *user = (AppCtx *) ctx;
+  DM             cdm  = dm;
   PetscFE        fe;
   PetscDS        prob;
   char           prefix[PETSC_MAX_PATH_LEN];
@@ -366,9 +380,10 @@ PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[],
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = (*setup)(prob, (AppCtx*)ctx);CHKERRQ(ierr);
+  ierr = (*setup)(prob, user);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    if (user->useNearNullspace) {ierr = DMSetNearNullSpaceConstructor(cdm, 0, CreateElasticityNullSpace);}
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
