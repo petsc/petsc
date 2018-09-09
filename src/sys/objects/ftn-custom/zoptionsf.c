@@ -56,7 +56,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertstring_(PetscOptions *options,
   char *c1;
 
   FIXCHAR(file,len,c1);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsInsertString(*options,c1);
   FREECHAR(file,c1);
 }
@@ -66,7 +65,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfile_(MPI_Fint *comm,PetscOpti
   char *c1;
 
   FIXCHAR(file,len,c1);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsInsertFile(MPI_Comm_f2c(*comm),*options,c1,*require);
   FREECHAR(file,c1);
 }
@@ -78,7 +76,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionssetvalue_(PetscOptions *options,char
 
   FIXCHAR(name,len1,c1);
   FIXCHAR(value,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsSetValue(*options,c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
@@ -86,7 +83,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionssetvalue_(PetscOptions *options,char
 
 PETSC_EXTERN void PETSC_STDCALL petscoptionsclear_(PetscOptions *options,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsClear(*options);
 }
 
@@ -95,7 +91,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsclearvalue_(PetscOptions *options,ch
   char *c1;
 
   FIXCHAR(name,len,c1);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsClearValue(*options,c1);
   FREECHAR(name,c1);
 }
@@ -107,17 +102,11 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionshasname_(PetscOptions *options,char*
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsHasName(*options,c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsallused_(PetscOptions *opt,PetscInt *n,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(opt);
-  *ierr = PetscOptionsAllUsed(*opt,n);
-}
 
 PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(PetscOptions *opt,char* pre PETSC_MIXED_LEN(len1),char* name PETSC_MIXED_LEN(len2),
                     PetscInt *ivalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
@@ -127,7 +116,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(PetscOptions *opt,char* pre 
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(opt);
   *ierr = PetscOptionsGetInt(*opt,c1,c2,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -142,7 +130,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetenumprivate_(PetscOptions *option
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetEnum(*options,c1,c2,list,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -157,7 +144,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetbool_(PetscOptions *options,char*
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetBool(*options,c1,c2,ivalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -172,7 +158,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetreal_(PetscOptions *options,char*
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetReal(*options,c1,c2,dvalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -187,7 +172,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetscalar_(PetscOptions *options,cha
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetScalar(*options,c1,c2,dvalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -202,7 +186,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetrealarray_(PetscOptions *options,
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetRealArray(*options,c1,c2,dvalue,nmax,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -217,7 +200,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetintarray_(PetscOptions *options,c
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetIntArray(*options,c1,c2,dvalue,nmax,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -237,7 +219,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetstring_(PetscOptions *options,cha
   c3   = string;
   len3 = len - 1;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetString(*options,c1,c2,c3,len3,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
@@ -260,23 +241,14 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscOptions *options,PetscVie
   PetscViewer v;
 
   PetscPatchDefaultViewers_Fortran(vin,v);
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsView(*options,v);
 }
-
-PETSC_EXTERN void PETSC_STDCALL petscoptionsleft_(PetscOptions *options,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(options);
-  *ierr = PetscOptionsLeft(*options);
-}
-
 
 PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,PetscObject *bobj,char* option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr  PETSC_END_LEN(loption))
 {
   char *o;
 
   FIXCHAR(option, loption, o);
-  CHKFORTRANNULLOBJECTDEREFERENCE(bobj);
   *ierr = PetscObjectViewFromOptions(*obj, *bobj, o);
   FREECHAR(option, o);
 }

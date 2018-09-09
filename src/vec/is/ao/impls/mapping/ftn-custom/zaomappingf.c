@@ -19,9 +19,4 @@ PETSC_EXTERN void PETSC_STDCALL aocreatemapping_(MPI_Comm *comm,PetscInt *napp,P
   *ierr = AOCreateMapping(MPI_Comm_f2c(*(MPI_Fint*)comm),*napp,myapp,mypetsc,aoout);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aocreatemappingis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(ispetsc);
-  *ierr = AOCreateMappingIS(*isapp,*ispetsc,aoout);
-}
 

@@ -11,24 +11,24 @@ static PetscErrorCode PCBDDCViewNullSpaceCorrectionPC(PC pc,PetscViewer view)
   ierr = PCShellGetContext(pc,(void**)&pc_ctx);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(view,"inner preconditioner:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
-    ierr = PCView(pc_ctx->local_pc,view);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
-
     ierr = PetscViewerPushFormat(view,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(view,"Lbasis:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(view,"L:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
     ierr = MatView(pc_ctx->Lbasis_mat,view);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(view,"Kbasis:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(view,"K:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
     ierr = MatView(pc_ctx->Kbasis_mat,view);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
 
     ierr = PetscViewerPopFormat(view);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(view,"inner preconditioner:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
+    ierr = PCView(pc_ctx->local_pc,view);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -220,11 +220,17 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   ierr = PCSetOperators(newpc,local_mat,local_mat);CHKERRQ(ierr);
   ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(newpc,shell_ctx);CHKERRQ(ierr);
+  if (isdir) {
+    ierr = PCShellSetName(newpc,"Nullspace corrected interior solve");CHKERRQ(ierr);
+  } else {
+    ierr = PCShellSetName(newpc,"Nullspace corrected correction solve");CHKERRQ(ierr);
+  }
   ierr = PCShellSetApply(newpc,PCBDDCApplyNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCShellSetView(newpc,PCBDDCViewNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyNullSpaceCorrectionPC);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
   ierr = KSPSetPC(local_ksp,newpc);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)newpc,(PetscObject)local_ksp,0);CHKERRQ(ierr);
   ierr = KSPSetUp(local_ksp);CHKERRQ(ierr);
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
@@ -234,6 +240,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     const char* prefix;
 
     ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)local_ksp,0);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(local_ksp,&prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(check_ksp,"approxscale_");CHKERRQ(ierr);
@@ -325,6 +332,7 @@ PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)local_ksp,1);CHKERRQ(ierr);
   ierr = KSPGetOptionsPrefix(local_ksp,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(check_ksp,"approxcheck_");CHKERRQ(ierr);

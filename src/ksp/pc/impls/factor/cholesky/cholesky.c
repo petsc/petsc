@@ -178,6 +178,34 @@ static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc,Vec x,Vec y)
+{
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    ierr = MatForwardSolve(pc->pmat,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatForwardSolve(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc,Vec x,Vec y)
+{
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    ierr = MatBackwardSolve(pc->pmat,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatBackwardSolve(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -275,13 +303,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
 
   ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
 
-  pc->ops->destroy           = PCDestroy_Cholesky;
-  pc->ops->reset             = PCReset_Cholesky;
-  pc->ops->apply             = PCApply_Cholesky;
-  pc->ops->applytranspose    = PCApplyTranspose_Cholesky;
-  pc->ops->setup             = PCSetUp_Cholesky;
-  pc->ops->setfromoptions    = PCSetFromOptions_Cholesky;
-  pc->ops->view              = PCView_Cholesky;
-  pc->ops->applyrichardson   = 0;
+  pc->ops->destroy             = PCDestroy_Cholesky;
+  pc->ops->reset               = PCReset_Cholesky;
+  pc->ops->apply               = PCApply_Cholesky;
+  pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Cholesky;
+  pc->ops->applysymmetricright = PCApplySymmetricRight_Cholesky;
+  pc->ops->applytranspose      = PCApplyTranspose_Cholesky;
+  pc->ops->setup               = PCSetUp_Cholesky;
+  pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
+  pc->ops->view                = PCView_Cholesky;
+  pc->ops->applyrichardson     = 0;
   PetscFunctionReturn(0);
 }

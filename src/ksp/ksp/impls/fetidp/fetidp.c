@@ -522,7 +522,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   Mat              A,Ap;
   PetscInt         fid = -1;
   PetscMPIInt      size;
-  PetscBool        ismatis,pisz,allp;
+  PetscBool        ismatis,pisz,allp,schp;
   PetscBool        flip; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
@@ -537,10 +537,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   pisz = PETSC_FALSE;
   flip = PETSC_FALSE;
   allp = PETSC_FALSE;
+  schp = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_fetidp_pressure_schur","Use a BDDC solver for pressure",NULL,schp,&schp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
@@ -580,6 +582,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = PetscFree(fields);CHKERRQ(ierr);
     } else if (c) {
       MatISLocalFields lf;
+
       ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
       ierr = PCBDDCSetDofsSplittingLocal(fetidp->innerbddc,lf->nr,lf->rf);CHKERRQ(ierr);
     }
@@ -588,10 +591,10 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   if (!fetidp->saddlepoint) {
     ierr = PCSetOperators(fetidp->innerbddc,A,A);CHKERRQ(ierr);
   } else {
-    Mat      nA,lA;
-    Mat      PPmat;
-    IS       pP;
-    PetscInt totP;
+    Mat          nA,lA,PPmat;
+    MatNullSpace nnsp;
+    IS           pP;
+    PetscInt     totP;
 
     ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_lA",(PetscObject)lA);CHKERRQ(ierr);
@@ -645,11 +648,23 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       Pall  = NULL;
       lPall = NULL;
       ploc  = PETSC_FALSE;
-      if (fid >= 0) {
+      if (fid < 0) { /* zero pressure block */
+        PetscInt np;
+
+        ierr = MatFindZeroDiagonals(A,&Pall);CHKERRQ(ierr);
+        ierr = ISGetSize(Pall,&np);CHKERRQ(ierr);
+        if (!np) { /* zero-block not found, defaults to last field (if set) */
+          fid  = pcbddc->n_ISForDofsLocal ? pcbddc->n_ISForDofsLocal - 1 : pcbddc->n_ISForDofs - 1;
+          ierr = ISDestroy(&Pall);CHKERRQ(ierr);
+        } else if (!pcbddc->n_ISForDofsLocal && !pcbddc->n_ISForDofs) {
+          ierr = PCBDDCSetDofsSplitting(fetidp->innerbddc,1,&Pall);CHKERRQ(ierr);
+        }
+      }
+      if (!Pall) { /* look for registered fields */
         if (pcbddc->n_ISForDofsLocal) {
           PetscInt np;
 
-          if (fid >= pcbddc->n_ISForDofsLocal) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
+          if (fid < 0 || fid >= pcbddc->n_ISForDofsLocal) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
           /* need a sequential IS */
           ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[fid],&np);CHKERRQ(ierr);
           ierr = ISGetIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
@@ -657,19 +672,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          if (fid >= pcbddc->n_ISForDofs) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
+          if (fid < 0 || fid >= pcbddc->n_ISForDofs) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
           ierr = PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]);CHKERRQ(ierr);
           Pall = pcbddc->ISForDofs[fid];
-        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Missing fields! Use PCBDDCSetDofsSplitting/Local");
-      } else { /* fallback to zero pressure block */
-        IS list[2];
-
-        ierr = MatFindZeroDiagonals(A,&list[1]);CHKERRQ(ierr);
-        ierr = ISComplement(list[1],rst,ren,&list[0]);CHKERRQ(ierr);
-        ierr = PCBDDCSetDofsSplitting(fetidp->innerbddc,2,list);CHKERRQ(ierr);
-        ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
-        Pall = list[1];
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
       }
+
       /* if the user requested the entire pressure,
          remove the interior pressure dofs from II (or pII) */
       if (allp) {
@@ -872,6 +880,17 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     } else {
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_lA",NULL);CHKERRQ(ierr);
     }
+    ierr = MatGetNearNullSpace(Ap,&nnsp);CHKERRQ(ierr);
+    if (!nnsp) {
+      ierr = MatGetNullSpace(Ap,&nnsp);CHKERRQ(ierr);
+    }
+    if (!nnsp) {
+      ierr = MatGetNearNullSpace(A,&nnsp);CHKERRQ(ierr);
+    }
+    if (!nnsp) {
+      ierr = MatGetNullSpace(A,&nnsp);CHKERRQ(ierr);
+    }
+    ierr = MatSetNearNullSpace(nA,nnsp);CHKERRQ(ierr);
     ierr = PCSetOperators(fetidp->innerbddc,nA,nA);CHKERRQ(ierr);
     ierr = MatDestroy(&nA);CHKERRQ(ierr);
 
@@ -882,20 +901,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     if (!totP) {
       pcbddc->benign_saddle_point = PETSC_TRUE;
       pcbddc->compute_nonetflux   = PETSC_TRUE;
-    }
-
-    /* Divergence mat */
-    if (totP) {
-      Mat       B;
-      IS        P;
-      PetscBool save;
-
-      ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(A,P,NULL,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-      save = pcbddc->compute_nonetflux; /* SetDivergenceMat activates nonetflux computation */
-      ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,PETSC_FALSE,NULL);CHKERRQ(ierr);
-      pcbddc->compute_nonetflux = save;
-      ierr = MatDestroy(&B);CHKERRQ(ierr);
     }
 
     /* Operators for pressure preconditioner */
@@ -920,29 +925,77 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         }
         ierr = MatDestroy(&C);CHKERRQ(ierr);
       }
-      if (A != Ap) { /* user has provided a different Pmat, use it to extract the pressure preconditioner */
-        Mat C;
+      /* Divergence mat */
+      if (!pcbddc->divudotp) {
+        Mat       B;
+        IS        P;
+        PetscBool save;
 
-        ierr = MatCreateSubMatrix(Ap,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-        ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
-        ierr = MatDestroy(&C);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
+        if (!pisz) {
+          IS       F,V;
+          PetscInt m,M;
+
+          ierr = MatGetOwnershipRange(A,&m,&M);CHKERRQ(ierr);
+          ierr = ISCreateStride(PetscObjectComm((PetscObject)P),M-m,m,1,&F);CHKERRQ(ierr);
+          ierr = ISComplement(P,m,M,&V);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(A,F,V,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+          ierr = MatZeroRowsIS(B,P,0.0,NULL,NULL);CHKERRQ(ierr);
+          ierr = ISDestroy(&V);CHKERRQ(ierr);
+          ierr = ISDestroy(&F);CHKERRQ(ierr);
+        } else {
+          ierr = MatCreateSubMatrix(A,P,NULL,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+        }
+        save = pcbddc->compute_nonetflux; /* SetDivergenceMat activates nonetflux computation */
+        ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,(PetscBool)!pisz,NULL);CHKERRQ(ierr);
+        pcbddc->compute_nonetflux = save;
+        ierr = MatDestroy(&B);CHKERRQ(ierr);
+      }
+      if (A != Ap) { /* user has provided a different Pmat, this always superseeds the setter (TODO: is it OK?) */
+        /* use monolithic operator, we restrict later */
+        ierr = KSPFETIDPSetPressureOperator(ksp,Ap);CHKERRQ(ierr);
       }
       ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
 
-      /* Preconditioned operator for the pressure block */
-      if (PPmat) {
-        Mat       C;
-        IS        Pall;
-        PetscInt  AM,PAM,PAN,pam,pan,am,an,pl,pIl,pAg,pIg;
-        PetscBool ismatis;
+      /* PPmat not present, use some default choice */
+      if (!PPmat) {
+        Mat C;
 
-        ierr = PetscObjectTypeCompare((PetscObject)PPmat,MATIS,&ismatis);CHKERRQ(ierr);
-        if (ismatis) {
-          ierr = MatConvert(PPmat,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject*)&C);CHKERRQ(ierr);
+        if (!schp && C) { /* non-zero pressure block, most likely Almost Incompressible Elasticity */
+          ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
+        } else if (!pisz && schp) { /* we need the whole pressure mass matrix to define the interface BDDC */
+          IS  P;
+
+          ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(A,P,P,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          ierr = MatScale(C,-1.);CHKERRQ(ierr);
+          ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
           ierr = MatDestroy(&C);CHKERRQ(ierr);
-          ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
+        } else { /* identity (need to be scaled properly by the user using e.g. a Richardson method */
+          PetscInt nl;
+
+          ierr = ISGetLocalSize(fetidp->pP,&nl);CHKERRQ(ierr);
+          ierr = MatCreate(PetscObjectComm((PetscObject)ksp),&C);CHKERRQ(ierr);
+          ierr = MatSetSizes(C,nl,nl,totP,totP);CHKERRQ(ierr);
+          ierr = MatSetType(C,MATAIJ);CHKERRQ(ierr);
+          ierr = MatMPIAIJSetPreallocation(C,1,NULL,0,NULL);CHKERRQ(ierr);
+          ierr = MatSeqAIJSetPreallocation(C,1,NULL);CHKERRQ(ierr);
+          ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatShift(C,1.);CHKERRQ(ierr);
+          ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
+          ierr = MatDestroy(&C);CHKERRQ(ierr);
         }
+      }
+
+      /* Preconditioned operator for the pressure block */
+      ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
+      if (PPmat) {
+        Mat      C;
+        IS       Pall;
+        PetscInt AM,PAM,PAN,pam,pan,am,an,pl,pIl,pAg,pIg;
+
         ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&Pall);CHKERRQ(ierr);
         ierr = MatGetSize(A,&AM,NULL);CHKERRQ(ierr);
         ierr = MatGetSize(PPmat,&PAM,&PAN);CHKERRQ(ierr);
@@ -957,48 +1010,31 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
         if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
-          ierr  = MatCreateSubMatrix(PPmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          if (schp) {
+            ierr = MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          } else {
+            ierr = MatCreateSubMatrix(PPmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          }
         } else if (pAg == PAM) { /* global ordering for pressure only */
-          if (!allp) { /* solving for interface pressure only */
+          if (!allp && !schp) { /* solving for interface pressure only */
             IS restr;
 
-            ierr  = ISRenumber(fetidp->pP,NULL,NULL,&restr);CHKERRQ(ierr);
-            ierr  = MatCreateSubMatrix(PPmat,restr,restr,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-            ierr  = ISDestroy(&restr);CHKERRQ(ierr);
+            ierr = ISRenumber(fetidp->pP,NULL,NULL,&restr);CHKERRQ(ierr);
+            ierr = MatCreateSubMatrix(PPmat,restr,restr,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+            ierr = ISDestroy(&restr);CHKERRQ(ierr);
           } else {
-            ierr  = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
-            C     = PPmat;
+            ierr = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
+            C    = PPmat;
           }
         } else if (pIg == PAM) { /* global ordering for selected pressure only */
-          ierr  = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
-          C     = PPmat;
-        } else {
-          SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");
-        }
-        ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
+          if (schp) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
+          ierr = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
+          C    = PPmat;
+        } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");
+
+        ierr = KSPFETIDPSetPressureOperator(ksp,C);CHKERRQ(ierr);
         ierr = MatDestroy(&C);CHKERRQ(ierr);
-      } else {
-        Mat C;
-
-        ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject*)&C);CHKERRQ(ierr);
-        if (C) { /* non-zero pressure block, most likely Almost Incompressible Elasticity */
-          ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
-        } else { /* identity (need to be scaled properly by the user using e.g. a Richardson method */
-          PetscInt nl;
-
-          ierr = ISGetLocalSize(fetidp->pP,&nl);CHKERRQ(ierr);
-          ierr = MatCreate(PetscObjectComm((PetscObject)ksp),&PPmat);CHKERRQ(ierr);
-          ierr = MatSetSizes(PPmat,nl,nl,totP,totP);CHKERRQ(ierr);
-          ierr = MatSetType(PPmat,MATAIJ);CHKERRQ(ierr);
-          ierr = MatMPIAIJSetPreallocation(PPmat,1,NULL,0,NULL);CHKERRQ(ierr);
-          ierr = MatSeqAIJSetPreallocation(PPmat,1,NULL);CHKERRQ(ierr);
-          ierr = MatAssemblyBegin(PPmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-          ierr = MatAssemblyEnd(PPmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-          ierr = MatShift(PPmat,1.);CHKERRQ(ierr);
-          ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)PPmat);CHKERRQ(ierr);
-          ierr = MatDestroy(&PPmat);CHKERRQ(ierr);
-        }
-      }
+      } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing Pmat for pressure block");
     } else { /* totP == 0 */
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pP",NULL);CHKERRQ(ierr);
     }
@@ -1028,8 +1064,8 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   ierr = KSPSetNormType(pcbddc->ksp_R,KSP_NORM_DEFAULT);CHKERRQ(ierr);
 
   /* setup FETI-DP operators
-     If fetidp->statechanged is true, we need update the operators
-     that are needed in the saddle-point case. This should be replaced
+     If fetidp->statechanged is true, we need to update the operators
+     needed in the saddle-point case. This should be replaced
      by a better logic when the FETI-DP matrix and preconditioner will
      have their own classes */
   if (pcbddc->new_primal_space || fetidp->statechanged) {
@@ -1040,6 +1076,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)D,(PetscObject)fetidp->innerksp,0);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
     ierr = MatCreateVecs(F,&(fetidp->innerksp)->vec_rhs,&(fetidp->innerksp)->vec_sol);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
@@ -1165,19 +1202,17 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  fully redundant: %d\n",fetidp->fully_redundant);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  saddle point:    %d\n",fetidp->saddlepoint);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  inner solver details\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Inner KSP solver details\n");CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = KSPView(fetidp->innerksp,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC solver details\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Inner BDDC solver details\n");CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(fetidp->innerbddc,viewer);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

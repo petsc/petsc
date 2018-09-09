@@ -482,7 +482,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 }
 
 #include <petscdraw.h>
-/*@C
+/*@
    KSPSolve - Solves linear system.
 
    Collective on KSP

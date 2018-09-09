@@ -90,173 +90,31 @@ unconstrained minimization solver and can be selected by using the
 TAO solver {\tt tao\_lmvm}.  For best efficiency, function and gradient 
 evaluations should be performed simultaneously when using this algorithm.
 
-The primary factors determining the behavior of this algorithm are the 
-number of vectors stored for the Hessian approximation and the scaling matrix
-used when computing the direction.  The number of vectors stored can be set
-with the command line argument {\tt -tao\_lmm\_vectors <int>}; $5$ is the 
-default 
-value.  Increasing the number of vectors results in a better Hessian 
-approximation and can decrease the number of iterations required to compute
-a solution to the optimization problem.  However, as the number of vectors
-increases, more memory is consumed, and each direction calculation takes
-longer to compute.  Therefore, a tradeoff must be made between the 
-quality of the Hessian approximation, the memory requirements, and
-the time to compute the direction.  A list of all available options
-for this algorithm is presented in Table~\ref{table:lmvmoptions}.
+The primary factors determining the behavior of this algorithm are the type 
+of Hessian approximation used, the number of vectors stored for the approximation 
+and the initialization/scaling of the approximation. These options can be 
+configured using the {\tt -tao\_lmvm\_mat\_lmvm} prefix. For further detail, 
+we refer the reader to the {\tt MATLMVM} matrix type definitions in the PETSc 
+Manual.
 
-During the computation of the direction, the inverse of an ``initial''
-positive-definite Hessian approximation $H_{0,k}$ is applied.  This 
-approximation can be updated at each iteration.  The choice of $H_{0,k}$
-significantly affects the quality of the direction obtained
-and can result in a decrease in the number of function and gradient 
-evaluations required to solve the optimization problem.  However,
-the calculation of $H_{0,k}$ at each iteration significantly 
-affects the time required to update the limited-memory BFGS 
-approximation and the cost of obtaining the direction.  By default, 
-$H_{0,k}$ is a diagonal matrix obtained from the diagonal entries
-of a Broyden approximation to the Hessian matrix.  The calculation
-of $H_{0,k}$ can be modified with the command line argument 
-{\tt -tao\_lmm\_scale\_type <none,scalar,broyden>}.  Each scaling 
-method is described below.  The {\tt scalar} and {\tt broyden} 
-techniques are inspired by \cite{Gilbert-Lemarechal}.
+The LMVM algorithm also allows the user to define a custom initial 
+Hessian matrix $H_{0,k}$ through the interface function {\tt TaoLMVMSetH0()}. 
+This user-provided initialization overrides any other scalar or diagonal 
+initialization inherent to the LMVM approximation. The provided $H_{0,k}$ must 
+be a PETSc {\tt Mat} type object that represents a positive-definite matrix. 
+The approximation prefers {\tt MatSolve()} if the provided matrix has 
+{\tt MATOP\_SOLVE} implemented. Otherwise, {\tt MatMult()} is used in a KSP 
+solve to perform the inversion of the user-provided initial Hessian.
 
-\begin{description}
-\item[{\tt none}]  This scaling method uses the identity matrix as 
-$H_{0,k}$.  No extra computations are required when obtaining the 
-search direction or updating the Hessian approximation.  However, 
-the number of functions and gradient evaluations required to converge
-to a solution is typically much larger than the number required when 
-using other scaling methods.
-\item[{\tt scalar}]  This scaling method uses a multiple of the identity 
-matrix as $H_{0,k}$.  The scalar value $\sigma$ is chosen by solving the 
-one-dimensional optimization problem
-\[
-\min_\sigma \|\sigma^\alpha Y - \sigma^{\alpha - 1} S\|_F^2,
-\]
-where $\alpha \in [0,1]$ is given and $S$ and $Y$ are the matrices of 
-past iterate and gradient information required by the limited-memory
-BFGS update formula.  The optimal value for $\sigma$ can be written
-down explicitly.  This choice of $\sigma$ attempts to satisfy the 
-secant equation $\sigma Y = S$.  Since this equation cannot typically
-be satisfied by a scalar, a least norm solution is computed.  The amount 
-of past iterate and gradient information used is set by the command line 
-argument {\tt -tao\_lmm\_scalar\_history <int>}, which must be less than 
-or equal to the number of vectors kept for the BFGS approximation.  
-The default value is 5.  The choice for $\alpha$ is made with the command 
-line argument {\tt -tao\_lmm\_scalar\_alpha <real>}; $1$ is the default
-value.  This scaling method offers a good compromise between no scaling 
-and {\tt broyden} scaling.
-\item[{\tt broyden}] This scaling method uses a positive-definite diagonal 
-matrix obtained from the diagonal entries of the Broyden approximation to 
-the Hessian for the scaling matrix.  The Broyden approximation is a 
-family of approximations parametrized by a constant $\phi$; $\phi = 0$ 
-gives the BFGS formula, and $\phi = 1$ gives the DFP formula.  The value 
-of $\phi$ is set with the command line argument 
-{\tt -tao\_lmm\_broyden\_phi <real>}; the default value is $0.125$.  
-This scaling method requires the most computational effort of the
-available choices but typically results in a significant reduction 
-in the number of function and gradient evaluations taken to compute a 
-solution.
-\end{description}
+In applications where {\tt TaoSolve()} on the LMVM algorithm is repeatedly called 
+to solve similar or related problems, {\tt -tao\_lmvm\_recycle} flag can be used 
+to prevent resetting the LMVM approximation between subsequent solutions. This 
+recycling also avoids one extra function and gradient evalution, instead re-using 
+the values already computed at the end of the previous solution.
 
-An additional rescaling of the diagonal matrix can be applied to further
-improve performance when using the {\tt broyden} scaling method.  The
-rescaling method can be set with the command line argument 
-{\tt -tao\_lmm\_rescale\_type <none,scalar,gl>}; {\tt scalar} is the 
-default rescaling method.  The rescaling method applied can have a large 
-impact on the number of function and gradient evaluations necessary to 
-compute a solution to the optimization problem, but it increases the time
-required to update the BFGS approximation.  Each rescaling method is 
-described below.  These techniques are inspired by \cite{Gilbert-Lemarechal}.
-
-\begin{description}
-\item[{\tt none}] This rescaling method does not modify the diagonal scaling
-matrix.
-\item[{\tt scalar}] This rescaling method chooses a scalar value $\sigma$ by 
-solving the one-dimensional optimization problem
-\[
-\min_\sigma \|\sigma^\alpha H_{0,k}^{\beta} Y - \sigma^{\alpha - 1} H_{0,k}^{\beta - 1} S\|_F^2,
-\]
-where $\alpha \in [0,1]$ and $\beta \in [0,1]$ are given, $H_{0,k}$ is the 
-positive-definite diagonal scaling matrix computed by using the Broyden 
-update, and $S$ and $Y$ are the matrices of past iterate and gradient
-information required by the limited-memory BFGS update formula, respectfully.
-This 
-choice of $\sigma$ attempts to satisfy the secant equation 
-$\sigma H_{0,k} Y = S$.  Since this equation cannot typically be satisfied 
-by a scalar, a least norm solution is computed.  The scaling matrix used is 
-then $\sigma H_{0,k}$.  The amount of past iterate and gradient information 
-used is set by the command line argument 
-{\tt -tao\_lmm\_rescale\_history <int>}, which must be less than or equal
-to the number of vectors kept for the BFGS approximation; the default value 
-is 5.  The choice for $\alpha$ is made with the command
-line argument {\tt -tao\_lmm\_rescale\_alpha <real>}; $1$ is the default
-value.  The choice for $\beta$ is made with the command line argument 
-{\tt -tao\_lmm\_rescale\_beta <real>}; $0.5$ is the default value.
-\item[{\tt gl}] This scaling method is the same as the {\tt scalar} rescaling 
-method, but the previous value for the scaling matrix $H_{0,k-1}$ is used when 
-computing $\sigma$.  This is the rescaling method suggested in 
-\cite{Gilbert-Lemarechal}.
-\end{description}
-
-A limit can be placed on the difference between the scaling
-matrix computed at this iteration and the previous value for the
-scaling matrix.  The limiting type can be set with the command line 
-argument {\tt -tao\_lmm\_limit\_type <none,average,relative,absolute>};
-{\tt none} is the default value.  Each of these methods is described 
-below when using the {\tt scalar} scaling method.  The techniques are
-the same when using the {\tt broyden} scaling method but are applied
-to each entry in the diagonal matrix.
-
-\begin{description}
-\item[{\tt none}] Set $\sigma_k = \sigma$, where $\sigma$ is the value
-computed by the scaling method.
-\item[{\tt average}] Set $\sigma_k = \mu \sigma + (1 - \mu) \sigma_{k-1}$, 
-where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is
-the previous value, and $\mu \in [0,1]$ is given.
-\item[{\tt relative}] Set $\sigma_k = \mbox{median}\left\{ (1 - \mu) \sigma_{k-1}, \sigma, (1+\mu) \sigma_{k-1}\right\}$, 
-where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is 
-the previous value, and $\mu \in [0,1]$ is given.
-\item[{\tt absolute}] Set $\sigma_k = \mbox{median}\left\{\sigma_{k-1} - \nu, \sigma, \sigma_{k-1} + \nu\right\}$, 
-where $\sigma$ is the value computed by the scaling method, $\sigma_{k-1}$ is 
-the previous value, and $\nu$ is given.
-\end{description}
-The value for $\mu$ is set with the command line argument 
-{\tt -tao\_lmm\_limit\_mu <real>}; the default value is $1$.
-The value for $\nu$ is set with the command line argument 
-{\tt -tao\_lmm\_limit\_nu <real>}; the default value is 100.  
-
-The default values for the scaling, rescaling, and limit methods are based 
-on many tests using the unconstrained optimization problems from the 
-MINPACK-2 test set.  These tests were used to narrow the choices to 
-a few sets of promising values.  These promising values were then 
-run on the unconstrained optimization problems from the CUTEr 
-test set to obtain the default values.
-
-\begin{table}[htb]
-\caption{Summary of {\tt lmvm} options}
-\label{table:lmvmoptions}
-\vspace{5mm}
-\begin{tabular}{l|p{1.5in}|l|p{2.0in}}
-\hline
-Name \rule{0pt}{2.6ex} & Value & Default & Description \\
-\hline
-{\tt -tao\_lmm\_vectors} \rule{0pt}{2.6ex} & int & 5 & Number of vectors for Hessian approximation \\
-{\tt -tao\_lmm\_scale\_type} & none, scalar, broyden & broyden & Type of scaling method to use \\
-{\tt -tao\_lmm\_scalar\_history} & int & 5 & Number of vectors to use when scaling \\
-{\tt -tao\_lmm\_scalar\_alpha} & real & 1 & Value of $\alpha$ for scalar scaling method \\
-{\tt -tao\_lmm\_broyden\_phi} & real & 0.125 & Value of $\alpha$ for scalar scaling method \\
-{\tt -tao\_lmm\_rescale\_type} & none, scalar, gl & scalar & Type of rescaling method to use \\
-{\tt -tao\_lmm\_rescale\_history} & int & 5 & Number of vectors to use when rescaling \\
-{\tt -tao\_lmm\_rescale\_alpha} & real & 1 & Value of $\alpha$ for rescaling method \\
-{\tt -tao\_lmm\_rescale\_beta} & real & 0.5 & Value of $\beta$ for rescaling method \\
-{\tt -tao\_lmm\_limit\_type} & none, average, relative, absolute & none & Type of limit to impose on scaling matrix \\
-{\tt -tao\_lmm\_limit\_mu} & real & 1 & Value of $\mu$ for limit type\\
-{\tt -tao\_lmm\_limit\_nu} & real & 100 & Value of $\nu$ for limit type\\
-\hline
-\end{tabular}
-\end{table}
-\afterpage{\clearpage}
+This algorithm will be deprecated in the next version and replaced by the 
+bounded quasi-Newton Line Search (BQNLS) algorithm that can solve both bound constrained 
+and unconstrained problems.
 
 \subsection{Nonlinear Conjugate Gradient Method}\sindex{line search}\sindex{gradients}
 
@@ -549,6 +407,10 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
+This algorithm will be deprecated in the next version and replaced by the 
+bounded Newton Line Search (BNLS) algorithm that can solve both bound constrained 
+and unconstrained problems.
+
 \subsection{Newton Trust-Region Method}\sindex{Newton method}\sindex{trust
 region}
 
@@ -699,6 +561,10 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
+This algorithm will be deprecated in the next version and replaced by the 
+bounded Newton Trust Region (BNTR) algorithm that can solve both bound constrained 
+and unconstrained problems.
+
 \subsection{BMRM}\sindex{BMRM}
 The Bundle Method for Regularized Risk Minimization (BMRM)\cite{brmrm} is a 
 numerical approach to optimizing an unconstrained objective in the form of 
@@ -791,12 +657,11 @@ tolerances to determine which variables are actively bounded and which are free.
 BNK algorithms invert the reduced Hessian using a Krylov iterative method. Trust-region conjugate gradient 
 methods ({\tt KSPNASH}, {\tt KSPSTCG}, and {\tt KSPGLTR}) are required for the BNTR and BNTL algorithms, 
 and recommended for the BNLS algorithm. The preconditioner type can be changed using the 
-{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ahess}/{\tt bfgs}/{\tt petsc}. The {\tt ahess} option, which is 
-also the default, results in an absolute-valued Jacobi preconditioner, while the {\tt bfgs} option 
-preconditions the Krylov solution with an {\tt TAO\_LMVM} matrix. The {\tt petsc} option allows the user to 
-bypass the algorithm's special preconditioners specify a built-in PETSc preconditioner with {\tt -pc\_type} 
-({\tt ilu} and {\tt icc} preconditioners can yield good results for dense explicit Hessian matrices). The 
-BFGS and Jacobi preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
+{\tt -tao\_bnk\_pc\_type} {\tt none}/{\tt ilu}/{\tt icc}/{\tt jacobi}/{\tt lmvm}. The {\tt lmvm} option, which is 
+also the default, preconditions the Krylov solution with a {\tt MATLMVM} matrix. The remaining supported 
+preconditioner types are default PETSc types. If Jacobi is selected, the diagonal values are safeguarded to be positive. 
+{\tt icc} and {\tt ilu} options produce good results for problems with dense Hessians. The LMVM and Jacobi 
+preconditioners are also used as the approximate inverse-Hessian in the active-set estimation. 
 If neither are available, or if the Hessian matrix does not have {\tt MATOP\_GET\_DIAGONAL} defined, then the 
 active-set estimation falls back onto using an identity matrix in place of $D_k$ (this is equivalent to 
 estimating the active-set using a gradient descent step).
@@ -933,7 +798,6 @@ that equal one of its bounds and
 applies a preconditioned conjugate gradient method to a
 quadratic model of the remaining set of ``free'' variables.  
 
-
 The TRON algorithm solves a reduced linear system
 defined by the rows and columns corresponding to the variables that
 lie between the upper and lower bounds.
@@ -953,12 +817,36 @@ tuned and adjusted for optimal performance.
 
 BLMVM is a limited-memory, variable-metric method and is 
 the bound-constrained variant of the LMVM method for
-unconstrained optimization.  It uses projected gradients to approximate
+unconstrained optimization. It uses projected gradients to approximate
 the Hessian, eliminating the need for Hessian evaluations.
-The method can be set by using the TAO solver {\tt tao\_blmvm}.
-The command {\tt Tao\-LMVM\-Set\-Size()}, which sets the number
-of vectors to be used in the Hessian approximation, 
-also applies to this method.
+The method can be set by using the TAO solver {\tt tao\_blmvm}. For more details, 
+please see the LMVM section in the unconstrained algorithms as well as the 
+LMVM matrix documentation in the PETSc manual.
+
+This algorithm will be deprecated in the next version in favor of the bounded quasi-Newton 
+line search (BQNLS) algorithm.
+
+\subsection{Bounded Quasi-Newton-Krylov}\label{sec:bqnk}
+
+BQNK algorithms use the BNK infrastructure, but replace the exact Hessian with a quasi-Newton 
+approximation. The matrix-free forward product operation based on quasi-Newton update formulas 
+are used in conjunction with Krylov solvers to compute step directions. The quasi-Newton inverse 
+application is used to precondition the Krylov solution, and typically helps converge to a step 
+direction in $\mathcal{O}(10)$ iterations. This approach is most useful with quasi-Newton update 
+types such as Symmetric Rank-1 that cannot strictly guarantee positive-definiteness. The BNLS 
+framework with Hessian shifting, or the BNTR framework with trust region safeguards, can 
+successfully compensate for the Hessian approximation becoming indefinite.
+
+Similar to the full Newton-Krylov counterpart, BQNK algorithms come in three forms separated by 
+the globalization technique: line search (BQNKLS), trust region (BQNKTR) and trust region w/ line 
+search fall-back (BQNKTL). These algorithms are available via {\tt tao\_type <bqnkls, bqnktr, bqnktl>}.
+
+\subsection{Bounded Quasi-Newton Line Search (BQNLS)}\label{sec:bqnls}
+
+BQNLS algorithm uses the BNLS infrastructure, but replaces the step calculation with a direct 
+inverse application of the approximate Hessian based on quasi-Newton update formulas. No Krylov 
+solver is used in the solution, and therefore the quasi-Newton method chosen must guarantee 
+a positive-definite Hessian approximation. This algorithm is available via {\tt tao\_type bqnls}.
 
 \section{PDE-Constrained Optimization}
 \label{sec:lcl}

@@ -6,6 +6,7 @@
 */
 
 typedef struct {
+  Mat D;                                    /* diagonal scaling term */
   Vec *P, *Q;                               /* storage vectors for (B_i)*S[i] and (B_i)^{-1}*Y[i] */
   Vec invDnew, invD, BFGS, DFP, U, V, W;    /* work vectors for diagonal scaling */
   Vec work;
@@ -26,9 +27,10 @@ typedef struct {
 
 static const char *Scale_Table[64] = {"none","scalar","diagonal"};
 
-PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
-
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Inv(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Diag(Mat);
 PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
+
+PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(PetscOptionItems*, Mat);

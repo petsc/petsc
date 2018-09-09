@@ -356,7 +356,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 }
 
 /*@
-  DMFieldGetFEInvariance - Get information about the complexity of a field when pulled back onto the
+  DMFieldGetDegree - Get the polynomial degree of a field when pulled back onto the
   reference element
 
   Not collective
@@ -366,31 +366,28 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 - cellIS - the index set of points over which we want know the invariance
 
   Output Arguments:
-+ isConstant - Returns PETSC_TRUE if the pullback of the field is constant for each point in the index set
-. isAffine - Returns PETSC_TRUE if the pullback of the field is affine for each point in the index set
-- isQuadratic - Returns PETSC_TRUE if the pullback of the field is quadratic for each point in the index set
++ minDegree - the degree of the largest polynomial space contained in the field on each element
+- maxDegree - the largest degree of the smallest polynomial space containing the field on any element
 
   Level: intermediate
 
 .seealso: DMFieldEvaluateFE()
 @*/
-PetscErrorCode DMFieldGetFEInvariance(DMField field, IS cellIS, PetscBool *isConstant, PetscBool *isAffine, PetscBool *isQuadratic)
+PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, PetscInt *maxDegree)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(cellIS,IS_CLASSID,2);
-  if (isConstant) PetscValidPointer(isConstant,3);
-  if (isAffine) PetscValidPointer(isAffine,4);
-  if (isQuadratic) PetscValidPointer(isQuadratic,5);
+  if (minDegree) PetscValidPointer(minDegree,3);
+  if (maxDegree) PetscValidPointer(maxDegree,4);
 
-  if (isConstant)  *isConstant  = PETSC_FALSE;
-  if (isAffine)    *isAffine    = PETSC_FALSE;
-  if (isQuadratic) *isQuadratic = PETSC_FALSE;
+  if (minDegree) *minDegree = -1;
+  if (maxDegree) *maxDegree = PETSC_MAX_INT;
 
-  if (field->ops->getFEInvariance) {
-    ierr = (*field->ops->getFEInvariance) (field,cellIS,isConstant,isAffine,isQuadratic);CHKERRQ(ierr);
+  if (field->ops->getDegree) {
+    ierr = (*field->ops->getDegree) (field,cellIS,minDegree,maxDegree);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -410,7 +407,7 @@ PetscErrorCode DMFieldGetFEInvariance(DMField field, IS cellIS, PetscBool *isCon
 
   Level: developer
 
-.seealso: DMFieldEvaluteFE(), DMFIeldGetFEInvariance()
+.seealso: DMFieldEvaluteFE(), DMFieldGetDegree()
 @*/
 PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
 {
@@ -445,12 +442,13 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   Level: developer
 
-.seealso: DMFieldEvaluateFE(), DMFieldCreateDefaulteQuadrature(), DMFIeldGetFEInvariance()
+.seealso: DMFieldEvaluateFE(), DMFieldCreateDefaulteQuadrature(), DMFieldGetDegree()
 C@*/
 PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
 {
   PetscInt       dim, dE;
   PetscInt       nPoints;
+  PetscInt       maxDegree;
   PetscFEGeom    *g;
   PetscErrorCode ierr;
 
@@ -532,7 +530,8 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
     }
   }
   ierr = PetscFEGeomComplete(g);CHKERRQ(ierr);
-  ierr = DMFieldGetFEInvariance(field,pointIS,NULL,&g->isAffine,NULL);CHKERRQ(ierr);
+  ierr = DMFieldGetDegree(field,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
+  g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
     if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data\n");
     ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);

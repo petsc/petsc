@@ -140,8 +140,6 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
                                     void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),
                                     void *ctx,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(A);
-  CHKFORTRANNULLOBJECTDEREFERENCE(B);  
   CHKFORTRANNULLFUNCTION(func);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefault_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefault,ctx);
@@ -159,13 +157,6 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
   }
 }
 /* -------------------------------------------------------------*/
-
-PETSC_EXTERN void PETSC_STDCALL snessolve_(SNES *snes,Vec *b,Vec *x, int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  *ierr = SNESSolve(*snes,*b,*x);
-}
 
 PETSC_EXTERN void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -244,7 +235,6 @@ PETSC_EXTERN void snesconvergedskip_(SNES *snes,PetscInt *it,PetscReal *a,PetscR
 
 PETSC_EXTERN void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*), void *cctx,void (PETSC_STDCALL *destroy)(void*),PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(cctx);
   CHKFORTRANNULLFUNCTION(destroy);
 
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergeddefault_) {
@@ -335,7 +325,6 @@ PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal 
 
 PETSC_EXTERN void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void *mctx,void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(mctx);
   CHKFORTRANNULLFUNCTION(mondestroy);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitordefault_) {
     *ierr = SNESMonitorSet(*snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);

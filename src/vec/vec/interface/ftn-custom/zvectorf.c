@@ -63,12 +63,6 @@
 #define vecsetoptionsprefix_      vecsetoptionsprefix
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL vecsetrandom_(Vec *v, PetscRandom *r, int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(r);
-  *ierr = VecSetRandom(*v,*r);
-}
-
 PETSC_EXTERN void PETSC_STDCALL vecsetvalueslocal_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
 {
   *ierr = VecSetValuesLocal(*x,*ni,ix,y,*iora);

@@ -298,24 +298,8 @@ typedef struct {
   PetscScalar            *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus,*rstatus;
-  PetscBool              use_readyreceiver;
   PetscInt               bs;
-  PetscBool              sendfirst;
   PetscBool              contiq;
-  /* for MPI_Alltoallv() approach */
-  PetscBool              use_alltoallv;
-  PetscMPIInt            *counts,*displs;
-  /* for MPI_Alltoallw() approach */
-  PetscBool              use_alltoallw;
-#if defined(PETSC_HAVE_MPI_ALLTOALLW)
-  PetscMPIInt            *wcounts,*wdispls;
-  MPI_Datatype           *types;
-#endif
-  PetscBool              use_window;    /* these uses windows for communication across all MPI processes */
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-  MPI_Win                window;
-  PetscInt               *winstarts;    /* displacements in the processes I am putting to */
-#endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)      /* these uses windows for communication only within each node */
   PetscMPIInt            msize,sharedcnt;           /* total to entries that are going to processes with the same shared memory space */
   PetscScalar            *sharedspace;              /* space each process puts data to be read from other processes; allocated by MPI */
@@ -375,7 +359,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] += xv[k];
         y   += len;
       }
@@ -389,7 +373,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecScatterMemcpyPlanExecute_Pack(PetscInt i,c
     } else {
       for (j=xplan->copy_offsets[i]; j<xplan->copy_offsets[i+1]; j++) {
         len  = xplan->copy_lengths[j]/sizeof(PetscScalar);
-        xv   = x+xplan->copy_starts[i];
+        xv   = x+xplan->copy_starts[j];
         for (k=0; k<len; k++) y[k] = PetscMax(y[k],xv[k]);
         y   += len;
       }
@@ -519,10 +503,7 @@ struct _p_VecScatter {
   PETSCHEADER(struct _VecScatterOps);
   PetscInt       to_n,from_n;
   PetscBool      inuse;                /* prevents corruption from mixing two scatters */
-  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
-                                          is then treated as a nop */
-  PetscBool      packtogether;         /* packs all the messages before sending, same with receive */
-  PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
+  PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
   void           *fromdata,*todata;
   void           *spptr;
   PetscBool      is_duplicate;         /* IS has duplicate indices, would cause writing error in the case StoP of VecScatterEndMPI3Node */

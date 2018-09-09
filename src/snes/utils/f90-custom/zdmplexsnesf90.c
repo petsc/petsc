@@ -26,8 +26,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetcellfields_(DM *dm, IS *cellIS, Vec *lo
   PetscScalar *u, *u_t, *a;
   PetscInt     numCells, totDim, totDimAux = 0;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(locX_t);
-  CHKFORTRANNULLOBJECTDEREFERENCE(locA);
   *ierr = ISGetLocalSize(*cellIS, &numCells);if (*ierr) return;
   *ierr = DMPlexGetCellFields(*dm, *cellIS, *locX, *locX_t, *locA, &u, &u_t, &a);if (*ierr) return;
   *ierr = DMGetDS(*dm, &prob);if (*ierr) return;
@@ -64,8 +62,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexgetfacefields_(DM *dm, PetscInt *fStart, P
   PetscScalar *uL, *uR;
   PetscInt     numFaces = *fEnd - *fStart, totDim;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(locX_t);
-  CHKFORTRANNULLOBJECTDEREFERENCE(locGrad);
   *ierr = DMPlexGetFaceFields(*dm, *fStart, *fEnd, *locX, *locX_t, *faceGeometry, *cellGeometry, *locGrad, Nface, &uL, &uR);if (*ierr) return;
   *ierr = DMGetDS(*dm, &prob);if (*ierr) return;
   *ierr = PetscDSGetTotalDimension(prob, &totDim);if (*ierr) return;

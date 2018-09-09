@@ -13,6 +13,9 @@ PETSC_EXTERN PetscErrorCode PetscSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 
+PETSC_EXTERN PetscBool FEcite;
+PETSC_EXTERN const char FECitation[];
+
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscSpace);
@@ -28,19 +31,30 @@ struct _PetscSpaceOps {
 struct _p_PetscSpace {
   PETSCHEADER(struct _PetscSpaceOps);
   void                   *data;          /* Implementation object */
-  PetscInt                order;         /* The approximation order of the space */
+  PetscInt                degree;        /* The approximation order of the space */
+  PetscInt                maxDegree;     /* The containing approximation order of the space */
   PetscInt                Nc;            /* The number of components */
   PetscInt                Nv;            /* The number of variables in the space, e.g. x and y */
+  PetscInt                dim;           /* The dimension of the space */
   DM                      dm;            /* Shell to use for temp allocation */
 };
 
 typedef struct {
-  PetscInt    numVariables; /* The number of variables in the space, e.g. x and y */
   PetscBool   symmetric;    /* Use only symmetric polynomials */
   PetscBool   tensor;       /* Flag for tensor product */
   PetscInt   *degrees;      /* Degrees of single variable which we need to compute */
+  PetscBool   setupCalled;
   PetscSpace *subspaces;    /* Subspaces for each dimension */
 } PetscSpace_Poly;
+
+typedef struct {
+  PetscSpace *tensspaces;
+  PetscInt    numTensSpaces;
+  PetscInt    dim;
+  PetscBool   uniform;
+  PetscBool   setupCalled;
+  PetscSpace *heightsubspaces;    /* Height subspaces */
+} PetscSpace_Tensor;
 
 typedef struct {
   PetscQuadrature quad;         /* The points defining the space */
@@ -390,4 +404,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE, PetscDS, PetscFEJacobianType, PetscInt, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscReal, PetscScalar []);
 #endif

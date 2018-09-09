@@ -183,7 +183,7 @@ struct _MatOps {
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
-  PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*invertvariableblockdiagonal)(Mat,PetscInt,const PetscInt*,PetscScalar*);
   PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
@@ -410,6 +410,7 @@ struct _p_Mat {
   MatFactorError         factorerrortype;               /* type of error in factorization */
   PetscReal              factorerror_zeropivot_value;   /* If numerical zero pivot was detected this is the computed value */
   PetscInt               factorerror_zeropivot_row;     /* Row where zero pivot was detected */
+  PetscInt               nblocks,*bsizes;   /* support for MatSetVariableBlockSizes() */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

@@ -85,6 +85,14 @@
           matnullspaceequals = (A%v .eq. B%v)
         end function
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::matnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::matequals
+!DEC$ ATTRIBUTES DLLEXPORT::matfdcoloringnotequal
+!DEC$ ATTRIBUTES DLLEXPORT::matfdcoloringequals
+!DEC$ ATTRIBUTES DLLEXPORT::matnullspacenotequal
+!DEC$ ATTRIBUTES DLLEXPORT::matnullspaceequals
+#endif
         module petscmat
         use petscmatdef
         use petscvec

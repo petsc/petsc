@@ -31,7 +31,7 @@ PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line
   return 0;
 }
 
-/*@C
+/*@
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object obj.
 

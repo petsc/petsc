@@ -153,9 +153,9 @@
         end module
 
       subroutine F90ArraySFNodeCreate(array,n,ptr)
+      use petscsys
+      use petscis
       implicit none
-#include <../src/sys/f90-mod/petscsys.h>
-#include <../src/vec/f90-mod/petscis.h>
       PetscInt n,array(2*n)
       type(PetscSFNode), pointer :: ptr(:)
       PetscInt i
