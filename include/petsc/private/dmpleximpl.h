@@ -6,7 +6,6 @@
 #include <petscbt.h>
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
-#include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;

@@ -6,6 +6,7 @@
 #include <petscdm.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscdsimpl.h>
+#include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
 
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
