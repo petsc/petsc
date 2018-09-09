@@ -1267,45 +1267,42 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
-  } else {                      /* Default implementation currently does no caching */
+  } else { /* Default implementation currently does no caching */
     PetscInt  gstart,gend,start;
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-    if (gcontiguous) {          /* We can do a no-copy implementation */
-      PetscInt    n,N,bs;
-      PetscMPIInt size;
-      PetscInt    state;
+    if (gcontiguous) { /* We can do a no-copy implementation */
+      PetscInt n,N,bs;
+      PetscInt state;
 
+      ierr = ISGetSize(is,&N);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
       if (n%bs || bs == 1 || !n) bs = -1; /* Do not decide block size if we do not have to */
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       ierr = VecLockGet(X,&state);CHKERRQ(ierr);
       if (state) {
         const PetscScalar *x;
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        if (size == 1) {
-          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
-        } else {
-          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
-        }
-        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
+        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
         ierr = VecLockPush(Z);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       } else {
         PetscScalar *x;
         ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-        if (size == 1) {
-          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x+start,&Z);CHKERRQ(ierr);
-        } else {
-          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x+start,&Z);CHKERRQ(ierr);
-        }
+        ierr = VecCreate(PetscObjectComm((PetscObject)X),&Z);CHKERRQ(ierr);
+        ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
+        ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
+        ierr = VecPlaceArray(Z,(PetscScalar*)x+start);CHKERRQ(ierr);
         ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
       }
-    } else {                    /* Have to create a scatter and do a copy */
+    } else { /* Have to create a scatter and do a copy */
       VecScatter scatter;
       PetscInt   n,N;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
