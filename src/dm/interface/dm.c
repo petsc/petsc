@@ -1267,6 +1267,25 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
+  /* Handle nullspace and near nullspace */
+  if (dm->prob) {
+    MatNullSpace nullSpace;
+    PetscInt     Nf;
+
+    ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+    if (Nf == 1) {
+      if (dm->nullspaceConstructors[0]) {
+        ierr = (*dm->nullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+      if (dm->nearnullspaceConstructors[0]) {
+        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNearNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
