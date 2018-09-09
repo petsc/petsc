@@ -1053,6 +1053,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_vanka_add
     requires: double !complex
+    filter: sed -e "s/linear solver iterations=52/linear solver iterations=49/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 52/Linear solve converged due to CONVERGED_RTOL iterations 49/g"
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
@@ -1061,6 +1062,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q1_p0_vanka_add_unity
     requires: double !complex
+    filter: sed -e "s/linear solver iterations=46/linear solver iterations=45/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 46/Linear solve converged due to CONVERGED_RTOL iterations 45/g"
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 1 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_converged_reason \
@@ -1069,6 +1071,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q2_q1_vanka_add
     requires: double !complex
+    filter: sed -e "s/linear solver iterations=[4-9][0-9][0-9]/linear solver iterations=489/g"
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged \
@@ -1077,6 +1080,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_quad_q2_q1_vanka_add_unity
     requires: double !complex
+    filter: sed -e "s/linear solver iterations=[4-9][0-9][0-9]/linear solver iterations=795/g"
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine 0 -interpolate 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged \
@@ -1085,7 +1089,7 @@ int main(int argc, char **argv)
   # Vanka smoother
   test:
     suffix: 2d_quad_q1_p0_gmg_vanka_add
-    requires: double !complex
+    requires: double !complex long_runtime
     args: -run_type full -bc_type dirichlet -simplex 0 -dm_refine_hierarchy 3 -interpolate 1 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 -snes_error_if_not_converged -snes_view -snes_monitor -snes_converged_reason \
       -ksp_type gmres -ksp_rtol 1.0e-5 -ksp_error_if_not_converged -ksp_monitor_true_residual \
