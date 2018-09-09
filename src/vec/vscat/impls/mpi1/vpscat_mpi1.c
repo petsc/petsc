@@ -8,18 +8,6 @@
 #include <petsc/private/vecscatterimpl.h>
 
 
-PetscErrorCode VecScatterCreate_MPI1(VecScatter ctx)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
-  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI1);CHKERRQ(ierr);
-  ierr = PetscInfo(ctx,"Using MPI1 for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
@@ -2544,6 +2532,18 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI1(PetscInt nx,const PetscInt *inidx
   }
   ierr = VecScatterCreateLocal_StoP_MPI1(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI1(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI1);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI1 for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI1,VecScatterCreateLocal_StoP_MPI1,VecScatterCreateLocal_PtoP_MPI1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

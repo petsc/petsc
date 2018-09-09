@@ -1,8 +1,8 @@
 
 /*
-     Code for creating scatters between vectors. This file
-  includes the code for scattering between sequential vectors and
-  some special cases for parallel scatters.
+     Higher level code for creating scatters between vectors called by some of the implementations.
+
+     The routines check for special cases and then call the implementation function for the general cases
 */
 
 #include <petsc/private/vecscatterimpl.h>    /*I   "petscvec.h"    I*/
@@ -17,7 +17,7 @@
    This code was written by Cameron Cooper, Occidental College, Fall 1995,
    will working at ANL as a SERS student.
 */
-PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
+static PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode ierr;
   PetscInt       yy_n,xx_n;
@@ -120,7 +120,7 @@ PetscErrorCode VecScatterView_MPI_ToAll(VecScatter in,PetscViewer viewer)
       This is special scatter code for when the entire parallel vector is  copied to processor 0.
 
 */
-PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
+static PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
@@ -201,7 +201,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
 /*
        The follow to are used for both VecScatterBegin_MPI_ToAll() and VecScatterBegin_MPI_ToOne()
 */
-PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
+static PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
   PetscErrorCode       ierr;
@@ -213,7 +213,7 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
+static PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
   PetscErrorCode       ierr;
@@ -366,17 +366,6 @@ PetscErrorCode VecScatterMemcpyPlanDestroy(VecScatterMemcpyPlan *plan)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-extern PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateLocal_StoP_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-#endif
-
-extern PetscErrorCode VecScatterCreateLocal_PtoS_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateLocal_PtoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateLocal_StoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-
-
 /* =======================================================================*/
 /*
    Blocksizes we have optimized scatters for
@@ -385,24 +374,7 @@ extern PetscErrorCode VecScatterCreateLocal_StoP_MPI1(PetscInt,const PetscInt*,P
 #define VecScatterOptimizedBS(mbs) (2 <= mbs)
 
 
-PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
-{
-  VecScatter     ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
-  ctx->inuse               = PETSC_FALSE;
-  ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
-  if (ctx->beginandendtogether) {
-    ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
-  }
-  *newctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
+static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_ptos)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
 {
   PetscErrorCode    ierr;
   PetscMPIInt       size;
@@ -410,8 +382,6 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
   MPI_Comm          comm;
   IS                tix=NULL,tiy=NULL,ix=ctx->from_is,iy=ctx->to_is;
   Vec               xin=ctx->from_v,yin=ctx->to_v;
-  VecScatterType    type;
-  PetscBool         vec_mpi1_flg;
   PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando;
 
   PetscFunctionBegin;
@@ -419,9 +389,6 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
   ierr = GetInputISType_private(ctx,VEC_MPI_ID,VEC_SEQ_ID,&ix_type,&tix,&iy_type,&tiy);CHKERRQ(ierr);
   if (tix) ix = tix;
   if (tiy) iy = tiy;
-
-  ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"mpi1",&vec_mpi1_flg);CHKERRQ(ierr);
 
   islocal = PETSC_FALSE;
   /* special case extracting (subset of) local portion */
@@ -595,15 +562,7 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
         ierr = ISBlockGetLocalSize(iy,&ny);CHKERRQ(ierr);
         ierr = ISBlockGetIndices(iy,&idy);CHKERRQ(ierr);
         if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-        if (vec_mpi1_flg) {
-          ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-        } else {
-          ierr = VecScatterCreateLocal_PtoS_MPI3(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-        }
-#else
-        ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-#endif
+        ierr = (*vecscattercreatelocal_ptos)(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(iy,&idy);CHKERRQ(ierr);
         ierr = PetscInfo(xin,"Special case: blocked indices\n");CHKERRQ(ierr);
@@ -628,15 +587,7 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
           idy[0] = ystart/bsx;
           for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;
         }
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-        if (vec_mpi1_flg) {
-          ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-        } else {
-          ierr = VecScatterCreateLocal_PtoS_MPI3(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-        }
-#else
-        ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-#endif
+        ierr = (*vecscattercreatelocal_ptos)(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
         ierr = PetscFree(idy);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
         ierr = PetscInfo(xin,"Special case: blocked indices to stride\n");CHKERRQ(ierr);
@@ -654,15 +605,7 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
     ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
     ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
     if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%D %D)",nx,ny);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-    if (vec_mpi1_flg) {
-      ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-    } else {
-      ierr = VecScatterCreateLocal_PtoS_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-    }
-#else
-    ierr = VecScatterCreateLocal_PtoS_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-#endif
+    ierr = (*vecscattercreatelocal_ptos)(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     ierr = PetscInfo(xin,"General case: MPI to Seq\n");CHKERRQ(ierr);
@@ -675,23 +618,18 @@ static PetscErrorCode VecScatterCreate_PtoS(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterCreate_StoP(VecScatter ctx)
+  static PetscErrorCode VecScatterCreate_StoP(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_stop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
 {
   PetscErrorCode    ierr;
   PetscInt          ix_type=-1,iy_type=-1;
   IS                tix=NULL,tiy=NULL,ix=ctx->from_is,iy=ctx->to_is;
   Vec               xin=ctx->from_v,yin=ctx->to_v;
-  VecScatterType    type;
-  PetscBool         vscat_mpi1;
   PetscBool         islocal,cando;
 
   PetscFunctionBegin;
   ierr = GetInputISType_private(ctx,VEC_MPI_ID,VEC_SEQ_ID,&ix_type,&tix,&iy_type,&tiy);CHKERRQ(ierr);
   if (tix) ix = tix;
   if (tiy) iy = tiy;
-
-  ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"mpi1",&vscat_mpi1);CHKERRQ(ierr);
 
   /* special case local copy portion */
   islocal = PETSC_FALSE;
@@ -751,14 +689,7 @@ static PetscErrorCode VecScatterCreate_StoP(VecScatter ctx)
         idy[0] = ystart/bsx;
         for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;
       }
-      if (vscat_mpi1) {
-        ierr = VecScatterCreateLocal_StoP_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-      }
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-      else {
-        ierr = VecScatterCreateLocal_StoP_MPI3(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-      }
-#endif
+      ierr = (*vecscattercreatelocal_stop)(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
       ierr = PetscFree(idy);CHKERRQ(ierr);
       ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"Special case: Blocked indices to stride\n");CHKERRQ(ierr);
@@ -775,14 +706,7 @@ static PetscErrorCode VecScatterCreate_StoP(VecScatter ctx)
     ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
     ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
     if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-    if (vscat_mpi1) {
-      ierr = VecScatterCreateLocal_StoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-    }
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-    else {
-      ierr = VecScatterCreateLocal_StoP_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-    }
-#endif
+    ierr = (*vecscattercreatelocal_stop)(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     ierr = PetscInfo(xin,"General case: Seq to MPI\n");CHKERRQ(ierr);
@@ -795,14 +719,12 @@ static PetscErrorCode VecScatterCreate_StoP(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterCreate_PtoP(VecScatter ctx)
+static PetscErrorCode VecScatterCreate_PtoP(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_ptop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
 {
   PetscErrorCode    ierr;
   PetscInt          ix_type=-1,iy_type=-1;
   IS                tix=NULL,tiy=NULL,ix=ctx->from_is,iy=ctx->to_is;
   Vec               xin=ctx->from_v,yin=ctx->to_v;
-  VecScatterType    type;
-  PetscBool         vscat_mpi1;
   PetscInt          nx,ny;
   const PetscInt    *idx,*idy;
 
@@ -811,23 +733,13 @@ static PetscErrorCode VecScatterCreate_PtoP(VecScatter ctx)
   if (tix) ix = tix;
   if (tiy) iy = tiy;
 
-  ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"mpi1",&vscat_mpi1);CHKERRQ(ierr);
-
   /* no special cases for now */
   ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
   ierr = ISGetIndices(ix,&idx);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
   ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
   if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-  if (vscat_mpi1) {
-    ierr = VecScatterCreateLocal_PtoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-  }
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
-  else {
-    ierr = VecScatterCreateLocal_PtoP_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-  }
-#endif
+  ierr = (*vecscattercreatelocal_ptop)(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
   ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
   ierr = PetscInfo(xin,"General case: MPI to MPI\n");CHKERRQ(ierr);
@@ -934,7 +846,7 @@ PetscErrorCode GetInputISType_private(VecScatter ctx,PetscInt xin_type,PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterCreate_vectype_private(VecScatter ctx)
+PetscErrorCode VecScatterCreate_vectype_private(VecScatter ctx,PetscErrorCode (*vecscattercreatelocal_ptos)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_stop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*vecscattercreatelocal_ptop)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter))
 {
   PetscErrorCode    ierr;
   PetscInt          xin_type=-1,yin_type=-1;
@@ -942,11 +854,11 @@ PetscErrorCode VecScatterCreate_vectype_private(VecScatter ctx)
   PetscFunctionBegin;
   ierr = VecScatterGetInputVecType_private(ctx,&xin_type,&yin_type);CHKERRQ(ierr);
   if (xin_type == VEC_MPI_ID && yin_type == VEC_SEQ_ID) {
-    ierr = VecScatterCreate_PtoS(ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_PtoS(ctx,vecscattercreatelocal_ptos);CHKERRQ(ierr);
   } else if (xin_type == VEC_SEQ_ID && yin_type == VEC_MPI_ID) {
-    ierr = VecScatterCreate_StoP(ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_StoP(ctx,vecscattercreatelocal_stop);CHKERRQ(ierr);
   } else if (xin_type == VEC_MPI_ID && yin_type == VEC_MPI_ID) {
-    ierr = VecScatterCreate_PtoP(ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_PtoP(ctx,vecscattercreatelocal_ptop);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

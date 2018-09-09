@@ -277,3 +277,31 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+
+      VecScatterCreateEmpty - Place holder for what should be VecScatterCreate()
+
+      Collective on MPI_Comm
+
+      Input Parameter:
+.       comm - the MPI communicator where the scatter lives
+
+      Output Parameter:
+.       newctx - the vector scatter object
+
+.seealso: VecScatterCreate(), VecScatterSetFromOptions(), VecScatterBegin(), VecScatterEnd()
+
+@*/
+PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
+{
+  VecScatter     ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ctx->inuse               = PETSC_FALSE;
+  ctx->beginandendtogether = PETSC_FALSE;
+  *newctx = ctx;
+  PetscFunctionReturn(0);
+}

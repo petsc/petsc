@@ -315,7 +315,7 @@ PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI3Node(VecScatter);
 
-PETSC_INTERN PetscErrorCode VecScatterCreate_vectype_private(VecScatter);
+PETSC_INTERN PetscErrorCode VecScatterCreate_vectype_private(VecScatter,PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter),PetscErrorCode (*)(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter));
 
 PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSG(VecScatter);
 PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSS(VecScatter);

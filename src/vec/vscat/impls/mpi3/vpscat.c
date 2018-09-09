@@ -4,31 +4,6 @@
 
 #include <petsc/private/vecscatterimpl.h>
 
-PetscErrorCode VecScatterCreate_MPI3(VecScatter ctx)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
-  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3);CHKERRQ(ierr);
-  ierr = PetscInfo(ctx,"Using MPI3 for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterCreate_MPI3Node(VecScatter ctx)
-{
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
-  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3NODE);CHKERRQ(ierr);
-  ierr = PetscInfo(ctx,"Using MPI3NODE for vector scatter\n");CHKERRQ(ierr);
-  ierr = VecScatterCreate_vectype_private(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
@@ -2892,4 +2867,26 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
   PetscFunctionReturn(0);
 }
 
-#endif
+PetscErrorCode VecScatterCreate_MPI3(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3 for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI3Node(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* subroutines called in VecScatterCreate_vectype_private() need scatter_type as an input */
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3NODE);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3NODE for vector scatter\n");CHKERRQ(ierr);
+  ierr = VecScatterCreate_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
