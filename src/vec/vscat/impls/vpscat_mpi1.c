@@ -5,6 +5,7 @@
 
 #include <../src/vec/vec/impls/dvecimpl.h>         /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <petsc/private/vecscatterimpl.h>
 
 PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {

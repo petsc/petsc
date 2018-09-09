@@ -2,7 +2,7 @@
     Defines parallel vector scatters.
 */
 
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/vecscatterimpl.h>
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
