@@ -6,7 +6,6 @@
 #include <petscbt.h>
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
-#include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
@@ -374,124 +373,6 @@ PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScal
 PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
-{
-  PetscFunctionBeginHot;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscInt       dof;
-    PetscErrorCode ierr;
-    *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
-    ierr = PetscSectionGetOffset(dm->defaultSection, point, start);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(dm->defaultSection, point, &dof);CHKERRQ(ierr);
-    *end = *start + dof;
-  }
-#else
-  {
-    const PetscSection s = dm->defaultSection;
-    *start = s->atlasOff[point - s->pStart];
-    *end   = *start + s->atlasDof[point - s->pStart];
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscInt       dof;
-    PetscErrorCode ierr;
-    *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
-    ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, start);CHKERRQ(ierr);
-    ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &dof);CHKERRQ(ierr);
-    *end = *start + dof;
-  }
-#else
-  {
-    const PetscSection s = dm->defaultSection->field[field];
-    *start = s->atlasOff[point - s->pStart];
-    *end   = *start + s->atlasDof[point - s->pStart];
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscErrorCode ierr;
-    PetscInt       dof,cdof;
-    *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
-    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be created automatically by DMGetGlobalSection()");
-    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
-    *end = *start + dof - cdof + (dof < 0 ? 1 : 0);
-  }
-#else
-  {
-    const PetscSection s    = dm->defaultGlobalSection;
-    const PetscInt     dof  = s->atlasDof[point - s->pStart];
-    const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
-    *start = s->atlasOff[point - s->pStart];
-    *end   = *start + dof - cdof + (dof < 0 ? 1 : 0);
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscInt       loff, lfoff, fdof, fcdof, ffcdof, f;
-    PetscErrorCode ierr;
-    *start = *end = 0; /* Silence overzealous compiler warning */
-    if (!dm->defaultSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default Section, see DMSetSection()");
-    if (!dm->defaultGlobalSection) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "DM must have a default global Section. It will be crated automatically by DMGetGlobalSection()");
-    ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(dm->defaultSection, point, &loff);CHKERRQ(ierr);
-    ierr = PetscSectionGetFieldOffset(dm->defaultSection, point, field, &lfoff);CHKERRQ(ierr);
-    ierr = PetscSectionGetFieldDof(dm->defaultSection, point, field, &fdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, field, &fcdof);CHKERRQ(ierr);
-    *start = *start < 0 ? *start - (lfoff-loff) : *start + lfoff-loff;
-    for (f = 0; f < field; ++f) {
-      ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, f, &ffcdof);CHKERRQ(ierr);
-      *start = *start < 0 ? *start + ffcdof : *start - ffcdof;
-    }
-    *end   = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
-  }
-#else
-  {
-    const PetscSection s     = dm->defaultSection;
-    const PetscSection fs    = dm->defaultSection->field[field];
-    const PetscSection gs    = dm->defaultGlobalSection;
-    const PetscInt     loff  = s->atlasOff[point - s->pStart];
-    const PetscInt     goff  = gs->atlasOff[point - s->pStart];
-    const PetscInt     lfoff = fs->atlasOff[point - s->pStart];
-    const PetscInt     fdof  = fs->atlasDof[point - s->pStart];
-    const PetscInt     fcdof = fs->bc ? fs->bc->atlasDof[point - fs->bc->pStart] : 0;
-    PetscInt           ffcdof = 0, f;
-
-    for (f = 0; f < field; ++f) {
-      const PetscSection ffs = dm->defaultSection->field[f];
-      ffcdof += ffs->bc ? ffs->bc->atlasDof[point - ffs->bc->pStart] : 0;
-    }
-    *start = goff + (goff < 0 ? loff-lfoff + ffcdof : lfoff-loff - ffcdof);
-    *end   = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
 
 PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM,PetscInt,PetscInt,PetscDualSpace *);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection,PetscInt,PetscInt,PetscInt *,PetscBool,const PetscInt[],PetscInt[]);
