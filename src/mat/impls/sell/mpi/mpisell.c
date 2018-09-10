@@ -981,8 +981,7 @@ PetscErrorCode MatSetFromOptions_MPISELL(PetscOptionItems *PetscOptionsObject,Ma
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MPISELL options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)A);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

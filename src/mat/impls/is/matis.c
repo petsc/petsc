@@ -3131,10 +3131,9 @@ static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject,
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MATIS options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)A);
   ierr = PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns","MatISFixLocalEmpty",a->locempty,&a->locempty,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-matis_storel2l","Store local-to-local matrices generated from PtAP operations","MatISStoreL2L",a->storel2l,&a->storel2l,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
