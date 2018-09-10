@@ -180,7 +180,11 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     try {
-      *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
+      if (a->compressedrow.use) {
+        *ygpu = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
+      } else {
+        *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
+      }
       ViennaCLWaitForGPU();
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
