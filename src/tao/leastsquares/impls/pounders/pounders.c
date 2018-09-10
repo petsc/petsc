@@ -33,7 +33,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   PetscInt i,row,col;
   PetscReal fr,fc;
   PetscFunctionBegin;
-  ierr = TaoComputeSeparableObjective(tao,x,F);CHKERRQ(ierr);
+  ierr = TaoComputeResidual(tao,x,F);CHKERRQ(ierr);
   if (tao->sep_weights_v) {
     ierr = VecPointwiseMult(mfqP->workfvec,tao->sep_weights_v,F);CHKERRQ(ierr);
     ierr = VecDot(mfqP->workfvec,mfqP->workfvec,fsum);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   } else {
     ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(tao,"Separable objective norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(*fsum)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
@@ -714,7 +714,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
   }
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
-  ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective);CHKERRQ(ierr);
+  ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res);CHKERRQ(ierr);
   ierr = PetscInfo1(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm);CHKERRQ(ierr);
 
   /* Gather mpi vecs to one big local vec */
@@ -831,7 +831,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
         mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];
     }
     ierr = VecDuplicate(tao->solution,&mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
-    ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[mfqP->nHist]);CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->ls_res,&mfqP->Fhist[mfqP->nHist]);CHKERRQ(ierr);
     ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,mfqP->work,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]);CHKERRQ(ierr);
@@ -871,7 +871,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       }
       mfqP->minindex = mfqP->nHist-1;
       minnorm = mfqP->Fres[mfqP->minindex];
-      ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective);CHKERRQ(ierr);
+      ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res);CHKERRQ(ierr);
       /* Change current center */
       ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
       for (i=0;i<mfqP->n;i++) {
@@ -1012,7 +1012,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);  }
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);  }
   ierr = VecGetSize(tao->solution,&mfqP->n);CHKERRQ(ierr);
-  ierr = VecGetSize(tao->sep_objective,&mfqP->m);CHKERRQ(ierr);
+  ierr = VecGetSize(tao->ls_res,&mfqP->m);CHKERRQ(ierr);
   mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
   if (mfqP->npmax == PETSC_DEFAULT) {
     mfqP->npmax = 2*mfqP->n + 1;
@@ -1024,10 +1024,10 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fhist);CHKERRQ(ierr);
   for (i=0;i<mfqP->n+1;i++) {
     ierr = VecDuplicate(tao->solution,&mfqP->Xhist[i]);CHKERRQ(ierr);
-    ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[i]);CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->ls_res,&mfqP->Fhist[i]);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(tao->solution,&mfqP->workxvec);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->sep_objective,&mfqP->workfvec);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->ls_res,&mfqP->workfvec);CHKERRQ(ierr);
   mfqP->nHist = 0;
 
   ierr = PetscMalloc1(tao->max_funcs+100,&mfqP->Fres);CHKERRQ(ierr);
@@ -1094,7 +1094,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
 
 
     ierr = VecScatterCreateWithData(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(tao->sep_objective,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(tao->ls_res,isfglob,mfqP->localf,isfloc,&mfqP->scatterf);CHKERRQ(ierr);
 
     ierr = ISDestroy(&isxloc);CHKERRQ(ierr);
     ierr = ISDestroy(&isxglob);CHKERRQ(ierr);
