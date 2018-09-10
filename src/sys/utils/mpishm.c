@@ -305,7 +305,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 
     Input Parameter:
 +   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
-.   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP
+.   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
 
     Output Parameter:
 .   pctrl      - a PETSc OpenMP controler
@@ -323,9 +323,21 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
   PetscShmComm          pshmcomm;
   MPI_Comm              shm_comm;
   PetscMPIInt           shm_rank,shm_comm_size,omp_rank,color;
+  PetscInt              num_packages,num_cores;
 
   PetscFunctionBegin;
   ierr = PetscNew(&ctrl);CHKERRQ(ierr);
+
+  /*=================================================================================
+    Init hwloc
+   ==================================================================================*/
+  ierr = hwloc_topology_init(&ctrl->topology);CHKERRQ(ierr);
+#if HWLOC_API_VERSION >= 0x00020000
+  /* to filter out unneeded info and have faster hwloc_topology_load */
+  ierr = hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE);CHKERRQ(ierr);
+  ierr = hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL);CHKERRQ(ierr);
+#endif
+  ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
 
   /*=================================================================================
     Split petsc_comm into multiple omp_comms. Ranks in an omp_comm have access to
@@ -340,6 +352,14 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 
   ierr = MPI_Comm_rank(shm_comm,&shm_rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(shm_comm,&shm_comm_size);CHKERRQ(ierr);
+
+  /* PETSc decides nthreads, which is the smaller of shm_comm_size or cores per package(socket) */
+  if (nthreads == -1) {
+    num_packages = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_PACKAGE); if (num_packages <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of sockets(packages) per compute node\n");
+    num_cores    = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_CORE);    if (num_cores    <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of cores per compute node\n");
+    nthreads     = num_cores/num_packages;
+    if (nthreads > shm_comm_size) nthreads = shm_comm_size;
+  }
 
   if (nthreads < 1 || nthreads > shm_comm_size) SETERRQ2(petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %d can not be < 1 or > the MPI shared memory communicator size %d\n",nthreads,shm_comm_size);
   if (shm_comm_size % nthreads) { ierr = PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %d is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size);CHKERRQ(ierr); }
@@ -375,13 +395,6 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     omp master logs its cpu binding (i.e., cpu set) and computes a new binding that
     is the union of the bindings of all ranks in the omp_comm
     =================================================================================*/
-  ierr = hwloc_topology_init(&ctrl->topology);CHKERRQ(ierr);
-#if HWLOC_API_VERSION >= 0x00020000
-  /* to filter out unneeded info and have faster hwloc_topology_load */
-  ierr = hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE);CHKERRQ(ierr);
-  ierr = hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL);CHKERRQ(ierr);
-#endif
-  ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
 
   ctrl->cpuset = hwloc_bitmap_alloc(); if (!ctrl->cpuset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed\n");
   ierr = hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);

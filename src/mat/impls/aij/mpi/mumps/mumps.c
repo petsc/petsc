@@ -1376,14 +1376,16 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
-  PetscInt       nthreads=1;
+  PetscInt       nthreads=0;
 
   PetscFunctionBegin;
   mumps->petsc_comm = PetscObjectComm((PetscObject)A);
   ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRQ(ierr); /* so that code like "if (!myid)" still works even if mumps_comm is different */
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_mumps_use_omp_threads",&nthreads,&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_mumps_use_omp_threads",&nthreads,NULL);CHKERRQ(ierr);
   if (mumps->use_petsc_omp_support) {
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
     ierr = PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl);CHKERRQ(ierr);
