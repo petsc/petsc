@@ -31,9 +31,8 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
   PetscErrorCode     ierr;
 
-
   PetscFunctionBegin;
-  if (A->rmap->n > 0 && A->cmap->n > 0) { //some OpenCL SDKs have issues with buffers of size 0
+  if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) { //some OpenCL SDKs have issues with buffers of size 0
     if (A->valid_GPU_matrix == PETSC_OFFLOAD_UNALLOCATED || A->valid_GPU_matrix == PETSC_OFFLOAD_CPU) {
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
@@ -177,7 +176,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
   ViennaCLVector       *ygpu=NULL;
 
   PetscFunctionBegin;
-  if (A->rmap->n > 0 && A->cmap->n > 0) {
+  if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     try {
@@ -189,11 +188,11 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(yy,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
 {
@@ -204,7 +203,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
   ViennaCLVector       *zgpu=NULL;
 
   PetscFunctionBegin;
-  if (A->rmap->n > 0 && A->cmap->n > 0) {
+  if (A->rmap->n > 0 && A->cmap->n > 0 && a->nz) {
     try {
       ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
       ierr = VecViennaCLGetArrayRead(yy,&ygpu);CHKERRQ(ierr);
@@ -235,6 +234,8 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
