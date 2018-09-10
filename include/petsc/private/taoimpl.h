@@ -16,7 +16,8 @@ struct _TaoOps {
     PetscErrorCode (*computeobjectiveandgradient)(Tao, Vec, PetscReal*, Vec, void*);
     PetscErrorCode (*computegradient)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computehessian)(Tao, Vec, Mat, Mat,  void*);
-    PetscErrorCode (*computeseparableobjective)(Tao, Vec, Vec, void*);
+    PetscErrorCode (*computeresidual)(Tao, Vec, Vec, void*);
+    PetscErrorCode (*computeresidualjacobian)(Tao, Vec, Mat, Mat, void*);
     PetscErrorCode (*computeconstraints)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computeinequalityconstraints)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computeequalityconstraints)(Tao, Vec, Vec, void*);
@@ -48,7 +49,8 @@ struct _p_Tao {
     void *user_objgradP;
     void *user_gradP;
     void *user_hessP;
-    void *user_sepobjP;
+    void *user_lsresP;
+    void *user_lsjacP;
     void *user_conP;
     void *user_con_equalityP;
     void *user_con_inequalityP;
@@ -82,7 +84,9 @@ struct _p_Tao {
     Mat hessian_pre;
     Mat gradient_norm;
     Vec gradient_norm_tmp;
-    Vec sep_objective;
+    Vec ls_res;
+    Mat ls_jac;
+    Mat ls_jac_pre;
     Vec sep_weights_v;
     PetscInt sep_weights_n;
     PetscInt *sep_weights_rows;
