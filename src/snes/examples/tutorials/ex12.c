@@ -1160,8 +1160,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: triangle
   # 2D serial P1 test 0-4
   test:
     suffix: 0
@@ -1537,10 +1535,22 @@ int main(int argc, char **argv)
     nsize: 4
     args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
-  test:
-    suffix: quad_bddc
+  testset:
     args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_degree 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -simplex 0 -petscspace_poly_tensor -pc_bddc_corner_selection -cells 3,3 -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
     nsize: 5
+    output_file: output/ex12_quad_bddc.out
+    filter: sed -e "s/aijcusparse/aij/g" -e "s/aijviennacl/aij/g" -e "s/factorization: cusparse/factorization: petsc/g"
+    test:
+      requires: !single
+      suffix: quad_bddc
+    test:
+      requires: !single veccuda
+      suffix: quad_bddc_cuda
+      args: -matis_localmat_type aijcusparse -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_solver_type cusparse
+    test:
+      requires: !single viennacl
+      suffix: quad_bddc_viennacl
+      args: -matis_localmat_type aijviennacl
 
   # Full solve simplex: ASM
   test:
