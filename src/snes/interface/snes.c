@@ -635,9 +635,12 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian_pre) {
-    PetscDS   prob;
-    Mat       J, B;
-    PetscBool hasPrec = PETSC_FALSE;
+    PetscErrorCode (*nspconstr)(DM, PetscInt, MatNullSpace *);
+    PetscDS          prob;
+    Mat              J, B;
+    MatNullSpace     nullspace = NULL;
+    PetscBool        hasPrec   = PETSC_FALSE;
+    PetscInt         Nf;
 
     J    = snes->jacobian;
     ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -645,6 +648,11 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     if (J)            {ierr = PetscObjectReference((PetscObject) J);CHKERRQ(ierr);}
     else if (hasPrec) {ierr = DMCreateMatrix(snes->dm, &J);CHKERRQ(ierr);}
     ierr = DMCreateMatrix(snes->dm, &B);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+    ierr = DMGetNullSpaceConstructor(snes->dm, Nf, &nspconstr);CHKERRQ(ierr);
+    if (nspconstr) (*nspconstr)(snes->dm, -1, &nullspace);
+    ierr = MatSetNullSpace(B, nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes, J ? J : B, B, NULL, NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -758,7 +766,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESSetOptionsPrefix()
+.seealso: SNESSetOptionsPrefix(), SNESResetFromOptions()
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
@@ -980,6 +988,30 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (pcset && (!snes->npc)) {
     ierr = SNESGetNPC(snes, &snes->npc);CHKERRQ(ierr);
   }
+  snes->setfromoptionscalled++;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESResetFromOptions - Sets various SNES and KSP parameters from user options ONLY if the SNES was previously set from options
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, options, database
+
+.seealso: SNESSetFromOptions(), SNESSetOptionsPrefix()
+@*/
+PetscErrorCode SNESResetFromOptions(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->setfromoptionscalled) {ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1625,6 +1657,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->vec_func_init_set = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->npcside           = PC_RIGHT;
+  snes->setfromoptionscalled = 0;
 
   snes->mf          = PETSC_FALSE;
   snes->mf_operator = PETSC_FALSE;
@@ -4263,19 +4296,25 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) snes), ((PetscObject) snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscConvEst conv;
-        PetscReal    alpha; /* Convergence rate of the solution error in the L_2 norm */
+        DM           dm;
+        PetscReal   *alpha; /* Convergence rate of the solution error for each field in the L_2 norm */
+        PetscInt     Nf;
 
         incall = PETSC_TRUE;
+        ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+        ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Nf, &alpha);CHKERRQ(ierr);
         ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) snes), &conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetSolver(conv, snes);CHKERRQ(ierr);
         ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
         ierr = PetscConvEstSetUp(conv);CHKERRQ(ierr);
-        ierr = PetscConvEstGetConvRate(conv, &alpha);CHKERRQ(ierr);
+        ierr = PetscConvEstGetConvRate(conv, alpha);CHKERRQ(ierr);
         ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
         ierr = PetscConvEstRateView(conv, alpha, viewer);CHKERRQ(ierr);
         ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        ierr = PetscFree(alpha);CHKERRQ(ierr);
         incall = PETSC_FALSE;
       }
       /* Adaptively refine the initial grid */
@@ -4382,6 +4421,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
       ierr = SNESReset(snes);CHKERRQ(ierr);
       ierr = SNESSetDM(snes,fine);CHKERRQ(ierr);
+      ierr = SNESResetFromOptions(snes);CHKERRQ(ierr);
       ierr = DMDestroy(&fine);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)));CHKERRQ(ierr);
     }

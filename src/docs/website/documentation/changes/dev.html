@@ -135,6 +135,17 @@
       </ul>
       <h4>KSP:</h4>
       <ul>
+        <li>The KSP viewing options have changed. Now
+          <ul>
+            <li>-ksp_compute_eigenvalues becomes -ksp_view_eigenvalues ascii</li>
+            <li>-ksp_plot_eigenvalues becomes -ksp_view_eigenvalues draw</li>
+            <li>-ksp_plot_eigencontours becomes -ksp_view_eigenvalues draw::draw_contour</li>
+            <li>-ksp_compute_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit ascii</li>
+            <li>-ksp_plot_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit draw</li>
+            <li>-ksp_compute_singularvalues becomes -ksp_view_singularvalues ascii</li>
+            <li>-ksp_final_residual becomes -ksp_view_final_residual</li>
+          </ul>
+        </li>
         <li><code>KSPLSQR</code>
           <ul>
             <li>Computes now an estimate of the operator's norm in the same way as Saunders and MATLAB, and uses it in the type-specific stopping criterion <code>KSPLSQRConvergedDefault()</code>; this now gives the same number of iterations as MATLAB's <code>lsqr()</code>.</li>

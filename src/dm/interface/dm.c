@@ -1402,6 +1402,15 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  *nullsp = dm->nullspaceConstructors[field];
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
 
@@ -3520,6 +3529,9 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 
   Output Parameter:
 . section - The PetscSection
+
+  Options Database Keys:
+. -dm_petscsection_view - View the Section created by the DM
 
   Level: intermediate
 

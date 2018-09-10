@@ -56,6 +56,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->numFields          = 0;
   (*s)->fieldNames         = NULL;
   (*s)->field              = NULL;
+  (*s)->useFieldOff        = PETSC_FALSE;
   (*s)->clObj              = NULL;
   (*s)->clSection          = NULL;
   (*s)->clPoints           = NULL;
@@ -3004,5 +3005,49 @@ PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt 
   PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,1);
   if (field > section->numFields) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"field %D greater than number of fields (%D) in section",field,section->numFields);
   ierr = PetscSectionRestorePointSyms(section->field[field],numPoints,points,perms,rots);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionGetUseFieldOffsets - Get the flag to use field offsets directly in a global section, rather than just the point offset
+
+  Not collective
+
+  Input Parameter:
+. s - the global PetscSection
+
+  Output Parameters:
+. flg - the flag
+
+  Level: developer
+
+.seealso: PetscSectionSetChart(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  *flg = s->useFieldOff;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionSetUseFieldOffsets - Set the flag to use field offsets directly in a global section, rather than just the point offset
+
+  Not collective
+
+  Input Parameters:
++ s   - the global PetscSection
+- flg - the flag
+
+  Level: developer
+
+.seealso: PetscSectionGetUseFieldOffsets(), PetscSectionSetChart(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  s->useFieldOff = flg;
   PetscFunctionReturn(0);
 }
