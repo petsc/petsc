@@ -87,11 +87,11 @@ struct _p_Tao {
     Vec ls_res;
     Mat ls_jac;
     Mat ls_jac_pre;
-    Vec sep_weights_v;
-    PetscInt sep_weights_n;
-    PetscInt *sep_weights_rows;
-    PetscInt *sep_weights_cols;
-    PetscReal *sep_weights_w;
+    Vec res_weights_v;
+    PetscInt res_weights_n;
+    PetscInt *res_weights_rows;
+    PetscInt *res_weights_cols;
+    PetscReal *res_weights_w;
     Vec constraints;
     Vec constraints_equality;
     Vec constraints_inequality;

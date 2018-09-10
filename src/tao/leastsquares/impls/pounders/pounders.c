@@ -34,17 +34,17 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   PetscReal fr,fc;
   PetscFunctionBegin;
   ierr = TaoComputeResidual(tao,x,F);CHKERRQ(ierr);
-  if (tao->sep_weights_v) {
-    ierr = VecPointwiseMult(mfqP->workfvec,tao->sep_weights_v,F);CHKERRQ(ierr);
+  if (tao->res_weights_v) {
+    ierr = VecPointwiseMult(mfqP->workfvec,tao->res_weights_v,F);CHKERRQ(ierr);
     ierr = VecDot(mfqP->workfvec,mfqP->workfvec,fsum);CHKERRQ(ierr);
-  } else if (tao->sep_weights_w) {
+  } else if (tao->res_weights_w) {
     *fsum=0;
-    for (i=0;i<tao->sep_weights_n;i++) {
-      row=tao->sep_weights_rows[i];
-      col=tao->sep_weights_cols[i];
+    for (i=0;i<tao->res_weights_n;i++) {
+      row=tao->res_weights_rows[i];
+      col=tao->res_weights_cols[i];
       ierr = VecGetValues(F,1,&row,&fr);CHKERRQ(ierr);
       ierr = VecGetValues(F,1,&col,&fc);CHKERRQ(ierr);
-      *fsum += tao->sep_weights_w[i]*fc*fr;
+      *fsum += tao->res_weights_w[i]*fc*fr;
     }
   } else {
     ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
@@ -165,10 +165,10 @@ static PetscErrorCode pounders_update_res(Tao tao)
   }
 
   /* Compute Gres= sum_ij[wij * (cjgi + cigj)] */
-  if (tao->sep_weights_v) {
+  if (tao->res_weights_v) {
     /* Vector(diagonal) weights: gres = sum_i(wii*ci*gi) */
     for (i=0;i<mfqP->m;i++) {
-      ierr = VecGetValues(tao->sep_weights_v,1,&i,&factor);CHKERRQ(ierr);
+      ierr = VecGetValues(tao->res_weights_v,1,&i,&factor);CHKERRQ(ierr);
       factor=factor*mfqP->C[i];
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*i],&ione,mfqP->Gres,&ione));
     }
@@ -176,7 +176,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
     /* vector(diagonal weights) Hres = sum_i(wii*(ci*Hi + gi * gi' )*/
     for (i=0;i<mfqP->m;i++) {
-      ierr = VecGetValues(tao->sep_weights_v,1,&i,&wii);CHKERRQ(ierr);
+      ierr = VecGetValues(tao->res_weights_v,1,&i,&wii);CHKERRQ(ierr);
       if (tao->niter>1) {
         factor=wii*mfqP->C[i];
         /* add wii * ci * Hi */
@@ -185,39 +185,39 @@ static PetscErrorCode pounders_update_res(Tao tao)
       /* add wii * gi * gi' */
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&wii,&mfqP->Fdiff[blasn*i],&blasn,&mfqP->Fdiff[blasn*i],&blasn,&one,mfqP->Hres,&blasn));
     }
-  } else if (tao->sep_weights_w) {
+  } else if (tao->res_weights_w) {
     /* General case: .5 * Gres= sum_ij[wij * (cjgi + cigj)] */
-    for (i=0;i<tao->sep_weights_n;i++) {
-      row=tao->sep_weights_rows[i];
-      col=tao->sep_weights_cols[i];
+    for (i=0;i<tao->res_weights_n;i++) {
+      row=tao->res_weights_rows[i];
+      col=tao->res_weights_cols[i];
 
-      factor = tao->sep_weights_w[i]*mfqP->C[col]/2.0;
+      factor = tao->res_weights_w[i]*mfqP->C[col]/2.0;
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*row],&ione,mfqP->Gres,&ione));
-      factor = tao->sep_weights_w[i]*mfqP->C[row]/2.0;
+      factor = tao->res_weights_w[i]*mfqP->C[row]/2.0;
       PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn,&factor,&mfqP->Fdiff[blasn*col],&ione,mfqP->Gres,&ione));
     }
 
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
     /* .5 * sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
-    for (i=0;i<tao->sep_weights_n;i++) {
-      row=tao->sep_weights_rows[i];
-      col=tao->sep_weights_cols[i];
-      factor=tao->sep_weights_w[i]/2.0;
+    for (i=0;i<tao->res_weights_n;i++) {
+      row=tao->res_weights_rows[i];
+      col=tao->res_weights_cols[i];
+      factor=tao->res_weights_w[i]/2.0;
       /* add wij * gi gj' + wij * gj gi' */
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*row],&blasn,&mfqP->Fdiff[blasn*col],&blasn,&one,mfqP->Hres,&blasn));
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","T",&blasn,&blasn,&ione,&factor,&mfqP->Fdiff[blasn*col],&blasn,&mfqP->Fdiff[blasn*row],&blasn,&one,mfqP->Hres,&blasn));
     }
     if (tao->niter > 1) {
-      for (i=0;i<tao->sep_weights_n;i++) {
-        row=tao->sep_weights_rows[i];
-        col=tao->sep_weights_cols[i];
+      for (i=0;i<tao->res_weights_n;i++) {
+        row=tao->res_weights_rows[i];
+        col=tao->res_weights_cols[i];
 
         /* add  wij*cj*Hi */
-        factor = tao->sep_weights_w[i]*mfqP->C[col]/2.0;
+        factor = tao->res_weights_w[i]*mfqP->C[col]/2.0;
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[row],&blasm,mfqP->Hres,&ione));
 
         /* add wij*ci*Hj */
-        factor = tao->sep_weights_w[i]*mfqP->C[row]/2.0;
+        factor = tao->res_weights_w[i]*mfqP->C[row]/2.0;
         PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&blasn2,&factor,&mfqP->H[col],&blasm,mfqP->Hres,&ione));
       }
     }

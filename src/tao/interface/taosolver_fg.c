@@ -333,12 +333,74 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 @*/
 PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(res, VEC_CLASSID,2);
+  PetscValidHeaderSpecific(res,VEC_CLASSID,2);
   tao->user_lsresP = ctx;
+  if (tao->ls_res) {
+    ierr = VecDestroy(&tao->ls_res);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectReference((PetscObject)res);CHKERRQ(ierr);
   tao->ls_res = res;
   tao->ops->computeresidual = func;
+  
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TaoSetResidualWeights - Give weights for the residual values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give. If this function is not used, or if sigma_v and sigma_w are both NULL, then the default identity matrix will be used for weights.
+
+  Collective on Tao
+
+  Input Parameters:
++ tao - the Tao context
+. sigma_v - vector of weights (diagonal terms only)
+. n       - the number of weights (if using off-diagonal)
+. rows    - index list of rows for sigma_w
+. cols    - index list of columns for sigma_w
+- vals - array of weights
+
+
+
+  Note: Either sigma_v or sigma_w (or both) should be NULL
+
+  Level: intermediate
+
+.seealso: TaoSetResidualRoutine()
+@*/
+PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  ierr = VecDestroy(&tao->res_weights_v);CHKERRQ(ierr);
+  tao->res_weights_v=sigma_v;
+  if (sigma_v) {
+    ierr = PetscObjectReference((PetscObject)sigma_v);CHKERRQ(ierr);
+  }
+  if (vals) {
+    if (tao->res_weights_n) {
+      ierr = PetscFree(tao->res_weights_rows);CHKERRQ(ierr);
+      ierr = PetscFree(tao->res_weights_cols);CHKERRQ(ierr);
+      ierr = PetscFree(tao->res_weights_w);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc1(n,&tao->res_weights_rows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->res_weights_cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->res_weights_w);CHKERRQ(ierr);
+    tao->res_weights_n=n;
+    for (i=0;i<n;i++) {
+      tao->res_weights_rows[i]=rows[i];
+      tao->res_weights_cols[i]=cols[i];
+      tao->res_weights_w[i]=vals[i];
+    }
+  } else {
+    tao->res_weights_n=0;
+    tao->res_weights_rows=0;
+    tao->res_weights_cols=0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -406,7 +468,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TaoSetGradientRoutine(Tao tao,  PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
+PetscErrorCode TaoSetGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);

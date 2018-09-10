@@ -1,0 +1,10 @@
+  iter =   0,   Function value 4575.73,   Residual: 1.33927e+06 
+  iter =   1,   Function value 2431.88,   Residual: 268108. 
+  iter =   2,   Function value 2384.71,   Residual: 8677.48 
+  iter =   3,   Function value 2384.51,   Residual: 43.5183 
+  iter =   4,   Function value 2384.51,   Residual: 9.61756 
+  iter =   5,   Function value 2384.51,   Residual: 0.0196927 
+  iter =   6,   Function value 2384.51,   Residual: 0.019799 
+  iter =   7,   Function value 2384.51,   Residual: 8.49513e-05 
+  iter =   8,   Function value 2384.51,   Residual: 4.10859e-05 
+  iter =   9,   Function value 2384.51,   Residual: < 1.0e-6 

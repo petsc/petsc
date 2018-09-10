@@ -94,8 +94,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->constraints=NULL;
   tao->constraints_equality=NULL;
   tao->constraints_inequality=NULL;
-  tao->sep_weights_v=NULL;
-  tao->sep_weights_w=NULL;
+  tao->res_weights_v=NULL;
+  tao->res_weights_w=NULL;
   tao->stepdirection=NULL;
   tao->niter=0;
   tao->ntotalits=0;
@@ -335,7 +335,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = MatDestroy(&(*tao)->jacobian_inequality_pre);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->state_is);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->design_is);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->sep_weights_v);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->res_weights_v);CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
   if ((*tao)->hist_malloc) {
     ierr = PetscFree((*tao)->hist_obj);CHKERRQ(ierr);
@@ -343,10 +343,10 @@ PetscErrorCode TaoDestroy(Tao *tao)
     ierr = PetscFree((*tao)->hist_cnorm);CHKERRQ(ierr);
     ierr = PetscFree((*tao)->hist_lits);CHKERRQ(ierr);
   }
-  if ((*tao)->sep_weights_n) {
-    ierr = PetscFree((*tao)->sep_weights_rows);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->sep_weights_cols);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->sep_weights_w);CHKERRQ(ierr);
+  if ((*tao)->res_weights_n) {
+    ierr = PetscFree((*tao)->res_weights_rows);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->res_weights_cols);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->res_weights_w);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -463,10 +463,10 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetMonitor(tao,TaoStepDirectionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsString("-tao_view_ls_residual","view least-squares residual vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-tao_view_residual","view least-squares residual vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoLSResidualMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoResidualMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -1835,7 +1835,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-   TaoLSResidualMonitor - Views the least-squares residual at each iteration
+   TaoResidualMonitor - Views the least-squares residual at each iteration
    It can be turned on from the command line using the
    -tao_view_ls_residual option
 
@@ -1852,7 +1852,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 
 .seealso: TaoDefaultSMonitor(), TaoSetMonitor()
 @*/
-PetscErrorCode TaoLSResidualMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer  = (PetscViewer)ctx;
