@@ -209,7 +209,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
   PetscErrorCode         ierr;
   PetscInt               ny,bs = in_from->bs,jj;
-  PetscCommShared        scomm;
+  PetscShmComm           scomm;
   MPI_Comm               mscomm;
   MPI_Info               info;
 
@@ -330,8 +330,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = PetscMalloc1(out_to->sharedcnt,&out_to->sharedspaceindices);CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->sharedspaceindices,in_to->sharedspaceindices,out_to->sharedcnt*sizeof(PetscInt));CHKERRQ(ierr);
 
-  ierr = PetscCommSharedGet(PetscObjectComm((PetscObject)in),&scomm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGet(PetscObjectComm((PetscObject)in),&scomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGetMpiShmComm(scomm,&mscomm);CHKERRQ(ierr);
   ierr = MPI_Info_create(&info);CHKERRQ(ierr);
   ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
   ierr = MPIU_Win_allocate_shared(bs*out_to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&out_to->sharedspace,&out_to->sharedwin);CHKERRQ(ierr);
@@ -2104,7 +2104,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
   MPI_Request            *send_waits = NULL,*recv_waits = NULL;
   MPI_Status             recv_status,*send_status;
   PetscErrorCode         ierr;
-  PetscCommShared        scomm;
+  PetscShmComm           scomm;
   PetscMPIInt            jj;
   MPI_Info               info;
   MPI_Comm               mscomm;
@@ -2121,8 +2121,8 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type,"mpi3node",&mpi3node);CHKERRQ(ierr);
 
-  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGet(comm,&scomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGetMpiShmComm(scomm,&mscomm);CHKERRQ(ierr);
 
   ierr = MPI_Info_create(&info);CHKERRQ(ierr);
   ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
@@ -2253,7 +2253,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
     ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
-    ierr = PetscCommSharedGlobalToLocal(scomm,onodes1[imdex],&jj);CHKERRQ(ierr);
+    ierr = PetscShmCommGlobalToLocal(scomm,onodes1[imdex],&jj);CHKERRQ(ierr);
     if (jj > -1) {
       ierr = PetscInfo3(NULL,"[%d] Sending values to shared memory partner %d,global rank %d\n",rank,jj,onodes1[imdex]);CHKERRQ(ierr);
       nrecvshared++;
@@ -2292,7 +2292,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     to->n    = 0;
     for (i=0; i<nrecvs; i++) {
       values = rsvalues;
-      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)onodes1[i],&jj);CHKERRQ(ierr);
+      ierr = PetscShmCommGlobalToLocal(scomm,(PetscMPIInt)onodes1[i],&jj);CHKERRQ(ierr);
       if (jj > -1) {
         to->sharedspacestarts[jj]   = to->sharedcnt;
         to->sharedspacestarts[jj+1] = to->sharedcnt + olengths1[i];
@@ -2345,7 +2345,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     lsharedowner[i] = -1;
     lowner[i]       = -1;
     if (nprocs[i]) {
-      ierr = PetscCommSharedGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
+      ierr = PetscShmCommGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
         from->sharedspacestarts[jj] = sharedstart[jj] = from->sharedcnt;
         from->sharedspacestarts[jj+1] = sharedstart[jj+1] = from->sharedspacestarts[jj] + nprocs[i];
