@@ -1057,6 +1057,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
       }
     }
 
+    ierr = PetscHSetIDestroy(&globalBcs);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&ownedpts);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&seenpts);CHKERRQ(ierr);
     ierr = PetscHSetIDestroy(&owneddofs);CHKERRQ(ierr);
