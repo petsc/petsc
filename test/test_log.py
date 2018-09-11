@@ -81,11 +81,6 @@ class TestLog(unittest.TestCase):
         self._run_events()
         self._run_stages()
 
-    def testLogBarrierBeginEnd(self):
-        self._run_events_barrier() # in main stage
-        self._run_stages_barrier() # in user stages
-
-
     def _run_stages(self):
         for stage in self._get_stages():
             self._run_events(stage)
@@ -116,25 +111,6 @@ class TestLog(unittest.TestCase):
         for event in reversed(self._get_events()):
             event.end()
 
-    def _run_stages_barrier(self):
-        for stage in self._get_stages():
-            self._run_events_barrier(stage)
-
-    def _run_events_barrier(self, stage=None):
-        if stage is not None:
-            stage.push()
-        self._events_begin_barrier()
-        self._events_end_barrier()
-        if stage is not None:
-            stage.pop()
-
-    def _events_begin_barrier(self):
-        for event in self._get_events():
-            event.barrierBegin()
-
-    def _events_end_barrier(self):
-        for event in reversed(self._get_events()):
-            event.barrierEnd()
 
 # --------------------------------------------------------------------
 
