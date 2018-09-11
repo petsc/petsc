@@ -4,11 +4,6 @@ static char help[] = "Tests mirror boundary conditions in 3-d.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-/*
-          THIS EXAMPLE DOES NOT WORK BECAUSE MIRROR BOUNDARY IS NOT YET IMPLEMENTED FOR 3D
-              We need someone with incredible attention to detail to implement it.
-*/
-
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -17,6 +12,7 @@ int main(int argc,char **argv)
   Vec            global,local;
   PetscScalar    ****vglobal;
   PetscViewer    sview;
+  PetscScalar    sum;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
@@ -33,7 +29,7 @@ int main(int argc,char **argv)
     for (j=ystart; j<ystart+n; j++) {
       for (i=xstart; i<xstart+m; i++) {
         for (c=0; c<dof; c++) {
-          vglobal[k][j][i][c] = 1000*k + 100*j + 10*(i+1) + c;
+          vglobal[k][j][i][c] = 1000*k + 100*j + 10*i + c;
         }
       }
     }
@@ -41,9 +37,12 @@ int main(int argc,char **argv)
   ierr = DMDAVecRestoreArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
 
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,global,ADD_VALUES,local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,global,ADD_VALUES,local);CHKERRQ(ierr);
 
+  ierr = VecSum(local,&sum);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"sum %g\n",(double)sum);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
   ierr = VecView(local,sview);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
@@ -60,7 +59,10 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-     TODO: need mirror support in 3d
+
+   test:
+     suffix: 2
+     nsize: 3
 
 TEST*/
 
