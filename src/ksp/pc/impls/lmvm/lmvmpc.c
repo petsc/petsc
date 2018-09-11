@@ -230,6 +230,8 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
    PCLMVM - Creates a preconditioner around an LMVM matrix. Options for the 
             underlying LMVM matrix can be access with the "-pc_lmvm_" prefix.
 
+   Level: intermediate
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), 
            PC, MATLMVM, PCLMVMUpdate(), PCLMVMSetMatLMVM(), PCLMVMGetMatLMVM()
 M*/

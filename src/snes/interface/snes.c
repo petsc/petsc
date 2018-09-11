@@ -3412,6 +3412,8 @@ PetscErrorCode  SNESSetForceIteration(SNES snes,PetscBool force)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
+   Level: intermediate
+
 .seealso: SNESSetForceIteration(), SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
 @*/
 PetscErrorCode  SNESGetForceIteration(SNES snes,PetscBool *force)
