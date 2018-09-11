@@ -43,10 +43,6 @@ EXTERN_C_END
 #endif
 #endif
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) && defined(PETSC_HAVE_HWLOC)
-#define PETSC_HAVE_OPENMP_SUPPORT 1
-#endif
-
 /* if using PETSc OpenMP support, we only call MUMPS on master ranks. Before/after the call, we change/restore CPUs the master ranks can run on */
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
 #define PetscMUMPS_c(mumps) \
@@ -2769,6 +2765,4 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_sell_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef PETSC_HAVE_OPENMP_SUPPORT
 

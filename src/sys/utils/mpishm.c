@@ -186,7 +186,7 @@ PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm,MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) && defined(PETSC_HAVE_HWLOC)
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
 #include <pthread.h>
 #include <hwloc.h>
 #include <omp.h>
@@ -570,4 +570,4 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
 }
 
 #undef USE_MMAP_ALLOCATE_SHARED_MEMORY
-#endif /* defined(PETSC_HAVE_PTHREAD) && .. */
+#endif /* defined(PETSC_HAVE_OPENMP_SUPPORT) */
