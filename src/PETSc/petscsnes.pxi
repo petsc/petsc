@@ -47,7 +47,7 @@ cdef extern from * nogil:
       SNES_DIVERGED_LINE_SEARCH
       SNES_DIVERGED_INNER
       SNES_DIVERGED_LOCAL_MIN
-
+      SNES_DIVERGED_DTOL
 
     ctypedef int (*PetscSNESCtxDel)(void*)
 

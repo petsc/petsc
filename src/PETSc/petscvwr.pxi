@@ -12,6 +12,9 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERVTK
     PetscViewerType PETSCVIEWERMATLAB
     PetscViewerType PETSCVIEWERSAWS
+    PetscViewerType PETSCVIEWERGLVIS
+    PetscViewerType PETSCVIEWERADIOS
+    PetscViewerType PETSCVIEWERADIOS2
 
     ctypedef enum PetscViewerFormat:
         PETSC_VIEWER_DEFAULT
@@ -43,6 +46,7 @@ cdef extern from * nogil:
         PETSC_VIEWER_BINARY_MATLAB
         PETSC_VIEWER_NATIVE
         PETSC_VIEWER_HDF5_VIZ
+        PETSC_VIEWER_HDF5_XDMF
         PETSC_VIEWER_NOFORMAT
 
     ctypedef enum PetscFileMode:

@@ -5,6 +5,7 @@ cdef extern from * nogil:
     PetscRandomType PETSCRAND48
     PetscRandomType PETSCSPRNG
     PetscRandomType PETSCRANDER48
+    PetscRandomType PETSCRANDOM123
 
     int PetscRandomCreate(MPI_Comm,PetscRandom*)
     int PetscRandomDestroy(PetscRandom*)

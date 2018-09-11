@@ -64,6 +64,7 @@ cdef extern from * nogil:
     PetscMatType MATSEQSELL
     PetscMatType MATMPISELL
     PetscMatType MATDUMMY
+    PetscMatType MATLMVM
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -75,6 +76,26 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGWBM
     PetscMatOrderingType MATORDERINGSPECTRAL
     PetscMatOrderingType MATORDERINGAMD
+
+    ctypedef char* PetscMatSolverType "const char*"
+    PetscMatSolverType MATSOLVERSUPERLU
+    PetscMatSolverType MATSOLVERSUPERLU_DIST
+    PetscMatSolverType MATSOLVERSTRUMPACK
+    PetscMatSolverType MATSOLVERUMFPACK
+    PetscMatSolverType MATSOLVERCHOLMOD
+    PetscMatSolverType MATSOLVERKLU
+    PetscMatSolverType MATSOLVERSPARSEELEMENTAL
+    PetscMatSolverType MATSOLVERELEMENTAL
+    PetscMatSolverType MATSOLVERESSL
+    PetscMatSolverType MATSOLVERLUSOL
+    PetscMatSolverType MATSOLVERMUMPS
+    PetscMatSolverType MATSOLVERMKL_PARDISO
+    PetscMatSolverType MATSOLVERMKL_CPARDISO
+    PetscMatSolverType MATSOLVERPASTIX
+    PetscMatSolverType MATSOLVERMATLAB
+    PetscMatSolverType MATSOLVERPETSC
+    PetscMatSolverType MATSOLVERBAS
+    PetscMatSolverType MATSOLVERCUSPARSE
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX
@@ -322,7 +343,7 @@ cdef extern from * nogil:
     int MatISGetLocalMat(PetscMat,PetscMat*)
     int MatISRestoreLocalMat(PetscMat,PetscMat*)
     int MatISSetLocalMat(PetscMat,PetscMat)
-    ctypedef char* PetscMatSolverType "const char*"
+
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO

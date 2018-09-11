@@ -44,6 +44,7 @@ class PCType(object):
     BDDC               = S_(PCBDDC)
     KACZMARZ           = S_(PCKACZMARZ)
     TELESCOPE          = S_(PCTELESCOPE)
+    LMVM               = S_(PCLMVM)
 
 class PCSide(object):
     # native

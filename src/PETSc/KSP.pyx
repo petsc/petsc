@@ -83,6 +83,7 @@ class KSPConvergedReason(object):
     DIVERGED_INDEFINITE_PC    = KSP_DIVERGED_INDEFINITE_PC
     DIVERGED_NANORINF         = KSP_DIVERGED_NANORINF
     DIVERGED_INDEFINITE_MAT   = KSP_DIVERGED_INDEFINITE_MAT
+    DIVERGED_PCSETUP_FAILED   = KSP_DIVERGED_PCSETUP_FAILED
 
 # --------------------------------------------------------------------
 

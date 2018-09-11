@@ -1,10 +1,11 @@
 # --------------------------------------------------------------------
 
 class RandomType(object):
-    RAND     = S_(PETSCRAND)
-    RAND48   = S_(PETSCRAND48)
-    SPRNG    = S_(PETSCSPRNG)
-    RANDER48 = S_(PETSCRANDER48)
+    RAND      = S_(PETSCRAND)
+    RAND48    = S_(PETSCRAND48)
+    SPRNG     = S_(PETSCSPRNG)
+    RANDER48  = S_(PETSCRANDER48)
+    RANDOM123 = S_(PETSCRANDOM123)
 
 # --------------------------------------------------------------------
 

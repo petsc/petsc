@@ -10,6 +10,14 @@ cdef extern from * nogil:
     PetscTAOType TAOOWLQN
     PetscTAOType TAOBMRM
     PetscTAOType TAOBLMVM
+    PetscTAOType TAOBQNLS
+    PetscTAOType TAOBNCG
+    PetscTAOType TAOBNLS
+    PetscTAOType TAOBNTR
+    PetscTAOType TAOBNTL
+    PetscTAOType TAOBQNKLS
+    PetscTAOType TAOBQNKTR
+    PetscTAOType TAOBQNKTL
     PetscTAOType TAOBQPIP
     PetscTAOType TAOGPCG
     PetscTAOType TAONM

@@ -75,6 +75,7 @@ cdef extern from * nogil:
         KSP_DIVERGED_INDEFINITE_PC
         KSP_DIVERGED_NANORINF
         KSP_DIVERGED_INDEFINITE_MAT
+        KSP_DIVERGED_PCSETUP_FAILED
 
     ctypedef int (*PetscKSPCtxDel)(void*)
 

@@ -64,6 +64,7 @@ class MatType(object):
     SEQSELL         = S_(MATSEQSELL)
     MPISELL         = S_(MATMPISELL)
     DUMMY           = S_(MATDUMMY)
+    LMVM            = S_(MATLMVM)
 
 class MatOption(object):
     UNUSED_NONZERO_LOCATION_ERR = MAT_UNUSED_NONZERO_LOCATION_ERR
@@ -123,6 +124,26 @@ class MatOrderingType(object):
     SPECTRAL    = S_(MATORDERINGSPECTRAL)
     AMD         = S_(MATORDERINGAMD)
 
+class MatSolverType(object):
+    SUPERLU         = S_(MATSOLVERSUPERLU)
+    SUPERLU_DIST    = S_(MATSOLVERSUPERLU_DIST)
+    STRUMPACK       = S_(MATSOLVERSTRUMPACK)
+    UMFPACK         = S_(MATSOLVERUMFPACK)
+    CHOLMOD         = S_(MATSOLVERCHOLMOD)
+    KLU             = S_(MATSOLVERKLU)
+    SPARSEELEMENTAL = S_(MATSOLVERSPARSEELEMENTAL)
+    ELEMENTAL       = S_(MATSOLVERELEMENTAL)
+    ESSL            = S_(MATSOLVERESSL)
+    LUSOL           = S_(MATSOLVERLUSOL)
+    MUMPS           = S_(MATSOLVERMUMPS)
+    MKL_PARDISO     = S_(MATSOLVERMKL_PARDISO)
+    MKL_CPARDISO    = S_(MATSOLVERMKL_CPARDISO)
+    PASTIX          = S_(MATSOLVERPASTIX)
+    MATLAB          = S_(MATSOLVERMATLAB)
+    PETSC           = S_(MATSOLVERPETSC)
+    BAS             = S_(MATSOLVERBAS)
+    CUSPARSE        = S_(MATSOLVERCUSPARSE)
+
 class MatFactorShiftType(object):
     # native
     NONE              = MAT_SHIFT_NONE
@@ -155,6 +176,7 @@ cdef class Mat(Object):
     InfoType        = MatInfoType
     Structure       = MatStructure
     OrderingType    = MatOrderingType
+    SolverType      = MatSolverType
     FactorShiftType = MatFactorShiftType
     SORType         = MatSORType
     #
@@ -1697,6 +1719,7 @@ del MatAssemblyType
 del MatInfoType
 del MatStructure
 del MatOrderingType
+del MatSolverType
 del MatFactorShiftType
 del MatSORType
 

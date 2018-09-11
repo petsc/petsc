@@ -10,6 +10,10 @@ class DMType(object):
     PATCH     = S_(DMPATCH)
     MOAB      = S_(DMMOAB)
     NETWORK   = S_(DMNETWORK)
+    FOREST    = S_(DMFOREST)
+    P4EST     = S_(DMP4EST)
+    P8EST     = S_(DMP8EST)
+    SWARM     = S_(DMSWARM)
 
 class DMBoundaryType(object):
     NONE     = DM_BOUNDARY_NONE

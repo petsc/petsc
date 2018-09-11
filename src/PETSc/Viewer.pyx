@@ -12,6 +12,9 @@ class ViewerType(object):
     VTK         = S_(PETSCVIEWERVTK)
     MATLAB      = S_(PETSCVIEWERMATLAB)
     SAWS        = S_(PETSCVIEWERSAWS)
+    GLVIS       = S_(PETSCVIEWERGLVIS)
+    ADIOS       = S_(PETSCVIEWERADIOS)
+    ADIOS2      = S_(PETSCVIEWERADIOS2)
 
 class ViewerFormat(object):
     DEFAULT           = PETSC_VIEWER_DEFAULT
@@ -43,6 +46,7 @@ class ViewerFormat(object):
     BINARY_MATLAB     = PETSC_VIEWER_BINARY_MATLAB
     NATIVE            = PETSC_VIEWER_NATIVE
     HDF5_VIZ          = PETSC_VIEWER_HDF5_VIZ
+    HDF5_XDMF         = PETSC_VIEWER_HDF5_XDMF
     NOFORMAT          = PETSC_VIEWER_NOFORMAT
 
 class FileMode(object):

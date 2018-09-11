@@ -55,6 +55,7 @@ class SNESConvergedReason(object):
     DIVERGED_LINE_SEARCH     = SNES_DIVERGED_LINE_SEARCH
     DIVERGED_INNER           = SNES_DIVERGED_INNER
     DIVERGED_LOCAL_MIN       = SNES_DIVERGED_LOCAL_MIN
+    DIVERGED_DTOL            = SNES_DIVERGED_DTOL
 
 # --------------------------------------------------------------------
 
