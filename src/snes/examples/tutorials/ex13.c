@@ -520,7 +520,22 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_scalable
     requires: triangle
-    args: -potential_petscspace_order 1 -dm_refine 3 -num_refine 2 -snes_convergence_estimate -pc_type gamg
+    args: -potential_petscspace_order 1 -dm_refine 3 -num_refine 6 -snes_convergence_estimate \
+      -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned \
+      -pc_type gamg \
+        -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
+        -pc_gamg_coarse_eq_limit 1000 \
+        -pc_gamg_reuse_interpolation true \
+        -pc_gamg_square_graph 1 \
+        -pc_gamg_threshold 0.05 \
+        -pc_gamg_threshold_scale .0 \
+      -mg_levels_ksp_type chebyshev \
+        -mg_levels_ksp_max_it 1 \
+        -mg_levels_esteig_ksp_type cg \
+        -mg_levels_esteig_ksp_max_it 10 \
+        -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 \
+        -mg_levels_pc_type jacobi \
+      -matptap_via scalable
   test:
     suffix: 2d_p2_0
     requires: triangle
