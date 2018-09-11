@@ -131,7 +131,6 @@ cell   7-------------6-------------11 cell
 */
 
 typedef struct {
-  DM        dm;
   PetscInt  debug;                        /* The debugging level */
   PetscInt  testNum;                      /* Indicates the mesh to create */
   PetscInt  dim;                          /* The topological mesh dimension */
@@ -147,7 +146,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dm           = NULL;
   options->debug        = 0;
   options->testNum      = 0;
   options->dim          = 2;
@@ -453,7 +451,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
 
   if (user->distribute) {
-    DM distributedMesh = NULL;
+    DM               pdm = NULL;
     PetscPartitioner part;
 
     /* Set partitioner options */
@@ -462,10 +460,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
 
     /* Redistribute mesh over processes using that partitioner */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
+    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
+      *dm  = pdm;
       ierr = PetscObjectSetName((PetscObject) *dm, "Redistributed Mesh");CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm, NULL, "-dist_dm_view");CHKERRQ(ierr);
     }
@@ -477,17 +475,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
 
 int main(int argc, char **argv)
 {
+  DM             dm;
   AppCtx         user;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(user.dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(user.dm, user.cellSimplex, 0);CHKERRQ(ierr);
-  if (user.interpolate) {ierr = DMPlexCheckFaces(user.dm, user.cellSimplex, 0);CHKERRQ(ierr);}
-  ierr = CheckMesh(user.dm, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex, 0);CHKERRQ(ierr);
+  if (user.interpolate) {ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);}
+  ierr = CheckMesh(dm, &user);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
