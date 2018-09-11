@@ -47,6 +47,8 @@ class Configure(config.package.Package):
     self.commc2f          = 0
     self.needBatchMPI     = 1
     self.alternativedownload = 'mpich'
+    # support MPI-3 process shared memory
+    self.support_mpi3_shm = 0
     return
 
   def setupHelp(self, help):
@@ -241,6 +243,7 @@ class Configure(config.package.Package):
       if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
         self.addDefine('HAVE_MPI_WIN_CREATE_FEATURE',1)
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY',1)
+        self.support_mpi3_shm = 1
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())

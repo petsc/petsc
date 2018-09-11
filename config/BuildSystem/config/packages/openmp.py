@@ -10,6 +10,10 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.mpi          = framework.require('config.packages.MPI',self)
+    self.pthread      = framework.require('config.packages.pthread',self)
+    self.hwloc        = framework.require('config.packages.hwloc',self)
+    self.odeps        = [self.mpi,self.pthread,self.hwloc]
     return
 
   def configureLibrary(self):
@@ -51,3 +55,7 @@ class Configure(config.package.Package):
       self.framework.packages = []
     self.framework.packages.append(self)
     config.package.Package.configureLibrary(self)
+    # this is different from HAVE_OPENMP. HAVE_OPENMP_SUPPORT checks if we have facilities to support
+    # running PETSc in flat-MPI mode and third party libraries in MPI+OpenMP hybrid mode
+    if self.mpi.found and self.mpi.support_mpi3_shm and self.pthread.found and self.hwloc.found:
+      self.addDefine('HAVE_OPENMP_SUPPORT', 1)
