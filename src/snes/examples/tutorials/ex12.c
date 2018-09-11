@@ -697,7 +697,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   }
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
                             "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
-                            user->fieldBC ? (void (*)()) user->exactFields[0] : (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+                            user->fieldBC ? (void (*)(void)) user->exactFields[0] : (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -841,7 +841,7 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
-  Vec            du, r;
+  Vec            du = NULL, r;
   PetscInt       level = 0;
   PetscBool      hasLevel;
 #if defined(PETSC_HAVE_HDF5)
@@ -855,9 +855,9 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
   /* Calculate solution */
   {
     PC        pc = user->pcmg; /* The MG PC */
-    DM        fdm = NULL,  cdm;
+    DM        fdm = NULL,  cdm = NULL;
     KSP       fksp, cksp;
-    Vec       fu,   cu;
+    Vec       fu,   cu = NULL;
     PetscInt  levels, l;
 
     ierr = KSPBuildSolution(ksp, NULL, &du);CHKERRQ(ierr);
