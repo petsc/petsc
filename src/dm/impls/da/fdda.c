@@ -792,6 +792,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
   if (da->structure_only) {
     ierr = MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
@@ -889,7 +890,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     ierr = MatSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA);CHKERRQ(ierr);
     ierr = MatSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA);CHKERRQ(ierr);
   }
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   *J = A;
   PetscFunctionReturn(0);
 }
