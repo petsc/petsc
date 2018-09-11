@@ -999,283 +999,302 @@ int main(int argc, char **argv)
   test:
     suffix: p1_2d_0
     requires: triangle
-    args: -petscspace_order 1 -qorder 1 -convergence
+    args: -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: p1_2d_1
     requires: triangle
-    args: -petscspace_order 1 -qorder 1 -porder 1
+    args: -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: p1_2d_2
     requires: triangle
-    args: -petscspace_order 1 -qorder 1 -porder 2
+    args: -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: p1_2d_3
     requires: triangle pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_2d_4
     requires: triangle pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_2d_5
     requires: triangle pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_1 on a tetrahedron
   test:
     suffix: p1_3d_0
     requires: ctetgen
-    args: -dim 3 -petscspace_order 1 -qorder 1 -convergence
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: p1_3d_1
     requires: ctetgen
-    args: -dim 3 -petscspace_order 1 -qorder 1 -porder 1
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: p1_3d_2
     requires: ctetgen
-    args: -dim 3 -petscspace_order 1 -qorder 1 -porder 2
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: p1_3d_3
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_3d_4
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_3d_5
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D P_2 on a triangle
   test:
     suffix: p2_2d_0
     requires: triangle
-    args: -petscspace_order 2 -qorder 2 -convergence
+    args: -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: p2_2d_1
     requires: triangle
-    args: -petscspace_order 2 -qorder 2 -porder 1
+    args: -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: p2_2d_2
     requires: triangle
-    args: -petscspace_order 2 -qorder 2 -porder 2
+    args: -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: p2_2d_3
     requires: triangle pragmatic
-    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_2d_4
     requires: triangle pragmatic
-    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_2d_5
     requires: triangle pragmatic
-    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_2 on a tetrahedron
   test:
     suffix: p2_3d_0
     requires: ctetgen
-    args: -dim 3 -petscspace_order 2 -qorder 2 -convergence
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: p2_3d_1
     requires: ctetgen
-    args: -dim 3 -petscspace_order 2 -qorder 2 -porder 1
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: p2_3d_2
     requires: ctetgen
-    args: -dim 3 -petscspace_order 2 -qorder 2 -porder 2
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: p2_3d_3
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_3d_4
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_3d_5
     requires: ctetgen pragmatic
-    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -qorder 1 -convergence
+    args: -simplex 0 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -qorder 1 -porder 1
+    args: -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -qorder 1 -porder 2
+    args: -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex
   test:
     suffix: q1_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: q1_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 1 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 1 -shear_coords
   test:
     suffix: q1_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 0 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 1 -non_affine_coords -convergence
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 2 -non_affine_coords -convergence
 
   # 2D Q_2 on a quadrilaterial
   test:
     suffix: q2_2d_plex_0
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
+  test:
+    suffix: q2_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
+  test:
+    suffix: q2_2d_plex_4
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
+  test:
+    suffix: q2_2d_plex_5
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 0 -non_affine_coords -convergence
+  test:
+    suffix: q2_2d_plex_6
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 1 -non_affine_coords -convergence
+  test:
+    suffix: q2_2d_plex_7
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
 
 
   # 2D P_3 on a triangle
   test:
     suffix: p3_2d_0
     requires: triangle !single
-    args: -petscspace_order 3 -qorder 3 -convergence
+    args: -petscspace_degree 3 -qorder 3 -convergence
   test:
     suffix: p3_2d_1
     requires: triangle !single
-    args: -petscspace_order 3 -qorder 3 -porder 1
+    args: -petscspace_degree 3 -qorder 3 -porder 1
   test:
     suffix: p3_2d_2
     requires: triangle !single
-    args: -petscspace_order 3 -qorder 3 -porder 2
+    args: -petscspace_degree 3 -qorder 3 -porder 2
   test:
     suffix: p3_2d_3
     requires: triangle !single
-    args: -petscspace_order 3 -qorder 3 -porder 3
+    args: -petscspace_degree 3 -qorder 3 -porder 3
   test:
     suffix: p3_2d_4
     requires: triangle pragmatic
-    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p3_2d_5
     requires: triangle pragmatic
-    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p3_2d_6
     requires: triangle pragmatic
-    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+    args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
 
   # 2D Q_3 on a quadrilaterial
   test:
     suffix: q3_2d_0
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -convergence
   test:
     suffix: q3_2d_1
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 1
   test:
     suffix: q3_2d_2
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 2
   test:
     suffix: q3_2d_3
     requires: mpi_type_get_envelope !single
-    args: -use_da 0 -simplex 0 -petscspace_order 3 -qorder 3 -porder 3
+    args: -use_da 0 -simplex 0 -petscspace_degree 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
   test:
     suffix: p1d_2d_0
     requires: triangle
-    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+    args: -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
   test:
     suffix: p1d_2d_1
     requires: triangle
-    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
+    args: -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_2
     requires: triangle
-    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+    args: -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
   test:
     suffix: p1d_2d_3
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
     filter: sed  -e "s/convergence rate at refinement 0: 2/convergence rate at refinement 0: 1.9/g"
   test:
     suffix: p1d_2d_4
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_5
     requires: triangle
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:
     suffix: p1_quad_2
     requires: triangle
-    args: -petscspace_order 1 -qorder 2 -porder 1
+    args: -petscspace_degree 1 -qorder 2 -porder 1
   test:
     suffix: p1_quad_5
     requires: triangle
-    args: -petscspace_order 1 -qorder 5 -porder 1
+    args: -petscspace_degree 1 -qorder 5 -porder 1
   test:
     suffix: p2_quad_3
     requires: triangle
-    args: -petscspace_order 2 -qorder 3 -porder 2
+    args: -petscspace_degree 2 -qorder 3 -porder 2
   test:
     suffix: p2_quad_5
     requires: triangle
-    args: -petscspace_order 2 -qorder 5 -porder 2
+    args: -petscspace_degree 2 -qorder 5 -porder 2
   test:
     suffix: q1_quad_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 2 -porder 1
   test:
     suffix: q1_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 1 -qorder 5 -porder 1
   test:
     suffix: q2_quad_3
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 3 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 3 -porder 1
   test:
     suffix: q2_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 5 -porder 1
 
 
   # Nonconforming tests
   test:
     suffix: constraints
-    args: -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -qorder 0 -constraints
+    args: -simplex 0 -petscspace_type tensor -petscspace_degree 1 -qorder 0 -constraints
   test:
     suffix: nonconforming_tensor_2
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_3
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_tensor_2_fv
     nsize: 4
@@ -1288,22 +1307,22 @@ int main(int argc, char **argv)
     suffix: nonconforming_tensor_2_hi
     requires: !single
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_type tensor -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_tensor_3_hi
     requires: !single skip
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_type tensor -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_2
     requires: triangle
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_2_hi
     requires: triangle !single
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 4 -qorder 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_2_fv
     requires: triangle
@@ -1313,12 +1332,12 @@ int main(int argc, char **argv)
     suffix: nonconforming_simplex_3
     requires: ctetgen
     nsize: 4
-    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_3_hi
     requires: ctetgen skip
     nsize: 4
-    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 4 -qorder 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_degree 4 -qorder 4
   test:
     suffix: nonconforming_simplex_3_fv
     requires: ctetgen
@@ -1331,39 +1350,39 @@ TEST*/
    # 2D Q_2 on a quadrilaterial Plex
   test:
     suffix: q2_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: q2_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
   test:
     suffix: q2_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscspace_degree 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6
     requires: pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1d_2d_7
     requires: pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1d_2d_8
     requires: pragmatic
-    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+    args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 */

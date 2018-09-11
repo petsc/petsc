@@ -488,7 +488,9 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 
 /*MC
  KSPPIPELCG - Pipelined conjugate gradient method with deeper pipelines.
- M*/
+
+   Level: intermediate
+M*/
 PETSC_EXTERN
 PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
 {

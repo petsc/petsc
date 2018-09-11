@@ -9,7 +9,7 @@
         PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPC
 
-      PC, parameter :: PETSC_NULL_PC = tPC(-1)
+      PC, parameter :: PETSC_NULL_PC = tPC(0)
 !
 !  PCSide
 !

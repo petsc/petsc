@@ -13,5 +13,5 @@ PETSC_EXTERN void PETSC_STDCALL dmplexdistribute_(DM *dm, PetscInt *overlap, Pet
   CHKFORTRANNULLOBJECT(sf);
   CHKFORTRANNULLOBJECT(dmParallel);
   *ierr = DMPlexDistribute(*dm, *overlap, sf, dmParallel);
-  if (dmParallel && !*dmParallel) *dmParallel = (DM)-1;
+  if (dmParallel && !*dmParallel) *dmParallel = (DM)0;
 }

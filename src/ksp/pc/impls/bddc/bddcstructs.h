@@ -137,6 +137,8 @@ struct _PCBDDCSubSchurs {
   PetscBool change_with_qr;
   /* prefix */
   char      *prefix;
+  /* */
+  PetscBool restrict_comm;
   /* debug */
   PetscBool debug;
 };
@@ -239,5 +241,12 @@ struct _BDdelta_DN {
   Vec work;
 };
 typedef struct _BDdelta_DN *BDdelta_DN;
+
+/* Schur interface preconditioner */
+struct _BDDCIPC_ctx {
+  VecScatter g2l;
+  PC         bddc;
+};
+typedef struct _BDDCIPC_ctx *BDDCIPC_ctx;
 
 #endif

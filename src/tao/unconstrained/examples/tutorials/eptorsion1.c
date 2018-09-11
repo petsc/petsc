@@ -622,30 +622,27 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type lmvm -tao_gatol 1.e-3
-
-   test:
-      suffix: 2
+      suffix: 1
       args: -tao_smonitor -tao_type ntl -tao_gatol 1.e-4
 
    test:
-      suffix: 3
+      suffix: 2
       args: -tao_smonitor -tao_type ntr -tao_gatol 1.e-4
 
    test:
-      suffix: 4
+      suffix: 3
       args: -tao_smonitor -tao_type bntr -tao_gatol 1.e-4 -my_tao_mf -tao_test_hessian
       
    test:
-     suffix: 5
+     suffix: 4
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnls
      
    test:
-     suffix: 6
+     suffix: 5
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type blmvm
      
    test:
-     suffix: 7
+     suffix: 6
      args: -tao_smonitor -tao_gatol 1e-3 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
 
 TEST*/

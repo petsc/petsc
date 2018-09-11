@@ -1515,6 +1515,7 @@ Symmetric Rank-1 \cite{NW99}                            & \lstinline|MATLMVMSR1|
 Davidon-Fletcher-Powell (DFP) \cite{NW99}               & \lstinline|MATLMVMDFP|          & \trl{lmvmdfp}       & SPD \\
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) \cite{NW99}     & \lstinline|MATLMVMBFGS|         & \trl{lmvmbfgs}      & SPD \\
 Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymBrdn|      & \trl{lmvmsymbrdn}   & SPD \\
+Restricted Broyden Family (full-memory diagonal)        & \lstinline|MATLMVMDiagBrdn|     & \trl{lmvmdiagbrdn}  & SPD \\
 \hline
 \end{tabular}
 \end{center}
@@ -1522,7 +1523,7 @@ Restricted Broyden Family \cite{erway2017solving}       & \lstinline|MATLMVMSymB
 \label{tab_matlmvmimpl}
 \end{table}
 
-PETSc implements six different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
+PETSc implements seven different LMVM matrices listed in the Table~\ref{tab_matlmvmimpl}. They can be created using 
 the \lstinline{MatCreate()} and \lstinline{MatSetType()} workflow, and share a number of common interface functions. 
 We will review the most important ones below:
 \begin{itemize}
@@ -1541,8 +1542,35 @@ We will review the most important ones below:
 LMVM matrices can be applied to vectors in forward mode via \lstinline{MatMult()} or \lstinline{MatMultAdd()}, and 
 in inverse mode via \lstinline{MatSolve()}. They also support \lstinline{MatGetVecs()}, \lstinline{MatDuplicate()} and 
 \lstinline{MatCopy()} operations. The maximum number of $s_k$ and $y_k$ update vectors stored can be changed via 
-\lstinline{-mat_lmvm_num_vecs} option. Restricted Broyden Family, DFP and BFGS methods additionally implement scalar 
-and diagonal scaling of the initial Jacobian which can be selected via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}.
+\lstinline{-mat_lmvm_num_vecs} option. 
+
+Restricted Broyden Family, DFP and BFGS methods additionally implement special Jacobian initialization and scaling 
+options available via \lstinline{-mat_lmvm_scale_type <none,scalar,diagonal>}. We describe these choices below:
+\begin{itemize}
+  \item \lstinline{none} -- Sets the initial Jacobian to be equal to the identity matrix. No extra computations are 
+  required when obtaining the search direction or updating the approximation. However, the number of function 
+  evaluations required to converge the Newton solution is typically much larger than what is required when using 
+  other initializations.
+  \item \lstinline{scalar} -- Defines the initial Jacobian as a scalar multiple of the identity matrix. The scalar 
+  value $\sigma$ is chosen by solving the one dimensional optimization problem
+  \[
+  \min_\sigma \|\sigma^\alpha Y - \sigma^{\alpha - 1} S\|_F^2,
+  \]
+  where $S$ and $Y$ are the matrices whose columns contain a subset of update vectors $s_k$ and $y_k$, and 
+  $\alpha \in [0, 1]$ is defined by the user via \lstinline{-mat_lmvm_alpha} and has a different default value for 
+  each LMVM implementation (e.g.: default $\alpha = 1$ for BFGS produces the well-known $y_k^T s_k / y_k^T y_k$ 
+  scalar initialization). The number of updates to be used in the $S$ and $Y$ matrices is 1 by default 
+  (i.e.: the latest update only) and can be changed via \lstinline{-mat_lmvm_scalar_hist}. This technique is inspired 
+  by Gilbert and Lemarechal~\cite{gilbert-lemarechal}.
+  \item \lstinline{diagonal} -- Uses a full-memory restricted Broyden update formula to construct a diagonal 
+  matrix for the Jacobian initialization. Although the full-memory formula is utilized, the actual memory footprint 
+  is restricted to only the vector representing the diagonal and some additional work vectors used in its construction. 
+  The diagonal terms are also re-scaled with every update as suggested in \cite{gilbert-lemarechal}. This 
+  initialization requires the most computational effort of the available choices but typically results in a significant 
+  reduction in the number of function evaluations taken to compute a solution. 
+\end{itemize}
+Note that the user-provided initial Jacobian via \lstinline{MatLMVMSetJ0()} overrides and disables all built-in 
+initialization methods.
 
 \subsection{Dense Matrices}
 \label{sec_matdense}

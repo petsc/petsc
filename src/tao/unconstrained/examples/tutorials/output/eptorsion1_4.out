@@ -3,16 +3,13 @@
 mx: 10     my: 10   
 
 iter =   0, Function value -0.330579, Residual: 0.728961 
-  ---------- Testing Hessian -------------
-  Run with -tao_test_hessian_view and optionally -tao_test_hessian <threshold> to show difference
-    of hand-coded and finite difference Hessian entries greater than <threshold>.
-  Testing hand-coded Hessian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
-    O(1.e-8), the hand-coded Hessian is probably correct.
-  ||H - Hfd||_F/||H||_F = 2.97218e-10, ||H - Hfd||_F = 1.31584e-08
-iter =   0, Function value -0.38665, Residual: 0.531327 
-  ---------- Testing Hessian -------------
-  ||H - Hfd||_F/||H||_F = 4.25681e-10, ||H - Hfd||_F = 1.88457e-08
-iter =   1, Function value -0.414887, Residual: 0.204719 
-  ---------- Testing Hessian -------------
-  ||H - Hfd||_F/||H||_F = 1.94063e-10, ||H - Hfd||_F = 8.59156e-09
-iter =   2, Function value -0.427745, Residual: < 1.0e-6 
+iter =   1, Function value -0.391218, Residual: 0.386209 
+iter =   2, Function value -0.412219, Residual: 0.209489 
+iter =   3, Function value -0.424578, Residual: 0.104311 
+iter =   4, Function value -0.426033, Residual: 0.112253 
+iter =   5, Function value -0.427233, Residual: 0.0332491 
+iter =   6, Function value -0.427491, Residual: 0.0246162 
+iter =   7, Function value -0.427717, Residual: 0.0129942 
+iter =   8, Function value -0.427741, Residual: 0.00603353 
+iter =   9, Function value -0.427743, Residual: 0.00427758 
+iter =  10, Function value -0.427745, Residual: 0.000625767 

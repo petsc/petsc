@@ -125,7 +125,7 @@ static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw,PetscReal x,PetscReal
   win->written = PETSC_TRUE;
   rx = a/2*(draw->port_xr-draw->port_xl)/(draw->coor_xr-draw->coor_xl);
   ry = b/2*(draw->port_yr-draw->port_yl)/(draw->coor_yr-draw->coor_yl);
-  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\fill [color=%s] (%g,%g) circle [x radius=%g,y radius=%g];\n",TikZColorMap(c),XTRANS(draw,x),YTRANS(draw,y),rx,ry);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\fill [color=%s] (%g,%g) circle [x radius=%g,y radius=%g];\n",TikZColorMap(c),XTRANS(draw,x),YTRANS(draw,y),(double)rx,(double)ry);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

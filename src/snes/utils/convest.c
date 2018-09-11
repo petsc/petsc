@@ -91,7 +91,8 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) ce), "", "Convergence Estimator Options", "PetscConvEst");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-convest_num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-convest_monitor", "Monitor the error for each convergence check", "PetscConvEst", ce->monitor, &ce->monitor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -287,7 +288,7 @@ and then fit the result to our model above using linear regression.
 .keywords: PetscConvEst, convergence
 .seealso: PetscConvEstSetSolver(), PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
-PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
+PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 {
   DM            *dm;
   PetscDS        prob;
@@ -325,6 +326,11 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
       ierr = DMSetDS(dm[r], prob);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
+      for (f = 0; f <= ce->Nf; ++f) {
+        PetscErrorCode (*nspconstr)(DM, PetscInt, MatNullSpace *);
+        ierr = DMGetNullSpaceConstructor(dm[r-1], f, &nspconstr);CHKERRQ(ierr);
+        ierr = DMSetNullSpaceConstructor(dm[r],   f,  nspconstr);CHKERRQ(ierr);
+      }
     }
     ierr = DMViewFromOptions(dm[r], NULL, "-conv_dm_view");CHKERRQ(ierr);
     /* Create solution */
@@ -417,6 +423,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
 PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
   PetscBool      isAscii;
+  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

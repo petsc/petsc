@@ -414,10 +414,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
       requires: !complex
 
    test:
-      args: -tao_smonitor -tao_type lmvm -tao_gatol 1.e-3
-
-   test:
-      suffix: 2
+      suffix: 1
       nsize: 2
       args: -tao_smonitor -tao_type nls -mx 16 -my 16 -tao_gatol 1.e-4
 

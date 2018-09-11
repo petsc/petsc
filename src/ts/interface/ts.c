@@ -76,7 +76,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_time <time> - maximum time to compute to
 .  -ts_max_steps <steps> - maximum number of time-steps to take
@@ -177,7 +177,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   /* Monitor options */
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor time and timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
-  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_extreme","Monitor extreme values of the solution","TSMonitorExtreme",TSMonitorExtreme,NULL);CHKERRQ(ierr);  
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_extreme","Monitor extreme values of the solution","TSMonitorExtreme",TSMonitorExtreme,NULL);CHKERRQ(ierr);
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -2587,7 +2587,8 @@ PetscErrorCode  TSSetUp(TS ts)
 @*/
 PetscErrorCode  TSReset(TS ts)
 {
-  PetscErrorCode ierr;
+  TS_RHSSplitLink ilink = ts->tsrhssplit,next;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2615,6 +2616,15 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
 
+  while (ilink) {
+    next = ilink->next;
+    ierr = TSDestroy(&ilink->ts);CHKERRQ(ierr);
+    ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
+    ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
+    ierr = PetscFree(ilink);CHKERRQ(ierr);
+    ilink = next;
+  }
+  ts->num_rhs_splits = 0;
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

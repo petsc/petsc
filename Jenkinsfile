@@ -33,11 +33,12 @@ pipeline {
         }
         stage('Examples') {
             steps {
-                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} allgtest-tap TIMEOUT=300"
+                sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} cleantest allgtest-tap TIMEOUT=300"
             }
             post {
                 always {
                     junit "**/${arch_name}/tests/testresults.xml"
+                    sh "make PETSC_ARCH=${arch_name} PETSC_DIR=${WORKSPACE} cleantest"
                 }
             }
         }

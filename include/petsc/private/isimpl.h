@@ -101,6 +101,7 @@ struct _p_PetscSection {
   char                        **fieldNames;   /* The field names */
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
+  PetscBool                     useFieldOff;  /* Use the field offsets directly for the global section, rather than the point offset */
 
   PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
   PetscSection                  clSection;    /* Section giving the number of points in each closure */
@@ -137,4 +138,7 @@ struct _p_PetscSectionSym {
   SymWorkLink workin;
   SymWorkLink workout;
 };
+
+
+PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #endif

@@ -3,31 +3,33 @@
 mx:8, my:8, bmx:2, bmy:5, height:0.3
 iter =   0, Function value 1.83917, Residual: 0.44807 
 iter =   1, Function value 1.79522, Residual: 0.58077 
-iter =   2, Function value 1.68599, Residual: 0.32535 
-iter =   3, Function value 1.66618, Residual: 0.551248 
-iter =   4, Function value 1.62202, Residual: 0.280427 
-iter =   5, Function value 1.61693, Residual: 0.273089 
-iter =   6, Function value 1.60879, Residual: 0.178533 
-iter =   7, Function value 1.60479, Residual: 0.107255 
-iter =   8, Function value 1.60288, Residual: 0.0466663 
-iter =   9, Function value 1.6022, Residual: 0.0285801 
-iter =  10, Function value 1.60148, Residual: 0.0250709 
-iter =  11, Function value 1.60122, Residual: 0.0147655 
-iter =  12, Function value 1.60118, Residual: 0.00765704 
-iter =  13, Function value 1.60116, Residual: 0.00404952 
-iter =  14, Function value 1.60115, Residual: 0.00224781 
-iter =  15, Function value 1.60115, Residual: 0.00293059 
-iter =  16, Function value 1.60115, Residual: 0.00266638 
-iter =  17, Function value 1.60115, Residual: 0.000482894 
-iter =  18, Function value 1.60115, Residual: 0.00040251 
-iter =  19, Function value 1.60115, Residual: 0.000283284 
-iter =  20, Function value 1.60115, Residual: 6.16337e-05 
+iter =   2, Function value 1.6861, Residual: 0.325694 
+iter =   3, Function value 1.6527, Residual: 0.463266 
+iter =   4, Function value 1.61291, Residual: 0.140527 
+iter =   5, Function value 1.60885, Residual: 0.0821046 
+iter =   6, Function value 1.60662, Residual: 0.0647188 
+iter =   7, Function value 1.60346, Residual: 0.0593318 
+iter =   8, Function value 1.60324, Residual: 0.128197 
+iter =   9, Function value 1.60161, Residual: 0.0357046 
+iter =  10, Function value 1.60138, Residual: 0.0198527 
+iter =  11, Function value 1.60122, Residual: 0.0143298 
+iter =  12, Function value 1.60119, Residual: 0.0195803 
+iter =  13, Function value 1.60115, Residual: 0.00495585 
+iter =  14, Function value 1.60115, Residual: 0.00153265 
+iter =  15, Function value 1.60115, Residual: 0.00122319 
+iter =  16, Function value 1.60115, Residual: 0.00103626 
+iter =  17, Function value 1.60115, Residual: 0.00156191 
+iter =  18, Function value 1.60115, Residual: 0.000331879 
+iter =  19, Function value 1.60115, Residual: 0.000179533 
+iter =  20, Function value 1.60115, Residual: 0.000137138 
+iter =  21, Function value 1.60115, Residual: 0.000126009 
+iter =  22, Function value 1.60115, Residual: 7.08451e-05 
 Tao Object: 1 MPI processes
   type: bqnls
     Rejected BFGS updates: 0
     CG steps: 0
     Newton steps: 0
-    BFGS steps: 19
+    BFGS steps: 21
     Scaled gradient steps: 1
     Gradient steps: 0
     KSP termination reasons:
@@ -47,9 +49,20 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 19
+      Number of updates: 21
       Number of rejects: 0
       Number of resets: 0
+      Mat Object: (J0_) 1 MPI processes
+        type: lmvmdiagbrdn
+        rows=64, cols=64
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 21
+          Number of rejects: 0
+          Number of resets: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30
@@ -77,14 +90,25 @@ Tao Object: 1 MPI processes
         Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 5
-        Number of updates: 19
+        Number of updates: 21
         Number of rejects: 0
         Number of resets: 0
-    total KSP iterations: 0
-    Active Set subset type: subvec
-    convergence tolerances: gatol=0.0001,     steptol=0.,     gttol=0.
-    Residual in Function/Gradient:=6.16337e-05
-    Objective value=1.60115
-    total number of iterations=20,                            (max: 50)
-    total number of function/gradient evaluations=22,        (max: 4000)
-    Solution converged:      ||g(X)|| <= gatol
+        Mat Object: (J0_) 1 MPI processes
+          type: lmvmdiagbrdn
+          rows=64, cols=64
+            Scale history: 1
+            Scale params: alpha=1., beta=0.5, rho=1.
+            Convex factor: theta=0.125
+            Max. storage: 1
+            Used storage: 1
+            Number of updates: 21
+            Number of rejects: 0
+            Number of resets: 0
+  total KSP iterations: 0
+  Active Set subset type: subvec
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=7.08451e-05
+  Objective value=1.60115
+  total number of iterations=22,                          (max: 50)
+  total number of function/gradient evaluations=24,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

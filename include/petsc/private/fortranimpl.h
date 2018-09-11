@@ -130,16 +130,7 @@ if (flg) {                                   \
   if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); *ierr = 1; return; } \
-  else if (*(void**)a == (void*)-1) { a = NULL; }
-
-PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
-
-#define CHKFORTRANNULLOBJECTDEREFERENCE(a)  \
-  if (FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
-    PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
-    "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); *ierr = 1; return; } \
-  else if (*(void**)a == (void*)-1) { *((void***)&a) = &PETSCNULLPOINTERADDRESS; }
-
+  else if (*(void**)a == (void*)0) { a = NULL; }
 
 #define CHKFORTRANNULLBOOL(a)  \
   if (FORTRANNULLSCALAR(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)  || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a)) { \
@@ -191,7 +182,6 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    CHKFORTRANNULLOBJECTDEREFERENCE(vin);\
     if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_WORLD_FORTRAN) { \
       v = PETSC_VIEWER_DRAW_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_SELF_FORTRAN) { \

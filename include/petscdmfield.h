@@ -41,7 +41,7 @@ PETSC_EXTERN PetscErrorCode    DMFieldCreateFEGeom(DMField,IS,PetscQuadrature,Pe
 
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDefaultQuadrature(DMField,IS,PetscQuadrature*);
 
-PETSC_EXTERN PetscErrorCode    DMFieldGetFEInvariance(DMField,IS,PetscBool*,PetscBool*,PetscBool*);
+PETSC_EXTERN PetscErrorCode    DMFieldGetDegree(DMField,IS,PetscInt *,PetscInt *);
 
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDA(DM,PetscInt,const PetscScalar *,DMField *);
 PETSC_EXTERN PetscErrorCode    DMFieldCreateDS(DM,PetscInt,Vec,DMField *);
@@ -54,7 +54,7 @@ PETSC_EXTERN PetscErrorCode    DMFieldShellSetEvaluateFE(DMField,PetscErrorCode(
 PETSC_EXTERN PetscErrorCode    DMFieldShellEvaluateFEDefault(DMField,IS,PetscQuadrature,PetscDataType,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode    DMFieldShellSetEvaluateFV(DMField,PetscErrorCode(*)(DMField,IS,PetscDataType,void*,void*,void*));
 PETSC_EXTERN PetscErrorCode    DMFieldShellEvaluateFVDefault(DMField,IS,PetscDataType,void*,void*,void*);
-PETSC_EXTERN PetscErrorCode    DMFieldShellSetGetFEInvariance(DMField,PetscErrorCode(*)(DMField,IS,PetscBool *,PetscBool *,PetscBool *));
+PETSC_EXTERN PetscErrorCode    DMFieldShellSetGetDegree(DMField,PetscErrorCode(*)(DMField,IS,PetscInt *,PetscInt *));
 PETSC_EXTERN PetscErrorCode    DMFieldShellSetCreateDefaultQuadrature(DMField,PetscErrorCode(*)(DMField,IS,PetscQuadrature *));
 
 #endif

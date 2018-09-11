@@ -4,9 +4,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = symbrdn.c
+SOURCEC  = symbrdn.c symbadbrdn.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = symbrdn.h
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

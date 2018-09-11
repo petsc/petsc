@@ -169,9 +169,9 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
 
     /* Creating the index sets */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_local,PETSC_COPY_VALUES, &pcis->is_B_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_local,PETSC_COPY_VALUES, &pcis->is_I_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),n_I,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
 
     /* Freeing memory */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
@@ -409,33 +409,6 @@ PetscErrorCode  PCISCreate(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pcis->is_B_local       = 0;
-  pcis->is_I_local       = 0;
-  pcis->is_B_global      = 0;
-  pcis->is_I_global      = 0;
-  pcis->A_II             = 0;
-  pcis->A_IB             = 0;
-  pcis->A_BI             = 0;
-  pcis->A_BB             = 0;
-  pcis->D                = 0;
-  pcis->ksp_N            = 0;
-  pcis->ksp_D            = 0;
-  pcis->vec1_N           = 0;
-  pcis->vec2_N           = 0;
-  pcis->vec1_D           = 0;
-  pcis->vec2_D           = 0;
-  pcis->vec3_D           = 0;
-  pcis->vec1_B           = 0;
-  pcis->vec2_B           = 0;
-  pcis->vec3_B           = 0;
-  pcis->vec1_global      = 0;
-  pcis->work_N           = 0;
-  pcis->global_to_D      = 0;
-  pcis->N_to_B           = 0;
-  pcis->N_to_D           = 0;
-  pcis->global_to_B      = 0;
-  pcis->mapping          = 0;
-  pcis->BtoNmap          = 0;
   pcis->n_neigh          = -1;
   pcis->scaling_factor   = 1.0;
   pcis->reusesubmatrices = PETSC_TRUE;

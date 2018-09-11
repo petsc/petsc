@@ -121,6 +121,8 @@
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
+        <li>MatNullSpaceTest() now respects the options prefix of the
+        provided Mat.</li>
         <li>Added MatMatTransposeSolve() to MUMPS interface.</li>
         <li>Added MatPartitioningViewFromOptions().</li>
         <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
@@ -133,6 +135,17 @@
       </ul>
       <h4>KSP:</h4>
       <ul>
+        <li>The KSP viewing options have changed. Now
+          <ul>
+            <li>-ksp_compute_eigenvalues becomes -ksp_view_eigenvalues ascii</li>
+            <li>-ksp_plot_eigenvalues becomes -ksp_view_eigenvalues draw</li>
+            <li>-ksp_plot_eigencontours becomes -ksp_view_eigenvalues draw::draw_contour</li>
+            <li>-ksp_compute_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit ascii</li>
+            <li>-ksp_plot_eigenvalues_explicitly becomes -ksp_view_eigenvalues_explicit draw</li>
+            <li>-ksp_compute_singularvalues becomes -ksp_view_singularvalues ascii</li>
+            <li>-ksp_final_residual becomes -ksp_view_final_residual</li>
+          </ul>
+        </li>
         <li><code>KSPLSQR</code>
           <ul>
             <li>Computes now an estimate of the operator's norm in the same way as Saunders and MATLAB, and uses it in the type-specific stopping criterion <code>KSPLSQRConvergedDefault()</code>; this now gives the same number of iterations as MATLAB's <code>lsqr()</code>.</li>
@@ -152,6 +165,14 @@
         </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>Added symplecitc time integrators for separable Hamiltonian systems (-ts_type basicsymplectic). </li>
+      </ul>
+      <h4>TAO:</h4>
+      <ul>
+        <li>Removed <code>-tao_type test</code>.</li>
+        <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
+      </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>Renamed <code>DMDAGetReducedDMDA()</code> to <code>DMDACreateCompatibleDMDA()</code>.</li>

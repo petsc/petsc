@@ -212,7 +212,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetstratumis_(DM *dm, char* name PETSC_MIXED_L
 
   FIXCHAR(name, lenN, lname);
   *ierr = DMGetStratumIS(*dm, lname, *value, is);
-  if (is && !*is) *is = (IS)-1;
+  if (is && !*is) *is = (IS)0;
   FREECHAR(name, lname);
 }
 

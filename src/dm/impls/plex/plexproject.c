@@ -96,9 +96,12 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
-    PetscInt subp;
+    DMLabel  spmap;
+    PetscInt subp = p;
 
-    ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr);
+    /* If dm is a submesh, do not get subpoint */
+    ierr = DMPlexGetSubpointMap(dm, &spmap);CHKERRQ(ierr);
+    if (!spmap) {ierr = DMPlexGetSubpoint(dmAux, p, &subp);CHKERRQ(ierr);}
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
@@ -363,7 +366,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
     PetscDS      probEff         = prob;
     PetscScalar *values;
-    PetscBool   *fieldActive, isAffine;
+    PetscBool   *fieldActive;
+    PetscInt     maxDegree;
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
     IS           heightIS;
 
@@ -419,8 +423,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
         if (!isectIS) continue;
         ierr = ISGetLocalSize(isectIS, &n);CHKERRQ(ierr);
         ierr = ISGetIndices(isectIS, &points);CHKERRQ(ierr);
-        ierr = DMFieldGetFEInvariance(coordField,isectIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
-        if (isAffine) {
+        ierr = DMFieldGetDegree(coordField,isectIS,NULL,&maxDegree);CHKERRQ(ierr);
+        if (maxDegree <= 1) {
           ierr = DMFieldCreateDefaultQuadrature(coordField,isectIS,&quad);CHKERRQ(ierr);
         }
         if (!quad) {
@@ -458,8 +462,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       IS              pointIS;
 
       ierr = ISCreateStride(PETSC_COMM_SELF,pEnd-pStart,pStart,1,&pointIS);CHKERRQ(ierr);
-      ierr = DMFieldGetFEInvariance(coordField,pointIS,NULL,&isAffine,NULL);CHKERRQ(ierr);
-      if (isAffine) {
+      ierr = DMFieldGetDegree(coordField,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
+      if (maxDegree <= 1) {
         ierr = DMFieldCreateDefaultQuadrature(coordField,pointIS,&quad);CHKERRQ(ierr);
       }
       if (!quad) {

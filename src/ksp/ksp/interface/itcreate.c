@@ -683,6 +683,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_max   = 0;
   ksp->res_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
+  ksp->setfromoptionscalled = 0;
 
   ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
   ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);

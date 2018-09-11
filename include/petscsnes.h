@@ -98,6 +98,7 @@ PETSC_EXTERN PetscErrorCode SNESSetOptionsPrefix(SNES,const char[]);
 PETSC_EXTERN PetscErrorCode SNESAppendOptionsPrefix(SNES,const char[]);
 PETSC_EXTERN PetscErrorCode SNESGetOptionsPrefix(SNES,const char*[]);
 PETSC_EXTERN PetscErrorCode SNESSetFromOptions(SNES);
+PETSC_EXTERN PetscErrorCode SNESResetFromOptions(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESSetUseMatrixFree(SNES,PetscBool,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetUseMatrixFree(SNES,PetscBool*,PetscBool*);

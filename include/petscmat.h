@@ -45,6 +45,9 @@ typedef const char* MatType;
 #define MATAIJPERM         "aijperm"
 #define MATSEQAIJPERM      "seqaijperm"
 #define MATMPIAIJPERM      "mpiaijperm"
+#define MATAIJSELL         "aijsell"
+#define MATSEQAIJSELL      "seqaijsell"
+#define MATMPIAIJSELL      "mpiaijsell"
 #define MATAIJMKL          "aijmkl"
 #define MATSEQAIJMKL       "seqaijmkl"
 #define MATMPIAIJMKL       "mpiaijmkl"
@@ -95,6 +98,8 @@ typedef const char* MatType;
 #define MATLMVMBRDN        "lmvmbrdn"
 #define MATLMVMBADBRDN     "lmvmbadbrdn"
 #define MATLMVMSYMBRDN     "lmvmsymbrdn"
+#define MATLMVMSYMBADBRDN  "lmvmsymbadbrdn"
+#define MATLMVMDIAGBRDN    "lmvmdiagbrdn"
 
 /*J
     MatSolverType - String with the name of a PETSc matrix solver type.
@@ -293,6 +298,7 @@ PETSC_EXTERN PetscErrorCode MatImaginaryPart(Mat);
 PETSC_EXTERN PetscErrorCode MatGetDiagonalBlock(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatInvertVariableBlockDiagonal(Mat,PetscInt,const PetscInt*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat,Mat);
 
 /* ------------------------------------------------------------*/
@@ -414,6 +420,9 @@ PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatSetVariableBlockSizes(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatGetVariableBlockSizes(Mat,PetscInt*,const PetscInt**);
+
 PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat,PetscInt,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat,PetscScalar *[]);
 
