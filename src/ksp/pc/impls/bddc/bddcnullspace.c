@@ -135,11 +135,11 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   /* Create work vectors in shell context */
   ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
   ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
-  ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetType(shell_ctx->work_small_1,((PetscObject)pcis->vec1_B)->type_name);CHKERRQ(ierr);
   ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
   ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
-  ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetType(shell_ctx->work_full_1,((PetscObject)pcis->vec1_B)->type_name);CHKERRQ(ierr);
   ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
 
   /* Allocate workspace */
