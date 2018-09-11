@@ -127,11 +127,13 @@
         <li>Added MatPartitioningViewFromOptions().</li>
         <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
         <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
+        <li>Added new matrix types for limited-memory variable-metric (MATLMVM) approximations of Jacobians.</li>
         </ul>
       <h4>PC:</h4>
       <ul>
         <li> PCKSPGetKSP() now raises an error if called on a PC which is not of type PCKSP </li>
         <li> Added PCKSPSetKSP() </li>
+        <li> Added new PC based on the new LMVM matrices.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
@@ -164,6 +166,13 @@
         <li>SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate unlimited number of function evaluations.</li>
         </ul>
       <h4>SNESLineSearch:</h4>
+      <h4>TAO:</h4>
+        <ul>
+          <li>Added bound-constrained Newton-Krylov methods (BNLS, BNTR, BNTL).</li>
+          <li>All quasi-Newton methods updated to use the new LMVM Mat objects.</li>
+          <li>Added a bound-constrained quasi-Newton line search (BQNLS) method that re-uses BNLS infrastructure to replace BLMVM on next release.</li>
+          <li>Bound-constrained conjugate gradient method expanded with new CG update types and nonlinear preconditioning.</li>
+        </ul>
       <h4>TS:</h4>
       <ul>
         <li>Added symplecitc time integrators for separable Hamiltonian systems (-ts_type basicsymplectic). </li>
