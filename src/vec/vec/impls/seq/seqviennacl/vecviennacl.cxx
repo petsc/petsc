@@ -954,7 +954,6 @@ PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;

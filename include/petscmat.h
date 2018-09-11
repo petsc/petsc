@@ -1597,6 +1597,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
 
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 
+PETSC_EXTERN PetscErrorCode MatISSetLocalMatType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);

@@ -3867,7 +3867,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   /* create dummy vector to modify rhs and sol of MatMatSolve (work array will never be used) */
   dummy_vec = NULL;
   if (need_benign_correction && lda_rhs != n_R && F) {
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lda_rhs,work,&dummy_vec);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&dummy_vec);CHKERRQ(ierr);
+    ierr = VecSetSizes(dummy_vec,lda_rhs,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(dummy_vec,((PetscObject)pcis->vec1_N)->type_name);CHKERRQ(ierr);
   }
 
   /* Precompute stuffs needed for preprocessing and application of BDDC*/

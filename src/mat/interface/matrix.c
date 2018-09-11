@@ -76,6 +76,8 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
 
+  if (!x->ops->setrandom) SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Mat type %s",((PetscObject)x)->type_name);
+
   if (!rctx) {
     MPI_Comm comm;
     ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
@@ -1241,6 +1243,7 @@ PetscErrorCode MatDestroy(Mat *A)
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree((*A)->defaultvectype);CHKERRQ(ierr);
   ierr = PetscFree((*A)->bsizes);CHKERRQ(ierr);
   ierr = PetscFree((*A)->solvertype);CHKERRQ(ierr);
   ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
@@ -8889,7 +8892,7 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
-      ierr = VecSetType(*right,VECSTANDARD);CHKERRQ(ierr);
+      ierr = VecSetType(*right,mat->defaultvectype);CHKERRQ(ierr);
       ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
@@ -8897,7 +8900,7 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
-      ierr = VecSetType(*left,VECSTANDARD);CHKERRQ(ierr);
+      ierr = VecSetType(*left,mat->defaultvectype);CHKERRQ(ierr);
       ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
     }
   }
@@ -9354,6 +9357,9 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
+  if (A->symmetric_set && A->symmetric) {
+    ierr = MatSetOption(*C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

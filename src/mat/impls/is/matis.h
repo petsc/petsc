@@ -18,6 +18,7 @@ typedef struct {
   PetscBool  islocalref;                  /* is a reference to a local submatrix? */
   PetscBool  locempty;                    /* adapt local matrices for empty rows/cols during MatAssemblyEnd_IS */
   PetscBool  storel2l;                    /* carry over local-to-local inherited in MatPtAP */
+  char       *lmattype;
 } Mat_IS;
 
 struct _MatISLocalFields {

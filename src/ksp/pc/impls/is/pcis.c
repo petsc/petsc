@@ -181,11 +181,15 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     /* Creating work vectors and arrays */
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_N,&pcis->vec2_N);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcis->vec1_D,pcis->n-pcis->n_B,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(pcis->vec1_D,((PetscObject)pcis->vec1_N)->type_name);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcis->vec1_B,pcis->n_B,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(pcis->vec1_B,((PetscObject)pcis->vec1_N)->type_name);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
     ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);

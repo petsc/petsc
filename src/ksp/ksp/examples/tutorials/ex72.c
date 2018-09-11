@@ -611,8 +611,8 @@ int main(int argc,char **args)
 
    testset:
       suffix: aijcusparse
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) cusparse
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) veccuda
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu -vec_type cuda
 
    testset:
       TODO: No output file. Need to determine if deprecated

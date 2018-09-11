@@ -1145,8 +1145,18 @@ int main(int argc,char **args)
 
  testset:
    nsize: 4
-   suffix: bddc_fetidp_1
    args: -nex 7 -physical_pc_bddc_coarse_eqs_per_proc 3 -physical_pc_bddc_switch_static
+   output_file: output/ex59_bddc_fetidp_1.out
+   test:
+     suffix: bddc_fetidp_1
+   test:
+     requires: viennacl
+     suffix: bddc_fetidp_1_viennacl
+     args: -subdomain_mat_type aijviennacl
+   test:
+     requires: veccuda
+     suffix: bddc_fetidp_1_cuda
+     args: -subdomain_mat_type aijcusparse -physical_pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse
 
  testset:
    nsize: 4
@@ -1191,5 +1201,6 @@ int main(int argc,char **args)
    test:
      suffix: bddc_fetidp_ml_eqlimit_2
      args: -physical_pc_bddc_coarse_eqs_limit 46
+
 
 TEST*/
