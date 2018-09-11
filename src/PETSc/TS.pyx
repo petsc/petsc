@@ -647,6 +647,9 @@ cdef class TS(Object):
     def step(self):
         CHKERR( TSStep(self.ts) )
 
+    def restartStep(self):
+        CHKERR( TSRestartStep(self.ts) )
+
     def rollBack(self):
         CHKERR( TSRollBack(self.ts) )
 

@@ -239,6 +239,7 @@ cdef extern from * nogil:
     int TSSetUp(PetscTS)
     int TSReset(PetscTS)
     int TSStep(PetscTS)
+    int TSRestartStep(PetscTS)
     int TSRollBack(PetscTS)
     int TSSolve(PetscTS,PetscVec)
     int TSInterpolate(PetscTS,PetscReal,PetscVec)
