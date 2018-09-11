@@ -165,6 +165,14 @@
         </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>Added symplecitc time integrators for separable Hamiltonian systems (-ts_type basicsymplectic). </li>
+      </ul>
+      <h4>TAO:</h4>
+      <ul>
+        <li>Removed <code>-tao_type test</code>.</li>
+        <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
+      </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>Renamed <code>DMDAGetReducedDMDA()</code> to <code>DMDACreateCompatibleDMDA()</code>.</li>
