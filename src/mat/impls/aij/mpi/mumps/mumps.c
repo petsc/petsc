@@ -43,10 +43,7 @@ EXTERN_C_END
 #endif
 #endif
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && (defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) || defined(PETSC_HAVE_MMAP)) && defined(PETSC_HAVE_HWLOC)
-#define PETSC_HAVE_OPENMP_SUPPORT 1
-#endif
-
+/* if using PETSc OpenMP support, we only call MUMPS on master ranks. Before/after the call, we change/restore CPUs the master ranks can run on */
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
 #define PetscMUMPS_c(mumps) \
   do { \
@@ -1375,20 +1372,22 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
-  PetscInt       nthreads=1;
+  PetscInt       nthreads=0;
 
   PetscFunctionBegin;
   mumps->petsc_comm = PetscObjectComm((PetscObject)A);
   ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRQ(ierr); /* so that code like "if (!myid)" still works even if mumps_comm is different */
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mumps_omp_num_threads",&nthreads,&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_mumps_use_omp_threads",&nthreads,NULL);CHKERRQ(ierr);
   if (mumps->use_petsc_omp_support) {
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
     ierr = PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl);CHKERRQ(ierr);
     ierr = PetscOmpCtrlGetOmpComms(mumps->omp_ctrl,&mumps->omp_comm,&mumps->mumps_comm,&mumps->is_omp_master);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -mumps_omp_num_threads option\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -mat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual\n");
 #endif
   } else {
     mumps->omp_comm      = PETSC_COMM_SELF;
@@ -2415,6 +2414,8 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 
   Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with MUMPS
 
+  Use ./configure --with-openmp --download-hwloc (or --with-hwloc) to enable running MUMPS in MPI+OpenMP hybrid mode and non-MUMPS in flat-MPI mode. See details below.
+
   Use -pc_type cholesky or lu -pc_factor_mat_solver_type mumps to use this direct solver
 
   Options Database Keys:
@@ -2445,7 +2446,9 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 .  -mat_mumps_cntl_2  -  CNTL(2): stopping criterion of refinement
 .  -mat_mumps_cntl_3 - CNTL(3): absolute pivoting threshold
 .  -mat_mumps_cntl_4 - CNTL(4): value for static pivoting
--  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots
+.  -mat_mumps_cntl_5 - CNTL(5): fixation for null pivots
+-  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
+                                   Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
 
   Level: beginner
 
@@ -2456,6 +2459,43 @@ $          PCFactorGetMatrix(pc,&mat);
 $          MatMumpsGetInfo(mat,....);
 $          MatMumpsGetInfog(mat,....); etc.
            Or you can run with -ksp_error_if_not_converged and the program will be stopped and the information printed in the error message.
+
+   If you want to run MUMPS in MPI+OpenMP hybrid mode (i.e., enable multithreading in MUMPS), but still want to run the non-MUMPS part
+   (i.e., PETSc part) of your code in the so-called flat-MPI (aka pure-MPI) mode, you need to configure PETSc with --with-openmp --download-hwloc
+   (or --with-hwloc), and have an MPI that supports MPI-3.0's process shared memory (which is usually available). Since MUMPS calls BLAS
+   libraries, to really get performance, you should have multithreaded BLAS libraries such as Intel MKL, AMD ACML, Cray libSci or open sourced
+   OpenBLAS (PETSc has configure options to install/specify them). With these conditions met, you can run your program as before but with
+   an extra option -mat_mumps_use_omp_threads [m]. It works as if we set OMP_NUM_THREADS=m to MUMPS, with m defaults to the number of cores
+   per CPU socket (or package, in hwloc term), or number of PETSc MPI processes on a node, whichever is smaller.
+
+   By flat-MPI or pure-MPI mode, it means you run your code with as many MPI ranks as the number of cores. For example,
+   if a compute node has 32 cores and you run on two nodes, you may use "mpirun -n 64 ./test". To run MPI+OpenMP hybrid MUMPS,
+   the tranditional way is to set OMP_NUM_THREADS and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
+   threads per rank, then you may use "export OMP_NUM_THREADS=16 && mpirun -n 4 ./test". The problem of this approach is that the non-MUMPS
+   part of your code is run with fewer cores and CPUs are wasted. "-mat_mumps_use_omp_threads [m]" provides an alternative such that
+   you can stil run your code with as many MPI ranks as the number of cores, but have MUMPS run in MPI+OpenMP hybrid mode. In our example,
+   you can use "mpirun -n 64 ./test -mat_mumps_use_omp_threads 16".
+
+   If you run your code through a job submission system, there are caveats in MPI rank mapping. We use MPI_Comm_split_type to get MPI
+   processes on each compute node. Listing the processes in rank ascending order, we split processes on a node into consecutive groups of
+   size m and create a communicator called omp_comm for each group. Rank 0 in an omp_comm is called the master rank, and others in the omp_comm
+   are called slave ranks (or slaves). Only master ranks are seen to MUMPS and slaves are not. We will free CPUs assigned to slaves (might be set
+   by CPU binding policies in job scripts) and make the CPUs available to the master so that OMP threads spawned by MUMPS can run on the CPUs.
+   In a multi-socket compute node, MPI rank mapping is an issue. Still use the above example and suppose your compute node has two sockets,
+   if you interleave MPI ranks on the two sockets, in other words, even ranks are placed on socket 0, and odd ranks are on socket 1, and bind
+   MPI ranks to cores, then with -mat_mumps_use_omp_threads 16, a master rank (and threads it spawns) will use half cores in socket 0, and half
+   cores in socket 1, that definitely hurts locality. On the other hand, if you map MPI ranks consecutively on the two sockets, then the
+   problem will not happen. Therefore, when you use -mat_mumps_use_omp_threads, you need to keep an eye on your MPI rank mapping and CPU binding.
+   For example, with the Slurm job scheduler, one can use srun --cpu-bind=verbsoe -m block:block to map consecutive MPI ranks to sockets and
+   examine the mapping result.
+
+   PETSc does not control thread binding in MUMPS. So to get best performance, one still has to set OMP_PROC_BIND and OMP_PLACES in job scripts,
+   for example, export OMP_PLACES=threads and export OMP_PROC_BIND=spread. One does not need to export OMP_NUM_THREADS=m in job scripts as PETSc
+   calls omp_set_num_threads(m) internally before calling MUMPS.
+
+   References:
++   1. - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
+-   2. - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
 .seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
 
@@ -2725,6 +2765,4 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
   ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSELL,MAT_FACTOR_LU,MatGetFactor_sell_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef PETSC_HAVE_OPENMP_SUPPORT
 

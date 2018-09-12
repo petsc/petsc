@@ -186,13 +186,13 @@ PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm pshmcomm,MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_PTHREAD) && (defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) || defined(PETSC_HAVE_MMAP)) && defined(PETSC_HAVE_HWLOC)
+#if defined(PETSC_HAVE_OPENMP_SUPPORT)
 #include <pthread.h>
 #include <hwloc.h>
 #include <omp.h>
 
-/* Use mmap() to allocate shared mmeory (for the pthread_barrierattr_t object) if it is available,
-   otherwise use MPI_Win_allocate_shared. They should have the same effect besides MPI-3 is much
+/* Use mmap() to allocate shared mmeory (for the pthread_barrier_t object) if it is available,
+   otherwise use MPI_Win_allocate_shared. They should have the same effect except MPI-3 is much
    simpler to use. However, on a Cori Haswell node with Cray MPI, MPI-3 worsened a test's performance
    by 50%. Until the reason is found out, we use mmap() instead.
 */
@@ -218,7 +218,12 @@ struct _n_PetscOmpCtrl {
 };
 
 
-/* Allocate a shared pthread_barrier_t object in ctrl->omp_comm, set ctrl->barrier */
+/* Allocate and initialize a pthread_barrier_t object in memory shared by processes in omp_comm
+   contained by the controler.
+
+   PETSc OpenMP controler users do not call this function directly. This function exists
+   only because we want to separate shared memory allocation methods from other code.
+ */
 PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode        ierr;
@@ -237,7 +242,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 #if defined(USE_MMAP_ALLOCATE_SHARED_MEMORY) && defined(PETSC_HAVE_MMAP)
   size = sizeof(pthread_barrier_t);
   if (ctrl->is_omp_master) {
-    /* use PETSC_COMM_SELF in PetscGetTmp, since it is a collective call. Using omp_comm would otherwise bcast the unfinished pathname to slaves */
+    /* use PETSC_COMM_SELF in PetscGetTmp, since it is a collective call. Using omp_comm would otherwise bcast the partially populated pathname to slaves */
     ierr    = PetscGetTmp(PETSC_COMM_SELF,pathname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr    = PetscStrlcat(pathname,"/petsc-shm-XXXXXX",PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     /* mkstemp replaces XXXXXX with a unique file name and opens the file for us */
@@ -246,7 +251,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
     baseptr = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0); if (baseptr == MAP_FAILED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"mmap() failed\n");
     ierr    = close(fd);CHKERRQ(ierr);
     ierr    = MPI_Bcast(pathname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,ctrl->omp_comm);CHKERRQ(ierr);
-    /* this MPI_Barrier is to wait slaves open the file before master unlinks it */
+    /* this MPI_Barrier is to wait slaves to open the file before master unlinks it */
     ierr    = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
     ierr    = unlink(pathname);CHKERRQ(ierr);
   } else {
@@ -277,7 +282,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(0);
 }
 
-/* Destroy ctrl->barrier */
+/* Destroy the pthread barrier in the PETSc OpenMP controler */
 PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
@@ -295,7 +300,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(0);
 }
 
-/* create a PETSc OpenMP controler, which manages PETSc's interaction with OpenMP runtime */
+/*@C
+    PetscOmpCtrlCreate - create a PETSc OpenMP controler, which manages PETSc's interaction with third party libraries using OpenMP
+
+    Input Parameter:
++   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
+.   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
+
+    Output Parameter:
+.   pctrl      - a PETSc OpenMP controler
+
+    Level: developer
+
+.seealso PetscOmpCtrlDestroy()
+@*/
 PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmpCtrl *pctrl)
 {
   PetscErrorCode        ierr;
@@ -305,9 +323,21 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
   PetscShmComm          pshmcomm;
   MPI_Comm              shm_comm;
   PetscMPIInt           shm_rank,shm_comm_size,omp_rank,color;
+  PetscInt              num_packages,num_cores;
 
   PetscFunctionBegin;
   ierr = PetscNew(&ctrl);CHKERRQ(ierr);
+
+  /*=================================================================================
+    Init hwloc
+   ==================================================================================*/
+  ierr = hwloc_topology_init(&ctrl->topology);CHKERRQ(ierr);
+#if HWLOC_API_VERSION >= 0x00020000
+  /* to filter out unneeded info and have faster hwloc_topology_load */
+  ierr = hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE);CHKERRQ(ierr);
+  ierr = hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL);CHKERRQ(ierr);
+#endif
+  ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
 
   /*=================================================================================
     Split petsc_comm into multiple omp_comms. Ranks in an omp_comm have access to
@@ -322,6 +352,14 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
 
   ierr = MPI_Comm_rank(shm_comm,&shm_rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(shm_comm,&shm_comm_size);CHKERRQ(ierr);
+
+  /* PETSc decides nthreads, which is the smaller of shm_comm_size or cores per package(socket) */
+  if (nthreads == -1) {
+    num_packages = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_PACKAGE); if (num_packages <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of sockets(packages) per compute node\n");
+    num_cores    = hwloc_get_nbobjs_by_type(ctrl->topology,HWLOC_OBJ_CORE);    if (num_cores    <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not determine number of cores per compute node\n");
+    nthreads     = num_cores/num_packages;
+    if (nthreads > shm_comm_size) nthreads = shm_comm_size;
+  }
 
   if (nthreads < 1 || nthreads > shm_comm_size) SETERRQ2(petsc_comm,PETSC_ERR_ARG_OUTOFRANGE,"number of OpenMP threads %d can not be < 1 or > the MPI shared memory communicator size %d\n",nthreads,shm_comm_size);
   if (shm_comm_size % nthreads) { ierr = PetscPrintf(petsc_comm,"Warning: number of OpenMP threads %d is not a factor of the MPI shared memory communicator size %d, which may cause load-imbalance!\n",nthreads,shm_comm_size);CHKERRQ(ierr); }
@@ -357,13 +395,6 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     omp master logs its cpu binding (i.e., cpu set) and computes a new binding that
     is the union of the bindings of all ranks in the omp_comm
     =================================================================================*/
-  ierr = hwloc_topology_init(&ctrl->topology);CHKERRQ(ierr);
-#if HWLOC_API_VERSION >= 0x00020000
-  /* to filter out unneeded info and have faster hwloc_topology_load */
-  ierr = hwloc_topology_set_all_types_filter(ctrl->topology,HWLOC_TYPE_FILTER_KEEP_NONE);CHKERRQ(ierr);
-  ierr = hwloc_topology_set_type_filter(ctrl->topology,HWLOC_OBJ_CORE,HWLOC_TYPE_FILTER_KEEP_ALL);CHKERRQ(ierr);
-#endif
-  ierr = hwloc_topology_load(ctrl->topology);CHKERRQ(ierr);
 
   ctrl->cpuset = hwloc_bitmap_alloc(); if (!ctrl->cpuset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed\n");
   ierr = hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
@@ -398,13 +429,21 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     }
   }
 
-  /* all wait for the master to finish the initialization before using the barrier */
-  ierr = MPI_Barrier(ctrl->omp_comm);CHKERRQ(ierr);
   ierr = PetscFree(cpu_ulongs);CHKERRQ(ierr);
   *pctrl = ctrl;
   PetscFunctionReturn(0);
 }
 
+/*@C
+    PetscOmpCtrlDestroy - destory the PETSc OpenMP controler
+
+    Input Parameter:
+.   pctrl  - a PETSc OpenMP controler
+
+    Level: developer
+
+.seealso PetscOmpCtrlCreate()
+@*/
 PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 {
   PetscErrorCode  ierr;
@@ -424,16 +463,18 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
 }
 
 /*@C
-    PetscOmpCtrlGetOmpComms - Get MPI communicators from a PetscOmpCtrl
+    PetscOmpCtrlGetOmpComms - Get MPI communicators from a PETSc OMP controler
 
     Input Parameter:
-.   ctrl - a PetscOmpCtrl
+.   ctrl - a PETSc OMP controler
 
     Output Parameter:
-+   omp_comm         - a communicator that includes a master rank and slave ranks.
++   omp_comm         - a communicator that includes a master rank and slave ranks where master spawns threads
 .   omp_master_comm  - on master ranks, return a communicator that include master ranks of each omp_comm;
                        on slave ranks, MPI_COMM_NULL will be return in reality.
 -   is_omp_master    - true if the calling process is an OMP master rank.
+
+    Notes: any output parameter can be NULL. The parameter is just ignored.
 
     Level: developer
 @*/
@@ -446,7 +487,30 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl,MPI_Comm *omp_comm,MPI_
   PetscFunctionReturn(0);
 }
 
-/* a barrier in the scope of an omp_comm. Not using MPI_Barrier since it keeps polling and does not free CPUs OMP wants to use */
+/*@C
+    PetscOmpCtrlBarrier - Do barrier on MPI ranks in omp_comm contained by the PETSc OMP controler (to let slave ranks free their CPU)
+
+    Input Parameter:
+.   ctrl - a PETSc OMP controler
+
+    Notes:
+    this is a pthread barrier on MPI processes. Using MPI_Barrier instead is conceptually correct. But MPI standard does not
+    require processes blocked by MPI_Barrier free their CPUs to let other processes progress. In practice, to minilize latency,
+    MPI processes stuck in MPI_Barrier keep polling and do not free CPUs. In contrast, pthread_barrier has this requirement.
+
+    A code using PetscOmpCtrlBarrier() would be like this,
+
+    if (is_omp_master) {
+      PetscOmpCtrlOmpRegionOnMasterBegin(ctrl);
+      Call the library using OpenMP
+      PetscOmpCtrlOmpRegionOnMasterEnd(ctrl);
+    }
+    PetscOmpCtrlBarrier(ctrl);
+
+    Level: developer
+
+.seealso PetscOmpCtrlOmpRegionOnMasterBegin(), PetscOmpCtrlOmpRegionOnMasterEnd()
+@*/
 PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
@@ -457,26 +521,53 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(0);
 }
 
-/* call this on master ranks before calling a library using OpenMP */
+/*@C
+    PetscOmpCtrlOmpRegionOnMasterBegin - Mark the beginning of an OpenMP library call on master ranks
+
+    Input Parameter:
+.   ctrl - a PETSc OMP controler
+
+    Notes:
+    Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms to know if this is a master rank.
+    This function changes CPU binding of master ranks and nthreads-var of OpenMP runtime
+
+    Level: developer
+
+.seealso: PetscOmpCtrlOmpRegionOnMasterEnd()
+@*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = hwloc_set_cpubind(ctrl->topology,ctrl->omp_cpuset,HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
-  omp_set_num_threads(ctrl->omp_comm_size); /* may override OMP_NUM_THREAD in environment */
+  omp_set_num_threads(ctrl->omp_comm_size); /* may override the OMP_NUM_THREAD env var */
   PetscFunctionReturn(0);
 }
 
-/* call this on master ranks after leaving a library using OpenMP */
+/*@C
+   PetscOmpCtrlOmpRegionOnMasterEnd - Mark the end of an OpenMP library call on master ranks
+
+   Input Parameter:
+.  ctrl - a PETSc OMP controler
+
+   Notes:
+   Only master ranks can call this function. Call PetscOmpCtrlGetOmpComms to know if this is a master rank.
+   This function restores the CPU binding of master ranks and set and nthreads-var of OpenMP runtime to 1.
+
+   Level: developer
+
+.seealso: PetscOmpCtrlOmpRegionOnMasterBegin()
+@*/
 PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = hwloc_set_cpubind(ctrl->topology,ctrl->cpuset,HWLOC_CPUBIND_PROCESS);CHKERRQ(ierr);
+  omp_set_num_threads(1);
   PetscFunctionReturn(0);
 }
 
 #undef USE_MMAP_ALLOCATE_SHARED_MEMORY
-#endif /* defined(PETSC_HAVE_PTHREAD) && .. */
+#endif /* defined(PETSC_HAVE_OPENMP_SUPPORT) */
