@@ -169,9 +169,9 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
 
     /* Creating the index sets */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_local,PETSC_COPY_VALUES, &pcis->is_B_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),pcis->n_B,idx_B_global,PETSC_COPY_VALUES,&pcis->is_B_global);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_local,PETSC_COPY_VALUES, &pcis->is_I_local);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_I,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),n_I,idx_I_global,PETSC_COPY_VALUES,&pcis->is_I_global);CHKERRQ(ierr);
 
     /* Freeing memory */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
@@ -181,11 +181,15 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     /* Creating work vectors and arrays */
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_N,&pcis->vec2_N);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&pcis->vec1_D);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcis->vec1_D,pcis->n-pcis->n_B,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(pcis->vec1_D,((PetscObject)pcis->vec1_N)->type_name);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcis->vec1_B,pcis->n_B,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(pcis->vec1_B,((PetscObject)pcis->vec1_N)->type_name);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
     ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
     ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
@@ -409,33 +413,6 @@ PetscErrorCode  PCISCreate(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pcis->is_B_local       = 0;
-  pcis->is_I_local       = 0;
-  pcis->is_B_global      = 0;
-  pcis->is_I_global      = 0;
-  pcis->A_II             = 0;
-  pcis->A_IB             = 0;
-  pcis->A_BI             = 0;
-  pcis->A_BB             = 0;
-  pcis->D                = 0;
-  pcis->ksp_N            = 0;
-  pcis->ksp_D            = 0;
-  pcis->vec1_N           = 0;
-  pcis->vec2_N           = 0;
-  pcis->vec1_D           = 0;
-  pcis->vec2_D           = 0;
-  pcis->vec3_D           = 0;
-  pcis->vec1_B           = 0;
-  pcis->vec2_B           = 0;
-  pcis->vec3_B           = 0;
-  pcis->vec1_global      = 0;
-  pcis->work_N           = 0;
-  pcis->global_to_D      = 0;
-  pcis->N_to_B           = 0;
-  pcis->N_to_D           = 0;
-  pcis->global_to_B      = 0;
-  pcis->mapping          = 0;
-  pcis->BtoNmap          = 0;
   pcis->n_neigh          = -1;
   pcis->scaling_factor   = 1.0;
   pcis->reusesubmatrices = PETSC_TRUE;

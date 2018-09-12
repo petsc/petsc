@@ -1,6 +1,9 @@
 
 #include "petsc/finclude/petscsys.h"
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscBagRegisterEnum
+#endif
       Subroutine PetscBagRegisterEnum(bag,addr,FArray,def,n,h,ierr)
       use,intrinsic :: iso_c_binding
       implicit none

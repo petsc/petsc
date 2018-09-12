@@ -1,20 +1,18 @@
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.49734;-0.834225], Cost function f=0.1144
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.19278;-1.04229], Cost function f=0.00102718
 Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.22433;-1.01808], Cost function f=0.00012752
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21763;-1.02315], Cost function f=5.31613e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21744;-1.02326], Cost function f=5.28491e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21687;-1.02353], Cost function f=5.12632e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21592;-1.02372], Cost function f=4.72868e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21423;-1.02349], Cost function f=3.75628e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21214;-1.02192], Cost function f=2.06264e-05
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21108;-1.01889], Cost function f=5.90725e-06
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21186;-1.01768], Cost function f=1.47234e-06
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21299;-1.01744], Cost function f=5.2964e-09
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21306;-1.01747], Cost function f=1.29049e-11
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=3.77657e-12
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.82455e-13
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.82195e-16
-Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=3.22586e-19
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21763;-1.02315], Cost function f=5.32282e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21745;-1.02327], Cost function f=5.3001e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21707;-1.02348], Cost function f=5.21879e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21638;-1.0237], Cost function f=4.99256e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.2151;-1.02376], Cost function f=4.38077e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21318;-1.02301], Cost function f=3.06762e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21135;-1.02027], Cost function f=1.07169e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21446;-1.01605], Cost function f=3.98717e-06
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21307;-1.01749], Cost function f=8.16769e-10
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.23568e-11
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=7.67925e-18
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=8.96644e-21
 Tao Object: 1 MPI processes
   type: blmvm
   Gradient steps: 0
@@ -27,9 +25,20 @@ Tao Object: 1 MPI processes
       Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
-      Number of updates: 15
+      Number of updates: 13
       Number of rejects: 0
       Number of resets: 1
+      Mat Object: (J0_) 1 MPI processes
+        type: lmvmdiagbrdn
+        rows=2, cols=2
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 13
+          Number of rejects: 0
+          Number of resets: 1
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
     maximum function evaluations=30
@@ -41,10 +50,10 @@ Tao Object: 1 MPI processes
     Termination reason: 1
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=7.19971e-10
-  Objective value=3.22586e-19
-  total number of iterations=16,                          (max: 2000)
-  total number of function/gradient evaluations=17,      (max: 4000)
+  Residual in Function/Gradient:=3.71547e-10
+  Objective value=8.96644e-21
+  total number of iterations=14,                          (max: 2000)
+  total number of function/gradient evaluations=15,      (max: 4000)
   Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes
   type: seq

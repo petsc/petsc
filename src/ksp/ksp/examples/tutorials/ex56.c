@@ -111,12 +111,12 @@ int main(int argc,char **args)
       ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
     }
     ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
 
     ierr = PetscFree(d_nnz);CHKERRQ(ierr);
     ierr = PetscFree(o_nnz);CHKERRQ(ierr);
-    ierr = MatSetFromOptions( Amat );CHKERRQ(ierr);
     ierr = MatCreateVecs(Amat,&bb,&xx);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);

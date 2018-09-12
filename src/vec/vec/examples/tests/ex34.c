@@ -16,7 +16,9 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
 
-  ierr = VecCreateSeq(comm,10,&V);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&V);CHKERRQ(ierr);
+  ierr = VecSetSizes(V,10,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(V);CHKERRQ(ierr);
   ierr = VecSetRandom(V,NULL);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(V);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(V);CHKERRQ(ierr);
@@ -160,6 +162,17 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
+   testset:
+      output_file: output/ex34_1.out
+      test:
+        suffix: standard
+      test:
+        requires: veccuda
+        args: -vec_type cuda
+        suffix: cuda
+      test:
+        requires: viennacl
+        args: -vec_type viennacl
+        suffix: viennacl
 
 TEST*/

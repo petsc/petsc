@@ -23,7 +23,7 @@ program  ex1f90
 
   call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRA(ierr);
   call DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
-  if (dmDist%v /= -1) then
+  if (dmDist /= PETSC_NULL_DM) then
     call DMDestroy(dm,ierr);CHKERRA(ierr)
     dm%v = dmDist%v
   end if

@@ -1402,6 +1402,15 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  *nullsp = dm->nullspaceConstructors[field];
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
 
@@ -1643,7 +1652,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 - len - The number of DMs
 
   Output Parameters:
-+ is - The global indices for the subproblem
++ is - The global indices for the subproblem, or NULL
 - superdm - The DM for the superproblem
 
   Level: intermediate
@@ -1659,12 +1668,11 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
   PetscValidPointer(dms,1);
   for (i = 0; i < len; ++i) {PetscValidHeaderSpecific(dms[i],DM_CLASSID,1);}
   if (is) PetscValidPointer(is,3);
-  if (superdm) PetscValidPointer(superdm,4);
+  PetscValidPointer(superdm,4);
   if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %D", len);
   if (len) {
-    if (dms[0]->ops->createsuperdm) {
-      ierr = (*dms[0]->ops->createsuperdm)(dms, len, is, superdm);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject) dms[0]), PETSC_ERR_SUP, "This type has no DMCreateSuperDM implementation defined");
+    if (dms[0]->ops->createsuperdm) {ierr = (*dms[0]->ops->createsuperdm)(dms, len, is, superdm);CHKERRQ(ierr);}
+    else SETERRQ(PetscObjectComm((PetscObject) dms[0]), PETSC_ERR_SUP, "This type has no DMCreateSuperDM implementation defined");
   }
   PetscFunctionReturn(0);
 }
@@ -3521,6 +3529,9 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 
   Output Parameter:
 . section - The PetscSection
+
+  Options Database Keys:
+. -dm_petscsection_view - View the Section created by the DM
 
   Level: intermediate
 

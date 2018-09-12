@@ -111,13 +111,6 @@ class Configure(config.base.Configure):
 
 
   def configure(self):
-    # on windows with fortran build - use with-shared-libraries=0 as default
-    if self.setCompilers.isCygwin(self.log) and hasattr(self.setCompilers,'FC') and self.framework.argDB['with-fortran-bindings']:
-      if 'with-shared-libraries' not in self.framework.clArgDB:
-        self.logPrint('Shared libraries (DLLs) - disabled due to fortran build on windows')
-        self.framework.argDB['with-shared-libraries'] = 0
-      elif self.framework.argDB['with-shared-libraries']:
-        raise RuntimeError('PETSc fortran bindings do not work with DLLs on windows!\nUse --with-shared-libraries=0 (if fortran interface is required)\nor use --with-fortran-bindings=0 (if DLLs are required for C/C++ only)')
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)

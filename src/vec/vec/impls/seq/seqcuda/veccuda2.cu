@@ -1006,7 +1006,12 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
     int  i;
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     cberr = cublasIXamax(cublasv2handle,bn,xarray,one,&i);CHKERRCUBLAS(cberr);
-    err = cudaMemcpy(z,xarray+i,sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+    if (bn) {
+      PetscScalar zs;
+
+      err = cudaMemcpy(&zs,xarray+i-1,sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+      *z = PetscAbsScalar(zs);
+    } else *z = 0.0;
     ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     ierr = VecCUDAGetArrayRead(xin,&xarray);CHKERRQ(ierr);

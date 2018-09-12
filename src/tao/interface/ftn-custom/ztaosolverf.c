@@ -229,7 +229,6 @@ PETSC_EXTERN void PETSC_STDCALL taosetvariableboundsroutine_(Tao *tao, void (PET
 
 PETSC_EXTERN void PETSC_STDCALL taosetmonitor_(Tao *tao, void (PETSC_STDCALL *func)(Tao*,void*,PetscErrorCode*),void *ctx, void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-    CHKFORTRANNULLOBJECT(ctx);
     CHKFORTRANNULLFUNCTION(mondestroy);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.mon,(PetscVoidFunction)func,ctx); if (*ierr) return;
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.mondestroy,(PetscVoidFunction)mondestroy,ctx); if (*ierr) return;

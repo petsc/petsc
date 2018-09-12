@@ -315,14 +315,8 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
   PetscErrorCode    ierr;
   PetscScalar       *xarray;
   const PetscScalar *barray;
-  PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
-  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
-
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_cpardiso->nrhs);CHKERRQ(ierr);
 
   if(mat_mkl_cpardiso->nrhs > 0){

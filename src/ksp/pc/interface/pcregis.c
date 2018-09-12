@@ -4,6 +4,7 @@
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_None(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LU(PC);
@@ -29,6 +30,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC);
 
 #if defined(PETSC_HAVE_ML)
@@ -81,6 +83,7 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCNONE         ,PCCreate_None);CHKERRQ(ierr);
   ierr = PCRegister(PCJACOBI       ,PCCreate_Jacobi);CHKERRQ(ierr);
   ierr = PCRegister(PCPBJACOBI     ,PCCreate_PBJacobi);CHKERRQ(ierr);
+  ierr = PCRegister(PCVPBJACOBI    ,PCCreate_VPBJacobi);CHKERRQ(ierr);
   ierr = PCRegister(PCBJACOBI      ,PCCreate_BJacobi);CHKERRQ(ierr);
   ierr = PCRegister(PCSOR          ,PCCreate_SOR);CHKERRQ(ierr);
   ierr = PCRegister(PCLU           ,PCCreate_LU);CHKERRQ(ierr);
@@ -106,7 +109,8 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCSVD          ,PCCreate_SVD);CHKERRQ(ierr);
   ierr = PCRegister(PCGAMG         ,PCCreate_GAMG);CHKERRQ(ierr);
   ierr = PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz);CHKERRQ(ierr);
-  ierr = PCRegister(PCTELESCOPE,PCCreate_Telescope);CHKERRQ(ierr);
+  ierr = PCRegister(PCTELESCOPE    ,PCCreate_Telescope);CHKERRQ(ierr);
+  ierr = PCRegister(PCPATCH        ,PCCreate_Patch);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegister(PCML           ,PCCreate_ML);CHKERRQ(ierr);
 #endif

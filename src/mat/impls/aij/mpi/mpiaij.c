@@ -19,7 +19,7 @@
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
   Developer Notes:
-    Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+    Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJSELL, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -2015,12 +2015,11 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 
 PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 {
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
+  Mat_MPIAIJ     *a    =(Mat_MPIAIJ*)A->data,*b;
+  Mat_SeqAIJ     *Aloc =(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data,*sub_B_diag;
+  PetscInt       M     = A->rmap->N,N=A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,*B_diag_ilen,*B_diag_i,i,ncol,A_diag_ncol;
   PetscErrorCode ierr;
-  PetscInt       M      = A->rmap->N,N = A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i;
-  PetscInt       cstart = A->cmap->rstart,ncol;
-  Mat            B;
+  Mat            B,A_diag,*B_diag;
   MatScalar      *array;
 
   PetscFunctionBegin;
@@ -2037,7 +2036,6 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = PetscMemzero(d_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<ai[ma]; i++) {
       d_nnz[aj[i]]++;
-      aj[i] += cstart; /* global col index to be used by MatSetValues() */
     }
     /* compute local off-diagonal contributions */
     ierr = PetscMemzero(g_nnz,nb*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2060,20 +2058,24 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   } else {
     B    = *matout;
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-    for (i=0; i<ai[ma]; i++) aj[i] += cstart; /* global col index to be used by MatSetValues() */
   }
 
-  /* copy over the A part */
-  array = Aloc->a;
-  row   = A->rmap->rstart;
-  for (i=0; i<ma; i++) {
-    ncol = ai[i+1]-ai[i];
-    ierr = MatSetValues(B,ncol,aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++;
-    array += ncol; aj += ncol;
+  b           = (Mat_MPIAIJ*)B->data;
+  A_diag      = a->A;
+  B_diag      = &b->A;
+  sub_B_diag  = (Mat_SeqAIJ*)(*B_diag)->data;
+  A_diag_ncol = A_diag->cmap->N;
+  B_diag_ilen = sub_B_diag->ilen;
+  B_diag_i    = sub_B_diag->i;
+
+  /* Set ilen for diagonal of B */
+  for (i=0; i<A_diag_ncol; i++) {
+    B_diag_ilen[i] = B_diag_i[i+1] - B_diag_i[i];
   }
-  aj = Aloc->j;
-  for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
+
+  /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
+  very quickly (=without using MatSetValues), because all writes are local. */
+  ierr = MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag);CHKERRQ(ierr);
 
   /* copy over the B part */
   ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
@@ -2536,13 +2538,12 @@ PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJ options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
   if (A->ops->increaseoverlap == MatIncreaseOverlap_MPIAIJ_Scalable) sc = PETSC_TRUE;
   ierr = PetscOptionsBool("-mat_increase_overlap_scalable","Use a scalable algorithm to compute the overlap","MatIncreaseOverlap",sc,&sc,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2581,6 +2582,15 @@ PetscErrorCode MatMissingDiagonal_MPIAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatInvertVariableBlockDiagonal_MPIAIJ(Mat A,PetscInt nblocks,const PetscInt *bsizes,PetscScalar *diag)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatInvertVariableBlockDiagonal(a->A,nblocks,bsizes,diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
@@ -2710,7 +2720,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*124*/MatFindNonzeroRows_MPIAIJ,
                                        MatGetColumnNorms_MPIAIJ,
                                        MatInvertBlockDiagonal_MPIAIJ,
-                                       0,
+                                       MatInvertVariableBlockDiagonal_MPIAIJ,
                                        MatCreateSubMatricesMPI_MPIAIJ,
                                 /*129*/0,
                                        MatTransposeMatMult_MPIAIJ_MPIAIJ,
@@ -5219,6 +5229,7 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,M
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/vecscatterimpl.h>
 /*
     MatGetBrowsOfAoCols_MPIAIJ - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
     of the OFF-DIAGONAL portion of local A
@@ -5234,6 +5245,9 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,M
 .    startsj_r - starting point in B's receiving j-arrays, saved for MAT_REUSE (or NULL)
 .    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or NULL)
 -    B_oth - the sequential matrix generated with size aBn=a->B->cmap->n by B->cmap->N
+
+    Developer Notes: This directly accesses information inside the VecScatter associated with the matrix-vector product
+     for this matrix. This is not desirable..
 
     Level: developer
 
@@ -5512,6 +5526,7 @@ PetscErrorCode MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[], 
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat,MatType,MatReuse,Mat*);
 #if defined(PETSC_HAVE_MKL_SPARSE)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJMKL(Mat,MatType,MatReuse,Mat*);
 #endif
@@ -5649,6 +5664,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijsell_C",MatConvert_MPIAIJ_MPIAIJSELL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijmkl_C",MatConvert_MPIAIJ_MPIAIJMKL);CHKERRQ(ierr);
 #endif
@@ -5890,4 +5906,3 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
   }
   PetscFunctionReturnVoid();
 }
-

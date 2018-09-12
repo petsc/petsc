@@ -1,2 +1,3 @@
 Matrix is symmetric (tolerance 0.)
+Matrix is symmetric (tolerance 0.)
 errors on 5 x 5 grid:  av |u-uexact|  = 4.531e-02,  |u-uexact|_inf = 1.635e-01

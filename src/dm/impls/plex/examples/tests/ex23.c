@@ -290,7 +290,7 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     requires: triangle
-    args: -dim 2 -velocity_petscspace_order 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_order 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
+    args: -dim 2 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
 
 TEST*/
 

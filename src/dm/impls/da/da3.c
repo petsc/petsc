@@ -231,7 +231,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   PetscFunctionBegin;
   if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
-  if ((bx == DM_BOUNDARY_MIRROR) || (by == DM_BOUNDARY_MIRROR) || (bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary not supported yet in 3d");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
@@ -816,7 +815,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         if (twod && (s_t < 0)) s_t = bases[n4] + i*x_t + x_t*y_t*z_t - x_t*y_t; /* 2D case */
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (bz == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) idx[nn++] = 0;
+        for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + x*i + (s_z - k - 1)*x*y;
       }
 
       if (n5 >= 0) { /* directly right */
@@ -874,7 +873,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }  else if (by == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) idx[nn++] = 0;
+        for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m];
@@ -893,7 +892,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }  else if (bx == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<s_x; j++) idx[nn++] = 0;
+        for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + s_x - j - 1 + k*x*y + i*x;
       }
 
       /* Interior */
@@ -907,7 +906,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       } else if (bx == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<s_x; j++) idx[nn++] = 0;
+        for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x - j - 1 + k*x*y + i*x;
       }
     }
 
@@ -926,7 +925,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (by == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) idx[nn++] = 0;
+        for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (y-i)*x;
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m];
@@ -985,7 +984,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         if (twod && (s_t >= M*N*P)) s_t = bases[n22] + i*x_t; /* 2d case */
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (bz == DM_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) idx[nn++] = 0;
+        for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + (z-k-1)*x*y + i*x;
       }
 
       if (n23 >= 0) { /* directly right */
@@ -1096,7 +1095,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Zs-zs < 0) {
           if (bz == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = 0;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + x*i + (s_z - k - 1)*x*y;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }
@@ -1164,7 +1163,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = -1;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (s_y - i)*x;;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }
@@ -1189,7 +1188,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0) {
           if (bx == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<s_x; j++) idx[nn++] = 0;
+            for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + s_x - j - 1 + k*x*y + i*x;
           } else {
             for (j=0; j<s_x; j++) idx[nn++] = -1;
           }
@@ -1207,7 +1206,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0) {
           if (bx == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<s_x; j++) idx[nn++] = 0;
+            for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x - j - 1 + k*x*y + i*x;
           } else {
             for (j=0; j<s_x; j++) idx[nn++] = -1;
           }
@@ -1232,7 +1231,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ye-Ye < 0) {
           if (by == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = 0;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + k*x*y + (y-i)*x;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }
@@ -1300,7 +1299,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ze-Ze < 0) {
           if (bz == DM_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) idx[nn++] = 0;
+            for (j=0; j<x; j++) idx[nn++] = bases[rank] + j + (z-k-1)*x*y + i*x;
           } else {
             for (j=0; j<x; j++) idx[nn++] = -1;
           }

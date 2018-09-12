@@ -1130,7 +1130,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Logically Collective on Vec

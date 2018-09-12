@@ -1,6 +1,6 @@
 
 #include <petscvec.h>
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/vecscatterimpl.h>
 
 static PetscBool  VecScatterPackageInitialized = PETSC_FALSE;
 
