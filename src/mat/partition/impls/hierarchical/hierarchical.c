@@ -378,7 +378,13 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 
 
 /*MC
-   MATPARTITIONINGHIERARCHPART - Creates a partitioning context via hierarchical partitioning strategy.
+   MATPARTITIONINGHIERARCH - Creates a partitioning context via hierarchical partitioning strategy.
+   The graph is partitioned into a number of subgraphs, and each subgraph is further split into a few smaller
+   subgraphs. The idea can be applied in a recursive manner. It is useful when you want to partition the graph
+   into a large number of subgraphs (often more than 10K) since partitions obtained with existing partitioners
+   such as ParMETIS and PTScotch are far from ideal. The hierarchical partitioning also tries to avoid off-node
+   communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
+   is to improve PCGASM convergence by generating multi-rank connected subdomain.
 
    Collective on MPI_Comm
 
@@ -386,8 +392,16 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 .  part - the partitioning context
 
    Options Database Keys:
++     -mat_partitioning_hierarchical_coarseparttype - partitioner type at the first level and parmetis is used by default
+.     -mat_partitioning_hierarchical_fineparttype - partitioner type at the second level and parmetis is used by default
+.     -mat_partitioning_hierarchical_Ncoarseparts - number of subgraphs is required at the first level, which is often the number of compute nodes
+-     -mat_partitioning_hierarchical_Nfineparts - number of smaller subgraphs for each subgraph, which is often the number of cores per compute node
 
    Level: beginner
+
+   References:
++  Fande Kong, Xiao-Chuan Cai, A highly scalable multilevel Schwarz method with boundary geometry preserving coarse spaces for 3D elasticity problems on domains with complex geometry,
+   SIAM Journal on Scientific Computing 38 (2), C73-C95, 2016
 
 .keywords: Partitioning, create, context
 
@@ -404,8 +418,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   ierr       = PetscNewLog(part,&hpart);CHKERRQ(ierr);
   part->data = (void*)hpart;
 
-  hpart->fineparttype       = 0; /* fine level partitioner */
-  hpart->coarseparttype     = 0; /* coarse level partitioner */
+  hpart->fineparttype       = 0; /* fine level (second) partitioner */
+  hpart->coarseparttype     = 0; /* coarse level (first) partitioner */
   hpart->Nfineparts         = 1; /* we do not further partition coarse partition any more by default */
   hpart->Ncoarseparts       = 0; /* number of coarse parts (first level) */
   hpart->coarseparts        = 0;
