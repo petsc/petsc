@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import numpy as np
+import os
+os.environ['MPLCONFIGDIR'] = os.environ.get('PETSC_DIR')+'/share/petsc/xml/'
+print os.environ.get('MPLCONFIGDIR')
 import importlib
 import datetime as date
 import matplotlib.pyplot as plt
@@ -84,7 +87,7 @@ def graphGen(data, graph_flops_scaling, dim):
     counter = 0
 
     #Set up plots with labels
-    plt.style.use('petsc_tas_style') #uses the specified style sheet for generating the plots
+    plt.style.use('petsc_tas_style.mplstyle') #uses the specified style sheet for generating the plots
 
     meshConvFig = plt.figure()
     meshConvOrigHandles = []
@@ -176,7 +179,8 @@ def leastSquares(x, y):
 
        :param x: Contains the x values for the data.
        :type x: numpy array
-       :param y: Contains the y values for the data.
+       :param y: Contains theort(77, application called MPI_Abort(MPI_COMM_WORLD, 77) - process 21)
+applicati y values for the data.
        :type y: numpy array
 
        :returns: alpha -- the convRate fo the least squares solution
