@@ -7,7 +7,7 @@ import argparse
 
 def main(cmdLineArgs):
     data = dataProces(cmdLineArgs)
-    graphGen(data)
+    graphGen(data, cmdLineArgs.graph_flops_scaling)
 
 def dataProces(cmdLineArgs):
     """
@@ -63,7 +63,7 @@ def dataProces(cmdLineArgs):
 
     return data
 
-def graphGen(data):
+def graphGen(data, graph_flops_scaling):
     """
     This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and
         Efficacy graphs.
@@ -91,6 +91,11 @@ def graphGen(data):
     statScaleHandles = []
     axStatScale = statScaleFig.add_subplot(1,1,1)
     axStatScale.set(xlabel = 'Time(s)', ylabel = 'Flop Rate (F/s)', title = 'Static Scaling')
+
+    statScaleFig = plt.figure()
+    statScaleHandles = []
+    axStatScale = statScaleFig.add_subplot(1,1,1)
+    axStatScale.set(xlabel = 'Time(s)', ylabel = 'DoF Rate (DoF/s)', title = 'Static Scaling')
 
     efficFig = plt.figure()
     efficHandles = []
@@ -123,12 +128,18 @@ def graphGen(data):
                 label = fileName + " Convergence rate =  " + convRate )
         meshConvLstSqHandles.append(y)
 
-        ##Start Static Scaling Graph
-        x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
+        ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
+        if graph_flops_scaling == 1 :
+            x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
+
+        statScaleHandles.append(x)
+        #TODO add switch default to DoF/s
+        ##Start Static Scaling with DoFs Graph
+        x, =axStatScale.loglog(value['times'], value['dofs'][0]/value['times'], label = fileName)
 
         statScaleHandles.append(x)
         ##Start Efficacy graph
-        x, = axEffic.loglog(value['times'], value['errors'][0]*value['times'], label = fileName)
+        x, = axEffic.semilogx(value['times'], -np.log10(value['errors'][0]*value['times']), label = fileName)
 
         efficHandles.append(x)
 
@@ -196,6 +207,10 @@ if __name__ == "__main__":
 
     cmdLine.add_argument('-version', '--version', action = 'version', version = '%(prog)s 1.0')
 
+    cmdLine.add_argument('-graph_flops_scaling', '--graph_flops_scaling', type = int, default = 0, choices = [0, 1],
+    help = 'Enables graphing flop rate static scaling graph. Default: %(default)s  do not print the graph. 1 to print the graph')
+
     cmdLineArgs = cmdLine.parse_args()
+
 
     main(cmdLineArgs)
