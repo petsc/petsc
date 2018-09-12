@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,ADD_VALUES,local);CHKERRQ(ierr);
 
   ierr = VecSum(local,&sum);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"sum %g\n",(double)sum);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"sum %g\n",(double)PetscRealPart(sum));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
   ierr = VecView(local,sview);CHKERRQ(ierr);
