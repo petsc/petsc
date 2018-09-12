@@ -659,8 +659,8 @@ class Configure(script.Script):
         added = 0
         for dir in dirs:
           if added:
-	    break
-	  for ext in ['a', 'so','dylib']:
+            break
+          for ext in ['a', 'so','dylib']:
             filename = os.path.join(dir, 'lib'+lib+'.'+ext)
             if os.path.isfile(filename):
               libArgs.append(filename)
