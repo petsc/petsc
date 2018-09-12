@@ -25,7 +25,6 @@ int main(int argc,char ** argv)
   const PetscInt   *vtx,*edges;
   Vec              X,F;
   SNES             snes;
-  PetscInt         ngvtx=PETSC_DETERMINE,ngedge=PETSC_DETERMINE;
   SNESConvergedReason reason;
 
   ierr = PetscInitialize(&argc,&argv,"wateroptions",help);if (ierr) return ierr;
@@ -57,7 +56,7 @@ int main(int argc,char ** argv)
   PetscLogStagePush(stage2);
 
   /* Set numbers of nodes and edges */
-  ierr = DMNetworkSetSizes(networkdm,1,0,&waterdata->nvertex,&waterdata->nedge,&ngvtx,&ngedge);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,&waterdata->nvertex,&waterdata->nedge,0,NULL);CHKERRQ(ierr);
   if (!crank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"water nvertices %D, nedges %D\n",waterdata->nvertex,waterdata->nedge);CHKERRQ(ierr);
   }

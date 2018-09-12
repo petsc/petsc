@@ -4,9 +4,7 @@
 #define GRAV 9.806
 #define PIPE_CHARACTERISTIC 10000000.0
 
-#include <petscts.h>
-#include <petscdmda.h>
-
+#include <petsc.h>
 
 typedef struct {
   PetscScalar q;       /* flow rate */
@@ -22,30 +20,44 @@ typedef struct {
 /*----------------------*/
 struct _p_Pipe
 {
-  MPI_Comm     comm;
-  PetscInt     id;
-  DM           da;
-  Vec          x;
-  PetscInt     nnodes;   /* number of nodes in da discretization */
-  PetscReal    length;   /* pipe length */
-  PetscReal    a;        /* natural flow speed */
-  PetscReal    fric;     /* friction */
-  PetscReal    D;        /* diameter */
-  PetscReal    A;        /* area of cross section */
-  PetscReal    R;        
-  PetscReal    rad;     
-  PetscScalar  H0,QL;    /* left and right boundary conditions for H and Q */
+  /* identification variables */
+  PetscInt    id;
+  PetscInt    networkid; /* which network this pipe belongs */
+
+  /* solver objects */
+  Vec         x;
+  PipeField   *xold;
+  PetscReal   dt;
+  DM          da;
+  PetscInt    nnodes;   /* number of nodes in da discretization */
+  Mat         *jacobian;
+
+  /* physics */
+  PetscReal   length;   /* pipe length */
+  PetscReal   a;        /* natural flow speed */
+  PetscReal   fric;     /* friction */
+  PetscReal   D;        /* diameter */
+  PetscReal   A;        /* area of cross section */
+  PetscReal   R;
+  PetscReal   rad;
   PipeBoundary boundary; /* boundary conditions for H and Q */
-  Mat          *jacobian;
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+
 typedef struct _p_Pipe *Pipe;
 
 extern PetscErrorCode PipeCreate(MPI_Comm,Pipe*);
 extern PetscErrorCode PipeDestroy(Pipe*);
-extern PetscErrorCode PipeSetParameters(Pipe,PetscReal,PetscInt,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode PipeSetParameters(Pipe,PetscReal,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode PipeSetUp(Pipe);
+extern PetscErrorCode PipeCreateJacobian(Pipe,Mat*,Mat*[]);
+extern PetscErrorCode PipeDestroyJacobian(Pipe);
 
-extern PetscErrorCode PipeComputeSteadyState(Pipe,PetscScalar,PetscScalar);
+extern PetscErrorCode PipeComputeSteadyState(Pipe, PetscScalar, PetscScalar);
 extern PetscErrorCode PipeIFunctionLocal(DMDALocalInfo*,PetscReal,PipeField*,PipeField*,PipeField*,Pipe);
+extern PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo*,PetscReal,PipeField*,PipeField*,PetscScalar*,Pipe);
+extern PetscErrorCode PipeRHSFunctionLocal(DMDALocalInfo*,PetscReal,PipeField*,PetscScalar*,Pipe);
+extern PetscErrorCode PipeMonitor(TS,PetscInt,PetscReal,Vec,void *);
 
+extern PetscErrorCode PipeCreateJacobian(Pipe,Mat*,Mat*[]);
+extern PetscErrorCode PipeDestroyJacobian(Pipe);
 #endif

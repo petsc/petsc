@@ -282,7 +282,7 @@ int main(int argc,char ** argv)
 
   /* Set number of nodes/edges */
   nV[0] = nnode; nE[0] = nbranch;
-  ierr = DMNetworkSetSizes(networkdm,1,0,nV,nE,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,nV,nE,0,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
   edgelists[0] = edgelist;
   ierr = DMNetworkSetEdgeList(networkdm,edgelists,NULL);CHKERRQ(ierr);

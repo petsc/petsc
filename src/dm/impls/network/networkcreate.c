@@ -263,7 +263,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
 
   PetscFunctionBegin;
 
-  dm->ops->view                            = NULL;
+  dm->ops->view                            = DMView_Network;
   dm->ops->setfromoptions                  = DMSetFromOptions_Network;
   dm->ops->clone                           = DMClone_Network;
   dm->ops->setup                           = DMSetUp_Network;
@@ -331,7 +331,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   network->NEdges    = 0;
   network->nVertices = 0;
   network->nEdges    = 0;
-  network->nsubnet   =  0;
+  network->nsubnet   = 0;
 
 
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);
