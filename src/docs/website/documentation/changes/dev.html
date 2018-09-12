@@ -191,6 +191,8 @@
       <h4>DMPlex:</h4>
       <ul>
         <li>Added an interface DM and boundary label to DMPlexCreateHybridMesh()</li>
+        <li>More refined control of <code>DMView()</code> when <code>PetscViewerType=PETSCVIEWERHDF5</code>. <code>PetscViewerFormat</code> can now be one of <code>{PETSC_VIEWER_HDF5_VIZ, PETSC_VIEWER_HDF5_XDMF, PETSC_VIEWER_HDF5_PETSC, PETSC_VIEWER_DEFAULT}</code>.</li>
+        <li>Parallel mesh load (i.e. mesh distributed right from beginning) with <code>DMLoad()</code>, <code>PetscViewerType=PETSCVIEWERHDF5</code> and <code>PetscViewerFormat=PETSC_VIEWER_HDF5_XDMF</code>, or <code>DMPlexCreateFromFile()</code> and <code>-dm_plex_create_from_hdf5_xdmf</code>.</li>
       </ul>
       <h4>PetscViewer:</h4>
       <li> Added argument to <code>PetscViewerVTKAddField()</code> to allow skipping of DM check as fields are added</li>
