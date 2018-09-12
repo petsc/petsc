@@ -7,7 +7,7 @@ import argparse
 
 def main(cmdLineArgs):
     data = dataProces(cmdLineArgs)
-    graphGen(data, cmdLineArgs.graph_flops_scaling)
+    graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
 def dataProces(cmdLineArgs):
     """
@@ -63,13 +63,19 @@ def dataProces(cmdLineArgs):
 
     return data
 
-def graphGen(data, graph_flops_scaling):
+def graphGen(data, graph_flops_scaling, dim):
     """
     This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and
         Efficacy graphs.
 
         :param data: Contains the data to be ploted on the graphs, assumes the format: data[<file name>][<data type>]: <numpy array>
-        :type datat: Dictionary
+        :type data: Dictionary
+        :param graph_flops_scaling: Controls creating the scaling graph that uses flops/second.  The default is not to.  This option
+                                    is specified on the command line.
+        :type graph_flops_scaling: Integer
+        :param dim: Contains the number of dimension of the mesh.  This is specified on the command line.
+        :type dim: Integer
+
 
         :returns: None
     """
@@ -114,8 +120,7 @@ def graphGen(data, graph_flops_scaling):
         print("Mesh Convergence")
         print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1]))
 
-        #TODO Command line argument for dim note needs to be neg
-        convRate = lstSqMeshConv[0] * -2
+        convRate = lstSqMeshConv[0] * -dim
         print('convRate: {} of {} data'.format(convRate,fileName))
 
         ##Start Mesh Convergance graph
@@ -133,7 +138,6 @@ def graphGen(data, graph_flops_scaling):
             x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
 
         statScaleHandles.append(x)
-        #TODO add switch default to DoF/s
         ##Start Static Scaling with DoFs Graph
         x, =axStatScale.loglog(value['times'], value['dofs'][0]/value['times'], label = fileName)
 
@@ -209,6 +213,9 @@ if __name__ == "__main__":
 
     cmdLine.add_argument('-graph_flops_scaling', '--graph_flops_scaling', type = int, default = 0, choices = [0, 1],
     help = 'Enables graphing flop rate static scaling graph. Default: %(default)s  do not print the graph. 1 to print the graph')
+
+    cmdLine.add_argument('-dim', '--dim', type = int, default = 2, help = 'Specifies the number of dimensions of the mesh. \
+        Default: %(default)s .')
 
     cmdLineArgs = cmdLine.parse_args()
 
