@@ -203,11 +203,10 @@ class generateExamples(Petsc):
     subst should be passed in instead of inDict
     """
     loopVars={}; newargs=""
-    lkeys=inDict.keys()
     lsuffix='_'
     argregex=re.compile('(?<![a-zA-Z])-(?=[a-zA-Z])')
     from testparse import parseLoopArgs
-    for key in lkeys:
+    for key in inDict.keys():
       if type(inDict[key])!=bytes: continue
       keystr = str(inDict[key])
       akey=('subargs' if key=='args' else key)  # what to assign
@@ -240,10 +239,10 @@ class generateExamples(Petsc):
       else:
         inDict['label_suffix']=lsuffix.rstrip('_')
     else:
-      if loopVars.keys(): 
+      if loopVars:
         inDict['args']=newargs.strip()
         inDict['label_suffix']=lsuffix.rstrip('_')
-    if loopVars.keys():
+    if loopVars:
       return loopVars
     else:
       return None

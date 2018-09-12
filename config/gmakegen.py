@@ -142,7 +142,7 @@ class Petsc(object):
                 return self.relpath(root, src)
             source = self.get_sources(makevars)
             for lang, s in source.items():
-                pkgsrcs[lang] += map(mkrel, s)
+                pkgsrcs[lang] += [mkrel(t) for t in s]
                 allsource += s
             self.mistakes.compareSourceLists(root, allsource, files) # Diagnostic output about unused source files
             self.gendeps.append(self.relpath(root, 'makefile'))
