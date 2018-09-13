@@ -41,7 +41,6 @@ MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 from __future__ import print_function
-import user
 import script
 import config.base
 import time

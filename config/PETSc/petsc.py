@@ -22,7 +22,6 @@ PETSc, we contribute objects to the PETSc which will be built.
 
 '''
 from __future__ import generators
-import user
 import config.base
 
 import re

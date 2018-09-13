@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import user
 import config.base
 
 import os

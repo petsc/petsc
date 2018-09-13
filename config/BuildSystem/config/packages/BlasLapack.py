@@ -1,5 +1,4 @@
 from __future__ import generators
-import user
 import config.base
 import config.package
 from sourceDatabase import SourceDB
