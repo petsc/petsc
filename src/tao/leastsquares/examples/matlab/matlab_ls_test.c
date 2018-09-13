@@ -22,7 +22,7 @@ typedef struct {
   int npmax;              /* Maximum interpolation points */
 } AppCtx;
 
-static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
+static PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscErrorCode  ierr;
@@ -36,11 +36,28 @@ static PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *ptr)
+{
+  AppCtx         *user = (AppCtx *)ptr;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectSetName((PetscObject)X,"X");CHKERRQ(ierr);
+  ierr = PetscMatlabEnginePut(user->mengine,(PetscObject)X);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(user->mengine,"J = jac(X);");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
+  ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)J);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TaoPounders(AppCtx *user)
 {
   PetscErrorCode ierr;
   Tao            tao;
   Vec            X, F;
+  Mat            J;
   char           buf[1024];
 
   PetscFunctionBegin;
@@ -62,10 +79,15 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)X);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,X);CHKERRQ(ierr);
 
-  /* Create residuals vector and set objective function */  
+  /* Create residuals vector and set residual function */  
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->m,&F);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
-  ierr = TaoSetSeparableObjectiveRoutine(tao,F,EvaluateFunction,(void*)user);CHKERRQ(ierr);
+  ierr = TaoSetResidualRoutine(tao,F,EvaluateResidual,(void*)user);CHKERRQ(ierr);
+
+  /* Create Jacobian matrix and set residual Jacobian routine */  
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->m,user->n,user->n,NULL,&J);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
+  ierr = TaoSetResidualJacobianRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);
 
   /* Solve the problem */
   ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
