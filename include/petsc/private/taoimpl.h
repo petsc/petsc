@@ -27,7 +27,7 @@ struct _TaoOps {
     PetscErrorCode (*computejacobianinequality)(Tao, Vec, Mat, Mat,  void*);
     PetscErrorCode (*computejacobianequality)(Tao, Vec, Mat, Mat,  void*);
     PetscErrorCode (*computebounds)(Tao, Vec, Vec, void*);
-
+    PetscErrorCode (*update)(Tao, PetscInt);
     PetscErrorCode (*convergencetest)(Tao,void*);
     PetscErrorCode (*convergencedestroy)(void*);
 
@@ -60,6 +60,7 @@ struct _p_Tao {
     void *user_jac_stateP;
     void *user_jac_designP;
     void *user_boundsP;
+    void *user_update;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(Tao,void*);
     PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void**);

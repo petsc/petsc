@@ -229,6 +229,7 @@ PETSC_EXTERN PetscErrorCode TaoGetObjective(Tao,PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
 PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);
+PETSC_EXTERN PetscErrorCode TaoSetUpdate(Tao, PetscErrorCode(*)(Tao, PetscInt), void*);
 
 PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
 PETSC_EXTERN PetscErrorCode TaoGetLinearSolveIterations(Tao,PetscInt *);
@@ -265,5 +266,6 @@ typedef struct _n_TaoMonitorDrawCtx* TaoMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TaoMonitorDrawCtx*);
 PETSC_EXTERN PetscErrorCode TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx*);
 
+PETSC_EXTERN PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetTikhonovLambda(Tao, PetscReal);
 #endif

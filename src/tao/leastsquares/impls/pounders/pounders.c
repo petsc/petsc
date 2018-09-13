@@ -822,6 +822,10 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     tao->niter++;
     /* Solve the subproblem min{Q(s): ||s|| <= 1.0} */
     ierr = gqtwrap(tao,&gnm,&mdec);CHKERRQ(ierr);

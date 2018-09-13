@@ -1337,6 +1337,38 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 }
 
 /*@C
+  TaoSetUpdate - Sets the general-purpose update function called
+  at the beginning of every iteration of the nonlinear solve. Specifically
+  it is called at the top of every iteration, after the new solution and the gradient 
+  is determined, but before the Hessian is computed (if applicable).
+
+  Logically Collective on Tao
+
+  Input Parameters:
+. tao - The tao solver context
+. func - The function
+
+  Calling sequence of func:
+. func (Tao tao, PetscInt step);
+
+. step - The current step of the iteration
+
+  Level: advanced
+
+.keywords: Tao, update
+
+.seealso TaoSolve()
+@*/
+PetscErrorCode  TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt), void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID,1);
+  tao->ops->update = func;
+  tao->user_update = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   TaoSetConvergenceTest - Sets the function that is to be used to test
   for convergence o fthe iterative minimization solution.  The new convergence
   testing routine will replace TAO's default convergence test.

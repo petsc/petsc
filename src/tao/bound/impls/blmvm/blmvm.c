@@ -40,6 +40,10 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     /* Compute direction */
     gnorm2 = gnorm*gnorm;
     if (gnorm2 == 0.0) gnorm2 = PETSC_MACHINE_EPSILON;

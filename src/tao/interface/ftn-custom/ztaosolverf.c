@@ -28,6 +28,7 @@
 #define taosetoptionsprefix_                TAOSETOPTIONSPREFIX
 #define taoappendoptionsprefix_             TAOAPPENDOPTIONSPREFIX
 #define taogettype_                         TAOGETTYPE
+#define taosetupdate_                       TAOSETUPDATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosetobjectiveroutine_             taosetobjectiveroutine
@@ -54,6 +55,7 @@
 #define taosetoptionsprefix_                taosetoptionsprefix
 #define taoappendoptionsprefix_             taoappendoptionsprefix
 #define taogettype_                         taogettype
+#define taosetupdate_                       taosetupdate
 #endif
 
 static struct {
@@ -76,6 +78,7 @@ static struct {
   PetscFortranCallbackId conineq;
   PetscFortranCallbackId coneq;
   PetscFortranCallbackId nfuncs;
+  PetscFortranCallbackId update;
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
   PetscFortranCallbackId function_pgiptr;
 #endif
@@ -168,6 +171,11 @@ static PetscErrorCode ourtaoinequalityconstraintsroutine(Tao tao, Vec x, Vec c, 
 static PetscErrorCode ourtaoequalityconstraintsroutine(Tao tao, Vec x, Vec c, void *ctx)
 {
     PetscObjectUseFortranCallback(tao,_cb.coneq,(Tao*,Vec*,Vec*,void*,PetscErrorCode*),(&tao,&x,&c,_ctx,&ierr));
+}
+
+static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter)
+{
+    PetscObjectUseFortranCallback(tao,_cb.update,(Tao*,PetscInt*),(&tao,&iter));
 }
 
 EXTERN_C_BEGIN
@@ -346,6 +354,13 @@ PETSC_EXTERN void PETSC_STDCALL taosetequalityconstraintsroutine_(Tao *tao, Vec 
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.coneq,(PetscVoidFunction)func,ctx);
     if(!*ierr) *ierr = TaoSetEqualityConstraintsRoutine(*tao, *C, ourtaoequalityconstraintsroutine,ctx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL taosetupdate_(Tao *tao, void (PETSC_STDCALL *func)(Tao *, PetscInt *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLFUNCTION(func);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.update,(PetscVoidFunction)func,ctx);
+    if(!*ierr) *ierr = TaoSetUpdate(*tao, ourtaoupdateroutine, ctx);
 }
 
 EXTERN_C_END

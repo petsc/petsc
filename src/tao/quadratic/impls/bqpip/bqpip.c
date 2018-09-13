@@ -313,6 +313,10 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = TaoMonitor(tao,tao->niter,qp->pobj,gnorm,qp->pinfeas,step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
     if (tao->reason != TAO_CONTINUE_ITERATING) break;
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     tao->niter++;
     tao->ksp_its = 0;
 

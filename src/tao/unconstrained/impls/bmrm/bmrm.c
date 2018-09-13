@@ -102,6 +102,11 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
     ierr = VecDot(W, G, &bt);CHKERRQ(ierr);
     bt = f - bt;
