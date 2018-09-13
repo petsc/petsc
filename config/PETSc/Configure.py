@@ -3,7 +3,7 @@ import config.base
 import os
 import sys
 import re
-import cPickle
+import pickle
 import string
 
 # The sorted() builtin is not available with python-2.3
@@ -1113,7 +1113,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.dumpCMakeLists()
     # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
     self.framework.storeSubstitutions(self.framework.argDB)
-    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB['configureCache'] = pickle.dumps(self.framework)
     self.framework.argDB.save(force = True)
     self.cmakeBoot()
     self.DumpPkgconfig()

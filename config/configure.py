@@ -384,7 +384,7 @@ def petsc_configure(configure_options):
   sys.path.insert(0, configDir)
   import config.base
   import config.framework
-  import cPickle
+  import pickle
 
   framework = None
   try:
@@ -393,7 +393,7 @@ def petsc_configure(configure_options):
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
-    framework.argDB['configureCache'] = cPickle.dumps(framework)
+    framework.argDB['configureCache'] = pickle.dumps(framework)
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()

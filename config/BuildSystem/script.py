@@ -5,7 +5,7 @@ if not hasattr(sys, 'version_info'):
   print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
   sys.exit(4)
 
-import cPickle
+import pickle
 
 try:
   import subprocess
@@ -296,11 +296,11 @@ class Script(logger.Logger):
       return None
     try:
       cache = argDB['configureCache']
-      framework = cPickle.loads(cache)
+      framework = pickle.loads(cache)
       framework.framework = framework
       framework.argDB = argDB
       self.logPrint('Loaded configure to cache: size '+str(len(cache)))
-    except cPickle.UnpicklingError as e:
+    except pickle.UnpicklingError as e:
       framework = None
       self.logPrint('Invalid cached configure: '+str(e))
     return framework

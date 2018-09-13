@@ -62,7 +62,7 @@ except ImportError:
   pass
 import nargs
 
-import cPickle
+import pickle
 import os
 import sys
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
@@ -101,7 +101,7 @@ Arg class, which wraps the usual value.'''
     self.parentDirectory = parentDirectory
     self.packer          = xdrlib.Packer()
     self.unpacker        = xdrlib.Unpacker('')
-    self.stopCmd         = cPickle.dumps(('stop',))
+    self.stopCmd         = pickle.dumps(('stop',))
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
     if load: self.load()
@@ -362,7 +362,7 @@ Arg class, which wraps the usual value.'''
       raise RuntimeError('Server address file does not exist: '+filename)
     try:
       f    = open(filename, 'r')
-      addr = cPickle.load(f)
+      addr = pickle.load(f)
       f.close()
       return addr
     except Exception as e:
@@ -372,7 +372,7 @@ Arg class, which wraps the usual value.'''
   def writeServerAddr(self, server):
     '''Write the server socket address (in pickled form) to a file, usually RDict.loc.'''
     f = file(self.addrFilename, 'w')
-    cPickle.dump(server.server_address, f)
+    pickle.dump(server.server_address, f)
     f.close()
     self.writeLogLine('SERVER: Wrote lock file '+os.path.abspath(self.addrFilename))
     return
@@ -472,7 +472,7 @@ Arg class, which wraps the usual value.'''
     if isPickled:
       p = packet
     else:
-      p = cPickle.dumps(packet)
+      p = pickle.dumps(packet)
     self.packer.reset()
     self.packer.pack_uint(len(p))
     if hasattr(s, 'write'):
@@ -489,7 +489,7 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine(source+': Receiving packet')
     if hasattr(s, 'read'):
       s.read(4)
-      value = cPickle.load(s)
+      value = pickle.load(s)
     else:
       # I probably need to check that it actually read these 4 bytes
       self.unpacker.reset(s.recv(4))
@@ -497,7 +497,7 @@ Arg class, which wraps the usual value.'''
       objString = ''
       while len(objString) < length:
         objString += s.recv(length - len(objString))
-      value = cPickle.loads(objString)
+      value = pickle.loads(objString)
     self.writeLogLine(source+': Received packet '+str(value))
     return value
 
@@ -634,7 +634,7 @@ Arg class, which wraps the usual value.'''
     if os.path.exists(self.saveFilename):
       try:
         dbFile = file(self.saveFilename)
-        data   = cPickle.load(dbFile)
+        data   = pickle.load(dbFile)
         self.updateTypes(data)
         dbFile.close()
         self.writeLogLine('Loaded dictionary from '+self.saveFilename)
@@ -653,7 +653,7 @@ Arg class, which wraps the usual value.'''
       # This should be a critical section
       dbFile = file(self.saveFilename, 'w')
       data   = dict(filter(lambda i: not i[1].getTemporary(), self.localitems()))
-      cPickle.dump(data, dbFile)
+      pickle.dump(data, dbFile)
       dbFile.close()
       self.writeLogLine('Saved local dictionary to '+os.path.abspath(self.saveFilename))
     elif not self.saveTimer:

@@ -54,7 +54,7 @@ from functools import reduce
 # workarround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
-import cPickle
+import pickle
 
 try:
   from hashlib import md5 as new_md5
@@ -353,7 +353,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         dependency = depPath
       else:
         dependency = os.path.dirname(dependency.__file__)
-    self.dependencies[dependency] = new_md5(cPickle.dumps(framework)).hexdigest()
+    self.dependencies[dependency] = new_md5(pickle.dumps(framework)).hexdigest()
     self.logPrint('Added configure dependency from '+dependency+'('+str(self.dependencies[dependency])+')')
     for child in framework.childGraph.vertices:
       child.argDB = self.argDB
@@ -366,7 +366,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def updatePackageDependencies(self):
     for dependency, digest in self.dependencies.items():
       framework = self.loadFramework(dependency)
-      if digest == new_md5(cPickle.dumps(framework)).hexdigest():
+      if digest == new_md5(pickle.dumps(framework)).hexdigest():
         continue
       self.logPrint('Configure dependency from '+dependency+' has changed. Reloading...')
       for child in framework.childGraph.vertices:

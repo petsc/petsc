@@ -33,7 +33,7 @@ import os
 import re
 import time
 
-import cPickle
+import pickle
 
 try:
   from hashlib import md5 as new_md5
@@ -257,7 +257,7 @@ class SourceDB (dict, logger.Logger):
       self.clear()
       self.logPrint('Loading source database from '+filename, 2, 'sourceDB')
       dbFile = file(filename)
-      newDB  = cPickle.load(dbFile)
+      newDB  = pickle.load(dbFile)
       dbFile.close()
       self.update(newDB)
     else:
@@ -273,7 +273,7 @@ class SourceDB (dict, logger.Logger):
     if os.path.exists(os.path.dirname(filename)):
       self.logPrint('Saving source database in '+filename, 2, 'sourceDB')
       dbFile = file(filename, 'w')
-      cPickle.dump(self, dbFile)
+      pickle.dump(self, dbFile)
       dbFile.close()
       self.isDirty = 0
     else:
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     else:
       if os.path.exists(sys.argv[1]):
         dbFile   = file(sys.argv[1])
-        sourceDB = cPickle.load(dbFile)
+        sourceDB = pickle.load(dbFile)
         dbFile.close()
       else:
         sys.exit('Could not load source database from '+sys.argv[1])

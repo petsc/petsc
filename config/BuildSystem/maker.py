@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import script
 
 import os
-import cPickle
+import pickle
 from functools import reduce
 
 class Make(script.Script):
@@ -163,7 +163,7 @@ class Make(script.Script):
       self.logPrint('Starting new configuration')
       self.framework.configure()
       self.builder.sourceDB.updateSource(self.getPythonFile(self.configureMod))
-      cache = cPickle.dumps(self.framework)
+      cache = pickle.dumps(self.framework)
       self.argDB['configureCache'] = cache
       self.logPrint('Wrote configure to cache: size '+str(len(cache)))
     else:
