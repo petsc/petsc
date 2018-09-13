@@ -80,8 +80,14 @@ class Configure(script.Script):
     self.language        = []
     if not tmpDir is None:
       self.tmpDir        = tmpDir
-    self.pushLanguage('C')
     return
+
+  def setup(self):
+    if hasattr(self, '_setup'):
+      return
+    script.Script.setup(self)
+    self._setup = 1
+    self.pushLanguage('C')
 
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
