@@ -807,7 +807,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is2);CHKERRQ(ierr);
       }
-      ierr = ISDestroy(&lPall);CHKERRQ(ierr);
       ierr = ISDestroy(&II);CHKERRQ(ierr);
 
       /* exclude selected pressures from the inner BDDC */
@@ -848,6 +847,52 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISDestroy(&plP);CHKERRQ(ierr);
         ierr = ISRestoreIndices(lP,&idxs);CHKERRQ(ierr);
       }
+
+      /* save CSR information for the pressure BDDC solver (if any) */
+      if (schp) {
+        PetscInt np,nt;
+
+        ierr = MatGetSize(matis->A,&nt,NULL);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(lP,&np);CHKERRQ(ierr);
+        if (np) {
+          PetscInt *xadj = pcbddc->mat_graph->xadj;
+          PetscInt *adjn = pcbddc->mat_graph->adjncy;
+          PetscInt nv = pcbddc->mat_graph->nvtxs_csr;
+
+          if (nv && nv == nt) {
+            ISLocalToGlobalMapping pmap;
+            PetscInt               *schp_csr,*schp_xadj,*schp_adjn,p;
+            PetscContainer         c;
+
+            ierr = ISLocalToGlobalMappingCreateIS(lPall,&pmap);CHKERRQ(ierr);
+            ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
+            for (p = 0, nv = 0; p < np; p++) {
+	      PetscInt x,n = idxs[p];
+
+              ierr = ISGlobalToLocalMappingApply(pmap,IS_GTOLM_DROP,xadj[n+1]-xadj[n],adjn+xadj[n],&x,NULL);CHKERRQ(ierr);
+              nv  += x;
+            }
+            ierr = PetscMalloc1(np + 1 + nv,&schp_csr);CHKERRQ(ierr);
+            schp_xadj = schp_csr;
+            schp_adjn = schp_csr + np + 1;
+            for (p = 0, schp_xadj[0] = 0; p < np; p++) {
+              PetscInt x,n = idxs[p];
+
+              ierr = ISGlobalToLocalMappingApply(pmap,IS_GTOLM_DROP,xadj[n+1]-xadj[n],adjn+xadj[n],&x,schp_adjn + schp_xadj[p]);CHKERRQ(ierr);
+              schp_xadj[p+1] = schp_xadj[p] + x;
+            }
+            ierr = ISRestoreIndices(lPall,&idxs);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingDestroy(&pmap);CHKERRQ(ierr);
+            ierr = PetscContainerCreate(PETSC_COMM_SELF,&c);CHKERRQ(ierr);
+            ierr = PetscContainerSetPointer(c,schp_csr);CHKERRQ(ierr);
+            ierr = PetscContainerSetUserDestroy(c,PetscContainerUserDestroyDefault);CHKERRQ(ierr);
+            ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pCSR",(PetscObject)c);CHKERRQ(ierr);
+            ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+
+          }
+        }
+      }
+      ierr = ISDestroy(&lPall);CHKERRQ(ierr);
       ierr = ISDestroy(&lP);CHKERRQ(ierr);
       fetidp->pP = pP;
     }

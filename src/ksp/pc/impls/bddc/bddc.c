@@ -2744,7 +2744,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
       /* Olof's idea: interface Schur complement preconditioner for the mass matrix */
       ierr = KSPGetPC(ksps[1],&ppc);CHKERRQ(ierr);
       if (fake) {
-        BDDCIPC_ctx bddcipc_ctx;
+        BDDCIPC_ctx    bddcipc_ctx;
+        PetscContainer c;
 
         matisok = PETSC_TRUE;
 
@@ -2753,6 +2754,18 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
         ierr = PCCreate(comm,&bddcipc_ctx->bddc);CHKERRQ(ierr);
         ierr = PCSetType(bddcipc_ctx->bddc,PCBDDC);CHKERRQ(ierr);
         ierr = PCSetOperators(bddcipc_ctx->bddc,M,M);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_pCSR",(PetscObject*)&c);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)M,MATIS,&ismatis);CHKERRQ(ierr);
+        if (c && ismatis) {
+          Mat      lM;
+          PetscInt *csr,n;
+
+          ierr = MatISGetLocalMat(M,&lM);CHKERRQ(ierr);
+          ierr = MatGetSize(lM,&n,NULL);CHKERRQ(ierr);
+          ierr = PetscContainerGetPointer(c,(void**)&csr);CHKERRQ(ierr);
+          ierr = PCBDDCSetLocalAdjacencyGraph(bddcipc_ctx->bddc,n,csr,csr + (n + 1),PETSC_COPY_VALUES);CHKERRQ(ierr);
+          ierr = MatISRestoreLocalMat(M,&lM);CHKERRQ(ierr);
+        }
         ierr = PCSetOptionsPrefix(bddcipc_ctx->bddc,((PetscObject)ksps[1])->prefix);CHKERRQ(ierr);
         ierr = PCSetErrorIfFailure(bddcipc_ctx->bddc,pc->erroriffailure);CHKERRQ(ierr);
         ierr = PCSetFromOptions(bddcipc_ctx->bddc);CHKERRQ(ierr);
