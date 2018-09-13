@@ -1403,10 +1403,10 @@ class Configure(config.base.Configure):
       for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
-	  linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          linker_flag_var = langMap[language]+'_LINKER_FLAGS'
           val = getattr(self,linker_flag_var)
-	  val.append(testFlag)
-	  setattr(self,linker_flag_var,val)
+          val.append(testFlag)
+          setattr(self,linker_flag_var,val)
       self.popLanguage()
     return
 

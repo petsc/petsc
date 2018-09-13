@@ -24,10 +24,10 @@ class Xdmf:
   def writeCells(self, fp, topologyPath, numCells, numCorners):
     fp.write('''\
     <DataItem Name="cells"
-	      ItemType="Uniform"
-	      Format="HDF"
-	      NumberType="Float" Precision="8"
-	      Dimensions="%d %d">
+              ItemType="Uniform"
+              Format="HDF"
+              NumberType="Float" Precision="8"
+              Dimensions="%d %d">
       &HeavyData;:/%s/cells
     </DataItem>
 ''' % (numCells, numCorners, topologyPath))
@@ -36,8 +36,8 @@ class Xdmf:
   def writeVertices(self, fp, geometryPath, numVertices, spaceDim):
     fp.write('''\
     <DataItem Name="vertices"
-	      Format="HDF"
-	      Dimensions="%d %d">
+              Format="HDF"
+              Dimensions="%d %d">
       &HeavyData;:/%s/vertices
     </DataItem>
     <!-- ============================================================ -->
@@ -47,24 +47,24 @@ class Xdmf:
   def writeLocations(self, fp, numParticles, spaceDim):
     fp.write('''\
     <DataItem Name="xcoord"
-	      Format="HDF"
-	      Dimensions="%d">
+              Format="HDF"
+              Dimensions="%d">
       &HeavyData;:/particles/xcoord
     </DataItem>
 ''' % (numParticles))
     if spaceDim == 1: return
     fp.write('''\
     <DataItem Name="ycoord"
-	      Format="HDF"
-	      Dimensions="%d">
+              Format="HDF"
+              Dimensions="%d">
       &HeavyData;:/particles/ycoord
     </DataItem>
 ''' % (numParticles))
     if spaceDim == 2: return
     fp.write('''\
     <DataItem Name="zcoord"
-	      Format="HDF"
-	      Dimensions="%d">
+              Format="HDF"
+              Dimensions="%d">
       &HeavyData;:/particles/zcoord
     </DataItem>
 ''' % (numParticles))
@@ -86,18 +86,18 @@ class Xdmf:
   def writeSpaceGridHeader(self, fp, numCells, numCorners, cellDim, spaceDim):
     fp.write('''\
       <Grid Name="domain" GridType="Uniform">
-	<Topology
-	   TopologyType="%s"
-	   NumberOfElements="%d">
-	  <DataItem Reference="XML">
-	    /Xdmf/Domain/DataItem[@Name="cells"]
-	  </DataItem>
-	</Topology>
-	<Geometry GeometryType="%s">
-	  <DataItem Reference="XML">
-	    /Xdmf/Domain/DataItem[@Name="vertices"]
-	  </DataItem>
-	</Geometry>
+        <Topology
+           TopologyType="%s"
+           NumberOfElements="%d">
+          <DataItem Reference="XML">
+            /Xdmf/Domain/DataItem[@Name="cells"]
+          </DataItem>
+        </Topology>
+        <Geometry GeometryType="%s">
+          <DataItem Reference="XML">
+            /Xdmf/Domain/DataItem[@Name="vertices"]
+          </DataItem>
+        </Geometry>
 ''' % (self.cellMap[cellDim][numCorners], numCells, "XYZ" if spaceDim > 2 else "XY"))
     return
 
@@ -116,28 +116,28 @@ class Xdmf:
       dof = f[1].shape[0]
       bs  = 1
     fp.write('''\
-	<Attribute
-	   Name="%s"
-	   Type="%s"
-	   Center="%s">
+        <Attribute
+           Name="%s"
+           Type="%s"
+           Center="%s">
           <DataItem ItemType="HyperSlab"
-		    Dimensions="1 %d %d"
-		    Type="HyperSlab">
+        	    Dimensions="1 %d %d"
+        	    Type="HyperSlab">
             <DataItem
-	       Dimensions="3 3"
-	       Format="XML">
+               Dimensions="3 3"
+               Format="XML">
               %d 0 0
               1 1 1
               1 %d %d
-	    </DataItem>
-	    <DataItem
-	       DataType="Float" Precision="8"
-	       Dimensions="%d %d %d"
-	       Format="HDF">
-	      &HeavyData;:%s
-	    </DataItem>
-	  </DataItem>
-	</Attribute>
+            </DataItem>
+            <DataItem
+               DataType="Float" Precision="8"
+               Dimensions="%d %d %d"
+               Format="HDF">
+              &HeavyData;:%s
+            </DataItem>
+          </DataItem>
+        </Attribute>
 ''' % (f[0], self.typeMap[f[1].attrs['vector_field_type']], domain, dof, bs, timestep, dof, bs, numSteps, dof, bs, name))
     return
 
@@ -162,28 +162,28 @@ class Xdmf:
       if len(f[1].shape) > 2: start  = '%d 0 %d' % (timestep, c)
       else:                   start  = '0 %d' % c
       fp.write('''\
-	<Attribute
-	   Name="%s"
-	   Type="Scalar"
-	   Center="%s">
+        <Attribute
+           Name="%s"
+           Type="Scalar"
+           Center="%s">
           <DataItem ItemType="HyperSlab"
-		    Dimensions="%s"
-		    Type="HyperSlab">
+        	    Dimensions="%s"
+        	    Type="HyperSlab">
             <DataItem
-	       Dimensions="3 %d"
-	       Format="XML">
+               Dimensions="3 %d"
+               Format="XML">
               %s
               %s
               %s
-	    </DataItem>
-	    <DataItem
-	       DataType="Float" Precision="8"
-	       Dimensions="%s"
-	       Format="HDF">
-	      &HeavyData;:%s
-	    </DataItem>
-	  </DataItem>
-	</Attribute>
+            </DataItem>
+            <DataItem
+               DataType="Float" Precision="8"
+               Dimensions="%s"
+               Format="HDF">
+              &HeavyData;:%s
+            </DataItem>
+          </DataItem>
+        </Attribute>
 ''' % (f[0]+'_'+ext, domain, cdims, len(f[1].shape), start, stride, size, dims, name))
     return
 
@@ -203,12 +203,12 @@ class Xdmf:
   def writeParticleGridHeader(self, fp, numParticles, spaceDim):
     fp.write('''\
       <Grid Name="particle_domain" GridType="Uniform">
-	<Topology TopologyType="Polyvertex" NodesPerElement="%d" />
-	<Geometry GeometryType="%s">
-	  <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="xcoord"]</DataItem>
-	  <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="ycoord"]</DataItem>
-	  %s
-	</Geometry>
+        <Topology TopologyType="Polyvertex" NodesPerElement="%d" />
+        <Geometry GeometryType="%s">
+          <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="xcoord"]</DataItem>
+          <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="ycoord"]</DataItem>
+          %s
+        </Geometry>
 ''' % (numParticles, "X_Y_Z" if spaceDim > 2 else "X_Y", "<DataItem Reference=\"XML\">/Xdmf/Domain/DataItem[@Name=\"zcoord\"]</DataItem>" if spaceDim > 2 else ""))
     return
 
