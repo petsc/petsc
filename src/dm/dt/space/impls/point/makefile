@@ -7,7 +7,7 @@ SOURCEC  = spacepoint.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/space/impls/point
+LOCDIR   = src/dm/dt/space/impls/point/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -3,7 +3,7 @@ ALL: lib
 
 SOURCEH = ../../../../include/petscdt.h ../../../../include/petscfe.h ../../../../include/petscfetypes.h
 DIRS    = interface impls
-LOCDIR  = src/dm/dt/fe
+LOCDIR  = src/dm/dt/fe/
 MANSEC  = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
