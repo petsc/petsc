@@ -161,17 +161,24 @@ Arg class, which wraps the usual value.'''
 
   def getType(self, key):
     '''Checks for the key locally, and if not found consults the parent. Returns the Arg object or None if not found.'''
-    if dict.has_key(self, key):
-      self.writeLogLine('getType: Getting local type for '+key+' '+str(dict.__getitem__(self, key)))
-      return dict.__getitem__(self, key)
-    elif not self.parent is None:
+    try:
+      value = dict.__getitem__(self, key)
+      self.writeLogLine('getType: Getting local type for '+key+' '+str(value))
+      return value
+    except KeyError:
+      pass
+    if self.parent:
       return self.send(key)
     return None
+
+  def dict_has_key(self, key):
+    """Utility to check whether the key is present in the dictionary without RDict side-effects."""
+    return key in dict(self)
 
   def __getitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Returns the value of the Arg.
        - If the value has not been set, the user will be prompted for input'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       self.writeLogLine('__getitem__: '+key+' has local type')
       pass
     elif not self.parent is None:
@@ -207,8 +214,8 @@ Arg class, which wraps the usual value.'''
     if not isinstance(value, nargs.Arg):
       raise TypeError('An argument type must be a subclass of Arg')
     value.setKey(key)
-    if forceLocal or self.parent is None or dict.has_key(self, key):
-      if dict.has_key(self, key):
+    if forceLocal or self.parent is None or self.dict_has_key(key):
+      if self.dict_has_key(key):
         v = dict.__getitem__(self, key)
         if v.isValueSet():
           try:
@@ -227,7 +234,7 @@ Arg class, which wraps the usual value.'''
 
   def __setitem__(self, key, value):
     '''Checks for the key locally, and if not found consults the parent. Sets the value of the Arg.'''
-    if not dict.has_key(self, key):
+    if not self.dict_has_key(key):
       if not self.parent is None:
         return self.send(key, value)
       else:
@@ -239,7 +246,7 @@ Arg class, which wraps the usual value.'''
 
   def __delitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       dict.__delitem__(self, key)
       #self.save()
     elif not self.parent is None:
@@ -257,7 +264,7 @@ Arg class, which wraps the usual value.'''
 
   def __contains__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the value has been set'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       if dict.__getitem__(self, key).isValueSet():
         self.writeLogLine('has_key: Have value for '+key)
       else:
@@ -275,7 +282,7 @@ Arg class, which wraps the usual value.'''
 
   def hasType(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the type has been set'''
-    if dict.has_key(self, key):
+    if self.dict_has_key(key):
       return 1
     elif not self.parent is None:
       return self.send(key)
@@ -329,14 +336,12 @@ Arg class, which wraps the usual value.'''
 
   def insertArgs(self, args):
     '''Insert some text arguments into the dictionary (list and dictionaries are recognized)'''
-    import UserDict
 
     if isinstance(args, list):
       for arg in args:
         (key, value) = nargs.Arg.parseArgument(arg)
         self.insertArg(key, value, arg)
-    # Necessary since os.environ is a UserDict
-    elif isinstance(args, dict) or isinstance(args, UserDict.UserDict):
+    elif hasattr(args, keys):
       for key in args.keys():
         if isinstance(args[key], str):
           value = nargs.Arg.parseValue(args[key])
