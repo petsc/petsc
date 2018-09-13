@@ -174,15 +174,12 @@
           <li>All quasi-Newton methods updated to use the new LMVM Mat objects.</li>
           <li>Added a bound-constrained quasi-Newton line search (BQNLS) method that re-uses BNLS infrastructure to replace BLMVM on next release.</li>
           <li>Bound-constrained conjugate gradient method expanded with new CG update types and nonlinear preconditioning.</li>
+          <li>Removed <code>-tao_type test</code>.</li>
+          <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
         </ul>
       <h4>TS:</h4>
       <ul>
         <li>Added symplectic time integrators for separable Hamiltonian systems (-ts_type basicsymplectic). </li>
-      </ul>
-      <h4>TAO:</h4>
-      <ul>
-        <li>Removed <code>-tao_type test</code>.</li>
-        <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>
