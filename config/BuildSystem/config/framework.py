@@ -62,12 +62,6 @@ except ImportError:
   from md5 import new as new_md5
 
 
-try:
-  enumerate([0, 1])
-except NameError:
-  def enumerate(l):
-    return zip(range(len(l)), l)
-
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1, tmpDir = None):

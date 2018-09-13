@@ -8,7 +8,7 @@ import logging, time
 import types
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
-from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
+from collections import defaultdict
 from gmakegen import *
 
 import inspect

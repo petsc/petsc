@@ -6,13 +6,6 @@ import re
 import pickle
 import string
 
-# The sorted() builtin is not available with python-2.3
-try: sorted
-except NameError:
-  def sorted(lst):
-    lst.sort()
-    return lst
-
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -559,9 +552,6 @@ prepend-path PATH "%s"
         if elem not in unique and elem != '':
           unique.append(elem)
       return unique
-    try: reversed # reversed was added in Python-2.4
-    except NameError:
-      def reversed(lst): return lst[::-1]
     def nublast(lst):
       'Return a list containing the last occurrence of each unique entry in a list'
       return reversed(nub(reversed(lst)))

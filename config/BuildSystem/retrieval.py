@@ -199,11 +199,7 @@ Downloaded package %s from: %s is not a tarball.
         dirname = firstmember.name
       else:
         dirname = os.path.dirname(firstmember.name)
-      if hasattr(tf,'extractall'): #python 2.5+
-        tf.extractall(root)
-      else:
-        for tfile in tf.getmembers():
-          tf.extract(tfile,root)
+      tf.extractall(root)
       tf.close()
 
     # fix file permissions for the untared tarballs.
