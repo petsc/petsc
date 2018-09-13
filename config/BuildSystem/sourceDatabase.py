@@ -151,7 +151,7 @@ class SourceDB (dict, logger.Logger):
     if isinstance(source, file):
       f = source
     else:
-      f = file(source)
+      f = open(source)
     m = new_md5()
     size = chunkSize
     buf  = f.read(size)
@@ -221,7 +221,7 @@ class SourceDB (dict, logger.Logger):
       (checksum, mtime, timestamp, dependencies) = self[source]
       newDep = []
       try:
-        file = file(source)
+        file = open(source)
       except IOError as e:
         if e.errno == errno.ENOENT:
           del self[source]
@@ -256,7 +256,7 @@ class SourceDB (dict, logger.Logger):
     if os.path.exists(filename):
       self.clear()
       self.logPrint('Loading source database from '+filename, 2, 'sourceDB')
-      dbFile = file(filename)
+      dbFile = open(filename)
       newDB  = pickle.load(dbFile)
       dbFile.close()
       self.update(newDB)
@@ -272,7 +272,7 @@ class SourceDB (dict, logger.Logger):
     filename = str(self.filename)
     if os.path.exists(os.path.dirname(filename)):
       self.logPrint('Saving source database in '+filename, 2, 'sourceDB')
-      dbFile = file(filename, 'w')
+      dbFile = open(filename, 'w')
       pickle.dump(self, dbFile)
       dbFile.close()
       self.isDirty = 0
@@ -310,7 +310,7 @@ class DependencyAnalyzer (logger.Logger):
     return matchName
 
   def getNeighbors(self, source):
-    file = file(source)
+    file = open(source)
     adj  = []
     for line in file:
       match = self.includeRE.match(line)
@@ -344,7 +344,7 @@ if __name__ == '__main__':
       print('sourceDatabase.py <database filename> [insert | remove] <filename>')
     else:
       if os.path.exists(sys.argv[1]):
-        dbFile   = file(sys.argv[1])
+        dbFile   = open(sys.argv[1])
         sourceDB = pickle.load(dbFile)
         dbFile.close()
       else:

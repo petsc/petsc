@@ -313,7 +313,7 @@ class Package(config.base.Configure):
     if isinstance(source, file):
       f = source
     else:
-      f = file(source)
+      f = open(source)
     m = new_md5()
     size = chunkSize
     buf  = f.read(size)
@@ -1314,7 +1314,7 @@ class GNUPackage(Package):
        args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
     ### Use conffile to check whether a reconfigure/rebuild is required
@@ -1408,7 +1408,7 @@ class CMakePackage(Package):
        args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
 

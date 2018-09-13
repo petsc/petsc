@@ -110,18 +110,18 @@ class Logger(args.ArgumentProcessor):
         appendArg = nargs.Arg.findArgument('logAppend', self.clArgs)
         if self.checkLog(logName):
           if not self.argDB is None and ('logAppend' in self.argDB and self.argDB['logAppend']) or (not appendArg is None and bool(appendArg)):
-            Logger.defaultLog = file(self.logName, 'a')
+            Logger.defaultLog = open(self.logName, 'a')
           else:
             try:
               import os
 
               os.rename(self.logName, self.logName+'.bkp')
-              Logger.defaultLog = file(self.logName, 'w')
+              Logger.defaultLog = open(self.logName, 'w')
             except OSError:
               sys.stdout.write('WARNING: Cannot backup log file, appending instead.\n')
-              Logger.defaultLog = file(self.logName, 'a')
+              Logger.defaultLog = open(self.logName, 'a')
         else:
-          Logger.defaultLog = file(self.logName, 'w')
+          Logger.defaultLog = open(self.logName, 'w')
       log = Logger.defaultLog
     return log
 

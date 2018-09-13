@@ -545,12 +545,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def substituteFile(self, inName, outName):
     '''Carry out substitution on the file "inName", creating "outName"'''
-    inFile  = file(inName)
+    inFile  = open(inName)
     if os.path.dirname(outName):
       if not os.path.exists(os.path.dirname(outName)):
         os.makedirs(os.path.dirname(outName))
     if self.file_create_pause: time.sleep(1)
-    outFile = file(outName, 'w')
+    outFile = open(outName, 'w')
     for line in inFile:
       outFile.write(self.substRE.sub(self.substituteName, line))
     outFile.close()
@@ -708,7 +708,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
-      f = file(name, 'w')
+      f = open(name, 'w')
       filename = os.path.basename(name)
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
@@ -727,7 +727,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
-      f = file(name, 'w')
+      f = open(name, 'w')
       filename = os.path.basename(name)
     self.outputMakeRules(f, self)
     for child in self.childGraph.vertices:
@@ -746,7 +746,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
-      f = file(name, 'w')
+      f = open(name, 'w')
       filename = os.path.basename(name)
     guard = 'INCLUDED_'+filename.upper().replace('.', '_')
     f.write('#if !defined('+guard+')\n')
@@ -773,7 +773,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
-      f = file(name, 'w')
+      f = open(name, 'w')
       filename = os.path.basename(name)
     guard = 'INCLUDED_'+filename.upper().replace('.', '_')
     f.write('#if !defined('+guard+')\n')

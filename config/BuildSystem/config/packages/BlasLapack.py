@@ -564,7 +564,7 @@ class Configure(config.package.Package):
         oldLibs  = self.compilers.LIBS
         self.compilers.LIBS = self.libraries.toString(lib)+' '+self.compilers.LIBS
       if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
+        f    = open(filename)
         out  = f.read()
         f.close()
         os.remove(filename)

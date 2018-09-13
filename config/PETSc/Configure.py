@@ -461,7 +461,7 @@ prepend-path PATH "%s"
 
   def dumpConfigInfo(self):
     import time
-    fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
+    fd = open(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return
@@ -473,7 +473,7 @@ prepend-path PATH "%s"
     import script
     def escape(s):
       return s.replace('"',r'\"').replace(r'\ ',r'\\ ')
-    fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
+    fd = open(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
     buildhost = platform.node()
@@ -787,7 +787,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.pushLanguage(self.languages.clanguage)
       try:
         if self.checkRun(includes, body) and os.path.exists(filename):
-          f    = file(filename)
+          f    = open(filename)
           size = int(f.read())
           f.close()
           os.remove(filename)
@@ -973,7 +973,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
   def configureDefaultArch(self):
     conffile = os.path.join('lib','petsc','conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
-      fd = file(conffile, 'w')
+      fd = open(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
       fd.write('include '+os.path.join('$(PETSC_DIR)','$(PETSC_ARCH)','lib','petsc','conf','petscvariables')+'\n')
@@ -1003,7 +1003,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
         del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = 'PETSC_ARCH='+str(self.arch.arch)
-    f = file(scriptName, 'w')
+    f = open(scriptName, 'w')
     f.write('#!'+sys.executable+'\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')

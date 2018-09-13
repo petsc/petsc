@@ -124,7 +124,7 @@ Arg class, which wraps the usual value.'''
 
   def __setstate__(self, d):
     '''Reconnect the parent socket object, recreate the XDR translators and reopen the log file after unpickling'''
-    self.logFile  = file('RDict.log', 'a')
+    self.logFile  = open('RDict.log', 'a')
     self.writeLogLine('Unpickling RDict')
     self.__dict__.update(d)
     import xdrlib
@@ -140,9 +140,9 @@ Arg class, which wraps the usual value.'''
       if os.path.isfile(filename+'.bkp'):
         os.remove(filename+'.bkp')
       os.rename(filename, filename+'.bkp')
-      self.logFile = file(filename, 'w')
+      self.logFile = open(filename, 'w')
     else:
-      self.logFile = file(filename, 'a')
+      self.logFile = open(filename, 'a')
     return
 
   def writeLogLine(self, message):
@@ -371,7 +371,7 @@ Arg class, which wraps the usual value.'''
 
   def writeServerAddr(self, server):
     '''Write the server socket address (in pickled form) to a file, usually RDict.loc.'''
-    f = file(self.addrFilename, 'w')
+    f = open(self.addrFilename, 'w')
     pickle.dump(server.server_address, f)
     f.close()
     self.writeLogLine('SERVER: Wrote lock file '+os.path.abspath(self.addrFilename))
@@ -633,7 +633,7 @@ Arg class, which wraps the usual value.'''
     self.saveFilename = os.path.abspath(self.saveFilename)
     if os.path.exists(self.saveFilename):
       try:
-        dbFile = file(self.saveFilename)
+        dbFile = open(self.saveFilename)
         data   = pickle.load(dbFile)
         self.updateTypes(data)
         dbFile.close()
@@ -651,7 +651,7 @@ Arg class, which wraps the usual value.'''
     if force:
       self.saveTimer = None
       # This should be a critical section
-      dbFile = file(self.saveFilename, 'w')
+      dbFile = open(self.saveFilename, 'w')
       data   = dict(filter(lambda i: not i[1].getTemporary(), self.localitems()))
       pickle.dump(data, dbFile)
       dbFile.close()

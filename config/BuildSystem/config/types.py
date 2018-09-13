@@ -281,7 +281,7 @@ void (*signal())();
       if not self.argDB['with-batch']:
         self.pushLanguage('C')
         if self.checkRun(includes, body) and os.path.exists(filename):
-          f    = file(filename)
+          f    = open(filename)
           size = int(f.read())
           f.close()
           os.remove(filename)
@@ -329,7 +329,7 @@ void (*signal())();
       bits = self.argDB['known-bits-per-byte']
     elif not self.argDB['with-batch']:
       if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
+        f    = open(filename)
         bits = int(f.read())
         f.close()
         os.remove(filename)
