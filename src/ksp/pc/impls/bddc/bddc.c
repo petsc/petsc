@@ -2709,7 +2709,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
       KSP       *ksps;
       PC        ppc,lagpc;
       PetscInt  nn;
-      PetscBool ismatis,matisok = PETSC_FALSE;
+      PetscBool ismatis,matisok = PETSC_FALSE,check = PETSC_FALSE;
 
       /* set the solver for the (0,0) block */
       ierr = PCFieldSplitSchurGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
@@ -2787,6 +2787,61 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
         ierr = PetscObjectTypeCompareAny((PetscObject)ppc,&matisok,PCBDDC,PCJACOBI,PCNONE,PCMG,"");CHKERRQ(ierr);
         if (ismatis && !matisok) {
           ierr = MatConvert(M,MATAIJ,MAT_INPLACE_MATRIX,&M);CHKERRQ(ierr);
+        }
+      }
+
+      /* run the subproblems to check convergence */
+      ierr = PetscOptionsGetBool(NULL,((PetscObject)newmat)->prefix,"-check_saddlepoint",&check,NULL);CHKERRQ(ierr);
+      if (check) {
+        PetscInt i;
+
+        for (i=0;i<nn;i++) {
+          KSP       kspC;
+          PC        pc;
+          Mat       F,pF;
+          Vec       x,y;
+          PetscBool isschur,prec = PETSC_TRUE;
+
+          ierr = KSPCreate(PetscObjectComm((PetscObject)ksps[i]),&kspC);CHKERRQ(ierr);
+          ierr = KSPSetOptionsPrefix(kspC,((PetscObject)ksps[i])->prefix);CHKERRQ(ierr);
+          ierr = KSPAppendOptionsPrefix(kspC,"check_");CHKERRQ(ierr);
+          ierr = KSPGetOperators(ksps[i],&F,&pF);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)F,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+          if (isschur) {
+            KSP  kspS,kspS2;
+            Mat  A00,pA00,A10,A01,A11;
+            char prefix[256];
+
+            ierr = MatSchurComplementGetKSP(F,&kspS);CHKERRQ(ierr);
+            ierr = MatSchurComplementGetSubMatrices(F,&A00,&pA00,&A01,&A10,&A11);CHKERRQ(ierr);
+            ierr = MatCreateSchurComplement(A00,pA00,A01,A10,A11,&F);CHKERRQ(ierr);
+            ierr = MatSchurComplementGetKSP(F,&kspS2);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sschur_",((PetscObject)kspC)->prefix);CHKERRQ(ierr);
+            ierr = KSPSetOptionsPrefix(kspS2,prefix);CHKERRQ(ierr);
+            ierr = KSPGetPC(kspS2,&pc);CHKERRQ(ierr);
+            ierr = PCSetType(pc,PCKSP);CHKERRQ(ierr);
+            ierr = PCKSPSetKSP(pc,kspS);CHKERRQ(ierr);
+            ierr = KSPSetFromOptions(kspS2);CHKERRQ(ierr);
+            ierr = KSPGetPC(kspS2,&pc);CHKERRQ(ierr);
+            ierr = PCSetUseAmat(pc,PETSC_TRUE);CHKERRQ(ierr);
+          } else {
+            ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
+          }
+          ierr = KSPSetFromOptions(kspC);CHKERRQ(ierr);
+          ierr = PetscOptionsGetBool(NULL,((PetscObject)kspC)->prefix,"-preconditioned",&prec,NULL);CHKERRQ(ierr);
+          if (prec)  {
+            ierr = KSPGetPC(ksps[i],&pc);CHKERRQ(ierr);
+            ierr = KSPSetPC(kspC,pc);CHKERRQ(ierr);
+          }
+          ierr = KSPSetOperators(kspC,F,pF);CHKERRQ(ierr);
+          ierr = MatCreateVecs(F,&x,&y);CHKERRQ(ierr);
+          ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+          ierr = MatMult(F,x,y);CHKERRQ(ierr);
+          ierr = KSPSolve(kspC,y,x);CHKERRQ(ierr);
+          ierr = KSPDestroy(&kspC);CHKERRQ(ierr);
+          ierr = MatDestroy(&F);CHKERRQ(ierr);
+          ierr = VecDestroy(&x);CHKERRQ(ierr);
+          ierr = VecDestroy(&y);CHKERRQ(ierr);
         }
       }
       ierr = PetscFree(ksps);CHKERRQ(ierr);
