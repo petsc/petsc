@@ -1,12 +1,10 @@
-
 #include <petsc/private/pcimpl.h>
 #include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {
-  KSP       ksp;
-  PetscInt  its;                    /* total number of iterations KSP uses */
+  KSP      ksp;
+  PetscInt its; /* total number of iterations KSP uses */
 } PC_KSP;
-
 
 static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
 {
@@ -32,8 +30,8 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   KSPConvergedReason reason;
 
   PetscFunctionBegin;
-  ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
-  ierr      = KSPGetConvergedReason(jac->ksp,&reason);CHKERRQ(ierr);
+  ierr = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(jac->ksp,&reason);CHKERRQ(ierr);
   if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
     pc->failedreason = PC_SUBPC_ERROR;
   }
@@ -44,12 +42,17 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 
 static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  PetscInt       its;
-  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode     ierr;
+  PetscInt           its;
+  PC_KSP             *jac = (PC_KSP*)pc->data;
+  KSPConvergedReason reason;
 
   PetscFunctionBegin;
-  ierr      = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(jac->ksp,&reason);CHKERRQ(ierr);
+  if (reason == KSP_DIVERGED_PCSETUP_FAILED) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
@@ -80,7 +83,7 @@ static PetscErrorCode PCReset_KSP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset(jac->ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -274,4 +277,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetKSP_C",PCKSPSetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
