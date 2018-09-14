@@ -7,19 +7,7 @@ if not hasattr(sys, 'version_info'):
 
 import pickle
 
-try:
-  import subprocess
-  USE_SUBPROCESS = 1
-except ImportError:
-  USE_SUBPROCESS = 0
-
-# Some features related to detecting login failures cannot be easily
-# implemented with the 'subprocess' module. Disable it for now ...
-USE_SUBPROCESS = 0
-# In Python 2.6 and above, the 'popen2' module is deprecated
-if sys.version_info[:2] >= (2, 6) and not USE_SUBPROCESS:
-  import warnings
-  warnings.filterwarnings('ignore', category=DeprecationWarning, module=__name__)
+import subprocess
 
 import nargs
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
@@ -146,92 +134,15 @@ class Script(logger.Logger):
     return module
   importModule = staticmethod(importModule)
 
-  if USE_SUBPROCESS:
-
-    def runShellCommand(command, log=None, cwd=None):
-      Popen = subprocess.Popen
-      PIPE  = subprocess.PIPE
-      if log: log.write('Executing: %s\n' % (command,))
-      pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
-                   bufsize=-1, shell=True, universal_newlines=True)
-      (out, err) = pipe.communicate()
-      ret = pipe.returncode
-      return (out, err, ret)
-
-  else:
-
-    def openPipe(command):
-      '''We need to use the asynchronous version here since we want to avoid blocking reads'''
-      import popen2
-
-      pipe = None
-      if hasattr(popen2, 'Popen3'):
-        pipe   = popen2.Popen3(command, 1)
-        input  = pipe.tochild
-        output = pipe.fromchild
-        err    = pipe.childerr
-      else:
-        import os
-        (input, output, err) = os.popen3(command)
-      return (input, output, err, pipe)
-    openPipe = staticmethod(openPipe)
-
-    def runShellCommand(command, log = None, cwd = None):
-      import select, os
-
-      ret        = None
-      out        = ''
-      err        = ''
-      loginError = 0
-      if cwd is not None:
-        oldpath = os.getcwd()
-        os.chdir(cwd)
-      if log: log.write('Executing: %s\n' % (command,))
-      (input, output, error, pipe) = Script.openPipe(command)
-      if cwd is not None:
-        os.chdir(oldpath)
-      input.close()
-      if useSelect:
-        outputClosed = 0
-        errorClosed  = 0
-        lst = [output, error]
-        while 1:
-          try:
-            ready = select.select(lst, [], [])
-          except Exception as e:
-            if log: log.write('** Error calling select() : '+str(e)+'\n')
-            continue
-          if len(ready[0]):
-            if error in ready[0]:
-              msg = error.readline()
-              if msg:
-                err += msg
-              else:
-                errorClosed = 1
-                lst.remove(error)
-            if output in ready[0]:
-              msg = output.readline()
-              if msg:
-                out += msg
-              else:
-                outputClosed = 1
-                lst.remove(output)
-            if msg and msg.find('password:') >= 0:
-              loginError = 1
-              break
-          if outputClosed and errorClosed:
-            break
-      else:
-        out = output.read()
-        err = error.read()
-      output.close()
-      error.close()
-      if pipe:
-        # We would like the NOHANG argument here
-        ret = pipe.wait()
-      if loginError:
-        raise RuntimeError('Could not login to site')
-      return (out, err, ret)
+  def runShellCommand(command, log=None, cwd=None):
+    Popen = subprocess.Popen
+    PIPE  = subprocess.PIPE
+    if log: log.write('Executing: %s\n' % (command,))
+    pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
+                 bufsize=-1, shell=True, universal_newlines=True)
+    (out, err) = pipe.communicate()
+    ret = pipe.returncode
+    return (out, err, ret)
 
   runShellCommand = staticmethod(runShellCommand)
 
