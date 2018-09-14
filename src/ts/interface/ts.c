@@ -4523,6 +4523,11 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 +  ts - the ODE integrator object
 -  dm - the dm, cannot be NULL
 
+   Notes:
+   A DM can only be used for solving one problem at a time because information about the problem is stored on the DM,
+   even when not using interfaces like DMTSSetIFunction().  Use DMClone() to get a distinct DM when solving
+   different problems using the same function space.
+
    Level: intermediate
 
 .seealso: TSGetDM(), SNESSetDM(), SNESGetDM()

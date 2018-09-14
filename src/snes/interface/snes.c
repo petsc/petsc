@@ -5215,6 +5215,11 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 +  snes - the nonlinear solver context
 -  dm - the dm, cannot be NULL
 
+   Notes:
+   A DM can only be used for solving one problem at a time because information about the problem is stored on the DM,
+   even when not using interfaces like DMSNESSetFunction().  Use DMClone() to get a distinct DM when solving different
+   problems using the same function space.
+
    Level: intermediate
 
 .seealso: SNESGetDM(), KSPSetDM(), KSPGetDM()
