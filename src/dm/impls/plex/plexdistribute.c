@@ -1708,10 +1708,10 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
-+ sf - The PetscSF used for point distribution
-- parallelMesh - The distributed DMPlex object, or NULL
++ sf - The PetscSF used for point distribution, or NULL if not needed
+- dmParallel - The distributed DMPlex object
 
-  Note: If the mesh was not distributed, the return value is NULL.
+  Note: If the mesh was not distributed, the output dmParallel will be NULL.
 
   The user can control the definition of adjacency for the mesh using DMPlexSetAdjacencyUseCone() and
   DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
