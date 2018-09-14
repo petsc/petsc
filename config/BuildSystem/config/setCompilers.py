@@ -1632,7 +1632,7 @@ if (dlclose(handle)) {
 
   def printEnvVariables(self):
     buf = '**** printenv ****'
-    for key,val in os.environ.iteritems():
+    for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
     return
