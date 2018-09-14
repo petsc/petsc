@@ -2385,6 +2385,9 @@ $  func(KSP ksp,Vec x,void *ctx)
 .  x - solution vector
 -  ctx - optional user-provided context
 
+   Notes: This should only be used in conjunction with KSPSetComputeRHS(), KSPSetComputeOperators(), otherwise
+   call KSPSetInitialGuessNonzero() and set the initial guess values in the solution vector passed to KSPSolve().
+
    Level: beginner
 
 .seealso: KSPSolve(), KSPSetComputeRHS(), KSPSetComputeOperators(), DMKSPSetComputeInitialGuess()
