@@ -62,7 +62,7 @@ class Info(logger.Logger):
     (nameLen, descLen) = self.getTextSizes()
     format = '  %-'+str(nameLen)+'s: %s\n'
     items  = self.sections.items()
-    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
+    items.sort(key=lambda a: a[1][0])
     for section, names in items:
       f.write(section+':\n')
       for name in names[1]:
@@ -128,7 +128,7 @@ class Help(Info):
     format    = '  -%s\n       %s\n'
     formatDef = '  -%s\n       %s  current: %s\n'
     items = self.sections.items()
-    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
+    items.sort(key=lambda a: a[1][0])
     for section, names in items:
       if sections and not section.lower() in sections: continue
       f.write(section+':\n')
