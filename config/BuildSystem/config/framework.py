@@ -700,7 +700,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def outputMakeMacroHeader(self, name):
     '''Write the make configuration header (bmake file)'''
-    if isinstance(name, file):
+    if hasattr(name, 'close'):
       f = name
       filename = 'Unknown'
     else:
@@ -713,13 +713,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
-    if not isinstance(name, file):
+    if not hasattr(name, 'close'):
       f.close()
     return
 
   def outputMakeRuleHeader(self, name):
     '''Write the make configuration header (bmake file)'''
-    if isinstance(name, file):
+    if hasattr(name, 'close'):
       f = name
       filename = 'Unknown'
     else:
@@ -732,13 +732,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeRules(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeRules(f, child)
-    if not isinstance(name, file):
+    if not hasattr(name, 'close'):
       f.close()
     return
 
   def outputHeader(self, name, prefix = None):
     '''Write the configuration header'''
-    if isinstance(name, file):
+    if hasattr(name, 'close'):
       f = name
       filename = 'Unknown'
     else:
@@ -759,13 +759,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')
-    if not isinstance(name, file):
+    if not hasattr(name, 'close'):
       f.close()
     return
 
   def outputCHeader(self, name):
     '''Write the C specific configuration header'''
-    if isinstance(name, file):
+    if hasattr(name, 'close'):
       f = name
       filename = 'Unknown'
     else:
@@ -799,7 +799,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputPrototypes(f, child, 'C')
     f.write('#endif\n')
     f.write('#endif\n')
-    if not isinstance(name, file):
+    if not hasattr(name, 'close'):
       f.close()
     return
 

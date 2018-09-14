@@ -148,7 +148,7 @@ class SourceDB (dict, logger.Logger):
   def getChecksum(source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
-    if isinstance(source, file):
+    if hasattr(source, 'close'):
       f = source
     else:
       f = open(source)
