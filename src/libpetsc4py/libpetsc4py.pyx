@@ -2113,6 +2113,7 @@ cdef extern from * nogil:
         PetscReal max_time
         TSConvergedReason reason
         PetscSNES snes
+        PetscBool usessnes
 cdef extern from * nogil:
     PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)
     PetscErrorCode TSGetSNES(PetscTS,PetscSNES*)
@@ -2180,6 +2181,8 @@ cdef PetscErrorCode TSCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
             <PetscVoidFunction>TSPythonSetType_PYTHON) )
+    #
+    ts.usessnes = PETSC_TRUE
     #
     cdef ctx = PyTS(NULL)
     ts.data = <void*> ctx
