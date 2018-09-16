@@ -668,6 +668,7 @@ J*/
 typedef const char* KSPGuessType;
 #define KSPGUESSFISCHER "fischer"
 #define KSPGUESSPOD     "pod"
+PETSC_EXTERN PetscErrorCode KSPGuessRegister(const char[],PetscErrorCode (*)(KSPGuess));
 PETSC_EXTERN PetscErrorCode KSPSetGuess(KSP,KSPGuess);
 PETSC_EXTERN PetscErrorCode KSPGetGuess(KSP,KSPGuess*);
 PETSC_EXTERN PetscErrorCode KSPGuessView(KSPGuess,PetscViewer);

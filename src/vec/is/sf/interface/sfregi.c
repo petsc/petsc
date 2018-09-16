@@ -66,6 +66,7 @@ PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PetscSFList,name,create);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
