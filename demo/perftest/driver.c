@@ -20,8 +20,7 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   /**/
-  formInitial(&app->nx,&app->ny,&app->nz,app->h,
-              &t,x);
+  formInitial(&app->nx,&app->ny,&app->nz,app->h,&t,x);
   /**/
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -39,8 +38,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   /**/
-  formFunction(&app->nx,&app->ny,&app->nz,app->h,
-               &t,x,xdot,f);
+  formFunction(&app->nx,&app->ny,&app->nz,app->h,&t,x,xdot,f);
   /**/
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);

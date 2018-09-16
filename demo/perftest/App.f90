@@ -6,8 +6,9 @@ subroutine formFunction_C(nx, ny, nz, h, t, x, xdot, f) &
   real(kind=C_DOUBLE), intent(in)    :: h(3), t
   real(kind=C_DOUBLE), intent(in)    :: x(nx,ny,nz), xdot(nx,ny,nz)
   real(kind=C_DOUBLE), intent(inout) :: f(nx,ny,nz)
-  call formfunction(nx, ny, nz, h, t, x, xdot, f)
+  call formfunction_f(nx, ny, nz, h, t, x, xdot, f)
 end subroutine formFunction_C
+
 subroutine formInitial_C(nx, ny, nz, h, t, x) &
      bind(C, name="formInitial")
   use ISO_C_BINDING, only: C_INT, C_DOUBLE
@@ -15,7 +16,7 @@ subroutine formInitial_C(nx, ny, nz, h, t, x) &
   integer(kind=C_INT), intent(in)    :: nx, ny, nz
   real(kind=C_DOUBLE), intent(in)    :: h(3), t
   real(kind=C_DOUBLE), intent(inout) :: x(nx,ny,nz)
-  call forminitial(nx, ny, nz, h, t, x)
+  call forminitial_f(nx, ny, nz, h, t, x)
 end subroutine formInitial_C
 
 subroutine evalK (P, K)
@@ -39,23 +40,17 @@ subroutine fillK (P, K)
   K(+1) = -Kb
 end subroutine fillK
 
-subroutine forminitial(nx, ny, nz, h, t, x)
+subroutine forminitial_f(nx, ny, nz, h, t, x)
   implicit none
-  !f2py intent(hide) :: nx = shape(x,0)
-  !f2py intent(hide) :: ny = shape(x,1)
-  !f2py intent(hide) :: nz = shape(x,2)
   integer, intent(in)         :: nx, ny, nz
   real(kind=8), intent(in)    :: h(3), t
   real(kind=8), intent(inout) :: x(nx,ny,nz)
   !
   x(:,:,:) = 0.0
-end subroutine forminitial
+end subroutine forminitial_f
 
-subroutine formfunction(nx, ny, nz, h, t, x, xdot, f)
+subroutine formfunction_f(nx, ny, nz, h, t, x, xdot, f)
   implicit none
-  !f2py intent(hide) :: nx = shape(x,0)
-  !f2py intent(hide) :: ny = shape(x,1)
-  !f2py intent(hide) :: nz = shape(x,2)
   integer, intent(in)         :: nx, ny, nz
   real(kind=8), intent(in)    :: h(3), t
   real(kind=8), intent(in)    :: x(nx,ny,nz), xdot(nx,ny,nz)
@@ -111,4 +106,4 @@ subroutine formfunction(nx, ny, nz, h, t, x, xdot, f)
   k = nz/2+1
   f(i,j,k:nz) = f(i,j,k:nz) + 300.0
   !
-end subroutine formfunction
+end subroutine formfunction_f
