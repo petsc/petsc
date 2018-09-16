@@ -4705,6 +4705,7 @@ PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatSeqAIJList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

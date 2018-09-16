@@ -4243,6 +4243,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package,MatType mtype,MatFact
   MatSolverTypeForSpecifcType inext,iprev = NULL;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   if (!next) {
     ierr = PetscNew(&MatSolverTypeHolders);CHKERRQ(ierr);
     ierr = PetscStrallocpy(package,&MatSolverTypeHolders->name);CHKERRQ(ierr);
