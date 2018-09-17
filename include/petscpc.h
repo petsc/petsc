@@ -362,6 +362,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetRestriction(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInjection(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInjection(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetInterpolation(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGSetOperators(PC,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);

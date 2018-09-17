@@ -44,6 +44,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_HMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
@@ -119,6 +120,7 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCHYPRE        ,PCCreate_HYPRE);CHKERRQ(ierr);
   ierr = PCRegister(PCPFMG         ,PCCreate_PFMG);CHKERRQ(ierr);
   ierr = PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG);CHKERRQ(ierr);
+  ierr = PCRegister(PCHMG          ,PCCreate_HMG);CHKERRQ(ierr);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
   ierr = PCRegister(PCTFS          ,PCCreate_TFS);CHKERRQ(ierr);

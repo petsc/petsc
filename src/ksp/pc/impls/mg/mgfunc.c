@@ -127,6 +127,19 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  PCMGSetOperators(PC pc,PetscInt l,Mat mat)
+{
+  PC_MG          *mg        = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  ierr = KSPSetOperators(mglevels[l]->smoothd,mat,mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    PCMGGetInterpolation - Gets the function to be used to calculate the
    interpolation from l-1 to the lth level
