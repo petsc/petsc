@@ -838,6 +838,7 @@ PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

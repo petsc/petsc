@@ -46,9 +46,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = NULL;
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
@@ -3402,6 +3399,7 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&DMList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -8,7 +8,7 @@ PetscFunctionList MatCoarsenList              = 0;
 PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-   MatCoarsenRegister - Adds a new sparse matrix coarser to the  matrix package.
+   MatCoarsenRegister - Adds a new sparse matrix coarsening algorithm to the matrix package.
 
    Logically Collective
 
@@ -37,6 +37,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatCoarsenList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
