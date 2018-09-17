@@ -1761,6 +1761,7 @@ PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PCList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

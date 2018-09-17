@@ -210,6 +210,7 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidPointer(delta,5);
   PetscValidPointer(betasub,6);
 
+  ierr          = SNESMSInitializePackage();CHKERRQ(ierr);
   ierr          = PetscNew(&link);CHKERRQ(ierr);
   t             = &link->tab;
   ierr          = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);

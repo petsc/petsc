@@ -1865,6 +1865,7 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = ISInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&ISLocalToGlobalMappingList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

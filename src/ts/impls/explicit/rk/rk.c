@@ -366,6 +366,7 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   if (bembed) PetscValidRealPointer(bembed,7);
   if (binterp || p > 1) PetscValidRealPointer(binterp,9);
 
+  ierr = TSRKInitializePackage();CHKERRQ(ierr);
   ierr = PetscNew(&link);CHKERRQ(ierr);
   t = &link->tab;
 

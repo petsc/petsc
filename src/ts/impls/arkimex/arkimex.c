@@ -577,6 +577,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   PetscInt       i,j;
 
   PetscFunctionBegin;
+  ierr     = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr     = PetscCalloc1(1,&link);CHKERRQ(ierr);
   t        = &link->tab;
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
