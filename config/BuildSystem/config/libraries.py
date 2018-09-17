@@ -172,7 +172,7 @@ class Configure(config.base.Configure):
       return pre + '\nstatic void _check_%s() { %s }' % (funcName, genCall(f, funcName, pre=True))
     def genCall(f, funcName, pre=False):
       if self.language[-1] != 'FC' and not pre:
-        return '_check_' + fname + '();'
+        return '_check_' + funcName + '();'
       # Construct function call
       if call:
         if isinstance(call, str):
