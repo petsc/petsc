@@ -130,9 +130,12 @@ class Logger(args.ArgumentProcessor):
     self.log.close()
 
   def saveLog(self):
-    import StringIO
+    import io
     self.logBkp = self.log
-    self.log    = StringIO.StringIO()
+    if sys.version_info < (3,):
+      self.log = io.BytesIO()
+    else:
+      self.log = io.StringIO()
 
   def restoreLog(self):
     s = self.log.getvalue()

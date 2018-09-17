@@ -1005,8 +1005,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         if ret:
           out += '\n'+msg+'\n'+se+'\n'
           try:
-            import sys,traceback,cStringIO
-            tb = cStringIO.StringIO()
+            import sys,traceback,io
+            tb = io.StringIO()
             traceback.print_tb(sys.exc_info()[2], file = tb)
             out += tb.getvalue()
             tb.close()
