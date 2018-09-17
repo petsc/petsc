@@ -1333,7 +1333,7 @@ class Configure(config.base.Configure):
           except RuntimeError:
             accepted = 0
           if accepted:
-            goodFlags = filter(self.checkLinkerFlag, flags)
+            goodFlags = list(filter(self.checkLinkerFlag, flags))
             self.sharedLinker = self.LD_SHARED
             self.sharedLibraryFlags = goodFlags
             self.sharedLibraryExt = ext
