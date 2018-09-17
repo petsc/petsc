@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vscat.c
+SOURCEC  = seqvscat.c
 SOURCEF  =
-SOURCEH  =
-DIRS     = seq mpi1 mpi3
+SOURCEH  = 
+DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vscat/impls/
+LOCDIR   = src/vec/vscat/impls/seq
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

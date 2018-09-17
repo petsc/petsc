@@ -137,10 +137,10 @@ PetscInt main(PetscInt argc,char **args)
         ISCreateStride(PETSC_COMM_WORLD,N2,indx,1,&indx1);
         indx=i*N1*N2+j*N2;
         ISCreateStride(PETSC_COMM_WORLD,N2,indx,1,&indx2);
-        VecScatterCreate(fin,indx1,ini,indx2,&vecscat);
+        VecScatterCreateWithData(fin,indx1,ini,indx2,&vecscat);
         VecScatterBegin(vecscat,fin,ini,INSERT_VALUES,SCATTER_FORWARD);
         VecScatterEnd(vecscat,fin,ini,INSERT_VALUES,SCATTER_FORWARD);
-        VecScatterCreate(fout1,indx1,final,indx2,&vecscat1);
+        VecScatterCreateWithData(fout1,indx1,final,indx2,&vecscat1);
         VecScatterBegin(vecscat1,fout1,final,INSERT_VALUES,SCATTER_FORWARD);
         VecScatterEnd(vecscat1,fout1,final,INSERT_VALUES,SCATTER_FORWARD);
      }

@@ -7,6 +7,7 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/vecscatterimpl.h>
 
+
 PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
@@ -1964,31 +1965,31 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */
 #define BS 1
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 2
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 3
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 4
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 5
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 6
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 7
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 8
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 9
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 10
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 11
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS 12
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 #define BS bs
-#include <../src/vec/vscat/impls/vpscat_mpi1.h>
+#include <../src/vec/vscat/impls/mpi1/vpscat_mpi1.h>
 
 /* ==========================================================================================*/
 
@@ -2527,10 +2528,30 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI1(PetscInt nx,const PetscInt *inidx
   }
 #endif
   if (duplicate) {
-    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterSetData() or VecScatterCreateWithData(), they are ignored\n");CHKERRQ(ierr);
   }
   ierr = VecScatterCreateLocal_StoP_MPI1(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterSetUp_MPI1(VecScatter ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterSetUp_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI1,VecScatterCreateLocal_StoP_MPI1,VecScatterCreateLocal_PtoP_MPI1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI1(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ctx->ops->setup = VecScatterSetUp_MPI1;
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI1);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI1 for vector scatter\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

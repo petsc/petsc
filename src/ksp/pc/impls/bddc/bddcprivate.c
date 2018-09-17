@@ -1510,7 +1510,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
 
     ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
     ierr = MatCreateVecs(lA,&vins,NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreate(v,vl2l,vins,NULL,&sc);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(v,vl2l,vins,NULL,&sc);CHKERRQ(ierr);
     ierr = VecScatterBegin(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&sc);CHKERRQ(ierr);
@@ -5121,7 +5121,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     }
     ierr = ISRestoreIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,j,aux_array2,PETSC_OWN_POINTER,&is_aux2);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcbddc->vec1_R,is_aux1,pcis->vec1_B,is_aux2,&pcbddc->R_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcbddc->vec1_R,is_aux1,pcis->vec1_B,is_aux2,&pcbddc->R_to_B);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux1);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux2);CHKERRQ(ierr);
 
@@ -5133,7 +5133,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
         }
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,j,aux_array1,PETSC_OWN_POINTER,&is_aux1);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pcbddc->vec1_R,is_aux1,pcis->vec1_D,(IS)0,&pcbddc->R_to_D);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(pcbddc->vec1_R,is_aux1,pcis->vec1_D,(IS)0,&pcbddc->R_to_D);CHKERRQ(ierr);
       ierr = ISDestroy(&is_aux1);CHKERRQ(ierr);
     }
     ierr = PetscBTDestroy(&bitmask);CHKERRQ(ierr);
@@ -5145,11 +5145,11 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
     ierr = ISGetLocalSize(reuse_solver->is_B,&schur_size);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,schur_size,n_D,1,&tis);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcbddc->vec1_R,tis,pcis->vec1_B,reuse_solver->is_B,&pcbddc->R_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcbddc->vec1_R,tis,pcis->vec1_B,reuse_solver->is_B,&pcbddc->R_to_B);CHKERRQ(ierr);
     ierr = ISDestroy(&tis);CHKERRQ(ierr);
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = ISCreateStride(PETSC_COMM_SELF,n_D,0,1,&tis);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pcbddc->vec1_R,tis,pcis->vec1_D,(IS)0,&pcbddc->R_to_D);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(pcbddc->vec1_R,tis,pcis->vec1_D,(IS)0,&pcbddc->R_to_D);CHKERRQ(ierr);
       ierr = ISDestroy(&tis);CHKERRQ(ierr);
     }
   }
@@ -8083,7 +8083,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = VecSetSizes(pcbddc->coarse_vec,lrows,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(pcbddc->coarse_vec,VECSTANDARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcbddc->vec1_P,NULL,pcbddc->coarse_vec,coarse_is,&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcbddc->vec1_P,NULL,pcbddc->coarse_vec,coarse_is,&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&coarse_is);CHKERRQ(ierr);
 
@@ -9047,7 +9047,7 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
     ierr = ISCreateGeneral(ccomm,lsize,b->garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,lsize,0,1,&to);CHKERRQ(ierr);
     ierr = MatCreateVecs(*B,&gvec,NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreate(gvec,from,b->lvec,to,&b->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(gvec,from,b->lvec,to,&b->Mvctx);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)*B,(PetscObject)b->Mvctx);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);

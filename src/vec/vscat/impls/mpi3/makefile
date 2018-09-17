@@ -1,15 +1,17 @@
+#requiresdefine 'PETSC_HAVE_MPI_WIN_CREATE_FEATURE'
+
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vscat.c
+SOURCEC  = vpscat.c
 SOURCEF  =
-SOURCEH  =
-DIRS     = seq mpi1 mpi3
+SOURCEH  = vpscat.h
+DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vscat/impls/
+LOCDIR   = src/vec/vscat/impls/mpi3
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

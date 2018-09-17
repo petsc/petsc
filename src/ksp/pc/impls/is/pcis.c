@@ -201,10 +201,10 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
     }
 
     /* Creating the scatter contexts */
-    ierr = VecScatterCreate(pcis->vec1_N,pcis->is_I_local,pcis->vec1_D,(IS)0,&pcis->N_to_D);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
-    ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcis->vec1_N,pcis->is_I_local,pcis->vec1_D,(IS)0,&pcis->N_to_D);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
     /* map from boundary to local */
     ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcis->BtoNmap);CHKERRQ(ierr);
