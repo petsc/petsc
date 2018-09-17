@@ -341,7 +341,6 @@ PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
 
-PETSC_EXTERN PetscErrorCode VecScatterCreateWithData(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterSetData(VecScatter,Vec,IS,Vec,IS);
 PETSC_EXTERN PetscErrorCode VecScatterCreate(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
