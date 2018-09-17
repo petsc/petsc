@@ -235,6 +235,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",B->checksymmetrytol,&B->checksymmetrytol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_error_if_failure","Generate an error if an error occurs when factoring the matrix","MatSetErrorIfFailure",B->erroriffailure,&B->erroriffailure,NULL);CHKERRQ(ierr);
 
   if (B->ops->setfromoptions) {
     ierr = (*B->ops->setfromoptions)(PetscOptionsObject,B);CHKERRQ(ierr);
