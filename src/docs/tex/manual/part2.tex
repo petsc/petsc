@@ -5314,8 +5314,8 @@ TSSetIJacobian(ts,A,A,YourComputeIJacobian, &appctx);
 \item  \trl{-ts_monitor_lg_error} - for ODEs with only a few components plots the error as a function of time, only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorLGError()}.
 \item  \trl{-ts_monitor_draw_solution} - plots the solution at each iteration, \lstinline{TSMonitorDrawSolution()}.
 \item  \trl{-ts_monitor_draw_error} - plots the error at each iteration only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorDrawSolution()}.
-\item  \trl-ts_monitor_solution binary[:filename]} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
-\item  \trl{-ts_monitor_solution_vtk < filename-%%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
+\item  \trl{-ts_monitor_solution binary:filename} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
+\item  \trl{-ts_monitor_solution_vtk < filename-%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
 \end{itemize}
 
 \section{Error control via variable time-stepping}
