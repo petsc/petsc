@@ -61,6 +61,8 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
     Output Parameter:
 .   snes - the SNES object
 
+    Level: advanced
+
 .seealso: MatCreateSNESMF()
 @*/
 PetscErrorCode MatSNESMFGetSNES(Mat J,SNES *snes)

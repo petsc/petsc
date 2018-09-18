@@ -1,6 +1,6 @@
 
 #include <petscvec.h>
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/vecscatterimpl.h>
 
 static PetscBool  VecScatterPackageInitialized = PETSC_FALSE;
 
@@ -85,7 +85,9 @@ PetscErrorCode VecScatterRegisterAll(void)
 
   ierr = VecScatterRegister(VECSCATTERSEQ,        VecScatterCreate_Seq);CHKERRQ(ierr);
   ierr = VecScatterRegister(VECSCATTERMPI1,       VecScatterCreate_MPI1);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
   ierr = VecScatterRegister(VECSCATTERMPI3,       VecScatterCreate_MPI3);CHKERRQ(ierr);
   ierr = VecScatterRegister(VECSCATTERMPI3NODE,   VecScatterCreate_MPI3Node);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }

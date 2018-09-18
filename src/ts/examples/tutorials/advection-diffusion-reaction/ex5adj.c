@@ -631,9 +631,21 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       output_file: output/ex5adj_sell_1.out
 
    test:
+      suffix: aijsell
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell -pc_type none
+      output_file: output/ex5adj_sell_1.out
+
+   test:
       suffix: sell2
       nsize: 4
       args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
+      output_file: output/ex5adj_sell_2.out
+
+   test:
+      suffix: aijsell2
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
       output_file: output/ex5adj_sell_2.out
 
    test:
@@ -652,6 +664,12 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       suffix: sell5
       nsize: 4
       args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -aijpc
+      output_file: output/ex5adj_sell_5.out
+
+   test:
+      suffix: aijsell5
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell
       output_file: output/ex5adj_sell_5.out
 
    test:

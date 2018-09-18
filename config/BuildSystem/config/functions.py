@@ -211,6 +211,12 @@ builtin and then its argument prototype would still apply. */
       self.addDefine('HAVE_MEMMOVE', 1)
     return
 
+  def checkMmap(self):
+    '''Check for functional mmap() to allocate shared memory and define HAVE_MMAP'''
+    if self.checkLink('#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <fcntl.h>\n','int fd;\n fd=open("/tmp/file",O_RDWR);\n mmap((void*)0,100,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);\n'):
+      self.addDefine('HAVE_MMAP', 1)
+    return
+
   def configure(self):
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
@@ -224,4 +230,5 @@ builtin and then its argument prototype would still apply. */
     self.executeTest(self.checkFreeReturnType)
     self.executeTest(self.checkVariableArgumentLists)
     self.executeTest(self.checkClassify, set(self.functions))
+    self.executeTest(self.checkMmap)
     return

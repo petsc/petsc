@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="310.html">3.10</a></li>
                 <li><a href="39.html">3.9</a></li>
                 <li><a href="38.html">3.8</a></li>
                 <li><a href="37.html">3.7</a></li>
@@ -100,71 +101,28 @@
       </div>
 
       <h4>General:</h4>
-      <ul>
-        <li>Removed <kbd>--with-errorchecking</kbd> configure option.</li>
-        <li>Added new command line option <kbd>-viewfromoptions</kbd> to disable <code>XXXViewFromOptions()</code> calls.</li>
-      </ul>
       <h4>Configure/Build:</h4>
-      <ul>
-        <li>Removed <kbd>--with-viewfromoptions</kbd> configure option in favor of the new command line option <kbd>-viewfromoptions</kbd>.</li>
-        <li>Following options are renamed to have more consistant names:<pre>
-          --with-packages-dir          -> --with-packages-download-dir
-          --with-external-packages-dir -> --with-packages-build-dir
-          --package-dirs               -> --with-packages-search-path
-          --search-dirs                -> --with-executables-search-path</pre></li>
-      </ul>
       <h4>IS:</h4>
       <h4>PetscDraw:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
+      <ul>
+        <li>Changed VecScatterCreate() to VecScatterCreateWithData().</li>
+        <li>Introduced VecScatterSetData().</li>
+        <li>Introduced VecScatterCreate() that creates empty scatter object that can be used with VecScatterSetData().</li>
+        <li>Introduced VecScatterSetUp().</li>
+        </ul>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-      <ul>
-        <li>MatNullSpaceTest() now respects the options prefix of the
-        provided Mat.</li>
-        <li>Added MatMatTransposeSolve() to MUMPS interface.</li>
-        <li>Added MatPartitioningViewFromOptions().</li>
-        <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
-        <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
-        </ul>
       <h4>PC:</h4>
-      <ul>
-        <li> PCKSPGetKSP() now raises an error if called on a PC which is not of type PCKSP </li>
-        <li> Added PCKSPSetKSP() </li>
-      </ul>
       <h4>KSP:</h4>
-      <ul>
-        <li><code>KSPLSQR</code>
-          <ul>
-            <li>Computes now an estimate of the operator's norm in the same way as Saunders and MATLAB, and uses it in the type-specific stopping criterion <code>KSPLSQRConvergedDefault()</code>; this now gives the same number of iterations as MATLAB's <code>lsqr()</code>.</li>
-            <li>Added <code>-ksp_lsqr_exact_mat_norm</code> and <code>KSPLSQRSetExactMatNorm()</code> to optionally compute and use the exact Frobenius norm instead of the estimate.</li>
-            <li><code>KSPLSQRMonitorDefault()</code> and <code>-ksp_lsqr_monitor</code> now additionally print the (estimate of) the operator's norm.</li>
-            <li>Allow setting <code>-ksp_convergence_test lsqr</code> (it's a default for <code>KSPLSQR</code>, though).</li>
-            <li><code>KSPLSQRSetStandardErrorVec()</code> is replaced by <code>KSPLSQRSetComputeStandardErrorVec()</code> which now specifies whether standard error vector should be computed instead of setting the vector;</li>
-            <li>likewise, option <code>-ksp_lsqr_set_standard_error</code> is replaced by <code>-ksp_lsqr_compute_standard_error</code>.</li>
-            <li>Renamed <code>KSPLSQRGetArnorm()</code> to <code>KSPLSQRGetNorms()</code> and removed its <code>rhs_norm</code> argument.</li>
-            <li>Renamed <code>KSPLSQRDefaultConverged()</code> to <code>KSPLSQRConvergedDefault()</code> merged with <code>KSPConvergedLSQR()</code>.</li>
-          </ul>
-        </li>
-      </ul>
       <h4>SNES:</h4>
-      <ul>
-        <li>SNESSetTolerances() and -snes_max_funcs now accept -1 to indicate unlimited number of function evaluations.</li>
-        </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
-      <ul>
-        <li>Renamed <code>DMDAGetReducedDMDA()</code> to <code>DMDACreateCompatibleDMDA()</code>.</li>
-        <li>Added DMGetCompatibility() and implementation for DMDA</li>
-      </ul>
       <h4>DMPlex:</h4>
-      <ul>
-        <li>Added an interface DM and boundary label to DMPlexCreateHybridMesh()</li>
-      </ul>
       <h4>PetscViewer:</h4>
-      <li> Added argument to <code>PetscViewerVTKAddField()</code> to allow skipping of DM check as fields are added</li>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>

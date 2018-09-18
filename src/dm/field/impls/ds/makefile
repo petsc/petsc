@@ -7,7 +7,7 @@ SOURCEC  = dmfieldds.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/field/impls/ds
+LOCDIR   = src/dm/field/impls/ds/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

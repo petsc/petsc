@@ -480,6 +480,7 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
   PetscInt          i,j;
 
   PetscFunctionBegin;
+  ierr     = TSGLEEInitializePackage();CHKERRQ(ierr);
   ierr     = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr     = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
   t        = &link->tab;

@@ -305,6 +305,8 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   Notes:
   Cannot call this routine before DMNetworkLayoutSetup()
 
+  Level: intermediate
+
 .seealso: DMNetworkLayoutSetUp, DMNetworkCreate
 @*/
 PetscErrorCode DMNetworkGetSubnetworkInfo(DM netdm,PetscInt id,PetscInt *nv, PetscInt *ne,const PetscInt **vtx, const PetscInt **edge)

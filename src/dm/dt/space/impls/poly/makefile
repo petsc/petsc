@@ -7,7 +7,7 @@ SOURCEC  = spacepoly.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/space/impls/poly
+LOCDIR   = src/dm/dt/space/impls/poly/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

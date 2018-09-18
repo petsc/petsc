@@ -597,7 +597,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
     for (p = pStart; p < pEnd; ++p) {
       PetscInt rS, rE;
 
-      ierr = DMPlexGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
+      ierr = DMGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
       for (r = rS; r < rE; ++r) {
         PetscInt numCols, cStart, c;
 
@@ -662,7 +662,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
     for (p = pStart; p < pEnd; ++p) {
       PetscInt rS, rE;
 
-      ierr = DMPlexGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
+      ierr = DMGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
       for (r = rS; r < rE; ++r) {
         PetscInt numCols, cStart;
 

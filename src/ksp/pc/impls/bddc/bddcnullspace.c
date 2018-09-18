@@ -135,11 +135,11 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   /* Create work vectors in shell context */
   ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
   ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
-  ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetType(shell_ctx->work_small_1,((PetscObject)pcis->vec1_B)->type_name);CHKERRQ(ierr);
   ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
   ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
-  ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetType(shell_ctx->work_full_1,((PetscObject)pcis->vec1_B)->type_name);CHKERRQ(ierr);
   ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
 
   /* Allocate workspace */
@@ -150,7 +150,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
 
   /* Restrict local null space on selected dofs
      and compute matrices N and K*N */
-  ierr = VecScatterCreate(pcis->vec1_N,local_dofs,shell_ctx->work_full_1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(pcis->vec1_N,local_dofs,shell_ctx->work_full_1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
   for (k=0;k<nnsp_size;k++) {
     ierr = VecPlaceArray(shell_ctx->work_full_1,(const PetscScalar*)&basis_mat[k*basis_dofs]);CHKERRQ(ierr);
     ierr = VecScatterBegin(scatter_ctx,nullvecs[k],shell_ctx->work_full_1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

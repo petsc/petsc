@@ -266,6 +266,7 @@ PetscErrorCode  VecFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&VecScatterList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);

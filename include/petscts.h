@@ -27,7 +27,7 @@ J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
-#define TSBSI             "bsi"
+#define TSBASICSYMPLECTIC "basicsymplectic"
 #define TSPSEUDO          "pseudo"
 #define TSCN              "cn"
 #define TSSUNDIALS        "sundials"
@@ -860,23 +860,23 @@ PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
 
 /*J
-  TSBSIType - String with the name of a basic symplectic integration method.
+  TSBasicSymplecticType - String with the name of a basic symplectic integration method.
 
   Level: beginner
 
-  .seealso: TSBSISetType(), TS, TSBSI, TSBSIRegister()
+  .seealso: TSBasicSymplecticSetType(), TS, TSBASICSYMPLECTIC, TSBasicSymplecticRegister()
 J*/
-typedef const char* TSBSIType;
-#define TSBSISIEULER   "1"
-#define TSBSIVELVERLET "2"
-#define TSBSI3         "3"
-#define TSBSI4         "4"
-PETSC_EXTERN PetscErrorCode TSBSISetType(TS,TSBSIType);
-PETSC_EXTERN PetscErrorCode TSBSIGetType(TS,TSBSIType*);
-PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,PetscReal[],PetscReal[]);
-PETSC_EXTERN PetscErrorCode TSBSIInitializePackage(void);
-PETSC_EXTERN PetscErrorCode TSBSIFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TSBSIRegisterDestroy(void);
+typedef const char* TSBasicSymplecticType;
+#define TSBASICSYMPLECTICSIEULER   "1"
+#define TSBASICSYMPLECTICVELVERLET "2"
+#define TSBASICSYMPLECTIC3         "3"
+#define TSBASICSYMPLECTIC4         "4"
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticSetType(TS,TSBasicSymplecticType);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticGetType(TS,TSBasicSymplecticType*);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegister(TSBasicSymplecticType,PetscInt,PetscInt,PetscReal[],PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
 /*
        PETSc interface to Sundials

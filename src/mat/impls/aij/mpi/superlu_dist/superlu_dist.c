@@ -130,7 +130,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     /* global mat input, convert b to x_seq */
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
-    ierr = VecScatterCreate(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
     ierr = ISDestroy(&iden);CHKERRQ(ierr);
 
     ierr = VecScatterBegin(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

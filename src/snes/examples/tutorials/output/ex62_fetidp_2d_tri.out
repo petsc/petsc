@@ -701,5 +701,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=15134, allocated nonzeros=18606
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-Number of SNES iterations = 1
 L_2 Error: 4.94788e-09 [4.02642e-10, 4.93147e-09]

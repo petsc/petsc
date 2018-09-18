@@ -51,6 +51,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
 
@@ -58,6 +59,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Pmat,2);CHKERRQ(ierr);
   ierr = MatSetType(Pmat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Pmat,18,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Pmat,18,NULL,12,NULL);CHKERRQ(ierr);
 
