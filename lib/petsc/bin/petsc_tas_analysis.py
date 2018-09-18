@@ -29,7 +29,8 @@ def dataProces(cmdLineArgs):
     print(cmdLineArgs)
     for module in cmdLineArgs.file:
         module = importlib.import_module(module)
-        Nf     = module.size
+        Nf     = 1
+        nProcs = module.size
         dofs   = []
         times  = []
         flops  = []
@@ -40,11 +41,23 @@ def dataProces(cmdLineArgs):
         while level >= 0:
             stageName = "ConvEst Refinement Level "+str(level)
             if stageName in module.Stages:
-                times.append(module.Stages[stageName]["SNESSolve"][0]["time"])
-                flops.append(module.Stages[stageName]["SNESSolve"][0]["flop"])
+                timeTemp = module.Stages[stageName]["SNESSolve"][0]["time"]
+                flopTemp = module.Stages[stageName]["SNESSolve"][0]["flop"]
+                #This loops is used to grab the greatest time and flop when run in parallel
+                for n in range(1, nProcs):
+                    timeTemp = timeTemp if timeTemp >= module.Stages[stageName]["SNESSolve"][n]["time"] \
+                            else module.Stages[stageName]["SNESSolve"][n]["time"]
+                    flopTemp = flopTemp if flopTemp >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
+                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
+
+
+                times.append(timeTemp)
+                flops.append(flopTemp)
+
                 for f in range(Nf):
                     dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
                     errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
+
                 level = level + 1
             else:
                 level = -1
@@ -65,6 +78,25 @@ def dataProces(cmdLineArgs):
         #print(v["dofs"][0])
 
     return data
+
+def getNf(errorList):
+    """"
+    This simple function takes the supplied error list and loops through that list until it encounters -1.  The default
+    convention is that each field from the problem has an entry in the error list with at most 8 fields.  If there are
+    less thatn 8 fields those entries are set to -1.
+    Example:
+      A problem with 4 fields would have a list of the form [.01, .003, .2, .04, -1, -1, -1, -1]
+
+    :param errorList: contains a list of floating point numbers with the errors from each level of refinement.
+    :type errorList: List containg Floating point numbers.
+
+    :returns: Nf and integer that represents the number of fields.
+    """
+    i = 0
+    Nf = 1
+    while errorList[i] != -1:
+        Nf = Nf + 1
+    return Nf
 
 def graphGen(data, graph_flops_scaling, dim):
     """
@@ -137,10 +169,10 @@ def graphGen(data, graph_flops_scaling, dim):
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
-        if graph_flops_scaling == 1 :
-            x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
+        #if graph_flops_scaling == 1 :
+        #    x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
 
-        statScaleHandles.append(x)
+        #statScaleHandles.append(x)
         ##Start Static Scaling with DoFs Graph
         x, =axStatScale.loglog(value['times'], value['dofs'][0]/value['times'], label = fileName)
 
@@ -161,6 +193,8 @@ def graphGen(data, graph_flops_scaling, dim):
     meshConvFig.show()
 
     statScaleLabels = [h.get_label() for h in statScaleHandles]
+    print(statScaleHandles)
+    print(statScaleLabels)
     statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
     statScaleFig.savefig('staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     statScaleFig.show()
@@ -179,8 +213,7 @@ def leastSquares(x, y):
 
        :param x: Contains the x values for the data.
        :type x: numpy array
-       :param y: Contains theort(77, application called MPI_Abort(MPI_COMM_WORLD, 77) - process 21)
-applicati y values for the data.
+       :param y: Contains the y values for the data.
        :type y: numpy array
 
        :returns: alpha -- the convRate fo the least squares solution
