@@ -97,7 +97,7 @@
     <div id="main">
 
       <div align="center">
-        <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.10 Version</a></h2>
       </div>
 
       <h4>General:</h4>
@@ -130,6 +130,7 @@
         <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
         <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
         <li>Added new matrix types for limited-memory variable-metric (MATLMVM) approximations of Jacobians.</li>
+        <li>Added MATAIJSELL, a sub-type of AIJ that uses SELL format internally for SELL-optimized operations.</li>
         </ul>
       <h4>PC:</h4>
       <ul>
