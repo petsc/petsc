@@ -118,6 +118,7 @@ struct _p_SNES {
 
   /* ------------------------- Miscellaneous Information ------------------------ */
 
+  PetscInt    setfromoptionscalled;
   PetscReal   *conv_hist;         /* If !0, stores function norm (or
                                     gradient norm) at each iteration */
   PetscInt    *conv_hist_its;     /* linear iterations for each Newton step */

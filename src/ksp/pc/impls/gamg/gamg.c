@@ -310,7 +310,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
       Scatter the element vertex information (still in the original vertex ordering)
       to the correct processor
     */
-    ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
     ierr = ISDestroy(&isscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

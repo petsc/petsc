@@ -9,7 +9,7 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/dt/fe/interface
+LOCDIR   = src/dm/dt/fe/interface/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

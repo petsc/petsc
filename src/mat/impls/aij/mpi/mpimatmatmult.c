@@ -375,11 +375,16 @@ PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/vecscatterimpl.h>
 /*
     This is a "dummy function" that handles the case where matrix C was created as a dense matrix
   directly by the user and passed to MatMatMult() with the MAT_REUSE_MATRIX option
 
   It is the same as MatMatMultSymbolic_MPIAIJ_MPIDense() except does not create C
+
+  Developer Notes: This directly accesses information inside the VecScatter associated with the matrix-vector product
+   for this matrix. This is not desirable..
+
 */
 PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat B,Mat C)
 {

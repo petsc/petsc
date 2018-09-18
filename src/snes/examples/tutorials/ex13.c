@@ -516,46 +516,46 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_0
     requires: triangle
-    args: -potential_petscspace_degree 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_0
     requires: triangle
-    args: -potential_petscspace_degree 2 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p3_0
     requires: triangle
-    args: -potential_petscspace_degree 3 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q1_0
-    args: -simplex 0 -potential_petscspace_degree 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_0
-    args: -simplex 0 -potential_petscspace_degree 2 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_degree 2 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q3_0
-    args: -simplex 0 -potential_petscspace_degree 3 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -simplex 0 -potential_petscspace_degree 3 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p1_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 1 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -potential_petscspace_degree 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
     requires: ctetgen
-    args: -dim 3 -potential_petscspace_degree 2 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -potential_petscspace_degree 2 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
     requires: ctetgen
     timeoutfactor: 2
-    args: -dim 3 -potential_petscspace_degree 3 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -simplex 0 -potential_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q2_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 2 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -simplex 0 -potential_petscspace_degree 2 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q3_0
-    args: -dim 3 -simplex 0 -potential_petscspace_degree 3 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -simplex 0 -potential_petscspace_degree 3 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 2d_p1_spectral_0
     requires: triangle fftw !complex

@@ -37,7 +37,9 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,nlocal,12);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,8,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&y);CHKERRQ(ierr);
+  ierr = VecSetSizes(y,8,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
 
   /* create two index sets */
   if (!rank) {
@@ -55,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
@@ -77,7 +79,19 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
+   testset:
       nsize: 2
-
+      output_file: output/ex23_1.out
+      filter: grep -v "  type:"
+      test:
+        suffix: standard
+        args: -vec_type standard
+      test:
+        requires: veccuda
+        suffix: cuda
+        args: -vec_type cuda
+      test:
+        requires: viennacl
+        suffix:  viennacl
+        args: -vec_type viennacl
 TEST*/

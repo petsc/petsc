@@ -623,6 +623,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 +  B - LMVM matrix
 -  delta - initial value for diagonal scaling
 
+   Level: intermediate
 @*/
 
 PetscErrorCode MatSymBrdnSetDelta(Mat B, PetscScalar delta)

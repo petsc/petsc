@@ -117,7 +117,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   }
   ierr = ISSetBlockSize(isin,bs);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(x,isin,xtmp,NULL,&scatter);CHKERRQ(ierr);
 
   sred->isin    = isin;
   sred->scatter = scatter;

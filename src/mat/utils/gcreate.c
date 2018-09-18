@@ -89,6 +89,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = PetscHeaderCreate(B,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECSTANDARD,&B->defaultvectype);CHKERRQ(ierr);
 
   B->congruentlayouts = PETSC_DECIDE;
   B->preallocated     = PETSC_FALSE;
@@ -344,6 +345,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
+  ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
