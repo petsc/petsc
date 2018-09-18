@@ -9,7 +9,9 @@
 
 /* external Fortran 90 subroutine */
 #define Del2Apply del2apply_
+EXTERN_C_BEGIN
 extern void Del2Apply(int*,double*,const double*,double*);
+EXTERN_C_END
 
 /* user data structure and routines 
  * defining the matrix-free operator */
