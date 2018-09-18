@@ -11,11 +11,12 @@
       Mat A
       PetscErrorCode ierr
       PetscInt i,j,m,n,iar(1),jar(1)
-      PetscInt rstart,rend
       PetscInt one
       PetscScalar  v(1)
       PetscScalar, pointer :: array(:,:)
-
+      PetscMPIInt rank
+      integer :: ashape(2)
+      character(len=80) :: string
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -51,23 +52,15 @@
 !
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
 
-
 !
-!      Print the local portion of the matrix to the screen
+!      Print the local matrix shape to the screen for each rank
 !
       call MatDenseGetArrayF90(A,array,ierr);CHKERRA(ierr)
-      call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRA(ierr)
-      call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr);CHKERRA(ierr)
-!
-!   Fortran IO may not come out in the correct order since each process
-!   is individually doing IO
-!      do 30 i=1,rend-rstart
-!         write(6,100) (PetscRealPart(array(i,j)),j=1,n)
-! 30   continue
-! 100  format(2F6.2)
-
-      call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr);CHKERRA(ierr)
-
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr);
+      ashape = shape(array)
+      write(string, '("[", i0, "]", " shape (", i0, ",", i0, ")", a1)') rank, ashape(1), ashape(2), new_line('a')
+      call PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr);CHKERRA(ierr);
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr);CHKERRA(ierr);
       call MatDenseRestoreArrayF90(A,array,ierr);CHKERRA(ierr)
 !
 !      Free the space used by the matrix

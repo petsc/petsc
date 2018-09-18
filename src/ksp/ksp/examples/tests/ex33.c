@@ -149,13 +149,13 @@ int main(int argc,char **args)
 
     test:
       suffix: superlu_dist
-      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
+      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NOROWPERM
       requires: superlu_dist !complex
       output_file: output/ex33.out
 
     test:
       suffix: superlu_dist_2
-      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NATURAL
+      args: -sigma 2.0 -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_rowperm NOROWPERM
       requires: superlu_dist !complex
       nsize: 3
       output_file: output/ex33.out

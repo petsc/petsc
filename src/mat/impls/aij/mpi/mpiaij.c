@@ -632,6 +632,94 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionReturn(0);
 }
 
+/*
+    This function sets the j and ilen arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+    No off-processor parts off the matrix are allowed here and mat->was_assembled has to be PETSC_FALSE.
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[])
+{
+  Mat_MPIAIJ     *aij        = (Mat_MPIAIJ*)mat->data;
+  Mat            A           = aij->A; /* diagonal part of the matrix */
+  Mat            B           = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *a          = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b          = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart      = mat->cmap->rstart,cend = mat->cmap->rend,col;
+  PetscInt       *ailen      = a->ilen,*aj = a->j;
+  PetscInt       *bilen      = b->ilen,*bj = b->j;
+  PetscInt       am          = aij->A->rmap->n,j;
+  PetscInt       diag_so_far = 0,dnz;
+  PetscInt       offd_so_far = 0,onz;
+
+  PetscFunctionBegin;
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    dnz = onz = 0;
+    /*  Iterate over all non-zero columns of the current row */
+    for (col=mat_i[j]; col<mat_i[j+1]; col++) {
+      /* If column is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        aj[diag_so_far++] = mat_j[col] - cstart;
+        dnz++;
+      } else { /* off-diagonal entries */
+        bj[offd_so_far++] = mat_j[col];
+        onz++;
+      }
+    }
+    ailen[j] = dnz;
+    bilen[j] = onz;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+    This function sets the local j, a and ilen arrays (of the diagonal and off-diagonal part) of an MPIAIJ-matrix.
+    The values in mat_i have to be sorted and the values in mat_j have to be sorted for each row (CSR-like).
+    No off-processor parts off the matrix are allowed here, they are set at a later point by MatSetValues_MPIAIJ.
+    Also, mat->was_assembled has to be false, otherwise the statement aj[rowstart_diag+dnz_row] = mat_j[col] - cstart;
+    would not be true and the more complex MatSetValues_MPIAIJ has to be used.
+*/
+PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat mat,const PetscInt mat_j[],const PetscInt mat_i[],const PetscScalar mat_a[])
+{
+  Mat_MPIAIJ     *aij   = (Mat_MPIAIJ*)mat->data;
+  Mat            A      = aij->A; /* diagonal part of the matrix */
+  Mat            B      = aij->B; /* offdiagonal part of the matrix */
+  Mat_SeqAIJ     *aijd  =(Mat_SeqAIJ*)(aij->A)->data,*aijo=(Mat_SeqAIJ*)(aij->B)->data;
+  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b     = (Mat_SeqAIJ*)B->data;
+  PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend;
+  PetscInt       *ailen = a->ilen,*aj = a->j;
+  PetscInt       *bilen = b->ilen,*bj = b->j;
+  PetscInt       am     = aij->A->rmap->n,j;
+  PetscInt       *full_diag_i=aijd->i,*full_offd_i=aijo->i; /* These variables can also include non-local elements, which are set at a later point. */
+  PetscInt       col,dnz_row,onz_row,rowstart_diag,rowstart_offd;
+  PetscScalar    *aa = a->a,*ba = b->a;
+
+  PetscFunctionBegin;
+  /* Iterate over all rows of the matrix */
+  for (j=0; j<am; j++) {
+    dnz_row = onz_row = 0;
+    rowstart_offd = full_offd_i[j];
+    rowstart_diag = full_diag_i[j];
+    /*  Iterate over all non-zero columns of the current row */
+    for (col=mat_i[j]; col<mat_i[j+1]; col++) {
+      /* If column is in the diagonal */
+      if (mat_j[col] >= cstart && mat_j[col] < cend) {
+        aj[rowstart_diag+dnz_row] = mat_j[col] - cstart;
+        aa[rowstart_diag+dnz_row] = mat_a[col];
+        dnz_row++;
+      } else { /* off-diagonal entries */
+        bj[rowstart_offd+onz_row] = mat_j[col];
+        ba[rowstart_offd+onz_row] = mat_a[col];
+        onz_row++;
+      }
+    }
+    ailen[j] = dnz_row;
+    bilen[j] = onz_row;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
@@ -1927,12 +2015,11 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 
 PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 {
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
+  Mat_MPIAIJ     *a    =(Mat_MPIAIJ*)A->data,*b;
+  Mat_SeqAIJ     *Aloc =(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data,*sub_B_diag;
+  PetscInt       M     = A->rmap->N,N=A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,*B_diag_ilen,*B_diag_i,i,ncol,A_diag_ncol;
   PetscErrorCode ierr;
-  PetscInt       M      = A->rmap->N,N = A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i;
-  PetscInt       cstart = A->cmap->rstart,ncol;
-  Mat            B;
+  Mat            B,A_diag,*B_diag;
   MatScalar      *array;
 
   PetscFunctionBegin;
@@ -1949,7 +2036,6 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = PetscMemzero(d_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<ai[ma]; i++) {
       d_nnz[aj[i]]++;
-      aj[i] += cstart; /* global col index to be used by MatSetValues() */
     }
     /* compute local off-diagonal contributions */
     ierr = PetscMemzero(g_nnz,nb*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1972,20 +2058,24 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   } else {
     B    = *matout;
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-    for (i=0; i<ai[ma]; i++) aj[i] += cstart; /* global col index to be used by MatSetValues() */
   }
 
-  /* copy over the A part */
-  array = Aloc->a;
-  row   = A->rmap->rstart;
-  for (i=0; i<ma; i++) {
-    ncol = ai[i+1]-ai[i];
-    ierr = MatSetValues(B,ncol,aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++;
-    array += ncol; aj += ncol;
+  b           = (Mat_MPIAIJ*)B->data;
+  A_diag      = a->A;
+  B_diag      = &b->A;
+  sub_B_diag  = (Mat_SeqAIJ*)(*B_diag)->data;
+  A_diag_ncol = A_diag->cmap->N;
+  B_diag_ilen = sub_B_diag->ilen;
+  B_diag_i    = sub_B_diag->i;
+
+  /* Set ilen for diagonal of B */
+  for (i=0; i<A_diag_ncol; i++) {
+    B_diag_ilen[i] = B_diag_i[i+1] - B_diag_i[i];
   }
-  aj = Aloc->j;
-  for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
+
+  /* Transpose the diagonal part of the matrix. In contrast to the offdiagonal part, this can be done
+  very quickly (=without using MatSetValues), because all writes are local. */
+  ierr = MatTranspose(A_diag,MAT_REUSE_MATRIX,B_diag);CHKERRQ(ierr);
 
   /* copy over the B part */
   ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
@@ -5802,4 +5892,3 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const
   }
   PetscFunctionReturnVoid();
 }
-

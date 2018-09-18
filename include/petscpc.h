@@ -282,6 +282,8 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetDivergenceMat(PC,Mat,PetscBool,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCGetPrimalVerticesIS(PC,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGetPrimalVerticesLocalIS(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
@@ -298,6 +300,8 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const Petsc
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,PetscBool,const char*,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCBDDCInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);

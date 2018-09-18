@@ -68,6 +68,7 @@ typedef struct _TSTrajectoryOps *TSTrajectoryOps;
 
 struct _TSTrajectoryOps {
   PetscErrorCode (*view)(TSTrajectory,PetscViewer);
+  PetscErrorCode (*reset)(TSTrajectory);
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
   PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal*);
@@ -89,6 +90,15 @@ struct _p_TSTrajectory {
   PetscErrorCode (*transformdestroy)(void*);
   void*          transformctx;
   void           *data;
+};
+
+typedef struct _TS_RHSSplitLink *TS_RHSSplitLink;
+struct _TS_RHSSplitLink {
+  TS              ts;
+  char            *splitname;
+  IS              is;
+  TS_RHSSplitLink next;
+  PetscLogEvent   event;
 };
 
 struct _p_TS {
@@ -220,6 +230,10 @@ struct _p_TS {
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
   Vec      *work;
+
+  /* ---------------------- RHS splitting support ---------------------------------*/
+  PetscInt        num_rhs_splits;
+  TS_RHSSplitLink tsrhssplit;
 };
 
 struct _TSAdaptOps {

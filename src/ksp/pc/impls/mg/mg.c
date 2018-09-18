@@ -94,6 +94,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 
       ierr = KSPCreateVecs(mglevels[levels-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
       mglevels[levels-1]->b = *vec;
+      ierr = PetscFree(vec);CHKERRQ(ierr);
     }
     ierr = VecCopy(b,mglevels[levels-1]->b);CHKERRQ(ierr);
   }
@@ -364,6 +365,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
       ierr = KSPCreateVecs(mglevels[levels-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
       mglevels[levels-1]->b = *vec;
+      ierr = PetscFree(vec);CHKERRQ(ierr);
     }
     ierr = VecCopy(b,mglevels[levels-1]->b);CHKERRQ(ierr);
   }

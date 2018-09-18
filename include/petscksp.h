@@ -335,9 +335,10 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 #define KSP_FILE_CLASSID 1211223
 
-PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
+PETSC_EXTERN PetscErrorCode KSPLSQRSetExactMatNorm(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
-PETSC_EXTERN PetscErrorCode KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetNorms(KSP,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
@@ -588,7 +589,7 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
-PETSC_EXTERN PetscErrorCode KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
+PETSC_EXTERN PetscErrorCode KSPLSQRConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void*);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void**);
 PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
@@ -711,6 +712,7 @@ PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMIsAllocated(Mat, PetscBool*);

@@ -1,0 +1,38 @@
+Mat Object: 2 MPI processes
+  type: mpidense
+1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00 
+  0 KSP unpreconditioned resid norm 5.697367813298e+00 true resid norm 5.697367813298e+00 ||r(i)||/||b|| 1.000000000000e+00
+  0 KSP resid norm 5.697367813298e+00
+  1 KSP unpreconditioned resid norm 6.747226026883e-01 true resid norm 6.747226026883e-01 ||r(i)||/||b|| 1.184270745367e-01
+  1 KSP resid norm 6.747226026883e-01 normal eq resid norm 5.424084523454e-01 matrix norm 2.522274425512e+00
+  2 KSP unpreconditioned resid norm 2.418354136999e-01 true resid norm 2.418354136999e-01 ||r(i)||/||b|| 4.244686697873e-02
+  2 KSP resid norm 2.418354136999e-01 normal eq resid norm 1.251932323578e-01 matrix norm 2.666940740554e+00
+  3 KSP unpreconditioned resid norm 2.000000000000e-01 true resid norm 2.000000000000e-01 ||r(i)||/||b|| 3.510392984164e-02
+  3 KSP resid norm 2.000000000000e-01 normal eq resid norm 4.237714688711e-14 matrix norm 2.828427124746e+00
+Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 3
+KSP Object: 2 MPI processes
+  type: lsqr
+    norm of standard error 0.331662, iterations 3
+    using inexact matrix norm
+  maximum iterations=10, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 2 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: 2 MPI processes
+    type: mpidense
+    rows=4, cols=3
+    total: nonzeros=12, allocated nonzeros=12
+    total number of mallocs used during MatSetValues calls =0
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+0.173205
+0.2
+Process [1]
+0.2

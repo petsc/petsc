@@ -137,4 +137,7 @@ struct _p_PetscSectionSym {
   SymWorkLink workin;
   SymWorkLink workout;
 };
+
+
+PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #endif

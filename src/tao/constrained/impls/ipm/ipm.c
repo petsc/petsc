@@ -237,7 +237,7 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   PetscInt       xstart,xend;
   PetscInt       ucstart,ucend; /* user ci */
   PetscInt       ucestart,uceend; /* user ce */
-  PetscInt       sstart,send;
+  PetscInt       sstart = 0 ,send = 0;
   PetscInt       bigsize;
   PetscInt       i,counter,nloc;
   PetscInt       *cind,*xind,*ucind,*uceind,*stepind;

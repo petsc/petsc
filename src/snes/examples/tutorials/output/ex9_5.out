@@ -1,2 +1,2 @@
-setup done: grid  Mx,My = 11,11  with spacing  dx,dy = 0.4000,0.4000
-errors:     av |u-uexact|  = 7.156e-03    |u-uexact|_inf = 2.550e-02
+  Linear solve converged due to CONVERGED_RTOL iterations 2
+errors on 5 x 5 grid:  av |u-uexact|  = 4.531e-02,  |u-uexact|_inf = 1.635e-01

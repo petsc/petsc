@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit       = '6.0.4-p2'
+    self.gitcommit       = '6.0.6-p1'
     self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
-                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_'+self.gitcommit+'.tar.gz']
+                            'https://bitbucket.org/petsc/pkg-scotch/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['scotch']
     self.liblist         = [['libptesmumps.a','libptscotchparmetis.a','libptscotch.a','libptscotcherr.a','libesmumps.a','libscotch.a','libscotcherr.a']]
     self.functions       = ['SCOTCH_archBuild']

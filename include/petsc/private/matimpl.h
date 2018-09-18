@@ -183,7 +183,7 @@ struct _MatOps {
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
-  PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*invertvariableblockdiagonal)(Mat,PetscInt,const PetscInt*,PetscScalar*);
   PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
@@ -410,6 +410,7 @@ struct _p_Mat {
   MatFactorError         factorerrortype;               /* type of error in factorization */
   PetscReal              factorerror_zeropivot_value;   /* If numerical zero pivot was detected this is the computed value */
   PetscInt               factorerror_zeropivot_row;     /* Row where zero pivot was detected */
+  PetscInt               nblocks,*bsizes;   /* support for MatSetVariableBlockSizes() */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
@@ -1423,6 +1424,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
   llnk[3] = 2;               /* next for the head node */
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max,PetscInt **lnk)
+{
+  PetscErrorCode ierr;
+  PetscInt       lsize = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscIntMultError(2,nlnk_max+2,&lsize);CHKERRQ(ierr);
+  ierr = PetscRealloc(lsize*sizeof(PetscInt),lnk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

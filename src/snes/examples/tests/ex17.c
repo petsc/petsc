@@ -680,8 +680,8 @@ int main(int argc,char **argv)
 
   ierr = block_system();CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 

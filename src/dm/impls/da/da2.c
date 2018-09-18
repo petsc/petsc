@@ -141,58 +141,6 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-      M is number of grid points
-      m is number of processors
-
-*/
-PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
-{
-  PetscErrorCode ierr;
-  PetscInt       m,n = 0,x = 0,y = 0;
-  PetscMPIInt    size,csize,rank;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  csize = 4*size;
-  do {
-    if (csize % 4) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
-    csize = csize/4;
-
-    m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)csize)/((PetscReal)N)));
-    if (!m) m = 1;
-    while (m > 0) {
-      n = csize/m;
-      if (m*n == csize) break;
-      m--;
-    }
-    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
-
-    x = M/m + ((M % m) > ((csize-1) % m));
-    y = (N + (csize-1)/m)/n;
-  } while ((x < 4 || y < 4) && csize > 1);
-  if (size != csize) {
-    MPI_Group   entire_group,sub_group;
-    PetscMPIInt i,*groupies;
-
-    ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc1(csize,&groupies);CHKERRQ(ierr);
-    for (i=0; i<csize; i++) {
-      groupies[i] = (rank/csize)*csize + i;
-    }
-    ierr = MPI_Group_incl(entire_group,csize,groupies,&sub_group);CHKERRQ(ierr);
-    ierr = PetscFree(groupies);CHKERRQ(ierr);
-    ierr = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&entire_group);CHKERRQ(ierr);
-    ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"DMDASplitComm2d:Creating redundant coarse problems of size %d\n",csize);CHKERRQ(ierr);
-  } else {
-    *outcomm = comm;
-  }
-  PetscFunctionReturn(0);
-}
 
 #if defined(new)
 /*

@@ -4,6 +4,20 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
+#if !defined(PETSC_PCBDDC_MAXLEVELS)
+#define PETSC_PCBDDC_MAXLEVELS 8
+#endif
+
+PETSC_EXTERN PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_LocalSolvers[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_LocalWork[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CorrectionSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CoarseSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_CoarseSolver[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_AdaptiveSetUp[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_Scaling[PETSC_PCBDDC_MAXLEVELS];
+PETSC_EXTERN PetscLogEvent PC_BDDC_Schurs[PETSC_PCBDDC_MAXLEVELS];
+
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
@@ -112,6 +126,7 @@ typedef struct {
   PetscInt            current_level;
   PetscInt            max_levels;
   PetscInt            coarse_eqs_per_proc;
+  PetscInt            coarse_eqs_limit;
   IS                  coarse_subassembling;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
@@ -169,6 +184,5 @@ typedef struct {
   PetscInt    dbg_flag;
   PetscViewer dbg_viewer;
 } PC_BDDC;
-
 
 #endif /* __pcbddc_h */

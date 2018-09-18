@@ -1,6 +1,6 @@
-  0 KSP Residual norm 2544.97 
-  1 KSP Residual norm 2.63058e-08 
-KSP Object: 8 MPI processes
+  0 KSP Residual norm 1.92584 
+  1 KSP Residual norm < 1.e-11
+KSP Object: 4 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     happy breakdown tolerance 1e-30
@@ -8,14 +8,14 @@ KSP Object: 8 MPI processes
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object: 8 MPI processes
+PC Object: 4 MPI processes
   type: tfs
   linear system matrix = precond matrix:
-  Mat Object: 8 MPI processes
+  Mat Object: 4 MPI processes
     type: mpiaij
-    rows=1501, cols=1501
-    total: nonzeros=26131, allocated nonzeros=26131
+    rows=181, cols=181
+    total: nonzeros=2245, allocated nonzeros=2245
     total number of mallocs used during MatSetValues calls =0
-      using I-node (on process 0) routines: found 63 nodes, limit used is 5
+      using I-node (on process 0) routines: found 16 nodes, limit used is 5
 Number of iterations =   1
-Residual norm 7.62063e-10
+  Residual norm < 1.e-12
