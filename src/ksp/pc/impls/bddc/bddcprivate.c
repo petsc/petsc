@@ -1510,7 +1510,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
 
     ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
     ierr = MatCreateVecs(lA,&vins,NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreate(v,vl2l,vins,NULL,&sc);CHKERRQ(ierr);
+    ierr = VecScatterCreate(v,NULL,vins,vl2l,&sc);CHKERRQ(ierr);
     ierr = VecScatterBegin(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&sc);CHKERRQ(ierr);

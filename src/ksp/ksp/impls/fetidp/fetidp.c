@@ -974,6 +974,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       if (!pcbddc->divudotp) {
         Mat       B;
         IS        P;
+        IS        l2l = NULL;
         PetscBool save;
 
         ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
@@ -982,19 +983,24 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           PetscInt m,M;
 
           ierr = MatGetOwnershipRange(A,&m,&M);CHKERRQ(ierr);
-          ierr = ISCreateStride(PetscObjectComm((PetscObject)P),M-m,m,1,&F);CHKERRQ(ierr);
+          ierr = ISCreateStride(PetscObjectComm((PetscObject)A),M-m,m,1,&F);CHKERRQ(ierr);
           ierr = ISComplement(P,m,M,&V);CHKERRQ(ierr);
-          ierr = MatCreateSubMatrix(A,F,V,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-          ierr = MatZeroRowsIS(B,P,0.0,NULL,NULL);CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(A,P,V,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+          {
+            Mat_IS *Bmatis = (Mat_IS*)B->data;
+            ierr = PetscObjectReference((PetscObject)Bmatis->getsub_cis);CHKERRQ(ierr);
+            l2l  = Bmatis->getsub_cis;
+          }
           ierr = ISDestroy(&V);CHKERRQ(ierr);
           ierr = ISDestroy(&F);CHKERRQ(ierr);
         } else {
           ierr = MatCreateSubMatrix(A,P,NULL,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
         }
         save = pcbddc->compute_nonetflux; /* SetDivergenceMat activates nonetflux computation */
-        ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,(PetscBool)!pisz,NULL);CHKERRQ(ierr);
+        ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,PETSC_FALSE,l2l);CHKERRQ(ierr);
         pcbddc->compute_nonetflux = save;
         ierr = MatDestroy(&B);CHKERRQ(ierr);
+        ierr = ISDestroy(&l2l);CHKERRQ(ierr);
       }
       if (A != Ap) { /* user has provided a different Pmat, this always superseeds the setter (TODO: is it OK?) */
         /* use monolithic operator, we restrict later */
