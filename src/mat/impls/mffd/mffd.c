@@ -195,6 +195,7 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatMFFDList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

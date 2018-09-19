@@ -45,7 +45,7 @@ int main(int argc,char **argv)
 
   ierr = VecSet(y,zero);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
@@ -65,7 +65,20 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
+   testset:
       nsize: 4
+      output_file: output/ex22_1.out
+      filter: grep -v "  type:"
+      test:
+        suffix: standard
+        args: -vec_type standard
+      test:
+        requires: veccuda
+        suffix: cuda
+        args: -vec_type cuda
+      test:
+        requires: viennacl
+        suffix:  viennacl
+        args: -vec_type viennacl
 
 TEST*/

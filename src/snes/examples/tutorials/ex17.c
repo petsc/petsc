@@ -413,7 +413,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_quad_vlap
     requires: triangle
-    args: -displacement_petscspace_degree 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -displacement_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_quad_vlap
     requires: triangle
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
     args: -displacement_petscspace_degree 3 -dm_refine 2 -dmsnes_check
   test:
     suffix: 2d_q1_quad_vlap
-    args: -simplex 0 -displacement_petscspace_degree 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -simplex 0 -displacement_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_quad_vlap
     args: -simplex 0 -displacement_petscspace_degree 2 -dm_refine 2 -dmsnes_check
@@ -434,7 +434,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_quad_elas
     requires: triangle
-    args: -sol_type elas_quad -displacement_petscspace_degree 1 -dm_refine 2 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_quad -displacement_petscspace_degree 1 -dm_refine 2 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_quad_elas
     requires: triangle
@@ -445,7 +445,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_quad -displacement_petscspace_degree 3 -dmsnes_check
   test:
     suffix: 2d_q1_quad_elas
-    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_quad_elas
     args: -sol_type elas_quad -simplex 0 -displacement_petscspace_degree 2 -dmsnes_check
@@ -456,7 +456,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_quad_vlap
     requires: ctetgen
-    args: -dim 3 -displacement_petscspace_degree 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
+    args: -dim 3 -displacement_petscspace_degree 1 -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_vlap
     requires: ctetgen
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
     args: -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
   test:
     suffix: 3d_q1_quad_vlap
-    args: -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
+    args: -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_q2_quad_vlap
     args: -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
@@ -477,7 +477,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_quad_elas
     requires: ctetgen
-    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 1 -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_p2_quad_elas
     requires: ctetgen
@@ -488,7 +488,7 @@ int main(int argc, char **argv)
     args: -sol_type elas_quad -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -dmsnes_check
   test:
     suffix: 3d_q1_quad_elas
-    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_q2_quad_elas
     args: -sol_type elas_quad -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -dmsnes_check
@@ -499,87 +499,87 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_trig_vlap
     requires: triangle
-    args: -sol_type vlap_trig -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_trig_vlap
     requires: triangle
-    args: -sol_type vlap_trig -displacement_petscspace_degree 2 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p3_trig_vlap
     requires: triangle
-    args: -sol_type vlap_trig -displacement_petscspace_degree 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q1_trig_vlap
-    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_trig_vlap
-    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q3_trig_vlap
-    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type vlap_trig -simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p1_trig_elas
     requires: triangle
-    args: -sol_type elas_trig -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p2_trig_elas
     requires: triangle
-    args: -sol_type elas_trig -displacement_petscspace_degree 2 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_p3_trig_elas
     requires: triangle
-    args: -sol_type elas_trig -displacement_petscspace_degree 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q1_trig_elas
-    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q2_trig_elas
-    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 2 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
   test:
     suffix: 2d_q3_trig_elas
-    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+    args: -sol_type elas_trig -simplex 0 -displacement_petscspace_degree 3 -dm_refine 1 -convest_num_refine 3 -snes_convergence_estimate
 
   test:
     suffix: 3d_p1_trig_vlap
     requires: ctetgen
-    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_vlap
     requires: ctetgen
-    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p3_trig_vlap
     requires: ctetgen
-    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q1_trig_vlap
-    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q2_trig_vlap
-    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q3_trig_vlap
-    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type vlap_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p1_trig_elas
     requires: ctetgen
-    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 1 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 1 -dm_refine 1 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_p2_trig_elas
     requires: ctetgen
-    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_p3_trig_elas
     requires: ctetgen
-    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q1_trig_elas
-    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -num_refine 2 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 1 -dm_refine 0 -convest_num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q2_trig_elas
-    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 2 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
   test:
     suffix: 3d_q3_trig_elas
-    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -num_refine 1 -snes_convergence_estimate
+    args: -sol_type elas_trig -dim 3 -simplex 0 -displacement_petscspace_degree 3 -dm_refine 0 -convest_num_refine 1 -snes_convergence_estimate
 
 TEST*/

@@ -781,7 +781,7 @@ PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
-PETSC_EXTERN PetscMPIInt Petsc_Shared_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_ShmComm_keyval;
 
 /*
   PETSc communicators have this attribute, see

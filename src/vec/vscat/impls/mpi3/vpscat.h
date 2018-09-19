@@ -16,8 +16,8 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
-#if defined(PETSC_HAVE_VIENNACL)
-  PetscBool              is_viennacltype = PETSC_FALSE;
+#if defined(PETSC_HAVE_VECCUDA)
+  PetscBool              is_cudatype = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -38,14 +38,9 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   nsends  = to->n;
   indices = to->indices;
   sstarts = to->starts;
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
-  if (is_viennacltype) {
-    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  } else
-#endif
 #if defined(PETSC_HAVE_VECCUDA)
-  {
+  ierr = PetscObjectTypeCompareAny((PetscObject)xin,&is_cudatype,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
+  if (is_cudatype) {
     VecCUDAAllocateCheckHost(xin);
     if (xin->valid_GPU_array == PETSC_OFFLOAD_GPU) {
       if (xin->spptr && ctx->spptr) {
@@ -55,12 +50,11 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       }
     }
     xv = *((PetscScalar**)xin->data);
-  }
-#else
+  } else
+#endif
   {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
-#endif
 
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
   else yv = xv;
@@ -265,7 +259,7 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
   Vec_Node               *vnode;
   PetscInt               cnt,*idx,*idy;
   MPI_Comm               comm,mscomm,veccomm;
-  PetscCommShared        scomm;
+  PetscShmComm           scomm;
   PetscMPIInt            i,xsize;
   PetscInt               k,k1;
   PetscScalar            *sharedspace;
@@ -274,8 +268,8 @@ PetscErrorCode PETSCMAP1(VecScatterEndMPI3Node)(VecScatter ctx,Vec xin,Vec yin,I
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
 
   ierr = PetscObjectGetComm((PetscObject)ctx,&comm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGet(comm,&scomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGetMpiShmComm(scomm,&mscomm);CHKERRQ(ierr);
 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 

@@ -45,6 +45,9 @@ typedef const char* MatType;
 #define MATAIJPERM         "aijperm"
 #define MATSEQAIJPERM      "seqaijperm"
 #define MATMPIAIJPERM      "mpiaijperm"
+#define MATAIJSELL         "aijsell"
+#define MATSEQAIJSELL      "seqaijsell"
+#define MATMPIAIJSELL      "mpiaijsell"
 #define MATAIJMKL          "aijmkl"
 #define MATSEQAIJMKL       "seqaijmkl"
 #define MATMPIAIJMKL       "mpiaijmkl"
@@ -1594,6 +1597,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
 
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 
+PETSC_EXTERN PetscErrorCode MatISSetLocalMatType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);

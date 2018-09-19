@@ -91,6 +91,7 @@
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
         <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
+        <li><a href="#multiplempis">How to fix the problem: PETSc was configured with one MPICH or OpenMPI mpi.h version but now appears to be compiling using a different MPICH OpenMPI mpi.h version</a></li>
         <li><a href="#PetscOptionsInsertFile">What does it mean when make test gives:</a>
             <pre>
 Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes
@@ -624,6 +625,15 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       </p>
 
       <hr>
+
+      <h3><a name="multiplempis">How to fix the problem: PETSc was configured with one MPICH (or OpenMPI) mpi.h version but now appears to be compiling using a different MPICH (or OpenMPI) mpi.h version</a></h3>
+
+<p>This happens for generally one of two reasons:
+  <ul>
+    <li>You previously ran ./configure with the option --download-mpich (or --download-openmpi) but later ran ./configure to use a version of MPI already installed on the machine. Solution: do "rm -rf ${PETSC_ARCH}" and run ./configure again.</li>
+    <li>You have two versions of MPI installed on your machine in different locations and both are being picked up in different parts of the configuration/make process. For example you may have MPI installed in /usr/local/mpi and in /Apps/OpenMPI. Solution: remove one of the two installations.</li>
+  </ul>
+
 
       <h3><a name="PetscOptionsInsertFile">What does it mean when make test gives:</a></h3>
             <pre>

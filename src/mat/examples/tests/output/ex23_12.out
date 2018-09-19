@@ -1,0 +1,96 @@
+Test MatGetInfo
+Process   0: 24 33 9 2 0
+Process   1: 24 33 9 1 0
+Process   2: 24 33 9 1 0
+GlobalMax  : 24 33 9 2 0
+GlobalSum  : 72 99 27 1 0
+Test MatView
+Mat Object: 3 MPI processes
+  type: is
+  Mat Object: (is_) 1 MPI processes
+    type: seqsbaij
+row 0: (0, 2.)  (1, -1.)  (11, -1.) 
+row 1: (1, 4.)  (2, -2.) 
+row 2: (2, 6.)  (3, -3.) 
+row 3: (3, 8.)  (4, -4.) 
+row 4: (4, 10.)  (5, -5.) 
+row 5: (5, 12.)  (6, -6.) 
+row 6: (6, 14.)  (7, -7.) 
+row 7: (7, 16.)  (8, -8.) 
+row 8: (8, 18.)  (9, -9.) 
+row 9: (9, 20.)  (10, -10.) 
+row 10: (10, 22.)  (11, -11.) 
+row 11: (11, 24.) 
+  Mat Object: (is_) 1 MPI processes
+    type: seqsbaij
+row 0: (0, 2.)  (1, -1.)  (11, -1.) 
+row 1: (1, 4.)  (2, -2.) 
+row 2: (2, 6.)  (3, -3.) 
+row 3: (3, 8.)  (4, -4.) 
+row 4: (4, 10.)  (5, -5.) 
+row 5: (5, 12.)  (6, -6.) 
+row 6: (6, 14.)  (7, -7.) 
+row 7: (7, 16.)  (8, -8.) 
+row 8: (8, 18.)  (9, -9.) 
+row 9: (9, 20.)  (10, -10.) 
+row 10: (10, 22.)  (11, -11.) 
+row 11: (11, 24.) 
+  Mat Object: (is_) 1 MPI processes
+    type: seqsbaij
+row 0: (0, 2.)  (1, -1.)  (11, -1.) 
+row 1: (1, 4.)  (2, -2.) 
+row 2: (2, 6.)  (3, -3.) 
+row 3: (3, 8.)  (4, -4.) 
+row 4: (4, 10.)  (5, -5.) 
+row 5: (5, 12.)  (6, -6.) 
+row 6: (6, 14.)  (7, -7.) 
+row 7: (7, 16.)  (8, -8.) 
+row 8: (8, 18.)  (9, -9.) 
+row 9: (9, 20.)  (10, -10.) 
+row 10: (10, 22.)  (11, -11.) 
+row 11: (11, 24.) 
+Test CheckMat
+Test MatDuplicate and MatAXPY
+Test MatConvert_IS_XAIJ
+Test MatConvert_XAIJ_IS
+Test MatDiagonalScale
+Test MatGetLocalSubMatrix
+Test MatConvert_Nest_IS
+Test MatCreateSubMatrix
+Test MatDiagonalSet
+Test MatShift
+IS Object: 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 5
+[0] 0 6
+[0] 1 7
+[0] 2 8
+[0] 3 9
+[0] 4 10
+[1] Index set is permutation
+[1] Number of indices in (stride) set 0
+[2] Index set is permutation
+[2] Number of indices in (stride) set 0
+Skipping MatZeroRows (diag nonzero)
+Test MatMissingDiagonal
+[0] [0,4) Missing 0, row -1 (diag nonzero)
+[1] [4,8) Missing 0, row -1 (diag nonzero)
+[2] [8,12) Missing 0, row -1 (diag nonzero)
+IS Object: 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 5
+[0] 0 6
+[0] 1 7
+[0] 2 8
+[0] 3 9
+[0] 4 10
+[1] Index set is permutation
+[1] Number of indices in (stride) set 0
+[2] Index set is permutation
+[2] Number of indices in (stride) set 0
+Skipping MatZeroRows (diag zero)
+Test MatMissingDiagonal
+[0] [0,4) Missing 0, row -1 (diag zero)
+[1] [4,8) Missing 0, row -1 (diag zero)
+[2] [8,12) Missing 0, row -1 (diag zero)
+Test MatTranspose

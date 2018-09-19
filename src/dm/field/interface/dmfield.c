@@ -443,7 +443,7 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   Level: developer
 
 .seealso: DMFieldEvaluateFE(), DMFieldCreateDefaulteQuadrature(), DMFieldGetDegree()
-C@*/
+@*/
 PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
 {
   PetscInt       dim, dE;

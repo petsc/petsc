@@ -106,7 +106,6 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for off-diagonal blocks\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
       if (ilink->fields) {
         ierr = PetscViewerASCIIPrintf(viewer,"Split number %D Fields ",i);CHKERRQ(ierr);
@@ -125,7 +124,6 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
       ierr  = KSPView(ilink->ksp,viewer);CHKERRQ(ierr);
       ilink = ilink->next;
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
 
  if (isdraw) {
@@ -547,7 +545,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr     = MatCreateVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
       ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
-      ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
         ierr = MatSetNearNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);
@@ -773,9 +771,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         PC  pcInner;
 
         ierr = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
+        ierr = KSPReset(kspInner);CHKERRQ(ierr);
+        ierr = KSPSetOperators(kspInner,jac->mat[0],jac->pmat[0]);CHKERRQ(ierr);
         ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
         /* Indent this deeper to emphasize the "inner" nature of this solver. */
         ierr = PetscObjectIncrementTabLevel((PetscObject)kspInner, (PetscObject) pc, 2);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)kspInner->pc, (PetscObject) pc, 2);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(kspInner, schurprefix);CHKERRQ(ierr);
 
         /* Set DM for new solver */
@@ -827,6 +828,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspupper);CHKERRQ(ierr);
         ierr = KSPSetErrorIfNotConverged(jac->kspupper,pc->erroriffailure);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(jac->kspupper, schurprefix);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspupper, (PetscObject) pc, 1);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspupper->pc, (PetscObject) pc, 1);CHKERRQ(ierr);
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(jac->kspupper, dmInner);CHKERRQ(ierr);
         ierr = KSPSetDMActive(jac->kspupper, PETSC_FALSE);CHKERRQ(ierr);

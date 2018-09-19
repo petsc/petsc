@@ -7,7 +7,7 @@ SOURCEC  = spacetensor.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     =
-LOCDIR   = src/dm/dt/space/impls/tensor
+LOCDIR   = src/dm/dt/space/impls/tensor/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

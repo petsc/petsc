@@ -2597,7 +2597,7 @@ PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat C)
   Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
   ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2617,8 +2617,9 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
     submatj = c->submatis1;
     if (submatj) {
       if (--((PetscObject)C)->refct <= 0) {
-        ierr = (submatj->destroy)(C);CHKERRQ(ierr);
+        ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
         ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+        ierr = PetscFree(C->defaultvectype);CHKERRQ(ierr);
         ierr = PetscLayoutDestroy(&C->rmap);CHKERRQ(ierr);
         ierr = PetscLayoutDestroy(&C->cmap);CHKERRQ(ierr);
         ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
@@ -3956,7 +3957,7 @@ M*/
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
   Developer Notes:
-    Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
+    Subclasses include MATAIJCUSPARSE, MATAIJPERM, MATAIJSELL, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -4121,6 +4122,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqsbaij_C",MatConvert_SeqAIJ_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqbaij_C",MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijperm_C",MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijsell_C",MatConvert_SeqAIJ_SeqAIJSELL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijmkl_C",MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
 #endif
@@ -4703,6 +4705,7 @@ PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatSeqAIJList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4732,6 +4735,7 @@ PetscErrorCode  MatSeqAIJRegisterAll(void)
 
   ierr = MatSeqAIJRegister(MATSEQAIJCRL,      MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
   ierr = MatSeqAIJRegister(MATSEQAIJPERM,     MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+  ierr = MatSeqAIJRegister(MATSEQAIJSELL,     MatConvert_SeqAIJ_SeqAIJSELL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE)
   ierr = MatSeqAIJRegister(MATSEQAIJMKL,      MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
 #endif

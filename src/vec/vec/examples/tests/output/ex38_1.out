@@ -1,5 +1,4 @@
 IS Object: 3 MPI processes
-  type: stride
 [0] Index set is permutation
 [0] Number of indices in (stride) set 3
 [0] 0 0
@@ -17,7 +16,6 @@ IS Object: 3 MPI processes
 [2] 4 24
 [2] 5 25
 IS Object: 3 MPI processes
-  type: general
 [0] Number of indices in set 7
 [0] 0 3
 [0] 1 4
@@ -39,8 +37,20 @@ IS Object: 3 MPI processes
 [2] 1 27
 [2] 2 28
 [2] 3 29
+IS Object: 3 MPI processes
+[0] Number of indices in set 3
+[0] 0 25
+[0] 1 22
+[0] 2 23
+[1] Number of indices in set 3
+[1] 0 15
+[1] 1 12
+[1] 2 13
+[2] Number of indices in set 3
+[2] 0 5
+[2] 1 2
+[2] 2 3
 Vec Object: 3 MPI processes
-  type: mpi
 Process [0]
 0.
 1.
@@ -57,7 +67,6 @@ Process [2]
 24.
 25.
 Vec Object: 3 MPI processes
-  type: mpi
 Process [0]
 3.
 4.
@@ -79,3 +88,16 @@ Process [2]
 27.
 28.
 29.
+Vec Object: 3 MPI processes
+Process [0]
+25.
+22.
+23.
+Process [1]
+15.
+12.
+13.
+Process [2]
+5.
+2.
+3.

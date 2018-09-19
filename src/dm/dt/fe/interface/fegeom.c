@@ -3,19 +3,19 @@
 PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
 {
   PetscFEGeom     *g;
-  PetscInt        dim, numPoints, N;
+  PetscInt        dim, Nq, N;
   const PetscReal *p;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscQuadratureGetData(quad,&dim,NULL,&numPoints,&p,NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad,&dim,NULL,&Nq,&p,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&g);CHKERRQ(ierr);
   g->xi        = p;
   g->numCells  = numCells;
-  g->numPoints = numPoints;
+  g->numPoints = Nq;
   g->dim       = dim;
   g->dimEmbed  = dimEmbed;
-  N = numCells * numPoints;
+  N = numCells * Nq;
   ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
   if (faceData) {
     ierr = PetscCalloc4(numCells, &g->face, N * dimEmbed, &g->n, N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]));CHKERRQ(ierr);

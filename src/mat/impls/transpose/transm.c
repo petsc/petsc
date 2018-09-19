@@ -72,6 +72,17 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatCreateVecs_Transpose(Mat A,Vec *r, Vec *l)
+{
+  Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateVecs(Aa->A,l,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
 {
   Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
@@ -155,6 +166,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multtranspose    = MatMultTranspose_Transpose;
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
   (*N)->ops->duplicate        = MatDuplicate_Transpose;
+  (*N)->ops->getvecs          = MatCreateVecs_Transpose;
   (*N)->assembled             = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatTransposeGetMat_C",MatTransposeGetMat_Transpose);CHKERRQ(ierr);

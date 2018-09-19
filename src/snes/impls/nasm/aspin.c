@@ -83,8 +83,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
     nonlinear solves per linear iteration, but this is far more efficient when subdomain sparse-direct preconditioner
     factorizations are reused on each application of J_b^{-1}.
 
-   Level:
-   intermediate
+   Level: intermediate
 
    References:
 +  1. - X. C. Cai and D. E. Keyes, "Nonlinearly preconditioned inexact Newton algorithms",  SIAM J. Sci. Comput., 24, 2002.

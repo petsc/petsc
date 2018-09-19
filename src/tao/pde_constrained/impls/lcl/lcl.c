@@ -164,8 +164,8 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);
   }
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is_state);CHKERRQ(ierr);
   ierr = ISDestroy(&is_design);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -7,7 +7,7 @@ SOURCEC  = dspacesimple.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/dualspace/impls/simple
+LOCDIR   = src/dm/dt/dualspace/impls/simple/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

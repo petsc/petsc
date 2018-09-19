@@ -7,7 +7,7 @@ SOURCEC  = fecomposite.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/fe/impls/composite
+LOCDIR   = src/dm/dt/fe/impls/composite/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

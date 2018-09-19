@@ -171,6 +171,7 @@ MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 #define MPI_BOTTOM   ((void *) 0)
 #define MPI_IN_PLACE ((void *)-1)
 
+#define MPI_PROC_NULL      (-1)
 #define MPI_ANY_SOURCE     (-2)
 #define MPI_ANY_TAG        (-1)
 #define MPI_UNDEFINED  (-32766)

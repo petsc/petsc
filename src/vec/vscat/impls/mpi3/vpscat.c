@@ -2,9 +2,8 @@
     Defines parallel vector scatters.
 */
 
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/vecscatterimpl.h>
 
-#if defined(PETSC_HAVE_MPI_WIN_CREATE_FEATURE)
 
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
@@ -209,7 +208,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
   PetscErrorCode         ierr;
   PetscInt               ny,bs = in_from->bs,jj;
-  PetscCommShared        scomm;
+  PetscShmComm           scomm;
   MPI_Comm               mscomm;
   MPI_Info               info;
 
@@ -330,8 +329,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = PetscMalloc1(out_to->sharedcnt,&out_to->sharedspaceindices);CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->sharedspaceindices,in_to->sharedspaceindices,out_to->sharedcnt*sizeof(PetscInt));CHKERRQ(ierr);
 
-  ierr = PetscCommSharedGet(PetscObjectComm((PetscObject)in),&scomm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGet(PetscObjectComm((PetscObject)in),&scomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGetMpiShmComm(scomm,&mscomm);CHKERRQ(ierr);
   ierr = MPI_Info_create(&info);CHKERRQ(ierr);
   ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
   ierr = MPIU_Win_allocate_shared(bs*out_to->sharedcnt*sizeof(PetscScalar),sizeof(PetscScalar),info,mscomm,&out_to->sharedspace,&out_to->sharedwin);CHKERRQ(ierr);
@@ -2051,31 +2050,31 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */
 #define BS 1
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 2
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 3
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 4
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 5
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 6
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 7
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 8
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 9
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 10
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 11
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS 12
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 #define BS bs
-#include <../src/vec/vscat/impls/vpscat.h>
+#include <../src/vec/vscat/impls/mpi3/vpscat.h>
 
 /* ==========================================================================================*/
 /*              create parallel to sequential scatter context                                */
@@ -2104,7 +2103,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
   MPI_Request            *send_waits = NULL,*recv_waits = NULL;
   MPI_Status             recv_status,*send_status;
   PetscErrorCode         ierr;
-  PetscCommShared        scomm;
+  PetscShmComm           scomm;
   PetscMPIInt            jj;
   MPI_Info               info;
   MPI_Comm               mscomm;
@@ -2121,8 +2120,8 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
   ierr = VecScatterGetType(ctx,&type);CHKERRQ(ierr);
   ierr = PetscStrcmp(type,"mpi3node",&mpi3node);CHKERRQ(ierr);
 
-  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
-  ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGet(comm,&scomm);CHKERRQ(ierr);
+  ierr = PetscShmCommGetMpiShmComm(scomm,&mscomm);CHKERRQ(ierr);
 
   ierr = MPI_Info_create(&info);CHKERRQ(ierr);
   ierr = MPI_Info_set(info, "alloc_shared_noncontig", "true");CHKERRQ(ierr);
@@ -2253,7 +2252,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
     ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
-    ierr = PetscCommSharedGlobalToLocal(scomm,onodes1[imdex],&jj);CHKERRQ(ierr);
+    ierr = PetscShmCommGlobalToLocal(scomm,onodes1[imdex],&jj);CHKERRQ(ierr);
     if (jj > -1) {
       ierr = PetscInfo3(NULL,"[%d] Sending values to shared memory partner %d,global rank %d\n",rank,jj,onodes1[imdex]);CHKERRQ(ierr);
       nrecvshared++;
@@ -2292,7 +2291,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     to->n    = 0;
     for (i=0; i<nrecvs; i++) {
       values = rsvalues;
-      ierr = PetscCommSharedGlobalToLocal(scomm,(PetscMPIInt)onodes1[i],&jj);CHKERRQ(ierr);
+      ierr = PetscShmCommGlobalToLocal(scomm,(PetscMPIInt)onodes1[i],&jj);CHKERRQ(ierr);
       if (jj > -1) {
         to->sharedspacestarts[jj]   = to->sharedcnt;
         to->sharedspacestarts[jj+1] = to->sharedcnt + olengths1[i];
@@ -2345,7 +2344,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS_MPI3(PetscInt nx,const PetscInt *inidx
     lsharedowner[i] = -1;
     lowner[i]       = -1;
     if (nprocs[i]) {
-      ierr = PetscCommSharedGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
+      ierr = PetscShmCommGlobalToLocal(scomm,i,&jj);CHKERRQ(ierr);
       if (jj > -1) {
         from->sharedspacestarts[jj] = sharedstart[jj] = from->sharedcnt;
         from->sharedspacestarts[jj+1] = sharedstart[jj+1] = from->sharedspacestarts[jj] + nprocs[i];
@@ -2861,11 +2860,40 @@ PetscErrorCode VecScatterCreateLocal_PtoP_MPI3(PetscInt nx,const PetscInt *inidx
   }
 #endif
   if (duplicate) {
-    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterSetData() or VecScatterCreateWithData(), they are ignored\n");CHKERRQ(ierr);
   }
   ierr = VecScatterCreateLocal_StoP_MPI3(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#endif
+PetscErrorCode VecScatterSetUp_MPI3(VecScatter ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterSetUp_vectype_private(ctx,VecScatterCreateLocal_PtoS_MPI3,VecScatterCreateLocal_StoP_MPI3,VecScatterCreateLocal_PtoP_MPI3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI3(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ctx->ops->setup = VecScatterSetUp_MPI3;
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3 for vector scatter\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecScatterCreate_MPI3Node(VecScatter ctx)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ctx->ops->setup = VecScatterSetUp_MPI3;
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,VECSCATTERMPI3NODE);CHKERRQ(ierr);
+  ierr = PetscInfo(ctx,"Using MPI3NODE for vector scatter\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

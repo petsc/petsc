@@ -12,7 +12,7 @@
   A star  http://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
   "ghost locations" for the root nodes.
 
-.seealso: PetscSFCreate(), VecScatter, VecScatterCreate()
+.seealso: PetscSFCreate(), VecScatter, VecScatterCreateWithData()
 S*/
 typedef struct _p_PetscSF* PetscSF;
 

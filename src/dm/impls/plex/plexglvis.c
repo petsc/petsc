@@ -166,7 +166,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             }
             ierr = ISCreateGeneral(PetscObjectComm((PetscObject)xlocal),totc*Nc,idxs,PETSC_USE_POINTER,&isfield);CHKERRQ(ierr);
           }
-          ierr = VecScatterCreate(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
+          ierr = VecScatterCreateWithData(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
           ierr = VecDestroy(&xfield);CHKERRQ(ierr);
           ierr = ISDestroy(&isfield);CHKERRQ(ierr);
           ctx->nf++;
@@ -192,7 +192,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
               idxs[cum++] = off + c;
             }
             ierr = ISCreateGeneral(PetscObjectComm((PetscObject)xlocal),totc,idxs,PETSC_USE_POINTER,&isfield);CHKERRQ(ierr);
-            ierr = VecScatterCreate(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
+            ierr = VecScatterCreateWithData(xlocal,isfield,xfield,NULL,&ctx->scctx[ctx->nf]);CHKERRQ(ierr);
             ierr = VecDestroy(&xfield);CHKERRQ(ierr);
             ierr = ISDestroy(&isfield);CHKERRQ(ierr);
             ctx->nf++;

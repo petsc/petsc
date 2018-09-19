@@ -156,7 +156,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBASICSYMPLECTIC);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"position",is1);CHKERRQ(ierr);
   ierr = TSRHSSplitSetIS(ts,"momentum",is2);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts,"position",NULL,RHSFunction1,&user);CHKERRQ(ierr);
@@ -212,10 +212,10 @@ int main(int argc,char **argv)
      requires: !single !complex
 
    test:
-     args: -ts_bsi_type 1 -monitor
+     args: -ts_basicsymplectic_type 1 -monitor
 
    test:
      suffix: 2
-     args: -ts_bsi_type 2 -monitor
+     args: -ts_basicsymplectic_type 2 -monitor
 
 TEST*/

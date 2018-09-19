@@ -33,6 +33,7 @@ class Configure(config.package.Package):
        self.logPrintBox('Configure option --boost-headers-only is ENABLED ... boost libraries will not be built')
        self.logPrintBox('Installing boost headers, this should not take long')
        try:
+         if os.path.lexists(boostIncludeDir): os.remove(boostIncludeDir)
          output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';' + 'ln -s $PWD/boost/ ' + boostIncludeDir, timeout=6000, log = self.log)
        except RuntimeError as e:
          raise RuntimeError('Error linking '+self.packageDir+' to '+ boostIncludeDir)
