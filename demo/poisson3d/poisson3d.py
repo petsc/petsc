@@ -4,6 +4,9 @@ petsc4py.init(sys.argv)
 from petsc4py import PETSc
 from del2mat import Del2Mat
 
+# this a sequential example
+assert PETSc.COMM_WORLD.getSize() == 1
+
 # number of nodes in each direction
 # excluding those at the boundary
 n = 32

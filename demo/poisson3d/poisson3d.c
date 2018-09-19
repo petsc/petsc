@@ -16,8 +16,15 @@ int main(int argc,char **argv)
   Vec x,b; 
   KSP ksp;
   PC  pc;
+  PetscMPIInt size;
   /* PETSc initialization  */ 
-  PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);
+  PetscInitialize(&argc, &argv, NULL, NULL);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (size != 1) {
+    PetscPrintf(PETSC_COMM_WORLD, "This a sequential example\n");
+    PetscFinalize();
+    return 1;
+  }
   /* number of nodes in each direction 
    * excluding those at the boundary */
   n = 32;
