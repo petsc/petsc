@@ -6088,7 +6088,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
           /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
           j = 0;
-          while (j < temp_constraints && singular_vals[j] < tol) j++;
+          while (j < temp_constraints && singular_vals[j]/singular_vals[temp_constraints-1] < tol) j++;
           total_counts = total_counts-j;
           valid_constraints = temp_constraints-j;
           /* scale and copy POD basis into used quadrature memory */
@@ -6126,7 +6126,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           k = temp_constraints;
           if (k > size_of_constraint) k = size_of_constraint;
           j = 0;
-          while (j < k && singular_vals[k-j-1] < tol) j++;
+          while (j < k && singular_vals[k-j-1]/singular_vals[0] < tol) j++;
           valid_constraints = k-j;
           total_counts = total_counts-temp_constraints+valid_constraints;
 #endif /* on missing GESVD */
