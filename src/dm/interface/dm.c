@@ -177,7 +177,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType()
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -203,7 +203,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMSetMatType(), DMGetMatType(), DMSetVecType()
 @*/
 PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
 {
@@ -331,7 +331,7 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
@@ -360,7 +360,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 {
