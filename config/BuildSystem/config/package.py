@@ -313,7 +313,7 @@ class Package(config.base.Configure):
     if hasattr(source, 'close'):
       f = source
     else:
-      f = open(source)
+      f = open(source, 'rb')
     m = new_md5()
     size = chunkSize
     buf  = f.read(size)

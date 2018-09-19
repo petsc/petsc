@@ -393,7 +393,8 @@ void (*signal())();
       self.executeTest(self.checkFortranKind)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
-    map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t'])
+    for t in ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t']:
+      self.executeTest(self.checkSizeof, t)
     self.executeTest(self.checkBitsPerByte)
     self.executeTest(self.checkVisibility)
     return

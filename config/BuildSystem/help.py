@@ -61,8 +61,7 @@ class Info(logger.Logger):
     self.printBanner(f)
     (nameLen, descLen) = self.getTextSizes()
     format = '  %-'+str(nameLen)+'s: %s\n'
-    items  = self.sections.items()
-    items.sort(key=lambda a: a[1][0])
+    items  = sorted(self.sections.items(), key=lambda a: a[1][0])
     for section, names in items:
       f.write(section+':\n')
       for name in names[1]:

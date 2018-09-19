@@ -3,7 +3,6 @@ import config.base
 import config.package
 from sourceDatabase import SourceDB
 import os
-import string
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -126,7 +125,7 @@ class Configure(config.package.Package):
     foundLapack = 0
     self.f2c    = 0
     # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
-    self.suffix = string.join(self.argDB.get('with-blaslapack-suffix', ''),'')
+    self.suffix = self.argDB.get('with-blaslapack-suffix', '')
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:

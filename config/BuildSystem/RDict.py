@@ -656,7 +656,7 @@ Arg class, which wraps the usual value.'''
     if force:
       self.saveTimer = None
       # This should be a critical section
-      dbFile = open(self.saveFilename, 'w')
+      dbFile = open(self.saveFilename, 'wb')
       data   = dict([i for i in self.localitems() if not i[1].getTemporary()])
       pickle.dump(data, dbFile)
       dbFile.close()
