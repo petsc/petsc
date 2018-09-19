@@ -181,7 +181,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
-  for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  for (i = 0; i < PetscMax(m, 1); ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
