@@ -301,7 +301,7 @@ Arg class, which wraps the usual value.'''
 
   def keys(self):
     '''Returns the list of keys in both the local and parent dictionaries'''
-    keyList = filter(lambda key: dict.__getitem__(self, key).isValueSet(), dict.keys(self))
+    keyList = [key for key in dict.keys(self) if dict.__getitem__(self, key).isValueSet()]
     if not self.parent is None:
       keyList.extend(self.send())
     return keyList
@@ -657,7 +657,7 @@ Arg class, which wraps the usual value.'''
       self.saveTimer = None
       # This should be a critical section
       dbFile = open(self.saveFilename, 'w')
-      data   = dict(filter(lambda i: not i[1].getTemporary(), self.localitems()))
+      data   = dict([i for i in self.localitems() if not i[1].getTemporary()])
       pickle.dump(data, dbFile)
       dbFile.close()
       self.writeLogLine('Saved local dictionary to '+os.path.abspath(self.saveFilename))

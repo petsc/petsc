@@ -393,16 +393,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       output = ''
     lines = output.splitlines()
     # Intel
-    lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
+    lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
     # IBM:
-    lines = filter(lambda s: not s.startswith('cc_r:'), lines)
+    lines = [s for s in lines if not s.startswith('cc_r:')]
     # PGI: Ignore warning about temporary license
-    lines = filter(lambda s: s.find('license.dat') < 0, lines)
+    lines = [s for s in lines if s.find('license.dat') < 0]
     # Cray XT3
-    lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
-    lines = filter(lambda s: s.find('INFO: linux target') < 0, lines)
+    lines = [s for s in lines if s.find('INFO: catamount target') < 0]
+    lines = [s for s in lines if s.find('INFO: linux target') < 0]
     # Lahey/Fujitsu
-    lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
+    lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
     output = reduce(lambda s, t: s+t, lines, '')
     log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
@@ -421,29 +421,29 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         # EXCEPT warnings that those bastards say we want
-        extraLines = filter(lambda s: s.find('implicit declaration of function') >= 0, lines)
-        lines = filter(lambda s: not self.warningRE.search(s), lines)
-        lines = filter(lambda s: s.find('In file included from') < 0, lines)
-        lines = filter(lambda s: s.find('from ') < 0, lines)
+        extraLines = [s for s in lines if s.find('implicit declaration of function') >= 0]
+        lines = [s for s in lines if not self.warningRE.search(s)]
+        lines = [s for s in lines if s.find('In file included from') < 0]
+        lines = [s for s in lines if s.find('from ') < 0]
         lines += extraLines
       # GCC: Ignore headers to toplevel
-      lines = filter(lambda s: s.find('At the top level') < 0, lines)
+      lines = [s for s in lines if s.find('At the top level') < 0]
       # GCC: Ignore headers to functions
-      lines = filter(lambda s: s.find(': In function') < 0, lines)
+      lines = [s for s in lines if s.find(': In function') < 0]
       # GCC: Ignore stupid warning about builtins
-      lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      lines = [s for s in lines if s.find('warning: conflicting types for built-in function') < 0]
       # GCC: Ignore stupid warning about unused variables
-      lines = filter(lambda s: s.find('warning: unused variable') < 0, lines)
+      lines = [s for s in lines if s.find('warning: unused variable') < 0]
       # Intel
-      lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
+      lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
       # PGI: Ignore warning about temporary license
-      lines = filter(lambda s: s.find('license.dat') < 0, lines)
+      lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
-      lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
-      lines = filter(lambda s: s.find('INFO: linux target') < 0, lines)
-      lines = filter(lambda s: s.find('Successful compile:') < 0, lines)
+      lines = [s for s in lines if s.find('INFO: catamount target') < 0]
+      lines = [s for s in lines if s.find('INFO: linux target') < 0]
+      lines = [s for s in lines if s.find('Successful compile:') < 0]
       # Lahey/Fujitsu
-      lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
+      lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
       output = reduce(lambda s, t: s+t, lines, '')
     return output
 
@@ -455,14 +455,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
       if self.argDB['ignoreWarnings'] and not hasIbmCrap:
-        lines = filter(lambda s: not self.warningRE.search(s), lines)
+        lines = [s for s in lines if not self.warningRE.search(s)]
       # PGI: Ignore warning about temporary license
-      lines = filter(lambda s: s.find('license.dat') < 0, lines)
+      lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
-      lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
-      lines = filter(lambda s: s.find('INFO: linux target') < 0, lines)
+      lines = [s for s in lines if s.find('INFO: catamount target') < 0]
+      lines = [s for s in lines if s.find('INFO: linux target') < 0]
       # Lahey/Fujitsu
-      lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
+      lines = [s for s in lines if s.find('Encountered 0 errors') < 0]
       output = reduce(lambda s, t: s+t, lines, '')
     return output
 
@@ -807,7 +807,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import nargs
     args = self.clArgs[:]
     for arg in omitArgs:
-      args = filter(lambda a: not nargs.Arg.parseArgument(a)[0] == arg, args)
+      args = [a for a in args if not nargs.Arg.parseArgument(a)[0] == arg]
     for a, arg in enumerate(args):
       parts = arg.split('=',1)
       if len(parts) == 2 and (' ' in parts[1] or '[' in parts[1]):

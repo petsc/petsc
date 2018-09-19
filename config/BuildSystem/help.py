@@ -32,7 +32,7 @@ class Info(logger.Logger):
     if not section in self.sections:
       self.sections[section] = (len(self.sections), [])
     if name in self.sections[section][1]:
-      name += '@'+str(len(filter(lambda n: name == n.split('@')[0], self.sections[section][1]))+1)
+      name += '@'+str(len([n for n in self.sections[section][1] if name == n.split('@')[0]])+1)
     self.sections[section][1].append(name)
     self.setDescription(section, name, desc)
     return

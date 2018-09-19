@@ -1514,7 +1514,7 @@ class Configure(config.base.Configure):
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):
         flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
+        goodFlags = list(filter(self.checkLinkerFlag, flags))
         self.dynamicLibraryFlags = goodFlags
         self.dynamicLibraryExt = ext
         testMethod = 'foo'

@@ -362,7 +362,7 @@ if __name__ == '__main__':
         else:
           sourceDB.logPrint('Matching regular expression '+sys.argv[3]+' over source database', 1, 'sourceDB')
           removeRE = re.compile(sys.argv[3])
-          removes  = filter(removeRE.match, sourceDB.keys())
+          removes  = list(filter(removeRE.match, sourceDB.keys()))
           for source in removes:
             self.logPrint('Removing '+source, 3, 'sourceDB')
             del self.sourceDB[source]

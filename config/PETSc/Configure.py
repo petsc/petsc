@@ -618,7 +618,7 @@ prepend-path PATH "%s"
         libvars.append(libvar)
       fd.write('mark_as_advanced (' + ' '.join(libvars) + ')\n')
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
-      includes = filter(notstandardinclude,includes)
+      includes = list(filter(notstandardinclude,includes))
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
     fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
     writeMacroDefinitions(fd)
