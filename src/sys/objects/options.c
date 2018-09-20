@@ -2813,7 +2813,7 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
         ierr = PetscStrcat(msg," ");CHKERRQ(ierr);
         ierr = PetscStrcat(msg,info);CHKERRQ(ierr);
       }
-      ierr = PetscStrcat(msg," (Silence this warning with");CHKERRQ(ierr);
+      ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
       ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
       ierr = PetscPrintf(PetscOptionsObject->comm,msg);CHKERRQ(ierr);
