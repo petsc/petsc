@@ -42,6 +42,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
 
   PetscFunctionBegin;
   ierr = DMPlexCreateBoxMesh(comm, dim, simplex, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Serial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
