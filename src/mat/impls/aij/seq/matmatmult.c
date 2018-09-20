@@ -1,154 +1,155 @@
 
-/*
-  Defines matrix-matrix product routines for pairs of SeqAIJ matrices
-          C = A * B
-*/
+ /*
+   Defines matrix-matrix product routines for pairs of SeqAIJ matrices
+           C = A * B
+ */
 
-#include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
-#include <../src/mat/utils/freespace.h>
-#include <petscbt.h>
-#include <petsc/private/isimpl.h>
-#include <../src/mat/impls/dense/seq/dense.h>
+ #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
+ #include <../src/mat/utils/freespace.h>
+ #include <petscbt.h>
+ #include <petsc/private/isimpl.h>
+ #include <../src/mat/impls/dense/seq/dense.h>
 
-static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
+ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
 
-#if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
-#endif
+ #if defined(PETSC_HAVE_HYPRE)
+ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+ #endif
 
-PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
-{
-  PetscErrorCode ierr;
-#if !defined(PETSC_HAVE_HYPRE)
-  const char     *algTypes[7] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined"};
-  PetscInt       nalg = 7;
-#else
-  const char     *algTypes[8] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined","hypre"};
-  PetscInt       nalg = 8;
-#endif
-  PetscInt       alg = 0; /* set default algorithm */
-  PetscBool      combined = PETSC_FALSE;  /* Indicates whether the symbolic stage already computed the numerical values. */
+ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+ {
+   PetscErrorCode ierr;
+ #if !defined(PETSC_HAVE_HYPRE)
+   const char     *algTypes[7] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined"};
+   PetscInt       nalg = 7;
+ #else
+   const char     *algTypes[8] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","combined","hypre"};
+   PetscInt       nalg = 8;
+ #endif
+   PetscInt       alg = 0; /* set default algorithm */
+   PetscBool      combined = PETSC_FALSE;  /* Indicates whether the symbolic stage already computed the numerical values. */
 
-  PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    switch (alg) {
-    case 1:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+   PetscFunctionBegin;
+   if (scall == MAT_INITIAL_MATRIX) {
+     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+     PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+     ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+     ierr = PetscOptionsEnd();CHKERRQ(ierr);
+     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+     switch (alg) {
+     case 1:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+       break;
+     case 2:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
+       break;
+     case 3:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
+       break;
+     case 4:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
+       break;
+     case 5:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
+       break;
+     case 6:
+       ierr = MatMatMult_SeqAIJ_SeqAIJ_Combined(A,B,fill,C);CHKERRQ(ierr);
+       combined = PETSC_TRUE;
+       break;
+ #if defined(PETSC_HAVE_HYPRE)
+     case 7:
+       ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
+       break;
+ #endif
+     default:
+       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
       break;
-    case 2:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
-      break;
-    case 3:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
-      break;
-    case 4:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
-      break;
-    case 5:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
-      break;
-    case 6:
-      ierr = MatMatMult_SeqAIJ_SeqAIJ_Combined(A,B,fill,C);CHKERRQ(ierr);
-      combined = PETSC_TRUE;
-      break;
-#if defined(PETSC_HAVE_HYPRE)
-    case 7:
-      ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
-      break;
-#endif
-    default:
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
-     break;
-    }
-    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-  }
+     }
+     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+   }
 
-  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  if (!combined) {
-    ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+   if (!combined) {
+     ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+   }
+   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+   PetscFunctionReturn(0);
+ }
 
-static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscReal fill,Mat *C)
-{
-  PetscErrorCode     ierr;
-  Mat_SeqAIJ         *a =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
-  PetscInt           am =A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
-  PetscReal          afill;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,*lnk,ndouble=0,Crmax;
-  PetscTable         ta;
-  PetscBT            lnkbt;
-  PetscFreeSpaceList free_space=NULL,current_space=NULL;
+ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscReal fill,Mat *C)
+ {
+   PetscErrorCode     ierr;
+   Mat_SeqAIJ         *a =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+   PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
+   PetscInt           am =A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
+   PetscReal          afill;
+   PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,*lnk,ndouble=0,Crmax;
+   PetscTable         ta;
+   PetscBT            lnkbt;
+   PetscFreeSpaceList free_space=NULL,current_space=NULL;
 
-  PetscFunctionBegin;
-  /* Get ci and cj */
-  /*---------------*/
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc1(am+2,&ci);CHKERRQ(ierr);
-  ci[0] = 0;
+   PetscFunctionBegin;
+   /* Get ci and cj */
+   /*---------------*/
+   /* Allocate ci array, arrays for fill computation and */
+   /* free space for accumulating nonzero column info */
+   ierr  = PetscMalloc1(am+2,&ci);CHKERRQ(ierr);
+   ci[0] = 0;
 
-  /* create and initialize a linked list */
-  ierr = PetscTableCreate(bn,bn,&ta);CHKERRQ(ierr); 
-  MatRowMergeMax_SeqAIJ(b,bm,ta);
-  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
-  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
+   /* create and initialize a linked list */
+   ierr = PetscTableCreate(bn,bn,&ta);CHKERRQ(ierr); 
+   MatRowMergeMax_SeqAIJ(b,bm,ta);
+   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
+   ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
 
-  ierr = PetscLLCondensedCreate(Crmax,bn,&lnk,&lnkbt);CHKERRQ(ierr);
+   ierr = PetscLLCondensedCreate(Crmax,bn,&lnk,&lnkbt);CHKERRQ(ierr);
 
-  /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am],bi[bm])),&free_space);CHKERRQ(ierr);
+   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
+   ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ai[am],bi[bm])),&free_space);CHKERRQ(ierr);
 
-  current_space = free_space;
+   current_space = free_space;
 
-  /* Determine ci and cj */
-  for (i=0; i<am; i++) {
-    anzi = ai[i+1] - ai[i];
-    aj   = a->j + ai[i];
-    for (j=0; j<anzi; j++) {
-      brow = aj[j];
-      bnzj = bi[brow+1] - bi[brow];
-      bj   = b->j + bi[brow];
-      /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(bnzj,bj,lnk,lnkbt);CHKERRQ(ierr);
-    }
-    cnzi = lnk[0];
+   /* Determine ci and cj */
+   for (i=0; i<am; i++) {
+     anzi = ai[i+1] - ai[i];
+     aj   = a->j + ai[i];
+     for (j=0; j<anzi; j++) {
+       brow = aj[j];
+       bnzj = bi[brow+1] - bi[brow];
+       bj   = b->j + bi[brow];
+       /* add non-zero cols of B into the sorted linked list lnk */
+       ierr = PetscLLCondensedAddSorted(bnzj,bj,lnk,lnkbt);CHKERRQ(ierr);
+     }
+     cnzi = lnk[0];
 
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<cnzi) {
-      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(cnzi,current_space->total_array_size),&current_space);CHKERRQ(ierr);
-      ndouble++;
-    }
+     /* If free space is not available, make more free space */
+     /* Double the amount of total space in the list */
+     if (current_space->local_remaining<cnzi) {
+       ierr = PetscFreeSpaceGet(PetscIntSumTruncate(cnzi,current_space->total_array_size),&current_space);CHKERRQ(ierr);
+       ndouble++;
+     }
 
-    /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(bn,cnzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
+     /* Copy data into free space, then initialize lnk */
+     ierr = PetscLLCondensedClean(bn,cnzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
 
-    current_space->array           += cnzi;
-    current_space->local_used      += cnzi;
-    current_space->local_remaining -= cnzi;
+     current_space->array           += cnzi;
+     current_space->local_used      += cnzi;
+     current_space->local_remaining -= cnzi;
 
-    ci[i+1] = ci[i] + cnzi;
-  }
+     ci[i+1] = ci[i] + cnzi;
+   }
 
-  /* Column indices are in the list of free space */
-  /* Allocate space for cj, initialize cj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc1(ci[am]+1,&cj);CHKERRQ(ierr);
-  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscLLCondensedDestroy(lnk,lnkbt);CHKERRQ(ierr);
+   /* Column indices are in the list of free space */
+   /* Allocate space for cj, initialize cj, and */
+   /* destroy list of free space and other temporary array(s) */
+   ierr = PetscMalloc1(ci[am]+1,&cj);CHKERRQ(ierr);
+   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+   ierr = PetscLLCondensedDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
-  /* put together the new symbolic matrix */
-  ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+   /* put together the new symbolic matrix */
+   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
+   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+   ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -369,6 +370,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   /* put together the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,ca,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -475,6 +477,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   /* put together the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,ca,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -581,6 +584,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   /* put together the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -701,6 +705,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   /* put together the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -789,6 +794,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* put together the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -864,6 +870,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,NULL,&Bt);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Bt,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* get symbolic C=A*Bt */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
@@ -1071,6 +1078,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap->n,A->rmap->n,ati,atj,NULL,&At);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(At,PetscAbs(A->cmap->bs),PetscAbs(B->cmap->bs));CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* get symbolic C=At*B */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
@@ -1625,6 +1633,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
   /* Create the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
