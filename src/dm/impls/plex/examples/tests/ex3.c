@@ -550,7 +550,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     MatNullSpace sp;
     PetscBool    isNullSpace, hasConst;
     PetscInt     n, i;
-    Vec          res, localX, localRes;
+    Vec          res = NULL, localX, localRes;
     PetscDS      ds;
 
     if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
@@ -561,7 +561,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs);CHKERRQ(ierr);
-    ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);
+    if (n) {ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);}
     ierr = DMCreateLocalVector(dm,&localX);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dm,&localRes);CHKERRQ(ierr);
     for (i = 0; i < n; i++) { /* also test via matrix-free Jacobian application */
