@@ -978,7 +978,7 @@ static PetscErrorCode DMPlexMapToLocalPoint(PetscHMapIJ roothash, const PetscInt
 .keywords: mesh
 .seealso: DMPlexInterpolate(), DMPlexUninterpolate()
 @*/
-static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
+PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
 {
   /*
        Okay, the algorithm is:
