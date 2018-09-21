@@ -122,6 +122,12 @@
           PetscOptions o
           PetscErrorCode ierr
         End Subroutine
+        Subroutine PetscOptionsInsertString(o,n,ierr)
+          use petscsysdef
+          PetscOptions o
+          character(*) n
+          PetscErrorCode ierr
+        End Subroutine
       End Interface
 
       Interface
