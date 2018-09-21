@@ -142,7 +142,7 @@ int main(int argc,char *argv[])
   FVCtx             ctx;
   IS                iss;
   IS                isf;
-  PetscInt          i,dof,xs,xm,Mx,draw = 0,counts=0,*index_slow,*index_fast;
+  PetscInt          i,k,dof,xs,xm,Mx,draw = 0,*index_slow,*index_fast,islow = 0,ifast = 0;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
   PetscErrorCode    ierr;
@@ -175,8 +175,10 @@ int main(int argc,char *argv[])
   ierr = PetscFunctionListAdd(&physics,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
 
   ctx.comm = comm;
-  ctx.cfl  = 0.9; ctx.bctype = FVBC_PERIODIC;
-  ctx.xmin = -1; ctx.xmax = 1;
+  ctx.cfl  = 0.9;
+  ctx.bctype = FVBC_PERIODIC;
+  ctx.xmin = -1.0;
+  ctx.xmax = 1.0;
   ierr = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL);CHKERRQ(ierr);
@@ -227,17 +229,16 @@ int main(int argc,char *argv[])
   ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
 
   /*-------------------------------- create index for slow parts and fast parts ----------------------------------------*/
-  for (i=0; i<Mx; i++) {
-    if (ctx.xmin+i*(ctx.xmax-ctx.xmin)/(PetscReal)Mx+0.5*(ctx.xmax-ctx.xmin)/(PetscReal)Mx < 0) counts = counts+1;
+  ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
+  ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
+  for (i=xs; i<xs+xm; i++) {
+    if (ctx.xmin+i*(ctx.xmax-ctx.xmin)/(PetscReal)Mx+0.5*(ctx.xmax-ctx.xmin)/(PetscReal)Mx < 0)
+      for (k=0; k<dof; k++) index_slow[islow++] = i*dof+k;
+    else
+      for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
   }  /* this step need to be changed based on discontinuous point of a */
-  ierr = PetscMalloc1(counts,&index_slow);CHKERRQ(ierr);
-  for (i=0; i<counts; i++) index_slow[i]=i;
-  ierr = PetscMalloc1(Mx-counts,&index_fast);CHKERRQ(ierr);
-  for (i=0; i<Mx-counts; i++) index_fast[i]=counts+i;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,counts,index_slow,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
-  counts = Mx-counts;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,counts,index_fast,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
-  /*--------------------------------------------------------------------------------------------------------------------*/
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
