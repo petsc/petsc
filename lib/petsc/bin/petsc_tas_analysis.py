@@ -10,7 +10,30 @@ import argparse
 
 def main(cmdLineArgs):
     data = dataProces(cmdLineArgs)
-    graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
+
+    if cmdLineArgs.enable_graphs == 1:
+        graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
+
+
+def varCalc(data, mean):
+    """"
+    This function takes an array of data and its associated mean, and returns the variance.
+    Variance = SUM[(mean - data)^2]/(array size)
+
+    :param data: An array containing the data to get the variance of.
+    :type data: A numpy array.
+
+    :param mean: Contains the mean of the data set.
+    :type data: A float.
+
+    :returns: The variance.
+    """
+    var = 0
+    for x in data:
+        var = var + (mean - x)**2
+
+    var = var/data.size
+    return var
 
 def dataProces(cmdLineArgs):
     """
@@ -35,23 +58,34 @@ def dataProces(cmdLineArgs):
         times  = []
         flops  = []
         errors = []
+        meanFlops = []
+        meanTimes = []
+
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
         level  = 0
         while level >= 0:
             stageName = "ConvEst Refinement Level "+str(level)
             if stageName in module.Stages:
-                timeTemp = module.Stages[stageName]["SNESSolve"][0]["time"]
-                flopTemp = module.Stages[stageName]["SNESSolve"][0]["flop"]
+                timeTemp  = module.Stages[stageName]["SNESSolve"][0]["time"]
+                totalTime = module.Stages[stageName]["SNESSolve"][0]["time"]
+
+                flopTemp  = module.Stages[stageName]["SNESSolve"][0]["flop"]
+                totalFlop = module.Stages[stageName]["SNESSolve"][0]["flop"]
+
                 #This loops is used to grab the greatest time and flop when run in parallel
                 for n in range(1, nProcs):
                     timeTemp = timeTemp if timeTemp >= module.Stages[stageName]["SNESSolve"][n]["time"] \
                             else module.Stages[stageName]["SNESSolve"][n]["time"]
                     flopTemp = flopTemp if flopTemp >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
                             else module.Stages[stageName]["SNESSolve"][n]["flop"]
+                    totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
+                    totalTime = totalTime + module.Stages[stageName]["SNESSolve"][n]["time"]
 
-
+                meanTimes.append(totalTime/nProcs)
                 times.append(timeTemp)
+
+                meanFlops.append(totalFlop/nProcs)
                 flops.append(flopTemp)
 
                 for f in range(Nf):
@@ -61,21 +95,30 @@ def dataProces(cmdLineArgs):
                 level = level + 1
             else:
                 level = -1
+
         dofs   = np.array(dofs)
         times  = np.array(times)
         flops  = np.array(flops)
         errors = np.array(errors)
-        data[module.__name__] = {}
+
+        data[module.__name__]           = {}
         data[module.__name__]["dofs"]   = dofs
         data[module.__name__]["times"]  = times
         data[module.__name__]["flops"]  = flops
         data[module.__name__]["errors"] = errors
 
+        if cmdLineArgs.view_variance == 1:
+            meanFlops = np.array(meanFlops)
+            meanTimes = np.array(meanTimes)
+            data[module.__name__]["Mean Flops"]  = meanFlops
+            data[module.__name__]["Mean Times"]  = meanTimes
+            data[module.__name__]["Var Flops"]  = varCalc(flops, meanFlops)
+            data[module.__name__]["Var Times"]  = varCalc(times, meanTimes)
+
     print('**************data*******************')
     print module.__name__
     for k,v in data.get(module.__name__).items():
-        print(" {} corresponds to {}".format(k,v))
-        #print(v["dofs"][0])
+        print(" {: >10} : {}".format(k,v))
 
     return data
 
@@ -169,8 +212,8 @@ def graphGen(data, graph_flops_scaling, dim):
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
-        #if graph_flops_scaling == 1 :
-        #    x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
+        if graph_flops_scaling == 1 :
+            x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
 
         #statScaleHandles.append(x)
         ##Start Static Scaling with DoFs Graph
@@ -186,15 +229,13 @@ def graphGen(data, graph_flops_scaling, dim):
     meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
     meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
     meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
-    print(meshConvHandles)
-    print(meshConvLabels)
+
     meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
     meshConvFig.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     meshConvFig.show()
 
     statScaleLabels = [h.get_label() for h in statScaleHandles]
-    print(statScaleHandles)
-    print(statScaleLabels)
+
     statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
     statScaleFig.savefig('staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
     statScaleFig.show()
@@ -253,6 +294,13 @@ if __name__ == "__main__":
 
     cmdLine.add_argument('-dim', '--dim', type = int, default = 2, help = 'Specifies the number of dimensions of the mesh. \
         Default: %(default)s .')
+
+    cmdLine.add_argument('-enable_graphs', '--enable_graphs', type = int, default = 1, choices = [0, 1],
+    help = 'Enables graphing. Default: %(default)s  print the graphs. 0 to disable printing the graphs')
+
+    cmdLine.add_argument('-view_variance', '--view_variance', type = int, default = 0, choices = [0, 1],
+    help = 'Enables calculating and outputing the Variance. Default: %(default)s does not print the variance. 1 to enable \
+        printing the graphs')
 
     cmdLineArgs = cmdLine.parse_args()
 
