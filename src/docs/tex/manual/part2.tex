@@ -585,7 +585,7 @@ The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{lstlisting}
 DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,DM *inra);
-DMDACreate3d=(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
+DMDACreate3d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
 \end{lstlisting}
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \lstinline{comm} must call \lstinline{DACreateXXX()}.
@@ -5314,8 +5314,8 @@ TSSetIJacobian(ts,A,A,YourComputeIJacobian, &appctx);
 \item  \trl{-ts_monitor_lg_error} - for ODEs with only a few components plots the error as a function of time, only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorLGError()}.
 \item  \trl{-ts_monitor_draw_solution} - plots the solution at each iteration, \lstinline{TSMonitorDrawSolution()}.
 \item  \trl{-ts_monitor_draw_error} - plots the error at each iteration only if \lstinline{TSSetSolutionFunction()} is provided, \lstinline{TSMonitorDrawSolution()}.
-\item  \trl{-ts_monitor_solution binary:filename} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
-\item  \trl{-ts_monitor_solution_vtk < filename-%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
+\item  \trl{-ts_monitor_solution binary[:filename]} - saves the solution at each iteration to a binary file, \lstinline{TSMonitorSolution()}.
+\item  \trl{-ts_monitor_solution_vtk <filename-%03D.vts>} - saves the solution at each iteration to a file in vtk format, \lstinline{TSMonitorSolutionVTK()}.
 \end{itemize}
 
 \section{Error control via variable time-stepping}
