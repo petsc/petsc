@@ -1544,7 +1544,7 @@ int main(int argc, char **argv)
       requires: !single
       suffix: quad_bddc
     test:
-      requires: !single veccuda
+      requires: !single cuda
       suffix: quad_bddc_cuda
       args: -matis_localmat_type aijcusparse -pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse -pc_bddc_neumann_pc_factor_mat_solver_type cusparse
     test:

@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         suffix: standard
         args: -vec_type standard
       test:
-        requires: veccuda
+        requires: cuda
         suffix: cuda
         args: -vec_type cuda
       test:

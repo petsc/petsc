@@ -1,6 +1,3 @@
-/*T
-   requires: veccuda
-T*/
 
 #include <petscvec.h>
 
@@ -146,6 +143,6 @@ int main(int argc, char * argv[]) {
    test:
       suffix: cuda
       args: -vec_type cuda
-      requires: veccuda
+      requires: cuda
 
 TEST*/

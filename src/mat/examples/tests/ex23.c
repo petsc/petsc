@@ -778,7 +778,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
         suffix: viennacl
         args: -matis_localmat_type aijviennacl
       test:
-        requires: veccuda
+        requires: cuda
         suffix: cusparse
         args: -matis_localmat_type aijcusparse
 

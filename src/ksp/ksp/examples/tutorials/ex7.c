@@ -258,35 +258,35 @@ int main(int argc,char **args)
 
    test:
       suffix: mpiaijcusparse
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
 
    test:
       suffix: mpiaijcusparse_2
       nsize: 2
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -vec_type cuda
 
    test:
       suffix: mpiaijcusparse_simple
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_simple_2
       nsize: 2
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_3
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
 
    test:
       suffix: mpiaijcusparse_4
       nsize: 2
-      requires: veccuda
+      requires: cuda
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type cuda
 
 TEST*/

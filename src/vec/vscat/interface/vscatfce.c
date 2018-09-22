@@ -1,5 +1,5 @@
 #include <petsc/private/vecscatterimpl.h> /*I   "petscvec.h"    I*/
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 #endif
 /* ------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *ctx)
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
   if ((*ctx)->ops->destroy) {ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = VecScatterCUDAIndicesDestroy((PetscCUDAIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBo
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 
 /*@C
    VecScatterInitializeForGPU - Initializes a generalized scatter from one vector
