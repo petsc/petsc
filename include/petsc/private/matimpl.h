@@ -217,13 +217,13 @@ struct _MatOps {
 PETSC_EXTERN PetscErrorCode MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
 PETSC_EXTERN PetscErrorCode MatQueryOp(MPI_Comm, PetscVoidFunction*, const char[], PetscInt, ...);
 
-typedef struct _p_MatBaseName* MatBaseName;
-struct _p_MatBaseName {
-  char        *bname,*sname,*mname;
-  MatBaseName next;
+typedef struct _p_MatRootName* MatRootName;
+struct _p_MatRootName {
+  char        *rname,*sname,*mname;
+  MatRootName next;
 };
 
-PETSC_EXTERN MatBaseName MatBaseNameList;
+PETSC_EXTERN MatRootName MatRootNameList;
 
 /*
    Utility private matrix routines

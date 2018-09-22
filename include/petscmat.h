@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
 PETSC_STATIC_INLINE PetscErrorCode MatViewFromOptions(Mat A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
-PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode MatRegisterRootName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
