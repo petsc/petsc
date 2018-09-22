@@ -657,6 +657,82 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
+{
+  PetscSFNode       *roots, *leaves;
+  const PetscInt    *locals;
+  const PetscSFNode *remotes;
+  PetscInt           nroots, r, nleaves, l;
+  MPI_Comm           comm;
+  PetscMPIInt        rank;
+  PetscInt           debug = 0;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
+  /* If a point p is on the interface, then all its cone points must be also on interface  */
+  ierr = PetscCalloc2(nroots, &roots, nroots, &leaves);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Roots\n");CHKERRQ(ierr);}
+  for (r = 0; r < nroots; ++r) {
+    const PetscInt  point = r;
+    const PetscInt *cone;
+    PetscInt        coneSize, ind0, ind1;
+
+    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    if (coneSize  > 1) {
+      /* Translate all points to root numbering */
+      ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
+      ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
+      roots[r].rank  = ind0 < 0 ? cone[0] : remotes[ind0].index;
+      roots[r].index = ind1 < 0 ? cone[1] : remotes[ind1].index;
+    }
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: %D %D\n", rank, r, roots[r].rank, roots[r].index);CHKERRQ(ierr);}
+  }
+  if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
+  ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
+  if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Leaves\n");CHKERRQ(ierr);}
+  for (l = 0; l < nleaves; ++l) {
+    const PetscInt  point = locals ? locals[l] : l;
+    const PetscInt *cone;
+    PetscInt        coneSize;
+
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: %D %D\n", rank, l, leaves[l].rank, leaves[l].index);CHKERRQ(ierr);}
+    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    if (coneSize > 1) {
+      PetscInt ind0, ind1;
+
+      ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
+      ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
+      if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 0, cone[0]);
+      if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 1, cone[1]);
+      if ((leaves[point].rank  != remotes[ind0].index) || (leaves[point].index != remotes[ind1].index)) {
+        const PetscInt *newcone;
+
+        /* TODO Generalize this to correct an arbitrary orientation */
+        ierr = DMPlexReverseCell(dm, point);CHKERRQ(ierr);
+        if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  reversed point %D\n", rank, point);CHKERRQ(ierr);}
+        ierr = DMPlexGetCone(dm, point, &newcone);CHKERRQ(ierr);
+        ierr = PetscFindInt(newcone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
+        ierr = PetscFindInt(newcone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
+        if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 0, cone[0]);
+        if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 1, cone[1]);
+        if (leaves[point].rank  != remotes[ind0].index)
+          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", point, 0, cone[0], remotes[ind0].rank, remotes[ind0].index, leaves[point].rank,  0, remotes[l].rank, remotes[l].index);
+        if (leaves[point].index != remotes[ind1].index)
+          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", point, 1, cone[1], remotes[ind1].rank, remotes[ind1].index, leaves[point].index, 1, remotes[l].rank, remotes[l].index);
+      }
+    }
+  }
+  if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
+  ierr = PetscFree2(roots, leaves);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* This interpolates the PointSF in parallel following local interpolation */
 static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt depth)
 {
@@ -899,6 +975,8 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
     ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
+    ierr = DMGetPointSF(idm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMPlexOrientPointSF_Internal(idm, sfPoint);CHKERRQ(ierr);
   }
   {
     PetscBool            isper;
