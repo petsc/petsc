@@ -210,3 +210,31 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+     test:
+       suffix: 2d
+       args: -petscspace_poly_tensor -petscspace_order 2 -dim 2
+       nsize: 3
+       requires: TODO
+
+     test:
+       suffix: 2d_fv
+       args: -use_fv -linear -dim 2 -dm_forest_partition_overlap 1
+       nsize: 3
+       requires: TODO
+
+     test:
+       suffix: 3d
+       args: -petscspace_poly_tensor -petscspace_order 1 -dim 3
+       nsize: 3
+       requires: TODO
+
+     test:
+       suffix: 3d_fv
+       args: -use_fv -linear -dim 3 -dm_forest_partition_overlap 1
+       nsize: 3
+       requires: TODO
+
+TEST*/
