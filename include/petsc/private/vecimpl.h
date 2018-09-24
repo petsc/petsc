@@ -137,7 +137,7 @@ struct _p_Vec {
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
   PetscInt               lock;   /* vector is locked to read only */
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   PetscOffloadFlag       valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* this is the special pointer to the array on the GPU */
 #endif
@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode VecCUDAAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
 #endif

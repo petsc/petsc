@@ -167,7 +167,7 @@ int main(int argc,char **argv)
       test:
         suffix: standard
       test:
-        requires: veccuda
+        requires: cuda
         args: -vec_type cuda
         suffix: cuda
       test:

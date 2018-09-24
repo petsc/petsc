@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLI
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
 typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
 typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;

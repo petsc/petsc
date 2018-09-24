@@ -202,12 +202,12 @@ int main(int argc,char **argv)
 
    test:
       suffix: aijcusparse
-      requires: veccuda
+      requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol
 
    test:
       suffix: aijcusparse_2
-      requires: veccuda
+      requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_type cusparse
 
 TEST*/

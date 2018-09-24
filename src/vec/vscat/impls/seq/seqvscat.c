@@ -7,7 +7,7 @@
 
 #include <petsc/private/vecscatterimpl.h>    /*I   "petscvec.h"    I*/
 
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 #endif
 
@@ -82,12 +82,12 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscErrorCode         ierr;
   PetscInt               i,n = gen_from->n,*fslots,*tslots;
   PetscScalar            *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
@@ -133,12 +133,12 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscErrorCode         ierr;
   PetscInt               first = gen_to->first;
   PetscScalar            *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
@@ -188,12 +188,12 @@ PetscErrorCode VecScatterBegin_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscErrorCode         ierr;
   PetscInt               first = gen_to->first,step = gen_to->step;
   PetscScalar            *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
@@ -245,12 +245,12 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscErrorCode         ierr;
   PetscInt               first = gen_from->first;
   PetscScalar            *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
@@ -300,12 +300,12 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscErrorCode         ierr;
   PetscInt               first = gen_from->first,step = gen_from->step;
   PetscScalar            *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */
@@ -378,12 +378,12 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscErrorCode        ierr;
   PetscInt              from_first = gen_from->first,from_step = gen_from->step;
   PetscScalar           *xv,*yv;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   PetscBool              is_veccuda;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_veccuda,VECSEQCUDA,VECMPICUDA,VECCUDA,"");CHKERRQ(ierr);
   if (is_veccuda && x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
     /* create the scatter indices if not done already */

@@ -145,5 +145,5 @@ class Configure(config.package.Package):
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
     self.configureTypes()
-    self.addDefine('HAVE_VECCUDA','1')
+    self.addDefine('HAVE_CUDA','1')
     return

@@ -70,6 +70,6 @@ int main(int argc, char **argv)
       suffix: cuda
       args: -vec_type cuda
       output_file: output/ex43_1.out
-      requires: veccuda
+      requires: cuda
 
 TEST*/

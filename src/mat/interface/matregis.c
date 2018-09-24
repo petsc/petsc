@@ -45,7 +45,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
 
-#if defined PETSC_HAVE_VECCUDA
+#if defined PETSC_HAVE_CUDA
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
@@ -143,7 +143,7 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATMPISELL,         MatCreate_MPISELL);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQSELL,         MatCreate_SeqSELL);CHKERRQ(ierr);
 
-#if defined PETSC_HAVE_VECCUDA
+#if defined PETSC_HAVE_CUDA
   ierr = MatRegisterBaseName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE);CHKERRQ(ierr);

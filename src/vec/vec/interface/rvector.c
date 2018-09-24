@@ -14,7 +14,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_VECCUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_OFFLOAD_CPU || vec->valid_GPU_array == PETSC_OFFLOAD_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
@@ -1578,7 +1578,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   VecLocked(x,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
@@ -1587,7 +1587,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
       }
@@ -1599,7 +1599,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDAAllocateCheckHost(x);CHKERRQ(ierr);
 #endif
       }
@@ -1646,7 +1646,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (x->valid_GPU_array == PETSC_OFFLOAD_GPU) {
 #if defined(PETSC_HAVE_VIENNACL)
       ierr = PetscObjectTypeCompareAny((PetscObject)x,&is_viennacltype,VECSEQVIENNACL,VECMPIVIENNACL,VECVIENNACL,"");CHKERRQ(ierr);
@@ -1655,7 +1655,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
       } else
 #endif
       {
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
         ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
       }
@@ -1801,7 +1801,7 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     x->valid_GPU_array = PETSC_OFFLOAD_CPU;
 #endif
   } else {
