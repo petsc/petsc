@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
   idx_t          ni,isize,*vtxdist, *xadj, *adjncy, *vwgt, *part;
   idx_t          wgtflag=0, numflag=0, ncon=1, ndims=3, edgecut=0;
   idx_t          options[5];
-  real_t         *xyz, *tpwgts, ubvec[1];
+  PetscReal      *xyz;
+  real_t         *sxyz, *tpwgts, ubvec[1];
   MPI_Comm       comm;
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
@@ -64,12 +65,12 @@ int main(int argc, char *argv[])
 
   ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
-  red = fread(xadj, sizeof(idx_t), ni+1, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  red = fread(xadj, sizeof(idx_t), ni+1, fp);if (red != (size_t) (ni+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
   for (i=0; i<ni; i++) {
-    red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+    red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);if (red != (size_t) (xadj[i+1]-xadj[i])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
   }
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
@@ -78,8 +79,10 @@ int main(int argc, char *argv[])
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
   ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ni*ndims,&sxyz);CHKERRQ(ierr);
 
-  red = fread(xyz, sizeof(real_t), ndims*ni, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  red = fread(xyz, sizeof(PetscReal), ndims*ni, fp);if (red != (size_t) (ndims*ni)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  for (i=0; i<ni*ndims; i++) sxyz[i] = (size_t) xyz[i];
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
@@ -96,13 +99,14 @@ int main(int argc, char *argv[])
   options[4] = 0;
 
   ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
-  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
+  status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec,options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
   ierr = PetscFree(vtxdist);CHKERRQ(ierr);
   ierr = PetscFree(xadj);CHKERRQ(ierr);
   ierr = PetscFree(adjncy);CHKERRQ(ierr);
   ierr = PetscFree3(xyz,part,tpwgts);CHKERRQ(ierr);
+  ierr = PetscFree(sxyz);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -117,13 +121,11 @@ int main(int argc, char *argv[])
       nsize: 2
       requires: parmetis datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -prefix ${DATAFILESPATH}/parmetis-test/testnp2
-      TODO: crashes
 
    test:
       suffix: 2
       nsize: 4
       requires: parmetis datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -prefix ${DATAFILESPATH}/parmetis-test/testnp4
-      TODO: crashes
 
 TEST*/
