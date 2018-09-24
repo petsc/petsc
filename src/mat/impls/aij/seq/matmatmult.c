@@ -1823,90 +1823,86 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   PetscFunctionReturn(0);
 }
 
-/* Needed for MatMatMult_SeqAIJ_SeqAIJ_Combined() */
-/* Append value to an array if the value is not present yet. A bitarray */
-/* was used to determine if there is already an entry at this position. */
-void appendToArray(PetscInt val, PetscInt *array, PetscInt *cnzi)
-{
-  array[(*cnzi)++] = val;
-}
-
 /* This algorithm combines the symbolic and numeric phase of matrix-matrix multiplication. */
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   PetscLogDouble     flops=0.0;
-  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data, *b = (Mat_SeqAIJ*)B->data, *c;
-  const PetscInt     *ai = a->i,*bi = b->i, *aj = a->j;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  const PetscInt     *ai=a->i,*bi=b->i;
   PetscInt           *ci,*cj,*cj_i;
-  PetscScalar        *ca, *ca_i;
-  PetscInt           c_maxmem = 0, a_maxrownnz = 0, a_rownnz, a_col;
-  PetscInt           am = A->rmap->N, bn = B->cmap->N, bm = B->rmap->N;
-  PetscInt           i, k, ndouble = 0;
+  PetscScalar        *ca,*ca_i;
+  PetscInt           b_maxmemrow,c_maxmem,a_col;
+  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
+  PetscInt           i,k,ndouble=0;
   PetscReal          afill;
   PetscScalar        *c_row_val_dense;
   PetscBool          *c_row_idx_flags;
-  PetscInt           *aj_i = a->j;
-  PetscScalar        *aa_i = a->a;
+  PetscInt           *aj_i=a->j;
+  PetscScalar        *aa_i=a->a;
 
   PetscFunctionBegin;
-  /* Step 1: Determine upper bounds on memory for C */
-  for (i=0; i<am; i++) { /* iterate over all rows of A */
-    const PetscInt anzi  = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
-    const PetscInt *acol = aj + ai[i]; /* column indices of nonzero entries in this row */
-    a_rownnz = 0;
-    for (k=0;k<anzi;++k) a_rownnz += bi[acol[k]+1] - bi[acol[k]];
-    a_maxrownnz = PetscMax(a_maxrownnz, a_rownnz);
-    c_maxmem += a_rownnz;
-  }
-  ierr = PetscMalloc1(am+1, &ci);               CHKERRQ(ierr);
-  ierr = PetscMalloc1(bn, &c_row_val_dense);    CHKERRQ(ierr);
-  ierr = PetscMalloc1(bn, &c_row_idx_flags);    CHKERRQ(ierr);
-  ierr = PetscMalloc1(c_maxmem,&cj);            CHKERRQ(ierr);
-  ierr = PetscMalloc1(c_maxmem,&ca);            CHKERRQ(ierr);
-  ca_i = ca;
-  cj_i = cj;
+
+  /* Step 1: Determine upper bounds on memory for C and allocate memory */
+  /* This should be enough for almost all matrices. If still more memory is needed, it is reallocated later. */
+  c_maxmem    = 8*(ai[am]+bi[bm]);
+  b_maxmemrow = PetscMin(bi[bm],bn);
+  ierr  = PetscMalloc1(am+1,&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(bn,&c_row_val_dense);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(bn,&c_row_idx_flags);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(c_maxmem,&cj);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(c_maxmem,&ca);CHKERRQ(ierr);
+  ca_i  = ca;
+  cj_i  = cj;
   ci[0] = 0;
-  ierr = PetscMemzero(c_row_val_dense, bn * sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(c_row_idx_flags, bn * sizeof(PetscBool));CHKERRQ(ierr);
+  ierr  = PetscMemzero(c_row_val_dense,bn*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(c_row_idx_flags,bn*sizeof(PetscBool));CHKERRQ(ierr);
   for (i=0; i<am; i++) {
     /* Step 2: Initialize the dense row vector for C  */
-    const PetscInt anzi     = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
-    PetscInt cnzi           = 0;
-    PetscInt *bj_i;
-    PetscScalar *ba_i;
+    const PetscInt anzi = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
+    PetscInt       cnzi = 0;
+    PetscInt       *bj_i;
+    PetscScalar    *ba_i;
+    /* If the number of indices in C so far + the max number of columns in the next row > c_maxmem  -> allocate more memory
+       Usually, there is enough memory in the first place, so this is not executed. */
+    while (ci[i] + b_maxmemrow > c_maxmem) {
+      c_maxmem *= 2;
+      ndouble++;
+      ierr = PetscRealloc(sizeof(PetscInt)*c_maxmem,&cj);
+      ierr = PetscRealloc(sizeof(PetscScalar)*c_maxmem,&ca);
+    }
 
     /* Step 3: Do the numerical calculations */
     for (a_col=0; a_col<anzi; a_col++) {          /* iterate over all non zero values in a row of A */
-      PetscInt a_col_index = aj_i[a_col];
-      const PetscInt bnzi = bi[a_col_index+1] - bi[a_col_index];
+      PetscInt       a_col_index = aj_i[a_col];
+      const PetscInt bnzi        = bi[a_col_index+1] - bi[a_col_index];
       flops += 2*bnzi;
-      bj_i = b->j + bi[a_col_index];   /* points to the current row in bj */
-      ba_i = b->a + bi[a_col_index];   /* points to the current row in ba */
+      bj_i   = b->j + bi[a_col_index];   /* points to the current row in bj */
+      ba_i   = b->a + bi[a_col_index];   /* points to the current row in ba */
       for (k=0; k<bnzi; ++k) { /* iterate over all non zeros of this row in B */
-        if (c_row_idx_flags[ bj_i[k] ] == PETSC_FALSE) {
-          appendToArray(bj_i[k], cj_i, &cnzi);
-          c_row_idx_flags[ bj_i[k] ] = PETSC_TRUE;
+        if (c_row_idx_flags[bj_i[k]] == PETSC_FALSE) {
+          cj_i[cnzi++]             = bj_i[k];
+          c_row_idx_flags[bj_i[k]] = PETSC_TRUE;
         }
-        c_row_val_dense[ bj_i[k] ] += aa_i[a_col] * ba_i[k];
+        c_row_val_dense[bj_i[k]] += aa_i[a_col] * ba_i[k];
       }
     }
 
     /* Sort array */
-    ierr = PetscSortInt(cnzi, cj_i);CHKERRQ(ierr);
+    ierr = PetscSortInt(cnzi,cj_i);CHKERRQ(ierr);
     /* Step 4 */
-    for (k=0; k < cnzi; k++) {
-      ca_i[k] = c_row_val_dense[cj_i[k]];
+    for (k=0; k<cnzi; k++) {
+      ca_i[k]                  = c_row_val_dense[cj_i[k]];
       c_row_val_dense[cj_i[k]] = 0.;
       c_row_idx_flags[cj_i[k]] = PETSC_FALSE;
     }
     /* terminate current row */
-    aa_i += anzi;
-    aj_i += anzi;
-    ca_i += cnzi;
-    cj_i += cnzi;
+    aa_i   += anzi;
+    aj_i   += anzi;
+    ca_i   += cnzi;
+    cj_i   += cnzi;
     ci[i+1] = ci[i] + cnzi;
-    flops += cnzi;
+    flops  += cnzi;
   }
 
   /* Step 5 */
