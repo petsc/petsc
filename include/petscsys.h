@@ -1794,7 +1794,7 @@ PETSC_EXTERN PetscErrorCode PetscMPIDump(FILE*);
 PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm,PetscReal[],PetscReal[]);
 
-/*
+/*MC
     PetscNot - negates a logical type value and returns result as a PetscBool
 
     Notes:
@@ -1802,7 +1802,11 @@ PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm,PetscReal[],PetscReal
 $     int        *a;
 $     PetscBool  flag = PetscNot(a)
      where !a would not return a PetscBool because we cannot provide a cast from int to PetscBool in C.
-*/
+
+    Level: beginner
+
+    .seealso : PetscBool, PETSC_TRUE, PETSC_FALSE
+M*/
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
 /*MC
