@@ -46,9 +46,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = NULL;
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
@@ -180,7 +177,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType()
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMGetVecType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -206,7 +203,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 
    Level: intermediate
 
-.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType
+.seealso: DMCreate(), DMDestroy(), DM, DMDAInterpolationType, VecType, DMSetMatType(), DMGetMatType(), DMSetVecType()
 @*/
 PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
 {
@@ -334,7 +331,7 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
@@ -363,7 +360,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType(), DMSetMatType(), DMGetMatType()
 @*/
 PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
 {
@@ -3402,6 +3399,7 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&DMList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

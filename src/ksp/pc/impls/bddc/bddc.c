@@ -2527,7 +2527,7 @@ static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
   ierr = VecScatterDestroy(&bddcipc_ctx->g2l);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&vv,NULL);CHKERRQ(ierr);
   ierr = ISRenumber(pcis->is_B_global,NULL,NULL,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vv,is,pcis->vec1_B,NULL,&bddcipc_ctx->g2l);CHKERRQ(ierr);
+  ierr = VecScatterCreateWithData(vv,is,pcis->vec1_B,NULL,&bddcipc_ctx->g2l);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = VecDestroy(&vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -28,7 +28,7 @@ typedef struct _p_Vec*         Vec;
 
   Concepts: scatter
 
-.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
+.seealso:  VecScatterCreateWithData(), VecScatterBegin(), VecScatterEnd()
 S*/
 typedef struct _p_VecScatter*  VecScatter;
 
@@ -42,45 +42,45 @@ E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
 
 /*MC
-    SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreate() call
+    SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreateWithData() call
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
+.seealso: VecScatter, ScatterMode, VecScatterCreateWithData(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
           SCATTER_REVERSE_LOCAL
 
 M*/
 
 /*MC
     SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
-         in the VecScatterCreate()
+         in the VecScatterCreateWithData()
 
     Level: beginner
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+.seealso: VecScatter, ScatterMode, VecScatterCreateWithData(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
           SCATTER_REVERSE_LOCAL
 
 M*/
 
 /*MC
-    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreate() call except NO parallel communication
+    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreateWithData() call except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
+.seealso: VecScatter, ScatterMode, VecScatterCreateWithData(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
           SCATTER_REVERSE_LOCAL
 
 M*/
 
 /*MC
     SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
-         in the VecScatterCreate()  except NO parallel communication
+         in the VecScatterCreateWithData()  except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
 
     Level: developer
 
-.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+.seealso: VecScatter, ScatterMode, VecScatterCreateWithData(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
           SCATTER_REVERSE
 
 M*/
@@ -111,7 +111,7 @@ typedef const char* VecType;
 
    Level: beginner
 
-.seealso: VecScatterSetType(), VecScatter, VecScatterCreate(), VecScatterDestroy()
+.seealso: VecScatterSetType(), VecScatter, VecScatterCreateWithData(), VecScatterDestroy()
 J*/
 typedef const char* VecScatterType;
 #define VECSCATTERSEQ       "seq"
@@ -125,7 +125,7 @@ PETSC_EXTERN PetscErrorCode VecScatterSetType(VecScatter, VecScatterType);
 PETSC_EXTERN PetscErrorCode VecScatterGetType(VecScatter, VecScatterType *);
 PETSC_EXTERN PetscErrorCode VecScatterSetFromOptions(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterRegister(const char[],PetscErrorCode (*)(VecScatter));
-PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterCreateWithData(Vec,IS,Vec,IS,VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizePackage(void);
 
@@ -341,11 +341,12 @@ PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
 
-PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
-PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
+PETSC_EXTERN PetscErrorCode VecScatterSetData(VecScatter,Vec,IS,Vec,IS);
+PETSC_EXTERN PetscErrorCode VecScatterCreate(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterSetUp(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}

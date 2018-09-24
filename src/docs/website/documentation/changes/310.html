@@ -97,7 +97,7 @@
     <div id="main">
 
       <div align="center">
-        <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.10 Version</a></h2>
       </div>
 
       <h4>General:</h4>
@@ -130,6 +130,7 @@
         <li>Added MatPartitioningApplyND() to compute a nested dissection ordering of a matrix.</li>
         <li>Deprecated MatISGetMPIXAIJ() in favour of MatConvert().</li>
         <li>Added new matrix types for limited-memory variable-metric (MATLMVM) approximations of Jacobians.</li>
+        <li>Added MATAIJSELL, a sub-type of AIJ that uses SELL format internally for SELL-optimized operations.</li>
         </ul>
       <h4>PC:</h4>
       <ul>
@@ -174,15 +175,12 @@
           <li>All quasi-Newton methods updated to use the new LMVM Mat objects.</li>
           <li>Added a bound-constrained quasi-Newton line search (BQNLS) method that re-uses BNLS infrastructure to replace BLMVM on next release.</li>
           <li>Bound-constrained conjugate gradient method expanded with new CG update types and nonlinear preconditioning.</li>
+          <li>Removed <code>-tao_type test</code>.</li>
+          <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
         </ul>
       <h4>TS:</h4>
       <ul>
         <li>Added symplectic time integrators for separable Hamiltonian systems (-ts_type basicsymplectic). </li>
-      </ul>
-      <h4>TAO:</h4>
-      <ul>
-        <li>Removed <code>-tao_type test</code>.</li>
-        <li>Gradient testing can now be accessed with the options <code>-tao_test_gradient</code>, <code>-tao_test_gradient_view</code>, and Hessian testing can be done with <code>-tao_test_hessian</code>, <code>-tao_test_hessian_view</code> (also works for matrix-free Hessian).</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>

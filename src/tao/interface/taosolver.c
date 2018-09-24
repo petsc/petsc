@@ -2144,6 +2144,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TaoList,sname, (void (*)(void))func);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

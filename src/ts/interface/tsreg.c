@@ -135,6 +135,7 @@ PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TSList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

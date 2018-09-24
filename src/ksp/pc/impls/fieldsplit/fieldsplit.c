@@ -545,7 +545,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr     = MatCreateVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
       ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
-      ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
+      ierr = VecScatterCreateWithData(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject*) &sp);CHKERRQ(ierr);
       if (sp) {
         ierr = MatSetNearNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);

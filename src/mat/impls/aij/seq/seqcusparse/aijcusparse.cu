@@ -1676,14 +1676,13 @@ static PetscErrorCode MatDuplicate_SeqAIJCUSPARSE(Mat A,MatDuplicateOption cpval
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat B)
 {
   PetscErrorCode ierr;
   cusparseStatus_t stat;
   cusparseHandle_t handle=0;
 
   PetscFunctionBegin;
-  ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
   ierr = PetscFree(B->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(VECCUDA,&B->defaultvectype);CHKERRQ(ierr);
 
@@ -1731,6 +1730,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
   B->valid_GPU_matrix = PETSC_OFFLOAD_UNALLOCATED;
 
   ierr = PetscObjectComposeFunction((PetscObject)B, "MatCUSPARSESetFormat_C", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJCUSPARSE(B);
   PetscFunctionReturn(0);
 }
 
