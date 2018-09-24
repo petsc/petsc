@@ -670,6 +670,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
 
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
+  if (nroots < 0) PetscFunctionReturn(0);
   /* If a point p is on the interface, then all its cone points must be also on interface  */
   ierr = PetscCalloc2(nroots, &roots, nroots, &leaves);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
