@@ -23,7 +23,11 @@ class Configure(config.package.GNUPackage):
 
   def gitPreInstallCheck(self):
     '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
-    import urllib, os
+    import os
+    try:
+      from urllib import urlretrieve
+    except ImportError:
+      from urllib.request import urlretrieve
 
     markFile = os.path.join(self.packageDir, '_patched')
     if not os.path.isfile(markFile):
