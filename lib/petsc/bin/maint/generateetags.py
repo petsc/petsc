@@ -90,41 +90,41 @@ def badWebIndex(dirname,file):
   else:
     return 1
 
-def processDir(flist,dirname,names):
+def processDir(flist, dirpath, dirnames, filenames):
   newls = []
   gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
   bpfx = ['.#']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
-  for l in names:
+  for l in filenames:
     if endsWithSuffix(l,gsfx) and not startsWithPrefix(l,bpfx):
       newls.append(l)
-    elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirname,l):
+    elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirpath,l):
       # if html - and not bad suffix - and not badWebIndex - then add to etags-list
       newls.append(l)
-  if newls: flist.extend([os.path.join(dirname,name) for name in newls])
+  if newls: flist.extend([os.path.join(dirpath,name) for name in newls])
 
   # exclude 'docs' but not 'src/docs'
   for exname in ['docs']:
-    if exname in names and dirname.find('src') <0:
-      names.remove(exname)
+    if exname in dirnames and dirpath.find('src') <0:
+      dirnames.remove(exname)
   # One-level unique dirs
   for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
-    if exname in names:
-      names.remove(exname)
+    if exname in dirnames:
+      dirnames.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
   for exname in ['src/python/PETSc','client/c++','client/c','client/python','src/docs/website/documentation/changes']:
-    for name in names:
-      filename=os.path.join(dirname,name)
+    for name in dirnames:
+      filename=os.path.join(dirpath,name)
       if filename.find(exname) >=0:
-        names.remove(name)
+        dirnames.remove(name)
   # check for configure generated PETSC_ARCHes
   rmnames=[]
-  for name in names:
-    if os.path.isdir(os.path.join(dirname,name,'petsc','conf')):
+  for name in dirnames:
+    if os.path.isdir(os.path.join(dirpath,name,'petsc','conf')):
       rmnames.append(name)
   for rmname in rmnames:
-    names.remove(rmname)
+    dirnames.remove(rmname)
   return
 
 def processFiles(dirname,flist):
@@ -156,7 +156,8 @@ def main(ctags):
     output = subprocess.check_output('git ls-files | egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)', shell=True)
     flist = output.decode(sys.getfilesystemencoding()).splitlines()
   except OSError:
-    os.path.walk(os.getcwd(),processDir,flist)
+    for dirpath, dirnames, filenames in os.walk(os.getcwd()):
+      processDir(flist, dirpath, dirnames, filenames)
     processFiles(os.getcwd(),flist)
   createTags(flist,etagfile,ctagfile)
   addFileNameTags(etagfile)
