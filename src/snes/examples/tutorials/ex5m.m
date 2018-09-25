@@ -1,7 +1,7 @@
 function localF = ex5m(localX,hx,hy,lambda)
-% $Id: ex5m.m,v 1.3 2000/05/08 03:54:05 bsmith Exp $
 %
-%  Matlab routine that does the FormFunction() for ex5m.c
+%  Matlab routine that does the FormFunction() for ex5.c
+%  when using the Matlab engine
 %
 [m,n] = size(localX);
 %
