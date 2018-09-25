@@ -9,7 +9,6 @@ import os
 #
 
 def processLOCDIR(arg,dirname,names):
-  import commands
   petscdir = arg[0]
   if 'makefile' in names:
     mfile=os.path.join(dirname,'makefile')
