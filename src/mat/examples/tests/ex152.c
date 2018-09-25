@@ -4,10 +4,8 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 
 /*
  * This file implements two tests for a bug reported in ParMETIS. These tests are not expected to pass without the
- * following two patches.
+ * patches in the PETSc distribution of ParMetis. See parmetis.py
  *
- * http://petsc.cs.iit.edu/petsc/externalpackages/parmetis-4.0.2/rev/2dd2eae596ac
- * http://petsc.cs.iit.edu/petsc/externalpackages/parmetis-4.0.2/rev/1c2b9fe39201
  *
  * The bug was reported upstream, but has received no action so far.
  *
@@ -92,7 +90,7 @@ int main(int argc, char *argv[])
   isize = size;
 
   ubvec[0]   = 1.05;
-  options[0] = 1;
+  options[0] = 0;
   options[1] = 2;
   options[2] = 15;
   options[3] = 0;
