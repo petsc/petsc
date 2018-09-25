@@ -7,7 +7,7 @@ int global_index(PetscInt i,PetscInt j,PetscInt k, PetscInt m, PetscInt n) { ret
 
 int main(int argc,char **argv)
 {
-  Mat            A,B,C;
+  Mat            A,B,C,PtAP,PtAP_copy,PtAP_squared;
   PetscInt       i,M,N,Istart,Iend,n=7,j,J,Ii,m=8,k,o=1;
   PetscScalar    v;
   PetscErrorCode ierr;
@@ -248,8 +248,19 @@ int main(int argc,char **argv)
   /* Test C = A*B */
   ierr = PetscLogStagePush(fullMatMatMultStage);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  /* Test PtAP_squared = PtAP(C,C)*PtAP(C,C)  */
+  ierr = MatPtAP(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP);
+  ierr = MatDuplicate(PtAP,MAT_COPY_VALUES,&PtAP_copy);CHKERRQ(ierr);
+  ierr = MatMatMult(PtAP,PtAP_copy,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP_squared);CHKERRQ(ierr);
+
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(PtAP_squared,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+
+  ierr = MatDestroy(&PtAP_squared);CHKERRQ(ierr);
+  ierr = MatDestroy(&PtAP_copy);CHKERRQ(ierr);
+  ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -265,21 +276,16 @@ int main(int argc,char **argv)
       nsize: 1
       args: -m 8 -n 8 -stencil 2d5point -matmatmult_via combined
 
-
  test:
-      suffix: 2
-      nsize: 4
-      args: -m 8 -n 8 -stencil 2d5point -matmatmult_via seqmpi
+       suffix: 2
+       nsize: 1
+       args: -m 5 -n 5 -o 5 -stencil 3d27point -matmatmult_via rowmerge
 
  test:
       suffix: 3
-      nsize: 8
-      args: -m 16 -n 16 -stencil 2d5point -matmatmult_via seqmpi
+      nsize: 4
+      args: -m 6 -n 6 -stencil 2d5point -matmatmult_via seqmpi
 
- test:
-      suffix: 4
-      nsize: 8
-      args: -m 32 -n 32 -stencil 2d5point -matmatmult_via seqmpi
 
 
 TEST*/
