@@ -70,11 +70,11 @@ class Configure(config.base.Configure):
     self.logPrint('Changed persistence directory to '+confdir)
     return
 
-  def cleanInstallDir(self):
+  def cleanConfDir(self):
     import shutil
-    if self.framework.argDB['with-clean'] and os.path.isdir(self.dir):
-      self.logPrintBox('Warning: "with-clean" is specified. Removing all build files from '+ self.dir)
-      shutil.rmtree(self.dir)
+    if self.framework.argDB['with-clean'] and os.path.isdir(self.confDir):
+      self.logPrintBox('Warning: "with-clean" is specified. Removing all build files from '+ self.confDir)
+      shutil.rmtree(self.confDir)
     return
 
   def saveReconfigure(self):
@@ -101,7 +101,7 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.setInstallDir)
     self.executeTest(self.saveReconfigure)
-    self.executeTest(self.cleanInstallDir)
+    self.executeTest(self.cleanConfDir)
     self.executeTest(self.configureInstallDir)
     self.executeTest(self.restoreReconfigure)
     return
