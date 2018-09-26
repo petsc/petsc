@@ -3588,6 +3588,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   ierr = DMPlexCreateSectionInitial(dm, dim, numFields, numComp, numDof, section);CHKERRQ(ierr);
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcComps, bcPoints, *section);CHKERRQ(ierr);
   if (perm) {ierr = PetscSectionSetPermutation(*section, perm);CHKERRQ(ierr);}
+  ierr = PetscSectionSetFromOptions(*section);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&aSec,NULL);CHKERRQ(ierr);
   if (numBC || aSec) {
