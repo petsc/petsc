@@ -1466,7 +1466,7 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   Not collective
 
   Input Parameters:
-+ mesh - The DMPlex
++ dm - The DMPlex
 - p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
@@ -1477,8 +1477,6 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
-
-  You must also call DMPlexRestoreCone() after you finish using the returned array.
 
 .seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart()
 @*/
