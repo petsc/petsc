@@ -5,14 +5,15 @@
           type(tDM),      intent(in)  :: d
           character(*),   intent(in)  :: str
           PetscInt,       intent(in)  :: v
-          type(tIS)                   :: i
+          type(tIS),      intent(out) :: i
           PetscErrorCode, intent(out) :: ierr
        end Subroutine DMGetStratumIS
        subroutine DMGetStratumSize(d,str,v,s,ierr)
           use petscdmdef
           type(tDM),      intent(in)  :: d
           character(*),   intent(in)  :: str
-          PetscInt,       intent(in)  :: v,s
+          PetscInt,       intent(in)  :: v
+          PetscInt,       intent(out) :: s
           PetscErrorCode, intent(out) :: ierr
        end Subroutine DMGetStratumSize
       end Interface
