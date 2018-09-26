@@ -1,0 +1,11 @@
+      Interface
+       subroutine DMGetLabel(d,str,l,ierr)
+          use petscdmdef
+          use petscisdef
+          type(tDM),      intent(in)  :: d
+          character(*),   intent(in)  :: str
+          type(tdmlabel), intent(out) :: l
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMGetLabel
+      end Interface
+
