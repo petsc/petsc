@@ -747,14 +747,14 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   const PetscInt     *ai=a->i,*bi=b->i,*aj=a->j,*bj=b->j,*inputi,*inputj,*inputcol,*inputcol_L1;
   PetscInt           *ci,*cj,*outputj,worki_L1[9],worki_L2[9];
   PetscInt           c_maxmem,a_maxrownnz=0,a_rownnz;
-  const PetscInt     workcol[8] = {0,1,2,3,4,5,6,7};
+  const PetscInt     workcol[8]={0,1,2,3,4,5,6,7};
   const PetscInt     am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   const PetscInt     *brow_ptr[8],*brow_end[8];
   PetscInt           window[8];
   PetscInt           window_min,old_window_min,ci_nnz,outputi_nnz=0,L1_nrows,L2_nrows;
-  PetscInt           i,k,ndouble = 0,L1_rowsleft,rowsleft;
+  PetscInt           i,k,ndouble=0,L1_rowsleft,rowsleft;
   PetscReal          afill;
-  PetscInt           *workj_L1,*workj_L2,*workj_L3_in,*workj_L3_out;
+  PetscInt           *workj_L1,*workj_L2,*workj_L3;
   PetscInt           L1_nnz,L2_nnz;
 
   /* Step 1: Get upper bound on memory required for allocation.
@@ -777,9 +777,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   }
   /* temporary work areas for merging rows */
   ierr = PetscMalloc1(a_maxrownnz*8,&workj_L1);CHKERRQ(ierr);
-  ierr = PetscMalloc1(a_maxrownnz*10,&workj_L2);CHKERRQ(ierr);
-  ierr = PetscMalloc1(a_maxrownnz,&workj_L3_in);CHKERRQ(ierr);
-  ierr = PetscMalloc1(a_maxrownnz,&workj_L3_out);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a_maxrownnz*8,&workj_L2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a_maxrownnz,&workj_L3);CHKERRQ(ierr);
 
   /* This should be enough for almost all matrices. If not, memory is reallocated later. */
   c_maxmem = 8*(ai[am]+bi[bm]);
@@ -816,7 +815,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
 
       /* The following macro is used to specialize for small rows in A.
          This helps with compiler unrolling, improving performance substantially.
-          Input:  inputj   inputi  L3_nnz inputcol  bn
+          Input:  inputj   inputi  inputcol  bn
           Output: outputj  outputi_nnz                       */
        #define MatMatMultSymbolic_RowMergeMacro(ANNZ)                        \
          window_min  = bn;                                                   \
@@ -824,10 +823,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
          for (k=0; k<ANNZ; ++k) {                                            \
            brow_ptr[k] = inputj + inputi[inputcol[k]];                       \
            brow_end[k] = inputj + inputi[inputcol[k]+1];                     \
-         }                                                                   \
-         for (k=0; k<ANNZ; ++k) {                                            \
-           window[k] = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn;     \
-           window_min = PetscMin(window[k], window_min);                     \
+           window[k]   = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn;   \
+           window_min  = PetscMin(window[k], window_min);                    \
          }                                                                   \
          while (window_min < bn) {                                           \
            outputj[outputi_nnz++] = window_min;                              \
@@ -934,7 +931,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
           inputj      = workj_L2;
           inputcol    = workcol;
           outputi_nnz = 0;
-          if (rowsleft) outputj = workj_L3_out;
+          if (rowsleft) outputj = workj_L3;
           else          outputj = cj + ci_nnz;
           switch (L2_nrows) {
           case 1:  brow_ptr[0] = inputj + inputi[inputcol[0]];
@@ -970,6 +967,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   /* Step 3: Create the new symbolic matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),am,bn,ci,cj,NULL,C);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
+  ierr = MatSetType(*C,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -1001,8 +999,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   /* Step 4: Free temporary work areas */
   ierr = PetscFree(workj_L1);CHKERRQ(ierr);
   ierr = PetscFree(workj_L2);CHKERRQ(ierr);
-  ierr = PetscFree(workj_L3_in);CHKERRQ(ierr);
-  ierr = PetscFree(workj_L3_out);CHKERRQ(ierr);
+  ierr = PetscFree(workj_L3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
