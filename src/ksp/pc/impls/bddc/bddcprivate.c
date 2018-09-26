@@ -1610,9 +1610,14 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) {
       PetscInt i;
+
       ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
       for (i=0;i<pcbddc->n_ISForDofs;i++) {
+        PetscInt bs;
+
         ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = ISGetBlockSize(pcbddc->ISForDofs[i],&bs);CHKERRQ(ierr);
+        ierr = ISSetBlockSize(pcbddc->ISForDofsLocal[i],bs);CHKERRQ(ierr);
         ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
       }
       pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
@@ -1630,10 +1635,15 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
       if (dm) {
         IS      *fields;
         PetscInt nf,i;
+
         ierr = DMCreateFieldDecomposition(dm,&nf,NULL,&fields,NULL);CHKERRQ(ierr);
         ierr = PetscMalloc1(nf,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
         for (i=0;i<nf;i++) {
+          PetscInt bs;
+
           ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,fields[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+          ierr = ISGetBlockSize(fields[i],&bs);CHKERRQ(ierr);
+          ierr = ISSetBlockSize(pcbddc->ISForDofsLocal[i],bs);CHKERRQ(ierr);
           ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);

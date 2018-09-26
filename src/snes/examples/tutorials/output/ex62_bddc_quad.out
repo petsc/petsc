@@ -1,23 +1,20 @@
-    0 KSP Residual norm 98.1802 
-    1 KSP Residual norm 16.4698 
-    2 KSP Residual norm 8.30469 
-    3 KSP Residual norm 4.05791 
-    4 KSP Residual norm 2.05661 
-    5 KSP Residual norm 0.675715 
-    6 KSP Residual norm 0.0673847 
-    7 KSP Residual norm 0.0183087 
-    8 KSP Residual norm 0.00339041 
-    9 KSP Residual norm 0.000678415 
-   10 KSP Residual norm 0.000184994 
-   11 KSP Residual norm 2.72912e-05 
-   12 KSP Residual norm 5.8021e-06 
-   13 KSP Residual norm 1.26645e-06 
-   14 KSP Residual norm 1.66098e-07 
+    0 KSP Residual norm 27.1976 
+    1 KSP Residual norm 7.12034 
+    2 KSP Residual norm 2.00517 
+    3 KSP Residual norm 0.228476 
+    4 KSP Residual norm 0.0406285 
+    5 KSP Residual norm 0.00618406 
+    6 KSP Residual norm 0.0011987 
+    7 KSP Residual norm 0.000142663 
+    8 KSP Residual norm 2.51304e-05 
+    9 KSP Residual norm 3.40343e-06 
+   10 KSP Residual norm 5.4907e-07 
+   11 KSP Residual norm 5.20507e-08 
 SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=14
+  total number of linear solver iterations=11
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 5 MPI processes
@@ -74,14 +71,14 @@ SNES Object: 5 MPI processes
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux: 0
     ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 1227 interface 171 coarse 36
-      Coarsening ratios: all/coarse 34 interface/coarse 4
+      Global dofs sizes: all 1227 interface 171 coarse 45
+      Coarsening ratios: all/coarse 27 interface/coarse 3
       Active processes : 5
       Total subdomains : 5
       Dofs type        :	MIN	MAX	MEAN
       Interior  dofs   :	114	242	211
       Interface dofs   :	39	99	70
-      Primal    dofs   :	9	24	16
+      Primal    dofs   :	11	29	20
       Local     dofs   :	153	333	282
       Local     subs   :	1	1
     --- Interior solver (rank 0)
@@ -133,8 +130,8 @@ SNES Object: 5 MPI processes
         linear system matrix = precond matrix:
         Mat Object: (pc_bddc_coarse_) 5 MPI processes
           type: mpiaij
-          rows=36, cols=36
-          total: nonzeros=1056, allocated nonzeros=1162
+          rows=45, cols=45
+          total: nonzeros=1617, allocated nonzeros=1774
           total number of mallocs used during MatSetValues calls =0
             using I-node (on process 0) routines: found 2 nodes, limit used is 5
               KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
@@ -150,10 +147,10 @@ SNES Object: 5 MPI processes
                 linear system matrix = precond matrix:
                 Mat Object:     1 MPI processes
                   type: seqaij
-                  rows=36, cols=36
-                  total: nonzeros=1056, allocated nonzeros=1056
+                  rows=45, cols=45
+                  total: nonzeros=1617, allocated nonzeros=1617
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 14 nodes, limit used is 5
+                    using I-node routines: found 16 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 5 MPI processes
       type: is
@@ -161,4 +158,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=46498, allocated nonzeros=53284
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-L_2 Error: 9.38912e-09 [5.57163e-10, 9.37257e-09]
+L_2 Error: 3.3062e-09 [1.97149e-10, 3.30032e-09]
