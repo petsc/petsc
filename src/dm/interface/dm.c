@@ -4396,7 +4396,7 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
 /*@
   DMGetCoordinates - Gets a global vector with the coordinates associated with the DM.
 
-  Not Collective
+  Collective on DM
 
   Input Parameter:
 . dm - the DM
