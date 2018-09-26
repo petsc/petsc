@@ -4733,7 +4733,7 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
 
-  Not Collective
+  Collective on DM
 
   Input Parameter:
 . dm - The DM object
