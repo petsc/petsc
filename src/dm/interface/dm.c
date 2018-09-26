@@ -4531,6 +4531,65 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMGetCoordinatesLocalTuple - Gets a local vector with the coordinates of specified points and section describing its layout.
+
+  Not collective
+
+  Input Parameter:
++ dm - the DM
+- p - the IS of points whose coordinates will be returned
+
+  Output Parameter:
++ pCoordSection - the PetscSection describing the layout of pCoord, i.e. each point corresponds to one point in p, and DOFs correspond to coordinates
+- pCoord - the Vec with coordinates of points in p
+
+  Note:
+  DMGetCoordinatesLocalSetUp() must be called first. This function employs DMGetCoordinatesLocalNoncollective() so it is not collective.
+
+  This creates a new vector, so the user SHOULD destroy this vector
+
+  Each process has the local and ghost coordinates
+
+  For DMDA, in two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
+  and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+  Level: advanced
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMSetCoordinatesLocal(), DMGetCoordinatesLocal(), DMGetCoordinatesLocalNoncollective(), DMGetCoordinatesLocalSetUp(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMGetCoordinatesLocalTuple(DM dm, IS p, PetscSection *pCoordSection, Vec *pCoord)
+{
+  PetscSection        cs, newcs;
+  Vec                 coords;
+  const PetscScalar   *arr;
+  PetscScalar         *newarr=NULL;
+  PetscInt            n;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(p, IS_CLASSID, 2);
+  if (pCoordSection) PetscValidPointer(pCoordSection, 3);
+  if (pCoord) PetscValidPointer(pCoord, 4);
+  if (!dm->coordinatesLocal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMGetCoordinatesLocalSetUp() has not been called or coordinates not set");
+  if (!dm->coordinateDM || !dm->coordinateDM->defaultSection) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM not supported");
+  cs = dm->coordinateDM->defaultSection;
+  coords = dm->coordinatesLocal;
+  ierr = VecGetArrayRead(coords, &arr);CHKERRQ(ierr);
+  ierr = PetscSectionExtractDofsFromArray(cs, MPIU_SCALAR, arr, p, &newcs, pCoord ? ((void**)&newarr) : NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coords, &arr);CHKERRQ(ierr);
+  if (pCoordSection) *pCoordSection = newcs;
+  if (pCoord) {
+    ierr = PetscSectionGetStorageSize(newcs, &n);CHKERRQ(ierr);
+    /* set array in two steps to mimic PETSC_OWN_POINTER */
+    ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)p), 1, n, NULL, pCoord);CHKERRQ(ierr);
+    ierr = VecReplaceArray(*pCoord, newarr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMGetCoordinateField(DM dm, DMField *field)
 {
   PetscErrorCode ierr;

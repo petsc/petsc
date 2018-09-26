@@ -130,6 +130,7 @@ PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalNoncollective(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocalTuple(DM,IS,PetscSection*,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,DMPointLocationType,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,PetscBool*,const PetscReal**,const PetscReal**,const DMBoundaryType**);
