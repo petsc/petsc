@@ -383,7 +383,7 @@ PetscErrorCode SetupFE(DM dm, PetscInt Nc, PetscBool simplex, const char name[],
   ierr = (*setup)(prob, user);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
-    if (user->useNearNullspace) {ierr = DMSetNearNullSpaceConstructor(cdm, 0, CreateElasticityNullSpace);}
+    if (user->useNearNullspace) {ierr = DMSetNearNullSpaceConstructor(cdm, 0, CreateElasticityNullSpace);CHKERRQ(ierr);}
     /* TODO: Check whether the boundary of coarse meshes is marked */
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
