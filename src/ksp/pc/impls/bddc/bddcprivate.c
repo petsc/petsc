@@ -2465,45 +2465,76 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
+PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodiaglocal)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  IS             pressures,zerodiag,zerodiag_save,*zerodiag_subs;
-  PetscInt       nz,n;
+  IS             pressures = NULL,zerodiag = NULL,*bzerodiag = NULL,zerodiag_save,*zerodiag_subs;
+  PetscInt       nz,n,benign_n,bsp = 1;
   PetscInt       *interior_dofs,n_interior_dofs,nneu;
   PetscBool      sorted,have_null,has_null_pressures,recompute_zerodiag,checkb;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (reuse) goto project_b0;
   ierr = PetscSFDestroy(&pcbddc->benign_sf);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->benign_B0);CHKERRQ(ierr);
   for (n=0;n<pcbddc->benign_n;n++) {
     ierr = ISDestroy(&pcbddc->benign_zerodiag_subs[n]);CHKERRQ(ierr);
   }
   ierr = PetscFree(pcbddc->benign_zerodiag_subs);CHKERRQ(ierr);
-  pcbddc->benign_n = 0;
-
-  /* if a local info on dofs is present, uses the last field for "pressures" (or fid by command line)
-     otherwise, it uses only zerodiagonal dofs (ok if the pressure block is all zero; it could fail if it is not)
+  has_null_pressures = PETSC_TRUE;
+  have_null = PETSC_TRUE;
+  /* if a local information on dofs is present, gets pressure dofs from command line (uses the last field is not provided)
+     Without local information, it uses only the zerodiagonal dofs (ok if the pressure block is all zero and it is a scalar field)
      Checks if all the pressure dofs in each subdomain have a zero diagonal
      If not, a change of basis on pressures is not needed
      since the local Schur complements are already SPD
   */
-  has_null_pressures = PETSC_TRUE;
-  have_null = PETSC_TRUE;
   if (pcbddc->n_ISForDofsLocal) {
-    IS       iP = NULL;
-    PetscInt npl,*idxs,p = pcbddc->n_ISForDofsLocal-1;
+    IS        iP = NULL;
+    PetscInt  p,*pp;
+    PetscBool flg;
 
+    ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pp);CHKERRQ(ierr);
+    n    = pcbddc->n_ISForDofsLocal;
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_bddc_pressure_field","Field id for pressures",NULL,p,&p,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-pc_bddc_pressure_field","Field id for pressures",NULL,pp,&n,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (p < 0 || p > pcbddc->n_ISForDofsLocal-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",p);
-    /* Dofs splitting for BDDC cannot have PETSC_COMM_SELF, so create a sequential IS */
-    ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[p],&npl);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,npl,idxs,PETSC_COPY_VALUES,&pressures);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
+    if (!flg) {
+      n = 1;
+      pp[0] = pcbddc->n_ISForDofsLocal-1;
+    }
+
+    bsp = 0;
+    for (p=0;p<n;p++) {
+      PetscInt bs;
+
+      if (pp[p] < 0 || pp[p] > pcbddc->n_ISForDofsLocal-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",pp[p]);
+      ierr = ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]],&bs);CHKERRQ(ierr);
+      bsp += bs;
+    }
+    ierr = PetscMalloc1(bsp,&bzerodiag);CHKERRQ(ierr);
+    bsp  = 0;
+    for (p=0;p<n;p++) {
+      const PetscInt *idxs;
+      PetscInt       b,bs,npl,*bidxs;
+
+      ierr = ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]],&bs);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[pp[p]],&npl);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->ISForDofsLocal[pp[p]],&idxs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(npl/bs,&bidxs);CHKERRQ(ierr);
+      for (b=0;b<bs;b++) {
+        PetscInt i;
+
+        for (i=0;i<npl/bs;i++) bidxs[i] = idxs[bs*i+b];
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,npl/bs,bidxs,PETSC_COPY_VALUES,&bzerodiag[bsp]);CHKERRQ(ierr);
+        bsp++;
+      }
+      ierr = PetscFree(bidxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[pp[p]],&idxs);CHKERRQ(ierr);
+    }
+    ierr = ISConcatenate(PETSC_COMM_SELF,bsp,bzerodiag,&pressures);CHKERRQ(ierr);
+
     /* remove zeroed out pressures if we are setting up a BDDC solver for a saddle-point FETI-DP */
     ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_lP",(PetscObject*)&iP);CHKERRQ(ierr);
     if (iP) {
@@ -2517,9 +2548,9 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     if (!sorted) {
       ierr = ISSort(pressures);CHKERRQ(ierr);
     }
-  } else {
-    pressures = NULL;
+    ierr = PetscFree(pp);CHKERRQ(ierr);
   }
+
   /* pcis has not been setup yet, so get the local size from the subdomain matrix */
   ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
   if (!n) pcbddc->benign_change_explicit = PETSC_TRUE;
@@ -2537,9 +2568,10 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
   }
   recompute_zerodiag = PETSC_FALSE;
+
   /* in case disconnected subdomains info is present, split the pressures accordingly (otherwise the benign trick could fail) */
   zerodiag_subs    = NULL;
-  pcbddc->benign_n = 0;
+  benign_n         = 0;
   n_interior_dofs  = 0;
   interior_dofs    = NULL;
   nneu             = 0;
@@ -2592,63 +2624,85 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       ierr = VecRestoreArray(work[1],&array);CHKERRQ(ierr);
       ierr = ISRestoreIndices(zerodiag,&idxs);CHKERRQ(ierr);
     }
-    if (nsubs > 1) {
-      ierr = PetscCalloc1(nsubs,&zerodiag_subs);CHKERRQ(ierr);
-      for (i=0;i<nsubs;i++) {
-        ISLocalToGlobalMapping l2g;
-        IS                     t_zerodiag_subs;
-        PetscInt               nl;
 
-        ierr = ISLocalToGlobalMappingCreateIS(subs[i],&l2g);CHKERRQ(ierr);
-        ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,zerodiag,&t_zerodiag_subs);CHKERRQ(ierr);
-        ierr = ISGetLocalSize(t_zerodiag_subs,&nl);CHKERRQ(ierr);
-        if (nl) {
-          PetscBool valid = PETSC_TRUE;
+    if (nsubs > 1 || bsp > 1) {
+      IS       *is;
+      PetscInt b,totb;
 
-          if (checkb) {
-            ierr = VecSet(matis->x,0);CHKERRQ(ierr);
-            ierr = ISGetLocalSize(subs[i],&nl);CHKERRQ(ierr);
-            ierr = ISGetIndices(subs[i],&idxs);CHKERRQ(ierr);
-            ierr = VecGetArray(matis->x,&array);CHKERRQ(ierr);
-            for (j=0;j<nl;j++) array[idxs[j]] = 1.;
-            ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
-            ierr = ISRestoreIndices(subs[i],&idxs);CHKERRQ(ierr);
-            ierr = VecPointwiseMult(matis->x,work[0],matis->x);CHKERRQ(ierr);
-            ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
-            ierr = VecPointwiseMult(matis->y,work[1],matis->y);CHKERRQ(ierr);
-            ierr = VecGetArray(matis->y,&array);CHKERRQ(ierr);
-            for (j=0;j<n_interior_dofs;j++) {
-              if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
-                valid = PETSC_FALSE;
-                break;
-              }
-            }
-            ierr = VecRestoreArray(matis->y,&array);CHKERRQ(ierr);
-          }
-          if (valid && nneu) {
-            const PetscInt *idxs;
-            PetscInt       nzb;
+      totb  = bsp;
+      is    = bsp > 1 ? bzerodiag : &zerodiag;
+      nsubs = PetscMax(nsubs,1);
+      ierr  = PetscCalloc1(nsubs*totb,&zerodiag_subs);CHKERRQ(ierr);
+      for (b=0;b<totb;b++) {
+        for (i=0;i<nsubs;i++) {
+          ISLocalToGlobalMapping l2g;
+          IS                     t_zerodiag_subs;
+          PetscInt               nl;
 
-            ierr = ISGetIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
-            ierr = ISGlobalToLocalMappingApply(l2g,IS_GTOLM_DROP,nneu,idxs,&nzb,NULL);CHKERRQ(ierr);
-            ierr = ISRestoreIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
-            if (nzb) valid = PETSC_FALSE;
-          }
-          if (valid && pressures) {
-            IS t_pressure_subs;
-            ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,pressures,&t_pressure_subs);CHKERRQ(ierr);
-            ierr = ISEqual(t_pressure_subs,t_zerodiag_subs,&valid);CHKERRQ(ierr);
-            ierr = ISDestroy(&t_pressure_subs);CHKERRQ(ierr);
-          }
-          if (valid) {
-            ierr = ISLocalToGlobalMappingApplyIS(l2g,t_zerodiag_subs,&zerodiag_subs[pcbddc->benign_n]);CHKERRQ(ierr);
-            pcbddc->benign_n++;
+          if (subs) {
+            ierr = ISLocalToGlobalMappingCreateIS(subs[i],&l2g);CHKERRQ(ierr);
           } else {
-            recompute_zerodiag = PETSC_TRUE;
+            IS tis;
+
+            ierr = MatGetLocalSize(pcbddc->local_mat,&nl,NULL);CHKERRQ(ierr);
+            ierr = ISCreateStride(PETSC_COMM_SELF,nl,0,1,&tis);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingCreateIS(tis,&l2g);CHKERRQ(ierr);
+            ierr = ISDestroy(&tis);CHKERRQ(ierr);
           }
+          ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,is[b],&t_zerodiag_subs);CHKERRQ(ierr);
+          ierr = ISGetLocalSize(t_zerodiag_subs,&nl);CHKERRQ(ierr);
+          if (nl) {
+            PetscBool valid = PETSC_TRUE;
+
+            if (checkb) {
+              ierr = VecSet(matis->x,0);CHKERRQ(ierr);
+              ierr = ISGetLocalSize(subs[i],&nl);CHKERRQ(ierr);
+              ierr = ISGetIndices(subs[i],&idxs);CHKERRQ(ierr);
+              ierr = VecGetArray(matis->x,&array);CHKERRQ(ierr);
+              for (j=0;j<nl;j++) array[idxs[j]] = 1.;
+              ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
+              ierr = ISRestoreIndices(subs[i],&idxs);CHKERRQ(ierr);
+              ierr = VecPointwiseMult(matis->x,work[0],matis->x);CHKERRQ(ierr);
+              ierr = MatMult(matis->A,matis->x,matis->y);CHKERRQ(ierr);
+              ierr = VecPointwiseMult(matis->y,work[1],matis->y);CHKERRQ(ierr);
+              ierr = VecGetArray(matis->y,&array);CHKERRQ(ierr);
+              for (j=0;j<n_interior_dofs;j++) {
+                if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
+                  valid = PETSC_FALSE;
+                  break;
+                }
+              }
+              ierr = VecRestoreArray(matis->y,&array);CHKERRQ(ierr);
+            }
+            if (valid && nneu) {
+              const PetscInt *idxs;
+              PetscInt       nzb;
+
+              ierr = ISGetIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
+              ierr = ISGlobalToLocalMappingApply(l2g,IS_GTOLM_DROP,nneu,idxs,&nzb,NULL);CHKERRQ(ierr);
+              ierr = ISRestoreIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
+              if (nzb) valid = PETSC_FALSE;
+            }
+            if (valid && pressures) {
+              IS       t_pressure_subs,tmp;
+              PetscInt i1,i2;
+
+              ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,pressures,&t_pressure_subs);CHKERRQ(ierr);
+              ierr = ISEmbed(t_zerodiag_subs,t_pressure_subs,PETSC_TRUE,&tmp);CHKERRQ(ierr);
+              ierr = ISGetLocalSize(tmp,&i1);CHKERRQ(ierr);
+              ierr = ISGetLocalSize(t_zerodiag_subs,&i2);CHKERRQ(ierr);
+              if (i2 != i1) valid = PETSC_FALSE;
+              ierr = ISDestroy(&t_pressure_subs);CHKERRQ(ierr);
+              ierr = ISDestroy(&tmp);CHKERRQ(ierr);
+            }
+            if (valid) {
+              ierr = ISLocalToGlobalMappingApplyIS(l2g,t_zerodiag_subs,&zerodiag_subs[benign_n]);CHKERRQ(ierr);
+              benign_n++;
+            } else recompute_zerodiag = PETSC_TRUE;
+          }
+          ierr = ISDestroy(&t_zerodiag_subs);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
         }
-        ierr = ISDestroy(&t_zerodiag_subs);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
       }
     } else { /* there's just one subdomain (or zero if they have not been detected */
       PetscBool valid = PETSC_TRUE;
@@ -2670,8 +2724,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
         ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
       }
       if (valid) {
-        pcbddc->benign_n = 1;
-        ierr = PetscMalloc1(pcbddc->benign_n,&zerodiag_subs);CHKERRQ(ierr);
+        benign_n = 1;
+        ierr = PetscMalloc1(benign_n,&zerodiag_subs);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject)zerodiag);CHKERRQ(ierr);
         zerodiag_subs[0] = zerodiag;
       }
@@ -2682,7 +2736,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   ierr = PetscFree(interior_dofs);CHKERRQ(ierr);
 
-  if (!pcbddc->benign_n) {
+  if (!benign_n) {
     PetscInt n;
 
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
@@ -2696,29 +2750,26 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 
   /* final check for null pressures */
   if (zerodiag && pressures) {
-    PetscInt nz,np;
-    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(pressures,&np);CHKERRQ(ierr);
-    if (nz != np) have_null = PETSC_FALSE;
+    ierr = ISEqual(pressures,zerodiag,&have_null);CHKERRQ(ierr);
   }
 
   if (recompute_zerodiag) {
     ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
-    if (pcbddc->benign_n == 1) {
+    if (benign_n == 1) {
       ierr = PetscObjectReference((PetscObject)zerodiag_subs[0]);CHKERRQ(ierr);
       zerodiag = zerodiag_subs[0];
     } else {
       PetscInt i,nzn,*new_idxs;
 
       nzn = 0;
-      for (i=0;i<pcbddc->benign_n;i++) {
+      for (i=0;i<benign_n;i++) {
         PetscInt ns;
         ierr = ISGetLocalSize(zerodiag_subs[i],&ns);CHKERRQ(ierr);
         nzn += ns;
       }
       ierr = PetscMalloc1(nzn,&new_idxs);CHKERRQ(ierr);
       nzn = 0;
-      for (i=0;i<pcbddc->benign_n;i++) {
+      for (i=0;i<benign_n;i++) {
         PetscInt ns,*idxs;
         ierr = ISGetLocalSize(zerodiag_subs[i],&ns);CHKERRQ(ierr);
         ierr = ISGetIndices(zerodiag_subs[i],(const PetscInt**)&idxs);CHKERRQ(ierr);
@@ -2731,6 +2782,9 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     }
     have_null = PETSC_FALSE;
   }
+
+  /* determines if the coarse solver will be singular or not */
+  ierr = MPIU_Allreduce(&have_null,&pcbddc->benign_null,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
   /* Prepare matrix to compute no-net-flux */
   if (pcbddc->compute_nonetflux && !pcbddc->divudotp) {
@@ -2786,13 +2840,33 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = MatAssemblyEnd(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&zerodiag_save);CHKERRQ(ierr);
+  ierr = ISDestroy(&pressures);CHKERRQ(ierr);
+  if (bzerodiag) {
+    PetscInt i;
 
+    for (i=0;i<bsp;i++) {
+      ierr = ISDestroy(&bzerodiag[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(bzerodiag);CHKERRQ(ierr);
+  }
+  pcbddc->benign_n = benign_n;
+  pcbddc->benign_zerodiag_subs = zerodiag_subs;
+
+  /* determines if the problem has subdomains with 0 pressure block */
+  have_null = (PetscBool)(!!pcbddc->benign_n);
+  ierr = MPIU_Allreduce(&have_null,&pcbddc->benign_have_null,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+
+project_b0:
   /* change of basis and p0 dofs */
-  if (has_null_pressures) {
+  if (pcbddc->benign_n) {
     IS             zerodiagc;
     const PetscInt *idxs,*idxsc;
     PetscInt       i,s,*nnz;
 
+    if (!zerodiag) {
+      ierr = ISConcatenate(PETSC_COMM_SELF,pcbddc->benign_n,pcbddc->benign_zerodiag_subs,&zerodiag);CHKERRQ(ierr);
+      ierr = ISSort(zerodiag);CHKERRQ(ierr);
+    }
     ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
     ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
     ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
@@ -2806,11 +2880,11 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     for (i=0;i<pcbddc->benign_n;i++) {
       PetscInt nzs,j;
 
-      ierr = ISGetLocalSize(zerodiag_subs[i],&nzs);CHKERRQ(ierr);
-      ierr = ISGetIndices(zerodiag_subs[i],&idxs);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[i],&nzs);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->benign_zerodiag_subs[i],&idxs);CHKERRQ(ierr);
       for (j=0;j<nzs-1;j++) nnz[idxs[j]] = 2; /* change on pressures */
       nnz[idxs[nzs-1]] = nzs; /* last local pressure dof in subdomain */
-      ierr = ISRestoreIndices(zerodiag_subs[i],&idxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pcbddc->benign_zerodiag_subs[i],&idxs);CHKERRQ(ierr);
     }
     ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
     ierr = MatSetOption(pcbddc->benign_change,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
@@ -2828,8 +2902,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       PetscScalar *array;
       PetscInt    nzs;
 
-      ierr = ISGetLocalSize(zerodiag_subs[s],&nzs);CHKERRQ(ierr);
-      ierr = ISGetIndices(zerodiag_subs[s],&idxs);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[s],&nzs);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcbddc->benign_zerodiag_subs[s],&idxs);CHKERRQ(ierr);
       for (i=0;i<nzs-1;i++) {
         PetscScalar vals[2];
         PetscInt    cols[2];
@@ -2846,11 +2920,12 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       ierr = MatSetValues(pcbddc->benign_change,1,idxs+nzs-1,nzs,idxs,array,INSERT_VALUES);CHKERRQ(ierr);
       /* store local idxs for p0 */
       pcbddc->benign_p0_lidx[s] = idxs[nzs-1];
-      ierr = ISRestoreIndices(zerodiag_subs[s],&idxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(pcbddc->benign_zerodiag_subs[s],&idxs);CHKERRQ(ierr);
       ierr = PetscFree(array);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->benign_change,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
     /* project if needed */
     if (pcbddc->benign_change_explicit) {
       Mat M;
@@ -2863,14 +2938,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     /* store global idxs for p0 */
     ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
   }
-  pcbddc->benign_zerodiag_subs = zerodiag_subs;
-  ierr = ISDestroy(&pressures);CHKERRQ(ierr);
-
-  /* determines if the coarse solver will be singular or not */
-  ierr = MPI_Allreduce(&have_null,&pcbddc->benign_null,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-  /* determines if the problem has subdomains with 0 pressure block */
-  have_null = (PetscBool)(!!pcbddc->benign_n);
-  ierr = MPI_Allreduce(&have_null,&pcbddc->benign_have_null,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   *zerodiaglocal = zerodiag;
   PetscFunctionReturn(0);
 }
