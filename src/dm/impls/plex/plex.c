@@ -1478,7 +1478,7 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart()
+.seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexGetConeTuple(), DMPlexSetChart()
 @*/
 PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 {
@@ -1491,6 +1491,43 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   PetscValidPointer(cone, 3);
   ierr  = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   *cone = &mesh->cones[off];
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetConeTuple - Return the points on the in-edges of several points in the DAG
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- p - The IS of points, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameter:
++ pConesSection - PetscSection describing the layout of pCones
+- pCones - An array of points which are on the in-edges for the point set p
+
+  Level: intermediate
+
+.seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetChart()
+@*/
+PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones)
+{
+  PetscSection        cs, newcs;
+  PetscInt            *cones;
+  PetscInt            *newarr=NULL;
+  PetscInt            n;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSection(dm, &cs);CHKERRQ(ierr);
+  ierr = PetscSectionExtractDofsFromArray(cs, MPIU_INT, cones, p, &newcs, pCones ? ((void**)&newarr) : NULL);CHKERRQ(ierr);
+  if (pConesSection) *pConesSection = newcs;
+  if (pCones) {
+    ierr = PetscSectionGetStorageSize(newcs, &n);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)p), n, newarr, PETSC_OWN_POINTER, pCones);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
