@@ -4438,6 +4438,38 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 }
 
 /*@
+  DMGetCoordinatesLocalSetUp - Prepares a local vector of coordinates, so that DMGetCoordinatesLocalNoncollective() can be used as non-collective afterwards.
+
+  Collective on DM
+
+  Input Parameter:
+. dm - the DM
+
+  Level: advanced
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMGetCoordinatesLocalNoncollective()
+@*/
+PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
+{
+  DM cdm = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!dm->coordinatesLocal && dm->coordinates) {
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) dm->coordinatesLocal, "coordinates");CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
+    /* call this just to make sure dm->defaultSection is created */
+    ierr = DMGetSection(cdm, &dm->defaultSection);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMGetCoordinatesLocal - Gets a local vector with the coordinates associated with the DM.
 
   Collective on DM
@@ -4459,7 +4491,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
-.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
+.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM(), DMGetCoordinatesLocalNoncollective()
 @*/
 PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 {
@@ -4468,15 +4500,33 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!dm->coordinatesLocal && dm->coordinates) {
-    DM cdm = NULL;
+  ierr = DMGetCoordinatesLocalSetUp(dm);CHKERRQ(ierr);
+  *c = dm->coordinatesLocal;
+  PetscFunctionReturn(0);
+}
 
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) dm->coordinatesLocal, "coordinates");CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
-  }
+/*@
+  DMGetCoordinatesLocalNoncollective - Non-collective version of DMGetCoordinatesLocal(). Fails if global coordinates have been set and DMGetCoordinatesLocalSetUp() not called.
+
+  Not collective
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameter:
+. c - coordinate vector
+
+  Level: advanced
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMGetCoordinatesLocalSetUp(), DMGetCoordinatesLocal(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(c,2);
+  if (!dm->coordinatesLocal && dm->coordinates) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMGetCoordinatesLocalSetUp() has not been called");
   *c = dm->coordinatesLocal;
   PetscFunctionReturn(0);
 }
