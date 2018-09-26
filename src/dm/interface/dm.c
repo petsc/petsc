@@ -4359,7 +4359,7 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
 /*@
   DMSetCoordinatesLocal - Sets into the DM a local vector that holds the coordinates
 
-  Collective on DM
+  Not collective
 
    Input Parameters:
 +  dm - the DM
