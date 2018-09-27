@@ -2823,6 +2823,27 @@ PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
   PetscFunctionReturn(0);
 }
 
+/*@
+    DMSetCoarsenLevel - Sets the number of coarsenings that have generated this DM.
+
+    Not Collective
+
+    Input Parameters:
++   dm - the DM object
+-   level - number of coarsenings
+
+    Level: developer
+
+.seealso DMCoarsen(), DMGetCoarsenLevel(), DMGetRefineLevel(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
+@*/
+PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->leveldown = level;
+  PetscFunctionReturn(0);
+}
+
 
 
 /*@C
