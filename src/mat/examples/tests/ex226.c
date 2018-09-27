@@ -250,7 +250,7 @@ int main(int argc,char **argv)
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
 
   /* Test PtAP_squared = PtAP(C,C)*PtAP(C,C)  */
-  ierr = MatPtAP(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP);
+  ierr = MatPtAP(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP);CHKERRQ(ierr);
   ierr = MatDuplicate(PtAP,MAT_COPY_VALUES,&PtAP_copy);CHKERRQ(ierr);
   ierr = MatMatMult(PtAP,PtAP_copy,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&PtAP_squared);CHKERRQ(ierr);
 
