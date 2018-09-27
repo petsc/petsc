@@ -423,7 +423,6 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
 {
   PetscBool      isAscii;
-  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
