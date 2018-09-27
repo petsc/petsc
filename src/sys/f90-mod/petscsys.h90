@@ -140,6 +140,13 @@
       end Interface
 
       Interface
+      subroutine PetscErrorf(ierr)
+      use petscsysdef
+       PetscErrorCode, intent(out) :: ierr
+      end Subroutine PetscErrorf
+      end Interface
+
+      Interface
       subroutine PetscRandomView(a,b,z)
       use petscsysdef
        PetscRandom a
