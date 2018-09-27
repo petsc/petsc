@@ -15,3 +15,15 @@
        integer z
        end subroutine
       end Interface
+
+      Interface
+      subroutine DMDASNESSetFunctionLocal(da,b,f,c,ierr)
+      use petscdmdef
+      use petscsnesdef
+       DM da
+       InsertMode b
+       external :: f
+       SNES, optional, intent(in) :: c
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine DMDASNESSetFunctionLocal
+      end Interface
