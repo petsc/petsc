@@ -298,7 +298,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   void          *ctx;
   Vec            u;
   PetscReal      t = 0.0, *x, *y, slope, intercept;
-  PetscInt      *dof, dim, Nr = ce->Nr, r, f;
+  PetscInt      *dof, dim, Nr = ce->Nr, r, f, oldlevel, oldnlev;
   PetscLogEvent  event;
   PetscErrorCode ierr;
 
@@ -308,6 +308,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMGetRefineLevel(ce->idm, &oldlevel);CHKERRQ(ierr);
   ierr = PetscMalloc2((Nr+1), &dm, (Nr+1)*ce->Nf, &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
   for (f = 0; f < ce->Nf; ++f) alpha[f] = 0.0;
@@ -375,6 +376,15 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
       if (ce->Nf > 1) {ierr = PetscPrintf(comm, "]");CHKERRQ(ierr);}
       ierr = PetscPrintf(comm, "\n");CHKERRQ(ierr);
     }
+    if (!r) {
+      /* PCReset() does not wipe out the level structure */
+      KSP ksp;
+      PC  pc;
+
+      ierr = SNESGetKSP(ce->snes, &ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+      ierr = PCMGGetLevels(pc, &oldnlev);CHKERRQ(ierr);
+    }
     /* Cleanup */
     ierr = VecDestroy(&u);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -397,6 +407,16 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
   ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
   /* Restore solver */
   ierr = SNESReset(ce->snes);CHKERRQ(ierr);
+  {
+    /* PCReset() does not wipe out the level structure */
+    KSP ksp;
+    PC  pc;
+
+    ierr = SNESGetKSP(ce->snes, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PCMGSetLevels(pc, oldnlev, NULL);CHKERRQ(ierr);
+    ierr = DMSetRefineLevel(ce->idm, oldlevel);CHKERRQ(ierr); /* The damn DMCoarsen() calls in PCMG can reset this */
+  }
   ierr = SNESSetDM(ce->snes, ce->idm);CHKERRQ(ierr);
   ierr = DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(ce->snes);CHKERRQ(ierr);
