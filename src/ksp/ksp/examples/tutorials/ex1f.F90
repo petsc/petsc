@@ -36,6 +36,7 @@
       PetscBool  flg
       PetscMPIInt size
       PetscScalar      none,one,value(3)
+      PetscLogStage    stages(2);
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -56,6 +57,9 @@
       i3 = 3
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
+      call PetscLogStageRegister("MatVec Assembly",stages(1),ierr)
+      call PetscLogStageRegister("KSP Solve",stages(2),ierr)
+      call PetscLogStagePush(stages(1),ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
 !         the linear system, Ax = b.
@@ -108,6 +112,8 @@
 
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
+      call PetscLogStagePop(ierr)
+      call PetscLogStagePush(stages(2),ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !          Create the linear solver and set various options
@@ -149,6 +155,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
+      call PetscLogStagePop(ierr)
 
 !  View solver info; we could instead use the option -ksp_view
 
