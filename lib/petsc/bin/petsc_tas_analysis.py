@@ -7,6 +7,8 @@ import importlib
 import datetime as date
 import matplotlib.pyplot as plt
 import argparse
+import math
+
 
 def main(cmdLineArgs):
     data = dataProces(cmdLineArgs)
@@ -14,8 +16,23 @@ def main(cmdLineArgs):
     if cmdLineArgs.enable_graphs == 1:
         graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
+class Stats(object):
+    name     = ""
+    mean     = 0
+    var      = 0
+    stdDev   = 0
+    stdError = 0
 
-def varCalc(data, mean):
+    #Class constructor
+    def __init__(self, name, mean, var, stdDev, stdError):
+        self.name     = name
+        self.mean     = mean
+        self.var      = var
+        self.stdDev   = stdDev
+        self.stdError = stdError
+
+
+def statCalc(data, meanTime, meanFlop):
     """"
     This function takes an array of data and its associated mean, and returns the variance.
     Variance = SUM[(mean - data)^2]/(array size)
@@ -28,12 +45,30 @@ def varCalc(data, mean):
 
     :returns: The variance.
     """
-    var = 0
-    for x in data:
-        var = var + (mean - x)**2
+    varTime = 0
+    varFlop = 0
+    counter = 0
 
-    var = var/data.size
-    return var
+    for k, v in data.items():
+        varTime = varTime + (meanTime - v['time'])**2
+        varFlop = varFlop + (meanFlop - v['flop'])**2
+        counter = counter +1
+
+    statFlop = Stats("Flops", meanFlop, varFlop, math.sqrt(varFlop), (math.sqrt(varFlop)/math.sqrt(counter)))
+    statTime = Stats("Time", meanTime, varTime, math.sqrt(varTime), (math.sqrt(varTime)/math.sqrt(counter)))
+    print("Stat Flops: {}".format(statFlop.stdError))
+    print("Stat Time: {}".format(statTime.stdError))
+
+    rows = [['testtest1'], ['test2test3']]
+    columns = ['ctest', 'ctest1', 'ctest2','ctest3']
+    testData=[[1,2,3,4],[5,6,7,8]]
+    the_table = plt.table(cellText = testData,
+                            rowLabels = rows,
+                            colLabels = columns)
+    plt.show()
+
+
+
 
 def dataProces(cmdLineArgs):
     """
@@ -43,7 +78,7 @@ def dataProces(cmdLineArgs):
 
         data[<file name>][<data type>]: <numpy array>
 
-        :param cmdLineArgs: Contains the file names to import and parse
+        :param cmdLineArgs: Contains the file names, and command line arguments.
         :type cmdLineArgs: numpy array
 
         :returns: data -- A dictionary containing the parsed data from the files specified on the command line.
@@ -51,20 +86,20 @@ def dataProces(cmdLineArgs):
     data = {}
     print(cmdLineArgs)
     for module in cmdLineArgs.file:
-        module = importlib.import_module(module)
-        Nf     = 1
-        nProcs = module.size
-        dofs   = []
-        times  = []
-        flops  = []
-        errors = []
-        meanFlops = []
-        meanTimes = []
+        module    = importlib.import_module(module)
+        Nf        = 1
+        nProcs    = module.size
+        dofs      = []
+        times     = []
+        flops     = []
+        errors    = []
+        #meanFlops = []
+        #meanTimes = []
 
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
-        level  = 0
-        while level >= 0:
+        level  = 1
+        while level >= 1:
             stageName = "ConvEst Refinement Level "+str(level)
             if stageName in module.Stages:
                 timeTemp  = module.Stages[stageName]["SNESSolve"][0]["time"]
@@ -72,7 +107,8 @@ def dataProces(cmdLineArgs):
 
                 flopTemp  = module.Stages[stageName]["SNESSolve"][0]["flop"]
                 totalFlop = module.Stages[stageName]["SNESSolve"][0]["flop"]
-
+                print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
+                print("************Level {}************".format(level))
                 #This loops is used to grab the greatest time and flop when run in parallel
                 for n in range(1, nProcs):
                     timeTemp = timeTemp if timeTemp >= module.Stages[stageName]["SNESSolve"][n]["time"] \
@@ -80,13 +116,18 @@ def dataProces(cmdLineArgs):
                     flopTemp = flopTemp if flopTemp >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
                             else module.Stages[stageName]["SNESSolve"][n]["flop"]
                     totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
+                    print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
                     totalTime = totalTime + module.Stages[stageName]["SNESSolve"][n]["time"]
 
-                meanTimes.append(totalTime/nProcs)
+                #The informaiton from level 0 is discarded.
+                meanTime = totalTime/nProcs
                 times.append(timeTemp)
-
-                meanFlops.append(totalFlop/nProcs)
-                flops.append(flopTemp)
+                #print("***test****")
+                #print module.Stages[stageName]["SNESSolve"].keys()
+                #The informaiton from level 0 is discarded.
+                meanFlop = totalFlop/nProcs
+                flops.append(totalFlop)
+                #statCalc(module.Stages[stageName]["SNESSolve"], meanTime, meanFlop)
 
                 for f in range(Nf):
                     dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
@@ -107,13 +148,13 @@ def dataProces(cmdLineArgs):
         data[module.__name__]["flops"]  = flops
         data[module.__name__]["errors"] = errors
 
-        if cmdLineArgs.view_variance == 1:
-            meanFlops = np.array(meanFlops)
-            meanTimes = np.array(meanTimes)
-            data[module.__name__]["Mean Flops"]  = meanFlops
-            data[module.__name__]["Mean Times"]  = meanTimes
-            data[module.__name__]["Var Flops"]  = varCalc(flops, meanFlops)
-            data[module.__name__]["Var Times"]  = varCalc(times, meanTimes)
+        #if cmdLineArgs.view_variance == 1:
+            #meanFlops = np.array(meanFlops)
+            #meanTimes = np.array(meanTimes)
+            #data[module.__name__]["Mean Flops"]  = meanFlops
+            #data[module.__name__]["Mean Times"]  = meanTimes
+            #data[module.__name__]["Var Flops"]  = varCalc(flops, meanFlops)
+            #data[module.__name__]["Var Times"]  = varCalc(times, meanTimes)
 
     print('**************data*******************')
     print module.__name__
@@ -226,6 +267,7 @@ def graphGen(data, graph_flops_scaling, dim):
         efficHandles.append(x)
 
         counter = counter + 1
+
     meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
     meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
     meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
