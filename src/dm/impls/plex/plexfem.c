@@ -142,7 +142,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   MPI_Comm       comm;
   Vec            mode[6];
   PetscSection   section, globalSection;
-  PetscInt       dim, dimEmbed, n, m, d, i, j;
+  PetscInt       dim, dimEmbed, n, m, mmin, d, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -160,6 +160,8 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   ierr = VecCreate(comm, &mode[0]);CHKERRQ(ierr);
   ierr = VecSetSizes(mode[0], n, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
+  ierr = VecGetSize(mode[0], &n);CHKERRQ(ierr);
+  mmin = PetscMin(m, n);
   for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
   for (d = 0; d < m; d++) {
     PetscInt         ctx[2];
@@ -170,9 +172,9 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
     ctx[1] = d;
     ierr = DMProjectFunction(dm, 0.0, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
   }
-  for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
+  for (i = 0; i < PetscMin(dim, mmin); ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
-  for (i = dim; i < m; ++i) {
+  for (i = dim; i < mmin; ++i) {
     PetscScalar dots[6];
 
     ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
@@ -180,8 +182,8 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
     ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
     ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
   }
-  ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
-  for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  ierr = MatNullSpaceCreate(comm, PETSC_FALSE, mmin, mode, sp);CHKERRQ(ierr);
+  for (i = 0; i < m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -70,6 +70,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
     PetscInt i;
     for (i = 0; i < 10; ++i) {
       v->nullspaceConstructors[i] = NULL;
+      v->nearnullspaceConstructors[i] = NULL;
     }
   }
   ierr = PetscDSCreate(comm, &v->prob);CHKERRQ(ierr);
@@ -1263,6 +1264,25 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
+  /* Handle nullspace and near nullspace */
+  if (dm->prob) {
+    MatNullSpace nullSpace;
+    PetscInt     Nf;
+
+    ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+    if (Nf == 1) {
+      if (dm->nullspaceConstructors[0]) {
+        ierr = (*dm->nullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+      if (dm->nearnullspaceConstructors[0]) {
+        ierr = (*dm->nearnullspaceConstructors[0])(dm, 0, &nullSpace);CHKERRQ(ierr);
+        ierr = MatSetNearNullSpace(*mat, nullSpace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1403,8 +1423,28 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(nullsp, 3);
   if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
   *nullsp = dm->nullspaceConstructors[field];
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  dm->nearnullspaceConstructors[field] = nullsp;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(nullsp, 3);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  *nullsp = dm->nearnullspaceConstructors[field];
   PetscFunctionReturn(0);
 }
 

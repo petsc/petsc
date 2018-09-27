@@ -222,6 +222,7 @@ struct _p_DM {
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
+  NullSpaceFunc           nearnullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
   DMBoundary              boundary;          /* List of boundary conditions */
