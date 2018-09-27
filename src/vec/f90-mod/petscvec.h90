@@ -36,6 +36,26 @@
       end Interface
 
       Interface
+      subroutine VecMin(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecMax(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
+      Interface
       subroutine VecScatterCreateToAll(a,b,c,z)
       use petscvecdef
        Vec a
