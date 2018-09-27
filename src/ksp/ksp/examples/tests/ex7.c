@@ -1,0 +1,124 @@
+
+static char help[] = "Illustrate how to solves a matrix-free linear system with KSP.\n\n";
+
+/*
+  Note: modified from ~src/ksp/ksp/examples/tutorials/ex1.c
+*/
+#include <petscksp.h>
+
+/*
+   MatShellMult - Computes the matrix-vector product, y = As x.
+
+   Input Parameters:
+   As - the matrix-free matrix
+   x  - vector
+
+   Output Parameter:
+   y - vector
+ */
+PetscErrorCode MyMatShellMult(Mat As,Vec x,Vec y)
+{
+  PetscErrorCode    ierr;
+  Mat               A;
+
+  PetscFunctionBegin;
+  /* printf("MatShellMult...user should implement this routine without using a matrix\n"); */
+  ierr = MatShellGetContext(As,&A);CHKERRQ(ierr);
+  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+int main(int argc,char **args)
+{
+  Vec            x, b, u;      /* approx solution, RHS, exact solution */
+  Mat            A,As;         /* linear system matrix */
+  KSP            ksp;          /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  PetscReal      norm;         /* norm of solution error */
+  PetscErrorCode ierr;
+  PetscInt       i,n = 10,col[3],its;
+  PetscMPIInt    size;
+  PetscScalar    one = 1.0,value[3];
+
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+         Compute the matrix and right-hand-side vector that define
+         the linear system, As x = b.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Create vectors */
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) x, "Solution");CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+
+  /* Create matrix A, to be used by MatShellMult() */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+
+  value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
+  for (i=1; i<n-1; i++) {
+    col[0] = i-1; col[1] = i; col[2] = i+1;
+    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  i    = n - 1; col[0] = n - 2; col[1] = n - 1;
+  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Set exact solution */
+  ierr = VecSet(u,one);CHKERRQ(ierr);
+
+  /* Create a matrix-free matrix As, matrix A is used as a data context in MatShellMult() */
+  ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,A,&As);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(As);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(As,MATOP_MULT,(void(*)(void))MyMatShellMult);
+
+  /* Compute right-hand-side vector. */
+  ierr = MatMult(As,u,b);CHKERRQ(ierr);
+
+  /* Create the linear solver and set various options */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,As,As);CHKERRQ(ierr);
+
+  /* Set linear solver defaults for this problem (optional). */
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+
+  /* Set runtime options */
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+  /* Solve linear system */
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+
+  /* Check the error */
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+
+  /* Free work space. */
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&As);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+
+  ierr = PetscFinalize();
+  return ierr;
+}
+
+/*TEST
+
+   test:
+      args: -ksp_monitor_short
+
+TEST*/
