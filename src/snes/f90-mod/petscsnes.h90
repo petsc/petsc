@@ -4,7 +4,7 @@
        SNES a
        character(*) b
        integer z
-       end subroutine
+      end subroutine
       end Interface
 
       Interface
@@ -13,17 +13,26 @@
        SNES a
        PetscViewer b
        integer z
-       end subroutine
+      end subroutine
       end Interface
 
       Interface
-      subroutine DMDASNESSetFunctionLocal(da,b,f,c,ierr)
+      subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
       use petscdmdef
       use petscsnesdef
-       DM da
-       InsertMode b
-       external :: f
-       SNES, optional, intent(in) :: c
+       DM, intent(in) :: dm
+       InsertMode, intent(in) :: imode
+       external :: func
+       SNES, optional, intent(in) :: ctx
        PetscErrorCode, intent(out) :: ierr
-       end subroutine DMDASNESSetFunctionLocal
+      end subroutine DMDASNESSetFunctionLocal
+      end Interface
+
+      Interface
+      subroutine SNESSetOptionsPrefix(snes,prefix,ierr)
+       use petscsnesdef
+       SNES, intent(in) :: snes
+       character(*), intent(in) :: prefix
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine SNESSetOptionsPrefix
       end Interface
