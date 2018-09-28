@@ -6,7 +6,7 @@
        DM, intent(in) :: dm
        InsertMode, intent(in) :: imode
        external :: func
-       type(*), optional :: ctx
+       type(*) :: ctx
        PetscErrorCode, intent(out) :: ierr
       end subroutine DMDASNESSetFunctionLocal
       end Interface
@@ -17,7 +17,7 @@
       use petscsnesdef
        DM, intent(in) :: dm
        external :: func
-       type(*), optional :: ctx
+       type(*)  :: ctx
        PetscErrorCode, intent(out) :: ierr
       end subroutine DMSNESSetFunctionLocal
       end Interface
@@ -27,8 +27,8 @@
       use petscsnesdef
        SNES :: snes
        external :: func
-       type(*), optional :: cctx
-       external          :: destroy
+       type(*) :: cctx
+       external :: destroy
        PetscErrorCode, intent(out) :: ierr
       end subroutine
       end Interface

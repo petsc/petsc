@@ -242,10 +242,7 @@
       use petscdmdef
       DM a
       PetscInt, intent(out) :: x,m
-      PetscInt,intent(out),optional :: y
-      PetscInt,intent(out),optional :: z
-      PetscInt,intent(out),optional :: n
-      PetscInt,intent(out),optional :: p
+      PetscInt,intent(inout):: y,z,n,p
       PetscErrorCode, intent(out) :: ierr
       End Subroutine DMDAGetCorners
       End Interface DMDAGetCorners
