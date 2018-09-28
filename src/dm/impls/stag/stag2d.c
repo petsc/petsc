@@ -500,8 +500,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
           }
         }
         if (dummyEnd[0]) {
-          i = stag->n[0];
           const PetscInt ighost = i + ghostOffsetStart[0];
+          i = stag->n[0];
           for (d=0; d<stag->dof[0]; ++d, ++count) { /* vertex first */
             idxGlobal[count] = globalOffset + j     *entriesPerElementRow      + i     *stag->entriesPerElement + d;
             idxLocal[count]  =                jghost*entriesPerElementRowGhost + ighost*stag->entriesPerElement + d;
@@ -513,8 +513,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
         }
       }
       if (dummyEnd[1]) {
-        j = stag->n[1];
         const PetscInt jghost = j + ghostOffsetStart[1];
+        j = stag->n[1];
         for (i=0; i<stag->n[0]; ++i) {
           const PetscInt ighost = i + ghostOffsetStart[0];
           for (d=0; d<entriesPerEdge; ++d, ++count) { /* vertex and bottom edge (which are the first entries) */
@@ -523,8 +523,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
           }
         }
         if (dummyEnd[0]) {
-          i = stag->n[0];
           const PetscInt ighost = i + ghostOffsetStart[0];
+          i = stag->n[0];
           for (d=0; d<entriesPerCorner; ++d, ++count) { /* vertex only */
             idxGlobal[count] = globalOffset + j     *entriesPerElementRow       + i     *entriesPerEdge          + d; /* note i increment by entriesPerEdge */
             idxLocal[count]  =                jghost*entriesPerElementRowGhost  + ighost*stag->entriesPerElement + d;
@@ -1135,7 +1135,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm,PetscInt **pGlobalO
   PetscErrorCode        ierr;
   const DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt              *globalOffsets;
-  PetscInt              i,j,d,entriesPerEdge;
+  PetscInt              i,j,d,entriesPerEdge,count;
   PetscMPIInt           size;
   PetscBool             extra[2];
 
@@ -1146,7 +1146,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm,PetscInt **pGlobalO
   ierr = PetscMalloc1(size,pGlobalOffsets);CHKERRQ(ierr);
   globalOffsets = *pGlobalOffsets;
   globalOffsets[0] = 0;
-  PetscInt count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
+  count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
   for (j=0; j<stag->nRanks[1]-1; ++j) {
     const PetscInt nnj = stag->l[1][j];
     for (i=0; i<stag->nRanks[0]-1; ++i) {
@@ -1155,16 +1155,16 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm,PetscInt **pGlobalO
       ++count;
     }
     {
-      i = stag->nRanks[0]-1;
       const PetscInt nni = stag->l[0][i];
+      i = stag->nRanks[0]-1;
       globalOffsets[count] = globalOffsets[count-1] + nnj*nni*stag->entriesPerElement
                              + (extra[0] ? nnj*entriesPerEdge : 0); /* Extra edges on the right */
       ++count;
     }
   }
   {
-    j = stag->nRanks[1]-1;
     const PetscInt nnj = stag->l[1][j];
+    j = stag->nRanks[1]-1;
     for (i=0; i<stag->nRanks[0]-1; ++i) {
       const PetscInt nni = stag->l[0][i];
       globalOffsets[count] = globalOffsets[count-1] + nni*nnj*stag->entriesPerElement
