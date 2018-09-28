@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
    test:
       suffix: 1d_1
-      nsize: 1d_1
+      nsize: 1
       args: -dim 1
 
    test:
