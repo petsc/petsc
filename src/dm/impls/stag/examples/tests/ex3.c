@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   /* A derived 3d DM, with a different section */
   ierr = DMStagCreateCompatibleDMStag(dms[0],0,1,0,1,&dms[2]);CHKERRQ(ierr);
 
-  /* A DM expected to be incompatible */
-  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dms[3]); /* stencil width different */
+  /* A DM expected to be incompatible (different stencil width) */
+  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dms[3]);CHKERRQ(ierr);
 
   /* Check expected self-compatibility */
   for (i=0; i<NDMS; ++i) {

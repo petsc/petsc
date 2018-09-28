@@ -17,7 +17,6 @@ int main(int argc,char **argv)
   dof0 = 1;
   dof1 = 1;
   dof2 = 1;
-  dofTotal = dof0 + 2*dof1 + dof2;
   stencilWidth = 2;
   ierr = DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,4,4,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,&dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);

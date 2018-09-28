@@ -723,7 +723,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   ierr = DMStagGetCorners(dmSol,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmSol,&dmCoord);CHKERRQ(ierr);
   ierr = DMGetCoordinates(dmSol,&coord);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dmCoord,&coordLocal);
+  ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip );CHKERRQ(ierr);
