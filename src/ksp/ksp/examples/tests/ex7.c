@@ -23,8 +23,8 @@ PetscErrorCode MyMatShellMult(Mat As,Vec x,Vec y)
 
   PetscFunctionBegin;
   /* printf("MatShellMult...user should implement this routine without using a matrix\n"); */
-  ierr = MatShellGetContext(As,&A);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = MatShellGetContext(As,&P);CHKERRQ(ierr);
+  ierr = MatMult(P,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
