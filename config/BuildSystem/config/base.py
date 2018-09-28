@@ -80,6 +80,12 @@ class Configure(script.Script):
     self.language        = []
     if not tmpDir is None:
       self.tmpDir        = tmpDir
+    try:
+      # The __init__ method may be called to reinitialize in the future (e.g.,
+      # updateCompilers()) and will need to be re-setup in that case.
+      delattr(self, '_setup')
+    except AttributeError:
+      pass
     return
 
   def setup(self):

@@ -900,6 +900,7 @@ class Package(config.base.Configure):
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
+    self.compilers.setup()
     self.compilerFlags.saveLog()
     self.compilerFlags.configure()
     self.logWrite(self.compilerFlags.restoreLog())
