@@ -21,6 +21,17 @@
        PetscErrorCode, intent(out) :: ierr
       end subroutine DMSNESSetFunctionLocal
       end Interface
+
+      Interface
+      subroutine SNESSetConvergenceTest(snes,func,cctx,destroy,ierr)
+      use petscsnesdef
+       SNES :: snes
+       external :: func
+       type(*), optional :: cctx
+       external          :: destroy
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine
+      end Interface
 #endif
       Interface
       subroutine SNESSetType(a,b,z)
