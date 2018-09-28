@@ -612,7 +612,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
   PetscErrorCode        ierr;
   const DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt              *globalOffsets;
-  PetscInt              i,j,k,d,entriesPerEdge,entriesPerFace;
+  PetscInt              i,j,k,d,entriesPerEdge,entriesPerFace,count;
   PetscMPIInt           size;
   PetscBool             extra[3];
 
@@ -624,7 +624,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
   ierr = PetscMalloc1(size,pGlobalOffsets);CHKERRQ(ierr);
   globalOffsets = *pGlobalOffsets;
   globalOffsets[0] = 0;
-  PetscInt count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
+  count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
   for (k=0; k<stag->nRanks[2]-1; ++k){
     const PetscInt nnk = stag->l[2][k];
     for (j=0; j<stag->nRanks[1]-1; ++j) {
@@ -637,16 +637,16 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
       }
       {
         /* Right boundary - extra faces */
-        i = stag->nRanks[0]-1;
         const PetscInt nni = stag->l[0][i];
+        i = stag->nRanks[0]-1;
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0] ? nnj*nnk*entriesPerFace : 0);
         ++count;
       }
     }
     {
-      j = stag->nRanks[1]-1;
       const PetscInt nnj = stag->l[1][j];
+      j = stag->nRanks[1]-1;
       for (i=0; i<stag->nRanks[0]-1; ++i) {
         const PetscInt nni = stag->l[0][i];
         /* Up boundary - extra faces */
@@ -655,8 +655,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
         ++count;
       }
       {
-        i = stag->nRanks[0]-1;
         const PetscInt nni = stag->l[0][i];
+        i = stag->nRanks[0]-1;
         /* Up right boundary - 2x extra faces and extra edges */
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0]             ? nnj*nnk*entriesPerFace : 0)
@@ -667,8 +667,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
     }
   }
   {
-    k = stag->nRanks[2]-1;
     const PetscInt nnk = stag->l[2][k];
+    k = stag->nRanks[2]-1;
     for (j=0; j<stag->nRanks[1]-1; ++j) {
       const PetscInt nnj = stag->l[1][j];
       for (i=0; i<stag->nRanks[0]-1; ++i) {
@@ -679,8 +679,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
         ++count;
       }
       {
-        i = stag->nRanks[0]-1;
         const PetscInt nni = stag->l[0][i];
+        i = stag->nRanks[0]-1;
         /* Front right boundary - 2x extra faces and extra edges */
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0]             ? nnk*nnj*entriesPerFace : 0)
@@ -690,8 +690,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
       }
     }
     {
-      j = stag->nRanks[1]-1;
       const PetscInt nnj = stag->l[1][j];
+      j = stag->nRanks[1]-1;
       for (i=0; i<stag->nRanks[0]-1; ++i) {
         const PetscInt nni = stag->l[0][i];
         /* Front up boundary - 2x extra faces and extra edges */
@@ -726,15 +726,15 @@ static PetscErrorCode DMStagSetUpBuildScatterPopulateIdx_3d(DM_Stag *stag,PetscI
       const PetscInt j = jg - startGhosty + starty;
       for (ig = startGhostx; ig<endGhostx; ++ig) {
         const PetscInt i = ig - startGhostx + startx;
-          for (d=0; d<stag->entriesPerElement; ++d,++c) {
-            idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *stag->entriesPerElement + d;
-            idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + d;
-          }
+        for (d=0; d<stag->entriesPerElement; ++d,++c) {
+          idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *stag->entriesPerElement + d;
+          idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + d;
+        }
       }
       if (extrax) {
-        ig = endGhostx;
         const PetscInt i = ig - startGhostx + startx;
         PetscInt dLocal;
+        ig = endGhostx;
         for (d=0,dLocal=0; d<stag->dof[0]; ++d, ++dLocal, ++c) { /* Vertex */
           idxGlobal[c] = globalOffset + k *eplNeighbor + j*eprNeighbor + i *stag->entriesPerElement + d;
           idxLocal[c]  =                kg*eplGhost    + jg*eprGhost   + ig*stag->entriesPerElement + dLocal;
@@ -758,8 +758,8 @@ static PetscErrorCode DMStagSetUpBuildScatterPopulateIdx_3d(DM_Stag *stag,PetscI
       }
     }
     if (extray) {
-      jg = endGhosty;
       const PetscInt j = jg - startGhosty + starty;
+      jg = endGhosty;
       for (ig = startGhostx; ig<endGhostx; ++ig) {
         const PetscInt i = ig - startGhostx + startx;
         /* Vertex and Back down edge */
@@ -778,37 +778,37 @@ static PetscErrorCode DMStagSetUpBuildScatterPopulateIdx_3d(DM_Stag *stag,PetscI
         /* Skip left face and element */
       }
       if (extrax) {
-        ig = endGhostx;
         const PetscInt i = ig - startGhostx + startx;
-          PetscInt dLocal;
-          for (d=0,dLocal=0; d<stag->dof[0]; ++d, ++dLocal, ++c) { /* Vertex */
-            idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *entriesPerFace          + d; /* Note face increment in x */
-            idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + dLocal;
-          }
-          dLocal += 2*stag->dof[1]+stag->dof[2]; /* Skip back down edge, back face, and back left edge */
-          for (; dLocal<stag->dof[0]+3*stag->dof[1]+stag->dof[2]; ++d, ++dLocal, ++c) { /* Down left edge */
-            idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *entriesPerFace          + d; /* Note face increment in x */
-            idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + dLocal;
-          }
-          /* Skip remaining entries */
+        ig = endGhostx;
+        PetscInt dLocal;
+        for (d=0,dLocal=0; d<stag->dof[0]; ++d, ++dLocal, ++c) { /* Vertex */
+          idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *entriesPerFace          + d; /* Note face increment in x */
+          idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + dLocal;
+        }
+        dLocal += 2*stag->dof[1]+stag->dof[2]; /* Skip back down edge, back face, and back left edge */
+        for (; dLocal<stag->dof[0]+3*stag->dof[1]+stag->dof[2]; ++d, ++dLocal, ++c) { /* Down left edge */
+          idxGlobal[c] = globalOffset + k *eplNeighbor + j *eprNeighbor + i *entriesPerFace          + d; /* Note face increment in x */
+          idxLocal[c]  =                kg*eplGhost    + jg*eprGhost    + ig*stag->entriesPerElement + dLocal;
+        }
+        /* Skip remaining entries */
       }
     }
   }
   if (extraz) {
-    kg = endGhostz;
     const PetscInt k = kg - startGhostz + startz;
+    kg = endGhostz;
     for (jg = startGhosty; jg < endGhosty; ++jg) {
       const PetscInt j = jg - startGhosty + starty;
       for (ig = startGhostx; ig<endGhostx; ++ig) {
         const PetscInt i = ig - startGhostx + startx;
-          for (d=0; d<entriesPerFace; ++d, ++c) {
-            idxGlobal[c] = globalOffset + k*eplNeighbor  + j *epFaceRow + i *entriesPerFace          + d; /* Note face-based x and y increments */
-            idxLocal[c]  =                kg*eplGhost    + jg*eprGhost  + ig*stag->entriesPerElement + d;
-          }
+        for (d=0; d<entriesPerFace; ++d, ++c) {
+          idxGlobal[c] = globalOffset + k*eplNeighbor  + j *epFaceRow + i *entriesPerFace          + d; /* Note face-based x and y increments */
+          idxLocal[c]  =                kg*eplGhost    + jg*eprGhost  + ig*stag->entriesPerElement + d;
+        }
       }
       if (extrax) {
-        ig = endGhostx;
         const PetscInt i = ig - startGhostx + startx;
+        ig = endGhostx;
         PetscInt dLocal;
         for (d=0,dLocal=0; d<stag->dof[0]; ++d, ++dLocal, ++c) { /* Vertex */
           idxGlobal[c] = globalOffset + k*eplNeighbor + j *epFaceRow + i *entriesPerFace          + d; /* Note face-based x and y increments */
@@ -823,22 +823,22 @@ static PetscErrorCode DMStagSetUpBuildScatterPopulateIdx_3d(DM_Stag *stag,PetscI
       }
     }
     if (extray) {
-      jg = endGhosty;
       const PetscInt j = jg - startGhosty + starty;
+      jg = endGhosty;
       for (ig = startGhostx; ig<endGhostx; ++ig) {
         const PetscInt i = ig - startGhostx + startx;
-          for (d=0; d<entriesPerEdge; ++d,++c) {
-            idxGlobal[c] = globalOffset + k*eplNeighbor + j *epFaceRow + i *entriesPerEdge          + d; /* Note face-based y increment and edge-based x increment */
-            idxLocal[c]  =                kg*eplGhost   + jg*eprGhost  + ig*stag->entriesPerElement + d;
-          }
+        for (d=0; d<entriesPerEdge; ++d,++c) {
+          idxGlobal[c] = globalOffset + k*eplNeighbor + j *epFaceRow + i *entriesPerEdge          + d; /* Note face-based y increment and edge-based x increment */
+          idxLocal[c]  =                kg*eplGhost   + jg*eprGhost  + ig*stag->entriesPerElement + d;
+        }
       }
       if (extrax) {
-        ig = endGhostx;
         const PetscInt i = ig - startGhostx + startx;
-          for (d=0; d<stag->dof[0]; ++d, ++c) { /* Vertex (only) */
-            idxGlobal[c] = globalOffset + k*eplNeighbor + j *epFaceRow + i *entriesPerEdge          + d; /* Note face-based y increment and edge-based x increment */
-            idxLocal[c]  =                kg*eplGhost   + jg*eprGhost  + ig*stag->entriesPerElement + d;
-          }
+        ig = endGhostx;
+        for (d=0; d<stag->dof[0]; ++d, ++c) { /* Vertex (only) */
+          idxGlobal[c] = globalOffset + k*eplNeighbor + j *epFaceRow + i *entriesPerEdge          + d; /* Note face-based y increment and edge-based x increment */
+          idxLocal[c]  =                kg*eplGhost   + jg*eprGhost  + ig*stag->entriesPerElement + d;
+        }
       }
     }
   }
