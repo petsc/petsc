@@ -1,5 +1,5 @@
 #if !defined(DMPRODUCTIMPL_H_)
-#define DMPRODUCT_H_
+#define DMPRODUCTIMPL_H_
 
 #include <petscdmproduct.h> /*I "petscdmproduct.h" I*/
 #include <petsc/private/dmimpl.h>
