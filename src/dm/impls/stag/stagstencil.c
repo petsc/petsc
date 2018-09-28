@@ -185,23 +185,16 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
 PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,const PetscScalar *val,InsertMode insertMode)
 {
   PetscErrorCode        ierr;
-  PetscInt              dim,direction,n;
-  PetscInt              *ir,*ic,*ix;
-  DMStagStencil const   *pos;
+  PetscInt              dim,n;
+  PetscInt              *ir,*ic;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
-  for (direction=0; direction<2; ++direction) { /* Same logic for row and column index transformation */
-    switch (direction) {
-      case 0: ix = ir; pos = posRow; n = nRow; break;
-      case 1: ix = ic; pos = posCol; n = nCol; break;
-      default:                                 break;
-    }
-    ierr = DMStagStencilToIndexLocal(dm,n,pos,ix);CHKERRQ(ierr);
-  }
+  ierr = DMStagStencilToIndexLocal(dm,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,nCol,posCol,ic);CHKERRQ(ierr);
   ierr = MatSetValuesLocal(mat,nRow,ir,nCol,ic,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
