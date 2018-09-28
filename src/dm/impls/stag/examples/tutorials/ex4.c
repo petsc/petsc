@@ -568,13 +568,13 @@ static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
 
    test:
       suffix: direct_umfpack
-      requires: suitesparse
+      requires: suitesparse !complex
       nsize: 1
       args: -stag_grid_x 12 -stag_grid_y 7 -pc_type lu -pc_factor_mat_solver_type umfpack
 
    test:
       suffix: direct_mumps
-      requires: mumps
+      requires: mumps !complex
       nsize: 9
       args: -stag_grid_x 13 -stag_grid_y 8 -pc_type lu -pc_factor_mat_solver_type mumps
 
