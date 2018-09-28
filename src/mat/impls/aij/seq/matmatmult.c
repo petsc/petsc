@@ -797,6 +797,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
     L2_nnz               = 0;
     L2_nrows             = 1;  /* Number of rows to be merged on Level 3. output of L3 already exists -> initial value 1   */
     worki_L2[1]          = 0;
+    outputi_nnz          = 0;
 
     /* If the number of indices in C so far + the max number of columns in the next row > c_maxmem  -> allocate more memory */
     while (ci_nnz+a_maxrownnz > c_maxmem) {
