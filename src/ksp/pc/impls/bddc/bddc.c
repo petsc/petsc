@@ -381,7 +381,7 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS v
   PetscValidHeaderSpecific(divudotp,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,divudotp,2);
   PetscValidLogicalCollectiveBool(pc,trans,3);
-  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_CLASSID,4);
+  if (vl2l) PetscValidHeaderSpecific(vl2l,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
   ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l));CHKERRQ(ierr);
