@@ -1155,16 +1155,16 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_2d(DM dm,PetscInt **pGlobalO
       ++count;
     }
     {
+      /* i = stag->nRanks[0]-1; */
       const PetscInt nni = stag->l[0][i];
-      i = stag->nRanks[0]-1;
       globalOffsets[count] = globalOffsets[count-1] + nnj*nni*stag->entriesPerElement
                              + (extra[0] ? nnj*entriesPerEdge : 0); /* Extra edges on the right */
       ++count;
     }
   }
   {
+    /* j = stag->nRanks[1]-1; */
     const PetscInt nnj = stag->l[1][j];
-    j = stag->nRanks[1]-1;
     for (i=0; i<stag->nRanks[0]-1; ++i) {
       const PetscInt nni = stag->l[0][i];
       globalOffsets[count] = globalOffsets[count-1] + nni*nnj*stag->entriesPerElement
