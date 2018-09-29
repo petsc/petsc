@@ -21,7 +21,7 @@ static char help[] = "Solve a toy 3D problem on a staggered grid\n\n";
   a constant-pressure nullspace. This allows use of direct solvers, e.g. to
   use UMFPACK,
 
-     ./stag_ex4 -pinpressure 1 -pc_type lu -pc_factor_mat_solver_type umfpack
+     ./ex3 -pinpressure 1 -pc_type lu -pc_factor_mat_solver_type umfpack
 
 */
 #include <petscdm.h>
