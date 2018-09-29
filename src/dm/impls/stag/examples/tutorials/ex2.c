@@ -361,12 +361,11 @@ static PetscErrorCode AttachNullspace(DM dmSol,Mat A)
    Here, we use the more direct method of iterating over arrays.  */
 static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
 {
-  PetscErrorCode    ierr;
-  PetscInt          startx,starty,nx,ny,nExtra[2],ex,ey;
-  PetscInt          iuy,iux,ip,iprev,icenter;
-  PetscScalar       ***arrSol;
-  const PetscScalar **cArrX,**cArrY;
-  Vec               solRefLocal;
+  PetscErrorCode ierr;
+  PetscInt       startx,starty,nx,ny,nExtra[2],ex,ey;
+  PetscInt       iuy,iux,ip,iprev,icenter;
+  PetscScalar    ***arrSol,**cArrX,**cArrY;
+  Vec            solRefLocal;
 
   PetscFunctionBeginUser;
   ierr = DMCreateGlobalVector(dmSol,pSolRef);CHKERRQ(ierr);

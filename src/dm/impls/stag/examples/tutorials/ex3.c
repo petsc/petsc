@@ -151,7 +151,7 @@ static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPres
   PetscBool         isLastRankx,isLastRanky,isLastRankz,isFirstRankx,isFirstRanky,isFirstRankz;
   PetscReal         hx,hy,hz;
   DM                dmCoord;
-  const PetscScalar ****arrCoord;
+  PetscScalar       ****arrCoord;
 
   PetscFunctionBeginUser;
   ierr = DMCreateMatrix(dmSol,pA);CHKERRQ(ierr);
@@ -714,8 +714,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   PetscInt          ip,iux,iuy,iuz,icp[3],icux[3],icuy[3],icuz[3];
   Vec               solRef,solRefLocal,coord,coordLocal;
   DM                dmCoord;
-  PetscScalar       ****arrSol;
-  const PetscScalar ****arrCoord;
+  PetscScalar       ****arrSol,****arrCoord;
 
   PetscFunctionBeginUser;
   ierr = DMCreateGlobalVector(dmSol,pSolRef);CHKERRQ(ierr);

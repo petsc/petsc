@@ -92,8 +92,7 @@ int main(int argc,char **argv)
   PetscInt          start,n,e,nExtra;
   PetscInt          iu,ip,ixu,ixp;
   PetscBool         isLastRank,isFirstRank;
-  PetscScalar       **arrSol;
-  const PetscScalar **arrCoordSol;
+  PetscScalar       **arrSol,**arrCoordSol;
   DMBoundaryType    boundary;
 
   const PetscReal domainSize = 1.0;
