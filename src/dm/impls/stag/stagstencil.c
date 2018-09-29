@@ -184,9 +184,9 @@ static PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt n,const DMStagSte
 @*/
 PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,const PetscScalar *val,InsertMode insertMode)
 {
-  PetscErrorCode        ierr;
-  PetscInt              dim;
-  PetscInt              *ir,*ic;
+  PetscErrorCode ierr;
+  PetscInt       dim;
+  PetscInt       *ir,*ic;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
