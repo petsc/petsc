@@ -637,16 +637,16 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
       }
       {
         /* Right boundary - extra faces */
+        /* i = stag->nRanks[0]-1; */
         const PetscInt nni = stag->l[0][i];
-        i = stag->nRanks[0]-1;
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0] ? nnj*nnk*entriesPerFace : 0);
         ++count;
       }
     }
     {
+      /* j = stag->nRanks[1]-1; */
       const PetscInt nnj = stag->l[1][j];
-      j = stag->nRanks[1]-1;
       for (i=0; i<stag->nRanks[0]-1; ++i) {
         const PetscInt nni = stag->l[0][i];
         /* Up boundary - extra faces */
@@ -655,8 +655,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
         ++count;
       }
       {
+        /* i = stag->nRanks[0]-1; */
         const PetscInt nni = stag->l[0][i];
-        i = stag->nRanks[0]-1;
         /* Up right boundary - 2x extra faces and extra edges */
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0]             ? nnj*nnk*entriesPerFace : 0)
@@ -667,8 +667,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
     }
   }
   {
+    /* k = stag->nRanks[2]-1; */
     const PetscInt nnk = stag->l[2][k];
-    k = stag->nRanks[2]-1;
     for (j=0; j<stag->nRanks[1]-1; ++j) {
       const PetscInt nnj = stag->l[1][j];
       for (i=0; i<stag->nRanks[0]-1; ++i) {
@@ -679,8 +679,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
         ++count;
       }
       {
+        /* i = stag->nRanks[0]-1; */
         const PetscInt nni = stag->l[0][i];
-        i = stag->nRanks[0]-1;
         /* Front right boundary - 2x extra faces and extra edges */
         globalOffsets[count] = globalOffsets[count-1] + nnj*nni*nnk*stag->entriesPerElement
                                + (extra[0]             ? nnk*nnj*entriesPerFace : 0)
@@ -690,8 +690,8 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
       }
     }
     {
+      /* j = stag->nRanks[1]-1; */
       const PetscInt nnj = stag->l[1][j];
-      j = stag->nRanks[1]-1;
       for (i=0; i<stag->nRanks[0]-1; ++i) {
         const PetscInt nni = stag->l[0][i];
         /* Front up boundary - 2x extra faces and extra edges */
