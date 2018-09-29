@@ -142,7 +142,7 @@ Helper function to get the number of extra points in a DMDA representation for a
 static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm,DMStagStencilLocation locCanonical,PetscInt *extraPoint)
 {
   PetscErrorCode ierr;
-  PetscInt        dim,d,nExtra[DMSTAG_MAX_DIM];
+  PetscInt       dim,d,nExtra[DMSTAG_MAX_DIM];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
@@ -179,7 +179,7 @@ type of DMDA to migrate to.
 static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation loc,PetscInt c,DM dmTo,Vec vecTo)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,d,dim,dof,dofToMax,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],nExtra[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
+  PetscInt       i,j,k,d,dim,dof,dofToMax,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
   Vec            vecLocal;
 
   PetscFunctionBegin;
@@ -192,7 +192,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
 #if defined(PETSC_USE_DEBUG)
   if (-c > dofToMax) SETERRQ1(PetscObjectComm((PetscObject)dmTo),PETSC_ERR_ARG_OUTOFRANGE,"Invalid negative component value. Must be >= -%D",dofToMax);
 #endif
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]);CHKERRQ(ierr);
+  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagDMDAGetExtraPoints(dm,loc,extraPoint);CHKERRQ(ierr);
   ierr = DMStagGetLocationDOF(dm,loc,&dof);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&vecLocal);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
 static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLocation loc,DM dmda)
 {
   PetscErrorCode ierr;
-  PetscInt       dim,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],nExtra[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM],d;
+  PetscInt       dim,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM],d;
   DM             dmstagCoord,dmdaCoord;
   DMType         dmstagCoordType;
   Vec            stagCoord,daCoord;
@@ -312,8 +312,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
   ierr = DMGetType(dmstagCoord,&dmstagCoordType);CHKERRQ(ierr);
   ierr = PetscStrcmp(dmstagCoordType,DMSTAG,&daCoordIsStag);CHKERRQ(ierr);
   ierr = PetscStrcmp(dmstagCoordType,DMPRODUCT,&daCoordIsProduct);CHKERRQ(ierr);
-
-  ierr = DMStagGetCorners(dmstag,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&nExtra[0],&nExtra[1],&nExtra[2]);CHKERRQ(ierr);
+  ierr = DMStagGetCorners(dmstag,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagDMDAGetExtraPoints(dmstag,loc,extraPoint);CHKERRQ(ierr);
   if (dim == 1) {
     PetscInt ex;
@@ -324,14 +323,14 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       PetscScalar **cArrStag;
       ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
       ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
-      for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+      for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
         cArrDa[ex][0] = cArrStag[ex][slot];
       }
       ierr = DMStagVecRestoreArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
     } else if (daCoordIsProduct) {
       const PetscScalar **cArrX;
       ierr = DMStagGet1dCoordinateArraysDOFRead(dmstag,&cArrX,NULL,NULL);CHKERRQ(ierr);
-      for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+      for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
         cArrDa[ex][0] = cArrX[ex][0];
       }
       ierr = DMStagRestore1dCoordinateArraysDOFRead(dmstag,&cArrX,NULL,NULL);CHKERRQ(ierr);
@@ -347,7 +346,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
       ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
       for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
-        for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+        for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
           for (d=0; d<2; ++d) {
             cArrDa[ey][ex][d] = cArrStag[ey][ex][slot+d];
           }
@@ -358,7 +357,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       const PetscScalar **cArrX,**cArrY;
       ierr = DMStagGet1dCoordinateArraysDOFRead(dmstag,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
       for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
-        for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+        for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
           cArrDa[ey][ex][0] = cArrX[ex][0];
           cArrDa[ey][ex][1] = cArrY[ey][0];
         }
@@ -377,7 +376,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       ierr = DMStagVecGetArrayDOFRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
       for (ez=start[2]; ez<start[2] + n[2] + extraPoint[2]; ++ez) {
         for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
-          for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+          for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
             for (d=0; d<3; ++d) {
               cArrDa[ez][ey][ex][d] = cArrStag[ez][ey][ex][slot+d];
             }
@@ -390,7 +389,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       ierr = DMStagGet1dCoordinateArraysDOFRead(dmstag,&cArrX,&cArrY,&cArrZ);CHKERRQ(ierr);
       for (ez=start[2]; ez<start[2] + n[2] + extraPoint[2]; ++ez) {
         for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
-          for (ex=start[0]; ex< start[0] + n[0] + extraPoint[0] ; ++ex) {
+          for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
             cArrDa[ez][ey][ex][0] = cArrX[ex][0];
             cArrDa[ez][ey][ex][1] = cArrY[ey][0];
             cArrDa[ez][ey][ex][2] = cArrZ[ez][0];
@@ -405,7 +404,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
 }
 
 /*
-Convert to a location value with only BACK,DOWN,LEFT, and ELEMENT involved (makes looping easier)
+Convert to a location value with only BACK, DOWN, LEFT, and ELEMENT involved (makes looping easier)
 */
 static PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc,DMStagStencilLocation *locCanonical)
 {
