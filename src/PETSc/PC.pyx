@@ -201,6 +201,12 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetUseAmat(self.pc, cflag) )
 
+    def setReusePreconditioner(self, flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag:
+            cflag = PETSC_TRUE
+        CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
+
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )
 
@@ -458,12 +464,6 @@ cdef class PC(Object):
         cdef PetscMat pmat = NULL
         if pre is not None: pmat = pre.mat
         CHKERR( PCFieldSplitSetSchurPre(self.pc, pval, pmat) )
-
-    def setReusePreconditioner(self, flag):
-        cdef PetscBool cflag = PETSC_FALSE
-        if flag:
-            cflag = PETSC_TRUE
-        CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
 
     # --- COMPOSITE ---
 
