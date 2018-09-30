@@ -68,6 +68,12 @@ class BaseTestIS(object):
             self.assertTrue(self.iset.equal(iset))
         del iset
 
+    def testRenumber(self):
+        (n1,is1) = self.iset.renumber()
+        (n2,is2) = self.iset.renumber(self.iset)
+        del is1
+        del is2
+
     def testProperties(self):
         proplist = ['sizes', 'size', 'local_size', 'indices',
                     'permutation', 'identity', 'sorted']

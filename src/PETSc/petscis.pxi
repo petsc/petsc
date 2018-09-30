@@ -45,6 +45,7 @@ cdef extern from * nogil:
     int ISDifference(PetscIS,PetscIS,PetscIS*)
     int ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
     int ISEmbed(PetscIS,PetscIS,PetscBool,PetscIS*)
+    int ISRenumber(PetscIS,PetscIS,PetscInt*,PetscIS*)
 
     int ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
 
