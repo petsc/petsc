@@ -465,15 +465,17 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
   ierr = PetscContainerGetPointer(container,(void**)&info);CHKERRQ(ierr);
-  if (info->init) {
-    PetscFunctionReturn(0);
-  }
+  if (info->init) PetscFunctionReturn(0);
+
+  /* Configure window */
   if (info->size[0] > 0) {
     ierr = PetscViewerASCIIPrintf(viewer,"window_size %D %D\n",info->size[0],info->size[1]);CHKERRQ(ierr);
   }
   if (name) {
     ierr = PetscViewerASCIIPrintf(viewer,"window_title '%s'\n",name);CHKERRQ(ierr);
   }
+
+  /* Configure default view */
   if (mesh) {
     switch (dim) {
     case 1:
@@ -498,13 +500,27 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
       break;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"autoscale value\n");CHKERRQ(ierr); /* update value-range; keep mesh-extents fixed */
-    if (info->pause == -1) {
-      ierr = PetscViewerASCIIPrintf(viewer,"autopause 1\n");CHKERRQ(ierr); /* pause */
-    }
-    if (info->pause == 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"pause\n");CHKERRQ(ierr); /* pause */
-    }
   }
+
+  { /* Additional keys and commands */
+    char keys[256] = "", cmds[2*PETSC_MAX_PATH_LEN] = "";
+    PetscOptions opt = ((PetscObject)viewer)->options;
+    const char  *pre = ((PetscObject)viewer)->prefix;
+
+    ierr = PetscOptionsGetString(opt,pre,"-glvis_keys",keys,sizeof(keys),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(opt,pre,"-glvis_exec",cmds,sizeof(cmds),NULL);CHKERRQ(ierr);
+    if (keys[0]) {ierr = PetscViewerASCIIPrintf(viewer,"keys %s\n",keys);CHKERRQ(ierr);}
+    if (cmds[0]) {ierr = PetscViewerASCIIPrintf(viewer,"%s\n",cmds);CHKERRQ(ierr);}
+  }
+
+  /* Pause visualization */
+  if (!mesh && info->pause == -1) {
+    ierr = PetscViewerASCIIPrintf(viewer,"autopause 1\n");CHKERRQ(ierr);
+  }
+  if (!mesh && info->pause == 0) {
+    ierr = PetscViewerASCIIPrintf(viewer,"pause\n");CHKERRQ(ierr);
+  }
+
   info->init = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -547,11 +563,13 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOpt
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"GLVis PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscViewerGLVisSetPrecision(v,prec);CHKERRQ(ierr);}
   ierr = PetscOptionsIntArray("-glvis_size","Window sizes",NULL,socket->windowsizes,&nsizes,&set);CHKERRQ(ierr);
   if (set && (nsizes == 1 || socket->windowsizes[1] < 0)) socket->windowsizes[1] = socket->windowsizes[0];
   ierr = PetscOptionsReal("-glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set);CHKERRQ(ierr);
-  if (set) {ierr = PetscViewerGLVisSetPrecision(v,prec);CHKERRQ(ierr);}
+  ierr = PetscOptionsName("-glvis_keys","Additional keys to configure visualization",NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-glvis_exec","Additional commands to configure visualization",NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -600,10 +618,12 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
 -  viewer    - the PetscViewer object
 
   Options Database Keys:
-+  -glvis_size <width,height> - Sets the window size (in pixels)
++  -glvis_precision <precision> - Sets number of digits for floating point values
+.  -glvis_size <width,height> - Sets the window size (in pixels)
 .  -glvis_pause <pause> - Sets time (in seconds) that the program pauses after each visualization
-       (0 is default, -1 implies every visualization).
--  -glvis_precision <precision> - Sets number of digits for floating point values
+       (0 is default, -1 implies every visualization)
+.  -glvis_keys - Additional keys to configure visualization
+-  -glvis_exec - Additional commands to configure visualization
 
   Notes:
     misses Fortran binding
