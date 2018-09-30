@@ -455,6 +455,17 @@ cdef class PC(Object):
             CHKERR( PetscFree(p) )
         return subksp
 
+    def getFieldSplitSchurGetSubKSP(self):
+        cdef PetscInt i = 0, n = 0
+        cdef PetscKSP *p = NULL
+        cdef object subksp = None
+        try:
+            CHKERR( PCFieldSplitSchurGetSubKSP(self.pc, &n, &p) )
+            subksp = [ref_KSP(p[i]) for i from 0 <= i <n]
+        finally:
+            CHKERR( PetscFree(p) )
+        return subksp
+
     def setFieldSplitSchurFactType(self, ctype):
         cdef PetscPCFieldSplitSchurFactType cval = ctype
         CHKERR( PCFieldSplitSetSchurFactType(self.pc, cval) )
