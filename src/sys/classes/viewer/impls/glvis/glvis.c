@@ -477,9 +477,10 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   if (mesh) {
     switch (dim) {
     case 1:
+      ierr = PetscViewerASCIIPrintf(viewer,"keys m\n");CHKERRQ(ierr); /* show mesh */
       break;
     case 2:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys cmeeppppp\n");CHKERRQ(ierr); /* show colorbar, mesh and ranks */
+      ierr = PetscViewerASCIIPrintf(viewer,"keys m\n");CHKERRQ(ierr); /* show mesh */
       break;
     case 3: /* TODO: decide default view in 3D */
       break;
@@ -488,7 +489,7 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
     ierr = PetscViewerASCIIPrintf(viewer,"keys cm\n");CHKERRQ(ierr); /* show colorbar and mesh */
     switch (dim) {
     case 1:
-      ierr = PetscViewerASCIIPrintf(viewer,"keys RRj\n");CHKERRQ(ierr); /* set to 1D (side view) and turn off perspective */
+      ierr = PetscViewerASCIIPrintf(viewer,"keys RRjl\n");CHKERRQ(ierr); /* set to 1D (side view), turn off perspective and light */
       break;
     case 2:
       ierr = PetscViewerASCIIPrintf(viewer,"keys Rjl\n");CHKERRQ(ierr); /* set to 2D (top view), turn off perspective and light */
