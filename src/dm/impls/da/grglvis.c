@@ -510,46 +510,10 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/* dispatching, prints through the socket by prepending the mesh keyword to the usual ASCII dump: duplicated code as in plexglvis.c, should be merged together */
-PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
+PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isglvis,isascii;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isglvis && !isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERGLVIS or VIEWERASCII");
-  if (isglvis) {
-    PetscViewer          view;
-    PetscViewerGLVisType type;
-
-    ierr = PetscViewerGLVisGetType_Private(viewer,&type);CHKERRQ(ierr);
-    ierr = PetscViewerGLVisGetDMWindow_Private(viewer,&view);CHKERRQ(ierr);
-    if (view) { /* in the socket case, it may happen that the connection failed */
-      if (type == PETSC_VIEWER_GLVIS_SOCKET) {
-        PetscMPIInt size,rank;
-
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nmesh\n",size,rank);CHKERRQ(ierr);
-      }
-      ierr = DMDAView_GLVis_ASCII(dm,view);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(view);CHKERRQ(ierr);
-      if (type == PETSC_VIEWER_GLVIS_SOCKET) {
-        PetscInt    dim;
-        const char* name;
-
-        ierr = PetscObjectGetName((PetscObject)dm,&name);CHKERRQ(ierr);
-        ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-        ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_TRUE,dim,name);CHKERRQ(ierr);
-        ierr = PetscBarrier((PetscObject)dm);CHKERRQ(ierr);
-      }
-    }
-  } else {
-    ierr = DMDAView_GLVis_ASCII(dm,viewer);CHKERRQ(ierr);
-  }
+  ierr = DMView_GLVis(dm,viewer,DMDAView_GLVis_ASCII);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

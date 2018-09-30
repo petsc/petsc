@@ -957,7 +957,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   /* vertices */
   if (hovec) { /* higher-order meshes */
     const char *fec;
-    PetscInt   i,n;
+    PetscInt   i,n,s;
 
     ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",vEnd-vStart);CHKERRQ(ierr);
@@ -971,7 +971,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = VecGetLocalSize(hovec,&n);CHKERRQ(ierr);
     if (n%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Size of local coordinate vector %D incompatible with space dimension %D",n,sdim);
     for (i=0;i<n/sdim;i++) {
-      PetscInt s;
       for (s=0;s<sdim;s++) {
         ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
       }
@@ -996,46 +995,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/* dispatching, prints through the socket by prepending the mesh keyword to the usual ASCII dump */
-PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isglvis,isascii;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isglvis && !isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERGLVIS or VIEWERASCII");
-  if (isglvis) {
-    PetscViewer          view;
-    PetscViewerGLVisType type;
-
-    ierr = PetscViewerGLVisGetType_Private(viewer,&type);CHKERRQ(ierr);
-    ierr = PetscViewerGLVisGetDMWindow_Private(viewer,&view);CHKERRQ(ierr);
-    if (view) { /* in the socket case, it may happen that the connection failed */
-      if (type == PETSC_VIEWER_GLVIS_SOCKET) {
-        PetscMPIInt size,rank;
-
-        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(view,"parallel %d %d\nmesh\n",size,rank);CHKERRQ(ierr);
-      }
-      ierr = DMPlexView_GLVis_ASCII(dm,view);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(view);CHKERRQ(ierr);
-      if (type == PETSC_VIEWER_GLVIS_SOCKET) {
-        PetscInt    dim;
-        const char* name;
-
-        ierr = PetscObjectGetName((PetscObject)dm,&name);CHKERRQ(ierr);
-        ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-        ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_TRUE,dim,name);CHKERRQ(ierr);
-        ierr = PetscBarrier((PetscObject)dm);CHKERRQ(ierr);
-      }
-    }
-  } else {
-    ierr = DMPlexView_GLVis_ASCII(dm,viewer);CHKERRQ(ierr);
-  }
+  ierr = DMView_GLVis(dm,viewer,DMPlexView_GLVis_ASCII);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

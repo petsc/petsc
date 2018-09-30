@@ -244,7 +244,7 @@ PetscErrorCode PetscViewerGLVisPause_Private(PetscViewer viewer)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (socket->pause > 0) {
+  if (socket->type == PETSC_VIEWER_GLVIS_SOCKET && socket->pause > 0) {
     ierr = PetscSleep(socket->pause);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -271,12 +271,13 @@ PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewer* view)
+PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewer *view)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(view,2);
   if (!socket->meshwindow) {
     if (socket->type == PETSC_VIEWER_GLVIS_SOCKET) {
       ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->meshwindow);CHKERRQ(ierr);
@@ -304,6 +305,27 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
     ierr = PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow);CHKERRQ(ierr);
   }
   *view = socket->meshwindow;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer viewer,PetscViewer *view)
+{
+  PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(view,2);
+  if (*view && *view != socket->meshwindow) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetDMWindow()");
+  if (*view) {
+    ierr = PetscViewerFlush(*view);CHKERRQ(ierr);
+    ierr = PetscBarrier((PetscObject)viewer);CHKERRQ(ierr);
+  }
+  if (socket->type == PETSC_VIEWER_GLVIS_DUMP) { /* destroy the viewer, as it is associated with a single time step */
+    ierr = PetscViewerDestroy(&socket->meshwindow);CHKERRQ(ierr);
+  } else if (!*view) { /* something went wrong (SIGPIPE) so we just zero the private pointer */
+    socket->meshwindow = NULL;
+  }
+  *view = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -440,7 +462,7 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt
   PetscValidLogicalCollectiveInt(viewer,wid,2);
   PetscValidPointer(view,3);
   if (wid < 0 || wid > socket->nwindow-1) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot restore window id %D: allowed range [0,%D)",wid,socket->nwindow);
-  if (*view && *view != socket->window[wid]) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetWindow");
+  if (*view && *view != socket->window[wid]) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetWindow()");
   if (*view) {
     ierr = PetscViewerFlush(*view);CHKERRQ(ierr);
     ierr = PetscBarrier((PetscObject)viewer);CHKERRQ(ierr);
@@ -809,3 +831,71 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
 #endif
   PetscFunctionReturn(0);
 }
+
+#if !defined(PETSC_MISSING_SIGPIPE)
+
+#include <signal.h>
+
+#if defined(PETSC_HAVE_WINDOWS_H)
+#define PETSC_DEVNULL "NUL"
+#else
+#define PETSC_DEVNULL "/dev/null"
+#endif
+
+static volatile PetscBool PetscGLVisBrokenPipe = PETSC_FALSE;
+
+static void (*PetscGLVisSigHandler_save)(int) = NULL;
+
+static void PetscGLVisSigHandler_SIGPIPE(PETSC_UNUSED int sig)
+{
+  PetscGLVisBrokenPipe = PETSC_TRUE;
+#if !defined(PETSC_MISSING_SIG_IGN)
+  signal(SIGPIPE,SIG_IGN);
+#endif
+}
+
+PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
+{
+  PetscFunctionBegin;
+  if (PetscGLVisSigHandler_save) SETERRQ1(comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
+  PetscGLVisBrokenPipe = PETSC_FALSE;
+  PetscGLVisSigHandler_save = signal(SIGPIPE,PetscGLVisSigHandler_SIGPIPE);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm comm,PetscViewer *win)
+{
+  PetscBool      flag,brokenpipe;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  flag = PetscGLVisBrokenPipe;
+  ierr = MPIU_Allreduce(&flag,&brokenpipe,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+  if (brokenpipe) {
+    FILE *sock, *null = fopen(PETSC_DEVNULL,"w");
+    ierr = PetscViewerASCIIGetPointer(*win,&sock);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetFILE(*win,null);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(win);CHKERRQ(ierr);
+    if (sock) (void)fclose(sock);
+  }
+  (void)signal(SIGPIPE,PetscGLVisSigHandler_save);
+  PetscGLVisSigHandler_save = NULL;
+  PetscGLVisBrokenPipe = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#else
+
+PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscGLVisCollectiveEnd(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#endif

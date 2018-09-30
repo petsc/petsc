@@ -30,4 +30,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer,PetscI
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer,PetscInt,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer,PetscInt*,const char**[],PetscInt*[],PetscErrorCode(**)(PetscObject,PetscInt,PetscObject[],void*),PetscObject*[],void**);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer,PetscViewer*);
+
+PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveBegin(MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm,PetscViewer*);
 #endif
