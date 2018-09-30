@@ -18,6 +18,7 @@ struct _n_PetscViewerGLVis {
   PetscInt               nwindow;                                               /* number of windows/fields to be visualized */
   PetscViewer            *window;
   char                   **windowtitle;
+  PetscInt               windowsizes[2];
   char                   **fec_type;                                            /* type of elements to be used for visualization, see FiniteElementCollection::Name() */
   PetscErrorCode         (*g2lfield)(PetscObject,PetscInt,PetscObject[],void*); /* global to local operation for generating dofs to be visualized */
   PetscInt               *spacedim;                                             /* geometrical space dimension (just used to initialize the scene) */
@@ -200,6 +201,8 @@ static PetscErrorCode PetscViewerGLVisAttachInfo_Private(PetscViewer viewer, Pet
     ierr = PetscNew(&info);CHKERRQ(ierr);
     info->enabled = PETSC_TRUE;
     info->init    = PETSC_FALSE;
+    info->size[0] = socket->windowsizes[0];
+    info->size[1] = socket->windowsizes[1];
     info->pause   = socket->pause;
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)window),&container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,(void*)info);CHKERRQ(ierr);
@@ -226,7 +229,7 @@ static PetscErrorCode PetscViewerGLVisGetNewWindow_Private(PetscViewer viewer,Pe
   /* if we could not estabilish a connection the first time,
      we disable the socket viewer */
   ldis = ierr ? PETSC_TRUE : PETSC_FALSE;
-  ierr = MPI_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&ldis,&dis,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
   if (dis) {
     socket->status = PETSCVIEWERGLVIS_DISABLED;
     ierr  = PetscViewerDestroy(&window);CHKERRQ(ierr);
@@ -332,7 +335,7 @@ PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer viewer, PetscViewer
       if (!socket->window[i])
         lconn = PETSC_FALSE;
 
-    ierr = MPI_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&lconn,&conn,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
     if (conn) socket->status = PETSCVIEWERGLVIS_CONNECTED;
   }
   *sockstatus = socket->status;
@@ -463,12 +466,11 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
   ierr = PetscContainerGetPointer(container,(void**)&info);CHKERRQ(ierr);
   if (info->init) {
-    if (info->pause < 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"pause\n");CHKERRQ(ierr); /* pause */
-    }
     PetscFunctionReturn(0);
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"window_size 800 800\n");CHKERRQ(ierr);
+  if (info->size[0] > 0) {
+    ierr = PetscViewerASCIIPrintf(viewer,"window_size %D %D\n",info->size[0],info->size[1]);CHKERRQ(ierr);
+  }
   if (name) {
     ierr = PetscViewerASCIIPrintf(viewer,"window_title '%s'\n",name);CHKERRQ(ierr);
   }
@@ -495,6 +497,9 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
       break;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"autoscale value\n");CHKERRQ(ierr); /* update value-range; keep mesh-extents fixed */
+    if (info->pause == -1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"autopause 1\n");CHKERRQ(ierr); /* pause */
+    }
     if (info->pause == 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"pause\n");CHKERRQ(ierr); /* pause */
     }
@@ -536,10 +541,16 @@ static PetscErrorCode PetscViewerSetFromOptions_GLVis(PetscOptionItems *PetscOpt
 {
   PetscErrorCode   ierr;
   PetscViewerGLVis socket = (PetscViewerGLVis)v->data;
+  PetscInt         nsizes = 2, prec = PETSC_DECIDE;
+  PetscBool        set;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"GLVis PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-viewer_glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsIntArray("-glvis_size","Window sizes",NULL,socket->windowsizes,&nsizes,&set);CHKERRQ(ierr);
+  if (set && (nsizes == 1 || socket->windowsizes[1] < 0)) socket->windowsizes[1] = socket->windowsizes[0];
+  ierr = PetscOptionsReal("-glvis_pause","-1 to pause after each visualization, otherwise sleeps for given seconds",NULL,socket->pause,&socket->pause,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-glvis_precision","Number of digits for floating point values","PetscViewerGLVisSetPrecision",prec,&prec,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscViewerGLVisSetPrecision(v,prec);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -573,10 +584,10 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
   PetscFunctionReturn(0);
 }
 
-/*
-     PetscViewerGLVisOpen - Opens a GLVis type viewer
+/*@C
+  PetscViewerGLVisOpen - Opens a GLVis type viewer
 
-  Collective on comm
+  Collective on MPI_Comm
 
   Input Parameters:
 +  comm      - the MPI communicator
@@ -587,14 +598,20 @@ static PetscErrorCode PetscViewerSetFileName_GLVis(PetscViewer viewer, const cha
   Output Parameters:
 -  viewer    - the PetscViewer object
 
+  Options Database Keys:
++  -glvis_size <width,height> - Sets the window size (in pixels)
+.  -glvis_pause <pause> - Sets time (in seconds) that the program pauses after each visualization
+       (0 is default, -1 implies every visualization).
+-  -glvis_precision <precision> - Sets number of digits for floating point values
+
   Notes:
     misses Fortran binding
 
   Level: beginner
 
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerGLVisType
-*/
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char* name, PetscInt port, PetscViewer* viewer)
+@*/
+PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, const char name[], PetscInt port, PetscViewer *viewer)
 {
   PetscViewerGLVis socket;
   PetscErrorCode   ierr;
@@ -640,7 +657,7 @@ $       XXXView(XXX object, PETSC_VIEWER_GLVIS_(comm));
 
 .seealso: PetscViewerGLVISOpen(), PetscViewerGLVisType, PetscViewerCreate(), PetscViewerDestroy()
 */
-PETSC_EXTERN PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
+PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
 {
   PetscErrorCode       ierr;
   PetscBool            flg;
@@ -689,6 +706,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
   socket->port  = 19916; /* GLVis default listening port */
   socket->type  = PETSC_VIEWER_GLVIS_SOCKET;
   socket->pause = 0; /* just pause the first time */
+
+  socket->windowsizes[0] = 600;
+  socket->windowsizes[1] = 600;
 
   /* defaults to full precision */
   ierr = PetscStrallocpy(" %g",&socket->fmt);CHKERRQ(ierr);
