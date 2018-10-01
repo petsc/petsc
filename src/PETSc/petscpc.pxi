@@ -289,8 +289,8 @@ cdef int PCPatch_ComputeOperator(
     if context is None and ctx != NULL: context = <object>ctx
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
-    pydofs = asarray(<PetscInt[:ndof]>dofmap)
-    op(Pc, toInt(point), Mat, Is, pydofs, *args, **kargs)
+    cdef PetscInt[:] pydofs = <PetscInt[:ndof]>dofmap
+    op(Pc, toInt(point), Mat, Is, asarray(pydofs), *args, **kargs)
     return 0
 
 
