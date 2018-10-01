@@ -1607,7 +1607,9 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #endif
     *a = *((PetscScalar**)x->data);
   } else {
-    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    if (x->ops->getarray) {
+      ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array for vector type \"%s\"",((PetscObject)x)->type_name);
   }
   PetscFunctionReturn(0);
 }

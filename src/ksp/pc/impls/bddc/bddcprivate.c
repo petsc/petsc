@@ -1510,7 +1510,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
 
     ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
     ierr = MatCreateVecs(lA,&vins,NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreateWithData(v,vl2l,vins,NULL,&sc);CHKERRQ(ierr);
+    ierr = VecScatterCreateWithData(v,NULL,vins,vl2l,&sc);CHKERRQ(ierr);
     ierr = VecScatterBegin(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&sc);CHKERRQ(ierr);
@@ -6088,7 +6088,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
           /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
           j = 0;
-          while (j < temp_constraints && singular_vals[j] < tol) j++;
+          while (j < temp_constraints && singular_vals[j]/singular_vals[temp_constraints-1] < tol) j++;
           total_counts = total_counts-j;
           valid_constraints = temp_constraints-j;
           /* scale and copy POD basis into used quadrature memory */
@@ -6126,7 +6126,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           k = temp_constraints;
           if (k > size_of_constraint) k = size_of_constraint;
           j = 0;
-          while (j < k && singular_vals[k-j-1] < tol) j++;
+          while (j < k && singular_vals[k-j-1]/singular_vals[0] < tol) j++;
           valid_constraints = k-j;
           total_counts = total_counts-temp_constraints+valid_constraints;
 #endif /* on missing GESVD */
@@ -8081,7 +8081,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
     ierr = VecCreate(PetscObjectComm((PetscObject)pc),&pcbddc->coarse_vec);CHKERRQ(ierr);
     ierr = VecSetSizes(pcbddc->coarse_vec,lrows,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetType(pcbddc->coarse_vec,VECSTANDARD);CHKERRQ(ierr);
+    ierr = VecSetType(pcbddc->coarse_vec,coarse_mat ? coarse_mat->defaultvectype : VECSTANDARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
     ierr = VecScatterCreateWithData(pcbddc->vec1_P,NULL,pcbddc->coarse_vec,coarse_is,&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
   }

@@ -1101,12 +1101,14 @@ PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool  
   IS             Me,Notme;
   PetscErrorCode ierr;
   PetscInt       M,N,first,last,*notme,i;
+  PetscBool      lf;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Easy test: symmetric diagonal block */
   Bij  = (Mat_MPIAIJ*) Bmat->data; Bdia = Bij->A;
-  ierr = MatIsTranspose(Adia,Bdia,tol,f);CHKERRQ(ierr);
+  ierr = MatIsTranspose(Adia,Bdia,tol,&lf);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lf,f,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)Amat));CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
