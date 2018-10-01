@@ -6752,6 +6752,68 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, PetscInt npoints, const PetscInt *points, PetscInt *missingPoint)
+{
+  PetscInt i,l,n;
+  const PetscInt *cone;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *missingPoint = -1;
+  ierr = DMPlexGetConeSize(dm, p, &n);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = PetscFindInt(cone[i], npoints, points, &l);CHKERRQ(ierr);
+    if (l < 0) {
+      *missingPoint = cone[i];
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCheckPointSF - Check that several sufficient conditions are met for the point SF of this plex.
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Note: This is mainly intended for debugging/testing purposes.
+
+  Level: developer
+
+.seealso: DMGetPointSF(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+@*/
+PetscErrorCode DMPlexCheckPointSF(DM dm)
+{
+  PetscSF sf;
+  PetscInt d,depth,i,nleaves,p,plo,phi,missingPoint;
+  const PetscInt *locals;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &locals, NULL);CHKERRQ(ierr);
+
+  /* 1) if some point is in interface, then all its cone points must be also in interface  */
+  for (i=0; i<nleaves; i++) {
+    p = locals[i];
+    ierr = DMPlexAreAllConePointsInArray_Private(dm, p, nleaves, locals, &missingPoint);CHKERRQ(ierr);
+    if (missingPoint >= 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d but not %d from its cone",p,missingPoint);
+  }
+
+  /* 2) check there are no faces in 2D, cells in 3D, in interface */
+  ierr = DMPlexGetVTKCellHeight(dm, &d);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, d, &plo, &phi);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    p = locals[i];
+    if (p >= plo && p < phi) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d which is a cell",p);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* Pointwise interpolation
      Just code FEM for now
      u^f = I u^c
