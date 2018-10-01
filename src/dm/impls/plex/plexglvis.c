@@ -343,21 +343,22 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     enabled = glvis_info->enabled;
     fmt     = glvis_info->fmt;
   }
+
+  /* Users can attach a coordinate vector to the DM in case they have a higher-order mesh
+     DMPlex does not currently support HO meshes, so there's no API for this */
+  ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
+
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
-  if (periodic && !localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
+  if (periodic && !localized && !hovec) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
   ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-  if (!coordinates) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
-
-  /* Users can attach a coordinate vector to the DM in case they have a higher-order mesh
-     DMPlex does not currently support HO meshes, so there's no API for this */
-  ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
+  if (!coordinates && !hovec) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
 
   /*
      a couple of sections of the mesh specification are disabled

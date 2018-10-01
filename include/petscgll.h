@@ -12,10 +12,10 @@
   The array nodes[] contains the vertices of each node
   The array weights[] are the integration weights
 
-  The mass matrix for the element corresponds to the diagona matrix whose entries are the weights[]
+  The mass matrix for the element corresponds to the diagonal matrix whose entries are the weights[]
 
   Developer Notes:
-    This may eventually get merged into a more abstract or general object for managing 
+    This may eventually get merged into a more abstract or general object for managing
     integration schemes or discretization schemes.
 
   References: XXXX
