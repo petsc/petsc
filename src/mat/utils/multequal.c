@@ -432,6 +432,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
     }
@@ -451,7 +452,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
     ierr = VecNorm(s2,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm > 10*normA*PETSC_MACHINE_EPSILON) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %D-th || A*(a x + y) - (a*A*x + A*y)|| = %g\n",k,norm);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %D-th || A*(a x + y) - (a*A*x + A*y)|| = %g\n",k,(double)norm);CHKERRQ(ierr);
       break;
     }
   }
