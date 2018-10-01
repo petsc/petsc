@@ -523,6 +523,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
@@ -738,6 +739,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicpc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
@@ -891,6 +893,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
@@ -1607,9 +1610,9 @@ if (dlclose(handle)) {
     This usually prevents mpi compilers from being used - so issue a warning'''
 
     if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
-      optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
-              (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
-              (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
+      optcplrs = [(['with-cc','CC'],['mpiicc','mpicc','mpcc','hcc','mpcc_r']),
+              (['with-fc','FC'],['mpiifort','mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-cxx','CXX'],['mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
       for opts,cplrs in optcplrs:
         for opt in opts:
           if (opt in self.argDB  and self.argDB[opt] != '0'):
