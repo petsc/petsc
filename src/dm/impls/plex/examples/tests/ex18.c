@@ -522,34 +522,84 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: 0
+  testset:
     nsize: 2
     args: -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 1
-    nsize: 2
-    args: -interpolate serial -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 1_tri_dist0
+      args: -distribute 0 -interpolate {{none serial}separate output}
+    test:
+      suffix: 1_tri_dist1
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+    test:
+      suffix: 1_quad_dist0
+      args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
+    test:
+      suffix: 1_quad_dist1
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
+
   test:
     suffix: 2
     nsize: 3
     args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 3
+
+  testset:
+    # the same as 1% for 3D
     nsize: 2
     args: -dim 3 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 4
-    nsize: 2
-    args: -dim 3 -interpolate serial -dm_view ascii::ascii_info_detail
-  test:
-    suffix: quad_0
-    nsize: 2
-    args: -cell_simplex 0 -interpolate serial -dm_view ascii::ascii_info_detail
-  test:
-    requires: TODO  # currently fails in DMPlexCheckPointSF(), SF needs to be fixed
-    suffix: quad_1
-    nsize: 2
-    args: -cell_simplex 0 -dim 3 -interpolate serial -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 4_tet_dist0
+      args: -distribute 0 -interpolate {{none serial}separate output}
+    test:
+      suffix: 4_tet_dist1
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+    test:
+      suffix: 4_hex_dist0
+      args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
+    test:
+      suffix: 4_hex_dist1
+      args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
 
+  testset:
+    requires: exodusii
+    nsize: 2
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo
+    args: -cell_simplex 0 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 5_dist0
+      args: -distribute 0 -interpolate {{none serial}separate output}
+    test:
+      suffix: 5_dist1
+      args: -distribute 1 -interpolate {{none serial parallel}separate output}
+
+  testset:
+    nsize: {{1 2 4}}
+    args: -use_generator
+    args: -distribute -interpolate {{none serial parallel}}
+    test:
+      suffix: 6_tri
+      requires: triangle
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
+    test:
+      suffix: 6_quad
+      args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
+    test:
+      suffix: 6_tet
+      requires: ctetgen
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
+    test:
+      suffix: 6_hex
+      args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
+
+  testset:
+    nsize: {{1 2 4 5}}
+    args: -cell_simplex 0 -distribute -interpolate {{none serial parallel}}
+    test:
+      suffix: 7_exo
+      requires: exodusii
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    test:
+      suffix: 7_hdf5
+      requires: hdf5
+      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
 TEST*/
