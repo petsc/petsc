@@ -203,6 +203,19 @@ cdef class Section(Object):
         cdef PetscInt coffset = asInt(offset)
         CHKERR( PetscSectionSetOffset(self.sec,cpoint,coffset) )
 
+    def getFieldOffset(self,point,field):
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        cdef PetscInt offset = 0
+        CHKERR( PetscSectionGetFieldOffset(self.sec,cpoint,cfield,&offset) )
+        return toInt(offset)
+
+    def setFieldOffset(self,point,field,offset):
+        cdef PetscInt cpoint = asInt(point)
+        cdef PetscInt cfield = asInt(field)
+        cdef PetscInt coffset = asInt(offset)
+        CHKERR( PetscSectionSetFieldOffset(self.sec,cpoint,cfield,coffset) )
+
     def getOffsetRange(self):
         cdef PetscInt oStart = 0, oEnd = 0
         CHKERR( PetscSectionGetOffsetRange(self.sec,&oStart,&oEnd) )
