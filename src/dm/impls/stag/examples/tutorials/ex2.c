@@ -18,7 +18,7 @@ static char help[] = "Solve a toy 2D problem on a staggered grid\n\n";
   a constant-pressure nullspace. This allows use of direct solvers, e.g. to
   use UMFPACK,
 
-     ./stag_ex3 -pinpressure 1 -pc_type lu -pc_factor_mat_solver_type umfpack
+     ./ex2 -pinpressure 1 -pc_type lu -pc_factor_mat_solver_type umfpack
 
   This example demonstrates the use of DMProduct to efficiently store coordinates
   on an orthogonal grid.

@@ -101,7 +101,7 @@ int main(int argc,char **argv)
     ierr = DMSetFromOptions(dmSol);CHKERRQ(ierr);
     ierr = DMSetUp(dmSol);CHKERRQ(ierr);
     ierr = DMStagSetUniformCoordinatesExplicit(dmSol,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-    /* Note: also see stag_ex2.c, where another, more efficient option is demonstrated,
+    /* Note: also see ex2.c, where another, more efficient option is demonstrated,
        using DMStagSetUniformCoordinatesProduct() */
   }
 

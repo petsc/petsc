@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = DMSetUp(ctx->dmCoeff);CHKERRQ(ierr);
   ierr = DMStagSetUniformCoordinatesExplicit(ctx->dmCoeff,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0);CHKERRQ(ierr);
 
-  /* Note: see stag_ex2.c for a more-efficient way to work with coordinates on an
+  /* Note: see ex2.c for a more-efficient way to work with coordinates on an
      orthogonal grid, using DMStagSetUniformCoordinatesProduct() */
 
   /* Get scaling constants, knowing grid spacing */
@@ -530,7 +530,7 @@ static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
   /* Dump element-based fields to a .vtr file */
   {
     PetscViewer viewer;
-    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),"stag_ex4_element.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),"ex4_element.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = VecView(vecVelAvg,viewer);CHKERRQ(ierr);
     ierr = VecView(vecP,viewer);CHKERRQ(ierr);
     ierr = VecView(vecEtaElement,viewer);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
   /* Dump vertex-based fields to a second .vtr file */
   {
     PetscViewer viewer;
-    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daEtaCorner),"stag_ex4_vertex.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daEtaCorner),"ex4_vertex.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = VecView(vecEtaCorner,viewer);CHKERRQ(ierr);
     ierr = VecView(vecRho,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
