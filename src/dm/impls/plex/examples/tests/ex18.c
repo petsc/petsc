@@ -526,19 +526,24 @@ int main(int argc, char **argv)
     nsize: 2
     args: -dm_view ascii::ascii_info_detail
     test:
+      requires: TODO
       suffix: 1_tri_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
+      requires: TODO
       suffix: 1_tri_dist1
       args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
+      requires: TODO
       suffix: 1_quad_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
+      requires: TODO
       suffix: 1_quad_dist1
       args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
 
   test:
+    requires: TODO
     suffix: 2
     nsize: 3
     args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail
@@ -548,15 +553,19 @@ int main(int argc, char **argv)
     nsize: 2
     args: -dim 3 -dm_view ascii::ascii_info_detail
     test:
+      requires: TODO
       suffix: 4_tet_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
+      requires: TODO
       suffix: 4_tet_dist1
       args: -distribute 1 -interpolate {{none serial parallel}separate output}
     test:
+      requires: TODO
       suffix: 4_hex_dist0
       args: -cell_simplex 0 -distribute 0 -interpolate {{none serial}separate output}
     test:
+      requires: TODO
       suffix: 4_hex_dist1
       args: -cell_simplex 0 -distribute 1 -interpolate {{none serial parallel}separate output}
 
@@ -569,6 +578,7 @@ int main(int argc, char **argv)
       suffix: 5_dist0
       args: -distribute 0 -interpolate {{none serial}separate output}
     test:
+      requires: TODO
       suffix: 5_dist1
       args: -distribute 1 -interpolate {{none serial parallel}separate output}
 
@@ -578,16 +588,18 @@ int main(int argc, char **argv)
     args: -distribute -interpolate {{none serial parallel}}
     test:
       suffix: 6_tri
-      requires: triangle
+      requires: TODO triangle
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 1 -dm_plex_generator triangle
     test:
+      requires: TODO
       suffix: 6_quad
       args: -faces {{2,2  1,3  7,4}} -cell_simplex 0
     test:
       suffix: 6_tet
-      requires: ctetgen
+      requires: TODO ctetgen
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 1 -dm_plex_generator ctetgen
     test:
+      requires: TODO
       suffix: 6_hex
       args: -faces {{2,2,2  1,3,5  3,4,7}} -cell_simplex 0
 
@@ -596,10 +608,10 @@ int main(int argc, char **argv)
     args: -cell_simplex 0 -distribute -interpolate {{none serial parallel}}
     test:
       suffix: 7_exo
-      requires: exodusii
+      requires: TODO exodusii
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     test:
       suffix: 7_hdf5
-      requires: hdf5
+      requires: TODO hdf5
       args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
 TEST*/
