@@ -720,7 +720,7 @@ int main(int argc,char *argv[])
   ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetRHSFunctionslow(ts,NULL,FVRHSFunctionslow,&ctx);CHKERRQ(ierr);
   ierr = TSSetRHSFunctionfast(ts,NULL,FVRHSFunctionfast,&ctx);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSPRK);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,10);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 

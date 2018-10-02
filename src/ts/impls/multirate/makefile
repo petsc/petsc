@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = prk.c
+SOURCEC  = mprk.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscts

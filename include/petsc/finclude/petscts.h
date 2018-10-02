@@ -36,7 +36,7 @@
 #define TSROSW            'rosw'
 #define TSEIMEX           'eimex'
 #define TSRADAU5          'radau5'
-#define TSPRK             'prk'
+#define TSMPRK            'mprk'
 
 #define TSTRAJECTORYBASIC 'basic'
 
@@ -68,11 +68,10 @@
 #define TSRK5DP   '5dp'
 #define TSRK5BS   '5bs'
 
-#define TSPRKType   character*(80)
-#define TSPRKM2       'pm2'
-#define TSPRKM3       'pm3'
-#define TSPRKRFSMR2   'p2'
-#define TSPRKRFSMR3   'p3'
+#define TSMPRKType   character*(80)
+#define TSMPRKPM2     'pm2'
+#define TSMPRKP2      'p2'
+#define TSMPRKP3      'p3'
 
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX1BEE   '1bee'

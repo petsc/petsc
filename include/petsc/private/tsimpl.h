@@ -22,7 +22,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSPRKRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSMPRKRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
