@@ -2312,6 +2312,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   Mat_IS         *b = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
+  ierr = PetscFree(b->bdiag);CHKERRQ(ierr);
   ierr = PetscFree(b->lmattype);CHKERRQ(ierr);
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&b->cctx);CHKERRQ(ierr);
@@ -2449,11 +2450,36 @@ static PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatInvertBlockDiagonal_IS(Mat mat,const PetscScalar **values)
+{
+  Mat_IS            *is = (Mat_IS*)mat->data;
+  MPI_Datatype      nodeType;
+  const PetscScalar *lv;
+  PetscInt          bs;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(is->A,bs);CHKERRQ(ierr);
+  ierr = MatInvertBlockDiagonal(is->A,&lv);CHKERRQ(ierr);
+  if (!is->bdiag) {
+    ierr = PetscMalloc1(bs*mat->rmap->n,&is->bdiag);CHKERRQ(ierr);
+  }
+  ierr = MPI_Type_contiguous(bs,MPIU_SCALAR,&nodeType);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&nodeType);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(is->sf,nodeType,lv,is->bdiag,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(is->sf,nodeType,lv,is->bdiag,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&nodeType);CHKERRQ(ierr);
+  if (values) *values = is->bdiag;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatISSetUpScatters_Private(Mat A)
 {
   Vec            cglobal,rglobal;
   IS             from;
   Mat_IS         *is = (Mat_IS*)A->data;
+  PetscScalar    sum;
   const PetscInt *garray;
   PetscInt       nr,rbs,nc,cbs;
   PetscBool      iscuda;
@@ -2491,6 +2517,8 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
     ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
     is->cctx = is->rctx;
   }
+  ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
+
   /* interface counter vector (local) */
   ierr = VecDuplicate(is->y,&is->counter);CHKERRQ(ierr);
   ierr = VecSet(is->y,1.);CHKERRQ(ierr);
@@ -2498,9 +2526,16 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   ierr = VecScatterEnd(is->rctx,is->y,rglobal,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->rctx,rglobal,is->counter,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* special functions for block-diagonal matrices */
+  ierr = VecSum(rglobal,&sum);CHKERRQ(ierr);
+  if ((PetscInt)(PetscRealPart(sum)) == A->rmap->N && A->rmap->N == A->cmap->N && A->rmap->mapping == A->cmap->mapping) {
+    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_IS;
+  } else {
+    A->ops->invertblockdiagonal = NULL;
+  }
+
   ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
-  ierr = VecDestroy(&cglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2520,6 +2555,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   } else is->csf = NULL;
   ierr = PetscSFDestroy(&is->sf);CHKERRQ(ierr);
   ierr = PetscFree2(is->sf_rootdata,is->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscFree(is->bdiag);CHKERRQ(ierr);
 
   /* Setup Layout and set local to global maps */
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -3277,33 +3313,8 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition methods (e.g. PCBDDC or KSPFETIDP).
-   This stores the matrices in globally unassembled form. Each processor
-   assembles only its local Neumann problem and the parallel matrix vector
+   This stores the matrices in globally unassembled form. Each processor assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
-
-   Operations Provided:
-+  MatMult()
-.  MatMultAdd()
-.  MatMultTranspose()
-.  MatMultTransposeAdd()
-.  MatZeroEntries()
-.  MatSetOption()
-.  MatZeroRows()
-.  MatSetValues()
-.  MatSetValuesBlocked()
-.  MatSetValuesLocal()
-.  MatSetValuesBlockedLocal()
-.  MatScale()
-.  MatGetDiagonal()
-.  MatMissingDiagonal()
-.  MatDuplicate()
-.  MatCopy()
-.  MatAXPY()
-.  MatCreateSubMatrix()
-.  MatGetLocalSubMatrix()
-.  MatTranspose()
-.  MatPtAP() (with P of AIJ type)
--  MatSetLocalToGlobalMapping()
 
    Options Database Keys:
 + -mat_type is - sets the matrix type to "is" during a call to MatSetFromOptions()
