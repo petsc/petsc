@@ -662,7 +662,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   PetscInt          (*roots)[2], (*leaves)[2];
   const PetscInt    *locals;
   const PetscSFNode *remotes;
-  PetscInt           nroots, r, nleaves, l;
+  PetscInt           nroots, nleaves, p;
   MPI_Comm           comm;
   PetscMPIInt        rank;
   PetscInt           debug = 0;
@@ -676,66 +676,64 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Roots\n");CHKERRQ(ierr);}
-  for (r = 0; r < nroots; ++r) {
-    const PetscInt  point = r;
+  for (p = 0; p < nroots; ++p) {
     const PetscInt *cone;
     PetscInt        coneSize, ind0, ind1;
 
-    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     if (coneSize  > 1) {
       /* Translate all points to root numbering */
       ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
       ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
-      roots[r][0] = ind0 < 0 ? cone[0] : remotes[ind0].index;
-      roots[r][1] = ind1 < 0 ? cone[1] : remotes[ind1].index;
-      if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: cone=[%D %D] ind=[%D %D] roots=[%D %D]\n", rank, r, cone[0], cone[1], ind0, ind1, roots[r][0], roots[r][1]);CHKERRQ(ierr);}
+      roots[p][0] = ind0 < 0 ? cone[0] : remotes[ind0].index;
+      roots[p][1] = ind1 < 0 ? cone[1] : remotes[ind1].index;
+      if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: cone=[%D %D] ind=[%D %D] roots=[%D %D]\n", rank, p, cone[0], cone[1], ind0, ind1, roots[p][0], roots[p][1]);CHKERRQ(ierr);}
     } else {
-      roots[r][0] = -1;
-      roots[r][1] = -1;
+      roots[p][0] = -1;
+      roots[p][1] = -1;
     }
   }
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
-  for (l = 0; l < nroots; ++l) {
-    leaves[l][0] = -2;
-    leaves[l][1] = -2;
+  for (p = 0; p < nroots; ++p) {
+    leaves[p][0] = -2;
+    leaves[p][1] = -2;
   }
   ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_2INT, roots, leaves);CHKERRQ(ierr);
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
   if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Referred leaves\n");CHKERRQ(ierr);}
-  for (l = 0; l < nroots; ++l) {
-    const PetscInt  point = l;
+  for (p = 0; p < nroots; ++p) {
     const PetscInt *cone;
     PetscInt        coneSize;
 
-    if (leaves[point][0] < 0) continue;
-    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: %D %D\n", rank, l, leaves[l][0], leaves[l][1]);CHKERRQ(ierr);}
+    if (leaves[p][0] < 0) continue;
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: %D %D\n", rank, p, leaves[p][0], leaves[p][1]);CHKERRQ(ierr);}
 
-    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     if (coneSize > 1) {
       PetscInt ind0, ind1;
 
       ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
       ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
-      if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 0, cone[0]);
-      if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 1, cone[1]);
-      if ((leaves[point][0]  != remotes[ind0].index) || (leaves[point][1] != remotes[ind1].index)) {
+      if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 0, cone[0]);
+      if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 1, cone[1]);
+      if ((leaves[p][0]  != remotes[ind0].index) || (leaves[p][1] != remotes[ind1].index)) {
         const PetscInt *newcone;
 
         /* TODO Generalize this to correct an arbitrary orientation */
-        ierr = DMPlexReverseCell(dm, point);CHKERRQ(ierr);
-        if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  reversed point %D\n", rank, point);CHKERRQ(ierr);}
-        ierr = DMPlexGetCone(dm, point, &newcone);CHKERRQ(ierr);
+        ierr = DMPlexReverseCell(dm, p);CHKERRQ(ierr);
+        if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  reversed point %D\n", rank, p);CHKERRQ(ierr);}
+        ierr = DMPlexGetCone(dm, p, &newcone);CHKERRQ(ierr);
         ierr = PetscFindInt(newcone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
         ierr = PetscFindInt(newcone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
-        if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 0, cone[0]);
-        if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", point, 1, cone[1]);
-        if (leaves[point][0]  != remotes[ind0].index)
-          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", point, 0, cone[0], remotes[ind0].rank, remotes[ind0].index, leaves[point][0], 0, remotes[l].rank, remotes[l].index);
-        if (leaves[point][1] != remotes[ind1].index)
-          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", point, 1, cone[1], remotes[ind1].rank, remotes[ind1].index, leaves[point][1], 1, remotes[l].rank, remotes[l].index);
+        if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 0, cone[0]);
+        if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 1, cone[1]);
+        if (leaves[p][0]  != remotes[ind0].index)
+          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", p, 0, cone[0], remotes[ind0].rank, remotes[ind0].index, leaves[p][0], 0, remotes[p].rank, remotes[p].index);
+        if (leaves[p][1] != remotes[ind1].index)
+          SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", p, 1, cone[1], remotes[ind1].rank, remotes[ind1].index, leaves[p][1], 1, remotes[p].rank, remotes[p].index);
       }
     }
   }
