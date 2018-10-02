@@ -98,7 +98,14 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
   ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
   if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
   if (is) {
-    PetscInt bs = -1, bsLocal[2], bsMinMax[2];
+    PetscInt bs, bsLocal[2], bsMinMax[2];
+
+    for (f = 0, bs = 0; f < numFields; ++f) {
+      PetscInt Nc;
+
+      ierr = PetscSectionGetFieldComponents(section, fields[f], &Nc);CHKERRQ(ierr);
+      bs  += Nc;
+    }
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, pSubSize  = 0;
@@ -113,13 +120,9 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const Pe
           pSubSize += fdof-fcdof;
         }
         subSize += pSubSize;
-        if (pSubSize) {
-          if (bs < 0) {
-            bs = pSubSize;
-          } else if (bs != pSubSize) {
-            /* Layout does not admit a pointwise block size */
-            bs = 1;
-          }
+        if (pSubSize && bs != pSubSize) {
+          /* Layout does not admit a pointwise block size */
+          bs = 1;
         }
       }
     }
