@@ -220,7 +220,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
 
   /* Get Nedelec field */
-  ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
   if (pcbddc->n_ISForDofsLocal && field >= pcbddc->n_ISForDofsLocal) SETERRQ2(comm,PETSC_ERR_USER,"Invalid field for Nedelec %D: number of fields is %D",field,pcbddc->n_ISForDofsLocal);
   if (pcbddc->n_ISForDofsLocal && field >= 0) {
     ierr          = PetscObjectReference((PetscObject)pcbddc->ISForDofsLocal[field]);CHKERRQ(ierr);
@@ -1803,7 +1802,6 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
 
   PetscFunctionBegin;
   if (mop != MPI_LAND && mop != MPI_LOR) SETERRQ(PetscObjectComm((PetscObject)(pc)),PETSC_ERR_SUP,"Supported are MPI_LAND and MPI_LOR");
-  ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
   if (mop == MPI_LAND) {
     /* init rootdata with true */
     ld   = (PetscBool*) matis->sf_rootdata;
@@ -6903,7 +6901,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
       if (pcbddc->mat_graph->cnloc != pc->pmat->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local coordinates! Got %D, expected %D",pcbddc->mat_graph->cnloc,pc->pmat->rmap->n);
       ierr = MatGetLocalSize(matis->A,&n,NULL);CHKERRQ(ierr);
-      ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
       ierr = PetscMalloc1(pcbddc->mat_graph->cdim*n,&lcoords);CHKERRQ(ierr);
       ierr = MPI_Type_contiguous(pcbddc->mat_graph->cdim,MPIU_REAL,&dimrealtype);CHKERRQ(ierr);
       ierr = MPI_Type_commit(&dimrealtype);CHKERRQ(ierr);
