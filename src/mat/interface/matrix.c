@@ -10523,9 +10523,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat C)
   ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetBlockSize(C,bs);CHKERRQ(ierr);
   ierr = PetscMalloc1(m/bs,&dnnz);CHKERRQ(ierr);
-  for(j = 0; j < m/bs; j++) {
-    dnnz[j] = 1;
-  }
+  for (j = 0; j < m/bs; j++) dnnz[j] = 1;
   ierr = MatXAIJSetPreallocation(C,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscFree(dnnz);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
