@@ -977,6 +977,13 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
     ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
+    {
+      /* TODO temporary */
+      PetscBool flg=PETSC_FALSE;
+      ierr = PetscOptionsGetBool(NULL,NULL, "-dm_plex_check_point_sf", &flg, NULL);CHKERRQ(ierr);
+      if (flg) {ierr = DMPlexCheckPointSF(idm);CHKERRQ(ierr);}
+      ierr = DMViewFromOptions(idm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
+    }
     ierr = DMGetPointSF(idm, &sfPoint);CHKERRQ(ierr);
     ierr = DMPlexOrientPointSF_Internal(idm, sfPoint);CHKERRQ(ierr);
   }
