@@ -52,7 +52,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
 static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse,PetscInt w,PetscInt **rfill)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nz;
+  PetscInt       nz;
 
   PetscFunctionBegin;
   if (!dfillsparse) PetscFunctionReturn(0);
