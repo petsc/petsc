@@ -515,6 +515,7 @@ int main(int argc, char **argv)
     ierr = DMPlexCheckFaces(dm, user.cellSimplex, 0);CHKERRQ(ierr);
   }
   ierr = CheckMesh(dm, &user);CHKERRQ(ierr);
+  ierr = DMPlexCheckConesConformOnInterfaces(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
