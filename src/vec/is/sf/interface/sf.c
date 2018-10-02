@@ -1238,9 +1238,9 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  PetscValidIntPointer(degree,2);
-  PetscValidPointer(mRootsOrigNumbering,3);
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (nroots) PetscValidIntPointer(degree,2);
+  PetscValidPointer(mRootsOrigNumbering,3);
   ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc1(nmroots, mRootsOrigNumbering);CHKERRQ(ierr);
