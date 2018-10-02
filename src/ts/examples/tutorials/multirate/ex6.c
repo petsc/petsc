@@ -374,13 +374,22 @@ int main(int argc,char *argv[])
 
     build:
       requires: !complex c99
+      depends: finitevolume1d.c
 
     test:
-      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.01 -ts_max_steps 20 -ts_type rk -ts_rk_type 2a -ts_rk_multirate_type partitioned -ts_rk_dtratio 2 -simulation -f "yourfilename.bin"
-      requires: !complex !single
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate_type nonsplit
 
     test:
-      suffix: 1
-      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -simulation -f "yourfilename.bin" -limit mc -ts_dt 0.01 -ts_max_steps 20 -ts_type prk -ts_prk_type pm2 -ts_prk_multirate_type combined
+      suffix: 2
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate_type split
+      output_file: output/ex6_1.out
 
+    test:
+      suffix: 3
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type pm2 -ts_mprk_multirate_type nonsplit
+
+    test:
+      suffix: 4
+      args: -da_grid_x 60 -initial 7 -xmin -1 -xmax 1 -hratio 2 -limit mc -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type pm2 -ts_mprk_multirate_type split
+      output_file: output/ex6_3.out
 TEST*/
