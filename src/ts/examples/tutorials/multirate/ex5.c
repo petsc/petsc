@@ -345,19 +345,22 @@ int main(int argc,char *argv[])
 /*TEST
     build:
       requires: !complex c99
+      depends: finitevolume1d.c
 
     test:
       args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate_type nonsplit
 
     test:
-      suffix: 1
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate_type split
-
-    test:
       suffix: 2
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.0125 -ts_max_steps 24 -ts_type prk -ts_prk_type pm2 -ts_prk_multirate_type nonsplit
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type rk -ts_rk_type 2a -ts_rk_dtratio 2 -ts_rk_multirate_type split
+      output_file: output/ex5_1.out
 
     test:
       suffix: 3
-      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.0125 -ts_max_steps 24 -ts_type prk -ts_prk_type pm2 -ts_prk_multirate_type split
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type pm2 -ts_mprk_multirate_type nonsplit
+
+    test:
+      suffix: 4
+      args: -da_grid_x 60 -initial 1 -xmin -1 -xmax 1 -limit mc -physics_advect_a1 1 -physics_advect_a2 2 -ts_dt 0.025 -ts_max_steps 24 -ts_type mprk -ts_mprk_type pm2 -ts_mprk_multirate_type split
+      output_file: output/ex5_3.out
 TEST*/
