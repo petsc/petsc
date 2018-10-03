@@ -268,10 +268,6 @@ struct _p_TS {
   /* ---------------------- RHS splitting support ---------------------------------*/
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
-
- /* multirate support */
-  IS  iss;
-  IS  isf;
 };
 
 struct _TSAdaptOps {
@@ -312,9 +308,7 @@ struct _p_TSAdapt {
 typedef struct _p_DMTS *DMTS;
 typedef struct _DMTSOps *DMTSOps;
 struct _DMTSOps {
-  TSRHSFunction     rhsfunction;
-  TSRHSFunctionslow rhsfunctionslow;
-  TSRHSFunctionfast rhsfunctionfast;
+  TSRHSFunction rhsfunction;
   TSRHSJacobian rhsjacobian;
 
   TSIFunction ifunction;
@@ -338,8 +332,6 @@ struct _DMTSOps {
 struct _p_DMTS {
   PETSCHEADER(struct _DMTSOps);
   void *rhsfunctionctx;
-  void *rhsfunctionslowctx;
-  void *rhsfunctionfastctx;
   void *rhsjacobianctx;
 
   void *ifunctionctx;
