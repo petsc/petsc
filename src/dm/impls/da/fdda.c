@@ -52,7 +52,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
 static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse,PetscInt w,PetscInt **rfill)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nz,*fill;
+  PetscInt       nz;
 
   PetscFunctionBegin;
   if (!dfillsparse) PetscFunctionReturn(0);
@@ -61,15 +61,8 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   nz = (dfillsparse[w] - w - 1);
 
   /* Allocate space for our copy of the given sparse matrix representation. */
-  ierr = PetscMalloc1(nz + w + 1,&fill);CHKERRQ(ierr);
-
-  /* Copy the given sparse matrix representation. */
-  for(i = 0; i < (nz + w + 1); ++i)
-  {
-    fill[i] = dfillsparse[i];
-  }
-
-  *rfill = fill;
+  ierr = PetscMalloc1(nz + w + 1,rfill);CHKERRQ(ierr);
+  ierr = PetscMemcpy(*rfill,dfillsparse,(nz+w+1)*sizeof(PetscInt));
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +166,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
            array of length nz + dof + 1, where nz is the number of non-zeros in
            the matrix.  The first dof entries in the array give the
            starting array indices of each row's items in the rest of the array,
-           the dof+1st item indicates the total number of nonzeros,
+           the dof+1st item contains the value nz + dof + 1 (i.e. the entire length of the array)
            and the remaining nz items give the column indices of each of
            the 1s within the logical 2D matrix.  Each row's items within
            the array are the column indices of the 1s within that row
