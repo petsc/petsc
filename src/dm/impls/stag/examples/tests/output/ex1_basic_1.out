@@ -1,0 +1,32 @@
+DM Object: 8 MPI processes
+  type: stag
+Dimension: 1
+Global size: 37
+Boundary ghosting: NONE
+Elementwise ghost stencil: NONE, width 2
+Stratum dof: 0:1 1:1
+[0] Local elements : 5 (5 with ghosts)
+[0] Local native entries: 10
+[0] Local entries total : 10
+[1] Local elements : 5 (5 with ghosts)
+[1] Local native entries: 10
+[1] Local entries total : 10
+[2] Local elements : 5 (5 with ghosts)
+[2] Local native entries: 10
+[2] Local entries total : 10
+[3] Local elements : 5 (5 with ghosts)
+[3] Local native entries: 10
+[3] Local entries total : 10
+[4] Local elements : 5 (5 with ghosts)
+[4] Local native entries: 10
+[4] Local entries total : 10
+[5] Local elements : 4 (4 with ghosts)
+[5] Local native entries: 8
+[5] Local entries total : 8
+[6] Local elements : 4 (4 with ghosts)
+[6] Local native entries: 8
+[6] Local entries total : 8
+[7] Local elements : 4 (5 with ghosts)
+[7] Local native entries: 9
+[7] Local entries total : 10
+2 Norm of test vector: 17.3205

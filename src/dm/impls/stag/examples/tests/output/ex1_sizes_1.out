@@ -1,0 +1,17 @@
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 6
+Boundary ghosting: NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 1 (2 with ghosts)
+[0] Local native entries: 2
+[0] Local entries total : 4
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 8
+[2] Local elements : 3 (5 with ghosts)
+[2] Local native entries: 7
+[2] Local entries total : 10
+2 Norm of test vector: 7.2111

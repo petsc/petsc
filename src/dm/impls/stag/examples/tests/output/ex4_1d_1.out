@@ -1,0 +1,18 @@
+DM Object: 1 MPI processes
+  type: stag
+Dimension: 1
+Global size: 2
+Boundary ghosting: NONE
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:2 1:3
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 12
+[0] Local entries total : 15
+Vec Object: 1 MPI processes
+  type: mpi
+Process [0]
+1.
+1.5
+2.
+2.5
+3.
