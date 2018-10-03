@@ -9,25 +9,12 @@ static char help[] = "Basic problem for multi-rate method.\n";
 
 F*/
 
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
-
 #include <petscts.h>
 
 typedef struct {
   PetscReal Tf,dt;
 } AppCtx;
 
-/*
-     Defines the ODE passed to the ODE solver
-*/
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -35,7 +22,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])+0.05*(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-PetscSinScalar(t)/(2.0*u[0]);
@@ -52,7 +38,6 @@ static PetscErrorCode RHSFunctionslow(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])+0.05*(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-PetscSinScalar(t)/(2.0*u[0]);
@@ -68,7 +53,6 @@ static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = 0.05*(-1.0+u[0]*u[0]-PetscCosScalar(t))/(2.0*u[0])-(-2.0+u[1]*u[1]-PetscCosScalar(5.0*t))/(2.0*u[1])-5.0*PetscSinScalar(5.0*t)/(2.0*u[1]);
@@ -77,23 +61,18 @@ static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-/*
-   Define the analytic solution for check method easily
- */
-static PetscErrorCode sol_true(PetscReal t, Vec U)
+static PetscErrorCode sol_true(PetscReal t,Vec U)
 {
-  PetscErrorCode    ierr;
-  PetscScalar       *u;
+  PetscErrorCode ierr;
+  PetscScalar    *u;
 
   PetscFunctionBegin;
-  /* The next allow us to access the entries of the vector directly */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   u[0] = PetscSqrtScalar(1.0+PetscCosScalar(t));
   u[1] = PetscSqrtScalar(2.0+PetscCosScalar(5.0*t));
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {
@@ -127,6 +106,7 @@ int main(int argc,char **argv)
   indicesf[0]=1;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicess,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necesary vector
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -139,26 +119,22 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set initial condition
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr   = VecGetArray(U,&u);CHKERRQ(ierr);
-  u[0]   = PetscSqrtScalar(2.0);
-  u[1]   = PetscSqrtScalar(3.0);
-  ierr   = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  u[0] = PetscSqrtScalar(2.0);
+  u[1] = PetscSqrtScalar(3.0);
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  /*ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);*/
-  ierr = TSSetType(ts,TSPRK);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);
 
   ierr = TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetRHSFunctionslow(ts,NULL,(TSRHSFunctionslow)RHSFunctionslow,&ctx);CHKERRQ(ierr);
-  ierr = TSSetRHSFunctionfast(ts,NULL,(TSRHSFunctionfast)RHSFunctionfast,&ctx);CHKERRQ(ierr);
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    pass indices of fast and slow parts to ts
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetIS(ts,iss,isf);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"slow",iss);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"fast",isf);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunctionslow)RHSFunctionslow,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunctionfast)RHSFunctionfast,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -168,7 +144,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");CHKERRQ(ierr);
   {
     ctx.Tf = 0.3;
     ctx.dt = 0.01;
@@ -198,7 +174,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Print norm2 error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"error is = %g\n", error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"l2 error norm: %g\n", error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
@@ -213,4 +189,3 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-

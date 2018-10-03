@@ -9,25 +9,12 @@ static char help[] = "Basic problem for multi-rate method.\n";
 
 F*/
 
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
-
 #include <petscts.h>
 
 typedef struct {
   PetscReal a,b,Tf,dt;
 } AppCtx;
 
-/*
-     Defines the ODE passed to the ODE solver
-*/
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -35,21 +22,15 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /* The next three lines allow us to access the entries of the vectors directly*/
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-
   f[0] = u[0]/ctx->a;
   f[1] = u[0]*PetscCosScalar(t*ctx->b);
-
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 
-/*
-     Defines the slow part of ODE passed to the ODE solver
-*/
 static PetscErrorCode RHSFunctionslow(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -57,18 +38,14 @@ static PetscErrorCode RHSFunctionslow(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /* The next three lines allow us to access the entries of the vectors directly*/
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = u[0]/ctx->a;
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
- }
+}
 
-/*
-     Defines the fast part of ODE passed to the ODE solver
-*/
 static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -76,25 +53,23 @@ static PetscErrorCode RHSFunctionfast(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscScalar       *f;
 
   PetscFunctionBegin;
-  /* The next three lines allow us to access the entries of the vectors directly*/
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = u[0]*PetscCosScalar(t*ctx->b);
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
- }
+}
 
 /*
-   Define the analytic solution for check method easily
- */
+  Define the analytic solution for check method easily
+*/
 static PetscErrorCode sol_true(PetscReal t, Vec U,AppCtx *ctx)
 {
-  PetscErrorCode    ierr;
-  PetscScalar       *u;
+  PetscErrorCode ierr;
+  PetscScalar    *u;
 
   PetscFunctionBegin;
-  /* The next allow us to access the entries of the vector directly */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   u[0] = PetscExpScalar(t/ctx->a);
   u[1] = (ctx->a*PetscCosScalar(ctx->b*t)+ctx->a*ctx->a*ctx->b*PetscSinScalar(ctx->b*t))*PetscExpScalar(t/ctx->a)/(1+ctx->a*ctx->a*ctx->b*ctx->b);
@@ -104,8 +79,8 @@ static PetscErrorCode sol_true(PetscReal t, Vec U,AppCtx *ctx)
 
 int main(int argc,char **argv)
 {
-  TS             ts;            /* ODE integrator */
-  Vec            U;             /* solution will be stored here */
+  TS             ts; /* ODE integrator */
+  Vec            U;  /* solution will be stored here */
   Vec            Utrue;
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -129,9 +104,9 @@ int main(int argc,char **argv)
     Create index for slow part and fast part
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscMalloc1(1,&indicess);CHKERRQ(ierr);
-  indicess[0]=0;
+  indicess[0] = 0;
   ierr = PetscMalloc1(1,&indicesf);CHKERRQ(ierr);
-  indicesf[0]=1;
+  indicesf[0] = 1;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicess,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,1,indicesf,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
 
@@ -143,41 +118,42 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&Utrue);CHKERRQ(ierr);
   ierr = VecCopy(U,Utrue);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ODE options","");CHKERRQ(ierr);
   {
     ctx.a  = 2.0;
     ctx.b  = 25.0;
-    ierr   = PetscOptionsScalar("-a","","",ctx.a,&ctx.a,NULL);CHKERRQ(ierr);
-    ierr   = PetscOptionsScalar("-b","","",ctx.b,&ctx.b,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsReal("-a","","",ctx.a,&ctx.a,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsReal("-b","","",ctx.b,&ctx.b,NULL);CHKERRQ(ierr);
     ctx.Tf = 2;
     ctx.dt = 0.01;
-    ierr   = PetscOptionsScalar("-Tf","","",ctx.Tf,&ctx.Tf,NULL);CHKERRQ(ierr);
-    ierr   = PetscOptionsScalar("-dt","","",ctx.dt,&ctx.dt,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsReal("-Tf","","",ctx.Tf,&ctx.Tf,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsReal("-dt","","",ctx.dt,&ctx.dt,NULL);CHKERRQ(ierr);
   }
  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize the solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr   = VecGetArray(U,&u);CHKERRQ(ierr);
-  u[0]   = 1.0;
-  u[1]   = ctx.a/(1+ctx.a*ctx.a*ctx.b*ctx.b);
-  ierr   = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  u[0] = 1.0;
+  u[1] = ctx.a/(1+ctx.a*ctx.a*ctx.b*ctx.b);
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_LINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
-  /*ierr = TSSetType(ts,TSPRK);CHKERRQ(ierr);*/
+  ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);
 
   ierr = TSSetRHSFunction(ts,NULL,(TSRHSFunction)RHSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetRHSFunctionslow(ts,NULL,(TSRHSFunctionslow)RHSFunctionslow,&ctx);CHKERRQ(ierr);
-  ierr = TSSetRHSFunctionfast(ts,NULL,(TSRHSFunctionfast)RHSFunctionfast,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"slow",iss);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"fast",isf);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,(TSRHSFunction)RHSFunctionslow,&ctx);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,(TSRHSFunction)RHSFunctionfast,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     pass indices of fast and slow parts to ts
@@ -214,7 +190,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Print norm2 error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"error is = %g\n", error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"l2 error norm = %g\n", error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
