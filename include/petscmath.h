@@ -700,7 +700,11 @@ typedef PetscReal MatReal;
 struct petsc_mpiu_2scalar {PetscScalar a,b;};
 PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
 
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+#if !defined(MPI_2INT)
+struct petsc_mpiu_2mpiint {PetscMPIInt a,b;};
+PETSC_EXTERN MPI_Datatype MPI_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2mpiint);
+#endif
+#if defined(PETSC_USE_64BIT_INDICES)
 struct petsc_mpiu_2int {PetscInt a,b;};
 PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2int);
 #else
