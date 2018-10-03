@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'v2.1.0'
-    self.download         = ['git://https://github.com/pghysels/STRUMPACK','http://portal.nersc.gov/project/sparse/strumpack/strumpack-2.1.0.tar.gz']
+    self.gitcommit        = 'v3.0.1'
+    self.download         = ['git://https://github.com/pghysels/STRUMPACK','https://github.com/pghysels/STRUMPACK/archive/v3.0.1.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack.a']]
@@ -25,7 +25,8 @@ class Configure(config.package.CMakePackage):
     self.ptscotch       = framework.require('config.packages.PTScotch',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.deps           = [self.mpi,self.blasLapack,self.scalapack,self.parmetis,self.metis,self.ptscotch]
+    self.deps           = [self.mpi,self.blasLapack,self.scalapack,self.metis]
+    self.odeps          = [self.parmetis,self.ptscotch]
     return
 
   def formCMakeConfigureArgs(self):
@@ -40,11 +41,19 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_LIBRARIES="'+self.libraries.toString(self.metis.lib)+'"')
     args.append('-DMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.metis.include)[2:]+'"')
 
-    args.append('-DPARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')
-    args.append('-DPARMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.parmetis.include)[2:]+'"')
+    if self.parmetis.found:
+      args.append('-DSTRUMPACK_USE_PARMETIS=ON')
+      args.append('-DPARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.lib)+'"')
+      args.append('-DPARMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.parmetis.include)[2:]+'"')
+    else:
+      args.append('-DSTRUMPACK_USE_PARMETIS=OFF')
 
-    args.append('-DSCOTCH_LIBRARIES="'+self.libraries.toString(self.ptscotch.lib)+'"')
-    args.append('-DSCOTCH_INCLUDES="'+self.headers.toStringNoDupes(self.ptscotch.include)[2:]+'"')
+    if self.ptscotch.found:
+      args.append('-DSTRUMPACK_USE_SCOTCH=ON')
+      args.append('-DSCOTCH_LIBRARIES="'+self.libraries.toString(self.ptscotch.lib)+'"')
+      args.append('-DSCOTCH_INCLUDES="'+self.headers.toStringNoDupes(self.ptscotch.include)[2:]+'"')
+    else:
+      args.append('-DSTRUMPACK_USE_SCOTCH=OFF')
 
     if self.compilerFlags.debugging:
       args.append('-DCMAKE_BUILD_TYPE=Debug')
