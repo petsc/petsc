@@ -2801,7 +2801,7 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     if (!quiet) {
       ierr = PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,oldname);CHKERRQ(ierr);
-      ierr = PetscStrcat(msg," is deprecated as of version ");
+      ierr = PetscStrcat(msg," is deprecated as of version ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,version);CHKERRQ(ierr);
       ierr = PetscStrcat(msg," and will be removed in a future release.");CHKERRQ(ierr);
       if (newname) {
