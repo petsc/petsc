@@ -93,8 +93,8 @@ int main(int argc,char **argv)
   ierr = InitializeData(&user);CHKERRQ(ierr);
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetResidualJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -120,17 +120,18 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
-  PetscReal      *y=user->y,*x,*f,*t=user->t;
+  const PetscReal *x;
+  PetscReal      *y=user->y,*f,*t=user->t;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   for (i=0;i<NOBSERVATIONS;i++) {
     f[i] = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscLogFlops(6*NOBSERVATIONS);
   PetscFunctionReturn(0);
@@ -142,12 +143,13 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
-  PetscReal      *x,*t=user->t;
+  const PetscReal *x;
+  PetscReal      *t=user->t;
   PetscReal      base;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   for (i=0;i<NOBSERVATIONS;i++) {
     base = PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 
@@ -161,7 +163,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscLogFlops(NOBSERVATIONS * 13);
   PetscFunctionReturn(0);
 }
@@ -413,6 +415,11 @@ PetscErrorCode InitializeData(AppCtx *user)
 
    test:
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
+      requires: !single
+      
+   test:
+      suffix: 2
+      args: -tao_smonitor -tao_max_it 100 -tao_type brgn -tao_gatol 1.e-5
       requires: !single
 
 TEST*/

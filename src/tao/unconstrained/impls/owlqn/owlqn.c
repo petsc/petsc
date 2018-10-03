@@ -97,6 +97,11 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     /* Compute direction */
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);

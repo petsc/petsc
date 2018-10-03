@@ -142,6 +142,10 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   }
   /* Initial gradient descent step. Scaling by 1.0 also does a decent job for some problems. */
   while(1) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     ierr = TaoBNCGConductIteration(tao, gnorm);CHKERRQ(ierr);
     if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
   }

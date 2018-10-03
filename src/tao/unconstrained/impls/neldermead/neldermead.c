@@ -173,6 +173,11 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   ierr = VecScale(Xbar,nm->oneOverN);CHKERRQ(ierr);
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     shrink = 0;
     ierr = VecCopy(nm->simplex[nm->indices[0]],tao->solution);CHKERRQ(ierr);
     ierr = TaoLogConvergenceHistory(tao, nm->f_values[nm->indices[0]], nm->f_values[nm->indices[nm->N]]-nm->f_values[nm->indices[0]], 0.0, tao->ksp_its);CHKERRQ(ierr);

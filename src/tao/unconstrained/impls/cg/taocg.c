@@ -54,6 +54,11 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
   cgP->nresetsteps = 0;
 
   while (1) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     /*  Save the current gradient information */
     f_old = f;
     gnorm2_old = gnorm2;

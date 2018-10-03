@@ -247,6 +247,10 @@ if (is_bfgs) {
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     ++tao->niter;
     tao->ksp_its=0;
     /* Compute the Hessian */
