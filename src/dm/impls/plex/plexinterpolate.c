@@ -720,16 +720,11 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Referred leaves\n");CHKERRQ(ierr);}
   for (p = 0; p < nroots; ++p) {
     if (leaves[p][0] < 0) continue;
-    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: %D %D\n", rank, p, leaves[p][0], leaves[p][1]);CHKERRQ(ierr);}
-
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    if (coneSize > 1) {
-      ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
-      ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
-      if (ind0 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 0, cone[0]);
-      if (ind1 < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains %D but is missing cone point %D = %D", p, 1, cone[1]);
-      if ((leaves[p][0]  != remotes[ind0].index) || (leaves[p][1] != remotes[ind1].index)) {
+    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: cone=[%D %D] leaves=[%D %D] roots=[%D %D] leavesRanks=[%D %D] rootsRanks=[%D %D]\n", rank, p, cone[0], cone[1], leaves[p][0], leaves[p][1], roots[p][0], roots[p][1], leavesRanks[p][0], leavesRanks[p][1], rootsRanks[p][0], rootsRanks[p][1]);CHKERRQ(ierr);}
+    {
+      if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][0] != rootsRanks[p][0])) {
         const PetscInt *newcone;
 
         /* TODO Generalize this to correct an arbitrary orientation */
