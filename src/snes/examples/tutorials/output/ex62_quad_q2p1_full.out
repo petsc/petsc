@@ -77,7 +77,7 @@ SNES Object: 1 MPI processes
               A11
                 Mat Object: (fieldsplit_pressure_) 1 MPI processes
                   type: seqaij
-                  rows=27, cols=27, bs=3
+                  rows=27, cols=27
                   total: nonzeros=81, allocated nonzeros=81
                   total number of mallocs used during MatSetValues calls =0
                     has attached null space
@@ -85,7 +85,7 @@ SNES Object: 1 MPI processes
               A10
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=27, cols=50, rbs=3, cbs = 1
+                  rows=27, cols=50
                   total: nonzeros=294, allocated nonzeros=294
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 9 nodes, limit used is 5
@@ -128,7 +128,7 @@ SNES Object: 1 MPI processes
                     using I-node routines: found 25 nodes, limit used is 5
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: seqaij
-            rows=27, cols=27, bs=3
+            rows=27, cols=27
             total: nonzeros=81, allocated nonzeros=81
             total number of mallocs used during MatSetValues calls =0
               has attached null space
@@ -141,4 +141,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 25 nodes, limit used is 5
-L_2 Error: 3.53929e-13 [2.35716e-14, 3.53143e-13]
+L_2 Error: 7.00037e-13 [4.65308e-14, 6.98488e-13]
