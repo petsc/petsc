@@ -201,6 +201,12 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetUseAmat(self.pc, cflag) )
 
+    def setReusePreconditioner(self, flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag:
+            cflag = PETSC_TRUE
+        CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
+
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )
 
@@ -449,6 +455,17 @@ cdef class PC(Object):
             CHKERR( PetscFree(p) )
         return subksp
 
+    def getFieldSplitSchurGetSubKSP(self):
+        cdef PetscInt i = 0, n = 0
+        cdef PetscKSP *p = NULL
+        cdef object subksp = None
+        try:
+            CHKERR( PCFieldSplitSchurGetSubKSP(self.pc, &n, &p) )
+            subksp = [ref_KSP(p[i]) for i from 0 <= i <n]
+        finally:
+            CHKERR( PetscFree(p) )
+        return subksp
+
     def setFieldSplitSchurFactType(self, ctype):
         cdef PetscPCFieldSplitSchurFactType cval = ctype
         CHKERR( PCFieldSplitSetSchurFactType(self.pc, cval) )
@@ -458,12 +475,6 @@ cdef class PC(Object):
         cdef PetscMat pmat = NULL
         if pre is not None: pmat = pre.mat
         CHKERR( PCFieldSplitSetSchurPre(self.pc, pval, pmat) )
-
-    def setReusePreconditioner(self, flag):
-        cdef PetscBool cflag = PETSC_FALSE
-        if flag:
-            cflag = PETSC_TRUE
-        CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
 
     # --- COMPOSITE ---
 

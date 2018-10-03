@@ -195,6 +195,7 @@ cdef extern from * nogil:
     int PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*,PetscInt*)
     int PCFieldSplitSetIS(PetscPC,char[],PetscIS)
     int PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
+    int PCFieldSplitSchurGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
     int PCFieldSplitSetSchurPre(PetscPC,PetscPCFieldSplitSchurPreType,PetscMat)
     int PCFieldSplitSetSchurFactType(PetscPC,PetscPCFieldSplitSchurFactType)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)

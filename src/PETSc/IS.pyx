@@ -233,6 +233,13 @@ cdef class IS(Object):
         CHKERR( ISEmbed(self.iset, iset.iset, bval, &out.iset) )
         return out
 
+    def renumber(self, IS mult=None):
+        cdef PetscIS mlt = NULL
+        if mult is not None: mlt = mult.iset
+        cdef IS out = IS()
+        cdef PetscInt n = 0
+        CHKERR( ISRenumber(self.iset, mlt, &n, &out.iset) )
+        return (toInt(n), out)
     #
 
     def setIndices(self, indices):
