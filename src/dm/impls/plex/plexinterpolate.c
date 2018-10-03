@@ -728,6 +728,9 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
         /* TODO Generalize this to correct an arbitrary orientation */
         ierr = DMPlexReverseCell(dm, p);CHKERRQ(ierr);
         if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  reversed point %D\n", rank, p);CHKERRQ(ierr);}
+      }
+#if defined(PETSC_USE_DEBUG)
+      {
         ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
         ierr = PetscFindInt(cone[0], nleaves, locals, &ind0);CHKERRQ(ierr);
         ierr = PetscFindInt(cone[1], nleaves, locals, &ind1);CHKERRQ(ierr);
@@ -738,6 +741,7 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
         if (leaves[p][1] != remotes[ind1].index)
           SETERRQ9(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D Cone[%D] %D --> (%D, %D) != %D Cone[%D] SF Point (%D, %D)", p, 1, cone[1], remotes[ind1].rank, remotes[ind1].index, leaves[p][1], 1, remotes[p].rank, remotes[p].index);
       }
+#endif
     }
   }
   if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
