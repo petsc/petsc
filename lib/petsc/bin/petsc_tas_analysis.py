@@ -16,8 +16,8 @@ def main(cmdLineArgs):
     if cmdLineArgs.enable_graphs == 1:
         graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
-class Stats(object):
-    name     = ""
+class Stage(object):
+    level    = ""
     mean     = 0
     var      = 0
     stdDev   = 0
@@ -86,48 +86,103 @@ def dataProces(cmdLineArgs):
     data = {}
     print(cmdLineArgs)
     for module in cmdLineArgs.file:
-        module    = importlib.import_module(module)
-        Nf        = 1
-        nProcs    = module.size
-        dofs      = []
-        times     = []
-        flops     = []
-        errors    = []
-        #meanFlops = []
-        #meanTimes = []
+        module             = importlib.import_module(module)
+        Nf                 = getNf(module.Stages["ConvEst Refinement Level 1"]["ConvEst Error"][0]["error"])
+        nProcs             = module.size
+        dofs               = []
+        errors             = []
+
+        times              = []
+        timesMin           = []
+        meanTime           = []
+        timeGrowthRate     = []
+
+        flops              = []
+        flopsMax           = []
+        flopsMin           = []
+        meanFlop           = []
+        flopGrowthRate     = []
+
+        luFactor           = []
+        luFactorMin        = []
+        luFactorMean       = []
+        luFactorGrowthRate = []
 
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
+
+        #level set to 1 due to problems with coarse grid effecting measurements
         level  = 1
         while level >= 1:
             stageName = "ConvEst Refinement Level "+str(level)
             if stageName in module.Stages:
-                timeTemp  = module.Stages[stageName]["SNESSolve"][0]["time"]
-                totalTime = module.Stages[stageName]["SNESSolve"][0]["time"]
+                timeTempMax  = module.Stages[stageName]["SNESSolve"][0]["time"]
+                timeTempMin  = module.Stages[stageName]["SNESSolve"][0]["time"]
+                totalTime    = module.Stages[stageName]["SNESSolve"][0]["time"]
 
-                flopTemp  = module.Stages[stageName]["SNESSolve"][0]["flop"]
-                totalFlop = module.Stages[stageName]["SNESSolve"][0]["flop"]
+
+                flopsTempMax  = module.Stages[stageName]["SNESSolve"][0]["flop"]
+                flopsTempMin  = module.Stages[stageName]["SNESSolve"][0]["flop"]
+                totalFlop    = module.Stages[stageName]["SNESSolve"][0]["flop"]
+
+                luFactorTempMax = module.Stages[stageName]["MatLUFactorNum"][0]["time"] + \
+                    module.Stages[stageName]["MatLUFactorSym"][0]["time"]
+                luFactorTempMin = luFactorTempMax
+                totalLuFactor   = luFactorTempMax
+
                 print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
                 print("************Level {}************".format(level))
+
                 #This loops is used to grab the greatest time and flop when run in parallel
                 for n in range(1, nProcs):
-                    timeTemp = timeTemp if timeTemp >= module.Stages[stageName]["SNESSolve"][n]["time"] \
+                    #Sum of MatLUFactorNum and MatLUFactorSym
+                    luFactorCur = module.Stages[stageName]["MatLUFactorNum"][n]["time"] + \
+                        module.Stages[stageName]["MatLUFactorSym"][n]["time"]
+
+                    #Gather Time information
+                    timeTempMax = timeTempMax if timeTempMax >= module.Stages[stageName]["SNESSolve"][n]["time"] \
                             else module.Stages[stageName]["SNESSolve"][n]["time"]
-                    flopTemp = flopTemp if flopTemp >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
-                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
-                    totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
-                    print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
+                    timeTempMin = timeTempMin if timeTempMin <= module.Stages[stageName]["SNESSolve"][n]["time"] \
+                            else module.Stages[stageName]["SNESSolve"][n]["time"]
                     totalTime = totalTime + module.Stages[stageName]["SNESSolve"][n]["time"]
 
-                #The informaiton from level 0 is discarded.
-                meanTime = totalTime/nProcs
-                times.append(timeTemp)
-                #print("***test****")
-                #print module.Stages[stageName]["SNESSolve"].keys()
-                #The informaiton from level 0 is discarded.
-                meanFlop = totalFlop/nProcs
+                    #Gather Flop information
+                    flopsTempMax = flopsTempMax if flopsTempMax >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
+                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
+                    flopsTempMin = flopsTempMin if flopsTempMin <= module.Stages[stageName]["SNESSolve"][n]["flop"] \
+                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
+                    totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
+
+                    #Gather LU factor infomation
+                    luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
+                            else luFactorCur
+                    luFactorTempMin = luFactorTempMin if luFactorTempMin <= luFactorCur \
+                            else luFactorCur
+                    totalLuFactor = totalLuFactor + luFactorCur
+
+                    print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
+
+
+
+                #The informaiton from level 0 is NOT included.
+                meanTime.append(totalTime/nProcs)
+                times.append(timeTempMax)
+                timesMin.append(timeTempMin)
+
+                meanFlop.append(totalFlop/nProcs)
                 flops.append(totalFlop)
-                #statCalc(module.Stages[stageName]["SNESSolve"], meanTime, meanFlop)
+                flopsMax.append(flopsTempMax)
+                flopsMin.append(timeTempMin)
+
+                luFactor.append(luFactorTempMax)
+                luFactorMin.append(luFactorTempMin)
+                luFactorMean.append(totalLuFactor/nProcs)
+
+                #Calculats the growth rate of statistics between levels
+                if level > 1:
+                    timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
+                    flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
+                    luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
 
                 for f in range(Nf):
                     dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
@@ -138,28 +193,51 @@ def dataProces(cmdLineArgs):
                 level = -1
 
         dofs   = np.array(dofs)
-        times  = np.array(times)
-        flops  = np.array(flops)
         errors = np.array(errors)
 
-        data[module.__name__]           = {}
-        data[module.__name__]["dofs"]   = dofs
-        data[module.__name__]["times"]  = times
-        data[module.__name__]["flops"]  = flops
-        data[module.__name__]["errors"] = errors
+        times              = np.array(times)
+        meanTime           = np.array(meanTime)
+        timesMin           = np.array(timesMin)
+        timeGrowthRate     = np.array(timeGrowthRate)
 
-        #if cmdLineArgs.view_variance == 1:
-            #meanFlops = np.array(meanFlops)
-            #meanTimes = np.array(meanTimes)
-            #data[module.__name__]["Mean Flops"]  = meanFlops
-            #data[module.__name__]["Mean Times"]  = meanTimes
-            #data[module.__name__]["Var Flops"]  = varCalc(flops, meanFlops)
-            #data[module.__name__]["Var Times"]  = varCalc(times, meanTimes)
+        flops              = np.array(flops)
+        meanFlop           = np.array(meanFlop)
+        flopsMax           = np.array(flopsMax)
+        flopsMin           = np.array(flopsMin)
+        flopGrowthRate     = np.array(flopGrowthRate)
 
-    print('**************data*******************')
+        luFactor           = np.array(luFactor)
+        luFactorMin        = np.array(luFactorMin)
+        luFactorMean       = np.array(luFactorMean)
+        luFactorGrowthRate = np.array(luFactorGrowthRate)
+
+
+        data[module.__name__]                       = {}
+        data[module.__name__]["dofs"]               = dofs
+        data[module.__name__]["errors"]             = errors
+
+        data[module.__name__]["times"]              = times
+        data[module.__name__]["meanTime"]           = meanTime
+        data[module.__name__]["timesRange"]         = times-timesMin
+        data[module.__name__]["timeGrowthRate"]     = timeGrowthRate
+
+        data[module.__name__]["flops"]              = flops
+        data[module.__name__]["meanFlop"]           = meanFlop
+        data[module.__name__]["flopRange"]          = flopsMax - flopsMin
+        data[module.__name__]["flopGrowthRate"]     = flopGrowthRate
+
+        data[module.__name__]["luFactor"]           = luFactor
+        data[module.__name__]["luFactorMean"]       = luFactorMean
+        data[module.__name__]["luFactorRange"]      = luFactor-luFactorMin
+        data[module.__name__]["luFactorGrowthRate"] = luFactorGrowthRate
+
+
+
+    print('\t\t\t***************************data*********************************')
     print module.__name__
+    np.set_printoptions(precision=3, linewidth=100)
     for k,v in data.get(module.__name__).items():
-        print(" {: >10} : {}".format(k,v))
+        print(" {: >18} : {}\n".format(k,v))
 
     return data
 
@@ -179,8 +257,10 @@ def getNf(errorList):
     i = 0
     Nf = 1
     while errorList[i] != -1:
-        Nf = Nf + 1
+         Nf = Nf + 1
+         i += 1
     return Nf
+
 
 def graphGen(data, graph_flops_scaling, dim):
     """
