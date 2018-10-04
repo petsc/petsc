@@ -450,9 +450,9 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
 
     ierr = VecAXPY(s2,-1.0,s1);CHKERRQ(ierr); /* s2 = - s1 + s2 */
     ierr = VecNorm(s2,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    if (norm > 10*normA*PETSC_MACHINE_EPSILON) {
+    if (norm/normA > 100.*PETSC_MACHINE_EPSILON) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(A,"Error: %D-th || A*(a x + y) - (a*A*x + A*y)|| = %g\n",k,(double)norm);CHKERRQ(ierr);
+      ierr = PetscInfo3(A,"Error: %D-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n",k,(double)norm/normA,100.*PETSC_MACHINE_EPSILON);CHKERRQ(ierr);
       break;
     }
   }
