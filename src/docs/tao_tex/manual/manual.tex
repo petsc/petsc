@@ -104,7 +104,12 @@
 \special{pdf: out 0 << /Title (Bibliography) /Dest [ @thispage /FitH @ypos ] >>}
 \bibliographystyle{plain}
 \bibliography{../tao,mathprog}
-%\includepdf[pages={4}]{ANL-MCS-TM-322.pdf}
+
+\pagestyle{empty}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{ArgonneReportTemplateLastPage.pdf}}
+\caption{}
+\end{figure*}
 
 \end{document}
 
