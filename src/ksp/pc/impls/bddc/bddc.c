@@ -1320,17 +1320,20 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
-  PetscBool      save_rhs = PETSC_TRUE, benign_correction_computed;
+  PetscBool      iscg = PETSC_FALSE, save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
   /* if we are working with CG, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg, isgroppcg, ispipecg, ispipecgrr;
+    PetscBool isgroppcg, ispipecg, ispipelcg, ispipecgrr;
+
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !isgroppcg && !ispipecg && !ispipecgrr)) {
+    iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1425,7 +1428,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* compute initial vector in benign space if needed
      and remove non-benign solution from the rhs */
   benign_correction_computed = PETSC_FALSE;
-  if (rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
+  if (iscg && rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
     /* compute u^*_h using ideas similar to those in Xuemin Tu's PhD thesis (see Section 4.8.1)
        Recursively apply BDDC in the multilevel case */
     if (!pcbddc->benign_vec) {
@@ -1452,6 +1455,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->rhs_change = PETSC_TRUE;
     }
     pcbddc->benign_apply_coarse_only = PETSC_FALSE;
+  } else {
+    ierr = VecDestroy(&pcbddc->benign_vec);CHKERRQ(ierr);
   }
 
   /* dbg output */
