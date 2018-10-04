@@ -712,6 +712,31 @@ PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt masterConeSize, cons
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmine1[], PetscInt *rremote1[])
+{
+  PetscInt            nleaves;
+  PetscInt            nranks;
+  const PetscMPIInt   *ranks;
+  const PetscInt      *roffset, *rmine, *rremote;
+  PetscInt            n, o, r;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
+  nleaves = roffset[nranks];
+  ierr = PetscMalloc2(nleaves, rmine1, nleaves, rremote1);CHKERRQ(ierr);
+  for (r=0; r<nranks; r++) {
+    /* simultaneously sort rank-wise portions of rmine & rremote by values in rremote
+       - to unify order with the other side */
+    o = roffset[r];
+    n = roffset[r+1] - o;
+    ierr = PetscMemcpy(&(*rmine1)[o], &rmine[o], n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&(*rremote1)[o], &rremote[o], n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSortIntWithArray(n, &(*rremote1)[o], &(*rmine1)[o]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
 {
   PetscInt          (*roots)[2], (*leaves)[2];
@@ -719,6 +744,10 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   const PetscInt    *locals;
   const PetscSFNode *remotes;
   PetscInt           nroots, nleaves, p, c;
+  PetscInt           nranks, n, o, r;
+  const PetscMPIInt *ranks;
+  const PetscInt    *roffset;
+  PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */
   const PetscInt    *cone;
   PetscInt           coneSize, ind0, ind1;
   MPI_Comm           comm;
@@ -729,6 +758,9 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
   if (nroots < 0) PetscFunctionReturn(0);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
+  ierr = SortRmineRremoteByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
   ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -779,9 +811,25 @@ static PetscErrorCode DMPlexOrientPointSF_Internal(DM dm, PetscSF sf)
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: cone=[%D %D] leaves=[%D %D] roots=[%D %D] leavesRanks=[%D %D] rootsRanks=[%D %D]\n", rank, p, cone[0], cone[1], leaves[p][0], leaves[p][1], roots[p][0], roots[p][1], leavesRanks[p][0], leavesRanks[p][1], rootsRanks[p][0], rootsRanks[p][1]);CHKERRQ(ierr);}
     if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][0] != rootsRanks[p][0])) {
-      /* TODO Generalize this to correct an arbitrary orientation */
-      ierr = DMPlexReverseCell(dm, p);CHKERRQ(ierr);
-      if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  reversed point %D\n", rank, p);CHKERRQ(ierr);}
+      PetscInt masterCone[2];
+      /* Translate these two cone points back to leave numbering */
+      for (c = 0; c < 2; c++) {
+        if (leavesRanks[p][c] == rank) continue;
+        /* Find index of rank leavesRanks[p][c] among remote ranks */
+        /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
+        ierr = PetscFindMPIInt((PetscMPIInt)leavesRanks[p][c], nranks, ranks, &r);CHKERRQ(ierr);
+        if (PetscUnlikely(r < 0)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "this should never happen - rank %D not found among remote ranks",leavesRanks[p][c]);
+        /* Find point leaves[p][c] among remote points aimed at rank leavesRanks[p][c] */
+        o = roffset[r];
+        n = roffset[r+1] - o;
+        ierr = PetscFindInt(leaves[p][c], n, &rremote1[o], &ind0);CHKERRQ(ierr);
+        if (PetscUnlikely(ind0 < 0)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no cone point of %D is connected to (%D, %D) - it seems there is missing connection in point SF",p,ranks[r],leaves[p][c]);
+        /* Get the corresponding local point */
+        masterCone[c] = rmine1[o+ind0];CHKERRQ(ierr);
+      }
+      if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %D: masterCone=[%D %D]\n", rank, p, masterCone[0], masterCone[1]);CHKERRQ(ierr);}
+      /* Vaclav's note: Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
+      ierr = DMPlexOrientCell(dm, p, 2, masterCone);CHKERRQ(ierr);
     }
 #if defined(PETSC_USE_DEBUG)
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
