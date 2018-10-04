@@ -61,9 +61,9 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=Release')
 
     if self.openmp.found:
-      args.append('-DUSE_OPENMP=ON')
+      args.append('-DSTRUMPACK_USE_OPENMP=ON')
     else:
-      args.append('-DUSE_OPENMP=OFF')
+      args.append('-DSTRUMPACK_USE_OPENMP=OFF')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="' + self.framework.getCompiler() + '"')
