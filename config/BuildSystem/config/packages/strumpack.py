@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'v3.0.2'
-    self.download         = ['git://https://github.com/pghysels/STRUMPACK','https://github.com/pghysels/STRUMPACK/archive/v3.0.2.tar.gz']
+    self.gitcommit        = 'v3.0.3'
+    self.download         = ['git://https://github.com/pghysels/STRUMPACK','https://github.com/pghysels/STRUMPACK/archive/v3.0.3.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack.a']]
@@ -26,7 +26,7 @@ class Configure(config.package.CMakePackage):
     self.mpi            = framework.require('config.packages.MPI',self)
     self.openmp         = framework.require('config.packages.openmp',self)
     self.deps           = [self.mpi,self.blasLapack,self.scalapack,self.metis]
-    self.odeps          = [self.parmetis,self.ptscotch]
+    self.odeps          = [self.parmetis,self.ptscotch,self.openmp]
     return
 
   def formCMakeConfigureArgs(self):
