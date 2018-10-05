@@ -194,6 +194,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &myrank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &commsize);CHKERRQ(ierr);
@@ -202,6 +203,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   if (!sf) PetscFunctionReturn(0);
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote);CHKERRQ(ierr);
   if (nroots < 0) PetscFunctionReturn(0);
+  if (!dm->coordinates && !dm->coordinatesLocal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
 
