@@ -10,27 +10,45 @@ import argparse
 import math
 
 
+class File(object):
+    #Class constructor
+    def __init__(self, fileName):
+        self.fileName     = fileName
+        self.numberFields = 0
+        self.fieldList    = []
+        self.fileData     = {}
+
+    #Adds a field to the field list and increases the number by 1
+    def addField(self, field):
+        self.fieldList.append(field)
+        self.numberFields = self.numberFields +1
+
+    #Prints the content of the object\
+    def printFile(self):
+        print('\t\t*******************Data for {}***************************'.format(self.fileName))
+        np.set_printoptions(precision=3, linewidth=100)
+        for k,v in self.fileData.items():
+            print(" {: >18} : {}\n".format(k,v))
+        for field in self.fieldList:
+            field.printField()
+
+
+class Field(File):
+    #Class constructor
+    def __init__(self, fileName, fieldName):
+        File.fileName = fileName
+        self.fieldName = fieldName
+        self.fieldData = {}
+    def printField(self):
+        print('**********Data for Field {}************'.format(self.fieldName))
+        for k, v in self.fieldData.items():
+            print(" {: >18} : {}\n".format(k,v))
+
 def main(cmdLineArgs):
-    data = dataProces(cmdLineArgs)
+    file = dataProces(cmdLineArgs)
 
     if cmdLineArgs.enable_graphs == 1:
-        graphGen(data, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
-
-class Stage(object):
-    level    = ""
-    mean     = 0
-    var      = 0
-    stdDev   = 0
-    stdError = 0
-
-    #Class constructor
-    def __init__(self, name, mean, var, stdDev, stdError):
-        self.name     = name
-        self.mean     = mean
-        self.var      = var
-        self.stdDev   = stdDev
-        self.stdError = stdError
-
+        graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
 def statCalc(data, meanTime, meanFlop):
     """"
@@ -108,6 +126,11 @@ def dataProces(cmdLineArgs):
         luFactorMean       = []
         luFactorGrowthRate = []
 
+        file               = File(module.__name__)
+
+        for f in range(Nf):
+            file.addField(Field(file.fileName, str(f)))
+
         for f in range(Nf): errors.append([])
         for f in range(Nf): dofs.append([])
 
@@ -130,8 +153,8 @@ def dataProces(cmdLineArgs):
                 luFactorTempMin = luFactorTempMax
                 totalLuFactor   = luFactorTempMax
 
-                print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
-                print("************Level {}************".format(level))
+                # print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
+                # print("************Level {}************".format(level))
 
                 #This loops is used to grab the greatest time and flop when run in parallel
                 for n in range(1, nProcs):
@@ -160,7 +183,7 @@ def dataProces(cmdLineArgs):
                             else luFactorCur
                     totalLuFactor = totalLuFactor + luFactorCur
 
-                    print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
+                    #print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
 
 
 
@@ -212,34 +235,57 @@ def dataProces(cmdLineArgs):
         luFactorGrowthRate = np.array(luFactorGrowthRate)
 
 
-        data[module.__name__]                       = {}
-        data[module.__name__]["dofs"]               = dofs
-        data[module.__name__]["errors"]             = errors
+        # data[module.__name__]                       = {}
+        # data[module.__name__]["dofs"]               = dofs
+        # data[module.__name__]["errors"]             = errors
+        #
+        # data[module.__name__]["times"]              = times
+        # data[module.__name__]["meanTime"]           = meanTime
+        # data[module.__name__]["timesRange"]         = times-timesMin
+        # data[module.__name__]["timeGrowthRate"]     = timeGrowthRate
+        #
+        # data[module.__name__]["flops"]              = flops
+        # data[module.__name__]["meanFlop"]           = meanFlop
+        # data[module.__name__]["flopRange"]          = flopsMax - flopsMin
+        # data[module.__name__]["flopGrowthRate"]     = flopGrowthRate
+        #
+        # data[module.__name__]["luFactor"]           = luFactor
+        # data[module.__name__]["luFactorMean"]       = luFactorMean
+        # data[module.__name__]["luFactorRange"]      = luFactor-luFactorMin
+        # data[module.__name__]["luFactorGrowthRate"] = luFactorGrowthRate
 
-        data[module.__name__]["times"]              = times
-        data[module.__name__]["meanTime"]           = meanTime
-        data[module.__name__]["timesRange"]         = times-timesMin
-        data[module.__name__]["timeGrowthRate"]     = timeGrowthRate
+        # data["dofs"]               = dofs
+        # data["errors"]             = errors
 
-        data[module.__name__]["flops"]              = flops
-        data[module.__name__]["meanFlop"]           = meanFlop
-        data[module.__name__]["flopRange"]          = flopsMax - flopsMin
-        data[module.__name__]["flopGrowthRate"]     = flopGrowthRate
+        data["times"]              = times
+        data["meanTime"]           = meanTime
+        data["timesRange"]         = times-timesMin
+        data["timeGrowthRate"]     = timeGrowthRate
 
-        data[module.__name__]["luFactor"]           = luFactor
-        data[module.__name__]["luFactorMean"]       = luFactorMean
-        data[module.__name__]["luFactorRange"]      = luFactor-luFactorMin
-        data[module.__name__]["luFactorGrowthRate"] = luFactorGrowthRate
+        data["flops"]              = flops
+        data["meanFlop"]           = meanFlop
+        data["flopRange"]          = flopsMax - flopsMin
+        data["flopGrowthRate"]     = flopGrowthRate
+
+        data["luFactor"]           = luFactor
+        data["luFactorMean"]       = luFactorMean
+        data["luFactorRange"]      = luFactor-luFactorMin
+        data["luFactorGrowthRate"] = luFactorGrowthRate
 
 
+        file.fileData = data
+        for f in range(Nf):
+            file.fieldList[f].fieldData["dofs"]   = dofs[f]
+            file.fieldList[f].fieldData["errors"] = errors[f]
+    #print('\t\t\t***************************data*********************************')
+    #print module.__name__
+    #np.set_printoptions(precision=3, linewidth=100)
+    # for k,v in data.get(module.__name__).items():
+    #     print(" {: >18} : {}\n".format(k,v))
 
-    print('\t\t\t***************************data*********************************')
-    print module.__name__
-    np.set_printoptions(precision=3, linewidth=100)
-    for k,v in data.get(module.__name__).items():
-        print(" {: >18} : {}\n".format(k,v))
+    file.printFile()
 
-    return data
+    return file
 
 def getNf(errorList):
     """"
@@ -254,15 +300,15 @@ def getNf(errorList):
 
     :returns: Nf and integer that represents the number of fields.
     """
-    i = 0
-    Nf = 1
+    i  = 0
+    Nf = 0
     while errorList[i] != -1:
          Nf = Nf + 1
          i += 1
     return Nf
 
 
-def graphGen(data, graph_flops_scaling, dim):
+def graphGen(file, graph_flops_scaling, dim):
     """
     This function takes the supplied dictionary and plots the data from each file on the Mesh Convergence, Static Scaling, and
         Efficacy graphs.
@@ -307,11 +353,11 @@ def graphGen(data, graph_flops_scaling, dim):
     axEffic = efficFig.add_subplot(1,1,1)
     axEffic.set(xlabel = 'Time(s)', ylabel = 'Error Time', title = 'Efficacy')
 
+
     #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
-    for fileName, value in data.items():
+    for field in file.fieldList:
         #Least squares solution for Mesh Convergence
-        #TODO need to update index for multifield
-        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(value['dofs'][0], value['errors'][0])
+        lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(field.fieldData['dofs'], field.fieldData['errors'])
 
 
         print("Least Squares Data")
@@ -320,52 +366,61 @@ def graphGen(data, graph_flops_scaling, dim):
         print("Alpha: {} \n  {}".format(lstSqMeshConv[0], lstSqMeshConv[1]))
 
         convRate = lstSqMeshConv[0] * -dim
-        print('convRate: {} of {} data'.format(convRate,fileName))
+        print('convRate: {} of {} data'.format(convRate,file.fileName))
 
         ##Start Mesh Convergance graph
         convRate = str(convRate)
         #TODO have to update index for multiple fields
-        x, = axMeshConv.loglog(value['dofs'][0], value['errors'][0], label = fileName + ' Orig Data')
+        x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['errors'],
+            label = 'Field ' + field.fieldName + ' Orig Data')
+
         meshConvOrigHandles.append(x)
-        #TODO need to update index for multifield
-        y, = axMeshConv.loglog(value['dofs'][0], ((value['dofs'][0]**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
-                label = fileName + " Convergence rate =  " + convRate )
+
+        y, = axMeshConv.loglog(field.fieldData['dofs'], ((field.fieldData['dofs']**lstSqMeshConv[0] * 10**lstSqMeshConv[1])),
+                label = field.fieldName + " Convergence rate =  " + convRate )
+
         meshConvLstSqHandles.append(y)
 
         ##Start Static Scaling Graph, only if graph_flops_scaling equals 1.  Specified on the command line.
         if graph_flops_scaling == 1 :
-            x, =axStatScale.loglog(value['times'], value['flops']/value['times'], label = fileName)
+            x, =axStatScale.loglog(file.fileData['times'], file.fileData['flops']/file.fileData['times'],
+            label = 'Field ' + field.fieldName)
 
         #statScaleHandles.append(x)
         ##Start Static Scaling with DoFs Graph
-        x, =axStatScale.loglog(value['times'], value['dofs'][0]/value['times'], label = fileName)
+        x, =axStatScale.loglog(file.fileData['times'], field.fieldData['dofs'][0]/file.fileData['times'],
+            label = 'Field ' + field.fieldName)
 
         statScaleHandles.append(x)
         ##Start Efficacy graph
-        x, = axEffic.semilogx(value['times'], -np.log10(value['errors'][0]*value['times']), label = fileName)
+        x, = axEffic.semilogx(file.fileData['times'], -np.log10(field.fieldData['errors'][0]*file.fileData['times']),
+            label = 'Field ' + field.fieldName)
 
         efficHandles.append(x)
 
         counter = counter + 1
 
-    meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
-    meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
-    meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
+        meshConvHandles = meshConvOrigHandles + meshConvLstSqHandles
+        meshConvLabels = [h.get_label() for h in meshConvOrigHandles]
+        meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
 
-    meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
-    meshConvFig.savefig('meshConvergence' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    meshConvFig.show()
+        meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
+        meshConvFig.savefig('meshConvergenceField_' + field.fieldName + '_' +\
+            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+        meshConvFig.show()
 
-    statScaleLabels = [h.get_label() for h in statScaleHandles]
+        statScaleLabels = [h.get_label() for h in statScaleHandles]
 
-    statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
-    statScaleFig.savefig('staticScaling' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    statScaleFig.show()
+        statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
+        statScaleFig.savefig('staticScalingField_' + field.fieldName + '_' +\
+            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+        statScaleFig.show()
 
-    efficLabels = [h.get_label() for h in efficHandles]
-    efficFig.legend(handles = efficHandles, labels = efficLabels)
-    efficFig.savefig('efficacy' + date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
-    efficFig.show()
+        efficLabels = [h.get_label() for h in efficHandles]
+        efficFig.legend(handles = efficHandles, labels = efficLabels)
+        efficFig.savefig('efficacyField_' + field.fieldName + '_' +\
+            date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
+        efficFig.show()
 
 
 def leastSquares(x, y):
