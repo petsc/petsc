@@ -1184,8 +1184,9 @@ static PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc)
   PetscFunctionBegin;
   if (!mg->nlevels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MG has no levels");
   for (lev=0, *gc=0; lev<mg->nlevels; lev++) {
-    Mat A = mglevels[lev]->A;
-    ierr = MatGetInfo(A,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
+    Mat dB;
+    ierr = KSPGetOperators(mglevels[lev]->smoothd,NULL,&dB);CHKERRQ(ierr);
+    ierr = MatGetInfo(dB,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
     *gc += (PetscReal)info.nz_used;
     if (lev==mg->nlevels-1) nnz0 = info.nz_used;
   }
