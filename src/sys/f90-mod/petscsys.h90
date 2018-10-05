@@ -140,7 +140,7 @@
       Interface
       subroutine PetscErrorf(ierr)
       use petscsysdef
-       PetscErrorCode, intent(out) :: ierr
+       PetscErrorCode, intent(in) :: ierr
       end Subroutine PetscErrorf
       end Interface
       Interface
