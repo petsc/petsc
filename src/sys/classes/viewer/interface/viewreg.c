@@ -344,6 +344,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
             if (*loc1_fname) {
               ierr = PetscViewerDrawSetDrawType(*viewer,loc1_fname);CHKERRQ(ierr);
             }
+            ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
           }
         }
       }

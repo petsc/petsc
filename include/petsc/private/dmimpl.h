@@ -248,6 +248,8 @@ PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,const PetscInt[],IS*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateSuperDM_Section_Private(DM[],PetscInt,IS**,DM*);
 
+PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,PetscViewer));
+
 /*
 
           Composite Vectors
