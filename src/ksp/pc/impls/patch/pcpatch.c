@@ -1688,7 +1688,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   const char          *prefix;
   PetscBool            flg, dimflg, codimflg;
   MPI_Comm             comm;
-  PetscInt             ifields[patch->nsubspaces], nfields = patch->nsubspaces;
+  PetscInt            *ifields, nfields = patch->nsubspaces, k;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -1708,14 +1708,16 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   if (flg) {ierr = PCPatchSetSubMatType(pc, sub_mat_type);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-pc_patch_symmetrise_sweep", "Go start->end, end->start?", "PCPATCH", patch->symmetrise_sweep, &patch->symmetrise_sweep, &flg);CHKERRQ(ierr);
 
+  ierr = PetscMalloc1(patch->nsubspaces, &ifields);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_patch_exclude_subspaces",ifields,&nfields,&flg);CHKERRQ(ierr);
   if (flg && (patchConstructionType == PC_PATCH_USER)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "We cannot support excluding a subspace with user patches because we do not index patches with a mesh point");
   if (flg) {
     PetscHSetIClear(patch->subspaces_to_exclude);
-    for (int k = 0; k < nfields; k++) {
+    for (k = 0; k < nfields; k++) {
       PetscHSetIAdd(patch->subspaces_to_exclude, ifields[k]);
     }
   }
+  ierr = PetscFree(ifields);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-pc_patch_patches_view", "Print out information during patch construction", "PCPATCH", patch->viewPatches, &patch->viewPatches, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(comm, prefix, "-pc_patch_cells_view",   &patch->viewerCells,   &patch->formatCells,   &patch->viewCells);CHKERRQ(ierr);
