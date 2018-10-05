@@ -56,9 +56,14 @@ hyperbaseurl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
+\newgeometry{top=0mm, left=0mm, right=0mm, bottom=0mm}
 \centerline{\includegraphics{ArgonneReportTemplatePage2}}
+\restoregeometry
 \newpage
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagestyle{empty}
 \hfill {\large {\bf ANL-95/11 Rev 3.10}}
 
 \vspace*{2in}
@@ -157,10 +162,12 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 \bibliography{../petsc,../petscapp}
 
 \pagestyle{empty}
+\newgeometry{top=0mm, left=0mm, right=0mm, bottom=0mm}
 \begin{figure*}[hbt]
 \centerline{\includegraphics{ArgonneReportTemplateLastPage.pdf}}
 \caption{}
 \end{figure*}
+\restoregeometry
 
 \end{document}
 
