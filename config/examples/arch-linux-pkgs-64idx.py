@@ -10,6 +10,7 @@ configure_options = [
   '--download-hypre=1',
   '--download-superlu_dist=1',
   '--donwload-suitesparse=1',
+  '--with-cxx-dialect=C++11',
   '--download-cmake',  # superlu_dist requires a newer cmake
   ]
 

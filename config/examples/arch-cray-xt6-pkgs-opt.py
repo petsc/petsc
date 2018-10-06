@@ -32,6 +32,6 @@ if __name__ == '__main__':
     '--download-metis=1',
     '--download-parmetis',
     '--download-scalapack',
-    '--download-superlu_dist',
+    #'--download-superlu_dist',
   ]
   configure.petsc_configure(configure_options)
