@@ -224,6 +224,23 @@ PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
 
+/*MC
+  DMInterpolationInfo - Structure for holding information about interpolation on a mesh
+
+  Level: intermediate
+
+  Synopsis:
+    comm   - The communicator
+    dim    - The spatial dimension of points
+    nInput - The number of input points
+    points - The input point coordinates
+    cells  - The cell containing each point
+    n      - The number of local points
+    coords - The point coordinates
+    dof    - The number of components to interpolate
+
+.seealso: DMInterpolationCreate(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+M*/
 struct _DMInterpolationInfo {
   MPI_Comm   comm;
   PetscInt   dim;    /*1 The spatial dimension of points */
