@@ -7901,7 +7901,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (pcbddc->coarse_ksp) psum = 1;
     else psum = 0;
     ierr = MPIU_Allreduce(&psum,&ncoarse,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (ncoarse < size) have_void = PETSC_TRUE;
+    have_void = ncoarse < size ? PETSC_TRUE : PETSC_FALSE;
   }
   /* determine if we can go multilevel */
   if (multilevel_requested) {
@@ -7914,7 +7914,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (pcbddc->dbg_flag && multilevel_allowed) {
     ierr = ISView(pcbddc->coarse_subassembling,pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-
   /* compute dofs splitting and neumann boundaries for coarse dofs */
   nedcfield = -1;
   if (multilevel_allowed && !coarse_reuse && (pcbddc->n_ISForDofsLocal || pcbddc->NeumannBoundariesLocal || pcbddc->nedclocal)) { /* protects from unneded computations */
@@ -8049,8 +8048,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PCBDDCMatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling,0,restr,full_restr,PETSC_FALSE,&coarse_mat_is,0,NULL,0,NULL);CHKERRQ(ierr);
   }
   if (coarse_mat_is || coarse_mat) {
-    PetscMPIInt size;
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)coarse_mat_is),&size);CHKERRQ(ierr);
     if (!multilevel_allowed) {
       ierr = MatConvert(coarse_mat_is,MATAIJ,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     } else {
