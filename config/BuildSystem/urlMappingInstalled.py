@@ -1,6 +1,6 @@
 try:
   import urlparse
-except ModuleNotFoundError:
+except ImportError:
   from urllib import parse as urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['hg', 'ssh'])

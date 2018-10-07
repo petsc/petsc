@@ -493,7 +493,7 @@ class ArgDownload(Arg):
     if isinstance(value, str):
       try:
         import urlparse
-      except ModuleNotFoundError:
+      except ImportError:
         from urllib import parse as urlparse
       if not urlparse.urlparse(value)[0]: # how do we check if the URL is invalid?
         if os.path.isfile(value):

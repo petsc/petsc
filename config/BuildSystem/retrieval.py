@@ -8,7 +8,7 @@ except ImportError:
   from urllib.request import urlretrieve
 try:
   import urlparse
-except ModuleNotFoundError:
+except ImportError:
   from urllib import parse as urlparse
 import config.base
 import socket
