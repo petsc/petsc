@@ -1688,7 +1688,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   const char          *prefix;
   PetscBool            flg, dimflg, codimflg;
   MPI_Comm             comm;
-  PetscInt            *ifields, nfields = patch->nsubspaces, k;
+  PetscInt            *ifields, nfields, k;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -1708,7 +1708,14 @@ static PetscErrorCode PCSetFromOptions_PATCH(PetscOptionItems *PetscOptionsObjec
   if (flg) {ierr = PCPatchSetSubMatType(pc, sub_mat_type);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-pc_patch_symmetrise_sweep", "Go start->end, end->start?", "PCPATCH", patch->symmetrise_sweep, &patch->symmetrise_sweep, &flg);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(patch->nsubspaces, &ifields);CHKERRQ(ierr);
+  /* If the user has set the number of subspaces, use that for the buffer size,
+     otherwise use a large number */
+  if (patch->nsubspaces <= 0) {
+    nfields = 128;
+  } else {
+    nfields = patch->nsubspaces;
+  }
+  ierr = PetscMalloc1(nfields, &ifields);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_patch_exclude_subspaces",ifields,&nfields,&flg);CHKERRQ(ierr);
   if (flg && (patchConstructionType == PC_PATCH_USER)) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "We cannot support excluding a subspace with user patches because we do not index patches with a mesh point");
   if (flg) {
