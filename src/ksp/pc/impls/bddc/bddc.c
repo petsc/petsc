@@ -1428,7 +1428,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* compute initial vector in benign space if needed
      and remove non-benign solution from the rhs */
   benign_correction_computed = PETSC_FALSE;
-  if (iscg && rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
+  if (rhs && pcbddc->benign_compute_correction && (pcbddc->benign_have_null || pcbddc->benign_apply_coarse_only)) {
     /* compute u^*_h using ideas similar to those in Xuemin Tu's PhD thesis (see Section 4.8.1)
        Recursively apply BDDC in the multilevel case */
     if (!pcbddc->benign_vec) {
