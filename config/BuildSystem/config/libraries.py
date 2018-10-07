@@ -186,7 +186,7 @@ class Configure(config.base.Configure):
       return body
     # Handle Fortran mangling
     if fortranMangle:
-      funcs = map(self.compilers.mangleFortranFunction, funcs)
+      funcs = list(map(self.compilers.mangleFortranFunction, funcs))
     if not funcs:
       self.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
       return True
@@ -482,7 +482,7 @@ int checkInit(void) {
     return self._isBGL
 
   def configure(self):
-    map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
+    list(map(lambda args: self.executeTest(self.check, list(args)), self.libraries))
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkMathTgamma)
