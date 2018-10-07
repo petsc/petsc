@@ -2857,28 +2857,21 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
   ierr = MPIU_Allreduce(&have_null,&pcbddc->benign_have_null,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
 project_b0:
+  ierr = MatGetLocalSize(pcbddc->local_mat,&n,NULL);CHKERRQ(ierr);
   /* change of basis and p0 dofs */
   if (pcbddc->benign_n) {
-    IS             zerodiagc;
-    const PetscInt *idxs,*idxsc;
-    PetscInt       i,s,*nnz;
+    PetscInt i,s,*nnz;
 
-    if (!zerodiag) {
-      ierr = ISConcatenate(PETSC_COMM_SELF,pcbddc->benign_n,pcbddc->benign_zerodiag_subs,&zerodiag);CHKERRQ(ierr);
-      ierr = ISSort(zerodiag);CHKERRQ(ierr);
-    }
-    ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
-    ierr = ISComplement(zerodiag,0,n,&zerodiagc);CHKERRQ(ierr);
-    ierr = ISGetIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
     /* local change of basis for pressures */
     ierr = MatDestroy(&pcbddc->benign_change);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)pcbddc->local_mat),&pcbddc->benign_change);CHKERRQ(ierr);
     ierr = MatSetType(pcbddc->benign_change,MATAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(pcbddc->benign_change,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&nnz);CHKERRQ(ierr);
-    for (i=0;i<n-nz;i++) nnz[idxsc[i]] = 1; /* identity on velocities plus pressure dofs for non-singular subdomains */
+    for (i=0;i<n;i++) nnz[i] = 1; /* defaults to identity */
     for (i=0;i<pcbddc->benign_n;i++) {
-      PetscInt nzs,j;
+      const PetscInt *idxs;
+      PetscInt       nzs,j;
 
       ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[i],&nzs);CHKERRQ(ierr);
       ierr = ISGetIndices(pcbddc->benign_zerodiag_subs[i],&idxs);CHKERRQ(ierr);
@@ -2889,18 +2882,17 @@ project_b0:
     ierr = MatSeqAIJSetPreallocation(pcbddc->benign_change,0,nnz);CHKERRQ(ierr);
     ierr = MatSetOption(pcbddc->benign_change,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
-    /* set identity on velocities */
-    for (i=0;i<n-nz;i++) {
-      ierr = MatSetValue(pcbddc->benign_change,idxsc[i],idxsc[i],1.,INSERT_VALUES);CHKERRQ(ierr);
+    /* set identity by default */
+    for (i=0;i<n;i++) {
+      ierr = MatSetValue(pcbddc->benign_change,i,i,1.,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(zerodiagc,&idxsc);CHKERRQ(ierr);
-    ierr = ISDestroy(&zerodiagc);CHKERRQ(ierr);
     ierr = PetscFree3(pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx,pcbddc->benign_p0);CHKERRQ(ierr);
     ierr = PetscMalloc3(pcbddc->benign_n,&pcbddc->benign_p0_lidx,pcbddc->benign_n,&pcbddc->benign_p0_gidx,pcbddc->benign_n,&pcbddc->benign_p0);CHKERRQ(ierr);
     /* set change on pressures */
     for (s=0;s<pcbddc->benign_n;s++) {
-      PetscScalar *array;
-      PetscInt    nzs;
+      PetscScalar    *array;
+      const PetscInt *idxs;
+      PetscInt       nzs;
 
       ierr = ISGetLocalSize(pcbddc->benign_zerodiag_subs[s],&nzs);CHKERRQ(ierr);
       ierr = ISGetIndices(pcbddc->benign_zerodiag_subs[s],&idxs);CHKERRQ(ierr);
