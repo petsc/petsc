@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = rk.c
+SOURCEC  = rk.c mrk.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = rk.h
 LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/rk/
