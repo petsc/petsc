@@ -394,8 +394,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   }
   ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
   ierr = DMStagRestore1dCoordinateArraysDOFRead(dmSol,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,*pSolRef);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,*pSolRef);CHKERRQ(ierr);
+  ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,*pSolRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

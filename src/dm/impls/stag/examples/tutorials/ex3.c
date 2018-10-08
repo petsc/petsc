@@ -723,8 +723,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   ierr = DMGetCoordinateDM(dmSol,&dmCoord);CHKERRQ(ierr);
   ierr = DMGetCoordinates(dmSol,&coord);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocal(dmCoord,coord,INSERT_VALUES,coordLocal);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,ELEMENT,0,&ip );CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,LEFT,   0,&iux);CHKERRQ(ierr);
   ierr = DMStagGetLocationSlot(dmSol,DOWN,   0,&iuy);CHKERRQ(ierr);
@@ -770,8 +769,7 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol,Vec *pSolRef)
   }
   ierr = DMStagVecRestoreArrayDOFRead(dmCoord,coordLocal,&arrCoord);CHKERRQ(ierr);
   ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
+  ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
