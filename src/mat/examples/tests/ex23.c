@@ -551,7 +551,7 @@ int main(int argc,char **args)
     for (diff = 0; diff < 3; diff++) {
       for (perm = 0; perm < 3; perm++) {
         for (bs = 1; bs < 4; bs++) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatInvertBlockDiagonal blockdiag %d %d %d %d\n",n,diff,perm,bs);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatInvertBlockDiagonal blockdiag %D %D %D %D\n",n,diff,perm,bs);CHKERRQ(ierr);
           ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
           ierr = MatGetOwnershipRanges(A,&sts);CHKERRQ(ierr);
           switch (diff) {
