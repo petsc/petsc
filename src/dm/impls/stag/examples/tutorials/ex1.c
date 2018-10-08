@@ -151,8 +151,7 @@ int main(int argc,char **argv)
   }
   ierr = DMStagVecRestoreArrayDOFRead(dmCoordSol,coordSolLocal,&arrCoordSol);CHKERRQ(ierr);
   ierr = DMStagVecRestoreArrayDOF(dmSol,solRefLocal,&arrSol);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
+  ierr = DMLocalToGlobal(dmSol,solRefLocal,INSERT_VALUES,solRef);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmSol,&solRefLocal);CHKERRQ(ierr);
 
   /* Create another 1D DMStag for the forcing term, and populate a field on it.
@@ -171,8 +170,7 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(dmSol,&A);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmSol,&rhs);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmForcing,&fLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dmForcing,f,INSERT_VALUES,fLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dmForcing,f,INSERT_VALUES,fLocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocal(dmForcing,f,INSERT_VALUES,fLocal);CHKERRQ(ierr);
 
   /* Note: if iterating over all the elements, you will usually need to do something
      special at one of the boundaries. You can either make use of the existence
