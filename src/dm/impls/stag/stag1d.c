@@ -81,8 +81,12 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscRe
   ierr = DMGetLocalVector(dmCoord,&coordLocal);CHKERRQ(ierr);
 
   ierr = DMStagVecGetArrayDOF(dmCoord,coordLocal,&arr);CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT   ,0,&ileft   );CHKERRQ(ierr);
-  ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT,0,&ielement);CHKERRQ(ierr);
+  if (stagCoord->dof[0]) {
+    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_LEFT,0,&ileft);CHKERRQ(ierr);
+  }
+  if (stagCoord->dof[1]) {
+    ierr = DMStagGetLocationSlot(dmCoord,DMSTAG_ELEMENT,0,&ielement);CHKERRQ(ierr);
+  }
   ierr = DMStagGetCorners(dmCoord,&start,NULL,NULL,&n,NULL,NULL,&nExtra,NULL,NULL);CHKERRQ(ierr);
 
   min = xmin;
