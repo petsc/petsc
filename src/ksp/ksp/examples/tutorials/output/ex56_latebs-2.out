@@ -31,6 +31,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.07125
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -146,6 +147,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.07125
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -262,6 +264,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.07125
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
