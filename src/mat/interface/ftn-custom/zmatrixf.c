@@ -59,6 +59,8 @@
 #define matzerorows_                     MATZEROROWS
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
+#define matzerorowslocal0_               MATZEROROWSLOCAL0
+#define matzerorowslocal1_               MATZEROROWSLOCAL1
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
@@ -709,4 +711,16 @@ PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row,const MatFactorIn
 PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, int *ierr)
 {
   *ierr = MatFactorInfoInitialize(info);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag,*x,*b);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal0_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  matzerorowslocal_(mat,numRows,rows,diag,x,b,ierr);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal1_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  matzerorowslocal_(mat,numRows,rows,diag,x,b,ierr);
 }

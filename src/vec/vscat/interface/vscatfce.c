@@ -254,7 +254,7 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    VecScatterRemap - Remaps the "from" and "to" indices in a
    vector scatter context. FOR EXPERTS ONLY!
 
@@ -277,7 +277,7 @@ PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
      This is backwards from the paralllel case!
 
 @*/
-PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *tomap,PetscInt *frommap)
+PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt tomap[],PetscInt frommap[])
 {
   VecScatter_MPI_General *to,*from;
   VecScatter_Seq_General *sgto,*sgfrom;
