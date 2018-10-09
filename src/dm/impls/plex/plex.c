@@ -6392,7 +6392,7 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexGetCellNumbering - Get a global cell numbering for all cells on this process
 
   Input Parameter:
@@ -6431,7 +6431,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexGetVertexNumbering - Get a global certex numbering for all vertices on this process
 
   Input Parameter:
@@ -6456,7 +6456,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreatePointNumbering - Create a global numbering for all points on this process
 
   Input Parameter:
