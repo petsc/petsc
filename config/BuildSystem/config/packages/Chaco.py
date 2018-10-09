@@ -36,14 +36,15 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing chaco; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret  = config.package.Package.executeShellCommandSeq(['make clean',
-                                                                         'make',
-                                                                         [self.setCompilers.AR, self.setCompilers.AR_FLAGS, 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX]
-                                                                         + [obj for obj in glob.glob('*.o') if obj != 'main.o'],
-                                                                         [self.setCompilers.RANLIB, 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX],
-                                                                         [self.installSudo+'mkdir', '-p', os.path.join(self.installDir,self.libdir)],
-                                                                         [self.installSudo+'cp', 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX, os.path.join(self.installDir,self.libdir)]
-                                                                         ], cwd=os.path.join(self.packageDir, 'code'), timeout=2500, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommandSeq(
+          ['make clean',
+           'make',
+           self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+'libchaco.'+
+           self.setCompilers.AR_LIB_SUFFIX+' `ls */*.o |grep -v main/main.o`',
+           [self.setCompilers.RANLIB, 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX],
+           [self.installSudo+'mkdir', '-p', os.path.join(self.installDir,self.libdir)],
+           [self.installSudo+'cp', 'libchaco.'+self.setCompilers.AR_LIB_SUFFIX, os.path.join(self.installDir,self.libdir)]
+          ], cwd=os.path.join(self.packageDir, 'code'), timeout=2500, log = self.log)
 
       except RuntimeError as e:
         raise RuntimeError('Error running make on CHACO: '+str(e))

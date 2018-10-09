@@ -151,9 +151,11 @@ class Configure(config.package.Package):
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommandSeq([[self.installSudo+'mkdir', '-p', libDir, includeDir],
-                                                                        [self.installSudo+'cp', '-f'] + glob.glob('lib/*.*') + [libDir+'/.'],
-                                                                        [self.installSudo+'cp', '-f'] + glob.glob('include/*.*') + [includeDir+'/.']], cwd=self.packageDir, timeout=50, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommandSeq(
+          [[self.installSudo+'mkdir', '-p', libDir, includeDir],
+           self.installSudo+'cp -f lib/*.* '+libDir+'/.',
+           self.installSudo+'cp -f include/*.* '+includeDir+'/.'
+          ], cwd=self.packageDir, timeout=50, log = self.log)
         if self.argDB['with-mumps-serial']:
           output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=25, log = self.log)
       except RuntimeError as e:

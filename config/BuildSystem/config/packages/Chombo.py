@@ -113,11 +113,12 @@ class Configure(config.package.Package):
           raise RuntimeError('Error running make on Chombo: config value not found')
         self.logPrint('Chombo installed using config=%s\n'%config_value)
         import glob
-        output,err,ret = config.package.Package.executeShellCommandSeq(['make clean',
-                                                                        'make lib',
-                                                                        [self.installSudo+'cp', '-f'] + glob.glob('lib*.'+self.setCompilers.AR_LIB_SUFFIX) + [os.path.join(self.installDir,self.libdir,'')],
-                                                                        [self.installSudo+'cp', '-f'] + glob.glob('include/*.H') + [os.path.join(self.installDir,self.includedir,'')]],
-                                                                       cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommandSeq(
+          ['make clean',
+           'make lib',
+           self.installSudo+'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,''),
+           self.installSudo+'cp -f include/*.H '+os.path.join(self.installDir,self.includedir,'')
+          ], cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on Chombo: '+str(e))
 
