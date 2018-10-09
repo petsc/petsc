@@ -631,7 +631,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       }
 
       /* interior dofs in layout */
-      ierr = MatISSetUpSF(A);CHKERRQ(ierr);
       ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = ISGetLocalSize(II,&ni);CHKERRQ(ierr);

@@ -714,7 +714,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
 
     if (!patch->user_patches) {
       if (ghost) {ierr = DMLabelHasPoint(ghost, v, &flg);CHKERRQ(ierr);}
-      else       {ierr = PetscFindInt(v, nleaves, leaves, &loc); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
+      else       {ierr = PetscFindInt(v, nleaves, leaves, &loc);CHKERRQ(ierr); flg = loc >=0 ? PETSC_TRUE : PETSC_FALSE;}
       /* Not an owned entity, don't make a cell patch. */
       if (flg) continue;
     }
@@ -1542,7 +1542,7 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         ierr = PCPatchCreateMatrix_Private(pc, i, &mat);CHKERRQ(ierr);
         /* Populate operator here. */
         ierr = PCPatchComputeOperator_Private(pc, mat, i);CHKERRQ(ierr);
-        ierr = KSPSetOperators(patch->ksp[i], mat, mat);
+        ierr = KSPSetOperators(patch->ksp[i], mat, mat);CHKERRQ(ierr);
         /* Drop reference so the KSPSetOperators below will blow it away. */
         ierr = MatDestroy(&mat);CHKERRQ(ierr);
       }

@@ -1491,15 +1491,16 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   }
   ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
   if (section) {
-    PetscInt *fieldSizes, **fieldIndices;
+    PetscInt *fieldSizes, *fieldNc, **fieldIndices;
     PetscInt nF, f, pStart, pEnd, p;
 
     ierr = DMGetGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nF,&fieldSizes,nF,&fieldIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nF,&fieldSizes,nF,&fieldNc,nF,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
+      ierr          = PetscSectionGetFieldComponents(section, f, &fieldNc[f]);CHKERRQ(ierr);
     }
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof;
@@ -1507,11 +1508,16 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
         for (f = 0; f < nF; ++f) {
-          PetscInt fdof, fcdof;
+          PetscInt fdof, fcdof, fpdof;
 
-          ierr           = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-          ierr           = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-          fieldSizes[f] += fdof-fcdof;
+          ierr  = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr  = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          fpdof = fdof-fcdof;
+          if (fpdof && fpdof != fieldNc[f]) {
+            /* Layout does not admit a pointwise block size */
+            fieldNc[f] = 1;
+          }
+          fieldSizes[f] += fpdof;
         }
       }
     }
@@ -1549,10 +1555,17 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (fields) {
       ierr = PetscMalloc1(nF, fields);CHKERRQ(ierr);
       for (f = 0; f < nF; ++f) {
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+        PetscInt bs, in[2], out[2];
+
+        ierr  = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+        in[0] = -fieldNc[f];
+        in[1] = fieldNc[f];
+        ierr  = MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+        bs    = (-out[0] == out[1]) ? out[1] : 1;
+        ierr  = ISSetBlockSize((*fields)[f], bs);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
+    ierr = PetscFree3(fieldSizes,fieldNc,fieldIndices);CHKERRQ(ierr);
   } else if (dm->ops->createfieldis) {
     ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);
   }

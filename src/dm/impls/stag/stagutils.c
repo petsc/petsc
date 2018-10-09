@@ -71,6 +71,7 @@ PetscErrorCode DMStagGet1dCoordinateArraysDOFRead(DM dm,void* arrX,void* arrY,vo
     ierr = PetscStrcmp(DMPRODUCT,dmType,&isProduct);CHKERRQ(ierr);
     if (!isProduct) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");CHKERRQ(ierr);
   }
+  for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = 0;
   for (d=0; d<dim; ++d) {
     DM        subDM;
     DMType    dmType;
@@ -139,6 +140,7 @@ PETSC_EXTERN PetscErrorCode DMStagGet1dCoordinateLocationSlot(DM dm,DMStagStenci
     ierr = PetscStrcmp(DMPRODUCT,dmType,&isProduct);CHKERRQ(ierr);
     if (!isProduct) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");CHKERRQ(ierr);
   }
+  for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = 0;
   for (d=0; d<dim; ++d) {
     DM        subDM;
     DMType    dmType;

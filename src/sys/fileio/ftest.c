@@ -143,12 +143,14 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
    Input Parameter:
 +  fname - the filename
--  mode - either 'r', 'w', or 'x'
+-  mode - either 'r', 'w', 'x' or '\0'
 
    Output Parameter:
 .  flg - the file exists and satisfies the mode
 
    Level: intermediate
+
+   Notes: if mode is '\0', no permissions checks are performed
 
 .seealso: PetscTestDirectory(), PetscLs()
 @*/
@@ -164,11 +166,12 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists);CHKERRQ(ierr);
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
-
+  /* return if asked to check for existence only */
+  if (mode == '\0') { *flg = exists; PetscFunctionReturn(0); }
   ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -2280,7 +2280,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
   PetscInt       i = 0;
 
   PetscFunctionBegin;
-  if (superdm) {ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);}
+  ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);
   ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
   (*superdm)->useNatural = PETSC_FALSE;
   for (i = 0; i < len; i++){

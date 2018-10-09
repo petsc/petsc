@@ -1320,17 +1320,20 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
-  PetscBool      save_rhs = PETSC_TRUE, benign_correction_computed;
+  PetscBool      iscg = PETSC_FALSE, save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
   /* if we are working with CG, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg, isgroppcg, ispipecg, ispipecgrr;
+    PetscBool isgroppcg, ispipecg, ispipelcg, ispipecgrr;
+
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !isgroppcg && !ispipecg && !ispipecgrr)) {
+    iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1452,6 +1455,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->rhs_change = PETSC_TRUE;
     }
     pcbddc->benign_apply_coarse_only = PETSC_FALSE;
+  } else {
+    ierr = VecDestroy(&pcbddc->benign_vec);CHKERRQ(ierr);
   }
 
   /* dbg output */
@@ -1576,7 +1581,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscMPIInt     size;
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
-  PetscBool       new_nearnullspace_provided,ismatis;
+  PetscBool       new_nearnullspace_provided,ismatis,rl;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1590,7 +1595,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
-  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
+  rl = pcbddc->recompute_topography;
+  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
+  ierr = MPIU_Allreduce(&rl,&pcbddc->recompute_topography,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   if (pcbddc->recompute_topography) {
     pcbddc->graphanalyzed    = PETSC_FALSE;
     computeconstraintsmatrix = PETSC_TRUE;
@@ -1659,8 +1666,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS* pcis = (PC_IS*)pc->data;
 
     if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis || !computesubschurs) pcbddc->benign_change_explicit = PETSC_TRUE;
-    /* detect local saddle point and change the basis in pcbddc->local_mat (TODO: reuse case) */
-    ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
+    /* detect local saddle point and change the basis in pcbddc->local_mat */
+    ierr = PCBDDCBenignDetectSaddlePoint(pc,(PetscBool)(!pcbddc->recompute_topography),&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from local mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
     /* give pcis a hint to not reuse submatrices during PCISCreate */

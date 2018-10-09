@@ -3073,7 +3073,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
   switch (bs) {
   case 1:
     for (i=0; i<mbs; i++) {
-      ierr    = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
+      ierr = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
       if (PetscAbsScalar(diag[i] + shift) < PETSC_MACHINE_EPSILON) {
         if (allowzeropivot) {
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;

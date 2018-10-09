@@ -406,7 +406,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
   ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-STACK%06d.bin",id);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&usempiio);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&usempiio);CHKERRQ(ierr);
   if (usempiio) {
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,(MPI_File*)&fd);CHKERRQ(ierr);
     ierr = PetscBinarySynchronizedSeek(PETSC_COMM_WORLD,fd,off,PETSC_BINARY_SEEK_END,&offset);CHKERRQ(ierr);

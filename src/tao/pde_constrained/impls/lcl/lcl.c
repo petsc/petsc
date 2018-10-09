@@ -159,9 +159,9 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   ierr = VecGetOwnershipRange(lclP->V,&lo,&hi);CHKERRQ(ierr);
   if (0) {
     PetscInt sizeU,sizeV;
-    ierr = VecGetSize(lclP->U,&sizeU);
-    ierr = VecGetSize(lclP->V,&sizeV);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);
+    ierr = VecGetSize(lclP->U,&sizeU);CHKERRQ(ierr);
+    ierr = VecGetSize(lclP->V,&sizeV);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);CHKERRQ(ierr);
   }
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design);CHKERRQ(ierr);
   ierr = VecScatterCreateWithData(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);

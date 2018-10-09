@@ -295,8 +295,8 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecViennaCLAllocateCheckHost(xin);
-  ierr = VecViennaCLAllocateCheckHost(yin);
+  ierr = VecViennaCLAllocateCheckHost(xin);CHKERRQ(ierr);
+  ierr = VecViennaCLAllocateCheckHost(yin);CHKERRQ(ierr);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -593,7 +593,7 @@ PetscErrorCode VecSet_SeqViennaCL(Vec xin,PetscScalar alpha)
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
-    ierr = VecViennaCLRestoreArrayWrite(xin,&xgpu);
+    ierr = VecViennaCLRestoreArrayWrite(xin,&xgpu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

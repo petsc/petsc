@@ -3905,10 +3905,10 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   cend   = B->cmap->rend;
   rstart = B->rmap->rstart;
 
-  ierr = PetscMalloc2(m,&d_nnz,m,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscCalloc2(m,&d_nnz,m,&o_nnz);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  for (i=0; i<m; i++) {
+  for (i=0; i<m && Ii; i++) {
     nnz = Ii[i+1]- Ii[i];
     JJ  = J + Ii[i];
     if (nnz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
@@ -3917,7 +3917,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
   }
 #endif
 
-  for (i=0; i<m; i++) {
+  for (i=0; i<m && Ii; i++) {
     nnz     = Ii[i+1]- Ii[i];
     JJ      = J + Ii[i];
     nnz_max = PetscMax(nnz_max,nnz);
@@ -3936,7 +3936,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],con
     ierr = PetscCalloc1(nnz_max+1,&values);CHKERRQ(ierr);
   }
 
-  for (i=0; i<m; i++) {
+  for (i=0; i<m && Ii; i++) {
     ii   = i + rstart;
     nnz  = Ii[i+1]- Ii[i];
     ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+Ii[i],values+(v ? Ii[i] : 0),INSERT_VALUES);CHKERRQ(ierr);

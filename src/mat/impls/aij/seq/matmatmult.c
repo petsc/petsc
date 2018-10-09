@@ -1856,8 +1856,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ_Combined(Mat A,Mat B,PetscReal fill,Mat 
     while (ci[i] + b_maxmemrow > c_maxmem) {
       c_maxmem *= 2;
       ndouble++;
-      ierr = PetscRealloc(sizeof(PetscInt)*c_maxmem,&cj);
-      ierr = PetscRealloc(sizeof(PetscScalar)*c_maxmem,&ca);
+      ierr = PetscRealloc(sizeof(PetscInt)*c_maxmem,&cj);CHKERRQ(ierr);
+      ierr = PetscRealloc(sizeof(PetscScalar)*c_maxmem,&ca);CHKERRQ(ierr);
     }
 
     /* Step 3: Do the numerical calculations */

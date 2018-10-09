@@ -54,7 +54,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts,const char splitname[],IS is)
   ierr = TSCreate(PetscObjectComm((PetscObject)ts),&newsplit->ts);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)newsplit->ts,(PetscObject)ts,1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)newsplit->ts);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%srhsplit_%s_",((PetscObject)ts)->prefix ? ((PetscObject)ts)->prefix : "",newsplit->splitname);CHKERRQ(ierr);
   ierr = TSSetOptionsPrefix(newsplit->ts,prefix);CHKERRQ(ierr);
   if (!next) ts->tsrhssplit = newsplit;
   else {

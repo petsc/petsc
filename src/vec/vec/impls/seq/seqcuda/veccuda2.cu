@@ -767,7 +767,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
     }
   }
   ierr = WaitForGPU();CHKERRCUDA(ierr);
-  ierr = VecCUDARestoreArrayWrite(xin,&xarray);
+  ierr = VecCUDARestoreArrayWrite(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -26,6 +26,7 @@ int main(int argc,char **args)
   PetscInt               rst,ren,cst,cen,nr,nc;
   PetscMPIInt            rank,size;
   PetscBool              testT,squaretest,isaij;
+  PetscBool              permute = PETSC_FALSE;
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE;
   PetscErrorCode         ierr;
 
@@ -51,11 +52,10 @@ int main(int argc,char **args)
   ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetBool(NULL,NULL,"-permmap",&permute,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-diffmap",&diffmap,NULL);CHKERRQ(ierr);
   if (!symmetric && (diffmap || m != n)) {
-    PetscBool permute = PETSC_FALSE;
 
-    ierr = PetscOptionsGetBool(NULL,NULL,"-permmap",&permute,NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,m,permute ? m -1 : 0,permute ? -1 : 1,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
@@ -534,6 +534,109 @@ int main(int argc,char **args)
       ierr = MatDestroy(&B2);CHKERRQ(ierr);
     }
 
+  }
+
+  /* test MatInvertBlockDiagonal
+       special cases for block-diagonal matrices */
+  if (m == n) {
+    ISLocalToGlobalMapping map;
+    Mat                    Abd,Bbd;
+    IS                     is,bis;
+    const PetscScalar      *isbd,*aijbd;
+    PetscScalar            *vals;
+    const PetscInt         *sts,*idxs;
+    PetscInt               *idxs2,diff,perm,nl,bs,st,en,in;
+    PetscBool              ok;
+
+    for (diff = 0; diff < 3; diff++) {
+      for (perm = 0; perm < 3; perm++) {
+        for (bs = 1; bs < 4; bs++) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatInvertBlockDiagonal blockdiag %D %D %D %D\n",n,diff,perm,bs);CHKERRQ(ierr);
+          ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
+          ierr = MatGetOwnershipRanges(A,&sts);CHKERRQ(ierr);
+          switch (diff) {
+          case 1: /* inverted layout by processes */
+	    in = 1;
+            st = sts[size - rank - 1];
+            en = sts[size - rank];
+            nl = en - st;
+            break;
+          case 2: /* round-robin layout */
+            in = size;
+            st = rank;
+            nl = n/size;
+            if (rank < n%size) nl++;
+            break;
+          default: /* same layout */
+            in = 1;
+            st = sts[rank];
+            en = sts[rank + 1];
+            nl = en - st;
+            break;
+          }
+          ierr = ISCreateStride(PETSC_COMM_WORLD,nl,st,in,&is);CHKERRQ(ierr);
+          ierr = ISGetLocalSize(is,&nl);CHKERRQ(ierr);
+          ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nl,&idxs2);CHKERRQ(ierr);
+          for (i=0;i<nl;i++) {
+            switch (perm) { /* invert some of the indices */
+            case 2:
+              idxs2[i] = rank%2 ? idxs[i] : idxs[nl-i-1];
+              break;
+            case 1:
+              idxs2[i] = rank%2 ? idxs[nl-i-1] : idxs[i];
+              break;
+            default:
+              idxs2[i] = idxs[i];
+              break;
+            }
+          }
+          ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
+          ierr = ISCreateBlock(PETSC_COMM_WORLD,bs,nl,idxs2,PETSC_OWN_POINTER,&bis);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingCreateIS(bis,&map);CHKERRQ(ierr);
+          ierr = MatCreateIS(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,bs*n,bs*n,map,NULL,&Abd);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
+          ierr = MatISSetPreallocation(Abd,bs,NULL,0,NULL);CHKERRQ(ierr);
+          for (i=0;i<nl;i++) {
+            PetscInt b1,b2;
+
+            for (b1=0;b1<bs;b1++) {
+              for (b2=0;b2<bs;b2++) {
+                vals[b1*bs + b2] = i*bs*bs + b1*bs + b2 + 1 + (b1 == b2 ? 1.0 : 0);
+              }
+            }
+            ierr = MatSetValuesBlockedLocal(Abd,1,&i,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
+          }
+          ierr = MatAssemblyBegin(Abd,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatAssemblyEnd(Abd,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatConvert(Abd,MATAIJ,MAT_INITIAL_MATRIX,&Bbd);CHKERRQ(ierr);
+          ierr = MatInvertBlockDiagonal(Abd,&isbd);CHKERRQ(ierr);
+          ierr = MatInvertBlockDiagonal(Bbd,&aijbd);CHKERRQ(ierr);
+          ierr = MatGetLocalSize(Bbd,&nl,NULL);CHKERRQ(ierr);
+          ok   = PETSC_TRUE;
+          for (i=0;i<nl/bs;i++) {
+            PetscInt b1,b2;
+
+            for (b1=0;b1<bs;b1++) {
+              for (b2=0;b2<bs;b2++) {
+                if (PetscAbsScalar(isbd[i*bs*bs+b1*bs + b2]-aijbd[i*bs*bs+b1*bs + b2]) > PETSC_SMALL) ok = PETSC_FALSE;
+                if (!ok) {
+                  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] ERROR block %d, entry %d %d: %g %g\n",rank,i,b1,b2,isbd[i*bs*bs+b1*bs + b2],aijbd[i*bs*bs+b1*bs + b2]);CHKERRQ(ierr);
+                  break;
+                }
+              }
+              if (!ok) break;
+            }
+            if (!ok) break;
+          }
+          ierr = MatDestroy(&Abd);CHKERRQ(ierr);
+          ierr = MatDestroy(&Bbd);CHKERRQ(ierr);
+          ierr = PetscFree(vals);CHKERRQ(ierr);
+          ierr = ISDestroy(&is);CHKERRQ(ierr);
+          ierr = ISDestroy(&bis);CHKERRQ(ierr);
+        }
+      }
+    }
   }
   /* free testing matrices */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
