@@ -234,7 +234,7 @@ extern "C" {
     if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       found = 1
       # define the symbol as found
-      if functionDefine: self.addDefine(self.getDefineNameFunc(fname), 1)
+      if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
       # add to list of found libraries
       elif libName:
         for lib in libName:
