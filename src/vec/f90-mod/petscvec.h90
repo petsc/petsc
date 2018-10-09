@@ -226,3 +226,13 @@
        integer z
        end subroutine
       end Interface
+
+      Interface
+      subroutine VecScatterRemap(a,b,c,z)
+      use petscvecdef
+       VecScatter a ! VecScatter
+       PetscInt b (*) ! PetscInt
+       PetscInt c (*) ! PetscInt
+       integer z
+       end subroutine
+      end Interface

@@ -6121,7 +6121,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 

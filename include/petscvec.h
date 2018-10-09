@@ -350,7 +350,7 @@ PETSC_EXTERN PetscErrorCode VecScatterSetUp(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
-PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
