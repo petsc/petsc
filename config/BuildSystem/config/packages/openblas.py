@@ -40,6 +40,8 @@ class Configure(config.package.Package):
       cmdline += " INTERFACE64=1 "
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
+    if not self.argDB['with-shared-libraries']:
+      cmdline += " NO_SHARED=1 "
 
     libdir = self.libDir
     blasDir = self.packageDir
