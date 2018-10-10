@@ -446,7 +446,7 @@ PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
-    if (i < len_slow+1) {
+    if (i < len_slow) {
       /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
       ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds,ctx->xmin+hx*i);CHKERRQ(ierr);
       /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
@@ -478,7 +478,7 @@ PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   for (i=xs; i<xs+xm+1; i++) {
     PetscReal   maxspeed;
     PetscScalar *uL,*uR;
-    if (i < len_slow+1) { /* slow parts can be changed based on a */
+    if (i < len_slow) { /* slow parts can be changed based on a */
       uL = &ctx->uLR[0];
       uR = &ctx->uLR[dof];
       for (j=0; j<dof; j++) {
@@ -492,6 +492,19 @@ PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       }
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[i*dof+j] += ctx->flux[j]/hx;
+      }
+    }
+    if (i == len_slow) { /* slow parts can be changed based on a */
+      uL = &ctx->uLR[0];
+      uR = &ctx->uLR[dof];
+      for (j=0; j<dof; j++) {
+        uL[j] = x[(i-1)*dof+j]+slope[(i-1)*dof+j]*hx/2;
+        uR[j] = x[(i-0)*dof+j]-slope[(i-0)*dof+j]*hx/2;
+      }
+      ierr    = (*ctx->physics.riemann)(ctx->physics.user,dof,uL,uR,ctx->flux,&maxspeed,ctx->xmin+hx*i,ctx->xmin,ctx->xmax);CHKERRQ(ierr);
+      cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hx)); /* Max allowable value of 1/Delta t */
+      if (i > xs) {
+        for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hx;
       }
     }
   }
@@ -559,8 +572,8 @@ PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       (*ctx->limit)(&info,cjmpL,cjmpR,ctx->cslope);
       for (j=0; j<dof; j++) ctx->cslope[j] /= hx; /* rescale to a slope */
       for (j=0; j<dof; j++) {
-      PetscScalar tmp = 0;
-      for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
+        PetscScalar tmp = 0;
+        for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof]*ctx->cslope[k];
         slope[i*dof+j] = tmp;
       }
     }
@@ -598,7 +611,6 @@ PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         for (j=0; j<dof; j++) f[(i-len_slow)*dof+j] += ctx->flux[j]/hx;
       }
     }
-
   }
   ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
