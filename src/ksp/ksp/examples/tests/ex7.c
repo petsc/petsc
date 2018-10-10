@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PC             pc;           /* preconditioner context */
   PetscReal      norm;         /* norm of solution error */
   PetscErrorCode ierr;
-  PetscInt       i,n = 100,col[3],its,k;
+  PetscInt       i,n = 100,col[3],its;
   PetscMPIInt    size;
   PetscScalar    one = 1.0,value[3];
   PetscBool      flg;
@@ -85,7 +85,7 @@ int main(int argc,char **args)
 
   /* Check As is a linear operator: As*(ax + y) = a As*x + As*y */
   ierr = MatIsLinear(As,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Shell matrix As is non-linear!\n");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Shell matrix As is non-linear! Use '-info |grep MatIsLinear' to get detailed report\n");
 
   /* Compute right-hand-side vector. */
   ierr = MatMult(As,u,b);CHKERRQ(ierr);
@@ -124,6 +124,9 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      args: -ksp_monitor_short
+      args: -ksp_monitor_short -ksp_max_it 10
+   test:
+      suffix: 2
+      args: -ksp_monitor_short -ksp_max_it 10
 
 TEST*/
