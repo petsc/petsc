@@ -553,8 +553,9 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
     viennacl::vector_tuple<PetscScalar> y_tuple(ygpu_array);
     ViennaCLVector result = viennacl::linalg::inner_prod(*xgpu, y_tuple);
 
+    viennacl::copy(result.begin(), result.end(), z);
+
     for (i=0; i<nv; i++) {
-      viennacl::copy(result.begin(), result.end(), z);
       ierr = VecViennaCLRestoreArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
     }
 
