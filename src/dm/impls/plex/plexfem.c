@@ -120,7 +120,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreateRigidBody - For the default global section, create rigid body modes by function space interpolation
 
   Collective on DM
@@ -187,7 +187,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreateRigidBodies - For the default global section, create rigid body modes by function space interpolation
 
   Collective on DM
