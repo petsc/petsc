@@ -969,6 +969,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   if (!stag->coordinateDMType) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"You must first call DMStagSetCoordinateDMType()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1004,6 +1005,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg);CHKERRQ(ierr);
   if (stag->coordinateDMType && !flg) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   ierr = DMStagSetCoordinateDMType(dm,DMSTAG);CHKERRQ(ierr);
@@ -1046,6 +1048,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg);CHKERRQ(ierr);
   if (stag->coordinateDMType && !flg) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   ierr = DMStagSetCoordinateDMType(dm,DMPRODUCT);CHKERRQ(ierr);
