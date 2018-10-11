@@ -235,28 +235,6 @@ def dataProces(cmdLineArgs):
         luFactorGrowthRate = np.array(luFactorGrowthRate)
 
 
-        # data[module.__name__]                       = {}
-        # data[module.__name__]["dofs"]               = dofs
-        # data[module.__name__]["errors"]             = errors
-        #
-        # data[module.__name__]["times"]              = times
-        # data[module.__name__]["meanTime"]           = meanTime
-        # data[module.__name__]["timesRange"]         = times-timesMin
-        # data[module.__name__]["timeGrowthRate"]     = timeGrowthRate
-        #
-        # data[module.__name__]["flops"]              = flops
-        # data[module.__name__]["meanFlop"]           = meanFlop
-        # data[module.__name__]["flopRange"]          = flopsMax - flopsMin
-        # data[module.__name__]["flopGrowthRate"]     = flopGrowthRate
-        #
-        # data[module.__name__]["luFactor"]           = luFactor
-        # data[module.__name__]["luFactorMean"]       = luFactorMean
-        # data[module.__name__]["luFactorRange"]      = luFactor-luFactorMin
-        # data[module.__name__]["luFactorGrowthRate"] = luFactorGrowthRate
-
-        # data["dofs"]               = dofs
-        # data["errors"]             = errors
-
         data["times"]              = times
         data["meanTime"]           = meanTime
         data["timesRange"]         = times-timesMin
@@ -277,11 +255,7 @@ def dataProces(cmdLineArgs):
         for f in range(Nf):
             file.fieldList[f].fieldData["dofs"]   = dofs[f]
             file.fieldList[f].fieldData["errors"] = errors[f]
-    #print('\t\t\t***************************data*********************************')
-    #print module.__name__
-    #np.set_printoptions(precision=3, linewidth=100)
-    # for k,v in data.get(module.__name__).items():
-    #     print(" {: >18} : {}\n".format(k,v))
+
 
     file.printFile()
 
@@ -352,6 +326,7 @@ def graphGen(file, graph_flops_scaling, dim):
     efficHandles = []
     axEffic = efficFig.add_subplot(1,1,1)
     axEffic.set(xlabel = 'Time(s)', ylabel = 'Error Time', title = 'Efficacy')
+    axEffic.set_ylim(0,6)
 
 
     #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
@@ -370,7 +345,7 @@ def graphGen(file, graph_flops_scaling, dim):
 
         ##Start Mesh Convergance graph
         convRate = str(convRate)
-        #TODO have to update index for multiple fields
+
         x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['errors'],
             label = 'Field ' + field.fieldName + ' Orig Data')
 
@@ -388,12 +363,12 @@ def graphGen(file, graph_flops_scaling, dim):
 
         #statScaleHandles.append(x)
         ##Start Static Scaling with DoFs Graph
-        x, =axStatScale.loglog(file.fileData['times'], field.fieldData['dofs'][0]/file.fileData['times'],
+        x, =axStatScale.loglog(file.fileData['times'], field.fieldData['dofs']/file.fileData['times'],
             label = 'Field ' + field.fieldName)
 
         statScaleHandles.append(x)
         ##Start Efficacy graph
-        x, = axEffic.semilogx(file.fileData['times'], -np.log10(field.fieldData['errors'][0]*file.fileData['times']),
+        x, = axEffic.semilogx(file.fileData['times'], -np.log10(field.fieldData['errors']*file.fileData['times']),
             label = 'Field ' + field.fieldName)
 
         efficHandles.append(x)
