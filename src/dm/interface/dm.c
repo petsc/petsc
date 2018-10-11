@@ -2132,6 +2132,36 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
 }
 
 /*@
+    DMGlobalToLocal - update local vectors from global vector
+
+    Neighbor-wise Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - INSERT_VALUES or ADD_VALUES
+-   l - the local vector
+
+    Notes:
+    The communication involved in this update can be overlapped with computation by using
+    DMGlobalToLocalBegin() and DMGlobalToLocalEnd().
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
+
+@*/
+PetscErrorCode DMGlobalToLocal(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalBegin(dm,g,mode,l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
 
     Neighbor-wise Collective on DM
@@ -2142,10 +2172,9 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
 .   mode - INSERT_VALUES or ADD_VALUES
 -   l - the local vector
 
+    Level: intermediate
 
-    Level: beginner
-
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
 
 @*/
 PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2189,10 +2218,9 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 .   mode - INSERT_VALUES or ADD_VALUES
 -   l - the local vector
 
+    Level: intermediate
 
-    Level: beginner
-
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMLocalToGlobalBegin(), DMLocalToGlobal(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd()
 
 @*/
 PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
@@ -2313,9 +2341,41 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
   }
   PetscFunctionReturn(0);
 }
+/*@
+    DMLocalToGlobal - updates global vectors from local vectors
+
+    Neighbor-wise Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   l - the local vector
+.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+-   g - the global vector
+
+    Notes:
+    The communication involved in this update can be overlapped with computation by using
+    DMLocalToGlobalBegin() and DMLocalToGlobalEnd().
+
+    In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
+           INSERT_VALUES is not supported for DMDA; in that case simply compute the values directly into a global vector instead of a local one.
+
+    Level: beginner
+
+.seealso DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+
+@*/
+PetscErrorCode DMLocalToGlobal(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalBegin(dm,l,mode,g);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,l,mode,g);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
-    DMLocalToGlobalBegin - updates global vectors from local vectors
+    DMLocalToGlobalBegin - begins updating global vectors from local vectors
 
     Neighbor-wise Collective on DM
 
@@ -2329,9 +2389,9 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
     In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
            INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
 
-    Level: beginner
+    Level: intermediate
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+.seealso DMLocalToGlobal(), DMLocalToGlobalEnd(), DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocal(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
 
 @*/
 PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
@@ -2426,8 +2486,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 .   mode - INSERT_VALUES or ADD_VALUES
 -   g - the global vector
 
-
-    Level: beginner
+    Level: intermediate
 
 .seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalEnd()
 
