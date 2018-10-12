@@ -722,9 +722,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntl_pc_type - "none","ahess","bfgs","petsc"
-. -tao_ntl_bfgs_scale_type - type of scaling with bfgs pc, "ahess" or "bfgs"
-. -tao_ntl_init_type - "constant","direction","interpolation"
++ -tao_ntl_init_type - "constant","direction","interpolation"
 . -tao_ntl_update_type - "reduction","interpolation"
 . -tao_ntl_min_radius - lower bound on trust region radius
 . -tao_ntl_max_radius - upper bound on trust region radius

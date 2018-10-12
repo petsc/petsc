@@ -836,9 +836,7 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
               min_t f(xk + t d_k)
 
     Options Database Keys:
-+ -tao_nls_pc_type - "none","ahess","bfgs","petsc"
-. -tao_nls_bfgs_scale_type - "ahess","phess","bfgs"
-. -tao_nls_init_type - "constant","direction","interpolation"
++ -tao_nls_init_type - "constant","direction","interpolation"
 . -tao_nls_update_type - "step","direction","interpolation"
 . -tao_nls_sval - perturbation starting value
 . -tao_nls_imin - minimum initial perturbation
