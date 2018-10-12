@@ -887,6 +887,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   TAO_NLS        *nlsP;
   const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
+  char           buffer[1024];
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&nlsP);CHKERRQ(ierr);
@@ -978,7 +979,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_nls_");CHKERRQ(ierr);
+  ierr = PetscStrlcat(buffer, tao->hdr.prefix, sizeof(buffer));CHKERRQ(ierr);
+  ierr = PetscStrlcat(buffer, "tao_nls_",sizeof(buffer));CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, buffer);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
