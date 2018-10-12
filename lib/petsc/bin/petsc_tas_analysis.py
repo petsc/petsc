@@ -2,12 +2,13 @@
 import numpy as np
 import os
 os.environ['MPLCONFIGDIR'] = os.environ.get('PETSC_DIR')+'/share/petsc/xml/'
-print os.environ.get('MPLCONFIGDIR')
 import importlib
 import datetime as date
 import matplotlib.pyplot as plt
 import argparse
 import math
+import configureTAS as config
+import sys
 
 
 class File(object):
@@ -50,42 +51,6 @@ def main(cmdLineArgs):
     if cmdLineArgs.enable_graphs == 1:
         graphGen(file, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
-def statCalc(data, meanTime, meanFlop):
-    """"
-    This function takes an array of data and its associated mean, and returns the variance.
-    Variance = SUM[(mean - data)^2]/(array size)
-
-    :param data: An array containing the data to get the variance of.
-    :type data: A numpy array.
-
-    :param mean: Contains the mean of the data set.
-    :type data: A float.
-
-    :returns: The variance.
-    """
-    varTime = 0
-    varFlop = 0
-    counter = 0
-
-    for k, v in data.items():
-        varTime = varTime + (meanTime - v['time'])**2
-        varFlop = varFlop + (meanFlop - v['flop'])**2
-        counter = counter +1
-
-    statFlop = Stats("Flops", meanFlop, varFlop, math.sqrt(varFlop), (math.sqrt(varFlop)/math.sqrt(counter)))
-    statTime = Stats("Time", meanTime, varTime, math.sqrt(varTime), (math.sqrt(varTime)/math.sqrt(counter)))
-    print("Stat Flops: {}".format(statFlop.stdError))
-    print("Stat Time: {}".format(statTime.stdError))
-
-    rows = [['testtest1'], ['test2test3']]
-    columns = ['ctest', 'ctest1', 'ctest2','ctest3']
-    testData=[[1,2,3,4],[5,6,7,8]]
-    the_table = plt.table(cellText = testData,
-                            rowLabels = rows,
-                            colLabels = columns)
-    plt.show()
-
-
 
 
 def dataProces(cmdLineArgs):
@@ -102,6 +67,8 @@ def dataProces(cmdLineArgs):
         :returns: data -- A dictionary containing the parsed data from the files specified on the command line.
     """
     data = {}
+    sys.path.append(config.filePath['absoluteData'])
+    print sys.path
     print(cmdLineArgs)
     for module in cmdLineArgs.file:
         module             = importlib.import_module(module)
@@ -326,7 +293,7 @@ def graphGen(file, graph_flops_scaling, dim):
     efficHandles = []
     axEffic = efficFig.add_subplot(1,1,1)
     axEffic.set(xlabel = 'Time(s)', ylabel = 'Error Time', title = 'Efficacy')
-    axEffic.set_ylim(0,6)
+    axEffic.set_ylim(0,10)
 
 
     #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
@@ -380,20 +347,20 @@ def graphGen(file, graph_flops_scaling, dim):
         meshConvLabels = meshConvLabels + [h.get_label() for h in meshConvLstSqHandles]
 
         meshConvFig.legend(handles = meshConvHandles, labels = meshConvLabels)
-        meshConvFig.savefig('meshConvergenceField_' + field.fieldName + '_' +\
+        meshConvFig.savefig(config.filePath['absoluteGraphs']+'meshConvergenceField_' + field.fieldName + '_' +\
             date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
         meshConvFig.show()
 
         statScaleLabels = [h.get_label() for h in statScaleHandles]
 
         statScaleFig.legend(handles = statScaleHandles, labels = statScaleLabels)
-        statScaleFig.savefig('staticScalingField_' + field.fieldName + '_' +\
+        statScaleFig.savefig(config.filePath['absoluteGraphs']+'staticScalingField_' + field.fieldName + '_' +\
             date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
         statScaleFig.show()
 
         efficLabels = [h.get_label() for h in efficHandles]
         efficFig.legend(handles = efficHandles, labels = efficLabels)
-        efficFig.savefig('efficacyField_' + field.fieldName + '_' +\
+        efficFig.savefig(config.filePath['absoluteGraphs']+'efficacyField_' + field.fieldName + '_' +\
             date.datetime.now().strftime('%m_%d_%Y_%H_%M_%S') + '.png')
         efficFig.show()
 
