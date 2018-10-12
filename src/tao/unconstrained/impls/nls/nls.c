@@ -978,7 +978,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_nls_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
