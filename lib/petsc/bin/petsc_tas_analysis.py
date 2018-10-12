@@ -9,7 +9,19 @@ import argparse
 import math
 import configureTAS as config
 import sys
+import traceback
 
+# class NoDataError(Exception):
+#     """
+#     Raised if -file/-f is None and if the directory from configureTAS.absoluteData
+#        is also empty
+#     """
+#     def __init__(self, msg=None):
+#         if msg is None:
+#             msg = "No vaild data modules in  and -file/-f argument is empty. \
+#                 Please check for .py or .pyc files or specify one with the -file/-f \
+#                 argument."
+#             super(msg).__init__()
 
 class File(object):
     #Class constructor
@@ -67,10 +79,28 @@ def dataProces(cmdLineArgs):
         :returns: data -- A dictionary containing the parsed data from the files specified on the command line.
     """
     data = {}
-    sys.path.append(config.filePath['absoluteData'])
-    print sys.path
-    print(cmdLineArgs)
-    for module in cmdLineArgs.file:
+    dataPath = config.filePath['absoluteData']
+    sys.path.append(dataPath)
+    files = []
+    #if -file/-f was left blank then this will automatically add every .py and .pyc
+    #file to the files[] list to be processed.
+    if(cmdLineArgs.file == None):
+        try:
+            filesTemp = os.listdir(dataPath)
+            for f in filesTemp:
+                if f[-3:] == '.py':
+                    files.append(f[0:len(f)-3])
+                elif f[-4:] == '.pyc':
+                    files.append(f[0:len(f)-4])
+            if len(filesTemp) == 0 or len(files) == 0:
+                raise IOError()
+        except IOError:
+            sys.exit ("No vaild data modules in " + dataPath + " and -file/-f argument is empty. \n"
+            "Please check for .py or .pyc files in " + dataPath + " or specify one with the -file/-f "
+            "argument.")
+
+
+    for module in files:
         module             = importlib.import_module(module)
         Nf                 = getNf(module.Stages["ConvEst Refinement Level 1"]["ConvEst Error"][0]["error"])
         nProcs             = module.size
