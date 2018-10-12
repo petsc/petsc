@@ -761,7 +761,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   TAO_NTL        *tl;
   PetscErrorCode ierr;
   const char     *morethuente_type = TAOLINESEARCHMT;
-  char           buffer[1024];
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&tl);CHKERRQ(ierr);
@@ -838,9 +837,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = PetscStrlcat(buffer, tao->hdr.prefix, sizeof(buffer));CHKERRQ(ierr);
-  ierr = PetscStrlcat(buffer, "tao_ntl_",sizeof(buffer));CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, buffer);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(tao->ksp, "tao_ntl_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
