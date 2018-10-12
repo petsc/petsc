@@ -259,7 +259,8 @@
 
 !     Check if mymult() produces a linear operator
       if (usemf) then
-         call MatIsLinear(J,5,flg,ierr)
+         N = 5
+         call MatIsLinear(J,N,flg,ierr)
          if (.not. flg) then
             print *, 'IsLinear',flg
          endif
