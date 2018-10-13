@@ -206,12 +206,16 @@ class generateExamples(Petsc):
     lsuffix='_'
     argregex=re.compile('(?<![a-zA-Z])-(?=[a-zA-Z])')
     from testparse import parseLoopArgs
-    for key in inDict.keys():
-      if type(inDict[key])!=bytes: continue
-      keystr = str(inDict[key])
+    for key in inDict:
+      if key in ('SKIP', 'regexes'):
+        continue
       akey=('subargs' if key=='args' else key)  # what to assign
       if akey not in inDict: inDict[akey]=''
-      varlist=[]
+      if akey == 'nsize' and not inDict['nsize'].startswith('{{'):
+        # Always generate a loop over nsize, even if there is only one value
+        inDict['nsize'] = '{{' + inDict['nsize'] + '}}'
+      keystr = str(inDict[key])
+      varlist = []
       for varset in argregex.split(keystr):
         if not varset.strip(): continue
         if '{{' in varset:
@@ -220,8 +224,9 @@ class generateExamples(Petsc):
           varlist.append(keyvar)
           loopVars[akey][keyvar]=[keyvar,lvars]
           if akey=='nsize':
-            inDict[akey] = '${' + keyvar + '}'
-            lsuffix+=akey+'-'+inDict[akey]+'_'
+            if len(lvars.split()) > 1:
+              inDict[akey] = '${' + keyvar + '}'
+              lsuffix+=akey+'-'+inDict[akey]+'_'
           else:
             inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
             lsuffix+=keyvar+'-${' + keyvar + '}_'
@@ -229,7 +234,6 @@ class generateExamples(Petsc):
           if key=='args': newargs+=" -"+varset.strip()
         if varlist: loopVars[akey]['varlist']=varlist
 
-      
     # For subtests, args are always substituted in (not top level)
     if isSubtest:
       inDict['subargs']+=" "+newargs.strip()
@@ -242,10 +246,7 @@ class generateExamples(Petsc):
       if loopVars:
         inDict['args']=newargs.strip()
         inDict['label_suffix']=lsuffix.rstrip('_')
-    if loopVars:
-      return loopVars
-    else:
-      return None
+    return loopVars
 
   def getArgLabel(self,testDict):
     """
@@ -328,7 +329,7 @@ class generateExamples(Petsc):
     subst={}
 
     # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
-    if 'nsize' not in testDict: testDict['nsize']=1
+    if 'nsize' not in testDict: testDict['nsize'] = '1'
     if 'timeoutfactor' not in testDict: testDict['timeoutfactor']="1"
     for ak in testparse.acceptedkeys: 
       if ak=='test': continue
@@ -354,9 +355,6 @@ class generateExamples(Petsc):
     # This is used to label some matrices
     subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
     subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
-
-    # These can have for loops and are treated separately later
-    subst['nsize']=str(subst['nsize'])
 
     #Conf vars
     if self.petsc_arch.find('valgrind')>=0:
@@ -507,7 +505,7 @@ class generateExamples(Petsc):
     for key in loopVars:
       for var in loopVars[key]['varlist']:
         varval=loopVars[key][var]
-        outstr += indnt * i + "for "+varval[0]+" in "+varval[1]+"; do\n"
+        outstr += indnt * i + "for {0} in ${{{0}:-{1}}}; do\n".format(*varval)
         i = i + 1
     return (outstr,i)
 
@@ -573,11 +571,6 @@ class generateExamples(Petsc):
       for stest in testDict["subtests"]:
         subst=substP.copy()
         subst.update(testDict[stest])
-        # nsize is special because it is usually overwritten
-        if 'nsize' in testDict[stest]:
-          fh.write("nsize="+str(testDict[stest]['nsize'])+"\n")
-        else:
-          fh.write("nsize=1\n")
         subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
         if sLoopVars: 
@@ -666,8 +659,7 @@ class generateExamples(Petsc):
       testDict['SKIP'] = []
     # MPI requirements
     if 'MPI_IS_MPIUNI' in self.conf:
-      nsize=testDict.get('nsize','1')
-      if str(nsize) != '1':
+      if testDict.get('nsize', '1') != '1':
         testDict['SKIP'].append("Parallel test with serial build")
 
       # The requirements for the test are the sum of all the run subtests
@@ -676,8 +668,7 @@ class generateExamples(Petsc):
         for stest in testDict['subtests']:
           if 'requires' in testDict[stest]:
             testDict['requires']+=" "+testDict[stest]['requires']
-          nsize=testDict[stest].get('nsize','1')
-          if str(nsize) != '1':
+          if testDict.get('nsize', '1') != '1':
             testDict['SKIP'].append("Parallel test with serial build")
             break
 
