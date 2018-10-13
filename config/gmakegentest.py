@@ -202,9 +202,9 @@ class generateExamples(Petsc):
       loopVars['subargs']['pc_type']=[["pc_type"],["cholesky sor"]]
     subst should be passed in instead of inDict
     """
-    loopVars={}; newargs=""
+    loopVars={}; newargs=[]
     lsuffix='_'
-    argregex=re.compile('(?<![a-zA-Z])-(?=[a-zA-Z])')
+    argregex=re.compile('(?<![\w])(?=-[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in inDict:
       if key in ('SKIP', 'regexes'):
@@ -231,12 +231,14 @@ class generateExamples(Petsc):
             inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
             lsuffix+=keyvar+'-${' + keyvar + '}_'
         else:
-          if key=='args': newargs+=" -"+varset.strip()
-        if varlist: loopVars[akey]['varlist']=varlist
+          if key=='args':
+            newargs.append(varset.strip())
+        if varlist:
+          loopVars[akey]['varlist']=varlist
 
     # For subtests, args are always substituted in (not top level)
     if isSubtest:
-      inDict['subargs']+=" "+newargs.strip()
+      inDict['subargs'] += " ".join(newargs)
       inDict['args']=''
       if 'label_suffix' in inDict:
         inDict['label_suffix']+=lsuffix.rstrip('_')
@@ -244,7 +246,7 @@ class generateExamples(Petsc):
         inDict['label_suffix']=lsuffix.rstrip('_')
     else:
       if loopVars:
-        inDict['args']=newargs.strip()
+        inDict['args'] = ' '.join(newargs)
         inDict['label_suffix']=lsuffix.rstrip('_')
     return loopVars
 
