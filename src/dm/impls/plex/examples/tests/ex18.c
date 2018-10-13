@@ -83,6 +83,28 @@ Four triangles partitioned across 3 ranks
     rank 1: 1
     rank 2: 2 3
 
+Test 2 (3 ranks):
+Four triangles partitioned across 3 ranks
+
+   1 _______ 3
+   | \     / |
+   |  \ 1 /  |
+   |   \ /   |
+   | 0  0  2 |
+   |   / \   |
+   |  / 3 \  |
+   | /     \ |
+   2 ------- 4
+
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+    rank 2: 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+    rank 2: 2 3
+
 Tetrahedron
 -----------
 Test 0:
@@ -398,6 +420,45 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
       default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
+  case 2:
+    if (size != 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    switch (rank) {
+      case 0:
+      {
+        const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
+        const int      cells[3]  = {1, 2, 0};
+        PetscReal      coords[4] = {0.5, 0.5, 0.0, 1.0};
+        PetscInt       markerPoints[6] = {1, 1, 2, 1, 3, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      case 1:
+      {
+        const PetscInt numCells  = 1, numVertices = 2, numCorners = 3;
+        const int      cells[3]  = {1, 0, 3};
+        PetscReal      coords[4] = {0.0, 0.0, 1.0, 1.0};
+        PetscInt       markerPoints[6] = {1, 1, 2, 1, 3, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      case 2:
+      {
+        const PetscInt numCells  = 2, numVertices = 1, numCorners = 3;
+        const int      cells[6]  = {0, 4, 3, 0, 2, 4};
+        PetscReal      coords[2] = {1.0, 0.0};
+        PetscInt       markerPoints[10] = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      }
+      break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    }
+    break;
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
@@ -669,6 +730,11 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2
+    nsize: 3
+    args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
+  test:
+    requires:
+    suffix: 2b
     nsize: 3
     args: -testnum 1 -interpolate serial -dm_view ascii::ascii_info_detail -dm_plex_check_symmetry -dm_plex_check_skeleton unknown -dm_plex_check_geometry
 
