@@ -144,8 +144,6 @@ int main(int argc,char *argv[])
   DM                da;
   Vec               X,X0,R;
   FVCtx             ctx;
-  IS                iss;
-  IS                isf;
   PetscInt          i,k,dof,xs,xm,Mx,draw = 0,*index_slow,*index_fast,islow = 0,ifast = 0;
   PetscBool         view_final = PETSC_FALSE;
   PetscReal         ptime;
@@ -193,6 +191,7 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsBool("-simulation","Compare errors with reference solution","",ctx.simulation,&ctx.simulation,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-recursive_split","Split the domain recursively","",ctx.recursive,&ctx.recursive,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the limiter from the list of registered limiters */
@@ -241,17 +240,38 @@ int main(int argc,char *argv[])
     else
       for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
   }  /* this step need to be changed based on discontinuous point of a */
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&iss);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&isf);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"slow",iss);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"fast",isf);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"slow",ctx.iss);CHKERRQ(ierr);
+  ierr = TSRHSSplitSetIS(ts,"fast",ctx.isf);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow,&ctx);CHKERRQ(ierr);
   ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast,&ctx);CHKERRQ(ierr);
+
+  if (ctx.recursive) {
+    TS subts;
+    islow = 0;
+    ifast = 0;
+    for (i=xs; i<xs+xm; i++) {
+      PetscReal coord = ctx.xmin+i*(ctx.xmax-ctx.xmin)/(PetscReal)Mx+0.5*(ctx.xmax-ctx.xmin)/(PetscReal)Mx;
+      if (coord >= 0 && coord < ctx.xmin+(ctx.xmax-ctx.xmin)*3/4.)
+        for (k=0; k<dof; k++) index_slow[islow++] = i*dof+k;
+      if (coord >= ctx.xmin+(ctx.xmax-ctx.xmin)*3/4.)
+        for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
+    }  /* this step need to be changed based on discontinuous point of a */
+    ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss2);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf2);CHKERRQ(ierr);
+
+    ierr = TSRHSSplitGetSubTS(ts,"fast",&subts);CHKERRQ(ierr);
+    ierr = TSRHSSplitSetIS(subts,"slow",ctx.iss2);CHKERRQ(ierr);
+    ierr = TSRHSSplitSetIS(subts,"fast",ctx.isf2);CHKERRQ(ierr);
+    ierr = TSRHSSplitSetRHSFunction(subts,"slow",NULL,FVRHSFunctionslow2,&ctx);CHKERRQ(ierr);
+    ierr = TSRHSSplitSetRHSFunction(subts,"fast",NULL,FVRHSFunctionfast2,&ctx);CHKERRQ(ierr);
+  }
 
   /*ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);*/
   ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);
@@ -327,13 +347,15 @@ int main(int argc,char *argv[])
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
   ierr = PetscFree3(ctx.uLR,ctx.flux,ctx.speeds);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.iss);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.isf);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.iss2);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.isf2);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&X0);CHKERRQ(ierr);
   ierr = VecDestroy(&R);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = ISDestroy(&iss);CHKERRQ(ierr);
-  ierr = ISDestroy(&isf);CHKERRQ(ierr);
   ierr = PetscFree(index_slow);CHKERRQ(ierr);
   ierr = PetscFree(index_fast);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&limiters);CHKERRQ(ierr);

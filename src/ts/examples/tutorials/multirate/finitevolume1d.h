@@ -105,13 +105,16 @@ typedef struct {
   void        (*limit2)(LimitInfo,const PetscScalar*,const PetscScalar*,PetscInt,PetscInt,PetscInt,PetscScalar*);
   PhysicsCtx2 physics2;
   PetscInt    hratio;           /* hratio = hslow/hfast */
-  IS          isf,iss;
+  IS          isf,iss,isf2,iss2;
+  PetscBool   recursive;
 } FVCtx;
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */
 PetscErrorCode FVRHSFunction(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode FVRHSFunctionslow(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode FVRHSFunctionfast(TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode FVRHSFunctionslow2(TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode FVRHSFunctionfast2(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode FVSample(FVCtx*,DM,PetscReal,Vec);
 PetscErrorCode SolutionStatsView(DM,Vec,PetscViewer);
 
