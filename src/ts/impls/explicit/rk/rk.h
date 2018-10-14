@@ -35,5 +35,5 @@ typedef struct {
   PetscReal    time_step;
   PetscInt     dtratio;          /* ratio between slow time step size and fast step size                         */
   IS           is_fast,is_slow;
-  TS           subts_fast,subts_slow;
+  TS           subts_fast,subts_slow,subts_current,ts_root;
 } TS_RK;
