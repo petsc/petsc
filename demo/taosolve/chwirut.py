@@ -39,7 +39,7 @@ class Chwirut(object):
         X[1] = 0.08
         X[2] = 0.05
 
-    def formObjective(self, tao, X, F):
+    def formResidual(self, tao, X, F):
         x, y = self.x, self.y
         b1, b2, b3 = X.array
         F.array = y - np.exp(-b1*x)/(b2 + b3*x)
@@ -67,7 +67,7 @@ f.setFromOptions()
 
 tao = PETSc.TAO().create(PETSc.COMM_SELF)
 tao.setType(PETSc.TAO.Type.POUNDERS)
-tao.setSeparableObjective(user.formObjective, f)
+tao.setResidual(user.formResidual, f)
 tao.setFromOptions()
 
 user.formInitialGuess(x)

@@ -93,7 +93,7 @@ cdef extern from * nogil:
 
 
     int TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
-    int TaoComputeSeparableObjective(PetscTAO,PetscVec,PetscVec)
+    int TaoComputeResidual(PetscTAO,PetscVec,PetscVec)
     int TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
     int TaoComputeObjectiveAndGradient(PetscTAO,PetscVec,PetscReal*,PetscVec)
     int TaoComputeConstraints(PetscTAO,PetscVec,PetscVec)
@@ -122,7 +122,7 @@ cdef extern from * nogil:
     #int TaoGetJacobianMat(PetscTAO,PetscMat*,PetscMat*)
 
     ctypedef int TaoObjective(PetscTAO,PetscVec,PetscReal*,void*) except PETSC_ERR_PYTHON
-    ctypedef int TaoSeparableObjective(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
+    ctypedef int TaoResidual(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int TaoGradient(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int TaoObjGrad(PetscTAO,PetscVec,PetscReal*,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int TaoVarBounds(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
@@ -140,7 +140,7 @@ cdef extern from * nogil:
                                    void*) except PETSC_ERR_PYTHON
 
     int TaoSetObjectiveRoutine(PetscTAO,TaoObjective*,void*)
-    int TaoSetSeparableObjectiveRoutine(PetscTAO,PetscVec,TaoSeparableObjective,void*)
+    int TaoSetResidualRoutine(PetscTAO,PetscVec,TaoResidual,void*)
     int TaoSetGradientRoutine(PetscTAO,TaoGradient*,void*)
     int TaoSetObjectiveAndGradientRoutine(PetscTAO,TaoObjGrad*,void*)
     int TaoSetVariableBoundsRoutine(PetscTAO,TaoVarBounds*,void*)
@@ -177,15 +177,15 @@ cdef int TAO_Objective(PetscTAO _tao,
     _f[0] = asReal(retv)
     return 0
 
-cdef int TAO_SeparableObjective(PetscTAO _tao,
-                                PetscVec _x, PetscVec _f,
-                                void *ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TAO_Residual(PetscTAO _tao,
+                      PetscVec _x, PetscVec _r,
+                      void *ctx) except PETSC_ERR_PYTHON with gil:
 
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
-    cdef Vec f   = ref_Vec(_f)
-    (separable, args, kargs) = tao.get_attr("__separable__")
-    separable(tao, x, f, *args, **kargs)
+    cdef Vec r   = ref_Vec(_r)
+    (residual, args, kargs) = tao.get_attr("__residual__")
+    residual(tao, x, r, *args, **kargs)
     return 0
 
 cdef int TAO_Gradient(PetscTAO _tao,
