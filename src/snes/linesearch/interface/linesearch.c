@@ -566,7 +566,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
     PetscReal alpha,ydiffnorm;
     ierr  = VecAXPY(Ylast,-1.0,Y);CHKERRQ(ierr);
     ierr  = VecNorm(Ylast,NORM_2,&ydiffnorm);CHKERRQ(ierr);
-    alpha = ylastnorm / ydiffnorm;
+    alpha = (ydiffnorm > .001*ylastnorm) ? ylastnorm / ydiffnorm : 1000.0;
     ierr  = VecCopy(Y,Ylast);CHKERRQ(ierr);
     ierr  = VecScale(Y,alpha);CHKERRQ(ierr);
     ierr  = PetscInfo3(snes,"Angle %14.12e degrees less than threshold %14.12e, corrected step by alpha=%14.12e\n",(double)(theta*180./PETSC_PI),(double)angle,(double)alpha);CHKERRQ(ierr);
