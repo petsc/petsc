@@ -730,9 +730,9 @@ PetscErrorCode DMStagRestore1dCoordinateArraysDOFRead(DM dm,void *arrX,void *arr
 - boundaryType0,boundaryType1,boundaryType2 - boundary types in each direction
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-  Level: developer
+  Level: advanced
 
 .seealso: DMSTAG, DMBoundaryType, DMStagCreate1d(), DMStagCreate2d(), DMStagCreate3d()
 @*/
@@ -788,9 +788,9 @@ PetscErrorCode DMStagSetCoordinateDMType(DM dm,DMType dmtype)
 - dof0,dof1,dof2,dof3 - dof per stratum
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-  Level: developer
+  Level: advanced
 
 .seealso: DMSTAG
 @*/
@@ -829,7 +829,7 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
 - nRanks0,nRanks1,nRanks2 - number of ranks in each direction
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
   Level: developer
 
@@ -886,9 +886,9 @@ PetscErrorCode DMStagSetGhostType(DM dm,DMStagStencilType stencilType)
 - N0,N1,N2 - global elementwise sizes
 
   Notes:
-  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.
+  Arguments corresponding to higher dimensions are ignored for 1D and 2D grids.
 
-  Level: developer
+  Level: advanced
 
 .seealso: DMSTAG, DMStagGetGlobalSizes()
 @*/
@@ -969,6 +969,7 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   if (!stag->coordinateDMType) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"You must first call DMStagSetCoordinateDMType()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1004,6 +1005,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg);CHKERRQ(ierr);
   if (stag->coordinateDMType && !flg) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   ierr = DMStagSetCoordinateDMType(dm,DMSTAG);CHKERRQ(ierr);
@@ -1046,6 +1048,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
+  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg);CHKERRQ(ierr);
   if (stag->coordinateDMType && !flg) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   ierr = DMStagSetCoordinateDMType(dm,DMPRODUCT);CHKERRQ(ierr);

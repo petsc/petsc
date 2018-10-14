@@ -11,7 +11,7 @@
 - slot - which dimension slot, in the range 0 to dim-1
 
   Output Parameter:
-+ subdm - the sub-DM
+. subdm - the sub-DM
 
   Level: advanced
 
