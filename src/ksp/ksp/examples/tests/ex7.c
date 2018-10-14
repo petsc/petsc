@@ -81,7 +81,7 @@ int main(int argc,char **args)
   /* Create a matrix-free matrix As, P is used as a data context in MyMatShellMult() */
   ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,P,&As);CHKERRQ(ierr);
   ierr = MatSetFromOptions(As);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(As,MATOP_MULT,(void(*)(void))MyMatShellMult);
+  ierr = MatShellSetOperation(As,MATOP_MULT,(void(*)(void))MyMatShellMult);CHKERRQ(ierr);
 
   /* Check As is a linear operator: As*(ax + y) = a As*x + As*y */
   ierr = MatIsLinear(As,10,&flg);CHKERRQ(ierr);
