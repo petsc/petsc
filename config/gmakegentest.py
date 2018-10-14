@@ -204,7 +204,7 @@ class generateExamples(Petsc):
     """
     loopVars={}; newargs=[]
     lsuffix='_'
-    argregex=re.compile('(?<![\w])(?=-[a-zA-Z])')
+    argregex=re.compile('(?<![\w@])(?=-[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in inDict:
       if key in ('SKIP', 'regexes'):
@@ -225,8 +225,7 @@ class generateExamples(Petsc):
           loopVars[akey][keyvar]=[keyvar,lvars]
           if akey=='nsize':
             if len(lvars.split()) > 1:
-              inDict[akey] = '${' + keyvar + '}'
-              lsuffix+=akey+'-'+inDict[akey]+'_'
+              lsuffix += akey +'-${' + keyvar + '}'
           else:
             inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
             lsuffix+=keyvar+'-${' + keyvar + '}_'
@@ -534,6 +533,9 @@ class generateExamples(Petsc):
     # Get variables to go into shell scripts.  last time testDict used
     subst=self.getSubstVars(testDict,rpath,testname)
     loopVars = self._getLoopVars(subst,testname)  # Alters subst as well
+    if 'subtests' in testDict:
+      # The subtests inherit inDict, so we don't need top-level loops.
+      loopVars = {}
 
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
