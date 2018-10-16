@@ -1500,7 +1500,29 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = VecSet(patch->patchX[i], 1.0);CHKERRQ(ierr);
         ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchX[i], patch->dof_weights, ADD_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
       }
+
+      PetscScalar *input = NULL;
+      PetscScalar *output = NULL;
+      Vec global;
+      VecDuplicate(patch->dof_weights, &global);
+      VecSet(global, 0.);
+
+      ierr = VecGetArray(patch->dof_weights, &input);CHKERRQ(ierr);
+      ierr = VecGetArray(global, &output);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(patch->defaultSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(patch->defaultSF, MPIU_SCALAR, input, output, MPI_SUM);CHKERRQ(ierr);
+      ierr = VecRestoreArray(patch->dof_weights, &input);CHKERRQ(ierr);
+      ierr = VecRestoreArray(global, &output);CHKERRQ(ierr);
+
       ierr = VecReciprocal(patch->dof_weights);CHKERRQ(ierr);
+
+      ierr = VecGetArray(patch->dof_weights, &output);CHKERRQ(ierr);
+      ierr = VecGetArray(global, &input);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(patch->defaultSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(patch->defaultSF, MPIU_SCALAR, input, output);CHKERRQ(ierr);
+      ierr = VecRestoreArray(patch->dof_weights, &output);CHKERRQ(ierr);
+      ierr = VecRestoreArray(global, &input);CHKERRQ(ierr);
+      ierr = VecDestroy(&global);CHKERRQ(ierr);
     }
   }
   if (patch->save_operators) {
