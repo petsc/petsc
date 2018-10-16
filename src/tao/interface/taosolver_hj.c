@@ -484,7 +484,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
 }
 
 /*@C
-   TaoSetResidualJacobianRoutine - Sets the function to compute the least-squares residual Jacobian as well as the 
+   TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the 
    location to store the matrix.
 
    Logically collective on Tao
@@ -508,7 +508,7 @@ $    func(Tao tao,Vec x,Mat J,Mat Jpre,void *ctx);
 
    Level: intermediate
 @*/
-PetscErrorCode TaoSetResidualJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
+PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
   PetscErrorCode ierr;
 

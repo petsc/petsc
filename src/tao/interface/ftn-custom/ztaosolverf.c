@@ -9,7 +9,7 @@
 #define taosetobjectiveandgradientroutine_  TAOSETOBJECTIVEANDGRADIENTROUTINE
 #define taosethessianroutine_               TAOSETHESSIANROUTINE
 #define taosetresidualroutine_              TAOSETRESIDUALROUTINE
-#define taosetresidualjacobianroutine_      TAOSETRESIDUALJACOBIANROUTINE
+#define taosetjacobianresidualroutine_      TAOSETJACOBIANRESIDUALROUTINE
 #define taosetjacobianroutine_              TAOSETJACOBIANROUTINE
 #define taosetjacobianstateroutine_         TAOSETJACOBIANSTATEROUTINE
 #define taosetjacobiandesignroutine_        TAOSETJACOBIANDESIGNROUTINE
@@ -36,7 +36,7 @@
 #define taosetobjectiveandgradientroutine_  taosetobjectiveandgradientroutine
 #define taosethessianroutine_               taosethessianroutine
 #define taosetresidualroutine_              taosetresidualroutine
-#define taosetresidualjacobianroutine_      taosetresidualjacobianroutine
+#define taosetjacobianresidualroutine_      taosetjacobianresidualroutine
 #define taosetjacobianroutine_              taosetjacobianroutine
 #define taosetjacobianstateroutine_         taosetjacobianstateroutine
 #define taosetjacobiandesignroutine_        taosetjacobiandesignroutine
@@ -128,7 +128,7 @@ static PetscErrorCode ourtaoresidualroutine(Tao tao, Vec x, Vec f, void *ctx)
     PetscObjectUseFortranCallback(tao,_cb.lsres,(Tao*,Vec*,Vec*,void*,PetscErrorCode*),(&tao,&x,&f,_ctx,&ierr));
 }
 
-static PetscErrorCode ourtaoresidualjacobianroutine(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx)
+static PetscErrorCode ourtaojacobianresidualroutine(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx)
 {
     PetscObjectUseFortranCallback(tao,_cb.lsjac,(Tao*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&tao,&x,&J,&Jpre,_ctx,&ierr));
 }
@@ -208,11 +208,11 @@ PETSC_EXTERN void PETSC_STDCALL taosetresidualroutine_(Tao *tao, Vec *F, void (P
     if(!*ierr) *ierr = TaoSetResidualRoutine(*tao,*F,ourtaoresidualroutine,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taosetresidualjacobianroutine_(Tao *tao, Mat *J, Mat *Jpre, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL taosetjacobianresidualroutine_(Tao *tao, Mat *J, Mat *Jpre, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.lsjac,(PetscVoidFunction)func,ctx);
-    if(!*ierr) *ierr = TaoSetResidualJacobianRoutine(*tao,*J,*Jpre,ourtaoresidualjacobianroutine,ctx);
+    if(!*ierr) *ierr = TaoSetJacobianResidualRoutine(*tao,*J,*Jpre,ourtaojacobianresidualroutine,ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL taosetjacobianroutine_(Tao *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
