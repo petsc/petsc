@@ -942,4 +942,9 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      nsize: 4
      args: -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129 -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.5,0,1.1 -mg_levels_ksp_max_it 2
 
+   test:
+     requires: complex
+     suffix: complex
+     args: -snes_mf_operator -mat_mffd_complex -snes_monitor
+
 TEST*/

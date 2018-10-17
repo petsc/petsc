@@ -551,6 +551,8 @@ PETSC_EXTERN PetscErrorCode VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
 PETSC_EXTERN PetscErrorCode VecConjugate(Vec);
+PETSC_EXTERN PetscErrorCode VecImaginaryPart(Vec);
+PETSC_EXTERN PetscErrorCode VecRealPart(Vec);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreateToAll(Vec,VecScatter*,Vec*);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToZero(Vec,VecScatter*,Vec*);
