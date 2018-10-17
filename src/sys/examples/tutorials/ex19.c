@@ -33,5 +33,5 @@ int main(int argc,char **argv)
 
    test:
      localrunfiles: optionsfile
-
+     filter: grep -v malloc | grep -v nox
 TEST*/
