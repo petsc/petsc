@@ -726,9 +726,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntl_pc_type - "none","ahess","bfgs","petsc"
-. -tao_ntl_bfgs_scale_type - type of scaling with bfgs pc, "ahess" or "bfgs"
-. -tao_ntl_init_type - "constant","direction","interpolation"
++ -tao_ntl_init_type - "constant","direction","interpolation"
 . -tao_ntl_update_type - "reduction","interpolation"
 . -tao_ntl_min_radius - lower bound on trust region radius
 . -tao_ntl_max_radius - upper bound on trust region radius
@@ -835,13 +833,14 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   tl->update_type     = NTL_UPDATE_REDUCTION;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_ntl_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

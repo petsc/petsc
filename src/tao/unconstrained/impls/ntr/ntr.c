@@ -565,9 +565,7 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntr_pc_type - "none","ahess","bfgs","petsc"
-. -tao_ntr_bfgs_scale_type - type of scaling with bfgs pc, "ahess" or "bfgs"
-. -tao_ntr_init_type - "constant","direction","interpolation"
++ -tao_ntr_init_type - "constant","direction","interpolation"
 . -tao_ntr_update_type - "reduction","interpolation"
 . -tao_ntr_min_radius - lower bound on trust region radius
 . -tao_ntr_max_radius - upper bound on trust region radius
@@ -661,8 +659,9 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 
   /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_ntr_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

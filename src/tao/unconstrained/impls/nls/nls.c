@@ -840,9 +840,7 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
               min_t f(xk + t d_k)
 
     Options Database Keys:
-+ -tao_nls_pc_type - "none","ahess","bfgs","petsc"
-. -tao_nls_bfgs_scale_type - "ahess","phess","bfgs"
-. -tao_nls_init_type - "constant","direction","interpolation"
++ -tao_nls_init_type - "constant","direction","interpolation"
 . -tao_nls_update_type - "step","direction","interpolation"
 . -tao_nls_sval - perturbation starting value
 . -tao_nls_imin - minimum initial perturbation
@@ -974,15 +972,16 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
   nlsP->update_type     = NLS_UPDATE_STEP;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp,(PetscObject)tao,1);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_nls_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
