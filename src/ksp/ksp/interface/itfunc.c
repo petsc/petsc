@@ -933,6 +933,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
 
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ksp->totalits += ksp->its;
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
     ierr = VecDestroy(&btmp);CHKERRQ(ierr);
