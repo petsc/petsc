@@ -204,7 +204,7 @@ class generateExamples(Petsc):
     """
     loopVars={}; newargs=[]
     lsuffix='_'
-    argregex=re.compile('(?<![\w@])(?=-[a-zA-Z])')
+    argregex = re.compile(' (?=-[a-zA-Z])')
     from testparse import parseLoopArgs
     for key in inDict:
       if key in ('SKIP', 'regexes'):
