@@ -39,9 +39,10 @@ static PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr)
 static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatConvert(J, MATSEQAIJ, MAT_INPLACE_MATRIX, &J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)X,"X");CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(user->mengine,(PetscObject)X);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(user->mengine,"J = jac(X);");CHKERRQ(ierr);
@@ -49,6 +50,7 @@ static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *pt
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)J);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatConvert(J, MATSEQDENSE, MAT_INPLACE_MATRIX, &J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -63,8 +65,6 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   PetscFunctionBegin;
 
   /* Set the values for the algorithm options we want to use */
-  sprintf(buf,"%d",user->nfmax);
-  ierr = PetscOptionsSetValue(NULL,"-tao_max_funcs",buf);CHKERRQ(ierr);
   sprintf(buf,"%d",user->npmax);
   ierr = PetscOptionsSetValue(NULL,"-tao_pounders_npmax",buf);CHKERRQ(ierr);
   sprintf(buf,"%5.4e",user->delta);
@@ -85,12 +85,13 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = TaoSetResidualRoutine(tao,F,EvaluateResidual,(void*)user);CHKERRQ(ierr);
 
   /* Create Jacobian matrix and set residual Jacobian routine */  
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->m,user->n,user->n,NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user->m,user->n,NULL,&J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
   ierr = TaoSetResidualJacobianRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);
 
   /* Solve the problem */
   ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
+  ierr = TaoSetMaximumFunctionEvaluations(tao,user->nfmax);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
