@@ -156,6 +156,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   
   tao->bounded = PETSC_FALSE;
 
+  tao->header_printed = PETSC_FALSE;
+
   /* These flags prevents algorithms from overriding user options */
   tao->max_it_changed   =PETSC_FALSE;
   tao->max_funcs_changed=PETSC_FALSE;
@@ -206,7 +208,7 @@ PetscErrorCode TaoSolve(Tao tao)
                                 "Year   = 2014,\n"
                                 "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
                                 "url    = {http://www.mcs.anl.gov/tao}\n}\n",&set);CHKERRQ(ierr);
-
+  tao->header_printed = PETSC_FALSE;
   ierr = TaoSetUp(tao);CHKERRQ(ierr);
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   if (tao->linesearch) {
@@ -1535,8 +1537,9 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   gnorm=tao->residual;
   ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
-  if (its == 0 && ((PetscObject)tao)->prefix) {
+  if (its == 0 && ((PetscObject)tao)->prefix && !tao->header_printed) {
      ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+     tao->header_printed = PETSC_TRUE;
    }
   ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
@@ -1587,8 +1590,9 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
   tr=tao->trust;
   ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
-  if (its == 0 && ((PetscObject)tao)->prefix) {
+  if (its == 0 && ((PetscObject)tao)->prefix && !tao->header_printed) {
      ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+     tao->header_printed = PETSC_TRUE;
    }
   ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
