@@ -2532,6 +2532,167 @@ PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A00,Mat *A01,Mat *A10, Mat
   PetscFunctionReturn(0);
 }
 
+/*@
+    PCFieldSplitSetGKBTol -  Sets the solver tolerance for the Golub-Kahan bidiagonalization preconditioner.
+
+    Collective on PC
+
+    Input Parameters:
++   pc        - the preconditioner context
+-   tolerance - the solver tolerance
+
+    Options Database:
+.     -pc_fieldsplit_gkb_tol - default is 1e-5
+
+    Level: intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBNu(), PCFieldSplitSetGKBMaxit()
+@*/
+PetscErrorCode PCFieldSplitSetGKBTol(PC pc,PetscReal tolerance)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,tolerance,2);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBTol_C",(PC,PetscReal),(pc,tolerance));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc,PetscReal tolerance)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->gkbtol = tolerance;
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+    PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the Golub-Kahan bidiagonalization preconditioner.
+
+    Collective on PC
+
+    Input Parameters:
++   pc     - the preconditioner context
+-   maxit  - the maximum number of iterations
+
+    Options Database:
+.     -pc_fieldsplit_gkb_maxit - default is 100
+
+    Level: intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBNu()
+@*/
+PetscErrorCode PCFieldSplitSetGKBMaxit(PC pc,PetscInt maxit)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,maxit,2);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBMaxit_C",(PC,PetscInt),(pc,maxit));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc,PetscInt maxit)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->gkbmaxit = maxit;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the Golub-Kahan bidiagonalization preconditioner.
+
+    Collective on PC
+
+    Notes:
+    The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. For more details on the
+    Golub-Kahan bidiagonalization method and its lower bound stopping criterion, please refer to
+
+[Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+
+    Input Parameters:
++   pc     - the preconditioner context
+-   delay  - the delay window in the lower bound estimate
+
+    Options Database:
+.     -pc_fieldsplit_gkb_delay - default is 5
+
+    Level: intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBNu(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBMaxit()
+@*/
+PetscErrorCode PCFieldSplitSetGKBDelay(PC pc,PetscInt delay)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,delay,2);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBDelay_C",(PC,PetscInt),(pc,delay));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc,PetscInt delay)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->gkbdelay = delay;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the Golub-Kahan bidiagonalization preconditioner.
+
+    Collective on PC
+
+    Notes:
+    This shift is in general done to obtain better convergence properties for the outer loop in the algorithm. This is often achieved by chosing nu sufficiently large. However,
+    if nu is chosen too big, the matrix H might be badly conditioned and the solution of the linear system Hx = b in the inner loop gets difficult. It is therefore
+    necessary to find a good balance in between the convergence of the inner and outer loop.
+
+    For nu = 0, no shift is done. In this case A00 has to be positive definite. The matrix N in [Ar13] is then chosen as identity.
+
+[Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+
+    Input Parameters:
++   pc     - the preconditioner context
+-   nu     - the shift parameter
+
+    Options Database:
+.     -pc_fieldsplit_gkb_nu - default is 1
+
+    Level: intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetGKBDelay(), PCFieldSplitSetGKBTol(), PCFieldSplitSetGKBMaxit()
+@*/
+PetscErrorCode PCFieldSplitSetGKBNu(PC pc,PetscReal nu)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,nu,2);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetGKBNu_C",(PC,PetscReal),(pc,nu));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFieldSplitSetGKBNu_FieldSplit(PC pc,PetscReal nu)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->gkbnu = nu;
+  PetscFunctionReturn(0);
+}
+
+
 static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -2548,6 +2709,10 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",PCFieldSplitGetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",PCFieldSplitSetSchurScale_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",0);CHKERRQ(ierr);
   } else if (type == PC_COMPOSITE_GKB){
     pc->ops->apply = PCApply_FieldSplit_GKB;
     pc->ops->view  = PCView_FieldSplit_GKB;
@@ -2557,6 +2722,10 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",PCFieldSplitSetGKBTol_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",PCFieldSplitSetGKBMaxit_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",PCFieldSplitSetGKBNu_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",PCFieldSplitSetGKBDelay_FieldSplit);CHKERRQ(ierr);
   } else {
     pc->ops->apply = PCApply_FieldSplit;
     pc->ops->view  = PCView_FieldSplit;
@@ -2566,7 +2735,11 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
-   }
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBTol_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBMaxit_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBNu_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetGKBDelay_C",0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
