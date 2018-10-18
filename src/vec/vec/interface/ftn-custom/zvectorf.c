@@ -26,9 +26,13 @@
 #define vecrestorearrayread_      VECRESTOREARRAYREAD
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
-#define vecmin_                   VECMIN
-#define vecmax_                   VECMAX
-#define vecgetownershiprange_     VECGETOWNERSHIPRANGE
+#define vecmin1_                  VECMIN1
+#define vecmin2_                  VECMIN2
+#define vecmax1_                  VECMAX1
+#define vecmax2_                  VECMAX2
+#define vecgetownershiprange1_    VECGETOWNERSHIPRANGE1
+#define vecgetownershiprange2_    VECGETOWNERSHIPRANGE2
+#define vecgetownershiprange3_    VECGETOWNERSHIPRANGE3
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
 #define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -56,9 +60,13 @@
 #define vecrestorearrayread_      vecrestorearrayread
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecdestroyvecs_           vecdestroyvecs
-#define vecmin_                   vecmin
-#define vecmax_                   vecmax
-#define vecgetownershiprange_     vecgetownershiprange
+#define vecmin1_                  vecmin1
+#define vecmin2_                  vecmin2
+#define vecmax1_                  vecmax1
+#define vecmax2_                  vecmax2
+#define vecgetownershiprange1_    vecgetownershiprange1
+#define vecgetownershiprange2_    vecgetownershiprange2
+#define vecgetownershiprange3_    vecgetownershiprange3
 #define vecgetownershipranges_    vecgetownershipranges
 #define vecsetoptionsprefix_      vecsetoptionsprefix
 #endif
@@ -261,19 +269,45 @@ PETSC_EXTERN void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscError
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecmin_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecmin1_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(p);
   *ierr = VecMin(*x,p,val);
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecmax_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecmin2_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(p);
+  *ierr = VecMin(*x,p,val);
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecmax1_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(p);
   *ierr = VecMax(*x,p,val);
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecgetownershiprange_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecmax2_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(p);
+  *ierr = VecMax(*x,p,val);
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecgetownershiprange1_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(low);
+  CHKFORTRANNULLINTEGER(high);
+  *ierr = VecGetOwnershipRange(*x,low,high);
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecgetownershiprange2_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(low);
+  CHKFORTRANNULLINTEGER(high);
+  *ierr = VecGetOwnershipRange(*x,low,high);
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecgetownershiprange3_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(low);
   CHKFORTRANNULLINTEGER(high);
