@@ -338,12 +338,12 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(res,VEC_CLASSID,2);
-  tao->user_lsresP = ctx;
+  ierr = PetscObjectReference((PetscObject)res);CHKERRQ(ierr);
   if (tao->ls_res) {
     ierr = VecDestroy(&tao->ls_res);CHKERRQ(ierr);
   }
-  ierr = PetscObjectReference((PetscObject)res);CHKERRQ(ierr);
   tao->ls_res = res;
+  tao->user_lsresP = ctx;
   tao->ops->computeresidual = func;
   
   PetscFunctionReturn(0);
@@ -376,11 +376,14 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
   PetscInt       i;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = VecDestroy(&tao->res_weights_v);CHKERRQ(ierr);
-  tao->res_weights_v=sigma_v;
   if (sigma_v) {
+    PetscValidHeaderSpecific(sigma_v,VEC_CLASSID,2);
     ierr = PetscObjectReference((PetscObject)sigma_v);CHKERRQ(ierr);
   }
+  if (tao->res_weights_v) {
+    ierr = VecDestroy(&tao->res_weights_v);CHKERRQ(ierr);
+  }
+  tao->res_weights_v=sigma_v;
   if (vals) {
     if (tao->res_weights_n) {
       ierr = PetscFree(tao->res_weights_rows);CHKERRQ(ierr);

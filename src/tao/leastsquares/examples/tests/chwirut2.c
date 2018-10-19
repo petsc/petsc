@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   } else if (wtype == 2) {
     ierr = TaoSetResidualWeights(tao,NULL,NOBSERVATIONS,w_row,w_col,w_vals);CHKERRQ(ierr);
   }
-  ierr = TaoSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
   ierr = TaoSetTolerances(tao,1e-5,0.0,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */

@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetResidualJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
