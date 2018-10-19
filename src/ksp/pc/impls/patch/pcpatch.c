@@ -1368,7 +1368,11 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
     ierr = PetscFree(dnnz);CHKERRQ(ierr);
     ierr = PCPatchZeroFillMatrix_Private(*mat, ncell, patch->totalDofsPerCell, &dofsArray[offset*patch->totalDofsPerCell]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_Patch_Prealloc, pc, 0, 0, 0);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+    if(withArtificial) {
+      ierr = ISRestoreIndices(patch->dofsWithArtificial, &dofsArray);CHKERRQ(ierr);
+    } else {
+      ierr = ISRestoreIndices(patch->dofs, &dofsArray);CHKERRQ(ierr);
+    }
   }
   ierr = MatSetUp(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
