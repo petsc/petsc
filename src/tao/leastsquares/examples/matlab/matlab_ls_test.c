@@ -87,7 +87,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   /* Create Jacobian matrix and set residual Jacobian routine */  
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,user->m,user->n,NULL,&J);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J,"J");CHKERRQ(ierr);
-  ierr = TaoSetResidualJacobianRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianResidualRoutine(tao,J,J,EvaluateJacobian,(void*)user);CHKERRQ(ierr);
 
   /* Solve the problem */
   ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
