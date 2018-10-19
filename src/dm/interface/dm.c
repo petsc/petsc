@@ -1673,9 +1673,11 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 + is - The global indices for the subproblem
 - subdm - The DM for the subproblem
 
+  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
+
   Level: intermediate
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+.seealso DMPlexSetMigrationSF(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
 PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
@@ -1705,9 +1707,11 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 + is - The global indices for the subproblem, or NULL
 - superdm - The DM for the superproblem
 
+  Note: You need to call DMPlexSetMigrationSF() on the original DM if you want the Global-To-Natural map to be automatically constructed
+
   Level: intermediate
 
-.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+.seealso DMPlexSetMigrationSF(), DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
 PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
 {
@@ -5387,7 +5391,7 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 }
 
 /*@
-  DMSetUseNatural - Set the flag for creating a mapping to the natural order on distribution
+  DMSetUseNatural - Set the flag for creating a mapping to the natural order after distribution
 
   Collective on dm
 
@@ -5395,9 +5399,11 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
 + dm - The DM
 - useNatural - The flag to build the mapping to a natural order during distribution
 
+  Note: This also causes the map to be build after DMCreateSubDM() and DMCreateSuperDM()
+
   Level: beginner
 
-.seealso: DMGetUseNatural(), DMCreate()
+.seealso: DMGetUseNatural(), DMCreate(), DMPlexDistribute(), DMCreateSubDM(), DMCreateSuperDM()
 @*/
 PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
 {
