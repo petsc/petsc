@@ -257,6 +257,15 @@
       write(6,100) i+1
  100  format('Number of SNES iterations =',I2)
 
+!     Check if mymult() produces a linear operator
+      if (usemf) then
+         N = 5
+         call MatIsLinear(J,N,flg,ierr)
+         if (.not. flg) then
+            print *, 'IsLinear',flg
+         endif
+      endif
+
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Free work space.  All PETSc objects should be destroyed when they
 !     are no longer needed.
@@ -546,7 +555,7 @@
       subroutine  MyMult(J,X,F,ierr)
       use mymoduleex14f
       implicit none
-      
+
       Mat     J
       Vec     X,F
       PetscErrorCode ierr

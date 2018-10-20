@@ -374,7 +374,7 @@ SNES Object: 5 MPI processes
           Use user-defined CSR: 0
           Use local mat graph: 1
           Connectivity graph topological dimension: 2
-          Use vertices: 1 (vertex size 2)
+          Use vertices: 1 (vertex size 1)
           Use edges: 1
           Use faces: 0
           Use true near null space: 0
@@ -701,4 +701,4 @@ SNES Object: 5 MPI processes
       total: nonzeros=15134, allocated nonzeros=18606
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-L_2 Error: 4.94788e-09 [4.02642e-10, 4.93147e-09]
+L_2 Error: 4.93569e-09 [4.07655e-10, 4.91882e-09]

@@ -199,7 +199,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate_LMVMSymBrdn(B);
+  ierr = MatCreate_LMVMSymBrdn(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBRDN);CHKERRQ(ierr);
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
   B->ops->solve = MatSolve_LMVMSymBadBrdn;

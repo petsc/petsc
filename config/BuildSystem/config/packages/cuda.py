@@ -105,7 +105,7 @@ class Configure(config.package.Package):
         self.logPrint('Unable to parse CUDA version from header. Probably a buggy preprocessor')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
-    if self.CUDAVersion and self.CUDAVersion < self.CUDAMinVersion:
+    if self.CUDAVersion and int(self.CUDAVersion) < int(self.CUDAMinVersion):
       raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.verToStr(self.CUDAMinVersion)+' or higher. Found version '+self.verToStr(self.CUDAVersion))
     return
 
@@ -145,5 +145,5 @@ class Configure(config.package.Package):
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
     self.configureTypes()
-    self.addDefine('HAVE_VECCUDA','1')
+    self.addDefine('HAVE_CUDA','1')
     return

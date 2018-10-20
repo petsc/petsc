@@ -2800,8 +2800,8 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     ierr = PetscOptionsGetBool(PetscOptionsObject->options,NULL,quietopt,&quiet,NULL);CHKERRQ(ierr);
     if (!quiet) {
       ierr = PetscStrcpy(msg,"** PETSc DEPRECATION WARNING ** : the option ");CHKERRQ(ierr);
-      ierr = PetscStrcat(msg,newname);CHKERRQ(ierr);
-      ierr = PetscStrcat(msg," is deprecated as of version ");
+      ierr = PetscStrcat(msg,oldname);CHKERRQ(ierr);
+      ierr = PetscStrcat(msg," is deprecated as of version ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,version);CHKERRQ(ierr);
       ierr = PetscStrcat(msg," and will be removed in a future release.");CHKERRQ(ierr);
       if (newname) {
@@ -2813,7 +2813,7 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
         ierr = PetscStrcat(msg," ");CHKERRQ(ierr);
         ierr = PetscStrcat(msg,info);CHKERRQ(ierr);
       }
-      ierr = PetscStrcat(msg," (Silence this warning with");CHKERRQ(ierr);
+      ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
       ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
       ierr = PetscPrintf(PetscOptionsObject->comm,msg);CHKERRQ(ierr);

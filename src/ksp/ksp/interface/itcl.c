@@ -427,7 +427,19 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
+    ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view",                        &ksp->viewer,         &ksp->format,         &ksp->view);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_converged_reason",            &ksp->viewerReason,   &ksp->formatReason,   &ksp->viewReason);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_mat",                    &ksp->viewerMat,      &ksp->formatMat,      &ksp->viewMat);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_pmat",                   &ksp->viewerPMat,     &ksp->formatPMat,     &ksp->viewPMat);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_rhs",                    &ksp->viewerRhs,      &ksp->formatRhs,      &ksp->viewRhs);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_solution",               &ksp->viewerSol,      &ksp->formatSol,      &ksp->viewSol);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_mat_explicit",           &ksp->viewerMatExp,   &ksp->formatMatExp,   &ksp->viewMatExp);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_final_residual",         &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp);CHKERRQ(ierr);
     goto skipoptions;
   }
 
@@ -548,7 +560,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr        = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
     }
   }
-
 
   /*
    Calls Python function

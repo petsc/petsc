@@ -122,8 +122,13 @@
           PetscOptions o
           PetscErrorCode ierr
         End Subroutine
+        Subroutine PetscOptionsInsertString(o,n,ierr)
+          use petscsysdef
+          PetscOptions o
+          character(*) n
+          PetscErrorCode ierr
+        End Subroutine
       End Interface
-
       Interface
       subroutine PetscRandomSetType(a,b,z)
       use petscsysdef
@@ -132,7 +137,25 @@
        integer z
        end subroutine
       end Interface
-
+      Interface
+      subroutine PetscErrorf(ierr)
+      use petscsysdef
+       PetscErrorCode, intent(in) :: ierr
+      end Subroutine PetscErrorf
+      end Interface
+      Interface
+      subroutine PetscInitialize(c,ierr)
+      use petscsysdef
+       character(len=*), intent(in) :: c
+       PetscErrorCode, intent(out) :: ierr
+      end Subroutine PetscInitialize
+      end Interface
+      Interface
+      subroutine PetscFinalize(ierr)
+      use petscsysdef
+       PetscErrorCode, intent(out) :: ierr
+      end Subroutine PetscFinalize
+      end Interface
       Interface
       subroutine PetscRandomView(a,b,z)
       use petscsysdef

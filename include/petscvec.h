@@ -350,7 +350,7 @@ PETSC_EXTERN PetscErrorCode VecScatterSetUp(VecScatter);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
-PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLI
 PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 typedef struct _p_PetscCUDAIndices* PetscCUDAIndices;
 typedef struct _p_VecScatterCUDAIndices_StoS* VecScatterCUDAIndices_StoS;
 typedef struct _p_VecScatterCUDAIndices_PtoP* VecScatterCUDAIndices_PtoP;

@@ -278,7 +278,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
   ierr = MatGetOwnershipRange(Gmat_1,&my0,&Iend);CHKERRQ(ierr);
 
   /* get submatrices */
-  ierr = PetscObjectTypeCompare((PetscObject)Gmat_1, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
+  ierr = PetscStrbeginswith(((PetscObject)Gmat_1)->type_name,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
   if (isMPI) {
     /* grab matrix objects */
     mpimat_2 = (Mat_MPIAIJ*)Gmat_2->data;
@@ -297,7 +297,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
     }
   } else {
     PetscBool        isAIJ;
-    ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat_1,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+    ierr = PetscStrbeginswith(((PetscObject)Gmat_1)->type_name,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
     if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
     lid_cprowID_1 = NULL;

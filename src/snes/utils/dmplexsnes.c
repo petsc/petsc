@@ -40,6 +40,21 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationCreate - Creates a DMInterpolationInfo context
+
+  Collective on comm
+
+  Input Parameter:
+. comm - the communicator
+
+  Output Parameter:
+. ctx - the context
+
+  Level: beginner
+
+.seealso: DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationDestroy()
+@*/
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
   PetscErrorCode ierr;
@@ -58,6 +73,19 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationSetDim - Sets the spatial dimension for the interpolation context
+
+  Not collective
+
+  Input Parameters:
++ ctx - the context
+- dim - the spatial dimension
+
+  Level: intermediate
+
+.seealso: DMInterpolationGetDim(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+@*/
 PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 {
   PetscFunctionBegin;
@@ -66,6 +94,21 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationGetDim - Gets the spatial dimension for the interpolation context
+
+  Not collective
+
+  Input Parameter:
+. ctx - the context
+
+  Output Parameter:
+. dim - the spatial dimension
+
+  Level: intermediate
+
+.seealso: DMInterpolationSetDim(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+@*/
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
   PetscFunctionBegin;
@@ -74,6 +117,19 @@ PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationSetDof - Sets the number of fields interpolated at a point for the interpolation context
+
+  Not collective
+
+  Input Parameters:
++ ctx - the context
+- dof - the number of fields
+
+  Level: intermediate
+
+.seealso: DMInterpolationGetDof(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+@*/
 PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 {
   PetscFunctionBegin;
@@ -82,6 +138,21 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationGetDof - Gets the number of fields interpolated at a point for the interpolation context
+
+  Not collective
+
+  Input Parameter:
+. ctx - the context
+
+  Output Parameter:
+. dof - the number of fields
+
+  Level: intermediate
+
+.seealso: DMInterpolationSetDof(), DMInterpolationEvaluate(), DMInterpolationAddPoints()
+@*/
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
   PetscFunctionBegin;
@@ -90,6 +161,22 @@ PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationAddPoints - Add points at which we will interpolate the fields
+
+  Not collective
+
+  Input Parameters:
++ ctx    - the context
+. n      - the number of points
+- points - the coordinates for each point, an array of size n * dim
+
+  Note: The coordinate information is copied.
+
+  Level: intermediate
+
+.seealso: DMInterpolationSetDim(), DMInterpolationEvaluate(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, PetscReal points[])
 {
   PetscErrorCode ierr;
@@ -104,6 +191,20 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationSetUp - Computea spatial indices that add in point location during interpolation
+
+  Collective on ctx
+
+  Input Parameters:
++ ctx - the context
+. dm  - the DM for the function space used for interpolation
+- redundantPoints - If PETSC_TRUE, all processes are passing in the same array of points. Otherwise, points need to be communicated among processes.
+
+  Level: intermediate
+
+.seealso: DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints)
 {
   MPI_Comm          comm = ctx->comm;
@@ -207,6 +308,23 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationGetCoordinates - Gets a Vec with the coordinates of each interpolation point
+
+  Collective on ctx
+
+  Input Parameter:
+. ctx - the context
+
+  Output Parameter:
+. coordinates  - the coordinates of interpolation points
+
+  Note: The local vector entries correspond to interpolation points lying on this process, according to the associated DM. This is a borrowed vector that the user should not destroy.
+
+  Level: intermediate
+
+.seealso: DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coordinates)
 {
   PetscFunctionBegin;
@@ -216,6 +334,23 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationGetVector - Gets a Vec which can hold all the interpolated field values
+
+  Collective on ctx
+
+  Input Parameter:
+. ctx - the context
+
+  Output Parameter:
+. v  - a vector capable of holding the interpolated field values
+
+  Note: This vector should be returned using DMInterpolationRestoreVector().
+
+  Level: intermediate
+
+.seealso: DMInterpolationRestoreVector(), DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscErrorCode ierr;
@@ -230,6 +365,19 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationRestoreVector - Returns a Vec which can hold all the interpolated field values
+
+  Collective on ctx
+
+  Input Parameters:
++ ctx - the context
+- v  - a vector capable of holding the interpolated field values
+
+  Level: intermediate
+
+.seealso: DMInterpolationGetVector(), DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscErrorCode ierr;
@@ -704,7 +852,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
+  DMInterpolationEvaluate - Using the input from dm and x, calculates interpolated field values at the interpolation points.
+
   Input Parameters:
 + ctx - The DMInterpolationInfo context
 . dm  - The DM
@@ -712,7 +862,13 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
 
   Output Parameters:
 . v   - The vector containing the interpolated values
-*/
+
+  Note: A suitable v can be obtained using DMInterpolationGetVector().
+
+  Level: beginner
+
+.seealso: DMInterpolationGetVector(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Vec v)
 {
   PetscInt       dim, coneSize, n;
@@ -744,6 +900,18 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMInterpolationDestroy - Destroys a DMInterpolationInfo context
+
+  Collective on ctx
+
+  Input Parameter:
+. ctx - the context
+
+  Level: beginner
+
+.seealso: DMInterpolationEvaluate(), DMInterpolationAddPoints(), DMInterpolationCreate()
+@*/
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 {
   PetscErrorCode ierr;

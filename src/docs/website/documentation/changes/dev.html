@@ -115,14 +115,24 @@
         </ul>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+      <ul>
+        <li>MatRegisterBaseName() changed to MatRegisterRootName()</li>
+        </ul>
       <h4>PC:</h4>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>Added DMStag and associated functions, for working with quantities on regular staggered grids, in a manner similar to the usage of DMDA for colocated quantities.</li>
+        <li>Added DMLocalToGlobal() and DMLocalToGlobal()
+      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
+      <ul>
+        <li>Added new command line options to GLVis viewer, see PetscViewerGLVisOpen() manual page for details.
+      </ul>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>

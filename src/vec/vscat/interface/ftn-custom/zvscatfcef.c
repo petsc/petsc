@@ -33,3 +33,10 @@ PETSC_EXTERN void PETSC_STDCALL vecscatterview_(VecScatter *vecscatter,PetscView
   *ierr = VecScatterView(*vecscatter,v);
 }
 
+PETSC_EXTERN void PETSC_STDCALL vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfrom, int *ierr)
+{
+  CHKFORTRANNULLINTEGER(rto);
+  CHKFORTRANNULLINTEGER(rfrom);
+  *ierr = VecScatterRemap(*scat,rto,rfrom);
+}
+

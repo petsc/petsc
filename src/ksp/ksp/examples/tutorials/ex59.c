@@ -1154,7 +1154,7 @@ int main(int argc,char **args)
      suffix: bddc_fetidp_1_viennacl
      args: -subdomain_mat_type aijviennacl
    test:
-     requires: veccuda
+     requires: cuda
      suffix: bddc_fetidp_1_cuda
      args: -subdomain_mat_type aijcusparse -physical_pc_bddc_dirichlet_pc_factor_mat_solver_type cusparse
 

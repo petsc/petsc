@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist, mumps and mkl_pardiso).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
@@ -17,6 +17,10 @@ int main(int argc,char **args)
   MatFactorInfo  info;
   PetscRandom    rand;
   PetscBool      flg,testMatSolve=PETSC_TRUE,testMatMatSolve=PETSC_TRUE;
+  PetscBool      chol=PETSC_FALSE,view=PETSC_FALSE;
+#if defined(PETSC_HAVE_MUMPS)
+  PetscBool      test_mumps_opts;
+#endif
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
@@ -31,6 +35,7 @@ int main(int argc,char **args)
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -39,15 +44,25 @@ int main(int argc,char **args)
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
 
+  ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
+
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"ex125: nrhs %D\n",nrhs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(C,"rhs_");CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_factor",&view,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_matmatsolve",&testMatMatSolve,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-cholesky",&chol,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_mumps_opts",&test_mumps_opts,NULL);CHKERRQ(ierr);
+#endif
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -56,6 +71,7 @@ int main(int argc,char **args)
   {
     PetscInt    row,j,M,cols[nrhs];
     PetscScalar vals[nrhs];
+
     ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
     if (!rank) {
       for (j=0; j<nrhs; j++) cols[j] = j;
@@ -79,7 +95,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
-  /* Test LU Factorization */
+  /* Test Factorization */
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
@@ -88,27 +104,34 @@ int main(int argc,char **args)
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
+    if (chol) SETERRQ(PETSC_COMM_WORLD,1,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   case 1:
+    if (chol) SETERRQ(PETSC_COMM_WORLD,1,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU_DIST LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   case 2:
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    {
+    if (chol) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS CHOLESKY:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," MUMPS LU:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    }
+    if (test_mumps_opts) {
       /* test mumps options */
-      PetscInt    icntl;
-      PetscReal   cntl;
+      PetscInt  icntl;
+      PetscReal cntl;
 
       icntl = 2;        /* sequential matrix ordering */
-      ierr = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
+      ierr  = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
 
       cntl = 1.e-6; /* threshhold for row pivot detection */
       ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
@@ -118,23 +141,48 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   case 3:
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MKL_PARDISO LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    if (chol) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," MKL_PARDISO CHOLESKY:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," MKL_PARDISO LU:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERMKL_PARDISO,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    }
     break;
 #endif
   default:
-    ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC LU:\n");CHKERRQ(ierr);
-    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    if (chol) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC CHOLESKY:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," PETSC LU:\n");CHKERRQ(ierr);
+      ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    }
   }
 
   ierr           = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill      = 5.0;
   info.shifttype = (PetscReal) MAT_SHIFT_NONE;
-  ierr           = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  if (chol) {
+    ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
+  } else {
+    ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  }
 
   for (nfact = 0; nfact < 2; nfact++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the LU numfactorization \n",nfact);CHKERRQ(ierr);
-    ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    if (chol) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the CHOLESKY numfactorization \n",nfact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the LU numfactorization \n",nfact);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    }
+    if (view) {
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      view = PETSC_FALSE;
+    }
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
     if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
@@ -224,7 +272,7 @@ int main(int argc,char **args)
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, LU numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, numfact %D\n",norm,resi,nfact);CHKERRQ(ierr);
         }
       }
     }

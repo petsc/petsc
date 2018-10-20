@@ -642,9 +642,14 @@ and \lstinline{DMCreateLocalVector()}
 The \lstinline{InsertMode} can be either \lstinline{ADD_VALUES} or \lstinline{INSERT_VALUES}.
 
 One can scatter the local patches into the distributed vector
-with the commands
+with the command
+\begin{lstlisting}
+DMLocalToGlobal(DM da,Vec l,InsertMode mode,Vec g);
+\end{lstlisting}
+or the commands
 \begin{lstlisting}
 DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
+/* (Computation to overlap with communication) */
 DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{lstlisting}
 In general this is used with an \lstinline{InsertMode} of \lstinline{ADD_VALUES}, because if one wishes to insert values into the global vector they should
@@ -814,6 +819,10 @@ a nonlinear problem.  The analogous Fortran program is
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5f.F90}};
 see Chapter \ref{chapter_snes} for a discussion of the nonlinear
 solvers.
+
+\subsection{Staggered Grids}
+For regular grids with staggered data (living on elements, faces, edges, and/or vertices), the \lstinline{DMStag} object is available.
+It behaves much like \lstinline{DMDA}; see the \lstinline{DMSTAG} manual page for more information.
 
 % --------------------------------------------------------------------------------------
 \section{Vectors Related to Unstructured Grids}

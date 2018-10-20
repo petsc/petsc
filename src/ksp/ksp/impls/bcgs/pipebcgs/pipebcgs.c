@@ -235,9 +235,9 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
     EXA2CT European Project on EXascale Algorithms and Advanced Computational Techniques, 2016.
     
     Reference:
-    S. Cools and W. Vanroose, 
+    S. Cools and W. Vanroose,
     "The communication-hiding pipelined BiCGStab method for the parallel solution of large unsymmetric linear systems",
-    Submitted to Parallel Computing, 2016.
+    Parallel Computing, 65:1-20, 2017.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGS, KSPFBCGSL, KSPSetPCSide()
 M*/

@@ -487,9 +487,31 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 }
 
 /*MC
- KSPPIPELCG - Pipelined conjugate gradient method with deeper pipelines.
+    KSPPIPELCG - Deep pipelined (length l) Conjugate Gradient method. This method has only a single non-blocking global
+    reduction per iteration, compared to 2 blocking reductions for standard CG. The reduction is overlapped by the
+    matrix-vector product and preconditioner application of the next l iterations. The pipeline length l is a parameter
+    of the method.
 
-   Level: intermediate
+    Options Database Keys:
+.   see KSPSolve()
+
+    Level: intermediate
+
+    Notes:
+    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
+    performance of pipelined methods. See the FAQ on the PETSc website for details.
+
+    Contributed by:
+    Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
+    funded by Flemish Research Foundation (FWO) grant number 12H4617N.
+
+    Reference:
+    J. Cornelis, S. Cools and W. Vanroose,
+    "The Communication-Hiding Conjugate Gradient Method with Deep Pipelines", Submitted to SIAM Journal on Scientific
+    Computing (SISC), 2018.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSPCG, KSPPIPECG, KSPPIPECGRR, KSPPGMRES,
+    KSPPIPEBCGS, KSPSetPCSide()
 M*/
 PETSC_EXTERN
 PetscErrorCode KSPCreate_PIPELCG(KSP ksp)

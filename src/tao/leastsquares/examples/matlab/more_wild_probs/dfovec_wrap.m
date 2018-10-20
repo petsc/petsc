@@ -3,7 +3,7 @@ function out = dfovec_wrap(m,n,x,nprob,vec_out)
 global nfev fvals fvecs X_hist 
 
 fvec = dfovec(m,n,x,nprob);
-y = sum(fvec.^2);
+y = fvec'*fvec;
 
 % Update the function value history
 nfev = nfev+1;

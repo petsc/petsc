@@ -12,6 +12,7 @@ typedef struct _n_PetscViewerGLVisVecInfo *PetscViewerGLVisVecInfo;
 struct _n_PetscViewerGLVisInfo {
   PetscBool enabled;  /* whether or not to visualize data from the process (it works, but it currently misses a public API) */
   PetscBool init;     /* whether or not the popup window has been initialized (must be done after having sent the data the first time) */
+  PetscInt  size[2];  /* window sizes */
   PetscReal pause;    /* pause argument */
   char*     fmt;      /* format */
 };
@@ -29,4 +30,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer,PetscI
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer,PetscInt,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer,PetscInt*,const char**[],PetscInt*[],PetscErrorCode(**)(PetscObject,PetscInt,PetscObject[],void*),PetscObject*[],void**);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreDMWindow_Private(PetscViewer,PetscViewer*);
+
+PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveBegin(MPI_Comm,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscGLVisCollectiveEnd(MPI_Comm,PetscViewer*);
 #endif

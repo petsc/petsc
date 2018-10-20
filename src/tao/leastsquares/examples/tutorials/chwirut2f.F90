@@ -11,7 +11,7 @@
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
-!  Routines: TaoSetSeparableObjectiveRoutine();
+!  Routines: TaoSetResidualRoutine();
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
@@ -73,7 +73,7 @@
          CHKERRA(ierr)
 
 !     Set routines for function, gradient, and hessian evaluation
-         call TaoSetSeparableObjectiveRoutine(tao,f,                    &
+         call TaoSetResidualRoutine(tao,f,                    &
      &        FormFunction,0,ierr)
          CHKERRA(ierr)
 

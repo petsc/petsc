@@ -159,9 +159,9 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   ierr = VecGetOwnershipRange(lclP->V,&lo,&hi);CHKERRQ(ierr);
   if (0) {
     PetscInt sizeU,sizeV;
-    ierr = VecGetSize(lclP->U,&sizeU);
-    ierr = VecGetSize(lclP->V,&sizeV);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);
+    ierr = VecGetSize(lclP->U,&sizeU);CHKERRQ(ierr);
+    ierr = VecGetSize(lclP->V,&sizeV);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"size(U)=%D, size(V)=%D\n",sizeU,sizeV);CHKERRQ(ierr);
   }
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design);CHKERRQ(ierr);
   ierr = VecScatterCreateWithData(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter);CHKERRQ(ierr);
@@ -248,6 +248,10 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
     tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)

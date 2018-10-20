@@ -381,7 +381,7 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS v
   PetscValidHeaderSpecific(divudotp,MAT_CLASSID,2);
   PetscCheckSameComm(pc,1,divudotp,2);
   PetscValidLogicalCollectiveBool(pc,trans,3);
-  if (vl2l) PetscValidHeaderSpecific(divudotp,IS_CLASSID,4);
+  if (vl2l) PetscValidHeaderSpecific(vl2l,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
   ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l));CHKERRQ(ierr);
@@ -1320,17 +1320,20 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
   Vec            used_vec;
-  PetscBool      save_rhs = PETSC_TRUE, benign_correction_computed;
+  PetscBool      iscg = PETSC_FALSE, save_rhs = PETSC_TRUE, benign_correction_computed;
 
   PetscFunctionBegin;
   /* if we are working with CG, one dirichlet solve can be avoided during Krylov iterations */
   if (ksp) {
-    PetscBool iscg, isgroppcg, ispipecg, ispipecgrr;
+    PetscBool isgroppcg, ispipecg, ispipelcg, ispipecgrr;
+
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPGROPPCG,&isgroppcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipecg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECG,&ispipelcg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPIPECGRR,&ispipecgrr);CHKERRQ(ierr);
-    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || (!iscg && !isgroppcg && !ispipecg && !ispipecgrr)) {
+    iscg = (PetscBool)(iscg || isgroppcg || ispipecg || ispipelcg || ispipecgrr);
+    if (pcbddc->benign_apply_coarse_only || pcbddc->switch_static || !iscg) {
       ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
@@ -1452,6 +1455,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
       pcbddc->rhs_change = PETSC_TRUE;
     }
     pcbddc->benign_apply_coarse_only = PETSC_FALSE;
+  } else {
+    ierr = VecDestroy(&pcbddc->benign_vec);CHKERRQ(ierr);
   }
 
   /* dbg output */
@@ -1576,7 +1581,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscMPIInt     size;
   PetscBool       computesubschurs;
   PetscBool       computeconstraintsmatrix;
-  PetscBool       new_nearnullspace_provided,ismatis;
+  PetscBool       new_nearnullspace_provided,ismatis,rl;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1590,7 +1595,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
-  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
+  rl = pcbddc->recompute_topography;
+  if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
+  ierr = MPIU_Allreduce(&rl,&pcbddc->recompute_topography,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   if (pcbddc->recompute_topography) {
     pcbddc->graphanalyzed    = PETSC_FALSE;
     computeconstraintsmatrix = PETSC_TRUE;
@@ -1659,8 +1666,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS* pcis = (PC_IS*)pc->data;
 
     if (pcbddc->user_ChangeOfBasisMatrix || pcbddc->use_change_of_basis || !computesubschurs) pcbddc->benign_change_explicit = PETSC_TRUE;
-    /* detect local saddle point and change the basis in pcbddc->local_mat (TODO: reuse case) */
-    ierr = PCBDDCBenignDetectSaddlePoint(pc,&zerodiag);CHKERRQ(ierr);
+    /* detect local saddle point and change the basis in pcbddc->local_mat */
+    ierr = PCBDDCBenignDetectSaddlePoint(pc,(PetscBool)(!pcbddc->recompute_topography),&zerodiag);CHKERRQ(ierr);
     /* pop B0 mat from local mat */
     ierr = PCBDDCBenignPopOrPushB0(pc,PETSC_TRUE);CHKERRQ(ierr);
     /* give pcis a hint to not reuse submatrices during PCISCreate */
@@ -2709,7 +2716,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
       KSP       *ksps;
       PC        ppc,lagpc;
       PetscInt  nn;
-      PetscBool ismatis,matisok = PETSC_FALSE;
+      PetscBool ismatis,matisok = PETSC_FALSE,check = PETSC_FALSE;
 
       /* set the solver for the (0,0) block */
       ierr = PCFieldSplitSchurGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
@@ -2744,7 +2751,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
       /* Olof's idea: interface Schur complement preconditioner for the mass matrix */
       ierr = KSPGetPC(ksps[1],&ppc);CHKERRQ(ierr);
       if (fake) {
-        BDDCIPC_ctx bddcipc_ctx;
+        BDDCIPC_ctx    bddcipc_ctx;
+        PetscContainer c;
 
         matisok = PETSC_TRUE;
 
@@ -2753,6 +2761,18 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
         ierr = PCCreate(comm,&bddcipc_ctx->bddc);CHKERRQ(ierr);
         ierr = PCSetType(bddcipc_ctx->bddc,PCBDDC);CHKERRQ(ierr);
         ierr = PCSetOperators(bddcipc_ctx->bddc,M,M);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_pCSR",(PetscObject*)&c);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)M,MATIS,&ismatis);CHKERRQ(ierr);
+        if (c && ismatis) {
+          Mat      lM;
+          PetscInt *csr,n;
+
+          ierr = MatISGetLocalMat(M,&lM);CHKERRQ(ierr);
+          ierr = MatGetSize(lM,&n,NULL);CHKERRQ(ierr);
+          ierr = PetscContainerGetPointer(c,(void**)&csr);CHKERRQ(ierr);
+          ierr = PCBDDCSetLocalAdjacencyGraph(bddcipc_ctx->bddc,n,csr,csr + (n + 1),PETSC_COPY_VALUES);CHKERRQ(ierr);
+          ierr = MatISRestoreLocalMat(M,&lM);CHKERRQ(ierr);
+        }
         ierr = PCSetOptionsPrefix(bddcipc_ctx->bddc,((PetscObject)ksps[1])->prefix);CHKERRQ(ierr);
         ierr = PCSetErrorIfFailure(bddcipc_ctx->bddc,pc->erroriffailure);CHKERRQ(ierr);
         ierr = PCSetFromOptions(bddcipc_ctx->bddc);CHKERRQ(ierr);
@@ -2774,6 +2794,61 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
         ierr = PetscObjectTypeCompareAny((PetscObject)ppc,&matisok,PCBDDC,PCJACOBI,PCNONE,PCMG,"");CHKERRQ(ierr);
         if (ismatis && !matisok) {
           ierr = MatConvert(M,MATAIJ,MAT_INPLACE_MATRIX,&M);CHKERRQ(ierr);
+        }
+      }
+
+      /* run the subproblems to check convergence */
+      ierr = PetscOptionsGetBool(NULL,((PetscObject)newmat)->prefix,"-check_saddlepoint",&check,NULL);CHKERRQ(ierr);
+      if (check) {
+        PetscInt i;
+
+        for (i=0;i<nn;i++) {
+          KSP       kspC;
+          PC        pc;
+          Mat       F,pF;
+          Vec       x,y;
+          PetscBool isschur,prec = PETSC_TRUE;
+
+          ierr = KSPCreate(PetscObjectComm((PetscObject)ksps[i]),&kspC);CHKERRQ(ierr);
+          ierr = KSPSetOptionsPrefix(kspC,((PetscObject)ksps[i])->prefix);CHKERRQ(ierr);
+          ierr = KSPAppendOptionsPrefix(kspC,"check_");CHKERRQ(ierr);
+          ierr = KSPGetOperators(ksps[i],&F,&pF);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)F,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+          if (isschur) {
+            KSP  kspS,kspS2;
+            Mat  A00,pA00,A10,A01,A11;
+            char prefix[256];
+
+            ierr = MatSchurComplementGetKSP(F,&kspS);CHKERRQ(ierr);
+            ierr = MatSchurComplementGetSubMatrices(F,&A00,&pA00,&A01,&A10,&A11);CHKERRQ(ierr);
+            ierr = MatCreateSchurComplement(A00,pA00,A01,A10,A11,&F);CHKERRQ(ierr);
+            ierr = MatSchurComplementGetKSP(F,&kspS2);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sschur_",((PetscObject)kspC)->prefix);CHKERRQ(ierr);
+            ierr = KSPSetOptionsPrefix(kspS2,prefix);CHKERRQ(ierr);
+            ierr = KSPGetPC(kspS2,&pc);CHKERRQ(ierr);
+            ierr = PCSetType(pc,PCKSP);CHKERRQ(ierr);
+            ierr = PCKSPSetKSP(pc,kspS);CHKERRQ(ierr);
+            ierr = KSPSetFromOptions(kspS2);CHKERRQ(ierr);
+            ierr = KSPGetPC(kspS2,&pc);CHKERRQ(ierr);
+            ierr = PCSetUseAmat(pc,PETSC_TRUE);CHKERRQ(ierr);
+          } else {
+            ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
+          }
+          ierr = KSPSetFromOptions(kspC);CHKERRQ(ierr);
+          ierr = PetscOptionsGetBool(NULL,((PetscObject)kspC)->prefix,"-preconditioned",&prec,NULL);CHKERRQ(ierr);
+          if (prec)  {
+            ierr = KSPGetPC(ksps[i],&pc);CHKERRQ(ierr);
+            ierr = KSPSetPC(kspC,pc);CHKERRQ(ierr);
+          }
+          ierr = KSPSetOperators(kspC,F,pF);CHKERRQ(ierr);
+          ierr = MatCreateVecs(F,&x,&y);CHKERRQ(ierr);
+          ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+          ierr = MatMult(F,x,y);CHKERRQ(ierr);
+          ierr = KSPSolve(kspC,y,x);CHKERRQ(ierr);
+          ierr = KSPDestroy(&kspC);CHKERRQ(ierr);
+          ierr = MatDestroy(&F);CHKERRQ(ierr);
+          ierr = VecDestroy(&x);CHKERRQ(ierr);
+          ierr = VecDestroy(&y);CHKERRQ(ierr);
         }
       }
       ierr = PetscFree(ksps);CHKERRQ(ierr);

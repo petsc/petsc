@@ -57,7 +57,7 @@ class Configure(config.package.GNUPackage):
     '''bootstrap, then standar GNU configure; make; make install'''
     import os
     if not os.path.isfile(os.path.join(self.packageDir,'configure')):
-      self.logPrintBox('Trying to bootstrap p4est using autotools; this make take several minutes')
+      self.logPrintBox('Trying to bootstrap p4est using autotools; this may take several minutes')
       try:
         self.executeShellCommand('./bootstrap',cwd=self.packageDir,log=self.log)
       except RuntimeError as e:

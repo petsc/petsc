@@ -37,13 +37,13 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
   PetscBool      sametype,found,subclass = PETSC_FALSE;
-  MatBaseName    names = MatBaseNameList;
+  MatRootName    names = MatRootNameList;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
 
   while (names) {
-    ierr = PetscStrcmp(matype,names->bname,&found);CHKERRQ(ierr);
+    ierr = PetscStrcmp(matype,names->rname,&found);CHKERRQ(ierr);
     if (found) {
       PetscMPIInt size;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
@@ -167,33 +167,44 @@ PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
   PetscFunctionReturn(0);
 }
 
-MatBaseName MatBaseNameList = 0;
+MatRootName MatRootNameList = 0;
 
 /*@C
-      MatRegisterBaseName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
+      MatRegisterRootName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type. MatSetType()
+        and -mat_type will automatically use the sequential or parallel version based on the size of the MPI communicator associated with the
+        matrix.
 
   Input Parameters:
-+     bname - the basename, for example, MATAIJ
++     rname - the rootname, for example, MATAIJ
 .     sname - the name of the sequential matrix type, for example, MATSEQAIJ
 -     mname - the name of the parallel matrix type, for example, MATMPIAIJ
 
+  Notes: The matrix rootname should not be confused with the base type of the function PetscObjectBaseTypeCompare()
 
-  Level: advanced
+  Developer Notes: PETSc vectors have a similar rootname that indicates PETSc should automatically select the appropriate VecType based on the
+      size of the communicator but it is implemented by simply having additional VecCreate_RootName() registerer routines that dispatch to the
+      appropriate creation routine. Why have two different ways of implementing the same functionality for different types of objects? It is
+      confusing.
+
+  Level: developer
+
+.seealso: PetscObjectBaseTypeCompare()
+
 @*/
-PetscErrorCode  MatRegisterBaseName(const char bname[],const char sname[],const char mname[])
+PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const char mname[])
 {
   PetscErrorCode ierr;
-  MatBaseName    names;
+  MatRootName    names;
 
   PetscFunctionBegin;
   ierr = PetscNew(&names);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(bname,&names->bname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(rname,&names->rname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(sname,&names->sname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(mname,&names->mname);CHKERRQ(ierr);
-  if (!MatBaseNameList) {
-    MatBaseNameList = names;
+  if (!MatRootNameList) {
+    MatRootNameList = names;
   } else {
-    MatBaseName next = MatBaseNameList;
+    MatRootName next = MatRootNameList;
     while (next->next) next = next->next;
     next->next = names;
   }

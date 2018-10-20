@@ -222,6 +222,7 @@ struct _p_DM {
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
+  NullSpaceFunc           nearnullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscDS                 prob;
   DMBoundary              boundary;          /* List of boundary conditions */
@@ -246,6 +247,8 @@ PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,const PetscInt[],IS*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateSuperDM_Section_Private(DM[],PetscInt,IS**,DM*);
+
+PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,PetscViewer));
 
 /*
 

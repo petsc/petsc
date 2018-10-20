@@ -41,7 +41,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
@@ -166,7 +166,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   if (Y->valid_GPU_matrix != PETSC_OFFLOAD_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_OFFLOAD_CPU;
   }
