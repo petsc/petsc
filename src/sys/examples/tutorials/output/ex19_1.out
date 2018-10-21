@@ -1,5 +1,4 @@
 #PETSc Option Table entries:
--malloc_test
 -option1 value1
 -option2
 -option3 value3
