@@ -1719,7 +1719,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecRestoreArray(patch->dof_weights, &input);CHKERRQ(ierr);
       ierr = VecRestoreArray(global, &output);CHKERRQ(ierr);
 
-      ierr = VecReciprocal(patch->dof_weights);CHKERRQ(ierr);
+      ierr = VecReciprocal(global);CHKERRQ(ierr);
 
       ierr = VecGetArray(patch->dof_weights, &output);CHKERRQ(ierr);
       ierr = VecGetArray(global, &input);CHKERRQ(ierr);
