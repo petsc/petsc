@@ -1305,8 +1305,9 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
 
   PetscFunctionBegin;
 	if(withArtificial) {
+   // would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here
 		x = patch->patchXWithArtificial[point];
-		y = patch->patchYWithArtificial[point];
+		y = patch->patchXWithArtificial[point];
 	}
 	else {
 		x = patch->patchX[point];
@@ -1602,7 +1603,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
 
 		if(patch->multiplicative) {
 			ierr = PetscMalloc1(patch->npatch, &patch->patchXWithArtificial);CHKERRQ(ierr);
-			ierr = PetscMalloc1(patch->npatch, &patch->patchYWithArtificial);CHKERRQ(ierr);
 			ierr = PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
 		}
     for (p = pStart; p < pEnd; ++p) {
@@ -1617,8 +1617,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &dof);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = VecSetUp(patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
-        ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchYWithArtificial[p-pStart]);CHKERRQ(ierr);
-        ierr = VecSetUp(patch->patchYWithArtificial[p-pStart]);CHKERRQ(ierr);
 
 				// Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the 
 				// the index in the patch with all dofs
@@ -1632,16 +1630,16 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &numPatchDofsWithArtificial);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(patch->gtolCountsWithArtificial, p, &offsetWithArtificial);CHKERRQ(ierr);
 
-        printf("\n--------------------------------------------------\n");
-        printf("\n------------ without artificial ------------------\n");
-        for (PetscInt i=0; i<numPatchDofs; i++) {
-          printf("%i ", gtolArray[i + offset]);
-        }
-        printf("\n-------------- with artificial -------------------\n");
-        for (PetscInt i=0; i<numPatchDofsWithArtificial; i++) {
-          printf("%i ", gtolArrayWithArtificial[i + offsetWithArtificial]);
-        }
-        printf("\n--------------------------------------------------\n");
+        /*printf("\n--------------------------------------------------\n");*/
+        /*printf("\n------------ without artificial ------------------\n");*/
+        /*for (PetscInt i=0; i<numPatchDofs; i++) {*/
+        /*  printf("%i ", gtolArray[i + offset]);*/
+        /*}*/
+        /*printf("\n-------------- with artificial -------------------\n");*/
+        /*for (PetscInt i=0; i<numPatchDofsWithArtificial; i++) {*/
+        /*  printf("%i ", gtolArrayWithArtificial[i + offsetWithArtificial]);*/
+        /*}*/
+        /*printf("\n--------------------------------------------------\n");*/
 
         PetscInt dofWithoutArtificialCounter = 0;
         PetscInt *patchWithoutArtificialToWithArtificialArray;
@@ -1679,12 +1677,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = PetscMalloc1(patch->npatch, &patch->mat);CHKERRQ(ierr);
       for (i = 0; i < patch->npatch; ++i) {
         ierr = PCPatchCreateMatrix_Private(pc, i, &patch->mat[i], PETSC_FALSE);CHKERRQ(ierr);
-      }
-      if(patch->multiplicative) {
-        ierr = PetscMalloc1(patch->npatch, &patch->matWithArtificial);CHKERRQ(ierr);
-        for (i = 0; i < patch->npatch; ++i) {
-          ierr = PCPatchCreateMatrix_Private(pc, i, &patch->matWithArtificial[i], PETSC_TRUE);CHKERRQ(ierr);
-        }
       }
     }
     ierr = PetscLogEventEnd(PC_Patch_CreatePatches, pc, 0, 0, 0);CHKERRQ(ierr);
@@ -1735,15 +1727,25 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = MatZeroEntries(patch->mat[i]);CHKERRQ(ierr);
       ierr = PCPatchComputeOperator_Private(pc, patch->mat[i], i, PETSC_FALSE);CHKERRQ(ierr);
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
-      printf("Patch %i\n", i);
-      MatView(patch->mat[i], 0);
     }
     if(patch->multiplicative) {
+      ierr = PetscMalloc1(patch->npatch, &patch->matWithArtificial);CHKERRQ(ierr);
       for (i = 0; i < patch->npatch; ++i) {
-        ierr = MatZeroEntries(patch->matWithArtificial[i]);CHKERRQ(ierr);
-        ierr = PCPatchComputeOperator_Private(pc, patch->matWithArtificial[i], i, PETSC_TRUE);CHKERRQ(ierr);
-        printf("Patch %i, with artificial\n", i);
-        MatView(patch->matWithArtificial[i], 0);
+        // Instead of padding patch->patchY with zeros to get
+        // patch->patchYWithArtificial and then multiplying with the matrix,
+        // just get rid of the columns that correspond to the dofs with
+        // artificial bcs. That's of course fairly inefficient, hopefully we
+        // can just assemble the rectangular matrix in the first place.
+        Mat matSquare;
+        ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
+        ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
+        ierr = PCPatchComputeOperator_Private(pc, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
+        PetscInt dof;
+        ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
+        IS rowis;
+        ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
+        ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
       }
     }
   }
@@ -1823,37 +1825,29 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
       }
 
       ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchY[i], patch->localY, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
-			if(patch->multiplicative){
-				Mat multMat;
-				if (patch->save_operators) {
-					multMat = patch->matWithArtificial[i];
-				} else {
-					ierr = PCPatchCreateMatrix_Private(pc, i, &multMat, PETSC_TRUE);CHKERRQ(ierr);
-					ierr = PCPatchComputeOperator_Private(pc, multMat, i, PETSC_TRUE);CHKERRQ(ierr);
-				}
-        // transport patch->patchY[i] into patch->patchYWithArtificial[i]
-        PetscInt patchYSize;
-        VecGetSize(patch->patchY[i], &patchYSize);
-        VecSet(patch->patchYWithArtificial[i], 0.);
-        PetscScalar *patchYArray;
-        PetscScalar *patchYWithArtificialArray;
-        ierr = VecGetArray(patch->patchY[i], &patchYArray); CHKERRQ(ierr);
-        ierr = VecGetArray(patch->patchYWithArtificial[i], &patchYWithArtificialArray); CHKERRQ(ierr);
-        const PetscInt *patchWithoutArtificialToWithArtificialArray;
-        ierr = ISGetIndices(patch->dofMappingWithoutToWithArtificial[i], &patchWithoutArtificialToWithArtificialArray); CHKERRQ(ierr);
-        for(PetscInt k=0; k<patchYSize; k++) {
-            patchYWithArtificialArray[patchWithoutArtificialToWithArtificialArray[k]] = patchYArray[k];
+      if(patch->multiplicative){
+        Mat multMat;
+        if (patch->save_operators) {
+          multMat = patch->matWithArtificial[i];
+        } else {
+          /*Very inefficient, hopefully we can just assemble the rectangular matrix in the first place.*/
+          Mat matSquare;
+          ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
+          ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
+          ierr = PCPatchComputeOperator_Private(pc, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
+          PetscInt dof;
+          ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
+          IS rowis;
+          ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
+          ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
+          ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
         }
-        ierr = VecRestoreArray(patch->patchY[i], &patchYArray); CHKERRQ(ierr);
-        ierr = VecRestoreArray(patch->patchYWithArtificial[i], &patchYWithArtificialArray); CHKERRQ(ierr);
-        ierr = ISRestoreIndices(patch->dofMappingWithoutToWithArtificial[i], &patchWithoutArtificialToWithArtificialArray); CHKERRQ(ierr);
-
-        ierr = MatMult(multMat, patch->patchYWithArtificial[i], patch->patchXWithArtificial[i]); CHKERRQ(ierr);
+        ierr = MatMult(multMat, patch->patchY[i], patch->patchXWithArtificial[i]); CHKERRQ(ierr);
         ierr = VecScale(patch->patchXWithArtificial[i], -1.0); CHKERRQ(ierr);
         ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchXWithArtificial[i], patch->localX, ADD_VALUES, SCATTER_REVERSE, PETSC_TRUE); CHKERRQ(ierr);
-				if (patch->multiplicative && !patch->save_operators) {
-					ierr = MatDestroy(&multMat); CHKERRQ(ierr);
-				}
+        if (patch->multiplicative && !patch->save_operators) {
+          ierr = MatDestroy(&multMat); CHKERRQ(ierr);
+        }
       }
     }
   }

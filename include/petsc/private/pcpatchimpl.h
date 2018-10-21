@@ -63,7 +63,7 @@ typedef struct {
   MatType              sub_mat_type;       /* Matrix type for patch systems */
   Vec                 *patchX, *patchY;    /* RHS and solution for each patch */
   IS                  *dofMappingWithoutToWithArtificial;
-  Vec                 *patchXWithArtificial, *patchYWithArtificial;    /* like patchX, patchY but extra entries to include dofs with artificial bcs*/
+  Vec                 *patchXWithArtificial;    /* like patchX but extra entries to include dofs with artificial bcs*/
   Vec                 *patch_dof_weights;  /* Weighting for dof in each patch */
   Vec                  localX, localY;     /* ??? */
   Vec                  dof_weights;        /* In how many patches does each dof lie? */
