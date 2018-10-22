@@ -2700,9 +2700,11 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . ids         - An array of ids for constrained points
 - ctx         - An optional user context for bcFunc
 
+  Note: The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary().
+
   Level: developer
 
-.seealso: PetscDSAddBoundary(), PetscDSGetBoundary()
+.seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSGetNumBoundary()
 @*/
 PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
 {
@@ -2771,7 +2773,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 }
 
 /*@C
-  PetscDSGetBoundary - Add a boundary condition to the model
+  PetscDSGetBoundary - Gets a boundary condition to the model
 
   Input Parameters:
 + ds          - The PetscDS object
