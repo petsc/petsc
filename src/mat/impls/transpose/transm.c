@@ -82,7 +82,6 @@ PetscErrorCode MatCreateVecs_Transpose(Mat A,Vec *r, Vec *l)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
 {
   Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
@@ -93,7 +92,7 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
 }
 
 /*@
-      MatTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT'
+      MatTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT
 
    Logically collective on Mat
 

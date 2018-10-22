@@ -4990,7 +4990,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pets
 
     Level: developer
 
-.seealso: MatGetOwnerShipRange(), MatMPIAIJGetLocalMatCondensed()
+.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMatCondensed()
 
 @*/
 PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
