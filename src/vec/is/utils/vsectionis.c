@@ -3169,7 +3169,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 
   Input Parameters:
 + origSection - the PetscSection describing the layout of the array
-. dataType - MPI_Datatype describing the data type of the array
+. dataType - MPI_Datatype describing the data type of the array (currently only MPIU_INT, MPIU_SCALAR, MPIU_REAL)
 . origArray - the array; its size must be equal to the storage size of origSection
 - points - IS with points to extract; its indices must lie in the chart of origSection
 
