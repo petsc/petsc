@@ -9,7 +9,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v0.2.19'
+    self.gitcommit        = 'v0.3.3'
     self.download         = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.precisions       = ['single','double']
     self.fc               = 1
@@ -40,6 +40,8 @@ class Configure(config.package.Package):
       cmdline += " INTERFACE64=1 "
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
+    if not self.argDB['with-shared-libraries']:
+      cmdline += " NO_SHARED=1 "
 
     libdir = self.libDir
     blasDir = self.packageDir

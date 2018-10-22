@@ -1,0 +1,6 @@
+#PETSc Option Table entries:
+-option1 value1
+-option2
+-option3 value3
+-option_in_file 22
+#End of PETSc Option Table entries
