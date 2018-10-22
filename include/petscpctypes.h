@@ -1,8 +1,6 @@
 #if !defined(_PETSCPCTYPES_H)
 #define _PETSCPCTYPES_H
 
-#include <petscdmtypes.h>
-
 /*S
      PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
