@@ -43,7 +43,7 @@ def getenums(filename):
       while line:
         fl = reg.search(line)
         if fl:
-	  struct = struct.replace("\\","")
+          struct = struct.replace("\\","")
   	  struct = struct.replace("\n","")
   	  struct = struct.replace(";","")
   	  struct = struct.replace("typedef enum","")	
@@ -66,7 +66,7 @@ def getenums(filename):
             if i[0] == " ": i = i[1:]
             ivalues.append(i)
 
-	  enums[name] = ivalues
+          enums[name] = ivalues
           break
         line = f.readline()
         struct = struct + line
@@ -108,7 +108,7 @@ def getstructs(filename):
       while line:
         fl = reg.search(line)
         if fl:
-	  struct = struct.replace("\\","")
+          struct = struct.replace("\\","")
   	  struct = struct.replace("\n","")
   	  struct = struct.replace("typedef struct {","")
           struct = regblank.sub(" ",struct)
@@ -126,7 +126,7 @@ def getstructs(filename):
           for i in values:
             if i[0] == " ": i = i[1:]
             ivalues.append(i)
-	  structs[name] = ivalues
+          structs[name] = ivalues
           break
         line = f.readline()
         struct = struct + line
@@ -192,7 +192,7 @@ def getfunctions(filename):
         for i in rejects:
           if struct.find(i) > -1:
             reject = 1
-	if  not reject:
+        if  not reject:
           args = struct[struct.find("(")+1:struct.find(")")]
           args = args.split(",")
           if args == ['void']: args = []

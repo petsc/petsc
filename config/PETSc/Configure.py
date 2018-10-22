@@ -3,15 +3,8 @@ import config.base
 import os
 import sys
 import re
-import cPickle
+import pickle
 import string
-
-# The sorted() builtin is not available with python-2.3
-try: sorted
-except NameError:
-  def sorted(lst):
-    lst.sort()
-    return lst
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -468,7 +461,7 @@ prepend-path PATH "%s"
 
   def dumpConfigInfo(self):
     import time
-    fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
+    fd = open(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return
@@ -480,7 +473,7 @@ prepend-path PATH "%s"
     import script
     def escape(s):
       return s.replace('"',r'\"').replace(r'\ ',r'\\ ')
-    fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
+    fd = open(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
     buildhost = platform.node()
@@ -559,9 +552,6 @@ prepend-path PATH "%s"
         if elem not in unique and elem != '':
           unique.append(elem)
       return unique
-    try: reversed # reversed was added in Python-2.4
-    except NameError:
-      def reversed(lst): return lst[::-1]
     def nublast(lst):
       'Return a list containing the last occurrence of each unique entry in a list'
       return reversed(nub(reversed(lst)))
@@ -628,7 +618,7 @@ prepend-path PATH "%s"
         libvars.append(libvar)
       fd.write('mark_as_advanced (' + ' '.join(libvars) + ')\n')
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
-      includes = filter(notstandardinclude,includes)
+      includes = list(filter(notstandardinclude,includes))
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
     fd = open(os.path.join(self.arch.arch,'lib','petsc','conf','PETScBuildInternal.cmake'), 'w')
     writeMacroDefinitions(fd)
@@ -797,7 +787,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.pushLanguage(self.languages.clanguage)
       try:
         if self.checkRun(includes, body) and os.path.exists(filename):
-          f    = file(filename)
+          f    = open(filename)
           size = int(f.read())
           f.close()
           os.remove(filename)
@@ -983,7 +973,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
   def configureDefaultArch(self):
     conffile = os.path.join('lib','petsc','conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
-      fd = file(conffile, 'w')
+      fd = open(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
       fd.write('include '+os.path.join('$(PETSC_DIR)','$(PETSC_ARCH)','lib','petsc','conf','petscvariables')+'\n')
@@ -1013,7 +1003,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
         del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = 'PETSC_ARCH='+str(self.arch.arch)
-    f = file(scriptName, 'w')
+    f = open(scriptName, 'w')
     f.write('#!'+sys.executable+'\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
@@ -1113,7 +1103,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.dumpCMakeLists()
     # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
     self.framework.storeSubstitutions(self.framework.argDB)
-    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB['configureCache'] = pickle.dumps(self.framework)
     self.framework.argDB.save(force = True)
     self.cmakeBoot()
     self.DumpPkgconfig()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import user
 import config.base
 
 import os
@@ -56,7 +55,7 @@ class Configure(config.base.Configure):
       fd.write(accode)
       fd.close()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf, log = self.log)
+        output,err,ret  = config.base.Configure.executeShellCommand([self.autoreconf], log = self.log, cwd=testdir)
         self.logPrint('autoreconf test successful!')
       except RuntimeError as e:
         self.autoreconf = None

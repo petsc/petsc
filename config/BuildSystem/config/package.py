@@ -310,10 +310,10 @@ class Package(config.base.Configure):
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
-    if isinstance(source, file):
+    if hasattr(source, 'close'):
       f = source
     else:
-      f = file(source)
+      f = open(source, 'rb')
     m = new_md5()
     size = chunkSize
     buf  = f.read(size)
@@ -900,6 +900,7 @@ class Package(config.base.Configure):
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
+    self.compilers.setup()
     self.compilerFlags.saveLog()
     self.compilerFlags.configure()
     self.logWrite(self.compilerFlags.restoreLog())
@@ -933,21 +934,21 @@ class Package(config.base.Configure):
   def compilePETSc(self):
     try:
       self.logPrintBox('Compiling PETSc; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=1000, log = self.log)
+      output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=1000, log = self.log)
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error running make all on PETSc: '+str(e))
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
         self.log.write(output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.petscdir.dir+' && '+self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch,timeout=50, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=50, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
@@ -1304,7 +1305,10 @@ class GNUPackage(Package):
         raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found!')
       try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.programs.libtoolize+' && '+self.programs.autoreconf + ' --force --install', timeout=200, log = self.log)
+        output,err,ret  = config.base.Configure.executeShellCommand(self.programs.libtoolize, cwd=self.packageDir, timeout=100, log=self.log)
+        if ret:
+          raise RuntimeError('Error in libtoolize: ' + str(e))
+        output,err,ret  = config.base.Configure.executeShellCommand([self.programs.autoreconf, '--force', '--install'], cwd=self.packageDir, timeout=200, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
 
@@ -1314,7 +1318,7 @@ class GNUPackage(Package):
        args.append(self.argDB['download-'+self.downloadname.lower()+'-configure-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
     ### Use conffile to check whether a reconfigure/rebuild is required
@@ -1323,7 +1327,7 @@ class GNUPackage(Package):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
+      output1,err1,ret1  = config.base.Configure.executeShellCommand('./configure '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
@@ -1331,11 +1335,11 @@ class GNUPackage(Package):
       if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
       else: pmake = self.make.make+' '+self.makerulename+' '
 
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean', timeout=200, log = self.log)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand(pmake, cwd=self.packageDir, timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output4,err4,ret4  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=1000, log = self.log)
+      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.installSudo+self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
@@ -1408,7 +1412,7 @@ class CMakePackage(Package):
        args.append(self.argDB['download-'+self.downloadname.lower()+'-cmake-arguments'])
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
 
@@ -1426,14 +1430,15 @@ class CMakePackage(Package):
 
       try:
         self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' '+self.makerulename+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
+        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+' '+self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
-      self.postInstall(output1+err1+output2+err2,conffile)
+      self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
     return self.installDir

@@ -7,7 +7,6 @@ import re
 from exceptions import *
 import sys
 from string import *
-import commands
 
 def main():
   tcount = 0

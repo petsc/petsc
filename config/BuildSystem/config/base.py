@@ -80,8 +80,20 @@ class Configure(script.Script):
     self.language        = []
     if not tmpDir is None:
       self.tmpDir        = tmpDir
-    self.pushLanguage('C')
+    try:
+      # The __init__ method may be called to reinitialize in the future (e.g.,
+      # updateCompilers()) and will need to be re-setup in that case.
+      delattr(self, '_setup')
+    except AttributeError:
+      pass
     return
+
+  def setup(self):
+    if hasattr(self, '_setup'):
+      return
+    script.Script.setup(self)
+    self._setup = 1
+    self.pushLanguage('C')
 
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
@@ -442,7 +454,7 @@ class Configure(script.Script):
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
-    f = file(self.compilerSource, 'w')
+    f = open(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.log, lineLimit = 100000)
@@ -495,7 +507,7 @@ class Configure(script.Script):
     command = self.getCompilerCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
-    f = file(self.compilerSource, 'w')
+    f = open(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.log)
@@ -659,8 +671,8 @@ class Configure(script.Script):
         added = 0
         for dir in dirs:
           if added:
-	    break
-	  for ext in ['a', 'so','dylib']:
+            break
+          for ext in ['a', 'so','dylib']:
             filename = os.path.join(dir, 'lib'+lib+'.'+ext)
             if os.path.isfile(filename):
               libArgs.append(filename)

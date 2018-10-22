@@ -1336,7 +1336,7 @@ class Configure(config.base.Configure):
           except RuntimeError:
             accepted = 0
           if accepted:
-            goodFlags = filter(self.checkLinkerFlag, flags)
+            goodFlags = list(filter(self.checkLinkerFlag, flags))
             self.sharedLinker = self.LD_SHARED
             self.sharedLibraryFlags = goodFlags
             self.sharedLibraryExt = ext
@@ -1406,10 +1406,10 @@ class Configure(config.base.Configure):
       for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
-	  linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          linker_flag_var = langMap[language]+'_LINKER_FLAGS'
           val = getattr(self,linker_flag_var)
-	  val.append(testFlag)
-	  setattr(self,linker_flag_var,val)
+          val.append(testFlag)
+          setattr(self,linker_flag_var,val)
       self.popLanguage()
     return
 
@@ -1517,7 +1517,7 @@ class Configure(config.base.Configure):
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):
         flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
+        goodFlags = list(filter(self.checkLinkerFlag, flags))
         self.dynamicLibraryFlags = goodFlags
         self.dynamicLibraryExt = ext
         testMethod = 'foo'
@@ -1637,7 +1637,7 @@ if (dlclose(handle)) {
 
   def printEnvVariables(self):
     buf = '**** printenv ****'
-    for key,val in os.environ.iteritems():
+    for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
     return

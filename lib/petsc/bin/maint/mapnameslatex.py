@@ -219,8 +219,8 @@ if __name__ == "__main__":
     mappedstring = { }
     mappedlink   = { }
     for i in range(0,n):
-	fl = reg.search(lines[i])
-	if not fl:
+        fl = reg.search(lines[i])
+        if not fl:
            print('Bad line in '+htmlmapfile,lines[i])
         else:
             tofind = fl.group(1)
@@ -231,8 +231,8 @@ if __name__ == "__main__":
 #		if tofind[j] == '_':
 #		    tfind = tfind+'\\'
 #                tfind = tfind+tofind[j]
-	    mappedstring[tofind] = fl.group(2)
-	    mappedlink[tofind]   = fl.group(3)
+            mappedstring[tofind] = fl.group(2)
+            mappedlink[tofind]   = fl.group(3)
 
 #   Read in file that is to be mapped
     lines = sys.stdin.read()
@@ -251,29 +251,29 @@ if __name__ == "__main__":
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
-	if token.type == 'NEWLINE':
-	    print(text)
-	    text = ''
-	else:
-	    value = token.value
+        if token.type == 'NEWLINE':
+            print(text)
+            text = ''
+        else:
+            value = token.value
             # various verbatim-style environments disable bracket count
             # Note that a closing bracket inside a \trl{} will break things
             #print value + " : " + str(bracket) + str(vbracket) + str(lstinline_bracket) + str(outputlisting_bracket) + str(bashlisting_bracket) + str(makelisting_bracket) + str(lstlisting_bracket) + str(tikzpicture_bracket)
-	    if value == '\\begin{verbatim}':
+            if value == '\\begin{verbatim}':
                 vbracket = vbracket + 1;
-	    if value == '\\begin{bashlisting}':
+            if value == '\\begin{bashlisting}':
                 bashlisting_bracket = bashlisting_bracket + 1;
-	    if value == '\\begin{makelisting}':
+            if value == '\\begin{makelisting}':
                 makelisting_bracket = makelisting_bracket + 1;
-	    if value == '\\begin{outputlisting}':
+            if value == '\\begin{outputlisting}':
                 outputlisting_bracket = outputlisting_bracket + 1;
-	    if value == '\\begin{lstlisting}':
+            if value == '\\begin{lstlisting}':
                 lstlisting_bracket = lstlisting_bracket + 1;
-	    if value == '\\begin{tikzpicture}':
+            if value == '\\begin{tikzpicture}':
                 tikzpicture_bracket = tikzpicture_bracket + 1;
             # \href cannot be used in many places in Latex
             if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
-		bracket = bracket + 1;
+        	bracket = bracket + 1;
             #We keep track of whether we are inside an inline listing
             elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
                 lstinline_bracket = lstinline_bracket + 1
@@ -284,8 +284,8 @@ if __name__ == "__main__":
                 if lstinlinemod_bracket > 1 :
                     raise Exception('Nested \\lstinline (mod) detected')
             if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and makelisting_bracket==0 and tikzpicture_bracket==0:
-		value = token.value
-		if value in mappedstring:
+        	value = token.value
+        	if value in mappedstring:
                     mvalue = mappedstring[value].replace('_','\\_')
                     if lstlisting_bracket > 0 :
                         # NOTE: The latex listings escapechar ($) is hard-coded here 
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                     else :
                         value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
-		value = token.value
+        	value = token.value
             if token.value[0] == '}' and lstinline_bracket > 0 :
                 if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or makelisting_bracket > 0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline")
@@ -308,19 +308,19 @@ if __name__ == "__main__":
                 if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or makelisting_bracket >0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline (mod)")
                 lstinlinemod_bracket = lstinlinemod_bracket-1
-	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket == 0:
-		bracket = bracket - 1;
+            elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket == 0:
+        	bracket = bracket - 1;
             elif value == '\\end{verbatim}' and vbracket:
-	        vbracket = vbracket - 1;
+                vbracket = vbracket - 1;
             elif value == '\\end{outputlisting}' and outputlisting_bracket:
-	        outputlisting_bracket = outputlisting_bracket - 1;
+                outputlisting_bracket = outputlisting_bracket - 1;
             elif value == '\\end{bashlisting}' and bashlisting_bracket:
-	        bashlisting_bracket = bashlisting_bracket - 1;
+                bashlisting_bracket = bashlisting_bracket - 1;
             elif value == '\\end{makelisting}' and makelisting_bracket:
-	        makelisting_bracket = makelisting_bracket - 1;
+                makelisting_bracket = makelisting_bracket - 1;
             elif value == '\\end{lstlisting}' and lstlisting_bracket:
-	        lstlisting_bracket = lstlisting_bracket - 1;
+                lstlisting_bracket = lstlisting_bracket - 1;
             elif value == '\\end{tikzpicture}' and tikzpicture_bracket:
-	        tikzpicture_bracket = tikzpicture_bracket - 1;
+                tikzpicture_bracket = tikzpicture_bracket - 1;
 
-	    text = text+value
+            text = text+value

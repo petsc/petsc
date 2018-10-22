@@ -44,7 +44,7 @@ class Configure(config.package.GNUPackage):
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
     ### Use conffile to check whether a reconfigure/rebuild is required

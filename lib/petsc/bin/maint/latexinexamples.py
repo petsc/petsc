@@ -9,7 +9,6 @@ import re
 from exceptions import *
 import sys
 from string import *
-import commands
 
 def processexample(example):
   mat   = re.compile('<center>[a-zA-Z0-9_ -]*</center>')
