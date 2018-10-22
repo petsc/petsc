@@ -2756,7 +2756,7 @@ PetscErrorCode MatGetFactorType(Mat mat,MatFactorType *t)
 /*@C
    MatSetFactorType - sets the type of factorization it is
 
-   Not Collective
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
