@@ -376,4 +376,6 @@ PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat*);
 PETSC_EXTERN PetscErrorCode PCLMVMSetIS(PC, IS);
 PETSC_EXTERN PetscErrorCode PCLMVMClearIS(PC);
 
+PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
+
 #endif /* __PETSCPC_H */

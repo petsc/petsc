@@ -309,7 +309,6 @@ PETSC_EXTERN const char *const PCMGGalerkinTypes[];
 E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 PETSC_EXTERN const char *const PCExoticTypes[];
-PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 /*E
     PCPatchConstructType - The algorithm used to construct patches for the preconditioner
