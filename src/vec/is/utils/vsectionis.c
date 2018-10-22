@@ -3208,9 +3208,9 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   }
   ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
   if (newArray) {
-    if (dataType == MPIU_INT)           PetscSectionExpandPoints_Loop(PetscInt);
-    else if (dataType == MPIU_SCALAR)   PetscSectionExpandPoints_Loop(PetscScalar);
-    else if (dataType == MPIU_REAL)     PetscSectionExpandPoints_Loop(PetscReal);
+    if (dataType == MPIU_INT)           {PetscSectionExpandPoints_Loop(PetscInt);}
+    else if (dataType == MPIU_SCALAR)   {PetscSectionExpandPoints_Loop(PetscScalar);}
+    else if (dataType == MPIU_REAL)     {PetscSectionExpandPoints_Loop(PetscReal);}
     else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
   }
   if (newSection) {
