@@ -492,7 +492,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->options,((PetscObject)ksp)->prefix,"-ksp_converged_reason",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPReasonView_Internal(ksp, viewer, format);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -1685,6 +1685,7 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
     ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&ksp->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)ksp->pc);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptions((PetscObject)ksp->pc,((PetscObject)ksp)->options);CHKERRQ(ierr);
   }
   *pc = ksp->pc;
   PetscFunctionReturn(0);

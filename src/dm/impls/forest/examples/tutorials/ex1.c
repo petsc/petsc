@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   ierr = DMSetType(dm,(DMType) typeString);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-dm_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-dm_view",&viewer,NULL,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
   }

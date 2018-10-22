@@ -425,9 +425,9 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[]
 
   PetscFunctionBegin;
   if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->options,((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);

@@ -1052,7 +1052,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const char name[],const char *value[],PetscBool *set)
 {
   char           buf[MAXOPTNAME];
-  PetscBool      usehashtable = PETSC_TRUE;
+  PetscBool      usehashtable = PETSC_FALSE;
   PetscBool      matchnumbers = PETSC_TRUE;
   PetscErrorCode ierr;
 

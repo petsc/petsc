@@ -1738,7 +1738,7 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup("",(char**)&amsopt->data);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscOptionsObject->comm,PetscOptionsObject->prefix,opt,viewer,format,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscOptionsObject->comm,PetscOptionsObject->options,PetscOptionsObject->prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,"",text,ManSection(man));CHKERRQ(ierr);
   }

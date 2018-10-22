@@ -1702,7 +1702,7 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,PetscObject bobj,const char optio
 
   PetscFunctionBegin;
   prefix = bobj ? bobj->prefix : ((PetscObject)obj)->prefix;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->options,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecStashView(obj,viewer);CHKERRQ(ierr);

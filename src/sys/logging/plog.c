@@ -1760,7 +1760,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-log_view",&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-log_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = PetscLogView(viewer);CHKERRQ(ierr);

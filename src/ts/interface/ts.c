@@ -41,7 +41,7 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject) ts)->options,((PetscObject)ts)->prefix,name,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewerAndFormat *vf;
     ierr = PetscViewerAndFormatCreate(viewer,format,&vf);CHKERRQ(ierr);
@@ -2706,6 +2706,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
   PetscValidPointer(snes,2);
   if (!ts->snes) {
     ierr = SNESCreate(PetscObjectComm((PetscObject)ts),&ts->snes);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptions((PetscObject)ts->snes,((PetscObject)ts)->options);CHKERRQ(ierr);
     ierr = SNESSetFunction(ts->snes,NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
