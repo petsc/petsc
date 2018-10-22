@@ -2753,6 +2753,28 @@ PetscErrorCode MatGetFactorType(Mat mat,MatFactorType *t)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSetFactorType - sets the type of factorization it is
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  t - the type, one of MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT
+
+   Level: intermediate
+
+.seealso: MatFactorType, MatGetFactor(), MatGetFactorType()
+@*/
+PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  mat->factortype = t;
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------*/
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
