@@ -1721,6 +1721,9 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = VecRestoreArray(global, &input);CHKERRQ(ierr);
       ierr = VecDestroy(&global);CHKERRQ(ierr);
     }
+    if(patch->multiplicative && patch->save_operators) {
+      ierr = PetscMalloc1(patch->npatch, &patch->matWithArtificial);CHKERRQ(ierr);
+    }
   }
   if (patch->save_operators) {
     for (i = 0; i < patch->npatch; ++i) {
@@ -1729,7 +1732,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
     if(patch->multiplicative) {
-      ierr = PetscMalloc1(patch->npatch, &patch->matWithArtificial);CHKERRQ(ierr);
       for (i = 0; i < patch->npatch; ++i) {
         // Instead of padding patch->patchY with zeros to get
         // patch->patchYWithArtificial and then multiplying with the matrix,
@@ -1744,7 +1746,11 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
         IS rowis;
         ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
-        ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
+        if(pc->setupcalled) {
+          ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_REUSE_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
+        } else {
+          ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
+        }
         ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
       }
     }
@@ -1956,6 +1962,11 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   if (patch->patchXWithArtificial) {
     for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchXWithArtificial[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->patchXWithArtificial);CHKERRQ(ierr);
+  }
+  if(patch->dofMappingWithoutToWithArtificial) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = ISDestroy(&patch->dofMappingWithoutToWithArtificial[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
+
   }
   ierr = PetscFree(patch->sub_mat_type);CHKERRQ(ierr);
   if (patch->userIS) {
