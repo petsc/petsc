@@ -3208,14 +3208,10 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   }
   ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
   if (newArray) {
-    switch (dataType) {
-      case MPIU_INT:      PetscSectionExpandPoints_Loop(PetscInt); break;
-      case MPIU_SCALAR:   PetscSectionExpandPoints_Loop(PetscScalar); break;
-#if defined(PETSC_USE_COMPLEX)
-      case MPIU_REAL:     PetscSectionExpandPoints_Loop(PetscReal); break;
-#endif
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
-    }
+    if (dataType == MPIU_INT)           PetscSectionExpandPoints_Loop(PetscInt);
+    else if (dataType == MPIU_SCALAR)   PetscSectionExpandPoints_Loop(PetscScalar);
+    else if (dataType == MPIU_REAL)     PetscSectionExpandPoints_Loop(PetscReal);
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for this MPI_Datatype");
   }
   if (newSection) {
     *newSection = s;
