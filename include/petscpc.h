@@ -17,6 +17,23 @@ PETSC_EXTERN PetscFunctionList PCList;
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
 
+/* Arrays of names for options in implementation PCs */
+PETSC_EXTERN const char *const *const PCSides;
+PETSC_EXTERN const char *const PCJacobiTypes[];
+PETSC_EXTERN const char *const PCASMTypes[];
+PETSC_EXTERN const char *const PCGASMTypes[];
+PETSC_EXTERN const char *const PCCompositeTypes[];
+PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
+PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
+PETSC_EXTERN const char *const PCPARMSGlobalTypes[];
+PETSC_EXTERN const char *const PCPARMSLocalTypes[];
+PETSC_EXTERN const char *const PCMGTypes[];
+PETSC_EXTERN const char *const PCMGCycleTypes[];
+PETSC_EXTERN const char *const PCMGGalerkinTypes[];
+PETSC_EXTERN const char *const PCExoticTypes[];
+PETSC_EXTERN const char *const PCPatchConstructTypes[];
+PETSC_EXTERN const char *const PCFailedReasons[];
+
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
