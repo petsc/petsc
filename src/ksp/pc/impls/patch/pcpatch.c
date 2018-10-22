@@ -1904,6 +1904,15 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   ierr = PetscSectionDestroy(&patch->patchSection);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->ghostBcNodes);CHKERRQ(ierr);
   ierr = ISDestroy(&patch->globalBcNodes);CHKERRQ(ierr);
+  if(patch->gtolCountsWithArtificial)
+    ierr = PetscSectionDestroy(&patch->gtolCountsWithArtificial);CHKERRQ(ierr);
+  if(&patch->gtolWithArtificial)
+    ierr = ISDestroy(&patch->gtolWithArtificial);CHKERRQ(ierr);
+  if(patch->dofsWithArtificial)
+    ierr = ISDestroy(&patch->dofsWithArtificial);CHKERRQ(ierr);
+  if(patch->offsWithArtificial)
+    ierr = ISDestroy(&patch->offsWithArtificial);CHKERRQ(ierr);
+
 
   if (patch->dofSection) for (i = 0; i < patch->nsubspaces; i++) {ierr = PetscSectionDestroy(&patch->dofSection[i]);CHKERRQ(ierr);}
   ierr = PetscFree(patch->dofSection);CHKERRQ(ierr);
@@ -1939,6 +1948,14 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   if (patch->mat) {
     for (i = 0; i < patch->npatch; ++i) {ierr = MatDestroy(&patch->mat[i]);CHKERRQ(ierr);}
     ierr = PetscFree(patch->mat);CHKERRQ(ierr);
+  }
+  if (patch->matWithArtificial) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = MatDestroy(&patch->matWithArtificial[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->matWithArtificial);CHKERRQ(ierr);
+  }
+  if (patch->patchXWithArtificial) {
+    for (i = 0; i < patch->npatch; ++i) {ierr = VecDestroy(&patch->patchXWithArtificial[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(patch->patchXWithArtificial);CHKERRQ(ierr);
   }
   ierr = PetscFree(patch->sub_mat_type);CHKERRQ(ierr);
   if (patch->userIS) {
