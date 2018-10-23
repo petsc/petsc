@@ -23,10 +23,10 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   PetscErrorCode  ierr;
   MPI_Comm        comm;
-  MPI_Request	    sreq = 0,rreq = 0;
 
   IS              is_i,is_j;
   Vec             vec_a;
+  PetscLayout     jmap;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -81,15 +81,16 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   m = mat->rmap->n;
   M--;
 
-  /* Determine offset and count of elements for reading local part of array data*/
-  if (rank > 0) {
-    ierr = MPI_Isend(&i[0],1,MPIU_INT,rank-1,0,comm,&sreq);CHKERRQ(ierr);
-  }
-  if (rank < size - 1) {
-    ierr = MPI_Irecv(&i[m],1,MPIU_INT,rank+1,0,comm,&rreq);CHKERRQ(ierr);
-  }
-  if (sreq) ierr = MPI_Wait(&sreq,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-  if (rreq) ierr = MPI_Wait(&rreq,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  /* Determine offset and count of elements for reading local part of array data */
+  /* Create PetscLayout for j and a vectors; construct ranges first */
+  ierr = PetscLayoutCreate(comm,&jmap);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1, &jmap->range);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&i[0], 1, MPIU_INT, jmap->range, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  jmap->range[size] = i[m];
+  ierr = MPI_Bcast(&jmap->range[size], 1, MPIU_INT, size-1, comm);CHKERRQ(ierr);
+  i[m] = jmap->range[rank+1];
+  /* Deduce rstart, rend, n and N from the ranges */
+  ierr = PetscLayoutSetUp(jmap);CHKERRQ(ierr);
 
   /* Convert global to local indexing of rows */
   for (p=1; p<m+1; ++p) i[p] -= i[0];
@@ -98,15 +99,14 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   /* Read array j (array of column indices) */
   ierr = ISCreate(comm,&is_j);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)is_j,j_name);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(is_j->map,i[m]);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is_j->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDuplicate(jmap,&is_j->map);CHKERRQ(ierr);
   ierr = ISLoad(is_j,viewer);CHKERRQ(ierr);
   ierr = ISGetIndices(is_j,&j);CHKERRQ(ierr);
 
   /* Read array a (array of values) */
   ierr = VecCreate(comm,&vec_a);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)vec_a,a_name);CHKERRQ(ierr);
-  ierr = VecSetSizes(vec_a,i[m],PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscLayoutDuplicate(jmap,&vec_a->map);CHKERRQ(ierr);
   ierr = VecLoad(vec_a,viewer);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec_a,&a);CHKERRQ(ierr);
 
@@ -125,6 +125,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
   */
 
+  ierr = PetscLayoutDestroy(&jmap);CHKERRQ(ierr);
   ierr = PetscFree(i);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_i,&i_glob);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_j,&j);CHKERRQ(ierr);
