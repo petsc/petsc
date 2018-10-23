@@ -2,7 +2,7 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#include <petscoptions.h>
+#include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
 PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
