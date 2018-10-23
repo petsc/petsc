@@ -64,47 +64,40 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   m = (rank == size - 1) ? mat->rmap->n + 1 : mat->rmap->n;
   M = M + 1;
 
-  if (m > 0) {
-    /* Read array i (array of row indices) */
-    ierr = ISCreate(comm,&is_i);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)is_i,i_name);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(is_i->map,m);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(is_i->map,M);CHKERRQ(ierr);
-    ierr = ISLoad(is_i,viewer);CHKERRQ(ierr);
-    i    = ((IS_General*)is_i->data)->idx;
+  /* Read array i (array of row indices) */
+  ierr = ISCreate(comm,&is_i);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)is_i,i_name);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(is_i->map,m);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(is_i->map,M);CHKERRQ(ierr);
+  ierr = ISLoad(is_i,viewer);CHKERRQ(ierr);
+  i    = ((IS_General*)is_i->data)->idx;
 
-    /* Determine offset and count of elements for reading local part of array data*/
-    if (rank > 0) {
-      ierr = MPI_Isend(i,1,MPIU_INT,rank - 1,0,comm,NULL);CHKERRQ(ierr);
-    }
-
-    if (rank < size - 1) {
-      ierr = MPI_Irecv(&count_data,1,MPIU_INT,rank+1,0,comm,NULL);CHKERRQ(ierr);
-      count_data = count_data - i[0];
-    } else {
-      count_data = i[m-1] - i[0];
-    }
-
-    /* Read array j (array of column indices) */
-    ierr = ISCreate(comm,&is_j);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)is_j,j_name);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(is_j->map,count_data);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(is_j->map);CHKERRQ(ierr);
-    ierr = ISLoad(is_j,viewer);CHKERRQ(ierr);
-    j    = ((IS_General*)is_j->data)->idx;
-
-    /* Read array a (array of values) */
-    ierr = VecCreate(comm,&vec_a);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)vec_a,a_name);CHKERRQ(ierr);
-    ierr = VecSetSizes(vec_a,count_data,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecLoad(vec_a,viewer);CHKERRQ(ierr);
-    a    = ((Vec_MPI*)vec_a->data)->array;
-
-  } else {
-    a = NULL;
-    j = NULL;
-    i = 0;
+  /* Determine offset and count of elements for reading local part of array data*/
+  if (rank > 0) {
+    ierr = MPI_Isend(i,1,MPIU_INT,rank-1,0,comm,NULL);CHKERRQ(ierr);
   }
+
+  if (rank < size - 1) {
+    ierr = MPI_Irecv(&count_data,1,MPIU_INT,rank+1,0,comm,NULL);CHKERRQ(ierr);
+    count_data = count_data - i[0];
+  } else {
+    count_data = i[m-1] - i[0];
+  }
+
+  /* Read array j (array of column indices) */
+  ierr = ISCreate(comm,&is_j);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)is_j,j_name);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(is_j->map,count_data);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is_j->map);CHKERRQ(ierr);
+  ierr = ISLoad(is_j,viewer);CHKERRQ(ierr);
+  j    = ((IS_General*)is_j->data)->idx;
+
+  /* Read array a (array of values) */
+  ierr = VecCreate(comm,&vec_a);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)vec_a,a_name);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec_a,count_data,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecLoad(vec_a,viewer);CHKERRQ(ierr);
+  a    = ((Vec_MPI*)vec_a->data)->array;
 
   /* close group */
   PetscStackCallHDF5(H5Gclose,(group_matrix_id));
