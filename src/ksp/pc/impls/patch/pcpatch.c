@@ -1759,6 +1759,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         } else {
           ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
         }
+        ierr = ISDestroy(&rowis); CHKERRQ(ierr);
         ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
       }
     }
@@ -1855,11 +1856,12 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
           ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
           ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_INITIAL_MATRIX, &multMat); CHKERRQ(ierr);
           ierr = MatDestroy(&matSquare);CHKERRQ(ierr);
+          ierr = ISDestroy(&rowis); CHKERRQ(ierr);
         }
         ierr = MatMult(multMat, patch->patchY[i], patch->patchXWithArtificial[i]); CHKERRQ(ierr);
         ierr = VecScale(patch->patchXWithArtificial[i], -1.0); CHKERRQ(ierr);
         ierr = PCPatch_ScatterLocal_Private(pc, i + pStart, patch->patchXWithArtificial[i], patch->localX, ADD_VALUES, SCATTER_REVERSE, PETSC_TRUE); CHKERRQ(ierr);
-        if (patch->multiplicative && !patch->save_operators) {
+        if (!patch->save_operators) {
           ierr = MatDestroy(&multMat); CHKERRQ(ierr);
         }
       }
