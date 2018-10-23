@@ -9,9 +9,9 @@ Context for Bounded Regularized Gauss-Newton algorithm
 
 typedef struct {
   Mat J, H;
-  Vec x_old, x_work, r_work;
+  Vec x_old, x_work, r_work, diag;
   Tao subsolver, parent;
-  PetscReal lambda;
+  PetscReal lambda, epsilon;
 } TAO_BRGN;
 
 #endif /* if !defined(__TAO_BRGN_H) */
