@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
-#include "../../../../vec/is/is/impls/general/general.h"
-#include "../../../../vec/vec/impls/mpi/pvecimpl.h"
+#include <petsc/private/isimpl.h>
+#include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
@@ -12,8 +12,9 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   hsize_t         h5_dims[4];
 
   PetscInt        count_data;
-  PetscInt        *i = NULL,*j = NULL;
-  PetscScalar     *a = NULL;
+  PetscInt        *i = NULL;
+  const PetscInt  *j = NULL;
+  const PetscScalar *a = NULL;
   const char      *a_name,*i_name,*j_name,*mat_name,*c_name;
   int             rdim;
   PetscInt        p,m,M,N;
@@ -70,7 +71,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscLayoutSetLocalSize(is_i->map,m);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(is_i->map,M);CHKERRQ(ierr);
   ierr = ISLoad(is_i,viewer);CHKERRQ(ierr);
-  i    = ((IS_General*)is_i->data)->idx;
+  ierr = ISGetIndices(is_i,(const PetscInt**)&i);CHKERRQ(ierr);  /* we cheat here as we know it's ISGENERAL and need to modify the array */
 
   /* Determine offset and count of elements for reading local part of array data*/
   if (rank > 0) {
@@ -90,20 +91,20 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = PetscLayoutSetLocalSize(is_j->map,count_data);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is_j->map);CHKERRQ(ierr);
   ierr = ISLoad(is_j,viewer);CHKERRQ(ierr);
-  j    = ((IS_General*)is_j->data)->idx;
+  ierr = ISGetIndices(is_j,&j);CHKERRQ(ierr);
 
   /* Read array a (array of values) */
   ierr = VecCreate(comm,&vec_a);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)vec_a,a_name);CHKERRQ(ierr);
   ierr = VecSetSizes(vec_a,count_data,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecLoad(vec_a,viewer);CHKERRQ(ierr);
-  a    = ((Vec_MPI*)vec_a->data)->array;
+  ierr = VecGetArrayRead(vec_a,&a);CHKERRQ(ierr);
 
   /* close group */
   PetscStackCallHDF5(H5Gclose,(group_matrix_id));
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
 
-  /* Converting global to local indexing of rows */
+  /* Convert global to local indexing of rows */
   for (p=1; p<m; ++p) i[p] -= i[0];
   i[0] = 0;
 
@@ -118,6 +119,9 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   ierr = MatMPIBAIJSetPreallocationCSR(mat,bs,i,j,a);CHKERRQ(ierr);
   */
 
+  ierr = ISRestoreIndices(is_i,(const PetscInt**)&i);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is_j,&j);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vec_a,&a);CHKERRQ(ierr);
   ierr = ISDestroy(&is_i);CHKERRQ(ierr);
   ierr = ISDestroy(&is_j);CHKERRQ(ierr);
   ierr = VecDestroy(&vec_a);CHKERRQ(ierr);
