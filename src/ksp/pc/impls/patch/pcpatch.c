@@ -556,7 +556,13 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
           *dof += fdof;
         }
       }
-      if (off) {ierr = PetscSectionGetOffset(dofSection[0], p, off);CHKERRQ(ierr);}
+      if (off) {
+        *off = 0;
+        for (g = 0; g < patch->nsubspaces; ++g) {
+          ierr = PetscSectionGetOffset(dofSection[g], p, &fdof);CHKERRQ(ierr);
+          *off += fdof;
+        }
+      }
     } else {
       if (dof) {ierr = PetscSectionGetDof(dofSection[f], p, dof);CHKERRQ(ierr);}
       if (off) {ierr = PetscSectionGetOffset(dofSection[f], p, off);CHKERRQ(ierr);}
