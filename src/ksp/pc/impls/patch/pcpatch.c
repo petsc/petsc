@@ -1304,15 +1304,15 @@ static PetscErrorCode PCPatchCreateMatrix_Private(PC pc, PetscInt point, Mat *ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-	if(withArtificial) {
+  if(withArtificial) {
    // would be nice if we could create a rectangular matrix of size numDofsWithArtificial x numDofs here
-		x = patch->patchXWithArtificial[point];
-		y = patch->patchXWithArtificial[point];
-	}
-	else {
-		x = patch->patchX[point];
-		y = patch->patchY[point];
-	}
+    x = patch->patchXWithArtificial[point];
+    y = patch->patchXWithArtificial[point];
+  }
+  else {
+    x = patch->patchX[point];
+    y = patch->patchY[point];
+  }
 
   ierr = VecGetSize(x, &csize);CHKERRQ(ierr);
   ierr = VecGetSize(y, &rsize);CHKERRQ(ierr);
@@ -1601,10 +1601,10 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     ierr = PetscMalloc1(patch->npatch, &patch->patchX);CHKERRQ(ierr);
     ierr = PetscMalloc1(patch->npatch, &patch->patchY);CHKERRQ(ierr);
 
-		if(patch->multiplicative) {
-			ierr = PetscMalloc1(patch->npatch, &patch->patchXWithArtificial);CHKERRQ(ierr);
-			ierr = PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
-		}
+    if(patch->multiplicative) {
+      ierr = PetscMalloc1(patch->npatch, &patch->patchXWithArtificial);CHKERRQ(ierr);
+      ierr = PetscMalloc1(patch->npatch, &patch->dofMappingWithoutToWithArtificial);CHKERRQ(ierr);
+    }
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof;
 
@@ -1618,13 +1618,16 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         ierr = VecCreateSeq(PETSC_COMM_SELF, dof, &patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
         ierr = VecSetUp(patch->patchXWithArtificial[p-pStart]);CHKERRQ(ierr);
 
-				// Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the 
-				// the index in the patch with all dofs
+        // Now build the mapping that for a dof in a patch WITHOUT dofs that have artificial bcs gives the
+        // the index in the patch with all dofs
         const PetscInt    *gtolArray, *gtolArrayWithArtificial = NULL;
         PetscInt           numPatchDofs, offset;
         PetscInt           numPatchDofsWithArtificial, offsetWithArtificial;
         ierr = ISGetIndices(patch->gtol, &gtolArray);CHKERRQ(ierr);
+
         ierr = PetscSectionGetDof(patch->gtolCounts, p, &numPatchDofs);CHKERRQ(ierr);
+        if (numPatchDofs == 0) continue;
+
         ierr = PetscSectionGetOffset(patch->gtolCounts, p, &offset);CHKERRQ(ierr);
         ierr = ISGetIndices(patch->gtolWithArtificial, &gtolArrayWithArtificial);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(patch->gtolCountsWithArtificial, p, &numPatchDofsWithArtificial);CHKERRQ(ierr);
@@ -1684,19 +1687,19 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     /* If desired, calculate weights for dof multiplicity */
     if (patch->partition_of_unity) {
       ierr = VecDuplicate(patch->localX, &patch->dof_weights);CHKERRQ(ierr);
-			if(!patch->multiplicative) {
-				for (i = 0; i < patch->npatch; ++i) {
-					PetscInt dof;
+      if(!patch->multiplicative) {
+        for (i = 0; i < patch->npatch; ++i) {
+          PetscInt dof;
 
-					ierr = PetscSectionGetDof(patch->gtolCounts, i+pStart, &dof);CHKERRQ(ierr);
-					if (dof <= 0) continue;
-					ierr = VecSet(patch->patchX[i], 1.0);CHKERRQ(ierr);
-					ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchX[i], patch->dof_weights, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
-				}
-			} else { 
-				// multiplicative is actually only locally multiplicative and globally additive. need the pou where the mesh decomposition overlaps
-				ierr = VecSet(patch->dof_weights, 1.0);CHKERRQ(ierr);
-			}
+          ierr = PetscSectionGetDof(patch->gtolCounts, i+pStart, &dof);CHKERRQ(ierr);
+          if (dof <= 0) continue;
+          ierr = VecSet(patch->patchX[i], 1.0);CHKERRQ(ierr);
+          ierr = PCPatch_ScatterLocal_Private(pc, i+pStart, patch->patchX[i], patch->dof_weights, ADD_VALUES, SCATTER_REVERSE, PETSC_FALSE);CHKERRQ(ierr);
+        }
+      } else {
+        // multiplicative is actually only locally multiplicative and globally additive. need the pou where the mesh decomposition overlaps
+        ierr = VecSet(patch->dof_weights, 1.0);CHKERRQ(ierr);
+      }
 
       PetscScalar *input = NULL;
       PetscScalar *output = NULL;
@@ -1739,12 +1742,17 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         // artificial bcs. That's of course fairly inefficient, hopefully we
         // can just assemble the rectangular matrix in the first place.
         Mat matSquare;
+        IS rowis;
+        PetscInt dof;
+
+        ierr = MatGetSize(patch->mat[i], &dof, NULL);CHKERRQ(ierr);
+        if (dof == 0) continue;
+
         ierr = PCPatchCreateMatrix_Private(pc, i, &matSquare, PETSC_TRUE);CHKERRQ(ierr);
         ierr = MatZeroEntries(matSquare);CHKERRQ(ierr);
         ierr = PCPatchComputeOperator_Private(pc, matSquare, i, PETSC_TRUE);CHKERRQ(ierr);
-        PetscInt dof;
+
         ierr = MatGetSize(matSquare, &dof, NULL);CHKERRQ(ierr);
-        IS rowis;
         ierr = ISCreateStride(PETSC_COMM_SELF, dof, 0, 1, &rowis); CHKERRQ(ierr);
         if(pc->setupcalled) {
           ierr = MatCreateSubMatrix(matSquare, rowis, patch->dofMappingWithoutToWithArtificial[i], MAT_REUSE_MATRIX, &patch->matWithArtificial[i]); CHKERRQ(ierr);
