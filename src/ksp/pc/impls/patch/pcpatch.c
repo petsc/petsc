@@ -1,4 +1,5 @@
 #include <petsc/private/pcpatchimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/kspimpl.h>         /* For ksp->setfromoptionscalled */
 #include <petsc/private/dmpleximpl.h> /* For DMPlexComputeJacobian_Patch_Internal() */
 #include <petscsf.h>
 #include <petscbt.h>
@@ -1485,7 +1486,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       ierr = KSPSetOperators(patch->ksp[i], patch->mat[i], patch->mat[i]);CHKERRQ(ierr);
     }
   }
-  if (!pc->setupcalled && patch->optionsSet) for (i = 0; i < patch->npatch; ++i) {ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1547,6 +1547,9 @@ static PetscErrorCode PCApply_PATCH(PC pc, Vec x, Vec y)
         ierr = MatDestroy(&mat);CHKERRQ(ierr);
       }
       ierr = PetscLogEventBegin(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
+      if (!pc->setupcalled && patch->optionsSet && !patch->ksp[i]->setfromoptionscalled) {
+        ierr = KSPSetFromOptions(patch->ksp[i]);CHKERRQ(ierr);
+      }
       ierr = KSPSolve(patch->ksp[i], patch->patchX[i], patch->patchY[i]);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(PC_Patch_Solve, pc, 0, 0, 0);CHKERRQ(ierr);
 
