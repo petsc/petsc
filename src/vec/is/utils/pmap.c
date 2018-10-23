@@ -90,6 +90,35 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscLayoutSetUp_SizesFromRanges_Private(PetscLayout map)
+{
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
+  map->rstart = map->range[rank];
+  map->rend   = map->range[rank+1];
+  map->n      = map->rend - map->rstart;
+  map->N      = map->range[size];
+#if defined(PETSC_USE_DEBUG)
+  /* just check that n, N and bs are consistent */
+  {
+    PetscInt tmp;
+    ierr = MPIU_Allreduce(&map->n,&tmp,1,MPIU_INT,MPI_SUM,map->comm);CHKERRQ(ierr);
+    if (tmp != map->N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D.\nThe provided PetscLayout is wrong.",tmp,map->N,map->n);
+  }
+  if (map->bs > 1) {
+    if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local size %D must be divisible by blocksize %D",map->n,map->bs);
+  }
+  if (map->bs > 1) {
+    if (map->N % map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Global size %D must be divisible by blocksize %D",map->N,map->bs);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscLayoutSetUp - given a map where you have set either the global or local
                      size sets up the map so that it may be used.
@@ -109,6 +138,7 @@ $ PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N); o
 $ PetscLayoutSetUp(PetscLayout);
 $ PetscLayoutGetSize(PetscLayout,PetscInt *);
 
+  If range exists, and local size is not set, everything gets computed from the range.
 
   If the local size, global size are already set and range exists then this does nothing.
 
@@ -123,6 +153,10 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 
   PetscFunctionBegin;
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
+  if (map->range && map->n < 0) {
+    ierr = PetscLayoutSetUp_SizesFromRanges_Private(map);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (map->n > 0 && map->bs > 1) {
     if (map->n % map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local matrix size %D must be divisible by blocksize %D",map->n,map->bs);
