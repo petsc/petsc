@@ -23,6 +23,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   PetscErrorCode  ierr;
   MPI_Comm        comm;
+  MPI_Request	    sreq = 0,rreq = 0;
 
   IS              is_i,is_j;
   Vec             vec_a;
@@ -56,10 +57,10 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   /* If global sizes are set, check if they are consistent with that given in the file */
   if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%D) and input matrix has (%D)",mat->rmap->N,M);
   if (mat->cmap->N >= 0 && mat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%D) and input matrix has (%D)",mat->cmap->N,N);
+
+  /* Determine ownership of all (block) rows and columns */
   mat->rmap->N = M;
   mat->cmap->N = N;
-
-  /* determine ownership of all (block) rows and columns */
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   m = (rank == size - 1) ? mat->rmap->n + 1 : mat->rmap->n;
@@ -75,11 +76,15 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   /* Determine offset and count of elements for reading local part of array data*/
   if (rank > 0) {
-    ierr = MPI_Isend(i,1,MPIU_INT,rank-1,0,comm,NULL);CHKERRQ(ierr);
+    ierr = MPI_Isend(i,1,MPIU_INT,rank-1,0,comm,&sreq);CHKERRQ(ierr);
   }
 
   if (rank < size - 1) {
-    ierr = MPI_Irecv(&count_data,1,MPIU_INT,rank+1,0,comm,NULL);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&count_data,1,MPIU_INT,rank+1,0,comm,&rreq);CHKERRQ(ierr);
+  }
+  if (sreq) ierr = MPI_Wait(&sreq,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  if (rreq) ierr = MPI_Wait(&rreq,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  if (rank < size - 1) {
     count_data = count_data - i[0];
   } else {
     count_data = i[m-1] - i[0];
