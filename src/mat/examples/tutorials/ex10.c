@@ -82,6 +82,14 @@ int main(int argc,char **args)
       args: -f ${DATAFILESPATH}/matrices/small.mat -a_mat_type mpiaij -viewer_type hdf5
 
    test:
+      # test for more processes than rows
+      #TODO hang
+      suffix: mpiaij_hdf5_tiny
+      nsize: 8
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -a_mat_type mpiaij -viewer_type hdf5
+
+   test:
       suffix: mpidense
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
