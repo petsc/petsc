@@ -2731,8 +2731,7 @@ PetscErrorCode MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
 /*@C
    MatGetFactorType - gets the type of factorization it is
 
-   Note Collective
-   as the flag
+   Not Collective
 
    Input Parameters:
 .  mat - the matrix
@@ -2740,16 +2739,39 @@ PetscErrorCode MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
    Output Parameters:
 .  t - the type, one of MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT
 
-    Level: intermediate
+   Level: intermediate
 
-.seealso:    MatFactorType, MatGetFactor()
+.seealso: MatFactorType, MatGetFactor(), MatSetFactorType()
 @*/
 PetscErrorCode MatGetFactorType(Mat mat,MatFactorType *t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
+  PetscValidPointer(t,2);
   *t = mat->factortype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSetFactorType - sets the type of factorization it is
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  t - the type, one of MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT
+
+   Level: intermediate
+
+.seealso: MatFactorType, MatGetFactor(), MatGetFactorType()
+@*/
+PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  mat->factortype = t;
   PetscFunctionReturn(0);
 }
 
