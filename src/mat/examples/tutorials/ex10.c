@@ -83,7 +83,6 @@ int main(int argc,char **args)
 
    test:
       # test for more processes than rows
-      #TODO hang
       suffix: mpiaij_hdf5_tiny
       nsize: 8
       requires: double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 zlib
