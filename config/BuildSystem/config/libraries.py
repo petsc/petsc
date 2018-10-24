@@ -3,12 +3,6 @@ import config.base
 import os
 import re
 
-try:
-  enumerate([0, 1])
-except NameError:
-  def enumerate(l):
-    return zip(range(len(l)), l)
-
 class Configure(config.base.Configure):
   def __init__(self, framework, libraries = []):
     config.base.Configure.__init__(self, framework)
@@ -178,7 +172,7 @@ class Configure(config.base.Configure):
       return pre + '\nstatic void _check_%s() { %s }' % (funcName, genCall(f, funcName, pre=True))
     def genCall(f, funcName, pre=False):
       if self.language[-1] != 'FC' and not pre:
-        return '_check_' + fname + '();'
+        return '_check_' + funcName + '();'
       # Construct function call
       if call:
         if isinstance(call, str):
@@ -192,7 +186,7 @@ class Configure(config.base.Configure):
       return body
     # Handle Fortran mangling
     if fortranMangle:
-      funcs = map(self.compilers.mangleFortranFunction, funcs)
+      funcs = list(map(self.compilers.mangleFortranFunction, funcs))
     if not funcs:
       self.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
       return True
@@ -240,7 +234,7 @@ extern "C" {
     if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       found = 1
       # define the symbol as found
-      if functionDefine: self.addDefine(self.getDefineNameFunc(fname), 1)
+      if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
       # add to list of found libraries
       elif libName:
         for lib in libName:
@@ -350,7 +344,7 @@ extern "C" {
       checkLink = self.checkLink
       configObj = self
     else:
-      if hasattr(checkLink, 'im_self'):
+      if hasattr(checkLink, '__self__'):
         configObj = checkLink.__self__
       else:
         configObj = self
@@ -488,7 +482,7 @@ int checkInit(void) {
     return self._isBGL
 
   def configure(self):
-    map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
+    list(map(lambda args: self.executeTest(self.check, list(args)), self.libraries))
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkMathTgamma)

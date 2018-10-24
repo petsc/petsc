@@ -235,6 +235,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkSysWait)
     self.executeTest(self.checkTime)
     self.executeTest(self.checkMath)
-    map(lambda header: self.executeTest(self.check, header), set(self.headers))
+    for header in self.headers:
+      self.executeTest(self.check, header)
     self.executeTest(self.checkRecursiveMacros)
     return

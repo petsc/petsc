@@ -70,7 +70,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->ops->computeobjectiveandgradient=0;
   tao->ops->computegradient=0;
   tao->ops->computehessian=0;
-  tao->ops->computeseparableobjective=0;
+  tao->ops->computeresidual=0;
+  tao->ops->computeresidualjacobian=0;
   tao->ops->computeconstraints=0;
   tao->ops->computejacobian=0;
   tao->ops->computejacobianequality=0;
@@ -88,12 +89,13 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 
   tao->solution=NULL;
   tao->gradient=NULL;
-  tao->sep_objective = NULL;
+  tao->ls_res = NULL;
+  tao->ls_jac = NULL;
   tao->constraints=NULL;
   tao->constraints_equality=NULL;
   tao->constraints_inequality=NULL;
-  tao->sep_weights_v=NULL;
-  tao->sep_weights_w=NULL;
+  tao->res_weights_v=NULL;
+  tao->res_weights_w=NULL;
   tao->stepdirection=NULL;
   tao->niter=0;
   tao->ntotalits=0;
@@ -301,6 +303,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   }
   ierr = VecDestroy(&(*tao)->solution);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->gradient);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->ls_res);CHKERRQ(ierr);
 
   if ((*tao)->gradient_norm) {
     ierr = PetscObjectDereference((PetscObject)(*tao)->gradient_norm);CHKERRQ(ierr);
@@ -318,6 +321,8 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = VecDestroy(&(*tao)->stepdirection);CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian_pre);CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->ls_jac);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->ls_jac_pre);CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_pre);CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian);CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state_pre);CHKERRQ(ierr);
@@ -330,7 +335,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = MatDestroy(&(*tao)->jacobian_inequality_pre);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->state_is);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->design_is);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->sep_weights_v);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->res_weights_v);CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
   if ((*tao)->hist_malloc) {
     ierr = PetscFree((*tao)->hist_obj);CHKERRQ(ierr);
@@ -338,10 +343,10 @@ PetscErrorCode TaoDestroy(Tao *tao)
     ierr = PetscFree((*tao)->hist_cnorm);CHKERRQ(ierr);
     ierr = PetscFree((*tao)->hist_lits);CHKERRQ(ierr);
   }
-  if ((*tao)->sep_weights_n) {
-    ierr = PetscFree((*tao)->sep_weights_rows);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->sep_weights_cols);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->sep_weights_w);CHKERRQ(ierr);
+  if ((*tao)->res_weights_n) {
+    ierr = PetscFree((*tao)->res_weights_rows);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->res_weights_cols);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->res_weights_w);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -370,7 +375,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 . -tao_smonitor - same as tao_monitor, but truncates very small values
 . -tao_cmonitor - prints function value, residual, and constraint norm at each iteration
 . -tao_view_solution - prints solution vector at each iteration
-. -tao_view_separableobjective - prints separable objective vector at each iteration
+. -tao_view_ls_residual - prints least-squares residual vector at each iteration
 . -tao_view_step - prints step direction vector at each iteration
 . -tao_view_gradient - prints gradient vector at each iteration
 . -tao_draw_solution - graphically view solution vector at each iteration
@@ -458,10 +463,10 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetMonitor(tao,TaoStepDirectionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsString("-tao_view_separableobjective","view separable objective vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-tao_view_residual","view least-squares residual vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoSeparableObjectiveMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoResidualMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -1332,6 +1337,38 @@ PetscErrorCode TaoResetStatistics(Tao tao)
 }
 
 /*@C
+  TaoSetUpdate - Sets the general-purpose update function called
+  at the beginning of every iteration of the nonlinear solve. Specifically
+  it is called at the top of every iteration, after the new solution and the gradient 
+  is determined, but before the Hessian is computed (if applicable).
+
+  Logically Collective on Tao
+
+  Input Parameters:
+. tao - The tao solver context
+. func - The function
+
+  Calling sequence of func:
+. func (Tao tao, PetscInt step);
+
+. step - The current step of the iteration
+
+  Level: advanced
+
+.keywords: Tao, update
+
+.seealso TaoSolve()
+@*/
+PetscErrorCode  TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt), void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID,1);
+  tao->ops->update = func;
+  tao->user_update = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   TaoSetConvergenceTest - Sets the function that is to be used to test
   for convergence o fthe iterative minimization solution.  The new convergence
   testing routine will replace TAO's default convergence test.
@@ -1392,7 +1429,7 @@ $     int mymonitor(Tao tao,void *mctx)
 .    -tao_cmonitor       - same as smonitor plus constraint norm
 .    -tao_view_solution   - view solution at each iteration
 .    -tao_view_gradient   - view gradient at each iteration
-.    -tao_view_separableobjective - view separable objective function at each iteration
+.    -tao_view_ls_residual - view least-squares residual vector at each iteration
 -    -tao_cancelmonitors - cancels all monitors that have been hardwired into a code by calls to TaoSetMonitor(), but does not cancel those set via the options database.
 
 
@@ -1830,9 +1867,9 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-   TaoSeparableObjectiveMonitor - Views the separable objective function at each iteration
+   TaoResidualMonitor - Views the least-squares residual at each iteration
    It can be turned on from the command line using the
-   -tao_view_separableobjective option
+   -tao_view_ls_residual option
 
    Collective on Tao
 
@@ -1841,20 +1878,20 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_view_separableobjective
+.  -tao_view_ls_residual
 
    Level: advanced
 
 .seealso: TaoDefaultSMonitor(), TaoSetMonitor()
 @*/
-PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer  = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->sep_objective,viewer);CHKERRQ(ierr);
+  ierr = VecView(tao->ls_res,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2144,6 +2181,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TaoList,sname, (void (*)(void))func);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -40,7 +40,7 @@ typedef struct {
   PetscInt            *bs;                 /* [field] block size per field (can come from global operators?) */
   PetscInt            *nodesPerCell;       /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
   PetscInt             totalDofsPerCell;   /* Dofs per cell counting all fields */
-  PetscInt             exclude_subspace;   /* If you don't want any other dofs from a particular subspace you can exclude them with this.
+  PetscHSetI       subspaces_to_exclude;   /* If you don't want any other dofs from a particular subspace you can exclude them with this.
                                                 Used for Vanka in Stokes, for example, to eliminate all pressure dofs not on the vertex
                                                 you're building the patch around */
   PetscInt             vankadim;           /* In Vanka construction, should we eliminate any entities of a certain dimension on the initial patch? */

@@ -32,7 +32,7 @@ class Configure(config.package.Package):
     args = args+'AR         = '+self.setCompilers.AR+'\n'
     args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
 
-    fd = file(os.path.join(self.packageDir,'lib','Makefile.in'),'w')
+    fd = open(os.path.join(self.packageDir,'lib','Makefile.in'),'w')
     fd.write(args)
     self.framework.popLanguage()
     fd.close()

@@ -7,7 +7,7 @@ SOURCEC  = spacesubspace.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/space/impls/subspace
+LOCDIR   = src/dm/dt/space/impls/subspace/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

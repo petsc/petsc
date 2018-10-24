@@ -32,7 +32,7 @@ class Configure(config.package.Package):
     cargs=' '.join(cargs)
 
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write('args: '+args+'\n')
     fd.write('cargs: '+cargs+'\n')
     fd.close()

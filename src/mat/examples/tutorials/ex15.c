@@ -1,4 +1,4 @@
-static char help[] = "Example of using graph partitioning to segment an image\n\n";
+static char help[] = "Example of using graph partitioning to partition a graph\n\n";
 
 /*T
    Concepts: Mat^mat partitioning
@@ -59,8 +59,6 @@ int main(int argc, char **args)
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part, A);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-  /*ierr = MatPartitioningSetVertexWeights(part, const PetscInt weights[]);CHKERRQ(ierr);*/
-  /*ierr = MatPartitioningSetPartitionWeights(part,const PetscReal weights[]);CHKERRQ(ierr);*/
   ierr = MatPartitioningApply(part, &is);CHKERRQ(ierr);
   ierr = ISView(is, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
@@ -97,4 +95,9 @@ int main(int argc, char **args)
       requires: chaco
       args: -mat_partitioning_type chaco
 
+   test:
+      suffix: 5
+      nsize: 3
+      requires: parmetis
+      args: -mat_partitioning_type hierarch -mat_partitioning_hierarchical_nfineparts 3 -mat_partitioning_nparts 10 -N 100
 TEST*/

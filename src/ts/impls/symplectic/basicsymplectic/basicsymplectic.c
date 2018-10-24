@@ -179,6 +179,7 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
   PetscValidPointer(c,4);
   PetscValidPointer(d,4);
 
+  ierr = TSBasicSymplecticInitializePackage();CHKERRQ(ierr);
   ierr = PetscCalloc1(1,&link);CHKERRQ(ierr);
   scheme = &link->sch;
   ierr = PetscStrallocpy(name,&scheme->name);CHKERRQ(ierr);

@@ -2597,7 +2597,7 @@ PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat C)
   Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
   ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2617,8 +2617,9 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
     submatj = c->submatis1;
     if (submatj) {
       if (--((PetscObject)C)->refct <= 0) {
-        ierr = (submatj->destroy)(C);CHKERRQ(ierr);
+        ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
         ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+        ierr = PetscFree(C->defaultvectype);CHKERRQ(ierr);
         ierr = PetscLayoutDestroy(&C->rmap);CHKERRQ(ierr);
         ierr = PetscLayoutDestroy(&C->cmap);CHKERRQ(ierr);
         ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
@@ -3072,7 +3073,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
   switch (bs) {
   case 1:
     for (i=0; i<mbs; i++) {
-      ierr    = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
+      ierr = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
       if (PetscAbsScalar(diag[i] + shift) < PETSC_MACHINE_EPSILON) {
         if (allowzeropivot) {
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -4070,6 +4071,10 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CUDA)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat);
+#endif
+
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 {
   Mat_SeqAIJ     *b;
@@ -4124,6 +4129,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijsell_C",MatConvert_SeqAIJ_SeqAIJSELL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijmkl_C",MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijcusparse_C",MatConvert_SeqAIJ_SeqAIJCUSPARSE);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijcrl_C",MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -4704,6 +4712,7 @@ PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatSeqAIJList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -2,8 +2,14 @@ from __future__ import absolute_import
 import logger
 
 import os
-import urllib
-import urlparse
+try:
+  from urllib import urlretrieve
+except ImportError:
+  from urllib.request import urlretrieve
+try:
+  import urlparse
+except ImportError:
+  from urllib import parse as urlparse
 import config.base
 import socket
 
@@ -150,7 +156,7 @@ Unable to download package %s from: %s
     try:
       sav_timeout = socket.getdefaulttimeout()
       socket.setdefaulttimeout(30)
-      urllib.urlretrieve(url, localFile)
+      urlretrieve(url, localFile)
       socket.setdefaulttimeout(sav_timeout)
     except Exception as e:
       socket.setdefaulttimeout(sav_timeout)
@@ -199,11 +205,7 @@ Downloaded package %s from: %s is not a tarball.
         dirname = firstmember.name
       else:
         dirname = os.path.dirname(firstmember.name)
-      if hasattr(tf,'extractall'): #python 2.5+
-        tf.extractall(root)
-      else:
-        for tfile in tf.getmembers():
-          tf.extract(tfile,root)
+      tf.extractall(root)
       tf.close()
 
     # fix file permissions for the untared tarballs.

@@ -25,7 +25,7 @@ program  ex1f90
   call DMPlexDistribute(dm,izero,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
   if (dmDist /= PETSC_NULL_DM) then
     call DMDestroy(dm,ierr);CHKERRA(ierr)
-    dm%v = dmDist%v
+    dm = dmDist
   end if
 
   call ViewLabels(dm,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)

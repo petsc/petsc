@@ -933,6 +933,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
 
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ksp->totalits += ksp->its;
   if (nullsp) {
     ksp->vec_rhs = vec_rhs;
     ierr = VecDestroy(&btmp);CHKERRQ(ierr);
@@ -947,6 +948,7 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   if (ksp->viewPMat)     {ierr = ObjectView((PetscObject) pmat,         ksp->viewerPMat, ksp->formatPMat);CHKERRQ(ierr);}
   if (ksp->viewRhs)      {ierr = ObjectView((PetscObject) ksp->vec_rhs, ksp->viewerRhs,  ksp->formatRhs);CHKERRQ(ierr);}
   if (ksp->viewSol)      {ierr = ObjectView((PetscObject) ksp->vec_sol, ksp->viewerSol,  ksp->formatSol);CHKERRQ(ierr);}
+  if (ksp->view)         {ierr = ObjectView((PetscObject) ksp,          ksp->viewer,     ksp->format);CHKERRQ(ierr);}
 
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
@@ -2384,6 +2386,9 @@ $  func(KSP ksp,Vec x,void *ctx)
 +  ksp - the KSP context
 .  x - solution vector
 -  ctx - optional user-provided context
+
+   Notes: This should only be used in conjunction with KSPSetComputeRHS(), KSPSetComputeOperators(), otherwise
+   call KSPSetInitialGuessNonzero() and set the initial guess values in the solution vector passed to KSPSolve().
 
    Level: beginner
 

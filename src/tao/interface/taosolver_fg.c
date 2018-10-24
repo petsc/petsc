@@ -310,13 +310,13 @@ PetscErrorCode TaoSetObjectiveRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, 
 }
 
 /*@C
-  TaoSetSeparableObjectiveRoutine - Sets the function evaluation routine for least-square applications
+  TaoSetResidualRoutine - Sets the residual evaluation routine for least-square applications
 
   Logically collective on Tao
 
   Input Parameter:
 + tao - the Tao context
-. func - the objective function evaluation routine
+. func - the residual evaluation routine
 - ctx - [optional] user-defined context for private data for the function evaluation
         routine (may be NULL)
 
@@ -331,19 +331,26 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetJacobianRoutine()
 @*/
-PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec sepobj, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
+PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  PetscValidHeaderSpecific(sepobj, VEC_CLASSID,2);
-  tao->user_sepobjP = ctx;
-  tao->sep_objective = sepobj;
-  tao->ops->computeseparableobjective = func;
+  PetscValidHeaderSpecific(res,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)res);CHKERRQ(ierr);
+  if (tao->ls_res) {
+    ierr = VecDestroy(&tao->ls_res);CHKERRQ(ierr);
+  }
+  tao->ls_res = res;
+  tao->user_lsresP = ctx;
+  tao->ops->computeresidual = func;
+  
   PetscFunctionReturn(0);
 }
 
 /*@
-  TaoSetSeparableObjectiveWeights - Give weights for the separable objective values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give. If this function is not used, or if sigma_v and sigma_w are both NULL, then the default identity matrix will be used for weights.
+  TaoSetResidualWeights - Give weights for the residual values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give. If this function is not used, or if sigma_v and sigma_w are both NULL, then the default identity matrix will be used for weights.
 
   Collective on Tao
 
@@ -361,43 +368,47 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec sepobj, PetscErrorCo
 
   Level: intermediate
 
-.seealso: TaoSetSeparableObjectiveRoutine()
+.seealso: TaoSetResidualRoutine()
 @*/
-PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
+PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
 {
   PetscErrorCode ierr;
   PetscInt       i;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = VecDestroy(&tao->sep_weights_v);CHKERRQ(ierr);
-  tao->sep_weights_v=sigma_v;
   if (sigma_v) {
+    PetscValidHeaderSpecific(sigma_v,VEC_CLASSID,2);
     ierr = PetscObjectReference((PetscObject)sigma_v);CHKERRQ(ierr);
   }
+  if (tao->res_weights_v) {
+    ierr = VecDestroy(&tao->res_weights_v);CHKERRQ(ierr);
+  }
+  tao->res_weights_v=sigma_v;
   if (vals) {
-    if (tao->sep_weights_n) {
-      ierr = PetscFree(tao->sep_weights_rows);CHKERRQ(ierr);
-      ierr = PetscFree(tao->sep_weights_cols);CHKERRQ(ierr);
-      ierr = PetscFree(tao->sep_weights_w);CHKERRQ(ierr);
+    if (tao->res_weights_n) {
+      ierr = PetscFree(tao->res_weights_rows);CHKERRQ(ierr);
+      ierr = PetscFree(tao->res_weights_cols);CHKERRQ(ierr);
+      ierr = PetscFree(tao->res_weights_w);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc1(n,&tao->sep_weights_rows);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n,&tao->sep_weights_cols);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n,&tao->sep_weights_w);CHKERRQ(ierr);
-    tao->sep_weights_n=n;
+    ierr = PetscMalloc1(n,&tao->res_weights_rows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->res_weights_cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&tao->res_weights_w);CHKERRQ(ierr);
+    tao->res_weights_n=n;
     for (i=0;i<n;i++) {
-      tao->sep_weights_rows[i]=rows[i];
-      tao->sep_weights_cols[i]=cols[i];
-      tao->sep_weights_w[i]=vals[i];
+      tao->res_weights_rows[i]=rows[i];
+      tao->res_weights_cols[i]=cols[i];
+      tao->res_weights_w[i]=vals[i];
     }
   } else {
-    tao->sep_weights_n=0;
-    tao->sep_weights_rows=0;
-    tao->sep_weights_cols=0;
+    tao->res_weights_n=0;
+    tao->res_weights_rows=0;
+    tao->res_weights_cols=0;
   }
   PetscFunctionReturn(0);
 }
+
 /*@
-  TaoComputeSeparableObjective - Computes a separable objective function vector at a given point (for least-square applications)
+  TaoComputeResidual - Computes a least-squares residual vector at a given point
 
   Collective on Tao
 
@@ -409,14 +420,14 @@ PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n,
 . f - Objective vector at X
 
   Notes:
-    TaoComputeSeparableObjective() is typically used within minimization implementations,
+    TaoComputeResidual() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
 
   Level: advanced
 
-.seealso: TaoSetSeparableObjectiveRoutine()
+.seealso: TaoSetResidualRoutine()
 @*/
-PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F)
+PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
 {
   PetscErrorCode ierr;
 
@@ -426,15 +437,15 @@ PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F)
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,F,3);
-  if (tao->ops->computeseparableobjective) {
+  if (tao->ops->computeresidual) {
     ierr = PetscLogEventBegin(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
-    PetscStackPush("Tao user separable objective evaluation routine");
-    ierr = (*tao->ops->computeseparableobjective)(tao,X,F,tao->user_sepobjP);CHKERRQ(ierr);
+    PetscStackPush("Tao user least-squares residual evaluation routine");
+    ierr = (*tao->ops->computeresidual)(tao,X,F,tao->user_lsresP);CHKERRQ(ierr);
     PetscStackPop;
     ierr = PetscLogEventEnd(TAO_ObjectiveEval,tao,X,NULL,NULL);CHKERRQ(ierr);
     tao->nfuncs++;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetSeparableObjectiveRoutine() has not been called");
-  ierr = PetscInfo(tao,"TAO separable function evaluation.\n");CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetResidualRoutine() has not been called");
+  ierr = PetscInfo(tao,"TAO least-squares residual evaluation.\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +471,7 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TaoSetGradientRoutine(Tao tao,  PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
+PetscErrorCode TaoSetGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, Vec, void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);

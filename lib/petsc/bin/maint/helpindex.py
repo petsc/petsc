@@ -147,8 +147,8 @@ def printdata(LOC,fd,dict):
                   fd.write("<TABLE>\n")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
-		  # If prim_key exists in the concepts directory,
-		  # create a link to it.
+        	  # If prim_key exists in the concepts directory,
+        	  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
                   concept_filename = "concepts/" + concept_filename + ".html"
 
@@ -174,8 +174,8 @@ def printdata(LOC,fd,dict):
                   fd.write("<TABLE>")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=300 ><B><FONT SIZE=4>")
-		  # If prim_key exists in the concepts directory,
-		  # create a link to it.
+        	  # If prim_key exists in the concepts directory,
+        	  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
                   concept_filename = "concepts/" + concept_filename + ".html"
 

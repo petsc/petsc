@@ -7,7 +7,7 @@ SOURCEC  = dspacelagrange.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = 
-LOCDIR   = src/dm/dt/dualspace/impls/lagrange
+LOCDIR   = src/dm/dt/dualspace/impls/lagrange/
 MANSEC   = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

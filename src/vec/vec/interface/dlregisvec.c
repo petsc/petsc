@@ -196,7 +196,7 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecViennaCLCopyTo",   VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecViennaCLCopyFrom", VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscLogEventRegister("VecCUDACopyTo",     VEC_CLASSID,&VEC_CUDACopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCUDACopyFrom",   VEC_CLASSID,&VEC_CUDACopyFromGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUDACopyToGPUSome);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventSetCollective(VEC_ViennaCLCopyToGPU,   PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetCollective(VEC_ViennaCLCopyFromGPU, PETSC_FALSE);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = PetscLogEventSetCollective(VEC_CUDACopyToGPU,       PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetCollective(VEC_CUDACopyFromGPU,     PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetCollective(VEC_CUDACopyToGPUSome,   PETSC_FALSE);CHKERRQ(ierr);
@@ -266,6 +266,7 @@ PetscErrorCode  VecFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&VecScatterList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);

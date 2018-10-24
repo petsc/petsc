@@ -40,6 +40,11 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
 
   /*  Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     /*  Compute direction */
     if (lmP->H0) {
       ierr = MatLMVMSetJ0(lmP->M, lmP->H0);CHKERRQ(ierr);

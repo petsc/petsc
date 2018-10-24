@@ -35,6 +35,61 @@
         end Subroutine PetscSFGetGraph
       end Interface
 
+      Interface VecGetOwnershipRange
+      subroutine VecGetOwnershipRange1(x,l,h,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l,h
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecGetOwnershipRange2(x,l,h,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l(*),h
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecGetOwnershipRange3(x,l,h,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  l,h(*)
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+       end Interface
+
+      Interface VecMin
+      subroutine VecMin1(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecMin2(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p(*)
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
+      Interface VecMax
+      subroutine VecMax1(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      subroutine VecMax2(x,p,val,ierr)
+      use petscvecdef
+       Vec, intent(in) :: x
+       PetscInt, intent(out) ::  p(*)
+       PetscReal, intent(out) ::  val
+       PetscErrorCode, intent(out) :: ierr
+       end subroutine
+      end Interface
+
       Interface
       subroutine VecScatterCreateToAll(a,b,c,z)
       use petscvecdef
@@ -223,6 +278,16 @@
       use petscvecdef
        Vec a
        PetscViewer b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecScatterRemap(a,b,c,z)
+      use petscvecdef
+       VecScatter a ! VecScatter
+       PetscInt b (*) ! PetscInt
+       PetscInt c (*) ! PetscInt
        integer z
        end subroutine
       end Interface

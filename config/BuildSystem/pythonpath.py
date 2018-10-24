@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from __future__ import absolute_import
-import user
 import project
 import RDict
 
@@ -10,7 +9,7 @@ import sys
 
 def getPythonPath():
   if 'PYTHONPATH' in os.environ:
-    PYTHONPATH = filter(lambda p: len(p), os.environ['PYTHONPATH'].split(os.path.pathsep))
+    PYTHONPATH = [p for p in os.environ['PYTHONPATH'].split(os.path.pathsep) if len(p)]
   else:
     PYTHONPATH = []
   argsDB   = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))

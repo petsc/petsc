@@ -3,13 +3,17 @@
 /*@
   DMPlexSetMigrationSF - Sets the SF for migrating from a parent DM into this DM
 
-+ dm          - The DM
-. naturalSF   - The PetscSF
+  Input Parameters:
++ dm        - The DM
+- naturalSF - The PetscSF
+
+  Note: It is necessary to call this in order to have DMCreateSubDM() or DMCreateSuperDM() build the Global-To-Natural map
+
   Level: intermediate
 
 .seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexGetMigrationSF()
 @*/
-PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) 
+PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -21,13 +25,17 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 /*@
   DMPlexGetMigrationSF - Gets the SF for migrating from a parent DM into this DM
 
-+ dm          - The DM
-. *migrationSF   - The PetscSF
+  Input Parameter:
+. dm          - The DM
+
+  Output Parameter:
+. migrationSF - The PetscSF
+
   Level: intermediate
 
 .seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateMigrationSF(), DMPlexSetMigrationSF
 @*/
-PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF) 
+PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 {
   PetscFunctionBegin;
   *migrationSF = dm->sfMigration;
@@ -37,13 +45,15 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 /*@
   DMPlexSetGlobalToNaturalSF - Sets the SF for mapping Global Vec to the Natural Vec
 
+  Input Parameters:
 + dm          - The DM
-. naturalSF   - The PetscSF
+- naturalSF   - The PetscSF
+
   Level: intermediate
 
 .seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexGetGlobaltoNaturalSF()
 @*/
-PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) 
+PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -56,13 +66,17 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 /*@
   DMPlexGetGlobalToNaturalSF - Gets the SF for mapping Global Vec to the Natural Vec
 
-+ dm          - The DM
-. *naturalSF   - The PetscSF
+  Input Parameter:
+. dm          - The DM
+
+  Output Parameter:
+. naturalSF   - The PetscSF
+
   Level: intermediate
 
 .seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexCreateGlobalToNaturalSF(), DMPlexSetGlobaltoNaturalSF
 @*/
-PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF) 
+PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 {
   PetscFunctionBegin;
   *naturalSF = dm->sfNatural;
@@ -74,11 +88,13 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 
   Input Parameters:
 + dm          - The DM
-. section     - The PetscSection before the mesh was distributed
+. section     - The PetscSection describing the Vec before the mesh was distributed
 - sfMigration - The PetscSF used to distribute the mesh
 
-  Output Parameters:
-. sfNatural - PetscSF for mapping the Vec in PETSc ordering to the canonical ordering
+  Output Parameter:
+. sfNatural   - PetscSF for mapping the Vec in PETSc ordering to the canonical ordering
+
+  Note: This is not typically called by the user.
 
   Level: intermediate
 

@@ -24,13 +24,13 @@ class Configure(config.base.Configure):
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         self.logPrint('.git directory exists')
         if hasattr(self.sourceControl,'git'):
-          (o1, e1, s1) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' describe --match "v*"',checkCommand = noCheck, log = self.log)
-          (o2, e2, s2) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%H",checkCommand = noCheck, log = self.log)
-          (o3, e3, s3) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci",checkCommand = noCheck, log = self.log)
-          (o4, e4, s4) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' branch',checkCommand = noCheck, log = self.log)
+          (o1, e1, s1) = self.executeShellCommand([self.sourceControl.git, 'describe', '--match=v*'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
+          (o2, e2, s2) = self.executeShellCommand([self.sourceControl.git, 'log', '-1', '--pretty=format:%H'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
+          (o3, e3, s3) = self.executeShellCommand([self.sourceControl.git, 'log', '-1', '--pretty=format:%ci'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
+          (o4, e4, s4) = self.executeShellCommand([self.sourceControl.git, 'branch'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
           if s2 or s3 or s4:
             self.logPrintBox('***** WARNING: Git branch check is giving errors! Checking the repo with "git status"')
-            (o5, e5, s5) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' status',checkCommand = noCheck, log = self.log)
+            (o5, e5, s5) = self.executeShellCommand([self.sourceControl.git, 'status'],checkCommand = noCheck, log = self.log, cwd=self.petscdir.dir)
             self.logPrint(e5)
           else:
             if not o1: o1 = o2

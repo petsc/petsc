@@ -424,14 +424,14 @@ int main(int argc,char **args)
       suffix: mumps_omp_2
       nsize: 4
       requires: mumps hwloc openmp pthread define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-      args: -use_mumps_lu -mumps_omp_num_threads 2
+      args: -use_mumps_lu -mat_mumps_use_omp_threads 2
       output_file: output/ex52_1.out
 
    test:
       suffix: mumps_omp_3
       nsize: 4
       requires: mumps hwloc openmp pthread define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-      args: -use_mumps_ch -mumps_omp_num_threads 3
+      args: -use_mumps_ch -mat_mumps_use_omp_threads 3
       # Ignore the warning since we are intentionally testing the imbalanced case
       filter: grep -v "Warning: number of OpenMP threads"
       output_file: output/ex52_1.out
@@ -440,7 +440,8 @@ int main(int argc,char **args)
       suffix: mumps_omp_4
       nsize: 4
       requires: mumps hwloc openmp pthread define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-      args: -use_mumps_ch -mat_type sbaij -mumps_omp_num_threads 4
+      # let petsc guess a proper number for threads
+      args: -use_mumps_ch -mat_type sbaij -mat_mumps_use_omp_threads
       output_file: output/ex52_1.out
 
    test:

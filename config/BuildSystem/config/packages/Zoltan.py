@@ -40,11 +40,11 @@ class Configure(config.package.GNUPackage):
 
   def Install(self):
     '''Zoltan does not have a make clean'''
-    packageDir = os.path.join(self.packageDir,'build')
+    packageDir = os.path.join(self.packageDir,'petsc-build')
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
-    fd = file(conffile, 'w')
+    fd = open(conffile, 'w')
     fd.write(args)
     fd.close()
 

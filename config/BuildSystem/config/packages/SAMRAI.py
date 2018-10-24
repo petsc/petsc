@@ -23,7 +23,11 @@ class Configure(config.package.GNUPackage):
 
   def gitPreInstallCheck(self):
     '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
-    import urllib, os
+    import os
+    try:
+      from urllib import urlretrieve
+    except ImportError:
+      from urllib.request import urlretrieve
 
     markFile = os.path.join(self.packageDir, '_patched')
     if not os.path.isfile(markFile):
@@ -33,7 +37,7 @@ class Configure(config.package.GNUPackage):
       urllib.urlretrieve('https://github.com/IBAMR/IBAMR/releases/download/v0.1-rc1/SAMRAI-v2.4.4-patch-121212.gz', os.path.join(self.externalPackagesDir, 'SAMRAI-v2.4.4-patch-121212.gz'))
       self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded v2.4.4-patch-121212 into '+self.externalPackagesDir)
       output2,err2,ret2 = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && gunzip -c '+os.path.join(self.externalPackagesDir, 'SAMRAI-v2.4.4-patch-121212.gz')+' | patch -p2', timeout=200, log = self.framework.log)
-      f = file(markFile, 'w')
+      f = open(markFile, 'w')
       f.write('Patched and linked headers')
       f.close
     return

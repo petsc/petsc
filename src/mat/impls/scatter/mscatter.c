@@ -328,7 +328,7 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 
     Input Parameters:
 +   mat - the scatter matrix
--   scatter - the scatter context create with VecScatterCreate()
+-   scatter - the scatter context create with VecScatterCreate() or VecScatterCreateWithData()
 
    Level: advanced
 

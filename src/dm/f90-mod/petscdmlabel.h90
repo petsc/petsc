@@ -1,0 +1,47 @@
+      Interface
+       subroutine DMGetLabel(d,str,l,ierr)
+          use petscdmdef
+          DM,             intent(in)  :: d
+          character(*),   intent(in)  :: str
+          DMLabel,        intent(out) :: l
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMGetLabel
+      end Interface
+      Interface
+       subroutine DMGetLabelSize(d,str,l,ierr)
+          use petscdmdef
+          DM,             intent(in)  :: d
+          character(*),   intent(in)  :: str
+          PetscInt,       intent(out) :: l
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMGetLabelSize
+      end Interface
+      Interface
+       subroutine DMGetLabelValue(d,str,p,v,ierr)
+          use petscdmdef
+          DM,             intent(in)  :: d
+          character(*),   intent(in)  :: str
+          PetscInt,       intent(in)  :: p
+          PetscInt,       intent(out) :: v
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMGetLabelValue
+      end Interface
+      Interface
+       subroutine DMGetLabelIdIS(d,str,i,ierr)
+          use petscdmdef
+          use petscisdef
+          DM,             intent(in)  :: d
+          character(*),   intent(in)  :: str
+          IS,             intent(out) :: i
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMGetLabelIdIS
+      end Interface
+      Interface
+       subroutine DMSetLabelValue(d,str,p,v,ierr)
+          use petscdmdef
+          DM,             intent(in)  :: d
+          character(*),   intent(in)  :: str
+          PetscInt,       intent(in)  :: p,v
+          PetscErrorCode, intent(out) :: ierr
+       end Subroutine DMSetLabelValue
+      end Interface

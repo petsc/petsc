@@ -51,9 +51,7 @@ class Configure(config.package.Package):
       if line.startswith('FC  '):
         fc = self.compilers.FC
         if fc.find('f90') >= 0 or fc.find('f95') >=0:
-          import commands
-          output  = commands.getoutput(fc+' -v')
-          if output.find('IBM') >= 0:
+          if config.setCompilers.Configure.isIBM(fc, self.log):
             fc = os.path.join(os.path.dirname(fc),'xlf')
             self.log.write('Using IBM f90 compiler, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
