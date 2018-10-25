@@ -186,7 +186,7 @@ PetscErrorCode DMPlexCheckConesConformOnInterfaces(DM dm)
   PetscInt            *mine_orig_numbering;
   Vec                 *sntCoordinatesPerRank;
   Vec                 *refCoordinatesPerRank;
-  Vec                 *recCoordinatesPerRank;
+  Vec                 *recCoordinatesPerRank=0;
   PetscInt            r;
   PetscMPIInt         commsize, myrank;
   PetscBool           same;
