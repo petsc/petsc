@@ -14,6 +14,7 @@ X0 = dfoxs(n,nprob,factor^factor_power)';
 
 % Initialize the function handle for evaluating the residuals
 func = @(x)dfovec_wrap(m,n,x,nprob,1);
+jac = @(x)jacobian(m,n,x,nprob);
 
 % Initialize the algorithmic parameters for taopounders
 nfmax = nf_const*(n+1);   % Maximum number of function evaluations

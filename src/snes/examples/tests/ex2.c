@@ -326,57 +326,57 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -petscspace_order 1
+    args: -petscspace_degree 1
   test:
     suffix: 1
     requires: ctetgen
-    args: -petscspace_order 1 -dm_refine 2
+    args: -petscspace_degree 1 -dm_refine 2
   test:
     suffix: 2
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -petscpartitioner_type simple
+    args: -petscspace_degree 1 -petscpartitioner_type simple
   test:
     suffix: 3
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -dm_refine 2 -petscpartitioner_type simple
+    args: -petscspace_degree 1 -dm_refine 2 -petscpartitioner_type simple
   test:
     suffix: 4
     requires: ctetgen
     nsize: 5
-    args: -petscspace_order 1 -petscpartitioner_type simple
+    args: -petscspace_degree 1 -petscpartitioner_type simple
   test:
     suffix: 5
     requires: ctetgen
     nsize: 5
-    args: -petscspace_order 1 -dm_refine 2 -petscpartitioner_type simple
+    args: -petscspace_degree 1 -dm_refine 2 -petscpartitioner_type simple
   test:
     suffix: 6
     requires: ctetgen
-    args: -petscspace_order 1 -point_type grid
+    args: -petscspace_degree 1 -point_type grid
   test:
     suffix: 7
     requires: ctetgen
-    args: -petscspace_order 1 -dm_refine 2 -point_type grid
+    args: -petscspace_degree 1 -dm_refine 2 -point_type grid
   test:
     suffix: 8
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -point_type grid -petscpartitioner_type simple
+    args: -petscspace_degree 1 -point_type grid -petscpartitioner_type simple
   test:
     suffix: 9
     requires: ctetgen
-    args: -petscspace_order 1 -point_type grid_replicated
+    args: -petscspace_degree 1 -point_type grid_replicated
   test:
     suffix: 10
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -point_type grid_replicated -petscpartitioner_type simple
+    args: -petscspace_degree 1 -point_type grid_replicated -petscpartitioner_type simple
   test:
     suffix: 11
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -dm_refine 2 -point_type grid_replicated -petscpartitioner_type simple
+    args: -petscspace_degree 1 -dm_refine 2 -point_type grid_replicated -petscpartitioner_type simple
 
 TEST*/

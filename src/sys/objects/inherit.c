@@ -881,7 +881,6 @@ PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(ctx,1);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -955,7 +954,7 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
   if (!*obj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
   if (--((PetscObject)(*obj))->refct > 0) {*obj = 0; PetscFunctionReturn(0);}
-  if ((*obj)->userdestroy) (*(*obj)->userdestroy)((*obj)->ptr);
+  if ((*obj)->userdestroy) { ierr = (*(*obj)->userdestroy)((*obj)->ptr);CHKERRQ(ierr); }
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -140,3 +140,12 @@ int main(int argc, char **argv)
   return ierr;
 }
 
+/*TEST
+
+   build:
+     requires: moab
+
+   test:
+     args: -debug -fields v1,v2,v3
+
+TEST*/

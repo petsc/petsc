@@ -19,8 +19,8 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 typedef struct {
   char*                fineparttype; /* partitioner on fine level */
   char*                coarseparttype; /* partitioner on coarse level */
-  PetscInt             Nfineparts; /* number of fine parts on each coarse subdomain */
-  PetscInt             Ncoarseparts; /* number of coarse parts */
+  PetscInt             nfineparts; /* number of fine parts on each coarse subdomain */
+  PetscInt             ncoarseparts; /* number of coarse parts */
   IS                   coarseparts; /* partitioning on coarse level */
   IS                   fineparts; /* partitioning on fine level */
 } MatPartitioning_Hierarchical;
@@ -33,8 +33,10 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 {
   MatPartitioning_Hierarchical *hpart  = (MatPartitioning_Hierarchical*)part->data;
   const PetscInt               *fineparts_indices, *coarseparts_indices;
-  PetscInt                     *parts_indices,i,j,mat_localsize;
+  PetscInt                     *fineparts_indices_tmp;
+  PetscInt                     *parts_indices,i,j,mat_localsize, *offsets;
   Mat                           mat    = part->adj,adj,sadj;
+  PetscReal                    *part_weights;
   PetscBool                     flg;
   PetscInt                      bs     = 1;
   MatPartitioning               finePart, coarsePart;
@@ -63,24 +65,42 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   mat_localsize = adj->rmap->n;
   /* check parameters */
   /* how many small subdomains we want from a given 'big' suddomain */
-  if(!hpart->Nfineparts) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain \n");
-  if(!hpart->Ncoarseparts && !part->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts \n");
-  if(part->n && part->n%hpart->Nfineparts!=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,
-		   " total number of parts %D can not be divided by number of fine parts %D\n",part->n,hpart->Nfineparts);
+  if(!hpart->nfineparts) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain \n");
+  if(!hpart->ncoarseparts && !part->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts \n");
+
   if(part->n){
-    hpart->Ncoarseparts = part->n/hpart->Nfineparts;
+    hpart->ncoarseparts = part->n/hpart->nfineparts;
+
+    if (part->n%hpart->nfineparts != 0) hpart->ncoarseparts++;
   }else{
-	part->n = hpart->Ncoarseparts*hpart->Nfineparts;
+    part->n = hpart->ncoarseparts*hpart->nfineparts;
   }
-   /* we do not support this case currently, but this restriction should be
-     * removed in the further
-     * */
-  if(hpart->Ncoarseparts>size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP," we do not support number of coarse parts %D > size %D \n",hpart->Ncoarseparts,size);
+
+  ierr = PetscCalloc1(hpart->ncoarseparts+1, &offsets);CHKERRQ(ierr);
+  ierr = PetscCalloc1(hpart->ncoarseparts, &part_weights);CHKERRQ(ierr);
+
+
+  if (part->n%hpart->nfineparts != 0) offsets[1] = part->n%hpart->nfineparts;
+  else offsets[1] = hpart->nfineparts;
+
+  part_weights[0] = ((PetscReal)offsets[1])/part->n;
+
+  for (i=2; i<=hpart->ncoarseparts; i++) {
+    offsets[i] = hpart->nfineparts;
+    part_weights[i-1] = ((PetscReal)offsets[i])/part->n;
+  }
+
+  offsets[0] = 0;
+  for (i=1;i<=hpart->ncoarseparts; i++)
+    offsets[i] += offsets[i-1];
+
   ierr = MatPartitioningCreate(comm,&coarsePart);CHKERRQ(ierr);
     /* if did not set partitioning type yet, use parmetis by default */
   if (!hpart->coarseparttype){
 #if defined(PETSC_HAVE_PARMETIS)
     ierr = MatPartitioningSetType(coarsePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_PTSCOTCH)
+    ierr = MatPartitioningSetType(coarsePart,MATPARTITIONINGPTSCOTCH);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype"); 
 #endif
@@ -88,57 +108,78 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
     ierr = MatPartitioningSetType(coarsePart,hpart->coarseparttype);CHKERRQ(ierr);
   }
   ierr = MatPartitioningSetAdjacency(coarsePart,adj);CHKERRQ(ierr);
-  ierr = MatPartitioningSetNParts(coarsePart, hpart->Ncoarseparts);CHKERRQ(ierr);
+  ierr = MatPartitioningSetNParts(coarsePart, hpart->ncoarseparts);CHKERRQ(ierr);
   /* copy over vertex weights */
   if(part->vertex_weights){
    ierr = PetscMalloc1(mat_localsize,&coarse_vertex_weights);CHKERRQ(ierr);
    ierr = PetscMemcpy(coarse_vertex_weights,part->vertex_weights,sizeof(PetscInt)*mat_localsize);CHKERRQ(ierr);
    ierr = MatPartitioningSetVertexWeights(coarsePart,coarse_vertex_weights);CHKERRQ(ierr);
   }
+
+  ierr = MatPartitioningSetPartitionWeights(coarsePart, part_weights);CHKERRQ(ierr);
+
   /* It looks nontrivial to support part weights,
    * I will return back to implement it when have
    * an idea.
    *  */
   ierr = MatPartitioningApply(coarsePart,&hpart->coarseparts);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&coarsePart);CHKERRQ(ierr);
-  /* In the current implementation, destination should be the same as hpart->coarseparts,
-   * and this interface is preserved to deal with the case hpart->coarseparts>size in the
-   * future.
-   * */
-  ierr = MatPartitioningHierarchical_DetermineDestination(part,hpart->coarseparts,0,hpart->Ncoarseparts,&destination);CHKERRQ(ierr);
-  /* assemble a submatrix for partitioning subdomains  */
-  ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
-  ierr = ISDestroy(&destination);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
-  /* create a fine partitioner */
-  ierr = MatPartitioningCreate(scomm,&finePart);CHKERRQ(ierr);
-  /* if do not set partitioning type, use parmetis by default */
-  if(!hpart->fineparttype){
-#if defined(PETSC_HAVE_PARMETIS)
-    ierr = MatPartitioningSetType(finePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
-#else
-    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype"); 
-#endif
-  } else {
-    ierr = MatPartitioningSetType(finePart,hpart->fineparttype);CHKERRQ(ierr);
-  }
-  ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
-  ierr = MatPartitioningSetNParts(finePart, hpart->Nfineparts);CHKERRQ(ierr);
-  ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
-  ierr = MatDestroy(&sadj);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
-  ierr = MatPartitioningHierarchical_ReassembleFineparts(adj,fineparts_temp,mapping,&hpart->fineparts);CHKERRQ(ierr);
-  ierr = ISDestroy(&fineparts_temp);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
 
+  ierr = PetscCalloc1(mat_localsize, &fineparts_indices_tmp);CHKERRQ(ierr);
+
+  for(i=0; i<hpart->ncoarseparts; i+=size){
+    ierr = MatPartitioningHierarchical_DetermineDestination(part,hpart->coarseparts,i,i+size,&destination);CHKERRQ(ierr);
+    /* assemble a submatrix for partitioning subdomains  */
+    ierr = MatPartitioningHierarchical_AssembleSubdomain(adj,destination,&sadj,&mapping);CHKERRQ(ierr);
+    ierr = ISDestroy(&destination);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)sadj,&scomm);CHKERRQ(ierr);
+    /* create a fine partitioner */
+    ierr = MatPartitioningCreate(scomm,&finePart);CHKERRQ(ierr);
+    /* if do not set partitioning type, use parmetis by default */
+    if(!hpart->fineparttype){
+#if defined(PETSC_HAVE_PARMETIS)
+      ierr = MatPartitioningSetType(finePart,MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_PTSCOTCH)
+      ierr = MatPartitioningSetType(finePart,MATPARTITIONINGPTSCOTCH);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_CHACO)
+      ierr = MatPartitioningSetType(finePart,MATPARTITIONINGCHACO);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_PARTY)
+      ierr = MatPartitioningSetType(finePart,MATPARTITIONINGPARTY);CHKERRQ(ierr);
+#else
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
+#endif
+    } else {
+      ierr = MatPartitioningSetType(finePart,hpart->fineparttype);CHKERRQ(ierr);
+    }
+    ierr = MatPartitioningSetAdjacency(finePart,sadj);CHKERRQ(ierr);
+    ierr = MatPartitioningSetNParts(finePart, offsets[rank+1+i]-offsets[rank+i]);CHKERRQ(ierr);
+    ierr = MatPartitioningApply(finePart,&fineparts_temp);CHKERRQ(ierr);
+    ierr = MatDestroy(&sadj);CHKERRQ(ierr);
+    ierr = MatPartitioningDestroy(&finePart);CHKERRQ(ierr);
+    ierr = MatPartitioningHierarchical_ReassembleFineparts(adj,fineparts_temp,mapping,&hpart->fineparts);CHKERRQ(ierr);
+
+    ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
+    for (j=0;j<mat_localsize;j++)
+      if (fineparts_indices[j] >=0) fineparts_indices_tmp[j] = fineparts_indices[j];
+
+    ierr = ISRestoreIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&hpart->fineparts);CHKERRQ(ierr);
+    ierr = ISDestroy(&fineparts_temp);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
+  }
+
+  ierr = ISCreateGeneral(comm,mat_localsize,fineparts_indices_tmp,PETSC_OWN_POINTER,&hpart->fineparts);CHKERRQ(ierr);
   ierr = ISGetIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
   ierr = ISGetIndices(hpart->coarseparts,&coarseparts_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs*adj->rmap->n,&parts_indices);CHKERRQ(ierr);
   for(i=0; i<adj->rmap->n; i++){
     for(j=0; j<bs; j++){
-      parts_indices[bs*i+j] = fineparts_indices[i]+coarseparts_indices[i]*hpart->Nfineparts;
+      parts_indices[bs*i+j] = fineparts_indices[i]+offsets[coarseparts_indices[i]];
     }
   }
+  ierr = ISRestoreIndices(hpart->fineparts,&fineparts_indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(hpart->coarseparts,&coarseparts_indices);CHKERRQ(ierr);
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,bs*adj->rmap->n,parts_indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   ierr = MatDestroy(&adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -157,6 +198,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(sfineparts, 4);
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetLayouts(adj,&rmap,NULL);CHKERRQ(ierr);
@@ -174,6 +216,11 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   }
   ierr = PetscLayoutGetRanges(rmap,&ranges);CHKERRQ(ierr);
   ierr = PetscCalloc1(ranges[rank+1]-ranges[rank],&sfineparts_indices);CHKERRQ(ierr);
+
+  for (i=0; i<(ranges[rank+1]-ranges[rank]); i++) {
+    sfineparts_indices[i] = -1;
+  }
+
   ierr = ISGetIndices(fineparts,&fineparts_indices);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscCalloc1(localsize,&remote);CHKERRQ(ierr);
@@ -243,7 +290,7 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
 	/* compute target */
     target = part_indices[i]-pstart;
     /* mark out of range entity as -1 */
-    if(part_indices[i]<pstart || part_indices[i]>pend) target = -1;
+    if(part_indices[i]<pstart || part_indices[i]>=pend) target = -1;
 	dest_indices[i] = target;
   }
   ierr = ISCreateGeneral(comm,plocalsize,dest_indices,PETSC_OWN_POINTER,destination);CHKERRQ(ierr);
@@ -262,10 +309,10 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if(iascii){
-	 ierr = PetscViewerASCIIPrintf(viewer," Fine partitioner %s \n",hpart->fineparttype);CHKERRQ(ierr);
-	 ierr = PetscViewerASCIIPrintf(viewer," Coarse partitioner %s \n",hpart->coarseparttype);CHKERRQ(ierr);
-	 ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts %D \n",hpart->Ncoarseparts);CHKERRQ(ierr);
-	 ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts %D \n",hpart->Nfineparts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Fine partitioner %s \n",hpart->fineparttype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Coarse partitioner %s \n",hpart->coarseparttype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts %D \n",hpart->ncoarseparts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts %D \n",hpart->nfineparts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -293,21 +340,21 @@ PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part,IS
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, PetscInt Ncoarseparts)
+PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, PetscInt ncoarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
 
   PetscFunctionBegin;
-  hpart->Ncoarseparts = Ncoarseparts;
+  hpart->ncoarseparts = ncoarseparts;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, PetscInt Nfineparts)
+PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, PetscInt nfineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
 
   PetscFunctionBegin;
-  hpart->Nfineparts = Nfineparts;
+  hpart->nfineparts = nfineparts;
   PetscFunctionReturn(0);
 }
 
@@ -330,8 +377,8 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *Pets
     ierr = PetscCalloc1(1024,&hpart->fineparttype);CHKERRQ(ierr);
     ierr = PetscStrcpy(hpart->fineparttype,value);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Ncoarseparts","number of coarse parts",NULL,0,&hpart->Ncoarseparts,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Nfineparts","number of fine parts",NULL,1,&hpart->Nfineparts,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_ncoarseparts","number of coarse parts",NULL,hpart->ncoarseparts,&hpart->ncoarseparts,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_nfineparts","number of fine parts",NULL,hpart->nfineparts,&hpart->nfineparts,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,7 +400,13 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 
 
 /*MC
-   MATPARTITIONINGHIERARCHPART - Creates a partitioning context via hierarchical partitioning strategy.
+   MATPARTITIONINGHIERARCH - Creates a partitioning context via hierarchical partitioning strategy.
+   The graph is partitioned into a number of subgraphs, and each subgraph is further split into a few smaller
+   subgraphs. The idea can be applied in a recursive manner. It is useful when you want to partition the graph
+   into a large number of subgraphs (often more than 10K) since partitions obtained with existing partitioners
+   such as ParMETIS and PTScotch are far from ideal. The hierarchical partitioning also tries to avoid off-node
+   communication as much as possible for multi-core processor. Another user case for the hierarchical partitioning
+   is to improve PCGASM convergence by generating multi-rank connected subdomain.
 
    Collective on MPI_Comm
 
@@ -361,8 +414,16 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 .  part - the partitioning context
 
    Options Database Keys:
++     -mat_partitioning_hierarchical_coarseparttype - partitioner type at the first level and parmetis is used by default
+.     -mat_partitioning_hierarchical_fineparttype - partitioner type at the second level and parmetis is used by default
+.     -mat_partitioning_hierarchical_ncoarseparts - number of subgraphs is required at the first level, which is often the number of compute nodes
+-     -mat_partitioning_hierarchical_nfineparts - number of smaller subgraphs for each subgraph, which is often the number of cores per compute node
 
    Level: beginner
+
+   References:
++  Fande Kong, Xiao-Chuan Cai, A highly scalable multilevel Schwarz method with boundary geometry preserving coarse spaces for 3D elasticity problems on domains with complex geometry,
+   SIAM Journal on Scientific Computing 38 (2), C73-C95, 2016
 
 .keywords: Partitioning, create, context
 
@@ -379,10 +440,10 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning p
   ierr       = PetscNewLog(part,&hpart);CHKERRQ(ierr);
   part->data = (void*)hpart;
 
-  hpart->fineparttype       = 0; /* fine level partitioner */
-  hpart->coarseparttype     = 0; /* coarse level partitioner */
-  hpart->Nfineparts         = 1; /* we do not further partition coarse partition any more by default */
-  hpart->Ncoarseparts       = 0; /* number of coarse parts (first level) */
+  hpart->fineparttype       = 0; /* fine level (second) partitioner */
+  hpart->coarseparttype     = 0; /* coarse level (first) partitioner */
+  hpart->nfineparts         = 1; /* we do not further partition coarse partition any more by default */
+  hpart->ncoarseparts       = 0; /* number of coarse parts (first level) */
   hpart->coarseparts        = 0;
   hpart->fineparts          = 0;
 

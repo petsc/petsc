@@ -75,6 +75,14 @@ PETSC_EXTERN PetscErrorCode PCDiagonalScaleLeft(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCDiagonalScaleRight(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 
+PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
+PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
+
+PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
+PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
+
 /* ------------- options specific to particular preconditioners --------- */
 
 PETSC_EXTERN PetscErrorCode PCJacobiSetType(PC,PCJacobiType);
@@ -238,15 +246,16 @@ PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetComputeSubmatrix(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*);
 
-PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
-
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
 
-PETSC_EXTERN PetscErrorCode PCSetDM(PC,DM);
-PETSC_EXTERN PetscErrorCode PCGetDM(PC,DM*);
+PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetTolerance(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetIterations(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
 
-PETSC_EXTERN PetscErrorCode PCSetApplicationContext(PC,void*);
-PETSC_EXTERN PetscErrorCode PCGetApplicationContext(PC,void*);
+PETSC_EXTERN PetscErrorCode PCAINVCUSPSetDropTolerance(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCAINVCUSPUseScaling(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCAINVCUSPSetNonzeros(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCAINVCUSPSetLinParameter(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
@@ -346,6 +355,21 @@ PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreDM(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetDM(PC,DM*);
+
+PETSC_EXTERN PetscErrorCode PCPatchSetSaveOperators(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetSaveOperators(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetPartitionOfUnity(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetPartitionOfUnity(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetMultiplicative(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCPatchGetMultiplicative(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCPatchSetSubMatType(PC, MatType);
+PETSC_EXTERN PetscErrorCode PCPatchGetSubMatType(PC, MatType *);
+PETSC_EXTERN PetscErrorCode PCPatchSetCellNumbering(PC, PetscSection);
+PETSC_EXTERN PetscErrorCode PCPatchGetCellNumbering(PC, PetscSection *);
+PETSC_EXTERN PetscErrorCode PCPatchSetConstructType(PC, PCPatchConstructType,   PetscErrorCode (*)(PC, PetscInt *, IS **, IS *, void *), void *);
+PETSC_EXTERN PetscErrorCode PCPatchGetConstructType(PC, PCPatchConstructType *, PetscErrorCode (**)(PC, PetscInt *, IS **, IS *, void *), void **);
+PETSC_EXTERN PetscErrorCode PCPatchSetDiscretisationInfo(PC, PetscInt, DM *, PetscInt *, PetscInt *, const PetscInt **, const PetscInt *, PetscInt, const PetscInt *, PetscInt, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperator(PC, PetscErrorCode (*)(PC,PetscInt,Mat,IS,PetscInt,const PetscInt *,void *), void *);
 
 PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat*);

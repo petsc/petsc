@@ -1,0 +1,68 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:8, my:8, bmx:2, bmy:5, height:0.3
+iter =   0, Function value 1.83917, Residual: 0.44807 
+iter =   1, Function value 1.79522, Residual: 0.58077 
+iter =   2, Function value 1.75372, Residual: 0.616832 
+iter =   3, Function value 1.65018, Residual: 0.404145 
+iter =   4, Function value 1.61628, Residual: 0.186358 
+iter =   5, Function value 1.60847, Residual: 0.0709256 
+iter =   6, Function value 1.60591, Residual: 0.0593336 
+iter =   7, Function value 1.60397, Residual: 0.100999 
+iter =   8, Function value 1.6029, Residual: 0.0743998 
+iter =   9, Function value 1.60239, Residual: 0.0428564 
+iter =  10, Function value 1.60183, Residual: 0.0292889 
+iter =  11, Function value 1.60126, Residual: 0.0300716 
+iter =  12, Function value 1.60118, Residual: 0.00982924 
+iter =  13, Function value 1.60116, Residual: 0.00431567 
+iter =  14, Function value 1.60115, Residual: 0.00287347 
+iter =  15, Function value 1.60115, Residual: 0.00165424 
+iter =  16, Function value 1.60115, Residual: 0.00126068 
+iter =  17, Function value 1.60115, Residual: 0.000588528 
+iter =  18, Function value 1.60115, Residual: 0.000156883 
+iter =  19, Function value 1.60115, Residual: 0.000115255 
+iter =  20, Function value 1.60115, Residual: 0.000115372 
+iter =  21, Function value 1.60115, Residual: 0.000101098 
+iter =  22, Function value 1.60115, Residual: 3.27967e-05 
+Tao Object: 2 MPI processes
+  type: blmvm
+  Gradient steps: 0
+  Mat Object: (tao_blmvm_) 2 MPI processes
+    type: lmvmbfgs
+    rows=64, cols=64
+      Scale type: diagonal
+      Scale history: 1
+      Scale params: alpha=1., beta=0.5, rho=1.
+      Convex factors: phi=0., theta=0.125
+      Max. storage: 5
+      Used storage: 5
+      Number of updates: 21
+      Number of rejects: 0
+      Number of resets: 1
+      Mat Object: (J0_) 2 MPI processes
+        type: lmvmdiagbrdn
+        rows=64, cols=64
+          Scale history: 1
+          Scale params: alpha=1., beta=0.5, rho=1.
+          Convex factor: theta=0.125
+          Max. storage: 1
+          Used storage: 1
+          Number of updates: 20
+      Number of rejects: 0
+      Number of resets: 1
+  TaoLineSearch Object: 2 MPI processes
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=1
+    using variable bounds
+    Termination reason: 1
+  Active Set subset type: subvec
+  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=3.27967e-05
+  Objective value=1.60115
+  total number of iterations=22,                          (max: 2000)
+  total number of function/gradient evaluations=27,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol

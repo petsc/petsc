@@ -125,7 +125,11 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,tron->f,tron->gnorm,0.0,tron->stepsize);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
   while (tao->reason==TAO_CONTINUE_ITERATING){
-
+    /* Call general purpose update function */
+    if (tao->ops->update) {
+      ierr = (*tao->ops->update)(tao, tao->niter);CHKERRQ(ierr);
+    }
+    
     /* Perform projected gradient iterations */
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
 

@@ -48,32 +48,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
-{
-  PetscErrorCode ierr;
-  PetscInt rbs,cbs;
-
-  PetscFunctionBegin;
-  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
-  if (right) {
-    ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
-    ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
-    ierr = VecSetType(*right,VECCUDA);CHKERRQ(ierr);
-    ierr = VecSetLayout(*right,mat->cmap);CHKERRQ(ierr);
-  }
-  if (left) {
-    ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
-    ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
-    ierr = VecSetType(*left,VECCUDA);CHKERRQ(ierr);
-    ierr = VecSetLayout(*left,mat->rmap);CHKERRQ(ierr);
-
-
-  }
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
@@ -122,7 +96,6 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%D) and xx (%D)",A->cmap->n,nt);
   ierr = VecScatterInitializeForGPU(a->Mvctx,xx,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
@@ -165,7 +138,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsOb
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSPARSE options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusparse_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusparse gpu matrices for SpMV",
                             "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparseStruct->diagGPUMatFormat,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
@@ -183,7 +155,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsOb
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format);CHKERRQ(ierr);
     }
   }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -236,6 +208,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
+
   a        = (Mat_MPIAIJ*)A->data;
   a->spptr = new Mat_MPIAIJCUSPARSE;
 
@@ -246,7 +221,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUDA(err);
 
   A->ops->assemblyend    = MatAssemblyEnd_MPIAIJCUSPARSE;
-  A->ops->getvecs        = MatCreateVecs_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;
   A->ops->multtranspose  = MatMultTranspose_MPIAIJCUSPARSE;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSPARSE;

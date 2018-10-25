@@ -180,9 +180,8 @@ performed simultaneously when using this algorithm.
 \hline
 Name \rule{0pt}{2.6ex} & Value & Default & Description \\
 \hline
-{\tt -tao\_nls\_ksp\_type} \rule{0pt}{2.6ex} & cg, nash, stcg, gltr, petsc & stcg & Type of Krylov subspace method to use when solving linear system \\
-{\tt -tao\_nls\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
-{\tt -tao\_nls\_bfgs\_scale\_type} & ahess, phess, bfgs & phess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_nls\_ksp\_type} \rule{0pt}{2.6ex} & cg, nash, stcg, gltr, gmres, ... & stcg & Type of Krylov subspace method to use when solving linear system \\
+{\tt -tao\_nls\_pc\_type} & none, jacobi, icc, ilu, lmvm & lmvm & Type of preconditioner to use when solving linear system \\
 {\tt -tao\_nls\_sval} & real & $0$ & Initial perturbation value \\
 {\tt -tao\_nls\_imin} & real & $10^{-4}$ & Minimum initial perturbation value \\
 {\tt -tao\_nls\_imax} & real & $100$ & Maximum initial perturbation value \\
@@ -254,14 +253,9 @@ gradient method, generalized
 Lanczos method, or an alternative Krylov subspace method 
 supplied by PETSc.  The method used to solve the systems of equations is 
 specified with the command line argument 
-{\tt -tao\_nls\_ksp\_type <cg,nash,stcg,gltr,petsc>}; {\tt stcg} 
-is the default.  When the type is set to {\tt petsc}, the method set with 
-the PETSc {\tt -ksp\_type} command line argument is used.  For example, to 
-use GMRES as the linear system solver, one would use the command line 
-arguments {\tt -tao\_nls\_ksp\_type petsc -ksp\_type gmres}.  Internally,
-the PETSc implementations for the conjugate gradient methods and the 
-generalized Lanczos method are used.  See the PETSc manual for further 
-information on changing the behavior of the linear system solvers.  
+{\tt -tao\_nls\_ksp\_type <cg,nash,stcg,gltr,gmres,...>}; {\tt stcg} 
+is the default. See the PETSc manual for further information on changing 
+the behavior of the linear system solvers.  
 
 A good preconditioner reduces the number of iterations required to
 solve the linear system of equations.  For the conjugate gradient
@@ -271,30 +265,10 @@ preconditioner, the absolute value of the diagonal of the Hessian
 matrix, a limited-memory BFGS approximation to the Hessian matrix, or
 one of the other preconditioners provided by the PETSc package.  These
 preconditioners are specified by the command line arguments 
-{\tt -tao\_nls\_pc\_type <none,ahess,bfgs,petsc>}, respectively. The
-default is the {\tt bfgs} preconditioner.  When the preconditioner
-type is set to {\tt petsc}, the preconditioner set with the PETSc 
-{\tt -pc\_type} command line argument is used.  For example, to use an
-incomplete Cholesky factorization for the preconditioner, one would
-use the command line arguments 
-{\tt -tao\_nls\_pc\_type petsc -pc\_type icc}.  See the PETSc manual 
-for further information on changing the behavior of the preconditioners.
-
-The choice of scaling matrix can significantly affect the quality 
-of the Hessian approximation when using the {\tt bfgs} preconditioner and
-affect the number of iterations required by the linear system solver.
-The choices for scaling matrices are the same as those discussed for 
-the limited-memory, variable-metric algorithm.  For Newton methods,
-however, the option exists to use a scaling matrix based on the true
-Hessian matrix.  In particular, the implementation supports using the 
-absolute value of the diagonal of either the Hessian matrix or the perturbed 
-Hessian matrix.  The scaling 
-matrix to use with the {\tt bfgs} preconditioner is set with the 
-command line argument {\tt -tao\_nls\_bfgs\_scale\_type <bfgs,ahess,phess>}; 
-{\tt phess} is the default.  The {\tt bfgs} scaling matrix is derived from 
-the BFGS options.  The {\tt ahess} scaling matrix is the absolute value of 
-the diagonal of the Hessian matrix.  The {\tt phess} scaling matrix is
-the absolute value of the diagonal of the perturbed Hessian matrix.
+{\tt -tao\_nls\_pc\_type <none,jacobi,icc,ilu,lmvm>}, respectively. The
+default is the {\tt lmvm} preconditioner, which uses a BFGS approximation 
+of the inverse Hessian. See the PETSc manual for further information on 
+changing the behavior of the preconditioners.
 
 The perturbation $\rho_k$ is added when the direction returned by the
 Krylov subspace method is not a descent direction, the Krylov method
@@ -446,8 +420,7 @@ using this algorithm.
 Name \rule{0pt}{2.6ex} & Value & Default & Description \\
 \hline
 {\tt -tao\_ntr\_ksp\_type} \rule{0pt}{2.6ex} & nash, stcg, gltr & stcg & Type of Krylov subspace method to use when solving linear system \\
-{\tt -tao\_ntr\_pc\_type} & none, ahess, bfgs, petsc & bfgs & Type of preconditioner to use when solving linear system \\
-{\tt -tao\_ntr\_bfgs\_scale\_type} & ahess, bfgs & ahess & Type of scaling matrix to use with BFGS preconditioner \\
+{\tt -tao\_ntr\_pc\_type} & none, jacobi, icc, ilu, lmvm & lmvm & Type of preconditioner to use when solving linear system \\
 {\tt -tao\_ntr\_init\_type} & constant, direction, interpolation &
 interpolation & Method used to initialize trust-region radius \\
 {\tt -tao\_ntr\_mu1\_i} & real & 0.35 & $\mu_1$ in {\tt interpolation} init \\
@@ -486,10 +459,8 @@ generalized Lanczos
 method to the symmetric system of equations $H_k d = -g_k$.  The method 
 used to solve the system of equations is specified with the command line
 argument {\tt -tao\_ntr\_ksp\_type <nash,stcg,gltr>}; {\tt stcg} is the default.  
-Internally, the PETSc implementations for the Nash method, Steihaug-Toint 
-method, and the generalized Lanczos method are used.  See the PETSc manual 
-for further information on changing the behavior of these linear system 
-solvers.  
+See the PETSc manual for further information on changing the behavior of 
+these linear system solvers.  
 
 A good preconditioner reduces the number of iterations required to
 compute the direction.  For the Nash and Steihaug-Toint conjugate gradient
@@ -499,28 +470,9 @@ preconditioner, the absolute value of the diagonal of the Hessian
 matrix, a limited-memory BFGS approximation to the Hessian matrix, or
 one of the other preconditioners provided by the PETSc package.  These
 preconditioners are specified by the command line argument 
-{\tt -tao\_ntr\_pc\_type <none,ahess,bfgs,petsc>}, respectively.  The
-default is the {\tt bfgs} preconditioner.  When the preconditioner
-type is set to {\tt petsc}, the preconditioner set with the PETSc
-{\tt -pc\_type} command line argument is used.  For example, to use an
-incomplete Cholesky factorization for the preconditioner, one would
-use the command line arguments 
-{\tt -tao\_ntr\_pc\_type petsc -pc\_type icc}.  See the PETSc manual 
+{\tt -tao\_ntr\_pc\_type <none,jacobi,icc,ilu,lmvm>}, respectively.  The
+default is the {\tt lmvm} preconditioner. See the PETSc manual 
 for further information on changing the behavior of the preconditioners.
-
-The choice of scaling matrix can significantly affect the quality 
-of the Hessian approximation when using the {\tt bfgs} preconditioner and
-affect the number of iterations required by the linear system solver.
-The choices for scaling matrices are the same as those discussed for 
-the limited-memory, variable-metric algorithm.  For Newton methods,
-however, the option exists to use a scaling matrix based on the true
-Hessian matrix.  In particular, the implementation supports using the 
-absolute value of the diagonal of the Hessian matrix.  The scaling 
-matrix to use with the {\tt bfgs} preconditioner is set with the 
-command line arguments {\tt -tao\_ntr\_bfgs\_scale\_type <ahess,bfgs>}; 
-{\tt ahess} is the default.  The {\tt bfgs} scaling matrix is derived from 
-the BFGS options.  The {\tt ahess} scaling matrix is the absolute value of 
-the diagonal of the Hessian matrix.
 
 The method for computing an initial trust-region radius is set with the 
 command line arguments {\tt -tao\_ntr\_init\_type <constant,direction,interpolation>};

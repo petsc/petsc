@@ -22,7 +22,6 @@ PETSc, we contribute objects to the PETSc which will be built.
 
 '''
 from __future__ import generators
-import user
 import config.base
 
 import re
@@ -319,7 +318,7 @@ class Configure(config.base.Configure):
     minorRE    = re.compile(r'^#define PETSC_VERSION_MINOR([\s]+)(?P<versionNum>\d+)[\s]*$');
     subminorRE = re.compile(r'^#define PETSC_VERSION_SUBMINOR([\s]+)(?P<versionNum>\d+)[\s]*$');
     dateRE     = re.compile(r'^#define PETSC_VERSION_DATE([\s]+)"(?P<date>(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d\d?, \d\d\d\d)"[\s]*$');
-    input   = file(os.path.join(self.dir, 'include', 'petscversion.h'))
+    input   = open(os.path.join(self.dir, 'include', 'petscversion.h'))
     lines   = []
     majorNum = 'Unknown'
     minorNum = 'Unknown'

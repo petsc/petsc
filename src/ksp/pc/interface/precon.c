@@ -1173,7 +1173,7 @@ PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
 
@@ -1761,6 +1761,7 @@ PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PCList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

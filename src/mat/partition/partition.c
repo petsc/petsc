@@ -198,6 +198,7 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*func
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatPartitioningList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -631,6 +632,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
 $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
+$  -mat_partitioning_nparts - number of subgraphs
 
 
    Notes:
@@ -669,6 +671,9 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   if (flag) {
     ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
   }
+
+  ierr = PetscOptionsInt("-mat_partitioning_nparts","number of fine parts",NULL,part->n,& part->n,&flag);CHKERRQ(ierr);
+
   /*
     Set the type if it was never set.
   */

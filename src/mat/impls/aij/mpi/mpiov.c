@@ -1890,7 +1890,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 
               /* We receive an entire column of C, but a subset of it needs to be inserted into submat.
                For reuse, we replace received C->j with index that should be inserted to submat */
-              rbuf3_i[ct3++] = ct2;
+              if (iscolsorted) rbuf3_i[ct3++] = ct2;
             }
           }
           ierr = MatSetValues_SeqAIJ(submat,1,&row,idex,subcols,subvals,INSERT_VALUES);CHKERRQ(ierr);

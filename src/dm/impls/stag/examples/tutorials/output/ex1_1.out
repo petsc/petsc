@@ -1,0 +1,206 @@
+DM Object: 7 MPI processes
+  type: stag
+Dimension: 1
+Global size: 11
+Boundary ghosting: NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 4
+[0] Local entries total : 6
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 8
+[2] Local elements : 2 (4 with ghosts)
+[2] Local native entries: 4
+[2] Local entries total : 8
+[3] Local elements : 2 (4 with ghosts)
+[3] Local native entries: 4
+[3] Local entries total : 8
+[4] Local elements : 1 (3 with ghosts)
+[4] Local native entries: 2
+[4] Local entries total : 6
+[5] Local elements : 1 (3 with ghosts)
+[5] Local native entries: 2
+[5] Local entries total : 6
+[6] Local elements : 1 (3 with ghosts)
+[6] Local native entries: 3
+[6] Local entries total : 6
+DM Object: 7 MPI processes
+  type: stag
+Dimension: 1
+Global size: 11
+Boundary ghosting: NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 4
+[0] Local entries total : 6
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 8
+[2] Local elements : 2 (4 with ghosts)
+[2] Local native entries: 4
+[2] Local entries total : 8
+[3] Local elements : 2 (4 with ghosts)
+[3] Local native entries: 4
+[3] Local entries total : 8
+[4] Local elements : 1 (3 with ghosts)
+[4] Local native entries: 2
+[4] Local entries total : 6
+[5] Local elements : 1 (3 with ghosts)
+[5] Local native entries: 2
+[5] Local entries total : 6
+[6] Local elements : 1 (3 with ghosts)
+[6] Local native entries: 3
+[6] Local entries total : 6
+DM Object: 7 MPI processes
+  type: stag
+Dimension: 1
+Global size: 11
+Boundary ghosting: NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:1 1:0
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 2
+[0] Local entries total : 3
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 2
+[1] Local entries total : 4
+[2] Local elements : 2 (4 with ghosts)
+[2] Local native entries: 2
+[2] Local entries total : 4
+[3] Local elements : 2 (4 with ghosts)
+[3] Local native entries: 2
+[3] Local entries total : 4
+[4] Local elements : 1 (3 with ghosts)
+[4] Local native entries: 1
+[4] Local entries total : 3
+[5] Local elements : 1 (3 with ghosts)
+[5] Local native entries: 1
+[5] Local entries total : 3
+[6] Local elements : 1 (3 with ghosts)
+[6] Local native entries: 2
+[6] Local entries total : 3
+  0 KSP Residual norm 1097.97 
+  1 KSP Residual norm 1097.97 
+  2 KSP Residual norm 982.066 
+  3 KSP Residual norm 982.066 
+  4 KSP Residual norm 850.516 
+  5 KSP Residual norm 850.516 
+  6 KSP Residual norm 694.479 
+  7 KSP Residual norm 694.479 
+  8 KSP Residual norm 491.147 
+  9 KSP Residual norm 491.147 
+ 10 KSP Residual norm 12.2814 
+ 11 KSP Residual norm 12.0665 
+ 12 KSP Residual norm 11.4018 
+ 13 KSP Residual norm 11.1451 
+ 14 KSP Residual norm 10.5537 
+ 15 KSP Residual norm 10.4188 
+ 16 KSP Residual norm 9.85403 
+ 17 KSP Residual norm 9.80042 
+ 18 KSP Residual norm 9.21536 
+ 19 KSP Residual norm 9.20827 
+ 20 KSP Residual norm 8.53107 
+ 21 KSP Residual norm 8.52094 
+ 22 KSP Residual norm < 1.e-11
+DM Object: 7 MPI processes
+  type: stag
+Dimension: 1
+Global size: 11
+Boundary ghosting: NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:1 1:0
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 2
+[0] Local entries total : 3
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 2
+[1] Local entries total : 4
+[2] Local elements : 2 (4 with ghosts)
+[2] Local native entries: 2
+[2] Local entries total : 4
+[3] Local elements : 2 (4 with ghosts)
+[3] Local native entries: 2
+[3] Local entries total : 4
+[4] Local elements : 1 (3 with ghosts)
+[4] Local native entries: 1
+[4] Local entries total : 3
+[5] Local elements : 1 (3 with ghosts)
+[5] Local native entries: 1
+[5] Local entries total : 3
+[6] Local elements : 1 (3 with ghosts)
+[6] Local native entries: 2
+[6] Local entries total : 3
+DM Object: 7 MPI processes
+  type: stag
+Dimension: 1
+Global size: 11
+Boundary ghosting: NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:0 1:1
+[0] Local elements : 2 (3 with ghosts)
+[0] Local native entries: 2
+[0] Local entries total : 3
+[1] Local elements : 2 (4 with ghosts)
+[1] Local native entries: 2
+[1] Local entries total : 4
+[2] Local elements : 2 (4 with ghosts)
+[2] Local native entries: 2
+[2] Local entries total : 4
+[3] Local elements : 2 (4 with ghosts)
+[3] Local native entries: 2
+[3] Local entries total : 4
+[4] Local elements : 1 (3 with ghosts)
+[4] Local native entries: 1
+[4] Local entries total : 3
+[5] Local elements : 1 (3 with ghosts)
+[5] Local native entries: 1
+[5] Local entries total : 3
+[6] Local elements : 1 (3 with ghosts)
+[6] Local native entries: 1
+[6] Local entries total : 3
+Vec Object: Sol_u 7 MPI processes
+  type: mpi
+Process [0]
+1.33
+-12.4817
+Process [1]
+-23.4239
+-31.4967
+Process [2]
+-36.7001
+-39.034
+Process [3]
+-38.4986
+-35.0937
+Process [4]
+-28.8194
+Process [5]
+-19.6757
+Process [6]
+-7.66256
+7.22
+Vec Object: Sol_p 7 MPI processes
+  type: mpi
+Process [0]
+-151.928
+-120.365
+Process [1]
+-88.8009
+-57.2373
+Process [2]
+-25.6736
+5.89
+Process [3]
+37.4536
+69.0173
+Process [4]
+100.581
+Process [5]
+132.145
+Process [6]
+163.708
+Error (abs): 2.88801e-13
+Error (rel): 8.38669e-16

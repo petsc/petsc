@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 
             ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm),dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
             ierr = PetscFEGetBasisSpace(fe,&sp);CHKERRQ(ierr);
-            ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
+            ierr = PetscSpaceGetDegree(sp,&order,NULL);CHKERRQ(ierr);
             ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
             ierr = DMCreateLocalVector(dm,&localCoords);CHKERRQ(ierr);
             ierr = VecSetDM(localCoords,NULL);CHKERRQ(ierr);
@@ -245,6 +245,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -petscspace_order 2 -tensor_petscspace_order 2
+    args: -petscspace_degree 2 -tensor_petscspace_degree 2
 
 TEST*/

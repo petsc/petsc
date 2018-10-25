@@ -29,7 +29,6 @@ diffexec=${PETSCDIFF:-"${petsc_bindir}/petscdiff"}
 # The diff flags come from script arguments
 diff_exe="${diffexec} ${diff_flags}"
 mpiexec="${mpiexec} ${mpiexec_flags}"
-nsize=${nsize:-@NSIZE@}
 """
 
 footer='petsc_testend "@TESTROOT@" '

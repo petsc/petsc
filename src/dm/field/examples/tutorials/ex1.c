@@ -401,52 +401,52 @@ int main(int argc, char **argv)
   test:
     suffix: ds
     requires: !complex triangle
-    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -petscspace_order 2 -num_quad_points 1
+    args: -dm_type plex -dim 2 -num_components 2 -num_point_tests 2 -num_fe_tests 2 -num_fv_tests 2 -dmfield_view -petscspace_degree 2 -num_quad_points 1
 
   test:
     suffix: ds_simplex_0
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_order 0
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 0
 
   test:
     suffix: ds_simplex_1
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_order 1
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 1
 
   test:
     suffix: ds_simplex_2
     requires: !complex triangle
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_order 2
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_degree 2
 
   test:
     suffix: ds_tensor_2_0
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 0 -simplex 0
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -simplex 0
 
   test:
     suffix: ds_tensor_2_1
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 1 -simplex 0
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -simplex 0
 
   test:
     suffix: ds_tensor_2_2
     requires: !complex
-    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 2 -simplex 0
+    args: -dm_type plex -dim 2  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -simplex 0
 
   test:
     suffix: ds_tensor_3_0
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 0 -simplex 0
+    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 0 -simplex 0
 
   test:
     suffix: ds_tensor_3_1
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 1 -simplex 0
+    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 1 -simplex 0
 
   test:
     suffix: ds_tensor_3_2
     requires: !complex
-    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_order 2 -simplex 0
+    args: -dm_type plex -dim 3  -num_fe_tests 2  -petscspace_poly_tensor 1 -petscspace_degree 2 -simplex 0
 
   test:
     suffix: shell

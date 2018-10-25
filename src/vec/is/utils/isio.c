@@ -37,13 +37,12 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   ++dim;
   ++dim;
   PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
-  bsInd = rdim-1;
+  bsInd  = rdim-1;
   lenInd = timestep >= 0 ? 1 : 0;
   if (rdim != dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
   else if (bs != (PetscInt) dims[bsInd]) {
-    ierr = ISSetBlockSize(is, dims[bsInd]);
-    if (ierr) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for IS does not match blocksize in file %d",bs,dims[bsInd]);
-    bs = dims[bsInd];
+    ierr = ISSetBlockSize(is, dims[bsInd]);CHKERRQ(ierr);
+    bs   = dims[bsInd];
   }
 
   /* Set Vec sizes,blocksize,and type if not already set */

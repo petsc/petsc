@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c dmget.c dmi.c dlregisdmdm.c
+SOURCEC  = dm.c dmregall.c dmget.c dmi.c dmglvis.c dlregisdmdm.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm

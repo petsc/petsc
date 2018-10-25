@@ -70,7 +70,7 @@ PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC,IS);
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);
 PetscErrorCode PCBDDCBenignGetOrSetP0(PC,Vec,PetscBool);
-PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,IS*);
+PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC,PetscBool,IS*);
 PetscErrorCode PCBDDCBenignCheck(PC,IS);
 PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
 PetscErrorCode PCBDDCBenignRemoveInterior(PC,Vec,Vec);

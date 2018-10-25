@@ -849,8 +849,9 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   else if (eventPerfLog->eventInfo[event].depth < 0 || petsc_tracelevel < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
 
   /* Log performance info */
-  ierr = PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel);CHKERRQ(ierr);
-
+  if (petsc_tracelevel) {
+    ierr = PetscStrncpy(petsc_tracespace,petsc_traceblanks,2*petsc_tracelevel);CHKERRQ(ierr);
+  }
   petsc_tracespace[2*petsc_tracelevel] = 0;
   PetscTime(&cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name);CHKERRQ(ierr);

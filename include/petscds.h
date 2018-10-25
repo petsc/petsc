@@ -291,6 +291,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCopyConstants(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectEquations(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundary(PetscDS, PetscInt, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(void), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscDS);

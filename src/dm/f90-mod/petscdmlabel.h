@@ -5,7 +5,7 @@
 
       type tDMLabel
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tDMLabel
 
-      DMLabel, parameter :: PETSC_NULL_DMLABEL = tDMLabel(-1)
+      DMLabel, parameter :: PETSC_NULL_DMLABEL = tDMLabel(0)

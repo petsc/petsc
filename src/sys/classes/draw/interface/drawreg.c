@@ -310,6 +310,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PetscDrawList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,10 +1,8 @@
 from __future__ import generators
-import user
 import config.base
 import config.package
 from sourceDatabase import SourceDB
 import os
-import string
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -127,7 +125,7 @@ class Configure(config.package.Package):
     foundLapack = 0
     self.f2c    = 0
     # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
-    self.suffix = string.join(self.argDB.get('with-blaslapack-suffix', ''),'')
+    self.suffix = self.argDB.get('with-blaslapack-suffix', '')
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
@@ -565,7 +563,7 @@ class Configure(config.package.Package):
         oldLibs  = self.compilers.LIBS
         self.compilers.LIBS = self.libraries.toString(lib)+' '+self.compilers.LIBS
       if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
+        f    = open(filename)
         out  = f.read()
         f.close()
         os.remove(filename)

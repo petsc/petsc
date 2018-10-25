@@ -17,23 +17,14 @@
 #define matcreateschurcomplement_  matcreateschurcomplement
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreateschurcomplement_(Mat *A00,Mat *Ap00,Mat *A01,Mat *A10,Mat *A11,Mat *S,int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(A11);
-  *ierr = MatCreateSchurComplement(*A00,*Ap00,*A01,*A10,*A11,S);
-}
-
 PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
   *ierr = KSPBuildSolution(*ksp,*v,V);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(t);
-  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
   *ierr = KSPBuildResidual(*ksp,*t,*v,V);
 }

@@ -170,7 +170,7 @@ int main(int argc,char **argv)
       suffix: 2_aijcusparse_1
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
-      requires: veccuda
+      requires: cuda
       filter: grep -v type | grep -v "MPI processes"
 
    test:
@@ -178,7 +178,7 @@ int main(int argc,char **argv)
       nsize: 3
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
-      requires: veccuda
+      requires: cuda
       filter: grep -v type | grep -v "MPI processes"
 
    test:
@@ -190,7 +190,7 @@ int main(int argc,char **argv)
       suffix: 3_aijcusparse
       nsize: 2
       args: -mat_type mpiaijcusparse -rectA
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: 4
@@ -202,13 +202,13 @@ int main(int argc,char **argv)
       args: -mat_type seqaijcusparse -rectA
       filter: grep -v "Mat Object"
       output_file: output/ex2_11_A_aijcusparse.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: aijcusparse_2
       args: -mat_type seqaijcusparse -rectB
       filter: grep -v "Mat Object"
       output_file: output/ex2_11_B_aijcusparse.out
-      requires: veccuda
+      requires: cuda
 
 TEST*/

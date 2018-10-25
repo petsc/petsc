@@ -648,7 +648,7 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
    IMPORTANT:
    Unless configured appropriately, this preconditioner performs an inexact solve
    as part of the preconditioner application. Therefore, it must be used in combination
-   with flexible variants of iterative solvers, such as KSPFGMRES or KSPCGR.
+   with flexible variants of iterative solvers, such as KSPFGMRES or KSPGCR.
 
    Level: intermediate
 

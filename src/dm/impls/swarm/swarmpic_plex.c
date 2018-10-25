@@ -24,11 +24,11 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
   /*ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);*/
   ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
-  ierr = PetscSpaceSetOrder(P,1);CHKERRQ(ierr);
+  ierr = PetscSpaceSetDegree(P,1,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);

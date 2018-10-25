@@ -756,6 +756,85 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    /* Plot cells */
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    if (dim == 3 || !useNumbers) {
+      for (e = eStart; e < eEnd; ++e) {
+        const PetscInt *cone;
+
+        color = colors[rank%numColors];
+        for (l = 0; l < numLabels; ++l) {
+          PetscInt val;
+          ierr = DMGetLabelValue(dm, names[l], e, &val);CHKERRQ(ierr);
+          if (val >= 0) {color = lcolors[l%numLColors]; break;}
+        }
+        ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] (%D_%d) -- (%D_%d);\n", color, cone[0], rank, cone[1], rank);CHKERRQ(ierr);
+      }
+    } else {
+      for (c = cStart; c < cEnd; ++c) {
+        PetscInt *closure = NULL;
+        PetscInt  closureSize, firstPoint = -1;
+
+        ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
+        for (p = 0; p < closureSize*2; p += 2) {
+          const PetscInt point = closure[p];
+
+          if ((point < vStart) || (point >= vEnd)) continue;
+          if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%D_%d)", point, rank);CHKERRQ(ierr);
+          if (firstPoint < 0) firstPoint = point;
+        }
+        /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%d);\n", firstPoint, rank);CHKERRQ(ierr);
+        ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      double    ccoords[3] = {0.0, 0.0, 0.0};
+      PetscBool isLabeled  = PETSC_FALSE;
+      PetscInt *closure    = NULL;
+      PetscInt  closureSize, dof, d, n = 0;
+
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\path (");CHKERRQ(ierr);
+      for (p = 0; p < closureSize*2; p += 2) {
+        const PetscInt point = closure[p];
+        PetscInt       off;
+
+        if ((point < vStart) || (point >= vEnd)) continue;
+        ierr = PetscSectionGetDof(coordSection, point, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(coordSection, point, &off);CHKERRQ(ierr);
+        for (d = 0; d < dof; ++d) {
+          tcoords[d] = (double) (scale*PetscRealPart(coords[off+d]));
+          tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
+        }
+        /* Rotate coordinates since PGF makes z point out of the page instead of up */
+        if (dof == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
+        for (d = 0; d < dof; ++d) {ccoords[d] += tcoords[d];}
+        ++n;
+      }
+      for (d = 0; d < dof; ++d) {ccoords[d] /= n;}
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) {
+        if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", ccoords[d]);CHKERRQ(ierr);
+      }
+      color = colors[rank%numColors];
+      for (l = 0; l < numLabels; ++l) {
+        PetscInt val;
+        ierr = DMGetLabelValue(dm, names[l], c, &val);CHKERRQ(ierr);
+        if (val >= 0) {color = lcolors[l%numLColors]; isLabeled = PETSC_TRUE; break;}
+      }
+      if (useNumbers) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%d) [draw,shape=circle,color=%s] {%D};\n", c, rank, color, c);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%d) [fill,inner sep=%dpt,shape=circle,color=%s] {};\n", c, rank, !isLabeled ? 1 : 2, color);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     /* Plot edges */
     if (depth > 1 || plotEdges) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     if (plotEdges) {
@@ -794,41 +873,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "(0,0);\n");CHKERRQ(ierr);
     }
-    /* Plot cells */
-    if (dim == 3 || !useNumbers) {
-      for (e = eStart; e < eEnd; ++e) {
-        const PetscInt *cone;
-
-        color = colors[rank%numColors];
-        for (l = 0; l < numLabels; ++l) {
-          PetscInt val;
-          ierr = DMGetLabelValue(dm, names[l], e, &val);CHKERRQ(ierr);
-          if (val >= 0) {color = lcolors[l%numLColors]; break;}
-        }
-        ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] (%D_%d) -- (%D_%d);\n", color, cone[0], rank, cone[1], rank);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      for (c = cStart; c < cEnd; ++c) {
-        PetscInt *closure = NULL;
-        PetscInt  closureSize, firstPoint = -1;
-
-        ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank%numColors]);CHKERRQ(ierr);
-        for (p = 0; p < closureSize*2; p += 2) {
-          const PetscInt point = closure[p];
-
-          if ((point < vStart) || (point >= vEnd)) continue;
-          if (firstPoint >= 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- ");CHKERRQ(ierr);}
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(%D_%d)", point, rank);CHKERRQ(ierr);
-          if (firstPoint < 0) firstPoint = point;
-        }
-        /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%d);\n", firstPoint, rank);CHKERRQ(ierr);
-        ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      }
-    }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n");CHKERRQ(ierr);
@@ -857,7 +901,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, depth > 1 ? &pMax[depth - 2] : NULL, &pMax[0]);CHKERRQ(ierr);
-    ierr = PetscMalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
+    ierr = PetscCalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
@@ -949,6 +993,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscReal          xyl[2],xyr[2],bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscBool          isnull;
   PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N;
+  PetscMPIInt        rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -977,6 +1022,31 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   ierr = PetscDrawSetCoordinates(draw, xyl[0], xyl[1], xyr[0], xyr[1]);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *coords = NULL;
+    PetscInt     numCoords,coneSize;
+
+    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+    switch (coneSize) {
+    case 3:
+      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                               PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = PetscDrawRectangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
+                                PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D facets", coneSize);
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+  }
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *coords = NULL;
     PetscInt     numCoords,coneSize;
@@ -2210,7 +2280,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
   PetscInt       i = 0;
 
   PetscFunctionBegin;
-  if (superdm) {ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);}
+  ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);
   ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
   (*superdm)->useNatural = PETSC_FALSE;
   for (i = 0; i < len; i++){
@@ -3518,6 +3588,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   ierr = DMPlexCreateSectionInitial(dm, dim, numFields, numComp, numDof, section);CHKERRQ(ierr);
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcComps, bcPoints, *section);CHKERRQ(ierr);
   if (perm) {ierr = PetscSectionSetPermutation(*section, perm);CHKERRQ(ierr);}
+  ierr = PetscSectionSetFromOptions(*section);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&aSec,NULL);CHKERRQ(ierr);
   if (numBC || aSec) {
@@ -4907,7 +4978,11 @@ PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscInt poi
   PetscFunctionReturn(0);
 }
 
-/* . off - The global offset of this point */
+/*
+  This version only believes the point offset from the globalSection
+
+ . off - The global offset of this point
+*/
 PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, PetscInt indices[])
 {
   PetscInt       numFields, foff, f;
@@ -4949,6 +5024,57 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscI
       }
     }
     foff     += (setBC ? fdof : (fdof - cfdof));
+    foffs[f] += fdof;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+  This version believes the globalSection offsets for each field, rather than just the point offset
+
+ . foffs - The offset into 'indices' for each field, since it is segregated by field
+*/
+PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection section, PetscSection globalSection, PetscInt point, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, PetscInt indices[])
+{
+  PetscInt       numFields, foff, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscInt        fdof, cfdof;
+    const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
+    PetscInt        cind = 0, b;
+    const PetscInt  *perm = (perms && perms[f]) ? perms[f][permsoff] : NULL;
+
+    ierr = PetscSectionGetFieldDof(section, point, f, &fdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldConstraintDof(section, point, f, &cfdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldOffset(globalSection, point, f, &foff);CHKERRQ(ierr);
+    if (!cfdof || setBC) {
+      if (perm) {for (b = 0; b < fdof; b++) {indices[foffs[f]+perm[b]] = foff+b;}}
+      else      {for (b = 0; b < fdof; b++) {indices[foffs[f]+     b ] = foff+b;}}
+    } else {
+      ierr = PetscSectionGetFieldConstraintIndices(section, point, f, &fcdofs);CHKERRQ(ierr);
+      if (perm) {
+        for (b = 0; b < fdof; b++) {
+          if ((cind < cfdof) && (b == fcdofs[cind])) {
+            indices[foffs[f]+perm[b]] = -(foff+b+1);
+            ++cind;
+          } else {
+            indices[foffs[f]+perm[b]] = foff+b-cind;
+          }
+        }
+      } else {
+        for (b = 0; b < fdof; b++) {
+          if ((cind < cfdof) && (b == fcdofs[cind])) {
+            indices[foffs[f]+b] = -(foff+b+1);
+            ++cind;
+          } else {
+            indices[foffs[f]+b] = foff+b-cind;
+          }
+        }
+      }
+    }
     foffs[f] += fdof;
   }
   PetscFunctionReturn(0);
@@ -5744,9 +5870,18 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   }
   ierr = DMGetWorkArray(dm, numIndices, MPIU_INT, &indices);CHKERRQ(ierr);
   if (numFields) {
-    for (p = 0; p < numPoints; p++) {
-      ierr = PetscSectionGetOffset(globalSection, points[2*p], &globalOff);CHKERRQ(ierr);
-      DMPlexGetIndicesPointFields_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, offsets, PETSC_FALSE, perms, p, indices);
+    PetscBool useFieldOffsets;
+
+    ierr = PetscSectionGetUseFieldOffsets(globalSection, &useFieldOffsets);CHKERRQ(ierr);
+    if (useFieldOffsets) {
+      for (p = 0; p < numPoints; p++) {
+        DMPlexGetIndicesPointFieldsSplit_Internal(section, globalSection, points[2*p], offsets, PETSC_FALSE, perms, p, indices);
+      }
+    } else {
+      for (p = 0; p < numPoints; p++) {
+        ierr = PetscSectionGetOffset(globalSection, points[2*p], &globalOff);CHKERRQ(ierr);
+        DMPlexGetIndicesPointFields_Internal(section, points[2*p], globalOff < 0 ? -(globalOff+1) : globalOff, offsets, PETSC_FALSE, perms, p, indices);
+      }
     }
   } else {
     for (p = 0, off = 0; p < numPoints; p++) {
@@ -6257,7 +6392,7 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexGetCellNumbering - Get a global cell numbering for all cells on this process
 
   Input Parameter:
@@ -6296,7 +6431,7 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexGetVertexNumbering - Get a global certex numbering for all vertices on this process
 
   Input Parameter:
@@ -6321,7 +6456,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreatePointNumbering - Create a global numbering for all points on this process
 
   Input Parameter:
@@ -6613,6 +6748,68 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
       ierr = DMPlexRestoreFaces_Internal(dm, dim, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexAreAllConePointsInArray_Private(DM dm, PetscInt p, PetscInt npoints, const PetscInt *points, PetscInt *missingPoint)
+{
+  PetscInt i,l,n;
+  const PetscInt *cone;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *missingPoint = -1;
+  ierr = DMPlexGetConeSize(dm, p, &n);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = PetscFindInt(cone[i], npoints, points, &l);CHKERRQ(ierr);
+    if (l < 0) {
+      *missingPoint = cone[i];
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCheckPointSF - Check that several sufficient conditions are met for the point SF of this plex.
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Note: This is mainly intended for debugging/testing purposes.
+
+  Level: developer
+
+.seealso: DMGetPointSF(), DMPlexCheckSymmetry(), DMPlexCheckSkeleton(), DMPlexCheckFaces()
+@*/
+PetscErrorCode DMPlexCheckPointSF(DM dm)
+{
+  PetscSF sf;
+  PetscInt d,depth,i,nleaves,p,plo,phi,missingPoint;
+  const PetscInt *locals;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &locals, NULL);CHKERRQ(ierr);
+
+  /* 1) if some point is in interface, then all its cone points must be also in interface  */
+  for (i=0; i<nleaves; i++) {
+    p = locals[i];
+    ierr = DMPlexAreAllConePointsInArray_Private(dm, p, nleaves, locals, &missingPoint);CHKERRQ(ierr);
+    if (missingPoint >= 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d but not %d from its cone",p,missingPoint);
+  }
+
+  /* 2) check there are no faces in 2D, cells in 3D, in interface */
+  ierr = DMPlexGetVTKCellHeight(dm, &d);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, d, &plo, &phi);CHKERRQ(ierr);
+  for (i=0; i<nleaves; i++) {
+    p = locals[i];
+    if (p >= plo && p < phi) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point SF contains %d which is a cell",p);
   }
   PetscFunctionReturn(0);
 }

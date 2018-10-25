@@ -36,7 +36,7 @@ MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
-PetscMPIInt Petsc_Shared_keyval    = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -368,7 +368,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt ke
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm,PetscMPIInt,void *,void *);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Shm(MPI_Comm,PetscMPIInt,void *,void *);
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -603,18 +603,18 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
     }
     ierr = PetscOptionsGetAll(NULL,&options);CHKERRQ(ierr);
     if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);CHKERRQ(ierr);
     } else if (help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>",programname,options,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>",programname,options,help);CHKERRQ(ierr);
     } else {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);CHKERRQ(ierr);
     }
     ierr = PetscFree(options);CHKERRQ(ierr);
     ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
     ierr = PetscSNPrintf(intro,introlen,"<body>\n"
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
                                     "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
-                                    "%s",version,petscconfigureoptions,appline);
+                                    "%s",version,petscconfigureoptions,appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
@@ -968,7 +968,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
-  ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelShared,&Petsc_Shared_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelComm_Shm,&Petsc_ShmComm_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database
@@ -1551,7 +1551,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Comm_free_keyval(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Comm_free_keyval(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Comm_free_keyval(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
-  ierr = MPI_Comm_free_keyval(&Petsc_Shared_keyval);CHKERRQ(ierr);
+  ierr = MPI_Comm_free_keyval(&Petsc_ShmComm_keyval);CHKERRQ(ierr);
 
   ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);

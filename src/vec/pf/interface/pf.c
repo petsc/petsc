@@ -310,6 +310,7 @@ PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PFInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PFList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

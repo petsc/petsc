@@ -454,10 +454,10 @@ def lex(module=None,debug=0,optimize=0):
             error = 1
 
     # Sort the functions by line number
-    fsymbols.sort(lambda x,y: cmp(x.__code__.co_firstlineno,y.__code__.co_firstlineno))
+    fsymbols.sort(key=lambda x: x.__code__.co_firstlineno)
 
     # Sort the strings by regular expression length
-    ssymbols.sort(lambda x,y: (len(x[1]) < len(y[1])) - (len(x[1]) > len(y[1])))
+    ssymbols.sort(key=lambda x: len(x[1]))
 
     # Check for non-empty symbols
     if len(fsymbols) == 0 and len(ssymbols) == 0:

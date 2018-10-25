@@ -392,3 +392,74 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *
   ierr = VecDestroy(&s3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*@
+   MatIsLinear - Check if a shell matrix A is a linear operator.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the shell matrix
+-  n - number of random vectors to be tested
+
+   Output Parameter:
+.  flg - PETSC_TRUE if the shell matrix is linear; PETSC_FALSE otherwise.
+
+   Level: intermediate
+@*/
+PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Vec            x,y,s1,s2;
+  PetscRandom    rctx;
+  PetscScalar    a;
+  PetscInt       k;
+  PetscReal      norm,normA;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&s1);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
+
+  *flg = PETSC_TRUE;
+  for (k=0; k<n; k++) {
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
+    }
+    ierr = MPI_Bcast(&a, 1, MPIU_SCALAR, 0, comm);CHKERRQ(ierr);
+
+    /* s2 = a*A*x + A*y */
+    ierr = MatMult(A,y,s2);CHKERRQ(ierr); /* s2 = A*y */
+    ierr = MatMult(A,x,s1);CHKERRQ(ierr); /* s1 = A*x */
+    ierr = VecAXPY(s2,a,s1);CHKERRQ(ierr); /* s2 = a s1 + s2 */
+
+    /* s1 = A * (a x + y) */
+    ierr = VecAXPY(y,a,x);CHKERRQ(ierr); /* y = a x + y */
+    ierr = MatMult(A,y,s1);CHKERRQ(ierr);
+    ierr = VecNorm(s1,NORM_INFINITY,&normA);CHKERRQ(ierr);
+
+    ierr = VecAXPY(s2,-1.0,s1);CHKERRQ(ierr); /* s2 = - s1 + s2 */
+    ierr = VecNorm(s2,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    if (norm/normA > 100.*PETSC_MACHINE_EPSILON) {
+      *flg = PETSC_FALSE;
+      ierr = PetscInfo3(A,"Error: %D-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n",k,(double)norm/normA,100.*PETSC_MACHINE_EPSILON);CHKERRQ(ierr);
+      break;
+    }
+  }
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

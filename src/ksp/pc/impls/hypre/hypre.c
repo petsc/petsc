@@ -524,7 +524,7 @@ static const char *HYPREBoomerAMGSmoothType[]   = {"Schwarz-smoothers","Pilut","
 static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","seqboundary-Gauss-Seidel","SOR/Jacobi","backward-SOR/Jacobi",
                                                   "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */,"symmetric-SOR/Jacobi",
                                                   "" /* 7 */,"l1scaled-SOR/Jacobi","Gaussian-elimination",
-                                                  "" /* 10 */, "" /* 11 */, "" /* 12 */, "" /* 13 */, "" /* 14 */,
+                                                  "" /* 10 */, "" /* 11 */, "" /* 12 */, "l1-Gauss-Seidel" /* nonsymmetric */, "backward-l1-Gauss-Seidel" /* nonsymmetric */,
                                                   "CG" /* non-stationary */,"Chebyshev","FCF-Jacobi","l1scaled-Jacobi"};
 static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i",
                                                   "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1"};

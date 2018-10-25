@@ -16,6 +16,51 @@ typedef struct {
 } ISLocalToGlobalMapping_Hash;
 
 
+PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+{
+  PetscInt       numCells, step = 1;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  *pStart = 0;
+  *points = NULL;
+  ierr = ISGetLocalSize(pointIS, &numCells);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pointIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {ierr = ISStrideGetInfo(pointIS, pStart, &step);CHKERRQ(ierr);}
+  *pEnd   = *pStart + numCells;
+  if (!isStride || step != 1) {ierr = ISGetIndices(pointIS, points);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, const PetscInt **points)
+{
+  PetscInt       step = 1;
+  PetscBool      isStride;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscObjectTypeCompare((PetscObject) pointIS, ISSTRIDE, &isStride);CHKERRQ(ierr);
+  if (isStride) {ierr = ISStrideGetInfo(pointIS, pStart, &step);CHKERRQ(ierr);}
+  if (!isStride || step != 1) {ierr = ISGetIndices(pointIS, points);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd, const PetscInt *points)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  if (points) {
+    ierr = ISSetType(subpointIS, ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(subpointIS, pEnd-pStart, &points[pStart], PETSC_USE_POINTER);CHKERRQ(ierr);
+  } else {
+    ierr = ISSetType(subpointIS, ISSTRIDE);CHKERRQ(ierr);
+    ierr = ISStrideSetStride(subpointIS, pEnd-pStart, pStart, 1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -----------------------------------------------------------------------------------------*/
 
 /*
@@ -599,7 +644,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
     a new index set using the global numbering defined in an ISLocalToGlobalMapping
     context.
 
-    Not collective
+    Collective on is
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
@@ -607,6 +652,9 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 
     Output Parameters:
 .   newis - index set in global numbering
+
+    Notes:
+    The output IS will have the same communicator of the input IS.
 
     Level: advanced
 
@@ -808,6 +856,9 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
     Output Parameters:
 .   newis - index set in local numbering
 
+    Notes:
+    The output IS will be sequential, as it encodes a purely local operation
+
     Level: advanced
 
     Concepts: mapping^local to global
@@ -836,7 +887,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
   }
   ierr = ISGlobalToLocalMappingApply(mapping,type,n,idxin,&nout,idxout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),nout,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nout,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1820,6 +1871,7 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = ISInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&ISLocalToGlobalMappingList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

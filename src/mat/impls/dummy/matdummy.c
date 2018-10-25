@@ -50,7 +50,7 @@ PetscErrorCode MatDestroy_Dummy(Mat A)
 /*MC
    MATDUMMY - A matrix type to be used for reusing specific internal data structure.
 
-  Level: advanced
+  Level: developer
 
 .seealso: Mat
 

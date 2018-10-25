@@ -34,7 +34,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_WBM(Mat mat, MatOrderingType type, IS
 {
   PetscScalar    *a, *dw;
   const PetscInt *ia, *ja;
-  const PetscInt  job = 5;
+  PetscInt       job = 5;
   PetscInt       *perm, nrow, ncol, nnz, liw, *iw, ldw, i;
   PetscBool       done;
   PetscErrorCode  ierr;

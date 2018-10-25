@@ -32,7 +32,7 @@ class Info(logger.Logger):
     if not section in self.sections:
       self.sections[section] = (len(self.sections), [])
     if name in self.sections[section][1]:
-      name += '@'+str(len(filter(lambda n: name == n.split('@')[0], self.sections[section][1]))+1)
+      name += '@'+str(len([n for n in self.sections[section][1] if name == n.split('@')[0]])+1)
     self.sections[section][1].append(name)
     self.setDescription(section, name, desc)
     return
@@ -61,8 +61,7 @@ class Info(logger.Logger):
     self.printBanner(f)
     (nameLen, descLen) = self.getTextSizes()
     format = '  %-'+str(nameLen)+'s: %s\n'
-    items  = self.sections.items()
-    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
+    items  = sorted(self.sections.items(), key=lambda a: a[1][0])
     for section, names in items:
       f.write(section+':\n')
       for name in names[1]:
@@ -128,7 +127,7 @@ class Help(Info):
     format    = '  -%s\n       %s\n'
     formatDef = '  -%s\n       %s  current: %s\n'
     items = self.sections.items()
-    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
+    items.sort(key=lambda a: a[1][0])
     for section, names in items:
       if sections and not section.lower() in sections: continue
       f.write(section+':\n')

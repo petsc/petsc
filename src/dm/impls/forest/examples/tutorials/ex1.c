@@ -29,3 +29,25 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+      test:
+        suffix: moebius
+        nsize: 3
+        args: -dm_type p4est -dm_forest_topology moebius -dm_view vtk:moebius.vtu
+        requires: p4est
+
+      test:
+        suffix: shell
+        nsize: 3
+        args: -dm_type p8est -dm_forest_topology shell -dm_view vtk:shell.vtu
+        requires: p4est
+
+      test:
+        suffix: brick
+        nsize: 3
+        args: -dm_type p8est -dm_forest_topology brick -dm_p4est_brick_size 2,3,5 -dm_view vtk:brick.vtu
+        requires: p4est
+
+TEST*/

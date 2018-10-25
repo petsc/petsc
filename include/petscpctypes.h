@@ -70,6 +70,7 @@ typedef const char* PCType;
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
 #define PCTELESCOPE       "telescope"
+#define PCPATCH           "patch"
 #define PCLMVM            "lmvm"
 
 /*E
@@ -311,6 +312,16 @@ E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
+
+/*E
+    PCPatchConstructType - The algorithm used to construct patches for the preconditioner
+
+   Level: beginner
+
+.seealso: PCPatchSetConstructType(), PCEXOTIC
+E*/
+typedef enum {PC_PATCH_STAR, PC_PATCH_VANKA, PC_PATCH_USER, PC_PATCH_PYTHON} PCPatchConstructType;
+PETSC_EXTERN const char *const PCPatchConstructTypes[];
 
 /*E
     PCFailedReason - indicates type of PC failure

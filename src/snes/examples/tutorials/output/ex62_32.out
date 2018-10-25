@@ -24,7 +24,7 @@ SNES Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with MULTIPLICATIVE composition: total splits = 2
       Solver info for each split is in the following KSP objects:
-      Split number 0 Defined by IS
+    Split number 0 Defined by IS
     KSP Object: (fieldsplit_velocity_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
@@ -52,7 +52,7 @@ SNES Object: 1 MPI processes
         total: nonzeros=19908, allocated nonzeros=19908
         total number of mallocs used during MatSetValues calls =0
           using I-node routines: found 481 nodes, limit used is 5
-      Split number 1 Defined by IS
+    Split number 1 Defined by IS
     KSP Object: (fieldsplit_pressure_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
@@ -77,5 +77,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
-Number of SNES iterations = 1
-L_2 Error: 6.47442e-07 [1.52739e-08, 6.47262e-07]
+L_2 Error: 6.4744e-07 [1.52739e-08, 6.4726e-07]

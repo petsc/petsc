@@ -1401,6 +1401,60 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
 }
 
 /*@
+   VecImaginaryPart - Replaces a complex vector with its imginary part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: VecNorm(), VecRealPart()
+@*/
+PetscErrorCode  VecImaginaryPart(Vec v)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<n; i++) x[i] = PetscImaginaryPart(x[i]);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecRealPart - Replaces a complex vector with its real part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: VecNorm(), VecImaginaryPart()
+@*/
+PetscErrorCode  VecRealPart(Vec v)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<n; i++) x[i] = PetscRealPart(x[i]);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 

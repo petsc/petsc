@@ -102,7 +102,7 @@ class Configure(config.package.CMakePackage):
     if not self.argDB['with-batch']:
       try:
         self.logPrintBox('Testing xSDKTrilinos; this may take several minutes')
-        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'build')+' && '+self.cmake.ctest,timeout=50, log = self.log)
+        output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'petsc-build')+' && '+self.cmake.ctest,timeout=50, log = self.log)
         output = output+err
         self.log.write(output)
         if output.find('Failure') > -1:
@@ -114,13 +114,13 @@ class Configure(config.package.CMakePackage):
       self.logPrintDivider( debugSection = 'screen')
       self.logPrint('Since this is a batch system xSDKTrilinos cannot run tests directly. To run a short test suite.', debugSection = 'screen')
       self.logPrint('   Obtain an interactive session with your batch system', debugSection = 'screen')
-      self.logPrint('   cd to installxSDK/xsdk/petsc/arch-linux2-c-debug/externalpackages/git.xsdktrilinos/build', debugSection = 'screen')
+      self.logPrint('   cd to '+os.path.join(self.packageDir,'petsc-build'), debugSection = 'screen')
       self.logPrint('   ctest', debugSection = 'screen')
       linewidth = self.linewidth
       self.linewidth = -1
       if self.hypre.found:
-        self.logPrint(os.path.join(os.getcwd(),self.packageDir,'build','hypre','test','xSDKTrilinos_HypreTest.exe'), debugSection = 'screen')
-      self.logPrint(os.path.join(os.getcwd(),self.packageDir,'build','petsc','test','xSDKTrilinos_PETScAIJMatrix.exe'), debugSection = 'screen')
+        self.logPrint(os.path.join(os.getcwd(),self.packageDir,'petsc-build','hypre','test','xSDKTrilinos_HypreTest.exe'), debugSection = 'screen')
+      self.logPrint(os.path.join(os.getcwd(),self.packageDir,'petsc-build','petsc','test','xSDKTrilinos_PETScAIJMatrix.exe'), debugSection = 'screen')
       self.linewidth = linewidth
       self.logPrintDivider( debugSection = 'screen')
       self.logPrint('', debugSection = 'screen')

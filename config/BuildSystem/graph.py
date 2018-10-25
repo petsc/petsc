@@ -114,12 +114,12 @@ class DirectedGraph(object):
 
   def getRoots(graph):
     '''Return all the sources in the graph (nodes without entering edges)'''
-    return filter(lambda v: not len(graph.getEdges(v)[0]), graph.vertices)
+    return [v for v in graph.vertices if not len(graph.getEdges(v)[0])]
   getRoots = staticmethod(getRoots)
 
   def getLeaves(graph):
     '''Return all the sinks in the graph (nodes without exiting edges)'''
-    return filter(lambda v: not len(graph.getEdges(v)[1]), graph.vertices)
+    return [v for v in graph.vertices if not len(graph.getEdges(v)[1])]
   getLeaves = staticmethod(getLeaves)
 
   def depthFirstVisit(graph, vertex, seen = None, returnFinished = 0, outEdges = 1):

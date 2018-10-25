@@ -292,6 +292,7 @@ PETSC_EXTERN PetscErrorCode KSPBCGSLSetEll(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP,PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
+PETSC_EXTERN PetscErrorCode KSPResetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
 PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP,PetscInt,PetscReal,PetscViewerAndFormat*);
@@ -667,6 +668,7 @@ J*/
 typedef const char* KSPGuessType;
 #define KSPGUESSFISCHER "fischer"
 #define KSPGUESSPOD     "pod"
+PETSC_EXTERN PetscErrorCode KSPGuessRegister(const char[],PetscErrorCode (*)(KSPGuess));
 PETSC_EXTERN PetscErrorCode KSPSetGuess(KSP,KSPGuess);
 PETSC_EXTERN PetscErrorCode KSPGetGuess(KSP,KSPGuess*);
 PETSC_EXTERN PetscErrorCode KSPGuessView(KSPGuess,PetscViewer);
@@ -712,6 +714,7 @@ PETSC_EXTERN PetscErrorCode MatCreateLMVMSR1(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateLMVMSymBadBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLMVMDiagBrdn(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatLMVMUpdate(Mat, Vec, Vec);

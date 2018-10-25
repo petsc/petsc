@@ -180,12 +180,12 @@ int main(int argc,char **argv)
       nsize: 2
       args: -vec_type cuda
       output_file: output/ex1_1.out
-      requires: veccuda
+      requires: cuda
 
    test:
       suffix: cuda
       args: -vec_type cuda
       output_file: output/ex1_1.out
-      requires: veccuda
+      requires: cuda
 
 TEST*/

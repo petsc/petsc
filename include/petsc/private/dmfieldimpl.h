@@ -17,7 +17,7 @@ struct _DMFieldOps {
   PetscErrorCode (*evaluate) (DMField,Vec,PetscDataType,void*,void*,void*);
   PetscErrorCode (*evaluateFE) (DMField,IS,PetscQuadrature,PetscDataType,void*,void*,void*);
   PetscErrorCode (*evaluateFV) (DMField,IS,PetscDataType,void*,void*,void*);
-  PetscErrorCode (*getFEInvariance) (DMField,IS,PetscBool*,PetscBool*,PetscBool*);
+  PetscErrorCode (*getDegree) (DMField,IS,PetscInt *,PetscInt *);
   PetscErrorCode (*createDefaultQuadrature) (DMField,IS,PetscQuadrature*);
   PetscErrorCode (*computeFaceData) (DMField,IS,PetscQuadrature,PetscFEGeom *);
 };

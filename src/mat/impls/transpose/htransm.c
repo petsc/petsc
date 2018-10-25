@@ -71,6 +71,53 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatCreateVecs_HT(Mat N,Vec *r, Vec *l)
+{
+  Mat_HT         *Na = (Mat_HT*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateVecs(Na->A,l,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N,Mat *M)
+{
+  Mat_HT         *Na = (Mat_HT*)N->data;
+
+  PetscFunctionBegin;
+  *M = Na->A;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      MatHermitianTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT
+
+   Logically collective on Mat
+
+   Input Parameter:
+.   A  - the MATTRANSPOSE matrix
+
+   Output Parameter:
+.   M - the matrix object stored inside A
+
+   Level: intermediate
+
+.seealso: MatCreateHermitianTranspose()
+
+@*/
+PetscErrorCode MatHermitianTransposeGetMat(Mat A,Mat *M)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidPointer(M,2);
+  ierr = PetscUseMethod(A,"MatHermitianTransposeGetMat_C",(Mat,Mat*),(A,M));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
       MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
 
@@ -117,8 +164,10 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   (*N)->ops->multhermitiantranspose     = MatMultHermitianTranspose_HT;
   (*N)->ops->multhermitiantransposeadd  = MatMultHermitianTransposeAdd_HT;
   (*N)->ops->duplicate                  = MatDuplicate_HT;
+  (*N)->ops->getvecs                    = MatCreateVecs_HT;
   (*N)->assembled                       = PETSC_TRUE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatHermitianTransposeGetMat_C",MatHermitianTransposeGetMat_HT);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
