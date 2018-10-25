@@ -25,12 +25,12 @@
         PetscInt    index
       end type PetscSFNode
 
-      IS, parameter :: PETSC_NULL_IS = tIS(-1)
-      PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(-1)
+      IS, parameter :: PETSC_NULL_IS = tIS(0)
+      PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(0)
       PetscSection, parameter :: PETSC_NULL_SECTION =                   &
-     & tPetscSection(-1)
+     & tPetscSection(0)
       PetscSectionSym, parameter :: PETSC_NULL_SECTIONSYM =             &
-     & tPetscSectionSym(-1)
+     & tPetscSectionSym(0)
 
       PetscEnum IS_COLORING_GLOBAL
       PetscEnum IS_COLORING_LOCAL
@@ -48,3 +48,16 @@
 !
 !  End of Fortran include file for the IS package in PETSc
 
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SF
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTION
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SECTIONSYM
+!DEC$ ATTRIBUTES DLLEXPORT::IS_COLORING_GLOBAL
+!DEC$ ATTRIBUTES DLLEXPORT::IS_COLORING_LOCAL
+!DEC$ ATTRIBUTES DLLEXPORT::IS_GENERAL
+!DEC$ ATTRIBUTES DLLEXPORT::IS_STRIDE
+!DEC$ ATTRIBUTES DLLEXPORT::IS_BLOCK
+!DEC$ ATTRIBUTES DLLEXPORT::IS_GTOLM_MASK
+!DEC$ ATTRIBUTES DLLEXPORT::IS_GTOLM_DROP
+#endif

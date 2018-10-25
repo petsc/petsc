@@ -79,15 +79,25 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
-  AORegister - 
+  AORegister - Register  an application ordering method
+
+    Not Collective
+
+   Input Parameters:
++   sname - the name of the AO scheme
+-   function - the create routine for the application ordering method
 
   Level: advanced
+
+.seealso:   AOCreate(), AORegisterAll(), AOBASIC, AOADVANCED, AOMAPPING, AOMEMORYSCALABLE
+
 @*/
 PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&AOList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

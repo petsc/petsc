@@ -53,7 +53,6 @@ class PETScMaker(script.Script):
    self.arch          = self.framework.require('PETSc.options.arch',        None)
    self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
    self.languages     = self.framework.require('PETSc.options.languages',   None)
-   self.debugging     = self.framework.require('PETSc.options.debugging',   None)
    self.cmake         = self.framework.require('config.packages.cmake',       None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)

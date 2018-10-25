@@ -160,6 +160,7 @@ PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = ISInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&ISList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

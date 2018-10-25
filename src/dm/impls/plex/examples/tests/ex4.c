@@ -764,6 +764,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;

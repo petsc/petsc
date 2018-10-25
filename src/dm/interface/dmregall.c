@@ -23,6 +23,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 #endif
+PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
 /*@C
   DMRegisterAll - Registers all of the DM components in the DM package.
@@ -62,6 +64,8 @@ PetscErrorCode  DMRegisterAll(void)
   ierr = DMRegister(DMP4EST,      DMCreate_p4est);CHKERRQ(ierr);
   ierr = DMRegister(DMP8EST,      DMCreate_p8est);CHKERRQ(ierr);
 #endif
+  ierr = DMRegister(DMPRODUCT,    DMCreate_Product);CHKERRQ(ierr);
+  ierr = DMRegister(DMSTAG,       DMCreate_Stag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,6 +110,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Tensor(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace);
 
@@ -131,6 +136,7 @@ PetscErrorCode PetscSpaceRegisterAll(void)
   PetscSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
+  ierr = PetscSpaceRegister(PETSCSPACETENSOR,     PetscSpaceCreate_Tensor);CHKERRQ(ierr);
   ierr = PetscSpaceRegister(PETSCSPACEPOINT,      PetscSpaceCreate_Point);CHKERRQ(ierr);
   ierr = PetscSpaceRegister(PETSCSPACESUBSPACE,   PetscSpaceCreate_Subspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -66,7 +66,7 @@ class PETScExample(object):
   def optionsToString(self, **opts):
     '''Convert a dictionary of options to a command line argument string'''
     a = []
-    for key,value in opts.iteritems():
+    for key,value in opts.items():
       if value is None:
         a.append('-'+key)
       else:

@@ -275,7 +275,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 
    test:
       suffix: 4
-      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -pc_type none -tao_gatol 1.e-4
+      args: -tao_smonitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gatol 1.e-4
       
    test:
       suffix: 5
@@ -340,5 +340,9 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
    test:
      suffix: 20
      args: -tao_monitor -tao_gatol 1e-4 -tao_type blmvm -tao_ls_monitor
+     
+   test:
+     suffix: 21
+     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbadbrdn
 
 TEST*/

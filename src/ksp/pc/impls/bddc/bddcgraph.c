@@ -945,16 +945,32 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
      Get info for dofs splitting
      User can specify just a subset; an additional field is considered as a complementary field
   */
-  for (i=0;i<graph->nvtxs;i++) graph->which_dof[i] = n_ISForDofs; /* by default a dof belongs to the complement set */
-  for (i=0;i<n_ISForDofs;i++) {
+  for (i=0,k=0;i<n_ISForDofs;i++) {
+    PetscInt bs;
+
+    ierr = ISGetBlockSize(ISForDofs[i],&bs);CHKERRQ(ierr);
+    k   += bs;
+  }
+  for (i=0;i<graph->nvtxs;i++) graph->which_dof[i] = k; /* by default a dof belongs to the complement set */
+  for (i=0,k=0;i<n_ISForDofs;i++) {
+    PetscInt bs;
+
     ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(ISForDofs[i],&bs);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (j=0;j<is_size;j++) {
-      if (is_indices[j] > -1 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-        graph->which_dof[is_indices[j]] = i;
+    for (j=0;j<is_size/bs;j++) {
+      PetscInt b;
+
+      for (b=0;b<bs;b++) {
+        PetscInt jj = bs*j + b;
+
+        if (is_indices[jj] > -1 && is_indices[jj] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+          graph->which_dof[is_indices[jj]] = k+b;
+        }
       }
     }
     ierr = ISRestoreIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    k   += bs;
   }
 
   /* Take into account Neumann nodes */

@@ -70,6 +70,7 @@
 #define PCSVD 'svd'
 #define PCGAMG 'gamg'
 #define PCBDDC 'bddc'
+#define PCPATCH 'patch'
 
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum

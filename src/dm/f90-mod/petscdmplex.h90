@@ -316,3 +316,33 @@
           DM m
         End Subroutine
       End Interface
+
+      Interface
+        Subroutine DMPlexCreateFromFile(c,str,i,m,ierr)
+          use petscdmdef
+          MPI_Comm :: c
+          character(len=*) :: str
+          PetscBool, intent(in) :: i
+          DM, intent(out) :: m
+          PetscErrorCode, intent(out):: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexDistribute(m,o,sf,mp,ierr)
+          use petscdmdef
+          DM, intent(in) :: m
+          PetscInt, intent(in) :: o
+          PetscSF, intent(out) :: sf
+          DM, intent(out) :: mp
+          PetscErrorCode, intent(out):: ierr
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexCreateDefault(m,ierr)
+          use petscdmdef
+          DM, intent(out) :: m
+          PetscErrorCode, intent(out):: ierr
+        End Subroutine
+      End Interface

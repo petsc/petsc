@@ -1,15 +1,15 @@
-  0 KSP Residual norm 1541.57 
-  1 KSP Residual norm 457.801 
-  2 KSP Residual norm 179.436 
-  3 KSP Residual norm 48.8667 
-  4 KSP Residual norm 24.3583 
-  5 KSP Residual norm 8.6205 
-  6 KSP Residual norm 3.02657 
-  7 KSP Residual norm 1.24645 
-  8 KSP Residual norm 0.355762 
-  9 KSP Residual norm 0.0901996 
- 10 KSP Residual norm 0.0203897 
- 11 KSP Residual norm 0.00480298 
+  0 KSP Residual norm 1541.54 
+  1 KSP Residual norm 457.845 
+  2 KSP Residual norm 179.46 
+  3 KSP Residual norm 48.8768 
+  4 KSP Residual norm 24.3584 
+  5 KSP Residual norm 8.62105 
+  6 KSP Residual norm 3.02694 
+  7 KSP Residual norm 1.24675 
+  8 KSP Residual norm 0.355814 
+  9 KSP Residual norm 0.0902059 
+ 10 KSP Residual norm 0.0203924 
+ 11 KSP Residual norm 0.00480359 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -31,6 +31,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.11819
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -50,8 +51,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.36404, max = 1.91121
-        eigenvalues estimate via cg min 0.0514036, max 1.8202
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -171,18 +172,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154157 
-  1 KSP Residual norm 0.00457801 
-  2 KSP Residual norm 0.00179436 
-  3 KSP Residual norm 0.000488667 
-  4 KSP Residual norm 0.000243583 
-  5 KSP Residual norm 8.6205e-05 
-  6 KSP Residual norm 3.02657e-05 
-  7 KSP Residual norm 1.24645e-05 
-  8 KSP Residual norm 3.55762e-06 
-  9 KSP Residual norm 9.01996e-07 
- 10 KSP Residual norm 2.03897e-07 
- 11 KSP Residual norm 4.80298e-08 
+  0 KSP Residual norm 0.0154154 
+  1 KSP Residual norm 0.00457845 
+  2 KSP Residual norm 0.0017946 
+  3 KSP Residual norm 0.000488768 
+  4 KSP Residual norm 0.000243584 
+  5 KSP Residual norm 8.62105e-05 
+  6 KSP Residual norm 3.02694e-05 
+  7 KSP Residual norm 1.24675e-05 
+  8 KSP Residual norm 3.55814e-06 
+  9 KSP Residual norm 9.02059e-07 
+ 10 KSP Residual norm 2.03924e-07 
+ 11 KSP Residual norm 4.80359e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -204,6 +205,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.11819
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -224,8 +226,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.36404, max = 1.91121
-        eigenvalues estimate via cg min 0.0514036, max 1.8202
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -345,18 +347,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154157 
-  1 KSP Residual norm 0.00457801 
-  2 KSP Residual norm 0.00179436 
-  3 KSP Residual norm 0.000488667 
-  4 KSP Residual norm 0.000243583 
-  5 KSP Residual norm 8.6205e-05 
-  6 KSP Residual norm 3.02657e-05 
-  7 KSP Residual norm 1.24645e-05 
-  8 KSP Residual norm 3.55762e-06 
-  9 KSP Residual norm 9.01996e-07 
- 10 KSP Residual norm 2.03897e-07 
- 11 KSP Residual norm 4.80298e-08 
+  0 KSP Residual norm 0.0154154 
+  1 KSP Residual norm 0.00457845 
+  2 KSP Residual norm 0.0017946 
+  3 KSP Residual norm 0.000488768 
+  4 KSP Residual norm 0.000243584 
+  5 KSP Residual norm 8.62105e-05 
+  6 KSP Residual norm 3.02694e-05 
+  7 KSP Residual norm 1.24675e-05 
+  8 KSP Residual norm 3.55814e-06 
+  9 KSP Residual norm 9.02059e-07 
+ 10 KSP Residual norm 2.03924e-07 
+ 11 KSP Residual norm 4.80359e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -378,6 +380,7 @@ PC Object: 8 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
+        Complexity:    grid = 1.11819
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 8 MPI processes
       type: cg
@@ -398,8 +401,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.36404, max = 1.91121
-        eigenvalues estimate via cg min 0.0514036, max 1.8202
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -519,4 +522,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=5.332230e-05, |b|=4.630910e+00, emax=9.960807e-01
+[0]main |b-Ax|/|b|=5.332334e-05, |b|=4.631005e+00, emax=9.960804e-01

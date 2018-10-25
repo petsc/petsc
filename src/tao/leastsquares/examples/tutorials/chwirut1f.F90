@@ -12,7 +12,7 @@
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
 !  Routines: TaoSetInitialVector();
-!  Routines: TaoSetSeparableObjectiveRoutine();
+!  Routines: TaoSetResidualRoutine();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
 !  Routines: TaoDestroy();
@@ -80,7 +80,7 @@
       call TaoSetType(tao,TAOPOUNDERS,ierr);CHKERRA(ierr)
 !  Set routines for function, gradient, and hessian evaluation
 
-      call TaoSetSeparableObjectiveRoutine(tao,f,                       &
+      call TaoSetResidualRoutine(tao,f,                       &
      &      FormFunction,0,ierr)
       CHKERRA(ierr)
 

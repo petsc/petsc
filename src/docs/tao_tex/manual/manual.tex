@@ -11,6 +11,7 @@
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{amsmath}
+\usepackage{geometry}
 
 % moreverb provides commands for reading and writing files. In particular,
 % verbatiminput. See pages 66-70 on the LateX Companion.
@@ -96,15 +97,16 @@
 \newpage
 
 % \special{pdf..} is read by the dvipdfm to make a bookmark in the pdf doc
-\special{pdf: out 0 << /Title (Index) /Dest  [ @thispage /FitH @ypos ] >>}
 \label{sec:index}
 \include{sindex}
 
-
-\special{pdf: out 0 << /Title (Bibliography) /Dest [ @thispage /FitH @ypos ] >>}
 \bibliographystyle{plain}
 \bibliography{../tao,mathprog}
-%\includepdf[pages={4}]{ANL-MCS-TM-322.pdf}
+
+\pagestyle{empty}
+\newgeometry{top=0mm, left=0mm, right=0mm, bottom=0mm}
+\centerline{\includegraphics{ArgonneReportTemplateLastPage}}
+\restoregeometry
 
 \end{document}
 

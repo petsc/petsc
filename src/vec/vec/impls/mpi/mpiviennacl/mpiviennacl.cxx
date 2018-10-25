@@ -188,15 +188,16 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
   vv->ops->axpbypcz        = VecAXPBYPCZ_SeqViennaCL;
   vv->ops->pointwisemult   = VecPointwiseMult_SeqViennaCL;
   vv->ops->setrandom       = VecSetRandom_SeqViennaCL;
-  vv->ops->replacearray    = VecReplaceArray_SeqViennaCL;
   vv->ops->dot_local       = VecDot_SeqViennaCL;
   vv->ops->tdot_local      = VecTDot_SeqViennaCL;
   vv->ops->norm_local      = VecNorm_SeqViennaCL;
   vv->ops->mdot_local      = VecMDot_SeqViennaCL;
   vv->ops->destroy         = VecDestroy_MPIViennaCL;
   vv->ops->pointwisedivide = VecPointwiseDivide_SeqViennaCL;
-  /* place array?
-     reset array?
+  vv->ops->placearray      = VecPlaceArray_SeqViennaCL;
+  vv->ops->replacearray    = VecReplaceArray_SeqViennaCL;
+  vv->ops->resetarray      = VecResetArray_SeqViennaCL;
+  /*
      get values?
   */
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);

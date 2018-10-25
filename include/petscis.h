@@ -75,6 +75,9 @@ PETSC_EXTERN PetscErrorCode ISIntersect(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISLocate(IS,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode ISGetPointRange(IS,PetscInt*,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode ISRestorePointRange(IS,PetscInt*,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode ISGetPointSubrange(IS,PetscInt,PetscInt,const PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);
@@ -127,6 +130,7 @@ typedef const char* ISLocalToGlobalMappingType;
 #define ISLOCALTOGLOBALMAPPINGHASH  "hash"
 
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping,ISLocalToGlobalMappingType);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRegister(const char[],PetscErrorCode (*)(ISLocalToGlobalMapping));
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
@@ -311,6 +315,7 @@ PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFromOptions(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionCopy(PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionCompare(PetscSection, PetscSection, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
@@ -323,6 +328,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, Petsc
 PETSC_EXTERN PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPermutation(PetscSection, IS *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetPermutation(PetscSection, IS);
+PETSC_EXTERN PetscErrorCode PetscSectionGetPointMajor(PetscSection, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetPointMajor(PetscSection, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
@@ -363,6 +370,8 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, P
 PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionPermute(PetscSection, IS, PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetField(PetscSection, PetscInt, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetClosureIndex(PetscSection, PetscObject, PetscSection, IS);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosureIndex(PetscSection, PetscObject, PetscSection *, IS *);

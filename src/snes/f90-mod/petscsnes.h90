@@ -1,10 +1,65 @@
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
-      subroutine SNESSetType(a,b,z)
+      subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
+      use petscdmdef
       use petscsnesdef
-       SNES a
-       character(*) b
-       integer z
-       end subroutine
+       DM, intent(in) :: dm
+       InsertMode, intent(in) :: imode
+       external :: func
+       type(*) :: ctx
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine DMDASNESSetFunctionLocal
+      end Interface
+
+      Interface
+      subroutine DMSNESSetFunctionLocal(dm,func,ctx,ierr)
+      use petscdmdef
+      use petscsnesdef
+       DM, intent(in) :: dm
+       external :: func
+       type(*)  :: ctx
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine DMSNESSetFunctionLocal
+      end Interface
+
+      Interface
+      subroutine DMSNESSetJacobianLocal(dm,func,ctx,ierr)
+      use petscdmdef
+      use petscsnesdef
+       DM, intent(in) :: dm
+       external :: func
+       type(*)  :: ctx
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine DMSNESSetJacobianLocal
+      end Interface
+
+      Interface
+      subroutine SNESSetConvergenceTest(snes,func,cctx,destroy,ierr)
+      use petscsnesdef
+       SNES :: snes
+       external :: func
+       type(*) :: cctx
+       external :: destroy
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine
+      end Interface
+#endif
+      Interface
+      subroutine SNESSetType(a,b,ierr)
+      use petscsnesdef
+       SNES, intent(in) :: a
+       character(*), intent(in) :: b
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine
+      end Interface
+
+      Interface
+      subroutine SNESGetType(a,b,ierr)
+      use petscsnesdef
+       SNES, intent(in) :: a
+       character(*), intent(out) :: b
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine
       end Interface
 
       Interface
@@ -13,5 +68,14 @@
        SNES a
        PetscViewer b
        integer z
-       end subroutine
+      end subroutine
+      end Interface
+
+      Interface
+      subroutine SNESSetOptionsPrefix(snes,prefix,ierr)
+       use petscsnesdef
+       SNES, intent(in) :: snes
+       character(*), intent(in) :: prefix
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine SNESSetOptionsPrefix
       end Interface

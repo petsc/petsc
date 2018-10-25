@@ -3,7 +3,7 @@ ALL: lib
 
 MANSEC   = TS
 LOCDIR   = src/ts/impls/symplectic/
-DIRS     = bsi
+DIRS     = basicsymplectic
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

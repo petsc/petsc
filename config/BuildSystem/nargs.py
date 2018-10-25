@@ -491,7 +491,10 @@ class ArgDownload(Arg):
     except:
       raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
     if isinstance(value, str):
-      import urlparse
+      try:
+        import urlparse
+      except ImportError:
+        from urllib import parse as urlparse
       if not urlparse.urlparse(value)[0]: # how do we check if the URL is invalid?
         if os.path.isfile(value):
           value = 'file://'+os.path.abspath(value)

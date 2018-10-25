@@ -59,6 +59,8 @@
 #define matzerorows_                     MATZEROROWS
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
+#define matzerorowslocal0_               MATZEROROWSLOCAL0
+#define matzerorowslocal1_               MATZEROROWSLOCAL1
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
@@ -79,13 +81,14 @@
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
+#define matgetsize_                      MATGETSIZE
 #define matgetsize00_                    MATGETSIZE00
 #define matgetsize10_                    MATGETSIZE10
 #define matgetsize01_                    MATGETSIZE01
+#define matgetlocalsize_                 MATGETLOCALSIZE
 #define matgetlocalsize00_               MATGETLOCALSIZE00
 #define matgetlocalsize10_               MATGETLOCALSIZE10
 #define matgetlocalsize01_               MATGETLOCALSIZE01
-#define matgetnullspace_                 MATGETNULLSPACE
 #define matsetnullspace_                 MATSETNULLSPACE
 #define matgetownershiprange_            MATGETOWNERSHIPRANGE
 #define matgetownershipis_               MATGETOWNERSHIPIS
@@ -167,35 +170,19 @@
 #define matfactorinfoinitialize_         matfactorinfoinitialize
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
+#define matgetsize_                      matgetsize
 #define matgetsize00_                    matgetsize00
 #define matgetsize10_                    matgetsize10
 #define matgetsize01_                    matgetsize01
+#define matgetlocalsize_                 matgetlocalsize
 #define matgetlocalsize00_               matgetlocalsize00
 #define matgetlocalsize10_               matgetlocalsize10
 #define matgetlocalsize01_               matgetlocalsize01
-#define matgetnullspace_                 matgetnullspace
 #define matsetnullspace_                 matsetnullspace
 #define matgetownershiprange_            matgetownershiprange
 #define matgetownershipis_               matgetownershipis
 #define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #endif
-
-PETSC_EXTERN void PETSC_STDCALL matsetnullspace_(Mat *mat, MatNullSpace *nullsp, int *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(nullsp);
-  *ierr = MatSetNullSpace(*mat,*nullsp);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matgetnullspace_(Mat *mat, MatNullSpace *nullsp, int *ierr)
-{
-  MatNullSpace sp;
-  *ierr = MatGetNullSpace(*mat,&sp);if (*ierr) return;
-  if (!sp) {
-    *nullsp = (MatNullSpace) -1;
-  } else {
-    *nullsp = sp;
-  }
-}
 
 PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
 {
@@ -655,76 +642,6 @@ PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(PetscInt *n,Mat *smat,Pet
   *ierr = MatDestroySubMatrices(*n,&lsmat);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsColumns(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsColumnsIS(*mat,*is,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsStencil(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsColumnsStencil(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRows(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsIS(*mat,*is,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsLocalIS(*mat,*is,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsColumnsLocal(*mat,*numRows,rows,*diag,*x,*b);
-}
-
-PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECTDEREFERENCE(x);
-  CHKFORTRANNULLOBJECTDEREFERENCE(b);
-  *ierr = MatZeroRowsColumnsLocalIS(*mat,*is,*diag,*x,*b);
-}
-
 PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
@@ -757,8 +674,6 @@ PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col,const Mat
 
 PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
-  CHKFORTRANNULLOBJECTDEREFERENCE(row);
-  CHKFORTRANNULLOBJECTDEREFERENCE(col);
   *ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
@@ -800,4 +715,16 @@ PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row,const MatFactorIn
 PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, int *ierr)
 {
   *ierr = MatFactorInfoInitialize(info);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag,*x,*b);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal0_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  matzerorowslocal_(mat,numRows,rows,diag,x,b,ierr);
+}
+PETSC_EXTERN void PETSC_STDCALL  matzerorowslocal1_(Mat *mat,PetscInt *numRows, PetscInt rows[],PetscScalar *diag,Vec *x,Vec *b, int *ierr)
+{
+  matzerorowslocal_(mat,numRows,rows,diag,x,b,ierr);
 }

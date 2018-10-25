@@ -222,7 +222,7 @@ PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
   Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
   ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -241,8 +241,9 @@ PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n,Mat *mat[])
     c       = (Mat_SeqBAIJ*)C->data;
     submatj = c->submatis1;
     if (submatj) {
-      ierr = submatj->destroy(C);CHKERRQ(ierr);
+      ierr = (*submatj->destroy)(C);CHKERRQ(ierr);
       ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+      ierr = PetscFree(C->defaultvectype);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&C->rmap);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&C->cmap);CHKERRQ(ierr);
       ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);

@@ -90,6 +90,7 @@ struct _p_PetscSection {
   PETSCHEADER(int);
   PetscInt                      pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
   IS                            perm;         /* A permutation of [0, pEnd-pStart) */
+  PetscBool                     pointMajor;   /* True if the offsets are point major, otherwise they are fieldMajor */
   PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
   PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
   PetscInt                      maxDof;       /* Maximum dof on any point */
@@ -101,6 +102,7 @@ struct _p_PetscSection {
   char                        **fieldNames;   /* The field names */
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
+  PetscBool                     useFieldOff;  /* Use the field offsets directly for the global section, rather than the point offset */
 
   PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
   PetscSection                  clSection;    /* Section giving the number of points in each closure */

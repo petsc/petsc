@@ -10,7 +10,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/tao/leastsquares/examples/matlab/
 MANSEC           = TAO
-EXAMPLESC        = taopounders.c
+EXAMPLESC        = matlab_ls_test.c
 EXAMPLESF        = 
 EXAMPLESCH       =
 EXAMPLESFH       = 
@@ -20,9 +20,9 @@ DIRS             =
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-taopounders: taopounders.o chkopts
-	-${CLINKER} -o taopounders taopounders.o ${PETSC_TAO_LIB}
-	${RM} taopounders.o
+matlab_ls_test: matlab_ls_test.o chkopts
+	-${CLINKER} -o matlab_ls_test matlab_ls_test.o ${PETSC_TAO_LIB}
+	${RM} matlab_ls_test.o
 
 include ${PETSC_DIR}/lib/petsc/conf/test
 

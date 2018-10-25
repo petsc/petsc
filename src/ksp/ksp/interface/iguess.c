@@ -37,6 +37,7 @@ PetscErrorCode  KSPGuessRegister(const char sname[],PetscErrorCode (*function)(K
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&KSPGuessList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

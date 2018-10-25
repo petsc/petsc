@@ -432,7 +432,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   PetscInt         dim;
   PetscClassId     id;
   PetscQuadrature  quad = NULL;
-  PetscBool        isAffine;
+  PetscInt         maxDegree;
   PetscFEGeom      *geom;
   PetscInt         Nq, Nc, dimC, qNc, N;
   PetscInt         numPoints;
@@ -460,8 +460,8 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
   if (id != PETSCFE_CLASSID) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Discretization not supported\n");
   ierr = DMGetCoordinateField(field->dm, &coordField);CHKERRQ(ierr);
-  ierr = DMFieldGetFEInvariance(coordField, pointIS, NULL, &isAffine, NULL);CHKERRQ(ierr);
-  if (isAffine) {
+  ierr = DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree);CHKERRQ(ierr);
+  if (maxDegree <= 1) {
     ierr = DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad);CHKERRQ(ierr);
   }
   if (!quad) {ierr = DMFieldCreateDefaultQuadrature(field, pointIS, &quad);CHKERRQ(ierr);}
@@ -647,7 +647,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, PetscBool *isConstant, PetscBool *isAffine, PetscBool *isQuadratic)
+static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree)
 {
   DMField_DS     *dsfield;
   PetscObject    disc;
@@ -659,39 +659,23 @@ static PetscErrorCode DMFieldGetFEInvariance_DS(DMField field, IS pointIS, Petsc
   dsfield = (DMField_DS *) field->data;
   ierr = ISGetMinMax(pointIS,&imin,&imax);CHKERRQ(ierr);
   if (imin >= imax) {
-    if (isConstant) {*isConstant = PETSC_TRUE;}
-    if (isAffine) {*isAffine = PETSC_TRUE;}
-    if (isQuadratic) {*isQuadratic = PETSC_TRUE;}
-    PetscFunctionReturn(0);
-  }
-  for (h = 0; h < dsfield->height; h++) {
-    PetscInt hEnd;
+    h = 0;
+  } else {
+    for (h = 0; h < dsfield->height; h++) {
+      PetscInt hEnd;
 
-    ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
-    if (imin < hEnd) break;
+      ierr = DMPlexGetHeightStratum(field->dm,h,NULL,&hEnd);CHKERRQ(ierr);
+      if (imin < hEnd) break;
+    }
   }
   ierr = DMFieldDSGetHeightDisc(field,h,&disc);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(disc,&id);CHKERRQ(ierr);
   if (id == PETSCFE_CLASSID) {
     PetscFE    fe = (PetscFE) disc;
-    PetscInt   order, maxOrder;
-    PetscBool  tensor = PETSC_FALSE;
     PetscSpace sp;
 
     ierr = PetscFEGetBasisSpace(fe, &sp);CHKERRQ(ierr);
-    ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
-    ierr = PetscSpacePolynomialGetTensor(sp,&tensor);CHKERRQ(ierr);
-    if (tensor) {
-      PetscInt dim;
-
-      ierr = DMGetDimension(field->dm,&dim);CHKERRQ(ierr);
-      maxOrder = order * dim;
-    } else {
-      maxOrder = order;
-    }
-    if (isConstant)  *isConstant  = (maxOrder < 1) ? PETSC_TRUE : PETSC_FALSE;
-    if (isAffine)    *isAffine    = (maxOrder < 2) ? PETSC_TRUE : PETSC_FALSE;
-    if (isQuadratic) *isQuadratic = (maxOrder < 3) ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscSpaceGetDegree(sp, minDegree, maxDegree);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -736,7 +720,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
 {
   const PetscInt *points;
   PetscInt        p, dim, dE, numFaces, Nq;
-  PetscBool       affineCells;
+  PetscInt        maxDegree;
   DMLabel         depthLabel;
   IS              cellIS;
   DM              dm = field->dm;
@@ -747,11 +731,11 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
   dE  = geom->dimEmbed;
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(depthLabel, dim + 1, &cellIS);CHKERRQ(ierr);
-  ierr = DMFieldGetFEInvariance(field,cellIS,NULL,&affineCells,NULL);CHKERRQ(ierr);
+  ierr = DMFieldGetDegree(field,cellIS,NULL,&maxDegree);CHKERRQ(ierr);
   ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
   numFaces = geom->numCells;
   Nq = geom->numPoints;
-  if (affineCells) {
+  if (maxDegree <= 1) {
     PetscInt        numCells, offset, *cells;
     PetscFEGeom     *cellGeom;
     IS              suppIS;
@@ -1035,7 +1019,7 @@ static PetscErrorCode DMFieldInitialize_DS(DMField field)
   field->ops->evaluate                = DMFieldEvaluate_DS;
   field->ops->evaluateFE              = DMFieldEvaluateFE_DS;
   field->ops->evaluateFV              = DMFieldEvaluateFV_DS;
-  field->ops->getFEInvariance         = DMFieldGetFEInvariance_DS;
+  field->ops->getDegree               = DMFieldGetDegree_DS;
   field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DS;
   field->ops->view                    = DMFieldView_DS;
   field->ops->computeFaceData         = DMFieldComputeFaceData_DS;
@@ -1094,9 +1078,9 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     ierr = MPI_Allreduce(&localConeSize,&coneSize,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
     isSimplex = (coneSize == (dim + 1)) ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
-    ierr = PetscSpaceSetOrder(P, 1);CHKERRQ(ierr);
-    ierr = PetscSpaceSetNumComponents(P, numComponents);CHKERRQ(ierr);
     ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+    ierr = PetscSpaceSetDegree(P, 1, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = PetscSpaceSetNumComponents(P, numComponents);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
     ierr = PetscSpacePolynomialSetTensor(P, isSimplex ? PETSC_FALSE : PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);

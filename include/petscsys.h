@@ -1794,7 +1794,7 @@ PETSC_EXTERN PetscErrorCode PetscMPIDump(FILE*);
 PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxInt(MPI_Comm,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm,PetscReal[],PetscReal[]);
 
-/*
+/*MC
     PetscNot - negates a logical type value and returns result as a PetscBool
 
     Notes:
@@ -1802,7 +1802,11 @@ PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm,PetscReal[],PetscReal
 $     int        *a;
 $     PetscBool  flag = PetscNot(a)
      where !a would not return a PetscBool because we cannot provide a cast from int to PetscBool in C.
-*/
+
+    Level: beginner
+
+    .seealso : PetscBool, PETSC_TRUE, PETSC_FALSE
+M*/
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
 /*MC
@@ -2916,10 +2920,20 @@ PETSC_EXTERN PetscErrorCode PetscHeapDestroy(PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapView(PetscHeap,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscProcessPlacementView(PetscViewer);
-typedef struct _n_PetscCommShared* PetscCommShared;
-PETSC_EXTERN PetscErrorCode PetscCommSharedGet(MPI_Comm,PetscCommShared*);
-PETSC_EXTERN PetscErrorCode PetscCommSharedGlobalToLocal(PetscCommShared,PetscMPIInt,PetscMPIInt*);
-PETSC_EXTERN PetscErrorCode PetscCommSharedGetComm(PetscCommShared,MPI_Comm*);
+typedef struct _n_PetscShmComm* PetscShmComm;
+PETSC_EXTERN PetscErrorCode PetscShmCommGet(MPI_Comm,PetscShmComm*);
+PETSC_EXTERN PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm,PetscMPIInt,PetscMPIInt*);
+PETSC_EXTERN PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm,PetscMPIInt,PetscMPIInt*);
+PETSC_EXTERN PetscErrorCode PetscShmCommGetMpiShmComm(PetscShmComm,MPI_Comm*);
+
+/* routines to better support OpenMP multithreading needs of some PETSc third party libraries */
+typedef struct _n_PetscOmpCtrl* PetscOmpCtrl;
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlCreate(MPI_Comm,PetscInt,PetscOmpCtrl*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl,MPI_Comm*,MPI_Comm*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl*);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl);
+PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl);
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

@@ -17,6 +17,8 @@
 #include <petscdmredundant.h>
 #include <petscdmshell.h>
 #include <petscdmsliced.h>
+#include <petscdmswarm.h>
+#include <petscdmstag.h>
 
 #include <petscdt.h>
 #include <petscds.h>

@@ -1268,6 +1268,7 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TaoLineSearchList, sname, (void (*)(void))func);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

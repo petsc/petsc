@@ -2683,6 +2683,70 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscDSUpdateBoundary - Change a boundary condition for the model
+
+  Input Parameters:
++ ds          - The PetscDS object
+. bd          - The boundary condition number
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. name        - The BC name
+. labelname   - The label defining constrained points
+. field       - The field to constrain
+. numcomps    - The number of constrained field components
+. comps       - An array of constrained component numbers
+. bcFunc      - A pointwise function giving boundary values
+. numids      - The number of DMLabel ids for constrained points
+. ids         - An array of ids for constrained points
+- ctx         - An optional user context for bcFunc
+
+  Note: The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary().
+
+  Level: developer
+
+.seealso: PetscDSAddBoundary(), PetscDSGetBoundary(), PetscDSGetNumBoundary()
+@*/
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
+{
+  DSBoundary     b = ds->boundary;
+  PetscInt       n = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  while (b) {
+    if (n == bd) break;
+    b = b->next;
+    ++n;
+  }
+  if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (name) {
+    ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
+  }
+  if (labelname) {
+    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
+  }
+  if (numcomps >= 0 && numcomps != b->numcomps) {
+    b->numcomps = numcomps;
+    ierr = PetscFree(b->comps);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numcomps, &b->comps);CHKERRQ(ierr);
+    if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
+  }
+  if (numids >= 0 && numids != b->numids) {
+    b->numids = numids;
+    ierr = PetscFree(b->ids);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
+    if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
+  }
+  b->type = type;
+  if (field >= 0) {b->field  = field;}
+  if (bcFunc)     {b->func   = bcFunc;}
+  if (ctx)        {b->ctx    = ctx;}
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDSGetNumBoundary - Get the number of registered BC
 
@@ -2709,7 +2773,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 }
 
 /*@C
-  PetscDSGetBoundary - Add a boundary condition to the model
+  PetscDSGetBoundary - Gets a boundary condition to the model
 
   Input Parameters:
 + ds          - The PetscDS object

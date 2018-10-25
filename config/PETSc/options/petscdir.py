@@ -45,7 +45,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
     versionInfo = []
     if os.path.exists(versionHeader):
-      f = file(versionHeader)
+      f = open(versionHeader)
       for line in f:
         if line.find('define PETSC_VERSION') >= 0:
           versionInfo.append(line[:-1])

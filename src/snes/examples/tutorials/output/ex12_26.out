@@ -68,10 +68,6 @@ Vec Object: Residual, Iterate 0 1 MPI processes
   type: seq
 0.5
 L_2 Residual: 0.5
-Jacobian:
-Mat Object: 1 MPI processes
-  type: seqaij
-row 0: (0, 4.) 
 Residual:
 Vec Object: 1 MPI processes
   type: seq

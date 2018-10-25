@@ -48,14 +48,14 @@ static PetscBool MatPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  MatFinalizePackage(void)
 {
-  MatBaseName    nnames,names = MatBaseNameList;
+  MatRootName    nnames,names = MatRootNameList;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSolverTypeDestroy();CHKERRQ(ierr);
   while (names) {
     nnames = names->next;
-    ierr   = PetscFree(names->bname);CHKERRQ(ierr);
+    ierr   = PetscFree(names->rname);CHKERRQ(ierr);
     ierr   = PetscFree(names->sname);CHKERRQ(ierr);
     ierr   = PetscFree(names->mname);CHKERRQ(ierr);
     ierr   = PetscFree(names);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ PetscErrorCode  MatFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
-  MatBaseNameList                  = NULL;
+  MatRootNameList                  = NULL;
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
   MatOrderingRegisterAllCalled     = PETSC_FALSE;
@@ -82,7 +82,7 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
@@ -357,7 +357,7 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverTypeRegister_MUMPS();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_VECCUDA)
+#if defined(PETSC_HAVE_CUDA)
   ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)

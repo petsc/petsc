@@ -523,6 +523,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
@@ -738,6 +739,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicpc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
@@ -891,6 +893,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif77')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
@@ -1333,7 +1336,7 @@ class Configure(config.base.Configure):
           except RuntimeError:
             accepted = 0
           if accepted:
-            goodFlags = filter(self.checkLinkerFlag, flags)
+            goodFlags = list(filter(self.checkLinkerFlag, flags))
             self.sharedLinker = self.LD_SHARED
             self.sharedLibraryFlags = goodFlags
             self.sharedLibraryExt = ext
@@ -1403,10 +1406,10 @@ class Configure(config.base.Configure):
       for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
-	  linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          linker_flag_var = langMap[language]+'_LINKER_FLAGS'
           val = getattr(self,linker_flag_var)
-	  val.append(testFlag)
-	  setattr(self,linker_flag_var,val)
+          val.append(testFlag)
+          setattr(self,linker_flag_var,val)
       self.popLanguage()
     return
 
@@ -1514,7 +1517,7 @@ class Configure(config.base.Configure):
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):
         flagsArg = self.getLinkerFlagsArg()
-        goodFlags = filter(self.checkLinkerFlag, flags)
+        goodFlags = list(filter(self.checkLinkerFlag, flags))
         self.dynamicLibraryFlags = goodFlags
         self.dynamicLibraryExt = ext
         testMethod = 'foo'
@@ -1607,9 +1610,9 @@ if (dlclose(handle)) {
     This usually prevents mpi compilers from being used - so issue a warning'''
 
     if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
-      optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
-              (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
-              (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
+      optcplrs = [(['with-cc','CC'],['mpiicc','mpicc','mpcc','hcc','mpcc_r']),
+              (['with-fc','FC'],['mpiifort','mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-cxx','CXX'],['mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
       for opts,cplrs in optcplrs:
         for opt in opts:
           if (opt in self.argDB  and self.argDB[opt] != '0'):
@@ -1617,7 +1620,9 @@ if (dlclose(handle)) {
             for cplr in cplrs:
               mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
               if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the preferred compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified along with --with-mpi-dir='+self.argDB['with-mpi-dir']+' which implies using '+mpicplr+'.\n\
+  configure is confused and does not know which compiler to select and use! Please specify either [mpi] compilers or --with-mpi-dir - but not both!\n\
+  In most cases, specifying --with-mpi-dir - and not explicitly listing compilers could be preferable.'
                 raise RuntimeError(msg)
     return
 
@@ -1632,7 +1637,7 @@ if (dlclose(handle)) {
 
   def printEnvVariables(self):
     buf = '**** printenv ****'
-    for key,val in os.environ.iteritems():
+    for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
     self.logPrint(buf)
     return

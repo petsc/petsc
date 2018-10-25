@@ -377,7 +377,7 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
   if (bs < 0) PetscFunctionReturn(0);
-  if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
+  if (map->n > 0 && map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
   if (map->mapping) {
     PetscInt       obs;
     PetscErrorCode ierr;

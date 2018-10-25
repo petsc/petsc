@@ -237,3 +237,60 @@
         End Subroutine
       End Interface DMDAGetScatter
 
+      Interface DMDAGetCorners
+        Subroutine DMDAGetCorners000000(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x,y,z
+         PetscInt, intent(out) :: m,n,p
+         PetscErrorCode, intent(out) :: ierr
+        End Subroutine DMDAGetCorners000000
+
+        Subroutine DMDAGetCorners001001(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x,y
+         PetscInt              :: m,n
+         PetscInt              :: z(*),p(*)
+         PetscErrorCode, intent(out) :: ierr
+        End Subroutine DMDAGetCorners001001
+
+        Subroutine DMDAGetCorners011011(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x
+         PetscInt, intent(out) :: m
+         PetscInt              :: z(*),y(*)
+         PetscInt              :: p(*),n(*)
+         PetscErrorCode, intent(out) :: ierr
+         End Subroutine DMDAGetCorners011011
+      End Interface DMDAGetCorners
+
+      Interface DMDAGetGhostCorners
+        Subroutine DMDAGetGhostCorners000000(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x,y,z
+         PetscInt, intent(out) :: m,n,p
+         PetscErrorCode, intent(out) :: ierr
+        End Subroutine DMDAGetGhostCorners000000
+
+        Subroutine DMDAGetGhostCorners001001(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x,y
+         PetscInt              :: m,n
+         PetscInt              :: z(*),p(*)
+         PetscErrorCode, intent(out) :: ierr
+        End Subroutine DMDAGetGhostCorners001001
+
+        Subroutine DMDAGetGhostCorners011011(a,x,y,z,m,n,p,ierr)
+         use petscdmdef
+         DM a
+         PetscInt, intent(out) :: x
+         PetscInt, intent(out) :: m
+         PetscInt              :: z(*),y(*)
+         PetscInt              :: p(*),n(*)
+         PetscErrorCode, intent(out) :: ierr
+         End Subroutine DMDAGetGhostCorners011011
+      End Interface DMDAGetGhostCorners

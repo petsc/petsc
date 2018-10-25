@@ -30,7 +30,7 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
    Routines: TaoSetType();
-   Routines: TaoSetSeparableObjectiveRoutine();
+   Routines: TaoSetResidualRoutine();
    Routines: TaoSetJacobianRoutine();
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
@@ -108,13 +108,13 @@ int main(int argc,char **argv)
   ierr = InitializeData(&user);CHKERRQ(ierr);
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
   if (wtype == 1) {
-    ierr = TaoSetSeparableObjectiveWeights(tao,w,0,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = TaoSetResidualWeights(tao,w,0,NULL,NULL,NULL);CHKERRQ(ierr);
   } else if (wtype == 2) {
-    ierr = TaoSetSeparableObjectiveWeights(tao,NULL,NOBSERVATIONS,w_row,w_col,w_vals);CHKERRQ(ierr);
+    ierr = TaoSetResidualWeights(tao,NULL,NOBSERVATIONS,w_row,w_col,w_vals);CHKERRQ(ierr);
   }
-  ierr = TaoSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianResidualRoutine(tao, J, J, EvaluateJacobian, (void*)&user);CHKERRQ(ierr);
   ierr = TaoSetTolerances(tao,1e-5,0.0,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* Check for any TAO command line arguments */

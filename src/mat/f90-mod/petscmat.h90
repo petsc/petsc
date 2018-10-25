@@ -127,12 +127,6 @@
           integer z
         end subroutine
 
-        subroutine MatCreateSchurComplement(a,b,c,d,e,f,z)
-          use petscmatdef
-          Mat a,b,c,d,e,f
-          integer z
-        end subroutine
-
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
           use petscmatdef
           MPI_Comm a
@@ -701,6 +695,29 @@
        integer z
        end subroutine
       end Interface
+
+      Interface MatZeroRowsLocal
+      subroutine MatZeroRowsLocal0(a,b,c,d,e,f,z)
+      use petscmatdef
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscScalar d ! PetscScalar
+       Vec e ! Vec
+       Vec f ! Vec
+       integer z
+       end subroutine
+      subroutine MatZeroRowsLocal1(a,b,c,d,e,f,z)
+      use petscmatdef
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscScalar d ! PetscScalar
+       Vec e ! Vec
+       Vec f ! Vec
+       integer z
+       end subroutine
+      End Interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE

@@ -25,7 +25,7 @@ hyperbaseurl
 
 \usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
-\rhead{PETSc 3.9 \today}
+\rhead{PETSc 3.10 \today}
 
 \begin{document}
 
@@ -34,14 +34,14 @@ hyperbaseurl
 
 \pagestyle{empty}
 \hspace{-.65in}\includegraphics{ArgonneLogo}
-\hfill  {\large {\bf ANL-95/11 Rev 3.9}}
+\hfill  {\large {\bf ANL-95/11 Rev 3.10}}
 
 \vspace*{2in}
 \noindent {\huge{\bf PETSc Users Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.9}}
+\noindent {\Large{\it Revision 3.10}}
 
 \vspace*{1in}
 \noindent \\
@@ -56,22 +56,27 @@ hyperbaseurl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
+\newgeometry{top=0mm, left=0mm, right=0mm, bottom=0mm}
 \centerline{\includegraphics{ArgonneReportTemplatePage2}}
+\restoregeometry
 \newpage
 
-\hfill {\large {\bf ANL-95/11 Rev 3.9}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagestyle{empty}
+\hfill {\large {\bf ANL-95/11 Rev 3.10}}
 
 \vspace*{2in}
 \noindent {\LARGE{\bf PETSc Users Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\Large{\it Revision 3.9}}
+\noindent {\Large{\it Revision 3.10}}
 
 \vspace*{0.5in}
 \noindent Prepared by \\
 {\bf S. Balay\textsuperscript{1}, S. Abhyankar\textsuperscript{2}, M. Adams\textsuperscript{3}, J. Brown\textsuperscript{1}, P. Brune\textsuperscript{1}, K. Buschelman\textsuperscript{1},
-L. Dalcin\textsuperscript{4}, V. Eijkhout\textsuperscript{6}, W. Gropp\textsuperscript{1}, D. Karpeyev\textsuperscript{1},
+L. Dalcin\textsuperscript{4}, A. Dener\textsuperscript{1}, V. Eijkhout\textsuperscript{6}, W. Gropp\textsuperscript{1}, D. Karpeyev\textsuperscript{1},
 D. Kaushik\textsuperscript{1}, M. Knepley\textsuperscript{1}, D. May\textsuperscript{7}, L. Curfman McInnes\textsuperscript{1}, R. Mills\textsuperscript{1}, T. Munson\textsuperscript{1},
 K. Rupp\textsuperscript{1}, P. Sanan\textsuperscript{8}, B. Smith\textsuperscript{1}, S. Zampini\textsuperscript{4}, H. Zhang\textsuperscript{5}, and H. Zhang\textsuperscript{1}}\\
 \\
@@ -93,7 +98,7 @@ K. Rupp\textsuperscript{1}, P. Sanan\textsuperscript{8}, B. Smith\textsuperscrip
 
 
 \vspace*{30pt}
-\noindent April 2018
+\noindent September 2018
 
 \vspace*{20pt}
 \noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
@@ -157,10 +162,12 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 \bibliography{../petsc,../petscapp}
 
 \pagestyle{empty}
+\newgeometry{top=0mm, left=0mm, right=0mm, bottom=0mm}
 \begin{figure*}[hbt]
 \centerline{\includegraphics{ArgonneReportTemplateLastPage.pdf}}
 \caption{}
 \end{figure*}
+\restoregeometry
 
 \end{document}
 

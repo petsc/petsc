@@ -121,7 +121,7 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
   ierr = VecCreate(PetscObjectComm((PetscObject)win),v);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
-  ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0);CHKERRQ(ierr);
+  ierr = VecCreate_MPICUDA_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI*)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
@@ -286,6 +286,10 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   vv->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
+  if (alloc && !array) {
+    ierr = VecCUDAAllocateCheck(vv);CHKERRQ(ierr);
+    ierr = VecSet(vv,0.0);CHKERRQ(ierr);
+  }
   if (array) {
     if (!vv->spptr) {
       /* Cannot use PetscNew() here because spptr is void* */

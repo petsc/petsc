@@ -54,6 +54,9 @@ struct _p_MatMFFD {
   Vec         dlscale,drscale; /* diagonal scale */
   Vec         dshift,dshiftw;  /* shift by vectors */
   void        *ctx;            /* this is used by MatCreateSNESMF() to store the SNES object */
+#if defined(PETSC_USE_COMPLEX)
+  PetscBool   usecomplex;      /* use Lyness complex number trick to compute the matrix-vector product */
+#endif
 };
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;

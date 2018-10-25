@@ -1,10 +1,6 @@
 
 static char help[] = "Tests various DM routines.\n\n";
 
-/*T
-   requires: veccuda x
-T*/
-
 #include <petscdm.h>
 #include <petscdmda.h>
 
@@ -68,14 +64,14 @@ int main(int argc,char **argv)
 
    test:
       suffix: cuda1
-      requires: veccuda
+      requires: cuda
       args: -dm_vec_type cuda -nox
       filter: grep -v -i Object
 
    test:
       suffix: cuda2
       nsize: 2
-      requires: veccuda
+      requires: cuda
       args: -dm_vec_type cuda -nox
       filter: grep -v -i Object
 

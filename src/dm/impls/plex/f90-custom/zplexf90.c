@@ -114,7 +114,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecgetclosure_(DM *dm, PetscSection *secti
   PetscScalar *v = NULL;
   PetscInt     n;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(section);
   *ierr = DMPlexVecGetClosure(*dm, *section, *x, *point, &n, &v);if (*ierr) return;
   *ierr = F90Array1dCreate((void*) v, MPIU_SCALAR, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
@@ -123,7 +122,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecrestoreclosure_(DM *dm, PetscSection *s
 {
   PetscScalar *array;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(section);
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, &array);if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -133,7 +131,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecsetclosure_(DM *dm, PetscSection *secti
 {
   PetscScalar *array;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(section);
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexVecSetClosure(*dm,  *section, *v, *point, array, *mode);
 }
@@ -142,8 +139,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *secti
 {
   PetscScalar *array;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(section);
-  CHKFORTRANNULLOBJECTDEREFERENCE(globalSection);
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexMatSetClosure(*dm, *section, *globalSection, *A, *point, array, *mode);
 }
@@ -218,7 +213,6 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, Pets
   IS       *bcComps;
   IS       *bcPoints;
 
-  CHKFORTRANNULLOBJECTDEREFERENCE(perm);
   *ierr = F90Array1dAccess(ptrC, MPIU_INT, (void**) &numComp PETSC_F90_2PTR_PARAM(ptrCd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrD, MPIU_INT, (void**) &numDof PETSC_F90_2PTR_PARAM(ptrDd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrF, MPIU_INT, (void**) &bcField PETSC_F90_2PTR_PARAM(ptrFd));if (*ierr) return;
