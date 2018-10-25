@@ -556,7 +556,13 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
           *dof += fdof;
         }
       }
-      if (off) {ierr = PetscSectionGetOffset(dofSection[0], p, off);CHKERRQ(ierr);}
+      if (off) {
+        *off = 0;
+        for (g = 0; g < patch->nsubspaces; ++g) {
+          ierr = PetscSectionGetOffset(dofSection[g], p, &fdof);CHKERRQ(ierr);
+          *off += fdof;
+        }
+      }
     } else {
       if (dof) {ierr = PetscSectionGetDof(dofSection[f], p, dof);CHKERRQ(ierr);}
       if (off) {ierr = PetscSectionGetOffset(dofSection[f], p, off);CHKERRQ(ierr);}
@@ -1111,21 +1117,39 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   /* Create placeholder section for map from points to patch dofs */
   ierr = PetscSectionCreate(PETSC_COMM_SELF, &patch->patchSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(patch->patchSection, patch->nsubspaces);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(patch->dofSection[0], &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof, fdof, f;
+  if (patch->combined) {
+    PetscInt numFields;
+    ierr = PetscSectionGetNumFields(patch->dofSection[0], &numFields);CHKERRQ(ierr);
+    if (numFields != patch->nsubspaces) SETERRQ2(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Mismatch between number of section fields %D and number of subspaces %D", numFields, patch->nsubspaces);
+    ierr = PetscSectionGetChart(patch->dofSection[0], &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt dof, fdof, f;
 
-    ierr = PetscSectionGetDof(patch->dofSection[0], p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(patch->patchSection, p, dof);CHKERRQ(ierr);
-    for (f = 0; f < patch->nsubspaces; ++f) {
-      ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);
-      if (ierr == 0) {
+      ierr = PetscSectionGetDof(patch->dofSection[0], p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(patch->patchSection, p, dof);CHKERRQ(ierr);
+      for (f = 0; f < patch->nsubspaces; ++f) {
+        ierr = PetscSectionGetFieldDof(patch->dofSection[0], p, f, &fdof);CHKERRQ(ierr);
         ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
       }
-      else {
-        /* assume only one field */
-        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, dof);CHKERRQ(ierr);
+    }
+  } else {
+    PetscInt pStartf, pEndf, f;
+    pStart = PETSC_MAX_INT;
+    pEnd = PETSC_MIN_INT;
+    for (f = 0; f < patch->nsubspaces; ++f) {
+      ierr = PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf);CHKERRQ(ierr);
+      pStart = PetscMin(pStart, pStartf);
+      pEnd = PetscMax(pEnd, pEndf);
+    }
+    ierr = PetscSectionSetChart(patch->patchSection, pStart, pEnd);CHKERRQ(ierr);
+    for (f = 0; f < patch->nsubspaces; ++f) {
+      ierr = PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf);CHKERRQ(ierr);
+      for (p = pStartf; p < pEndf; ++p) {
+        PetscInt fdof;
+        ierr = PetscSectionGetDof(patch->dofSection[f], p, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionAddDof(patch->patchSection, p, fdof);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(patch->patchSection, p, f, fdof);CHKERRQ(ierr);
       }
     }
   }
